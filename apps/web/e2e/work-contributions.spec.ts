@@ -1,7 +1,15 @@
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
-import {expect, test, type Page} from "@playwright/test";
+import {expect, test, type Page, type Locator, type Route} from "@playwright/test";
 import {waitForOneTimeCode} from "./support/mail";
+
+// This regression must pass on its first attempt, including under a held publication.
+test.describe.configure({retries: 0});
+
+async function expectPublished(panel: Locator, content: string) {
+  await expect(panel.getByRole("button", {name: "Compartilhadas", exact: true})).toHaveAttribute("aria-pressed", "true");
+  await expect(panel.locator("article").filter({hasText: content}).getByRole("button", {name: "Propor alteração", exact: true})).toBeVisible();
+}
 
 test("two people preserve private branches, compare conflicts and lose revoked access", async ({page, browser}) => {
   const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
@@ -58,9 +66,50 @@ test("two people preserve private branches, compare conflicts and lose revoked a
     await expect(b).not.toContainText(`Private A ${id}`);
     await a.locator('textarea[name="contribution"]').fill(`Shared basis ${id}`);
     await a.getByRole("button", {name: "Salvar no meu canal", exact: true}).click();
-    await a.locator("article").filter({hasText: `Shared basis ${id}`}).getByRole("button", {name: "Compartilhar esta versão"}).click();
-    await b.getByRole("button", {name: "Compartilhadas", exact: true}).click();
-    await expect(b.locator("article").filter({hasText: `Shared basis ${id}`})).toBeVisible();
+    const privateBasis = a.locator("article").filter({hasText: `Shared basis ${id}`});
+    await expect(privateBasis).toBeVisible();
+    const revisionId = await privateBasis.getAttribute("data-revision-id");
+    expect(revisionId).toMatch(/^[0-9a-f-]{36}$/);
+    // Hold the real request before it reaches the server. Never mock its response or
+    // sleep: the other browser must finish its early read while publication is held.
+    let intercepted = false;
+    let release!: () => void;
+    const held = new Promise<void>(resolve => {release = resolve;});
+    const routeUrl = (url: URL) => url.origin === new URL(base).origin && url.pathname === new URL(workUrl).pathname;
+    const holdPromotion = async (route: Route) => {
+      const request = route.request();
+      const body = request.postData() ?? "";
+      if (!intercepted && request.method() === "POST" && request.headers()["next-action"]
+          && body.includes(revisionId!) && body.includes('"promotionId"')) {
+        intercepted = true;
+        await held;
+      }
+      await route.continue();
+    };
+    await page.route(routeUrl, holdPromotion);
+    try {
+      await test.step("before publication completes, an early shared read has no revision", async () => {
+        await privateBasis.getByRole("button", {name: "Compartilhar esta versão"}).click();
+        await expect.poll(() => intercepted).toBe(true);
+        await b.getByRole("button", {name: "Compartilhadas", exact: true}).click();
+        await expect(b.getByRole("button", {name: "Compartilhadas", exact: true})).toHaveAttribute("aria-pressed", "true");
+        await expect(b.locator("article").filter({hasText: `Shared basis ${id}`})).toHaveCount(0);
+        expect(sql(`select count(*) from public.contribution_revisions where work_id='${workId}' and promoted_from_revision_id='${revisionId}';`)).toBe("0");
+        await test.info().attach("publication-order-before", {body: JSON.stringify({publicationHeld: intercepted, readerFinished: true, sharedRevisions: 0}), contentType: "application/json"});
+      });
+    } finally {
+      release();
+      // This page has only this handler. Drain it before disabling interception;
+      // removing an in-flight handler can otherwise race route.continue().
+      await page.unrouteAll({behavior: "wait"});
+    }
+    await test.step("after observable publication, the second reader sees the persisted revision", async () => {
+      await expectPublished(a, `Shared basis ${id}`);
+      await b.getByRole("button", {name: "Compartilhadas", exact: true}).click();
+      await expectPublished(b, `Shared basis ${id}`);
+      expect(sql(`select count(*) from public.contribution_revisions where work_id='${workId}' and promoted_from_revision_id='${revisionId}';`)).toBe("1");
+      await test.info().attach("publication-order-after", {body: JSON.stringify({publisherSharedRevisionVisible: true, readerSharedRevisionVisible: true, sharedRevisions: 1}), contentType: "application/json"});
+    });
     for (const panel of [a, b]) await panel.locator("article").filter({hasText: `Shared basis ${id}`}).getByRole("button", {name: "Propor alteração"}).click();
     await a.locator('textarea[name="contribution"]').fill(`Alternative A ${id}`);
     await b.locator('textarea[name="contribution"]').fill(`Alternative B ${id}`);
@@ -69,6 +118,9 @@ test("two people preserve private branches, compare conflicts and lose revoked a
     await expect(b.locator("article").filter({hasText: `Alternative B ${id}`})).toBeVisible();
     await expect(a.locator("article").filter({hasText: `Alternative B ${id}`})).toHaveCount(0);
     await a.locator("article").filter({hasText: `Alternative A ${id}`}).getByRole("button", {name: "Compartilhar esta versão"}).click();
+    // The expected loser is B, so prove A won before submitting B's stale base.
+    // True simultaneous compare-and-swap is separately exercised by the SQL concurrency gate.
+    await expectPublished(a, `Alternative A ${id}`);
     await b.locator("article").filter({hasText: `Alternative B ${id}`}).getByRole("button", {name: "Compartilhar esta versão"}).click();
     const conflict = b.getByTestId("contribution-conflict");
     await expect(conflict).toContainText(`Shared basis ${id}`);
@@ -90,6 +142,7 @@ test("two people preserve private branches, compare conflicts and lose revoked a
     await expect(b.locator("article").filter({hasText: `Alternative B ${id}`}).getByText("Versão 2", {exact: true})).toBeVisible();
     expect(sql(`select count(*) from public.contribution_revisions newer join public.contribution_revisions prior on prior.id=newer.previous_revision_id where newer.work_id='${workId}' and newer.content='Alternative B ${id}' and prior.content=newer.content and newer.base_revision_id is distinct from prior.base_revision_id;`)).toBe("1");
     await b.locator("article").filter({hasText: `Alternative B ${id}`}).first().getByRole("button", {name: "Compartilhar esta versão"}).click();
+    await expectPublished(b, `Alternative B ${id}`);
     await b.locator("article").filter({hasText: `Alternative B ${id}`}).getByRole("button", {name: "Histórico", exact: true}).click();
     const history = b.getByRole("region", {name: "Histórico", exact: true});
     await expect(history).toContainText(`Shared basis ${id}`);
