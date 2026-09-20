@@ -84,11 +84,11 @@ export const procedureBuildProvenance = [
       "hash": "98358ad2a0febcc675089d89639f79aaad31445bbf4b7a64f17c6365cf6b5882"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -96,7 +96,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -123,7 +123,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "authoringStatus": "incomplete",
     "pendingContent": [
@@ -225,7 +225,7 @@ export const procedureBuildProvenance = [
         "evidence": []
       }
     ],
-    "manifestHash": "c7eb845a7f0a26c5a8c83d90b9f8b651ded0b95141b7bb49f0b378d4858e08ba"
+    "manifestHash": "fab18fb695b6a76b7c4c78d738634fe8e9a588cc87977706b816bb16dd6e3aec"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -239,11 +239,11 @@ export const procedureBuildProvenance = [
       "hash": "4de8c03356c3441ff145d2bc7c99bf5d7f7f573411b39a5fcad0cf756cf22ead"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -251,7 +251,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -278,7 +278,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "79f3b7b8dc8c260b8fc57e5819f0348874f03e81d6cdf16d0ee226738c75a0d8",
     "compositionStatus": "legacy_contract",
@@ -289,7 +289,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-debt-ledger",
       "exportName": "buildDebtLedger",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -297,7 +297,7 @@ export const procedureBuildProvenance = [
         "hash": "9a9aa31f9e062e0ff603d25b96908b367e0ab96bf8dd0ba3c9357a1a3ad49533"
       }
     ],
-    "manifestHash": "298fce25b17469c0d29c1ee085bc710e971c519d0a7f78371872c532782e413e"
+    "manifestHash": "726f63d0b0bea851a87bb3b0b3f553c068986ad05127a652518c8326439d2266"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -311,11 +311,11 @@ export const procedureBuildProvenance = [
       "hash": "31ecf5116ffed5f8f3b462ca70b46a7afd99bbfd625acbe2975294642890d15d"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -323,7 +323,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -350,7 +350,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "6364b4ea243d5c168f8b8c54e0ca8cad9c272e9950cd5855a66a81989770330d",
     "compositionStatus": "legacy_contract",
@@ -361,7 +361,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
       "exportName": "buildInterestAndIndexationSchedule",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -369,7 +369,7 @@ export const procedureBuildProvenance = [
         "hash": "4d92040831baf6f3ce75fe498929de89aa850d3d497c9013aafc6e1f8ca02685"
       }
     ],
-    "manifestHash": "c93d8a74bfc2ff4ae33595a73036501f69f9c47d46c04a5d45b482a02cae1bd3"
+    "manifestHash": "f76a29dbeffc86e4138634b528d8fdb119a6141cbad9dbdced6d3a29f941919c"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -383,11 +383,11 @@ export const procedureBuildProvenance = [
       "hash": "e66ff3415c454bcfe1f83d876b75f5e2d4549743ebd8af7f9cc726ae5bbdabfd"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -395,7 +395,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -422,7 +422,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "6e661629c022155da1631be5ef572337cadd32cfc1d67b50ec3be749ae06df7c",
     "compositionStatus": "legacy_contract",
@@ -433,7 +433,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
       "exportName": "reconcileCovenantDefinitions",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -441,7 +441,7 @@ export const procedureBuildProvenance = [
         "hash": "03470380a643dad767a765ec0d06875bf48ce0da0b4bce57053caf83ebf8a6b4"
       }
     ],
-    "manifestHash": "b97660a32206d1d7701c4b52c38a9bedb265524545df41cd01d846644f0aa4fc"
+    "manifestHash": "d223a8840241fb572a00e55db3340b38f52ee20fb96cd8f080c8a5f74e1c3607"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -455,11 +455,11 @@ export const procedureBuildProvenance = [
       "hash": "850274016f35d1273e56d1d672f51b6c81a38b7226a2eccf0a612c17a6999f87"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -467,7 +467,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -494,7 +494,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "59239ddb82f3ec8ef19b7d3efce99226f0cac024a9695ea13e9f3c54911691d6",
     "compositionStatus": "legacy_contract",
@@ -505,7 +505,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
       "exportName": "reconcileFinancialStatements",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -513,7 +513,7 @@ export const procedureBuildProvenance = [
         "hash": "a08f291c6583f230b7a3a88848f4ccab014f065de0ae1867b671070575c30e05"
       }
     ],
-    "manifestHash": "385127561fce5214fa6152647a87e8823de029e09f6b27467b5258e6e0064a34"
+    "manifestHash": "ed222fe4c63939e2a73937079c1fc440d72fcdf7f7769693e1ec8c6a5c41668d"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -527,11 +527,11 @@ export const procedureBuildProvenance = [
       "hash": "5db9dbc658da621ffa2025906461740a184a265b3fb21e43930b74c65693e23b"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -539,7 +539,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -566,7 +566,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "b7d5d41121e051a3147a3ffc3858187b385d2edb5e0ef97d118a0b42db35fd6b",
     "compositionStatus": "legacy_contract",
@@ -577,7 +577,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/plan-meeting-brief",
       "exportName": "planMeetingBrief",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -585,7 +585,7 @@ export const procedureBuildProvenance = [
         "hash": "19834e22ea2a03cc6d1273fdff2a3fc58da3fdd148bc0219f8e6f4d9ac042567"
       }
     ],
-    "manifestHash": "1479d648664fe2941060a1c3234fb10781826a21d8e0c4b1e19cfc12bfbd0eba"
+    "manifestHash": "46a599cf0959e170c9b21cbedc2a5defe1e89958e3eece0f4f253a7167b2af05"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -599,11 +599,11 @@ export const procedureBuildProvenance = [
       "hash": "0ed232f44132ee34e18d4e6ada078d8304415c6b6f82e332032ec86fc3d9f7ca"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -611,7 +611,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -638,7 +638,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "495babe03478b0f2d1ebe7eed8091b9b78dd530eeb57e997d89fda025745a28d",
     "compositionStatus": "legacy_contract",
@@ -649,7 +649,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/preview/synthesis",
       "exportName": "synthesisSkeleton",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -657,7 +657,7 @@ export const procedureBuildProvenance = [
         "hash": "7301ff06438a26a3b90964577b0292d71cfb456e313e91e2c2b6bfa5c5bdf06d"
       }
     ],
-    "manifestHash": "dbfe96bc2785456a48a44d1e4c719c3f76a47bfbcbe5743c38d99eb2bb1c2623"
+    "manifestHash": "949a7cf6e2bb8c6845f43060fe99149f5bc2f4bccb09da40c73c5c9c77f179ab"
   },
   {
     "manifestHash": "17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090",
@@ -755,11 +755,11 @@ export const procedureBuildProvenance = [
       "hash": "12a93d3b1640e3d870e0144b80baa91ec83cf070d02af3977308794d62d89df5"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -767,7 +767,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -794,7 +794,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "18e19567239919fcf991c4462a77dc997d923ab0b72704f42ea35f01928dbf4a",
     "compositionStatus": "legacy_contract",
@@ -805,7 +805,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/compare-refinancing-before-after",
       "exportName": "compareRefinancingBeforeAfter",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -813,7 +813,7 @@ export const procedureBuildProvenance = [
         "hash": "73d58853572afac424bd7323a662568c8e46ee09ea4e233ca4848c4310a10f52"
       }
     ],
-    "manifestHash": "bbf9007ebe9cb002864ae54cd8b2d7d3d5ce2b610db5879c8beecd53fe9e1ce1"
+    "manifestHash": "79fb0881bbb3d0e3c1de9abacafd162eb8a881ca1cbea9931e2045dde6d1737e"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -827,11 +827,11 @@ export const procedureBuildProvenance = [
       "hash": "58ea948ced9e36c8f8fa0987bb1c1efe3ff5691984aa6ba54cf739d257e903da"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -839,7 +839,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -866,7 +866,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "0c32ca0c53b50e0f9cd811c43dbcb0ed3791b21039a662e123f0c9e530c0a225",
     "compositionStatus": "legacy_contract",
@@ -877,7 +877,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
       "exportName": "diagnoseMaturityWall",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -885,7 +885,7 @@ export const procedureBuildProvenance = [
         "hash": "15feca2fb00f7cadae3efffc27cc399b2e20b0e7bddd92f3a7a727ce8147b7fa"
       }
     ],
-    "manifestHash": "0d7c69f35fdb5c1a199ff59f7d609b67581763566c40ea2ff10a579ed2b87d60"
+    "manifestHash": "2dbca3dea3bfc6ac949c9f36672686a12c9346e616ff8465c2f84e949389bf0d"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -899,11 +899,11 @@ export const procedureBuildProvenance = [
       "hash": "d68da65e036b6080dea53033eeec1f3f645d4fa6ea619515bdae158bc3970f0b"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -911,7 +911,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -938,7 +938,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "d5c086654076080458f702b19105765e1a5052b5945a38a94ac674bbe82fac07",
     "compositionStatus": "legacy_contract",
@@ -949,7 +949,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
       "exportName": "estimateExitCostBySeries",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -957,7 +957,7 @@ export const procedureBuildProvenance = [
         "hash": "801eea7f0fa061c88f76f0cdd7681746b2af3dc3d9c56ee6fc7bc662666c6a5b"
       }
     ],
-    "manifestHash": "80a3ba4e6d0f79d9175a99d16c5cf7e37b7a66a89445116bab84e3244d8068d0"
+    "manifestHash": "9b1cedc4b614159c159c28c8dcf2320929efb8242785a8cf5fee10523e9d0956"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -971,11 +971,11 @@ export const procedureBuildProvenance = [
       "hash": "547c04a7db74de7e66780431f164fdd0423007d5cc6361dd3a4a1cc11da73618"
     },
     "compiler": {
-      "version": "2026.09.20-v1",
+      "version": "2026.09.20-v2",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+          "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -983,7 +983,7 @@ export const procedureBuildProvenance = [
         },
         {
           "path": "packages/credit-playbook/src/procedure-compiler.ts",
-          "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+          "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
         },
         {
           "path": "packages/credit-playbook/src/procedure-contract.ts",
@@ -1010,7 +1010,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "36d9529f91f86a4fecfa29136a6207d39b53694350fd6f9608943204751c1e30"
+      "hash": "0c39d137cda18e700856c6f0ace36c038b17a1497182f5e8483d8cd8c8c0b493"
     },
     "adapterHash": "188b796cf9665f6b08d8e5e81d6634b2ecd11bf37452a79f0bdf2904dd2ff66d",
     "compositionStatus": "legacy_contract",
@@ -1021,7 +1021,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/declare-scenarios",
       "exportName": "declareScenarios",
-      "sourceClosureHash": "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81"
+      "sourceClosureHash": "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba"
     },
     "evidence": [
       {
@@ -1029,12 +1029,12 @@ export const procedureBuildProvenance = [
         "hash": "ad57c9153addb67a306702ec35c7176c8e8328142a18603a6057b4db3b26e858"
       }
     ],
-    "manifestHash": "aac487b4e0430971fbc4ab246013b597630a4fb1483d5b5af75dfaf4ff01a458"
+    "manifestHash": "a7005b7c2870be11ac35edfca3bb779f6c3b4a1afe4836e54b7feb68eab5d6d2"
   }
 ] as const;
 
 export const procedureExecutorSourceClosures = {
-  "0d7500a6fd72e346f7a9ca3d7e16595b6e8fec12809bbae63059703f83814c81": [
+  "c8f264564d1592d207e20e91192b296f24f9e2ff27022d54f9e72e28c2f19cba": [
     {
       "path": "packages/credit-ontology/package.json",
       "hash": "0f5f1ce7ae6f0ebb97b751c230cd6a3799abb49b5620c73454a78e90d09e7dc1"
@@ -1097,7 +1097,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/credit-playbook/src/build-method-manifest.ts",
-      "hash": "1396763fdbffba083c233e4cd7ad9df1b60d7457dd9785925e0bcddf9357cfea"
+      "hash": "d63f0e6ab99f9f92db3039f4b0edbe48c8a379ad52454f5c8fa6d7c937e76599"
     },
     {
       "path": "packages/credit-playbook/src/cases/gc01/build-debt-ledger.ts",
@@ -1241,7 +1241,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/credit-playbook/src/index.ts",
-      "hash": "bf74e04b3eed0be7e42d3ca8b603660c9abedbc86e9b241886c90677ca209b8a"
+      "hash": "ef9acfbc1569e8c1e6b0d8e8dfccd166d3987c214f84310a0ded6ee8e96e12a5"
     },
     {
       "path": "packages/credit-playbook/src/instruments.ts",
@@ -1262,6 +1262,10 @@ export const procedureExecutorSourceClosures = {
     {
       "path": "packages/credit-playbook/src/method-component.ts",
       "hash": "7275fec40f2976044ca821ca089d2b6c56618f99a1f5673c654a803cfde2e7ee"
+    },
+    {
+      "path": "packages/credit-playbook/src/method-data-contract.ts",
+      "hash": "8c2de2226ae1427054da6134688801a809943933ea1f5f244cca783ca8cd78b0"
     },
     {
       "path": "packages/credit-playbook/src/method-run-record.ts",
@@ -1305,7 +1309,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/credit-playbook/src/procedure-compiler.ts",
-      "hash": "692c94cdaa4112bba92fea7f01bb07f7f274a3d045947a74b413d79be343dad0"
+      "hash": "1a55d74325fdc30ee84aef501bac98cc5c8f2f884ca040d207ab57880726dd72"
     },
     {
       "path": "packages/credit-playbook/src/procedure-contract.ts",

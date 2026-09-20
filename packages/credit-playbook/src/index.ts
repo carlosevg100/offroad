@@ -50,3 +50,5 @@ export * from "./method-component";
 export * from "./procedure-compiler";
 
 export * from "./compose-method";
+
+export * from "./method-data-contract";

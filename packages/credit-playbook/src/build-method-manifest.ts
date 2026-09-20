@@ -1,6 +1,7 @@
 /** Build-only: neither exported from the package nor imported by the worker. */
 import {readFileSync, readdirSync} from "node:fs";
 import {resolve, relative, join} from "node:path";
+import {methodDataContractSchema, componentVersionSchema} from "./method-component";
 import {readReleasedMethodLock} from "./released-method-lock";
 import {loadMethodLibrary} from "./procedure-markdown";
 import {adaptLegacyMethodDocument, compileProcedureComposition, methodContentHash, pinMethodSources, componentCompilerVersion, type CompilerSource} from "./procedure-compiler";
@@ -28,6 +29,15 @@ export function buildMethodManifest(repositoryRoot: string) {
   for (const release of released) {
     if (!library.methods.some((method) => method.procedure.id === release.provenance.procedure.id && method.procedure.version === release.provenance.procedure.version)) throw new Error("published_method_document_missing");
   }
+  const contractsPath = "packages/financial-model/contracts/capital-decision-delivery.json";
+  const contracts = JSON.parse(source(contractsPath).content);
+  if (contracts.schemaVersion !== "method-executor-contracts.v1" || contracts.executor?.module !== "@offroad/financial-model"
+    || contracts.executor?.exportName !== "prepareCapitalDecisionDelivery") throw new Error("capital_executor_registration_mismatch");
+  const registeredCapitalExecutor = {...contracts.executor, version: componentVersionSchema.parse(contracts.executor.version),
+    inputContractHash: methodContentHash(methodDataContractSchema.parse(contracts.inputs)),
+    outputContractHash: methodContentHash(methodDataContractSchema.parse(contracts.outputs)),
+    sources: [...packageClosure("@offroad/financial-model", root), contractsPath,
+      "packages/financial-model/scripts/generate-capital-contracts.mjs"].map(source)};
   const provenance = library.methods.map((method) => {
     const release = released.find((entry) => entry.provenance.procedure.id === method.procedure.id && entry.provenance.procedure.version === method.procedure.version);
     if (release) {
@@ -39,7 +49,7 @@ export function buildMethodManifest(repositoryRoot: string) {
       executorSourceClosures[release.provenance.executor.sourceClosureHash] = release.executorSources;
       return release.provenance;
     }
-    if (method.composition) return compileProcedureComposition(method, method.composition, {compilerSources, executors: [], evidence: []});
+    if (method.composition) return compileProcedureComposition(method, method.composition, {compilerSources, executors: [registeredCapitalExecutor], evidence: []});
     const adapted = adaptLegacyMethodDocument(method);
     const implementation = method.procedure.implementation;
     const evidencePaths = new Set(method.procedure.reviews.map((review) => `packages/credit-playbook/${review.recordPath}`));

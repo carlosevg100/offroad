@@ -1,3 +1,12 @@
+## Etapa15: contratos do executor derivados dos schemas reais (2026-09-20)
+
+A geração usa os schemas efetivos de entrada e saída de prepareCapitalDecisionDelivery,
+incluindo null/variantes/ausência. O registro é da engenharia, não autorreferência da autoria.
+Compilador v2026.09.20-v2 fixa fechamento transitivo, contrato e gerador; mudança de contrato
+ou export inventado é negada. Dez testes novos entre playbook e model; validação semântica
+permanece no executor, com schema JSON integral fixado. Não publica ou ativa candidato.
+Sem DDL/provedor/acesso. Gates e produção precisam de prova no completion; autoria na15.
+
 ## Etapa15: entrega estruturada da decisão (2026-09-20)
 
 `prepareCapitalDecisionDelivery` recalcula a revisão e produz contrato tipado para a entrega:
