@@ -1,3 +1,12 @@
+## Etapa15: leitura de evidências Git em lotes limitados (2026-09-20)
+
+O limite de5s voltou a falhar no negativo capturedAt da CI da composição financeira. A PR
+financeira ficou bloqueada. Leitura Git agora usa metadados e lotes de blobs com até20MiB de
+conteúdo; hashes são conferidos por registro, sem cache de autoridade. Quatro testes novos
+cobrem binário/vazio, tamanho/tipo/ausência, injeção e árvore de trabalho alterada. Os94 testes
+do inventário permanecem;209governancePASS isolados em7,76s. Contrato em etapa-15-leitura-git-lotes.md.
+Sem DDL, novos acessos ou relaxamento de gates. CI/produção ainda exigem prova no completion.
+
 ## Etapa15: custos adotados na composição financeira em validação
 
 ## Etapa15: caixa e dívida por períodos comparáveis (2026-09-20)
