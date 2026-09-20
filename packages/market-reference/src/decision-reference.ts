@@ -29,7 +29,7 @@ export function reviewDecisionMarketReference(reference: DecisionMarketReference
   for (const field of ["instrument", "currency", "indexer"] as const) if (reference[field] !== target[field]) reasons.push(`${field}_mismatch`);
   if (reference.kind !== "market_context" && reference.subjectEntityId !== target.entityId) reasons.push("entity_specific_terms_required");
   if (!reference.observationIds.length || reference.observationIds.some(id => !target.selectedObservationIds.includes(id))) reasons.push("selected_observation_missing");
-  return {version: "decision-market-reference.v1", reference: structuredClone(reference),
+  return {version: "decision-market-reference.v1", reference: structuredClone(reference), target: structuredClone(target),
     status: reasons.length ? "unusable_for_comparison" as const : reference.kind === "market_context" ? "context_only" as const : "terms_for_review" as const,
     reasons, grantsAccess: false as const, confirmsFundingAvailability: false as const,
     requiresLiveRightsCheck: true as const};

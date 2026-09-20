@@ -51,7 +51,9 @@ export function prepareCapitalDecisionReview(raw: unknown) {
   const market = new Map(input.marketReferences.map(r => [r.id, r])); const referencedMarket = new Set<string>();
   const conditions = input.alternativeConditions.map(a => {
     const alternative = alternatives.get(a.id); if (!alternative) throw new Error("capital_review_unknown_alternative");
-    const review = reviewCapitalAlternativeConditions(a, [...used.keys()]);
+    const localBasis = [...alternative.projection.contributions.map(e => e.decisionId),
+      ...ratios.filter(r => r.alternativeId === a.id).flatMap(r => r.result.derivedDependencies)];
+    const review = reviewCapitalAlternativeConditions(a, localBasis);
     if (review.status === "basis_required") materialGaps.push(`conditions:${a.id}:basis_required`);
     if ((a.instrument === null) !== (a.indexer === null)) throw new Error("capital_review_instrument_context_required");
     const observations = alternative.projection.contributions.flatMap(e => e.observationId ? [e.observationId] : []);
@@ -73,7 +75,7 @@ export function prepareCapitalDecisionReview(raw: unknown) {
   for (const item of input.reviewItems) if (item.evidenceIds.some(id => !evidence.has(id))) throw new Error("capital_review_evidence_missing");
   const sufficiency = assessCapitalDecisionSufficiency({hasAlternatives: alternatives.size > 0,
     numericalGaps: composition.gaps.map(g => `${g.subjectId ?? "decision"}:${g.code}`), materialGaps, reviewItems: input.reviewItems});
-  const payload = {schemaVersion: "capital-decision-review.v1" as const, composition, ratios, conditions, sufficiency,
+  const payload = {schemaVersion: "capital-decision-review.v1" as const, asOf: input.asOf, composition, ratios, conditions, sufficiency,
     contributions: [...used.values()], requestedDecision: composition.question,
     certifiesContractualCompliance: false as const, confirmsFundingAvailability: false as const,
     grantsApproval: false as const, grantsExecution: false as const};
