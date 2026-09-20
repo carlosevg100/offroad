@@ -1,3 +1,17 @@
+## Etapa 15: liquidez por datas em validação
+
+Motor aditivo `buildLiquidityCalendar`, registrado como `financial.dated_liquidity`, e
+adaptador `calculateAdoptedLiquidityCalendar`: identidade de caixa por data efetiva, saldos
+disponível/restrito separados, ausência propagada e contribuições rastreáveis. Convenção
+explícita de saldo ao fim do dia; não prova liquidez intradiária nem ajusta dias úteis.
+Motor corrente `2026.09.20-v18`; R01 publicado preservado.
+
+23 testes novos e check integral (44 tarefas) aprovados; CI, merge e produção pendentes
+nesta candidata. Sem DDL, nova rota ou publicação de procedimento. A etapa 15 continua aberta.
+Detalhes e riscos: `docs/build/arcabouco/etapa-15-liquidez.md`; completion externo registra
+os comprovantes finais. A intermitência de contribuição compartilhada permanece atribuída
+à integração da etapa 15, antes de ligar a comparação ao trabalho persistente.
+
 ## Etapa 15: contrato da base de comparação em validação
 
 Incremento aditivo `capital-structure-decision.ts`: organiza alternativas em uma base imutável,

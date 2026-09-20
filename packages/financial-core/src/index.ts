@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.19-v17";
+export const financialCoreVersion = "2026.09.20-v18";
 
 export * from "./financial-truth";
 export * from "./depreciation";
@@ -202,6 +202,7 @@ export function calculateCapacityEnvelope(input: {
  * regression.
  */
 export const financialCalculationRegistry = {
+  "financial.dated_liquidity": "buildLiquidityCalendar",
   "financial.adjusted_ebitda": "calculateAdjustedEbitda",
   "financial.net_leverage": "calculateLeverage",
   "financial.dscr": "calculateDscr",
@@ -327,3 +328,5 @@ export function accrualFactorAtPrecision(input: {annualRate: DecimalInput; busin
   const value = factor.toDecimalPlaces(input.decimals, rounding).toFixed();
   return {value, trace: {id: "financial.accrual_factor_at_precision", formula: input.percentOfIndex === undefined ? "(1 + annualRate)^(businessDays/252) - 1, at the stated layer" : "(1 + ((1 + annualRate)^(1/252) - 1) * percent)^businessDays - 1, at the stated layer", operands: {annualRate: new Decimal(input.annualRate).toFixed(), businessDays: String(input.businessDays), percentOfIndex: input.percentOfIndex === undefined ? "n/a" : new Decimal(input.percentOfIndex).toFixed(), decimals: String(input.decimals), mode: input.mode}, result: value}};
 }
+
+export * from "./liquidity-calendar";
