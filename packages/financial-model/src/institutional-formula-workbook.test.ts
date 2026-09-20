@@ -5,6 +5,27 @@ import {prepareInstitutionalModelInput} from "./institutional-input";
 import {buildInstitutionalFinancialModel} from "./institutional-model";
 import {institutionalFormulaSheets} from "./institutional-formula-workbook";
 import {toGovernedXlsxBuffer} from "./governed-workbook";
+import {columnLetter, type ModelSheet} from "./model";
+
+function assertAcyclicFormulaReferences(sheets: ModelSheet[]) {
+ const dependencies = new Map<string, string[]>();
+ for (const sheet of sheets) sheet.rows.forEach((row,r)=>row.cells.forEach((cell,c)=>{
+  const address=`${sheet.name.en}!${columnLetter(c)}${r+1}`;
+  dependencies.set(address,[...(cell.formula??"").matchAll(/'([^']+)'!([A-Z]+[0-9]+)/g)].map(match=>`${match[1]}!${match[2]}`));
+ }));
+ const complete=new Set<string>();
+ function visit(address:string, ancestors:Set<string>) {
+  expect(ancestors.has(address),`Circular workbook dependency: ${address}`).toBe(false);
+  if(complete.has(address))return;
+  const next=new Set(ancestors).add(address);
+  for(const dependency of dependencies.get(address)??[]) {
+   expect(dependencies.has(dependency),`Missing workbook cell: ${dependency}`).toBe(true);
+   visit(dependency,next);
+  }
+  complete.add(address);
+ }
+ for(const address of dependencies.keys())visit(address,new Set());
+}
 
 describe("institutional local formula model",()=>{
  it.each(["opening_principal","indexed_principal","average_principal"] as const)("emits linked financial statements for %s with cash and capitalized treatment",async couponBase=>{
@@ -19,6 +40,15 @@ describe("institutional local formula model",()=>{
    const debt=input.debtInstruments[0]!;debt.indexer="IPCA";debt.indexationTreatment=treatment;debt.couponTreatment=treatment;debt.couponBase=couponBase;
    debt.periods=debt.periods.map((p,i)=>({...p,indexationRate:"0.04",couponRate:"0.08",...(i===3?{repayAll:true}:{scheduledPrincipal:"10"})}));
    const model=buildInstitutionalFinancialModel(input);const sheets=institutionalFormulaSheets(input,0,"en");
+   expect(model.periods.at(-1)!.closingGrossDebt).toBe("0");
+   assertAcyclicFormulaReferences(sheets);
+   const calculations=sheets[2]!;
+   const couponRow=calculations.rows.findIndex(r=>r.key===`debt.${debt.instrumentId}.coupon`)+1;
+   const principalRow=calculations.rows.find(r=>r.key===`debt.${debt.instrumentId}.principal`)!;
+   const maturity=principalRow.cells.at(-1)!.formula!;
+   const couponReference=`'Calculations 1'!${columnLetter(input.assumptionBook.periods.length)}${couponRow}`;
+   if(treatment==="capitalized_principal")expect(maturity).toContain(`+${couponReference}`);
+   else expect(maturity).not.toContain(couponReference);
    const rendered=await toGovernedXlsxBuffer({sheets,periods:[...input.assumptionBook.periods],deskAssumptions:[]},"en",{title:"Synthetic formula QA",asOfDate:"2026-12-31",currency:"BRL",scale:"units",classification:"internal",artifactClass:"institutional_editable"});
    expect(rendered.audit.formulaCoveragePassed).toBe(true);expect(rendered.audit.hardcodeViolations).toEqual([]);
    expect(sheets[0]!.rows.find(r=>r.key==="dscr")!.cells[1]!.formula).toContain("IF(");
