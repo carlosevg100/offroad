@@ -8,7 +8,7 @@ import {prepareCapitalDecisionDelivery} from "./capital-decision-delivery";
 describe("capital executor build-owned contracts", () => {
   it("requires the generated artifact to equal the current executor validation schemas", () => {
     const bytes = readFileSync(new URL("../contracts/capital-decision-delivery.json", import.meta.url), "utf8");
-    expect(bytes).toBe(JSON.stringify(capitalDecisionExecutorContracts(), null, 2) + "\n");
+    expect(bytes).toBe(JSON.stringify(capitalDecisionExecutorContracts()) + "\n");
   });
   it("matches the real validated input and calculated output with complete typed contracts", () => {
     const c = capitalDecisionExecutorContracts(); const input = {review: capitalDecisionReviewFixture().input,

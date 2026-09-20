@@ -11,5 +11,5 @@ try {
   const outfile = join(temporary, 'contracts.mjs');
   await build({entryPoints: [join(root, 'packages/financial-model/src/capital-executor-contracts.ts')], outfile, bundle: true, platform: 'node', format: 'esm', target: 'node24', logLevel: 'silent'});
   const {capitalDecisionExecutorContracts} = await import(pathToFileURL(outfile));
-  await writeFile(join(root, 'packages/financial-model/contracts/capital-decision-delivery.json'), JSON.stringify(capitalDecisionExecutorContracts(), null, 2) + '\n');
+  await writeFile(join(root, 'packages/financial-model/contracts/capital-decision-delivery.json'), JSON.stringify(capitalDecisionExecutorContracts()) + '\n');
 } finally {await rm(temporary, {recursive: true, force: true});}
