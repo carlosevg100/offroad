@@ -1,3 +1,13 @@
+## Etapa15: entrega estruturada da decisão (2026-09-20)
+
+`prepareCapitalDecisionDelivery` recalcula a revisão e produz contrato tipado para a entrega:
+alternativas, sensibilidades, caixa/dívida, condições, índices, referências, lacunas e proveniência.
+Nove testes novos verificam ausência, números, condição, material solicitado, restrição,
+covenant adverso e reprodução. Material não é publicado; recomendação não vira decisão.
+Inputs e manifesto precisam ser conservados pelo executor17 para reprodução a partir dos
+fingerprints. Sem DDL, nova rota ou provedor. Autoria/revisão profissional seguem na15.
+Gates e implantação exata serão registrados no completion.
+
 ## Etapa15: valores nulos e variantes nos contratos (2026-09-20)
 
 O vocabulário do compilador distingue campo ausente de valor nulo e permite alternativas
