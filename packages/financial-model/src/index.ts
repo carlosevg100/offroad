@@ -30,3 +30,5 @@ export * from "./capital-structure-decision";
 
 export * from "./adopted-liquidity-calendar";
 export * from "./adopted-debt-liquidity";
+
+export * from "./adopted-numeric-representation";
