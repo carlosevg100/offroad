@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.20-v22";
+export const financialCoreVersion = "2026.09.20-v23";
 
 export * from "./financial-truth";
 export * from "./depreciation";
@@ -202,6 +202,7 @@ export function calculateCapacityEnvelope(input: {
  * regression.
  */
 export const financialCalculationRegistry = {
+  "financial.capital_period_cash": "buildCapitalPeriodCash",
   "financial.operating_cash_projection": "buildOperatingCashProjection",
   "financial.normalize_currency_representation": "normalizeCurrencyRepresentation",
   "financial.financing_cash_flows": "buildFinancingCashFlows",
@@ -341,3 +342,5 @@ export * from "./financing-costs";
 export * from "./numeric-representation";
 
 export * from "./operating-cash-projection";
+
+export * from "./capital-period-cash";
