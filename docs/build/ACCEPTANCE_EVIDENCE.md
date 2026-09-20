@@ -1,5 +1,17 @@
 ## Etapa15: custos adotados na composição financeira em validação
 
+## Etapa15: caixa e dívida por períodos comparáveis (2026-09-20)
+
+`buildCapitalPeriodCash` recompõe operação e financiamento a partir de operandos, mantendo
+caixa disponível/restrito separados e dívida em cada fechamento. Datas/moeda/horizonte devem
+coincidir; dívida sem saldo na data requerida é recusada, sem interpolação. Financiamento
+inexistente exige declaração explícita; custos ou caixa inicial desconhecidos impedem saldo
+conclusivo. Mínimos medidos na abertura/fechamentos não comprovam liquidez diária. Dívida
+residual e custo nominal no horizonte ficam visíveis; nenhum resultado é rotulado custo de
+vida inteira. Onze casos novos,core213PASS; núcleo v23 e manifesto corrente, R01 preservado.
+Sem DDL, acesso novo ou publicação profissional. Check/CI/produção comprovados no completion
+externo; integração sob adoções, comparação e conteúdo completo seguem na15.
+
 ## Etapa15: projeção operacional sob adoções (2026-09-20)
 
 `calculateAdoptedOperatingProjection` conecta o orçamento ao envelope de adoções, sem valores
