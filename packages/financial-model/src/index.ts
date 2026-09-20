@@ -36,3 +36,5 @@ export * from "./adopted-numeric-representation";
 export * from "./adopted-financing-costs";
 
 export * from "./adopted-operating-projection";
+
+export * from "./adopted-capital-period-cash";

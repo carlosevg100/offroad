@@ -9,6 +9,17 @@ Sem DDL, novos acessos ou relaxamento de gates. CI/produção ainda exigem prova
 
 ## Etapa15: custos adotados na composição financeira em validação
 
+## Etapa15: composição do caixa sob base única (2026-09-20)
+
+`calculateAdoptedCapitalPeriodCash` une operação, dívida/encargos e movimentos de capital sob
+um envelope imutável. Conta operacional, inventário de capital e eventual ausência de dívida
+são adoções. Recusa bases/contextos divergentes, mistura de orçamento com caixa operacional
+direto, reutilização de observação e override de resultado. Aportes não viram receita ou dívida.
+Dezoito casos novos, model221PASS, conservam origem/hipótese/dependência por período. Sem DDL,
+acesso novo ou publicação. Check completo/CI/produção aguardam integração do reparo do gate de
+evidências; ainda não é incremento pronto. Contrato em etapa-15-caixa-adotado.md. Comparação
+de alternativas, revisão e autoria continuam na15; revalidação do executor na17.
+
 ## Etapa15: caixa e dívida por períodos comparáveis (2026-09-20)
 
 `buildCapitalPeriodCash` recompõe operação e financiamento a partir de operandos, mantendo
