@@ -1,3 +1,19 @@
+## Etapa 15: sincronização da jornada de contribuições em validação
+
+`apps/web/e2e/work-contributions.spec.ts` reproduz a leitura antecipada segurando a
+requisição real de publicação antes do servidor: o leitor termina sua consulta e não há
+revisão promovida no banco. Após liberar a requisição, exige publicação observável no
+canal compartilhado do autor, nova consulta do leitor e exatamente uma revisão persistida.
+A mesma espera protege a ordem do conflito (A publicado antes de B) e a consulta ao histórico.
+Sem respostas simuladas, sleep, aumento de timeout ou retry neste teste.
+
+Check local integral aprovado (44 tarefas); descoberta Playwright e tipagem aprovadas.
+O risco identificado antes da integração da comparação na 15 será encerrado apenas após
+esta reprodução e a jornada completa passarem na CI, com merge e produção verificados.
+Sem alteração funcional, DDL, política, rota, método publicado ou concessão de acesso.
+R01 permanece preservado; a etapa 15 e a composição financeira continuam abertas.
+Detalhes: `docs/build/arcabouco/etapa-15-compartilhamento.md`.
+
 ## Etapa 15: liquidez por datas em validação
 
 Motor aditivo `buildLiquidityCalendar`, registrado como `financial.dated_liquidity`, e
