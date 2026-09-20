@@ -1003,6 +1003,27 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
   const resolutions: SecurityInventoryDecision["evidenceResolutions"] = [];
   const repositoryResolution = await resolveTrustedRepository(parsed, blockers);
 
+
+  // Resolve every pinned Git object afresh for this evaluation, with bounded concurrency.
+  // Retain only byte summaries, not an inventory-wide collection of large buffers. Deduplicating
+  // object reads must not deduplicate expected fingerprints or grant authority across evaluations.
+  const objectRefs = [...new Set(parsed.evidenceIndex.filter(e => repositoryKinds.has(e.kind)
+    && safeRepositoryRelativePath(e.ref)).map(e => `${parsed.baseline.commit}:${e.ref}`))];
+  const objectSummaries = new Map<string, {fingerprint: string; byteLength: number} | null>();
+  let cursor = 0;
+  await Promise.all(Array.from({length: Math.min(4, objectRefs.length)}, async () => {
+    while (cursor < objectRefs.length) {
+      const objectRef = objectRefs[cursor++]!;
+      try {
+        const {stdout} = await execFileAsync("git", ["show", objectRef], {cwd: repositoryRoot, encoding: "buffer", maxBuffer: 20 * 1024 * 1024});
+        const bytes = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout);
+        objectSummaries.set(objectRef, {fingerprint: sha256(bytes), byteLength: bytes.byteLength});
+      } catch {
+        objectSummaries.set(objectRef, null);
+      }
+    }
+  }));
+
   for (const evidence of parsed.evidenceIndex) {
     if (!safeRepositoryRelativePath(evidence.ref)) {
       blockers.push({code: "evidence_ref_outside_repository", subjectRef: evidence.evidenceId});
@@ -1012,14 +1033,14 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
       const blockersBeforeResolution = blockers.length;
       if (repositoryKinds.has(evidence.kind)) {
         const objectRef = `${parsed.baseline.commit}:${evidence.ref}`;
-        const {stdout} = await execFileAsync("git", ["show", objectRef], {cwd: repositoryRoot, encoding: "buffer", maxBuffer: 20 * 1024 * 1024});
-        const bytes = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout);
-        const fingerprint = sha256(bytes);
+        const summary = objectSummaries.get(objectRef);
+        if (!summary) throw new Error("repository_evidence_bytes_unresolvable");
+        const {fingerprint, byteLength} = summary;
         if (evidence.contentFingerprint !== fingerprint) {
           blockers.push({code: "repository_evidence_content_mismatch", subjectRef: evidence.evidenceId});
         }
         if (blockers.length === blockersBeforeResolution) {
-          resolutions.push({evidenceId: evidence.evidenceId, ref: objectRef, byteLength: bytes.byteLength, contentFingerprint: fingerprint, source: "git_object"});
+          resolutions.push({evidenceId: evidence.evidenceId, ref: objectRef, byteLength, contentFingerprint: fingerprint, source: "git_object"});
         }
       } else if (externalKinds.has(evidence.kind)) {
         const absolutePath = resolve(repositoryRoot, evidence.ref);
