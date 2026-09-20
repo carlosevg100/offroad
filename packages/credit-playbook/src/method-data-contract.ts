@@ -19,6 +19,8 @@ export function methodDataContractFromJsonSchema(id: string, version: string, ra
     }
     if (Array.isArray(s.type)) return {type: "union", variants: s.type.map(type => project({...s, type}))};
     const type = s.type;
+    // JSON Schema represents a numeric literal as number even when it is an integer.
+    if (type === "number" && Number.isSafeInteger(s.const)) return {type: "integer"};
     if (type === "null" || type === "boolean" || type === "integer") return {type};
     if (type === "string") {
       const values = s.enum ?? (typeof s.const === "string" ? [s.const] : undefined);

@@ -1,3 +1,11 @@
+## Etapa15: registro e saída da preparação contratual (2026-09-20)
+
+Toda a saída da preparação contratual é validada: fontes, convenções, cenários, cálculos
+e lacunas. Contratos gerados e registro de engenharia fixam schemas reais e fontes
+transitivas. Seis casos novos conferem bytes, execução e forja; quatorze casos de preparação
+continuam. Compilador corrente v2026.09.20-v5; R01 preservado. Sem DDL, adoção, publicação
+ou ativação. Gates/produção no completion; autoria integrada e revisão continuam na15.
+
 ## Etapa15: mapas tipados para curvas contratuais (2026-09-20)
 
 Contratos representam valores por período/mês com tipo recursivo explícito; continuam

@@ -1,6 +1,7 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 import {executors} from "@offroad/credit-playbook";
+import {capitalContractInterestOutputSchema, capitalContractCovenantOutputSchema} from "./capital-contract-output";
 import {financialCoreVersion} from "@offroad/financial-core";
 
 const text = z.string().trim().min(1).max(2000);
@@ -19,6 +20,16 @@ export const capitalContractPreparationInputSchema = z.strictObject({
   for (const property of ["document", "sourceVersionId"] as const) if (new Set(input.sources.map(s => s[property])).size !== input.sources.length) context.addIssue({code: "custom", message: "Ambiguous source identity"});
   const observations = input.sources.flatMap(s => s.observationIds);
   if (new Set(observations).size !== observations.length) context.addIssue({code: "custom", message: "Duplicate observation identity"});
+});
+export const capitalContractPreparationOutputSchema = z.strictObject({
+  schemaVersion: z.literal("capital-contract-preparation.v1"), financialCoreVersion: text,
+  scope: z.strictObject(capitalContractPreparationInputSchema.shape).pick({workId: true, purpose: true, entityId: true, perimeter: true, scenario: true, currency: true, asOf: true}),
+  state: z.literal("candidate_contributions"),
+  inputs: z.strictObject({interest: executors.interestScheduleInputSchema.nullable(), interestConventions: executors.interestEventConventionsSchema.nullable(), covenants: executors.covenantReconciliationInputSchema.nullable()}),
+  inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/), interest: capitalContractInterestOutputSchema.nullable(), covenants: capitalContractCovenantOutputSchema.nullable(),
+  sourceBindings: z.array(source.extend({path: text})), sourceVersionIds: z.array(z.uuid()), observationIds: z.array(z.uuid()),
+  requiredReviews: z.array(text), mutatesWorkingBasis: z.literal(false), certifiesContractualCompliance: z.literal(false), grantsAccess: z.literal(false), grantsExecution: z.literal(false),
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
 });
 function canonical(value: unknown): string {
   return JSON.stringify(value, (_key, v: unknown) => v && typeof v === "object" && !Array.isArray(v)
@@ -68,5 +79,5 @@ export function prepareCapitalContractEvidence(raw: unknown) {
     sourceVersionIds: input.sources.map(s => s.sourceVersionId), observationIds: [...new Set(input.sources.flatMap(s => s.observationIds))],
     requiredReviews: ["source_extraction", "contractual_applicability", "rounding_and_calendar", "waiver_cure_and_legal_effects", "contextual_adoption"] as const,
     mutatesWorkingBasis: false as const, certifiesContractualCompliance: false as const, grantsAccess: false as const, grantsExecution: false as const};
-  return {...payload, fingerprint: fingerprint(payload)};
+  return capitalContractPreparationOutputSchema.parse({...payload, fingerprint: fingerprint(payload)});
 }

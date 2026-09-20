@@ -13,3 +13,14 @@ export function capitalDecisionExecutorContracts() {
     outputs: methodDataContractFromJsonSchema("capital.decision-delivery-output", capitalDecisionDeliveryVersion, outputSchema),
     validationSchemas: {input: inputSchema, output: outputSchema}};
 }
+
+import {capitalContractPreparationInputSchema, capitalContractPreparationOutputSchema} from "./capital-contract-preparation";
+export function capitalContractPreparationExecutorContracts() {
+  const options = {reused: "inline", cycles: "throw", unrepresentable: "throw"} as const;
+  const version = "2026.09.20-v1";
+  const inputSchema = z.toJSONSchema(capitalContractPreparationInputSchema, {...options, io: "input"});
+  const outputSchema = z.toJSONSchema(capitalContractPreparationOutputSchema, options);
+  return {schemaVersion: "method-executor-contracts.v1", executor: {module: "@offroad/financial-model", exportName: "prepareCapitalContractEvidence", version},
+    inputs: methodDataContractFromJsonSchema("capital.contract-preparation-input", version, inputSchema),
+    outputs: methodDataContractFromJsonSchema("capital.contract-preparation-output", version, outputSchema), validationSchemas: {input: inputSchema, output: outputSchema}};
+}
