@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 import {buildDatedDebtCashFlows, buildLiquidityCalendar, financialCoreVersion, type DatedDebtInput, type LiquidityEvent} from "@offroad/financial-core";
 import {readContextualBasis, type AdoptionBasisEntry} from "@offroad/reconciliation";
+import {numericInterpretationGroupSchema, resolveAdoptedCurrencyValues} from "./adopted-numeric-representation";
 
 const selection = z.strictObject({decisionId: z.uuid().nullable(), definitionVersionId: z.uuid(), definitionKind: z.enum(["reported", "managerial", "contractual"]), missingReason: z.string().trim().min(1).max(2000).nullable()})
   .refine(s => (s.decisionId === null) === (s.missingReason !== null), "Select a contribution or explain its absence");
@@ -28,6 +29,7 @@ export const adoptedDebtLiquidityInputSchema = z.strictObject({
   instruments: z.array(z.strictObject({id: z.uuid(), terms})).min(1).max(16),
   operatingEvents: z.array(z.strictObject({id: z.string().trim().min(1).max(160), date: z.iso.date(), account: z.enum(["available", "restricted"]), category: z.enum(Object.keys(cashCategories) as [keyof typeof cashCategories, ...Array<keyof typeof cashCategories>]), selection})).max(256),
   coverageReason: z.string().trim().min(5).max(2000),
+  numericInterpretations: z.array(numericInterpretationGroupSchema).max(64).default([]),
 }).refine(i => i.endDate > i.openingDate, "Invalid horizon")
   .refine(i => new Set(i.instruments.map(d => d.id)).size === i.instruments.length, "Duplicate instrument")
   .refine(i => new Set(i.operatingEvents.map(e => e.id)).size === i.operatingEvents.length, "Duplicate cash event");
@@ -39,7 +41,8 @@ const ratio = z.string().regex(/^-?\d{1,4}(?:\.\d{1,16})?$/);
 /** Pure integrity/context adapter. The envelope must come from the authorized SQL reader;
  * digest, context and retained contribution IDs do not grant access or prove source rights.
  * Curves are typed existing list values, not encoded JSON. All inputs must declare unit
- * scale: the basis reader preserves assertions and does not prove normalization. No math here.
+ * scale or an explicitly adopted interpretation: the reader does not prove normalization.
+ * Original assertions remain unchanged and every normalization keeps its own trace. No math here.
  */
 export function calculateAdoptedDebtLiquidity(raw: unknown) {
   const input = adoptedDebtLiquidityInputSchema.parse(raw);
@@ -47,17 +50,25 @@ export function calculateAdoptedDebtLiquidity(raw: unknown) {
   const entries = new Map(basis.entries.map(e => [e.decisionId, e]));
   const used = new Map<string, AdoptionBasisEntry>();
   const observationUses = new Map<string, string>();
-  const bindings: {operand: string; decisionId: string | null; missingReason: string | null}[] = [];
+  const bindings: {operand: string; decisionId: string | null; missingReason: string | null; interpretationDecisionIds: string[]}[] = [];
   const gaps: {operand: string; reason: string}[] = [];
+  const numericIds = [input.openingAvailable, input.openingRestricted,
+    ...input.instruments.flatMap(i => [i.terms.openingPrincipal, i.terms.drawdowns, i.terms.scheduledPrincipal, i.terms.prepayments]),
+    ...input.operatingEvents.map(e => e.selection)].flatMap(s => s.decisionId ? [s.decisionId] : []);
+  if (new Set(numericIds).size !== numericIds.length) throw new Error("debt_basis_missing_or_reused_contribution");
+  const normalization = numericIds.length ? resolveAdoptedCurrencyValues({envelope: input.envelope, scope: input.scope,
+    decisionIds: numericIds, groups: input.numericInterpretations}) : null;
+  const normalized = new Map(normalization?.values.map(v => [v.decisionId, v]) ?? []);
   function read<T>(s: z.infer<typeof selection>, operand: string, path: string, unit: string, periodStart: string | null, periodEnd: string, scenario: string, type: "number" | "text" | "list", schema: z.ZodType<T>): T | null {
-    bindings.push({operand, decisionId: s.decisionId, missingReason: s.missingReason});
+    const numeric = s.decisionId ? normalized.get(s.decisionId) : undefined;
+    bindings.push({operand, decisionId: s.decisionId, missingReason: s.missingReason, interpretationDecisionIds: numeric?.interpretationDecisionIds ?? []});
     if (!s.decisionId) {gaps.push({operand, reason: s.missingReason!}); return null;}
     const e = entries.get(s.decisionId); const d = e?.dimensions;
     if (!e || used.has(e.decisionId)) throw new Error("debt_basis_missing_or_reused_contribution");
     if (e.fieldPath !== path || e.value.type !== type || e.definitionKind !== s.definitionKind
       || d!.definitionVersionId !== s.definitionVersionId || d!.entityId !== input.entityId || d!.perimeter !== input.perimeter
       || d!.currency !== input.currency || d!.unit !== unit || d!.periodStart !== periodStart || d!.periodEnd !== periodEnd
-      || d!.scenario !== scenario || !hasUnitScale(d!.scale)) throw new Error("debt_basis_context_mismatch");
+      || d!.scenario !== scenario || (unit !== "currency" && !hasUnitScale(d!.scale))) throw new Error("debt_basis_context_mismatch");
     // One original observation cannot be counted again through a second hypothesis/slot.
     // A series is adopted once and can generate any number of intermediate events.
     if (e.observationId) {
@@ -65,6 +76,11 @@ export function calculateAdoptedDebtLiquidity(raw: unknown) {
       observationUses.set(e.observationId, operand);
     }
     used.set(e.decisionId, e);
+    if (unit === "currency") {
+      if (!numeric?.trace) {gaps.push({operand, reason: "Numeric representation has not been adopted"}); return null;}
+      for (const id of numeric.interpretationDecisionIds) used.set(id, entries.get(id)!);
+      return schema.parse(type === "number" ? numeric.trace.values[0] : numeric.trace.values);
+    }
     return schema.parse(e.value.value);
   }
   const openingAvailable = read(input.openingAvailable, "opening.available", "liquidity.available_cash", "currency", null, input.openingDate, input.openingScenario, "number", money);
@@ -90,7 +106,7 @@ export function calculateAdoptedDebtLiquidity(raw: unknown) {
     const scheduledPrincipal = term("scheduledPrincipal", "currency", "list", z.array(unsigned).min(1).max(2000));
     const prepayments = term("prepayments", "currency", "list", z.array(unsigned).min(1).max(2000));
     const repayAll = term("repayAll", "boolean", "list", z.array(z.enum(["true", "false"])).min(1).max(2000));
-    instrumentBindings.set(instrument.id, bindings.slice(start).flatMap(b => b.decisionId ? [b.decisionId] : []));
+    instrumentBindings.set(instrument.id, [...new Set(bindings.slice(start).flatMap(b => b.decisionId ? [b.decisionId, ...b.interpretationDecisionIds] : []))]);
     if (principal === null || timing === null || indexer === null || indexationTreatment === null || couponTreatment === null || couponBase === null || drawdownAccount === null || paymentAccount === null || periodEnds === null || indexationRates === null || couponRates === null || drawdowns === null || scheduledPrincipal === null || prepayments === null || repayAll === null) continue;
     if ([indexationRates, couponRates, drawdowns, scheduledPrincipal, prepayments, repayAll].some(v => v.length !== periodEnds.length)) throw new Error("debt_basis_series_length_mismatch");
     instruments.push({instrumentId: instrument.id, currency: input.currency, openingPrincipal: principal, indexer, indexationTreatment, couponTreatment, couponBase, drawdownAccount, paymentAccount,
@@ -109,14 +125,14 @@ export function calculateAdoptedDebtLiquidity(raw: unknown) {
     openingAvailable, openingRestricted, events: [...operatingEvents, ...debt.events],
   }) : null;
   const payload = {
-    schemaVersion: "adopted-debt-liquidity.v1" as const, financialCoreVersion,
+    schemaVersion: "adopted-debt-liquidity.v2" as const, financialCoreVersion,
     calculationIds: ["financial.dated_debt_cash_flows", "financial.dated_liquidity"] as const,
     scope: input.scope, entityId: input.entityId, perimeter: input.perimeter, currency: input.currency,
     openingDate: input.openingDate, endDate: input.endDate, openingScenario: input.openingScenario, scenario: input.scenario,
     basisFingerprint: input.envelope.fingerprint, status: gaps.length ? "missing_inputs" as const : "partial_composition" as const,
     exclusions: ["financing_fees", "financing_taxes", "all_in_cost"] as const, coverageReason: input.coverageReason,
     classification: [...used.values()].some(e => e.kind === "hypothesis") ? "working_hypothesis" as const : "working_selection" as const,
-    debt, liquidity, gaps, bindings, contributions: [...used.values()],
+    debt, liquidity, gaps, bindings, contributions: [...used.values()], numericNormalization: normalization,
     derivedDependencies: debt?.events.map(event => ({eventId: event.id, decisionIds: instrumentBindings.get(event.instrumentId)!})) ?? [],
     grantsExecution: false as const,
   };

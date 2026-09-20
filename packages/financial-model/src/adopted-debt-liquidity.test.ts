@@ -82,13 +82,13 @@ describe("debt and liquidity composed from adopted parameters", () => {
     const result = calculateAdoptedDebtLiquidity(restricted);
     expect(result.liquidity?.closingAvailable).toBe("150"); expect(result.liquidity?.closingRestricted).toBe("379");
   });
-  it("requires declared unit scale for scalars and lists instead of guessing normalization", () => {
+  it("requires adopted representation for non-unit scalars and lists instead of guessing normalization", () => {
     const input = fixture(); mutate(input, b => {entry(b, "available_cash").dimensions.scale = "1.00";});
     expect(calculateAdoptedDebtLiquidity(input).liquidity?.closingAvailable).toBe("29");
     mutate(input, b => {entry(b, "available_cash").dimensions.scale = "1000";});
-    expect(() => calculateAdoptedDebtLiquidity(input)).toThrow("debt_basis_context_mismatch");
+    expect(calculateAdoptedDebtLiquidity(input)).toMatchObject({status: "missing_inputs", debt: null, liquidity: null});
     mutate(input, b => {entry(b, "available_cash").dimensions.scale = "1"; entry(b, ".drawdowns").dimensions.scale = "1000";});
-    expect(() => calculateAdoptedDebtLiquidity(input)).toThrow("debt_basis_context_mismatch");
+    expect(calculateAdoptedDebtLiquidity(input)).toMatchObject({status: "missing_inputs", debt: null, liquidity: null});
   });
   it("keeps negative rates, residual debt and zero flows explicit in the composed calculation", () => {
     const input = fixture(); mutate(input, b => {entry(b, ".couponTreatment").value.value = "cash_paid"; entry(b, ".couponRates").value.value = ["-0.1", "-0.1"]; entry(b, ".repayAll").value.value = ["false", "false"];});

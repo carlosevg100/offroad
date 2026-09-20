@@ -1,3 +1,20 @@
+## Etapa15: representação numérica adotada em validação
+
+Novo `normalizeCurrencyRepresentation` no financial-core e `resolveAdoptedCurrencyValues`
+no financial-model. Uma interpretação adotada declara modo e membros exatos de um lote,
+sem conversão manual número por número. Distingue valor reportado em escala declarada de valor
+já em unidades. Mantém envelope original, contribuições e traces; sem prova da representação,
+valor não unitário gera lacuna e impede resultado composto. `calculateAdoptedDebtLiquidity`
+passa ao contrato v2 e inclui as dependências da interpretação. Outros adaptadores mantêm a
+negação de escala não unitária até integração própria; não recebem conversão por suposição.
+
+21 casos novos (5 núcleo,16 adoção) cobrem cálculo, lote, origem, contexto, séries e negação;
+check integral PASS (44 tarefas), financial-core190 e financial-model164. CI e produção
+serão comprovadas no completion externo. Sem DDL, nova rota ou publicação.
+Motor corrente v21; R01 imutável. Detalhes em `docs/build/arcabouco/etapa-15-representacao-numerica.md`.
+Custos, projeções/comparação, conteúdo e aprovação continuam na15; execução17, operação18,
+preservação19. Pedido vigente autoriza seguir até concluir a15, sem parar a cada incremento.
+
 ## Etapa 15: custos de financiamento por data em validação
 
 Novo motor `buildFinancingCashFlows` em `packages/financial-core/src/financing-costs.ts`,
