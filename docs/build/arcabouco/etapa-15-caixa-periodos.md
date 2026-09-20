@@ -18,8 +18,15 @@ explicitamente. Alongamento não se transforma em economia só porque parcela sa
 Dívida/financiamento ausentes exigem inventário com razão; qualquer custo desconhecido bloqueia
 resultado de caixa, preservando a projeção operacional para orientação parcial.
 
-Onze testes verificam caixa245/53, dívida220/0, custo47, residual242 no alongamento, caixa
+Quinze testes verificam caixa245/53, dívida220/0, custo47, residual242 no alongamento, caixa
 restrito, saldo negativo, abertura negativa, data de estoque ausente, contextos, custo/caixa
-desconhecidos, ausência explícita de dívida, precisão e reprodução. Núcleo v23, core213PASS.
+desconhecidos, ausência explícita de dívida, precisão e reprodução. Núcleo v23, core217PASS.
 Sem DDL ou nova autorização; integração sob adoções e comparação seguem na15. Manifesto
 corrente gerado, R01 preservado. Gates/CI/implantação registrados no completion externo.
+
+Aportes, distribuições, venda de ativo e aquisição têm movimentos separados, com identidade
+econômica, razão, data e conta. Não entram como receita ou dívida. Inventário desconhecido
+bloqueia; ausência é declaração explícita. Identidade econômica repetida entre encargos e
+movimentos de capital é recusada. Aquisição registrada aqui deve estar excluída do capex
+operacional, com revisão de origem na integração. Quatro casos adicionais verificam essas
+identidades, os sinais e as contas, incluindo caixa123 com aporte80/distribuição10.

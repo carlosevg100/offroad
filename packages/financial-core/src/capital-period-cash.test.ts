@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 import {buildCapitalPeriodCash, financingCostCategories, type CapitalPeriodCashInput, type FinancingCostsInput} from "./index";
 const workingCapital = () => ({receivables: "0", inventory: "0", otherOperatingAssets: "0", payables: "0", otherOperatingLiabilities: "0"});
 function fixture(): CapitalPeriodCashInput & {financing: {status: "provided"; input: FinancingCostsInput}} {
-  return {openingAvailable: "130", openingRestricted: "500", operatingCashAccount: "available",
+  return {capitalMovements: [], capitalMovementInventory: {status: "declared_complete", reason: "Synthetic absence of other capital movements"}, openingAvailable: "130", openingRestricted: "500", operatingCashAccount: "available",
     operating: {currency: "BRL", openingDate: "2026-12-31", endDate: "2027-02-28", convention: "accrual_ebitda_to_cash_before_financing", openingWorkingCapital: workingCapital(),
       periods: ["2027-01-31", "2027-02-28"].map((endDate, n) => ({id: endDate, startDate: n ? "2027-02-01" : "2027-01-01", endDate,
         revenue: {mode: "amount", amount: n ? "50" : "20"}, variableOperatingExpense: "0", fixedOperatingExpense: "0", nonCashEbitdaAdjustment: "0",
@@ -62,4 +62,30 @@ describe("capital period cash", () => {
     i.openingAvailable = "1"; i.operating.periods[0]!.fixedOperatingExpense = "99";
     expect(r.operands.openingAvailable).toBe("130"); expect(r.operands.operating.periods[0]!.fixedOperatingExpense).toBe("0");
   });
+  it("keeps equity and distributions separate from revenue and debt", () => {
+    const i = fixture(); i.capitalMovements = [
+      {id: "equity", economicId: "equity", date: "2027-01-15", amount: "80", account: "available", kind: "equity_contribution", reason: "Synthetic proposed equity raise"},
+      {id: "distribution", economicId: "distribution", date: "2027-02-15", amount: "10", account: "available", kind: "distribution", reason: "Synthetic planned distribution"},
+    ];
+    const r = buildCapitalPeriodCash(i); expect(r.summary).toMatchObject({closingAvailable: "123", closingDebt: "0"});
+    expect(r.operating.totalCashBeforeFinancing).toBe("70"); expect(r.rows![0]!.netCapitalAvailable).toBe("80");
+  });
+  it("keeps asset disposals and acquisitions in their declared account", () => {
+    const i = fixture(); i.capitalMovements = [
+      {id: "sale", economicId: "sale", date: "2027-01-15", amount: "40", account: "restricted", kind: "asset_sale", reason: "Synthetic restricted proceeds"},
+      {id: "acquisition", economicId: "acquisition", date: "2027-02-15", amount: "60", account: "available", kind: "acquisition", reason: "Synthetic cash acquisition, excluded from capex"},
+    ];
+    expect(buildCapitalPeriodCash(i).summary).toMatchObject({closingAvailable: "-7", closingRestricted: "540"});
+  });
+  it("rejects duplicate economics across charges and capital movements and dates outside the horizon", () => {
+    const i = fixture(); i.capitalMovements = [{id: "capital", economicId: "fee", date: "2027-01-15", amount: "5", account: "available", kind: "distribution", reason: "Synthetic duplicate charge"}];
+    expect(() => buildCapitalPeriodCash(i)).toThrow(/duplicate_movement/);
+    i.capitalMovements[0]!.economicId = "different"; i.capitalMovements[0]!.date = "2027-02-30";
+    expect(() => buildCapitalPeriodCash(i)).toThrow(/movement_date/);
+  });
+  it("keeps an unknown capital movement inventory from becoming an empty known ledger", () => {
+    const i = fixture(); i.capitalMovementInventory.status = "unknown";
+    expect(buildCapitalPeriodCash(i)).toMatchObject({status: "missing_inputs", rows: null, gaps: ["capital_movements_unknown"]});
+  });
+
 });

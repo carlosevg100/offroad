@@ -8,7 +8,7 @@ coincidir; dívida sem saldo na data requerida é recusada, sem interpolação. 
 inexistente exige declaração explícita; custos ou caixa inicial desconhecidos impedem saldo
 conclusivo. Mínimos medidos na abertura/fechamentos não comprovam liquidez diária. Dívida
 residual e custo nominal no horizonte ficam visíveis; nenhum resultado é rotulado custo de
-vida inteira. Onze casos novos,core213PASS; núcleo v23 e manifesto corrente, R01 preservado.
+vida inteira. Quinze casos novos,core217PASS; núcleo v23 e manifesto corrente, R01 preservado.
 Sem DDL, acesso novo ou publicação profissional. Check/CI/produção comprovados no completion
 externo; integração sob adoções, comparação e conteúdo completo seguem na15.
 
