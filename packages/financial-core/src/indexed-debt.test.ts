@@ -3,6 +3,50 @@ import {describe, expect, it} from "vitest";
 import {aggregateIndexedDebtSchedules, buildIndexedDebtSchedule} from "./indexed-debt";
 
 describe("indexed debt schedule", () => {
+  it.each([
+    ["opening_principal", "10", "115"],
+    ["indexed_principal", "10.5", "115.5"],
+    ["average_principal", "5.25", "110.25"],
+  ] as const)("settles the final capitalized coupon under the %s convention", (couponBase, coupon, settlement) => {
+    const schedule = buildIndexedDebtSchedule({
+      instrumentId: "terminal-pik", openingPrincipal: "100", indexer: "IPCA",
+      indexationTreatment: "capitalized_principal", couponTreatment: "capitalized_principal", couponBase,
+      periods: [{period: "2027", indexationRate: "0.05", couponRate: "0.1", repayAll: true}],
+    });
+    expect(schedule.rows[0]).toMatchObject({
+      indexationCapitalized: "5", couponCapitalized: coupon, couponPaid: "0",
+      scheduledPrincipal: settlement, cashDebtService: settlement, closingPrincipal: "0",
+    });
+    expect(schedule.totalCashDebtService).toBe(settlement);
+  });
+
+  it("settles prior and current capitalized coupons once at final maturity", () => {
+    const schedule = buildIndexedDebtSchedule({
+      instrumentId: "two-period-pik", openingPrincipal: "100", indexer: "none",
+      indexationTreatment: "not_applicable", couponTreatment: "capitalized_principal", couponBase: "opening_principal",
+      periods: [
+        {period: "2027", indexationRate: "0", couponRate: "0.1"},
+        {period: "2028", indexationRate: "0", couponRate: "0.1", repayAll: true},
+      ],
+    });
+    expect(schedule.rows[0]).toMatchObject({cashDebtService: "0", closingPrincipal: "110"});
+    expect(schedule.rows[1]).toMatchObject({openingPrincipal: "110", couponCapitalized: "11", scheduledPrincipal: "121", cashDebtService: "121", closingPrincipal: "0"});
+    expect(schedule.totalCashDebtService).toBe("121");
+    expect(schedule.totalFinanceExpense).toBe("21");
+  });
+
+  it.each(["NaN", "Infinity", "-Infinity"])("rejects non-finite principal operands (%s)", value => {
+    const input = {
+      instrumentId: "invalid-principal", openingPrincipal: "100", indexer: "none" as const,
+      indexationTreatment: "not_applicable" as const, couponTreatment: "cash_paid" as const, couponBase: "opening_principal" as const,
+      periods: [{period: "2027", indexationRate: "0", couponRate: "0.1"}],
+    };
+    expect(() => buildIndexedDebtSchedule({...input, openingPrincipal: value})).toThrow("finite");
+    for (const key of ["drawdown", "scheduledPrincipal", "prepayment"] as const) {
+      expect(() => buildIndexedDebtSchedule({...input, periods: [{...input.periods[0]!, [key]: value}]})).toThrow("finite");
+    }
+  });
+
   it("capitalizes IPCA into principal while paying the coupon in cash", () => {
     const schedule = buildIndexedDebtSchedule({
       instrumentId: "debenture-ipca",

@@ -2,6 +2,8 @@ import Decimal from "decimal.js";
 
 export type IndexedDebtTreatment = "not_applicable" | "cash_paid" | "capitalized_principal";
 export type CouponTreatment = "cash_paid" | "capitalized_principal";
+/** Average principal deducts half of the principal amortized before this period's
+ * coupon capitalization. It is a declared period convention, not a dated accrual. */
 export type CouponBase = "opening_principal" | "indexed_principal" | "average_principal";
 
 export type IndexedDebtPeriodInput = {
@@ -13,7 +15,7 @@ export type IndexedDebtPeriodInput = {
   drawdown?: Decimal.Value;
   scheduledPrincipal?: Decimal.Value;
   prepayment?: Decimal.Value;
-  /** Repay the full indexed principal after this period's indexation. Mutually exclusive with
+  /** Repay the full indexed principal plus this period's capitalized coupon. Mutually exclusive with
    * explicit scheduled principal and prepayment. This is required for inflation-linked bullets:
    * the contractual nominal is updated by the index and the updated amount, not the opening
    * nominal alone, is settled at maturity. */
@@ -63,6 +65,7 @@ const canonical = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
 
 function nonNegative(value: Decimal.Value, label: string): Decimal {
   const parsed = d(value);
+  if (!parsed.isFinite()) throw new RangeError(`${label} must be finite`);
   if (parsed.isNegative()) throw new RangeError(`${label} cannot be negative`);
   return parsed;
 }
@@ -121,17 +124,19 @@ export function buildIndexedDebtSchedule(input: IndexedDebtInstrumentInput): Ind
     const indexedPrincipal = preIndexationPrincipal.plus(indexationCapitalized);
     const requestedPrincipal = period.repayAll ? indexedPrincipal : scheduledRequested.plus(prepaymentRequested);
     if (requestedPrincipal.gt(indexedPrincipal)) throw new RangeError(`principal payment exceeds outstanding balance in ${period.period}`);
-    const paidPrincipal = requestedPrincipal;
-    const scheduledPrincipal = period.repayAll ? indexedPrincipal : scheduledRequested;
     const prepayment = prepaymentRequested;
     const couponBase = input.couponBase === "opening_principal"
       ? preIndexationPrincipal
       : input.couponBase === "average_principal"
-        ? indexedPrincipal.minus(paidPrincipal.div(2))
+        ? indexedPrincipal.minus(requestedPrincipal.div(2))
         : indexedPrincipal;
     const couponAccrued = Decimal.max(couponBase, 0).mul(couponRate);
     const couponPaid = input.couponTreatment === "cash_paid" ? couponAccrued : new Decimal(0);
     const couponCapitalized = input.couponTreatment === "capitalized_principal" ? couponAccrued : new Decimal(0);
+    // Compute the coupon on its declared base before settling it. Including PIK in
+    // that base through the final payment would create a circular average-principal formula.
+    const paidPrincipal = period.repayAll ? indexedPrincipal.plus(couponCapitalized) : requestedPrincipal;
+    const scheduledPrincipal = period.repayAll ? paidPrincipal : scheduledRequested;
     principal = indexedPrincipal.plus(couponCapitalized).minus(paidPrincipal);
     const cashDebtService = indexationPaid.plus(couponPaid).plus(paidPrincipal);
     const nonCashDebtIncrease = indexationCapitalized.plus(couponCapitalized);

@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.10-v16";
+export const financialCoreVersion = "2026.09.19-v17";
 
 export * from "./financial-truth";
 export * from "./depreciation";

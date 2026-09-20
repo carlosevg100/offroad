@@ -1,3 +1,25 @@
+## Etapa 15: primeiro incremento financeiro em validação
+
+Baseline `83c58704eae04b1a4b9d03501bf5b60d1a004942`; isolamento publicado já entregue.
+A quitação integral do motor de dívida passa a incluir o cupom capitalizado do período,
+sem deixar saldo residual nem cobrar duas vezes os juros anteriores. A convenção de saldo
+médio continua baseada no principal amortizado antes da capitalização do cupom corrente;
+não se apresenta como cálculo por datas. A planilha editável usa a mesma separação sem ciclo.
+Valores não finitos de principal, captação e amortização são recusados. Motor corrente
+versionado `2026.09.19-v17`; R01 permanece sob manifesto e artefato publicados imutáveis.
+
+Sete regressões do motor falharam antes e passaram após a correção; planilhas cobrem as três
+bases de cupom e os dois tratamentos. Check integral local aprovado (44 tarefas); CI e deploy pendentes nesta candidata.
+Não há DDL, nova fonte de dados, chamada de modelo, aprovação de conteúdo ou publicação de
+procedimento. O manifesto de autoria é regenerado; o registro e snapshot R01 não mudam.
+
+Este incremento não conclui a etapa 15. Restam comparação de alternativas, fontes/adoções,
+calendário de liquidez, sensibilidades, instrumento/preço governados, autoria completa,
+tempo até primeira resposta útil e publicação técnica sob aprovação real do conteúdo.
+Riscos: convenções financeiras explícitas e evidência na 15; retenção na 16; contrato de
+execução na 17; operação/alarmes na 18; auditoria na 22. Sem antecipar Temporal ou ensaios.
+A evidência final de CI, merge e produção será registrada no completion externo do incremento.
+
 ## Isolamento dos métodos publicados entregue
 
 PR 669 integrada em `a876965d57204e88357fe379364efb0b0e04a21d`. Quality 35466622840,
