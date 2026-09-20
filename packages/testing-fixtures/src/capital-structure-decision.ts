@@ -56,3 +56,5 @@ export function adoptedLiquidityCalendarFixture() {
     events: [{id: "debt", date: "2027-01-10", account: "available", direction: "outflow", selection: select(2)}, {id: "receipt", date: "2027-02-10", account: "available", direction: "inflow", selection: select(3)}],
   }};
 }
+
+export {adoptedDebtLiquidityFixture} from "./adopted-debt-liquidity";

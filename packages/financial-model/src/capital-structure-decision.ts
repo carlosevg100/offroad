@@ -1,8 +1,9 @@
+import {hasUnitScale} from "./adopted-input-scale";
 import {createHash} from "node:crypto";
 import {z} from "zod";
 import {readContextualBasis, type AdoptionBasisEntry} from "@offroad/reconciliation";
 
-export const capitalStructureComparisonVersion = "2026.09.19-v1";
+export const capitalStructureComparisonVersion = "2026.09.20-v2";
 const text = z.string().trim().min(1).max(2000);
 const key = z.string().trim().min(1).max(160);
 const scopeSchema = z.strictObject({workId: z.uuid(), purpose: text, versionId: z.uuid()});
@@ -97,8 +98,8 @@ export function prepareCapitalStructureComparison(raw: unknown) {
       if (entry.value.type !== "number" || entry.fieldPath !== metric.fieldPath || entry.definitionKind !== metric.definitionKind
         || dimensions.definitionVersionId !== metric.definitionVersionId || dimensions.scenario !== alt.scenario
         || dimensions.periodStart !== metric.periodStart || dimensions.periodEnd !== metric.periodEnd
-        || dimensions.currency !== metric.currency || dimensions.unit !== metric.unit) throw new Error("capital_comparison_metric_mismatch");
-      // Values in adopted bases are normalized decimals; presentation scale is not applied again.
+        || dimensions.currency !== metric.currency || dimensions.unit !== metric.unit || !hasUnitScale(dimensions.scale)) throw new Error("capital_comparison_metric_mismatch");
+      // The reader preserves assertions. Require declared unit scale instead of guessing normalization.
       return {metricId: metric.id, value: entry.value.value, decisionId: entry.decisionId, kind: entry.kind, missingReason: null};
     });
     alt.tradeoffs.forEach(t => t.basisDecisionIds.forEach(requireEntry));

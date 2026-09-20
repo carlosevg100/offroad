@@ -1,3 +1,21 @@
+## Etapa 15: composição de dívida e caixa sob parâmetros adotados
+
+`calculateAdoptedDebtLiquidity` valida contexto/definições e recalcula os movimentos pelos motores
+existentes. Séries tipadas conservam fontes e versões sem adoção por parcela; datas e convenções
+são adotadas, não inferidas. Caixa direto exclui agregados de dívida e ajustes de giro duplicados.
+Lacunas essenciais impedem resultado composto; custos de financiamento continuam explicitamente
+fora. Sem DDL, nova rota, concessão de acesso ou publicação profissional; R01 preservado.
+
+20 testes novos cobrem composição, origem, contexto, duplicação, ausência e reprodução. Três
+regressões dos adaptadores anteriores agora recusam escala não unitária: o leitor não prova
+normalização numérica, e não é seguro multiplicar ou ignorar escala por suposição. Check local
+integral PASS (44 tarefas; financial-model148). Esta é a candidata; o completion externo reúne os gates reais, merge e comprovação de web/worker no mesmo
+commit. A etapa 15 inteira permanece aberta. Contrato e riscos em
+`docs/build/arcabouco/etapa-15-adocoes-divida.md`.
+
+O incremento anterior de dívida datada foi concluído na PR 680, main `7a1b5ec22988`, com CI,
+web e worker verificados. Não repetir. Blocos anteriores abaixo registram candidatas históricas.
+
 ## Etapa 15: projeção dos movimentos de dívida por data
 
 Novo contrato aditivo `buildDatedDebtCashFlows` em `packages/financial-core/src/dated-debt.ts`:

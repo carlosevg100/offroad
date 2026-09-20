@@ -1,3 +1,4 @@
+import {hasUnitScale} from "./adopted-input-scale";
 import {calculateLeverage, financialCoreVersion} from "@offroad/financial-core";
 import {readContextualBasis, type AdoptionBasisEnvelope, type AdoptionBasisScope} from "@offroad/reconciliation";
 
@@ -17,6 +18,7 @@ export function calculateAdoptedLeverage(input: {
   }
   if (!debt.dimensions.currency || !["currency", "money", debt.dimensions.currency].includes(debt.dimensions.unit ?? "")
     || debt.dimensions.unit !== ebitda.dimensions.unit) throw new Error("adoption_calculation_units_required");
+  if (!hasUnitScale(debt.dimensions.scale) || !hasUnitScale(ebitda.dimensions.scale)) throw new Error("adoption_calculation_unit_scale_required");
   if (ebitda.dimensions.periodStart === null) throw new Error("adoption_calculation_flow_period_required");
   const calculation = calculateLeverage(debt.value.value, ebitda.value.value);
   return {

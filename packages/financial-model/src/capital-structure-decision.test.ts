@@ -84,7 +84,7 @@ describe("capital structure comparison basis", () => {
     const duplicate = fixture(); duplicate.alternatives.push(duplicate.alternatives[0]!);
     expect(() => prepareCapitalStructureComparison(duplicate)).toThrow("Duplicate comparison identity");
   });
-  it("preserves old contributions, normalized values and reproducibility across a new basis revision", () => {
+  it("preserves old revisions and rejects numerical comparison under ambiguous scale", () => {
     const input = fixture(); const before = structuredClone(input);
     const old = prepareCapitalStructureComparison(input);
     expect(input).toEqual(before);
@@ -95,7 +95,7 @@ describe("capital structure comparison basis", () => {
     expect(prepareCapitalStructureComparison(revised).fingerprint).not.toBe(old.fingerprint);
     expect(prepareCapitalStructureComparison(input)).toEqual(old);
     mutateBasis(input, b => {b.entries[0]!.dimensions.scale = "1000";});
-    expect(prepareCapitalStructureComparison(input).alternatives[0]!.values[0]!.value).toBe("-10");
+    expect(() => prepareCapitalStructureComparison(input)).toThrow("capital_comparison_metric_mismatch");
   });
   it("rejects ambiguous periods, out-of-horizon metrics, undeclared metrics and unbound evidence", () => {
     const flow = fixture(); flow.metrics[1]!.periodStart = null;
