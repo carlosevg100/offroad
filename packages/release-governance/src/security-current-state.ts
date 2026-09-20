@@ -5,6 +5,7 @@ import {dirname, isAbsolute, relative, resolve, sep} from "node:path";
 import {promisify} from "node:util";
 import {fileURLToPath} from "node:url";
 import {z} from "zod";
+import {readGitEvidenceSummaries} from "./git-evidence-reader";
 import type {TrustControlCatalogue} from "./control-register";
 import {
   createCanonicalSecurityEntityRelationships,
@@ -1004,25 +1005,10 @@ export async function evaluateSecurityCurrentStateInventoryTrusted(
   const repositoryResolution = await resolveTrustedRepository(parsed, blockers);
 
 
-  // Resolve every pinned Git object afresh for this evaluation, with bounded concurrency.
-  // Retain only byte summaries, not an inventory-wide collection of large buffers. Deduplicating
-  // object reads must not deduplicate expected fingerprints or grant authority across evaluations.
-  const objectRefs = [...new Set(parsed.evidenceIndex.filter(e => repositoryKinds.has(e.kind)
-    && safeRepositoryRelativePath(e.ref)).map(e => `${parsed.baseline.commit}:${e.ref}`))];
-  const objectSummaries = new Map<string, {fingerprint: string; byteLength: number} | null>();
-  let cursor = 0;
-  await Promise.all(Array.from({length: Math.min(4, objectRefs.length)}, async () => {
-    while (cursor < objectRefs.length) {
-      const objectRef = objectRefs[cursor++]!;
-      try {
-        const {stdout} = await execFileAsync("git", ["show", objectRef], {cwd: repositoryRoot, encoding: "buffer", maxBuffer: 20 * 1024 * 1024});
-        const bytes = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout);
-        objectSummaries.set(objectRef, {fingerprint: sha256(bytes), byteLength: bytes.byteLength});
-      } catch {
-        objectSummaries.set(objectRef, null);
-      }
-    }
-  }));
+  // Read pinned blobs afresh in bounded batches; expected hashes remain checked per record.
+  const objectRefs = parsed.evidenceIndex.filter(e => repositoryKinds.has(e.kind)
+    && safeRepositoryRelativePath(e.ref)).map(e => `${parsed.baseline.commit}:${e.ref}`);
+  const objectSummaries = await readGitEvidenceSummaries(repositoryRoot, objectRefs);
 
   for (const evidence of parsed.evidenceIndex) {
     if (!safeRepositoryRelativePath(evidence.ref)) {
