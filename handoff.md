@@ -1,3 +1,13 @@
+## Etapa15: composição da revisão da decisão (2026-09-20)
+
+`prepareCapitalDecisionReview` recalcula comparação e índices definidos, associa condições
+à base da alternativa e examina referências de mercado por data/contexto/origem. Integra
+credit-analysis (suficiência), deal-structure (condições), instrument-catalogue (identidade)
+e market-reference (metadados elegíveis), sem ranking/default financeiro legado. Quatorze
+testes novos, model261PASS. Referência não prova oferta; revisão proposta não aprova método.
+Contrato em etapa-15-revisao-decisao.md. Sem DDL ou acesso novo. Gate completo, CI e produção
+precisam ser registrados no completion. Autoria e adaptador seguem na15; direitos vivos na17.
+
 ## Etapa15: índice definido ligado às adoções (2026-09-20)
 
 `calculateAdoptedDefinedRatio` exige adoções de numerador, denominador, limite, comparador e

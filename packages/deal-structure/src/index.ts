@@ -17,3 +17,5 @@ export * from "./collateral";
 export * from "./operation";
 export * from "./structure";
 export * from "./alternatives";
+
+export * from "./capital-decision-conditions";
