@@ -1,6 +1,6 @@
 import Decimal from "decimal.js";
 
-export const financialCoreVersion = "2026.09.20-v18";
+export const financialCoreVersion = "2026.09.20-v19";
 
 export * from "./financial-truth";
 export * from "./depreciation";
@@ -202,6 +202,7 @@ export function calculateCapacityEnvelope(input: {
  * regression.
  */
 export const financialCalculationRegistry = {
+  "financial.dated_debt_cash_flows": "buildDatedDebtCashFlows",
   "financial.dated_liquidity": "buildLiquidityCalendar",
   "financial.adjusted_ebitda": "calculateAdjustedEbitda",
   "financial.net_leverage": "calculateLeverage",
@@ -330,3 +331,4 @@ export function accrualFactorAtPrecision(input: {annualRate: DecimalInput; busin
 }
 
 export * from "./liquidity-calendar";
+export * from "./dated-debt";

@@ -1,3 +1,20 @@
+## Etapa 15: projeção dos movimentos de dívida por data
+
+Novo contrato aditivo `buildDatedDebtCashFlows` em `packages/financial-core/src/dated-debt.ts`:
+recalcula a dívida a partir de operandos, fixa uma convenção temporal explícita e separa os
+movimentos pagos da capitalização. Mantém sinal, conta, moeda, saldo residual, cópia dos
+operandos e identidade de cada componente. Motor corrente `2026.09.20-v19`; R01 preservado.
+Não é CET nem previsão completa. Sem DDL, rota, concessão de acesso ou publicação de método.
+
+Check local integral aprovado: 44 tarefas, 15 testes novos (169 no motor). CI/merge/produção
+serão comprovados no completion externo.
+A etapa 15 permanece aberta. Próximos incrementos: adaptação às adoções autorizadas, composição
+de projeções/custos e aprovação profissional. Detalhes, testes e riscos atribuídos em
+`docs/build/arcabouco/etapa-15-divida-datada.md`.
+
+A pré-condição de sincronização foi efetivamente concluída na PR 679, main `c037b6db965e`,
+com CI e web/worker conferidos. Os blocos anteriores abaixo são registros históricos de candidatas.
+
 ## Etapa 15: sincronização da jornada de contribuições em validação
 
 `apps/web/e2e/work-contributions.spec.ts` reproduz a leitura antecipada segurando a
