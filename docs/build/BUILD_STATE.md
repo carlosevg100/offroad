@@ -1,3 +1,13 @@
+## Etapa15: candidata profissional e contrato de saída alinhados (2026-09-20)
+
+A candidata2026.09.20-v1 incorpora critérios profissionais, fórmulas implementadas, casos
+unitários reais e o componente de entrega registrado. Outputs corresponde aos nomes/tipos
+do executor, incluindo null e nullable; seis testes novos verificam alinhamento e ausência
+de aprovação/ativação. Compiladores correntes versionados; R01 preservado. Ainda incompleta:
+contratos/cláusulas, avaliação integrada, revisão independente, adaptador medido e ato do
+fundador. Nada disso é fabricado pelo texto. Sem DDL, task liberada ou provedor novo.
+Check/CI/produção precisam de prova no completion. Continuidade da15, não próxima onda.
+
 ## Etapa15: contratos do executor derivados dos schemas reais (2026-09-20)
 
 A geração usa os schemas efetivos de entrada e saída de prepareCapitalDecisionDelivery,

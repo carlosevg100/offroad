@@ -243,11 +243,12 @@ function parseStep(item: string, index: number, sourcePath: string): CanonicalPr
 
 /** `field_id (type, required|optional): description` with an optional `values: a, b` tail. */
 function parseOutputField(item: string, sourcePath: string): CanonicalProcedure["output"]["fields"][number] {
-  const match = /^([a-z][a-z0-9_.-]*)\s*\((string|number|decimal_string|boolean|date|enum|object|array),\s*(required|optional)\)\s*:\s*(.+)$/.exec(item);
+  const match = /^([a-z][A-Za-z0-9_.-]*)\s*\((string|number|decimal_string|boolean|date|enum|object|array|null)(\|null)?,\s*(required|optional)\)\s*:\s*(.+)$/.exec(item);
   if (!match) throw new MethodCompileError(sourcePath, `output field must read "field_id (type, required|optional): description": ${item.slice(0, 80)}`);
-  const [, id, type, requirement, tail] = match;
+  const [, id, type, nullable, requirement, tail] = match;
   const [description, valuesPart] = tail!.split("| values:").map((part) => part.trim());
   const field: CanonicalProcedure["output"]["fields"][number] = {id: id!, type: type as never, required: requirement === "required", description: description!, evidenceRequired: true};
+  if (nullable) field.nullable = true;
   if (valuesPart) field.allowedValues = valuesPart.split(",").map((value) => value.trim()).filter(Boolean);
   return field;
 }

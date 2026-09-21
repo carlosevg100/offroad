@@ -7,7 +7,7 @@ import {z} from "zod";
  * compiled projection directly and no runtime is allowed to invent a peer-to-peer handoff.
  */
 
-export const procedureCompilerVersion = "2026.08.25-v2";
+export const procedureCompilerVersion = "2026.09.20-v1";
 
 /**
  * The ladder a method climbs. Nothing skips a rung: `implemented` needs executable evidence,
@@ -47,12 +47,14 @@ export const outputValueTypeSchema = z.enum([
   "enum",
   "object",
   "array",
+  "null",
 ]);
 
 export const procedureOutputFieldSchema = z.object({
-  id: z.string().regex(/^[a-z][a-z0-9_.-]*$/),
+  id: z.string().regex(/^[a-z][A-Za-z0-9_.-]*$/).refine(id => !["constructor", "prototype"].includes(id)),
   type: outputValueTypeSchema,
   required: z.boolean(),
+  nullable: z.boolean().optional(),
   description: z.string().trim().min(1),
   /** Material assertions must point to evidence or a traced calculation. */
   evidenceRequired: z.boolean().default(true),
@@ -321,9 +323,9 @@ export function compileProcedureRegistry(
 
 function outputJsonSchema(fields: readonly ProcedureOutputField[]): Record<string, unknown> {
   const properties = Object.fromEntries(fields.map((field) => [field.id, {
-    type: jsonType(field.type),
+    type: field.nullable ? [jsonType(field.type), "null"] : jsonType(field.type),
     description: field.description,
-    ...(field.allowedValues ? {enum: field.allowedValues} : {}),
+    ...(field.allowedValues ? {enum: field.nullable ? [...field.allowedValues, null] : field.allowedValues} : {}),
     "x-evidence-required": field.evidenceRequired,
   }]));
   return {
