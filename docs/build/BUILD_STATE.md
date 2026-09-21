@@ -1,3 +1,12 @@
+## Etapa15: composição contratual e ordem dos eventos (2026-09-20)
+
+Juros/indexação e covenants são compostos como contribuições candidatas com fontes e versões.
+Nenhum default legado pode preencher silenciosamente um termo. Perímetro, moeda e data
+são conferidos. Entrada v8 exige convenção de eventos simultâneos e suporta números índice
+na indexação posicionada; v7 preservada. Quatorze testes novos e onze casos legados cobrem
+números e recusas. Sem DDL ou adoção automática. Revisão independente, adoção vinculada,
+conteúdo final e publicação continuam na15. Gates/produção precisam de prova no completion.
+
 ## Etapa15: adaptador canônico e medição de artefato (2026-09-20)
 
 A política do mapa direcional existente sai da string do worker e passa a um bloco compilado
