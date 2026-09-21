@@ -1,3 +1,9 @@
+## Etapa 16: contenção dos avaliadores históricos
+
+Os nove scripts manuais de avaliação que construíam adapters diretamente recebem uma barreira incondicional antes da construção real. Nenhuma chamada de provedor é necessária para a prova: regressões verificam o fluxo, aliases, ordem, condicional, captura do erro e construção direta. A religação com autoridade por tentativa é entrega explícita da etapa 17; suspensão não altera o método publicado nem libera execução para cliente. O ramo dry-run do baseline permanece antes da barreira, mas seu defeito preexistente de montagem da base fica registrado para correção na 17.
+
+A autorização permanente do fundador está em `docs/build/arcabouco-stage0/FOUNDER-ACTS.md`: decisões técnicas dentro do roteiro cabem ao executor com revisão independente. TRUST-AI-01/TRUST-SDLC-01: contenção dos caminhos manuais sem autoridade de retenção; sem DDL, concessões, envio externo, gasto ou dados descartáveis. Rollback não pode reabrir os scripts diretos: manter a barreira ou substituir por transporte governado comprovado. CI, revisão e implantação deste incremento serão comprovadas no completion; esta nota não antecipa resultados.
+
 ## Etapa 16: autorização de processamento por conta, modelo e recurso
 
 O gateway e a pesquisa pública consultam a autoridade do banco antes de cada tentativa, incluindo reparo e fallback. Atestados imutáveis identificam conta/projeto, versão de credencial, endpoint, região, modelos, recurso, finalidade, classe, direitos, treinamento e retenção por categoria. Desconhecido, revogado, vencido ou incompatível nega transmissão; cliente e worker não podem registrar atestados. A auditoria registra metadados de decisão, sem prompts, documentos ou segredos. Tabelas de eventos são append-only, com created_at e bloqueio de UPDATE/DELETE; não simulam atualização de fatos históricos.

@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /** Protected live executor and source-review controls; never application E2E or promotion. */
 import {mkdirSync, writeFileSync} from "node:fs";
 import {resolve, dirname} from "node:path";
@@ -17,6 +18,7 @@ async function main() {
   if (!process.env.ANTHROPIC_API_KEY || !process.env.OPENAI_API_KEY) throw new Error("protected_provider_credentials_required");
   const directory=resolve(process.env.RUNNER_TEMP ?? ".","document-work-product-live");
   mkdirSync(directory,{recursive:true});
+  requireGovernedEvaluationTransport();
   const adapters={anthropic:createAnthropicAdapter({apiKey:process.env.ANTHROPIC_API_KEY,disableSdkRetries:true}),openai:createOpenAIAdapter({apiKey:process.env.OPENAI_API_KEY,disableSdkRetries:true})};
   // Fixed dollar partitions retain USD3; controls receive only calls unused by completed gold runs.
   const calls:GatewayCallLog[]=[], controlCalls:GatewayCallLog[]=[];

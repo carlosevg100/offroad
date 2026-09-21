@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /**
  * Structured-output probe: calls the Anthropic adapter with synthetic input across the request
  * shapes the routing tasks use (effort low or medium, thinking off or adaptive, a flat schema or
@@ -80,6 +81,7 @@ const system = "You classify one sentence into the requested JSON. Return the re
 const input: AdapterRequest["input"] = [{type: "text", text: JSON.stringify({latestUserMessage: "Preciso preparar uma reunião com a Companhia Fictícia sobre refinanciamento das debêntures."})}];
 
 async function main() {
+  requireGovernedEvaluationTransport();
   const adapter = createAnthropicAdapter();
   const variants: Array<{label: string; request: AdapterRequest}> = [];
   for (const effort of ["low", "medium"] as const) {

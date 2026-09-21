@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /**
  * Runs the real extractor over a gold case and scores it — no fixture playback anywhere.
  *
@@ -68,6 +69,7 @@ if (!anthropicKey && !openaiKey) {
   process.exit(2);
 }
 
+requireGovernedEvaluationTransport();
 const gateway = createModelGateway({
   ...(modelOverride ? {experimentalModels: [modelOverride.model]} : {}),
   adapters: {

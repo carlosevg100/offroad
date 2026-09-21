@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /**
  * Runs the production Intent Classifier contract on the canonical synthetic turns.
  *
@@ -92,6 +93,7 @@ async function main(): Promise<void> {
   const plannedProviderOperations = plannedObservations * 2;
   if (plannedObservations !== 52) throw new Error(`intent_router_manifest_must_have_52_observations:${plannedObservations}`);
   mkdirSync(outDir, {recursive: true});
+  requireGovernedEvaluationTransport();
   const gateway = createModelGateway({
     adapters: {
       anthropic: createAnthropicAdapter({apiKey: anthropicKey!}),

@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 import {mkdirSync,writeFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {createAnthropicAdapter,createOpenAIAdapter,createModelGateway,type GatewayCallLog} from "@offroad/model-gateway";
@@ -9,6 +10,7 @@ async function main(){
   if(!anthropicKey||!openaiKey)throw new Error("advisor_probe_credentials_missing");
   const {advisorResponseContract}=await import(new URL("../../../apps/document-worker/src/agent-operation-brief.ts",import.meta.url).href);
   const calls:GatewayCallLog[]=[];
+  requireGovernedEvaluationTransport();
   const gateway=createModelGateway({adapters:{anthropic:createAnthropicAdapter({apiKey:anthropicKey}),openai:createOpenAIAdapter({apiKey:openaiKey})},budget:{maxCostUsd:1,maxCalls:8},onCall:call=>calls.push(call)});
   const input=[{type:"text" as const,text:JSON.stringify({locale:"pt-BR",currentBrief:{},project:{name:"Synthetic company meeting",entryJob:"origination_thesis",accessBasis:"public_information"},companyProfile:{companyName:"Synthetic Company"},documentInventory:[],workPlan:[],artifacts:[],recentConversation:[],latestUserMessage:"Quero preparar uma reunião com a Synthetic Company. Quais informações sobre o objetivo da reunião você precisa?",executionRoute:{action:"clarify",reasonCode:"missing_mission_context",analysisScope:null}})}];
   const results:Array<{provider:string;shape:string;passed:boolean;failure:string|null;start:number;end:number}>=[];

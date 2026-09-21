@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /**
  * `pnpm --filter @offroad/evals baseline:gold --case gc01 [--dry-run] [--out <dir>]`
  *
@@ -160,6 +161,7 @@ async function main(): Promise<void> {
     console.error("no model key in the environment. Run with `--env-file=.env.local`");
     process.exit(2);
   }
+  requireGovernedEvaluationTransport();
   const gateway = createModelGateway({
     adapters: {
       ...(anthropicKey ? {anthropic: createAnthropicAdapter({apiKey: anthropicKey})} : {}),
