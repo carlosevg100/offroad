@@ -2,6 +2,15 @@
 
 O run35555393424 revelou uma corrida no teste: o status genérico de sucesso da publicação era lido antes do término da adoção, antecipando a consulta SQL. O teste agora exige a indicação específica do vínculo adotado, retornada pelo servidor, antes de conferir o banco. Mantém as asserções de autorização, histórico e persistência, sem sleeps ou relaxamento de gate. A verificação da correção na CI e produção permanece requisito de fechamento. A CI também reprova execuções flaky com failOnFlakyTests; o retry conserva diagnóstico, sem tornar o gate verde. Sem DDL ou alteração de produto.
 
+## Etapa15: vínculo entre contrato e adoção (2026-09-20)
+
+O adaptador recompõe a preparação contratual e o índice adotado. Confere contexto, LTM,
+definições versionadas, âncoras e recibos de derivação; igualdade numérica isolada não basta.
+Divergência conserva os dois valores, hipótese conserva seu estado e dados conhecidos não
+somem por outra lacuna. Quinze testes novos cobrem vínculos, precisão, datas e forja.
+Sem DDL, leitura autorizada presumida ou adoção automática. Gates/produção no completion;
+integração final, revisão independente e publicação continuam na15.
+
 ## Etapa15: registro e saída da preparação contratual (2026-09-20)
 
 Toda a saída da preparação contratual é validada: fontes, convenções, cenários, cálculos
@@ -23,7 +32,7 @@ Gates/produção exigem prova no completion. Integração final e revisão segue
 Juros/indexação e covenants são compostos como contribuições candidatas com fontes e versões.
 Nenhum default legado pode preencher silenciosamente um termo. Perímetro, moeda e data
 são conferidos. Entrada v8 exige convenção de eventos simultâneos e suporta números índice
-na indexação posicionada; v7 preservada. Quatorze testes novos e onze casos legados cobrem
+na indexação posicionada; v7 preservada. Quinze testes novos e onze casos legados cobrem
 números e recusas. Sem DDL ou adoção automática. Revisão independente, adoção vinculada,
 conteúdo final e publicação continuam na15. Gates/produção precisam de prova no completion.
 
