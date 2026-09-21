@@ -1,3 +1,9 @@
+## Etapa 17, incremento 1: contrato fixado e validação no worker
+
+Contrato aditivo em `packages/agent-contracts/src/execution-contract.ts` e binder em `apps/document-worker/src/pinned-execution.ts`. Identidade, audiência, método, insumos, ferramentas, efeitos, orçamento e tentativa são explícitos; snapshots são copiados/congelados, e dados não JSON ou com chave descartável pelo parser são recusados. Esgotamento é parcial e ferramentas/versões divergentes são negadas. Sem novo produtor, RPC, DDL ou ativação: a persistência e a revalidação SQL por tentativa são o incremento seguinte. A decomposição completa e os riscos estão em `docs/build/arcabouco/etapa-17-execucao.md`.
+
+TRUST-APP-01/TRUST-AI-01/TRUST-SDLC-01: contrato não concede acesso e recibo local não substitui commit atômico. R01 e manifesto profissional v4 permanecem preservados. Revisão independente, CI e web/worker do incremento serão comprovados antes do completion; esta nota não os antecipa. Rollback preserva os consumidores atuais e a contenção dos nove scripts. Etapa 17 ainda não concluída, sem liberação para cliente real.
+
 ## Etapa 16: contenção dos avaliadores históricos
 
 Os nove scripts manuais de avaliação que construíam adapters diretamente recebem uma barreira incondicional antes da construção real. Nenhuma chamada de provedor é necessária para a prova: regressões verificam o fluxo, aliases, ordem, condicional, captura do erro e construção direta. A religação com autoridade por tentativa é entrega explícita da etapa 17; suspensão não altera o método publicado nem libera execução para cliente. O ramo dry-run do baseline permanece antes da barreira, mas seu defeito preexistente de montagem da base fica registrado para correção na 17.

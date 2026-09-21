@@ -12,6 +12,7 @@ export * from "./intent-envelope";
 export * from "./intent-classifier";
 export * from "./semantic-object-extractor";
 export * from "./reading-manifest";
+export * from "./execution-contract";
 export * from "./autonomy";
 export * from "./findings";
 

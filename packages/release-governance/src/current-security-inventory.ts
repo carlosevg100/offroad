@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "a876965d57204e88357fe379364efb0b0e04a21d";
-const capturedAt = "2026-09-19T20:25:25.185Z";
+const baselineCommit = "6d899ca5c2b4275f35ee721fc3967777f59134ef";
+const capturedAt = "2026-09-21T22:00:20.589Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -77,6 +77,14 @@ function requiredCanonicalEvidence(
 }
 
 const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
+  evidence("SEV-RETENTION-MATRIX", "repository_file", "packages/model-gateway/src/retention-matrix.ts", "Versioned account/model/resource eligibility with bounded retention and fail-closed unknown combinations."),
+  evidence("SEV-RETENTION-SERVER", "repository_file", "supabase/migrations/20260921155432_provider_retention_dependency_and_contract_guards.sql", "Current source and dependency retention rights are rechecked by capability-scoped SQL."),
+  evidence("SEV-RETENTION-SQL-TEST", "automated_test", "supabase/tests/provider_retention_eligibility.sql", "Negative tests cover expired attestations, revoked sources and capability forgery."),
+  evidence("SEV-RETENTION-RESEARCH", "repository_file", "apps/document-worker/src/provider-research-transport.ts", "Public research transport is authorized for each resource and refuses redirects."),
+  evidence("SEV-RETENTION-ACCOUNT-REVIEW", "repository_file", "docs/security/provider-processing/2026-09-21/REVIEW.md", "Dated account-specific operational review, limited retention and explicit exceptions; not universal vendor attestation."),
+  evidence("SEV-EVAL-CONTAINMENT", "repository_file", "packages/evals/src/live-evaluation-authority.ts", "Nine manual evaluators are suspended pending governed execution transport."),
+  evidence("SEV-EVAL-CONTAINMENT-TEST", "automated_test", "packages/evals/src/live-evaluation-authority.test.ts", "Negative mutations detect direct provider construction without the reviewed barrier."),
+
   evidence("SEV-RELEASE-LOCK", "repository_file", "packages/credit-playbook/src/released-method-lock.ts", "Published identity fixes original manifest and validates archived source pins."),
   evidence("SEV-RELEASE-MANIFEST", "repository_file", "packages/credit-playbook/knowledge/releases/method-release-lock.json", "Source commit, snapshot and artifact digest bind the preserved R01 execution."),
   evidence("SEV-RELEASE-BUILD", "repository_file", "packages/credit-playbook/scripts/build-released-executors.mjs", "Offline artifact reconstruction admits only recorded sources and native crypto."),
@@ -296,7 +304,7 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
   evidence("SEV-DEBT-VIEW-PROMPT", "repository_file", "apps/document-worker/src/company-debt-view.ts", "Role-free debt-view request builder after stage 1C."),
   evidence("SEV-ORIGINATION-PROMPT", "repository_file", "apps/document-worker/src/origination-thesis.ts", "Role-free origination request builder after stage 1C."),
   evidence("SEV-CAPITAL-PLANNING-PROMPT", "repository_file", "apps/document-worker/src/capital-planning.ts", "Role-free capital planning request builder after stage 1C."),
-  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-15.json", "Codex read-only delivery observation: deployed revision, consumer heartbeat and alarm states; the OIDC monitoring role denied DescribeAlarms. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
+  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-17.json", "Codex read-only delivery observation: deployed revision, consumer heartbeat and alarm states; the OIDC monitoring role denied DescribeAlarms. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
 ];
 
 const environments = [
@@ -396,12 +404,12 @@ const systems = [
     systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis, artifact generation and independent authority-event consumption.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-AWS", "VEN-SUPABASE", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], owner: owner("Document platform owner", "Platform engineering owner"),
-    evidenceRefs: ["SEV-RELEASE-MANIFEST", "SEV-RELEASE-LOADER", "SEV-RELEASE-LOADER-TEST", "SEV-RELEASE-GOLD", "SEV-METHOD-WORKER", "SEV-METHOD-WORKER-TEST", "SEV-METHOD-PIN-TEST", "SEV-METHOD-CALLBACK", "SEV-PROCEDURE-PROJECTION", "SEV-PROCEDURE-WORKER", "SEV-PROCEDURE-WORKER-TEST", "SEV-VAULT-WORKER-AUTHORITY", "SEV-WORK-RUNTIME", "SEV-WORK-RUNTIME-TEST", "SEV-ADOPT-CONTRACT", "SEV-ADOPT-SELECTION", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-JOB", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
+    evidenceRefs: ["SEV-RETENTION-MATRIX", "SEV-RETENTION-SERVER", "SEV-RETENTION-SQL-TEST", "SEV-RETENTION-RESEARCH", "SEV-RELEASE-MANIFEST", "SEV-RELEASE-LOADER", "SEV-RELEASE-LOADER-TEST", "SEV-RELEASE-GOLD", "SEV-METHOD-WORKER", "SEV-METHOD-WORKER-TEST", "SEV-METHOD-PIN-TEST", "SEV-METHOD-CALLBACK", "SEV-PROCEDURE-PROJECTION", "SEV-PROCEDURE-WORKER", "SEV-PROCEDURE-WORKER-TEST", "SEV-VAULT-WORKER-AUTHORITY", "SEV-WORK-RUNTIME", "SEV-WORK-RUNTIME-TEST", "SEV-ADOPT-CONTRACT", "SEV-ADOPT-SELECTION", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-JOB", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
   },
   {
     systemId: "SYS-GITHUB", title: "GitHub source and delivery control plane", kind: "delivery_pipeline", purpose: "Source control, pull requests, CI, security analysis and deployment identity.",
     environmentRefs: ["ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "credential_secret", "security_evidence"], vendorRefs: ["VEN-GITHUB", "VEN-AWS", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-SHEETJS-CDN", "VEN-UBUNTU-PACKAGES", "VEN-CLAMAV-DEFINITIONS"],
-    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-RELEASE-LOCK", "SEV-RELEASE-BUILD", "SEV-RELEASE-REPRODUCTION", "SEV-RELEASE-ISOLATION", "SEV-RELEASE-HISTORY", "SEV-RELEASE-HISTORY-TEST", "SEV-PLATFORM-METHOD-PREPARE", "SEV-PLATFORM-METHOD-PREPARE-TEST", "SEV-PLATFORM-METHOD-CLI", "SEV-PLATFORM-METHOD-CONCURRENCY", "SEV-METHOD-COMPOSITION", "SEV-METHOD-COMPOSITION-TEST", "SEV-METHOD-CONCURRENCY", "SEV-PROCEDURE-COMPONENTS", "SEV-PROCEDURE-COMPILER", "SEV-PROCEDURE-NEGATIVES", "SEV-PROCEDURE-BUILD", "SEV-PROCEDURE-PROJECTION-TEST", "SEV-PROCEDURE-AUTHORING", "SEV-PROCEDURE-CANDIDATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION", "SEV-DEPLOY-BOOT-PROOF", "SEV-CI-SCANNER", "SEV-CI-SCANNER-START"],
+    owner: owner("Engineering governance owner", "Product security owner"), evidenceRefs: ["SEV-EVAL-CONTAINMENT", "SEV-EVAL-CONTAINMENT-TEST", "SEV-RELEASE-LOCK", "SEV-RELEASE-BUILD", "SEV-RELEASE-REPRODUCTION", "SEV-RELEASE-ISOLATION", "SEV-RELEASE-HISTORY", "SEV-RELEASE-HISTORY-TEST", "SEV-PLATFORM-METHOD-PREPARE", "SEV-PLATFORM-METHOD-PREPARE-TEST", "SEV-PLATFORM-METHOD-CLI", "SEV-PLATFORM-METHOD-CONCURRENCY", "SEV-METHOD-COMPOSITION", "SEV-METHOD-COMPOSITION-TEST", "SEV-METHOD-CONCURRENCY", "SEV-PROCEDURE-COMPONENTS", "SEV-PROCEDURE-COMPILER", "SEV-PROCEDURE-NEGATIVES", "SEV-PROCEDURE-BUILD", "SEV-PROCEDURE-PROJECTION-TEST", "SEV-PROCEDURE-AUTHORING", "SEV-PROCEDURE-CANDIDATE", "SEV-QUALITY-WORKFLOW", "SEV-SECURITY-WORKFLOW", "SEV-DEPLOY-WORKER", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-CODEX", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION", "SEV-DEPLOY-BOOT-PROOF", "SEV-CI-SCANNER", "SEV-CI-SCANNER-START"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-PRIVILEGED-ACCESS", "SG-PROVIDER-ASSURANCE", "SG-DEPLOY-DIAGNOSTICS", "SG-SCHEMA-BEFORE-CODE", "SG-VENDOR-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-SDLC-01", "TRUST-SDLC-02", "TRUST-DATA-03", "TRUST-AI-01"],
   },
   {
@@ -741,12 +749,12 @@ const vendors: VendorInput[] = [
   {
     vendorId: "VEN-ANTHROPIC", title: "Anthropic", service: "Language-model inference", role: "subprocessor", environmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "security_evidence"],
     activationState: "observed_in_deployment_config", contractState: "unknown", retentionState: "unknown", trainingUseState: "unknown", regionState: "unknown",
-    owner: owner("Vendor risk owner", "AI governance owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-MODEL-DATA-POLICY", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION"], gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-01"],
+    owner: owner("Vendor risk owner", "AI governance owner"), evidenceRefs: ["SEV-RETENTION-ACCOUNT-REVIEW", "SEV-WORKER-TASK", "SEV-MODEL-DATA-POLICY", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-PROBE", "SEV-EVAL-LIVE-GATE", "SEV-EVAL-DOCUMENT-WORK", "SEV-EVAL-DOCUMENT-CONTINUATION"], gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-01"],
   },
   {
     vendorId: "VEN-OPENAI", title: "OpenAI", service: "Language-model inference and optional public web search", role: "subprocessor", environmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "security_evidence"],
     activationState: "observed_in_deployment_config", contractState: "unknown", retentionState: "unknown", trainingUseState: "unknown", regionState: "unknown",
-    owner: owner("Vendor risk owner", "AI governance owner"), evidenceRefs: ["SEV-WORKER-TASK", "SEV-MODEL-DATA-POLICY", "SEV-MODEL-POLICY", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-CODEX", "SEV-EVAL-DOCUMENT-WORK"], gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-01"],
+    owner: owner("Vendor risk owner", "AI governance owner"), evidenceRefs: ["SEV-RETENTION-ACCOUNT-REVIEW", "SEV-WORKER-TASK", "SEV-MODEL-DATA-POLICY", "SEV-MODEL-POLICY", "SEV-EVAL-EXTRACTION", "SEV-EVAL-INTENT", "SEV-EVAL-CLASSIFICATION", "SEV-EVAL-GOLD", "SEV-EVAL-CODEX", "SEV-EVAL-DOCUMENT-WORK"], gapRefs: ["SG-PROVIDER-ASSURANCE", "SG-VENDOR-ASSURANCE", "SG-REGION-MAP", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-AI-01", "TRUST-VENDOR-01", "TRUST-DATA-04", "TRUST-SDLC-01"],
   },
   {
     vendorId: "VEN-PERPLEXITY", title: "Perplexity", service: "Public web research", role: "subprocessor", environmentRefs: ["ENV-PRODUCTION", "ENV-CI", "ENV-EXTERNAL"], dataClassIds: ["public", "internal_operational", "security_evidence"],
@@ -833,9 +841,9 @@ const gaps = [
     controlIds: ["TRUST-VENDOR-01", "TRUST-DATA-04"], nextAction: "Collect current contract, DPA, retention, region, incident, notice and exit evidence for every material vendor.",
   },
   {
-    gapId: "SG-PROVIDER-ASSURANCE", title: "Provider data-policy enforcement is disabled in deployment configuration", severity: "critical", owner: owner("AI governance owner", "Privacy owner"),
+    gapId: "SG-PROVIDER-ASSURANCE", title: "Provider coverage and future evaluation transports remain incomplete", severity: "critical", owner: owner("AI governance owner", "Privacy owner"),
     targetRefs: ["ENV-CI", "ENV-EXTERNAL", "customer_confidential", "restricted_financial", "SYS-WORKER", "SYS-GITHUB", "FLOW-WORKER-ANTHROPIC", "FLOW-WORKER-OPENAI", "FLOW-WORKER-FIRECRAWL", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "ID-GITHUB-EVALS-OIDC", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], evidenceRefs: ["SEV-MODEL-DATA-POLICY", "SEV-MODEL-DATA-POLICY-TEST", "SEV-WORKER-CONFIG", "SEV-WORKER-TASK", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE"],
-    controlIds: ["TRUST-AI-01", "TRUST-DATA-04", "TRUST-VENDOR-01"], nextAction: "Stage 16: record current account/model/resource terms, non-training and bounded retention, then enforce eligibility; zero retention is a future commercial option, not a prerequisite. Repository flags do not establish live terms or enforcement.",
+    controlIds: ["TRUST-AI-01", "TRUST-DATA-04", "TRUST-VENDOR-01"], nextAction: "Stage 16 enforces reviewed account/model/resource eligibility and suspends nine direct evaluators. Keep unknown combinations denied, renew attestations before expiry and reconnect evaluations through the stage 17 authority. No universal provider coverage or zero-retention contract is claimed.",
   },
   {
     gapId: "SG-TELEMETRY-ASSURANCE", title: "Telemetry activation and handling not live-verified", severity: "high", owner: owner("Security operations owner", "Privacy owner"),
@@ -901,9 +909,9 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.19-wave-15-delivered-v1",
+  inventoryVersion: "2026.09.21-wave-17-opening-v1",
   generatedAt: capturedAt,
-  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-15", waveStatus: "open", materialChangeState: "reviewed"},
+  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-17", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",
   scopeRelationship: {
     semantics: "environment_and_data_class_refs_are_independent_unions",
@@ -916,7 +924,7 @@ const currentSecurityInventoryDeclaration = {
     "Functional owner roles are recorded, but named primary and backup assignments are not evidenced.",
     "Vendor contract, retention, region and training-use statements remain unknown without current evidence.",
     "Environment and data-class references are independent scope unions, not a Cartesian authorization matrix; that matrix remains an explicit critical gap.",
-    "The repository task definition omits provider-data-policy enforcement and enables Firecrawl while zero-data-retention is false; account-specific retention terms are reviewed in stage 16, and zero retention is not a prerequisite for this wave.",
+    "Stage 16 deployment enforces account/model/resource retention authority with pinned credentials. Dated operational attestations do not establish universal vendor coverage. Unknown combinations remain denied; the nine direct evaluators remain suspended until stage 17.",
     "Asset discovery is incomplete; missing boundaries are named in SG-ASSET-DISCOVERY rather than silently treated as absent.",
     "The Codex review workflow is an agentic executor with danger-full-access to an ephemeral runner, workspace command execution and network egress; least-privilege enforcement and prompt-injection containment remain an explicit critical gap.",
     "External-assurance and regulatory claims are represented only by the governed assurance section; this inventory is not their evidence.",
