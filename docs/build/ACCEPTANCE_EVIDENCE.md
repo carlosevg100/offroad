@@ -1,3 +1,7 @@
+## Etapa15: composição profissional integrada em preparação
+
+O documento canônico vincula o pacote contratual/de decisão e seis fontes verificáveis de testes/fixtures. Fontes não são runs ou aprovação. Três novos testes e seis regressões de autoria verificam identidade, evidências e ausência de promoção; gates finais serão registrados no completion após publicação. Sem DDL, sem ativação e R01 preservado. Runs finais, revisão independente real, aprovação profissional e publicação auditada continuam na15. A16 foi autorizada pelo fundador para depois do fechamento15. Detalhe: docs/build/arcabouco/etapa-15-composicao-profissional.md.
+
 ## Etapa15: pacote integrado do procedimento (2026-09-20)
 
 A entrega recompõe a decisão e a preparação contratual sob o mesmo contexto. Liga índices
