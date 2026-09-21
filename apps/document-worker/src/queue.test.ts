@@ -645,6 +645,72 @@ describe("capital TaskRun lifecycle", () => {
   });
 });
 
+describe("artifact transaction deadlock recovery", () => {
+  const input = {
+    taskRunId: "50000000-0000-4000-8000-000000000001",
+    artifactType: "company_resolution",
+    schemaVersion: "company-resolution.v1",
+    status: "draft" as const,
+    inputFingerprint: "a".repeat(64),
+    content: {companyName: "Example"},
+    dependencies: [{artifactId: "60000000-0000-4000-8000-000000000002", artifactFingerprint: "c".repeat(64)}],
+  };
+  const success = {data: {
+    id: "60000000-0000-4000-8000-000000000001",
+    artifact_fingerprint: "b".repeat(64), artifact_version: 1, replayed: false,
+  }, error: null};
+  const failure = (code: string) => ({data: null, error: {code, message: `rejected ${code}`}});
+  const client = (rpc: ReturnType<typeof vi.fn>) => createQueueClient(
+    {rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60},
+  );
+
+  it("repeats the complete artifact RPC after an aborted deadlock with identical authority and dependencies", async () => {
+    const rpc = vi.fn().mockResolvedValueOnce(failure("40P01")).mockResolvedValueOnce(success);
+    expect(await client(rpc).recordCapitalProjectArtifact(job, input)).toMatchObject({
+      id: success.data.id, artifactVersion: 1, replayed: false,
+    });
+    expect(rpc).toHaveBeenCalledTimes(2);
+    expect(rpc.mock.calls[1]).toEqual(rpc.mock.calls[0]);
+    expect(rpc.mock.calls[1]).toEqual(["worker_record_capital_project_artifact", expect.objectContaining({
+      p_job_id: job.job_id, p_capability_token: job.capability_token,
+      p_task_run_id: input.taskRunId, p_dependencies: input.dependencies,
+      p_input_fingerprint: input.inputFingerprint, p_content: input.content,
+    })]);
+  });
+
+  it("stops after three aborted transactions instead of retrying indefinitely", async () => {
+    const rpc = vi.fn().mockResolvedValue(failure("40P01"));
+    await expect(client(rpc).recordCapitalProjectArtifact(job, input)).rejects.toThrow("rejected 40P01");
+    expect(rpc).toHaveBeenCalledTimes(3);
+  });
+
+  it("honors access revocation when the next transaction rechecks authority", async () => {
+    const rpc = vi.fn().mockResolvedValueOnce(failure("40P01")).mockResolvedValueOnce(failure("42501"));
+    await expect(client(rpc).recordCapitalProjectArtifact(job, input)).rejects.toThrow("rejected 42501");
+    expect(rpc).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(["42501", "40001", "55000", "23505", "", "PGRST000"])(
+    "does not retry access, stale inputs, uniqueness or transport rejection %s", async (code) => {
+      const rpc = vi.fn().mockResolvedValue(failure(code));
+      await expect(client(rpc).recordCapitalProjectArtifact(job, input)).rejects.toThrow(`rejected ${code}`);
+      expect(rpc).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("does not replay an ambiguous thrown network failure", async () => {
+    const rpc = vi.fn().mockRejectedValue(new Error("network disconnected"));
+    await expect(client(rpc).recordCapitalProjectArtifact(job, input)).rejects.toThrow("network disconnected");
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not extend deadlock retries to claiming jobs or other effects", async () => {
+    const rpc = vi.fn().mockResolvedValue(failure("40P01"));
+    await expect(client(rpc).claim()).rejects.toThrow("rejected 40P01");
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("advisor specialized completion", () => {
   it("passes the exact capability, artifact and durable message to the atomic RPC", async () => {
     const capitalJob: CapitalProjectAnalysisJob = {
