@@ -1,0 +1,816 @@
+{
+  "reviewer": "Codex /root/stage15_independent_review AI",
+  "pins": [
+    {
+      "path": "packages/financial-model/src/capital-procedure-runs.test-support.ts",
+      "sha256": "b7ac851c6de0d924d102a7e911ac951802ebf29b8065924c580667eee5f1d030"
+    },
+    {
+      "path": "packages/financial-model/src/capital-contract-adoptions.ts",
+      "sha256": "13827215ae714fce08f31605c5306317c497d43915bf4577ef462ba212b199de"
+    },
+    {
+      "path": "packages/financial-model/src/capital-contract-preparation-v2.ts",
+      "sha256": "e4618bd3c985e02a77d254f365c3892f164430db827d821cf9dfc720798d2ba2"
+    },
+    {
+      "path": "packages/financial-model/src/capital-procedure-v2-runs.test-support.ts",
+      "sha256": "a15195773394988847fb1fd2a8cf1abcdb9be4f47653364132949de522fa28ac"
+    },
+    {
+      "path": "packages/financial-model/src/capital-contract-adoptions.test-support.ts",
+      "sha256": "c087fe024f2bba6bf149132e61f8d4e6c838990a52e372aec882027f0950bfea"
+    },
+    {
+      "path": "packages/financial-model/src/capital-contract-preparation.ts",
+      "sha256": "7ef5f8c595a0a4bbc50d30c77b0c03e88a5fe0c1a2c2511a6541f68c05888376"
+    },
+    {
+      "path": "packages/financial-model/src/capital-procedure-packet.ts",
+      "sha256": "c7877b9611877a8ad3b43e536e9deaee308b8de58a480489c67931000e7be167"
+    },
+    {
+      "path": "packages/financial-model/src/capital-procedure-packet.test-support.ts",
+      "sha256": "20ac976883cfa3ea3ed3664e369f8d6fa54a5eadab425c91b41bd0bb06b77128"
+    },
+    {
+      "path": "packages/testing-fixtures/src/capital-structure-decision.ts",
+      "sha256": "19f0ddbc3249d1bcd60b096ccb7547d5014c368f8c77585523fb75bf284cf202"
+    },
+    {
+      "path": "packages/credit-playbook/src/index.ts",
+      "sha256": "b83a38df65f2bb3cdf1f55f0a73d30617042b48c241877957ae99c2f6e535dac"
+    },
+    {
+      "path": "packages/reconciliation/src/index.ts",
+      "sha256": "9cb72d9e2d604f5b2fea6b738a765b87a819c0f5e6780f7498dd95afcf8e1f46"
+    },
+    {
+      "path": "packages/financial-core/src/indexed-contract-events.ts",
+      "sha256": "63991ab780a804178aea5ac07f1c4fdf37f986781e5555772d47e006419b7253"
+    },
+    {
+      "path": "packages/financial-core/src/index.ts",
+      "sha256": "4e0026e86968eecaaffea4aa1184e8cf2fb14529392b16877726b14f12a531a8"
+    },
+    {
+      "path": "packages/financial-model/src/capital-decision-delivery.ts",
+      "sha256": "fee297c0c1849264228bc2a3f372e8cd2d6e6d48a2117d05c0c478aa6a65af7e"
+    },
+    {
+      "path": "packages/financial-model/src/capital-procedure-packet-v2.ts",
+      "sha256": "17c467d5e7b3abf281e24d3256fef3e33d980f6fd8b33ff6eba07f39f013b68a"
+    },
+    {
+      "path": "packages/financial-model/src/capital-indexed-contracts.test-support.ts",
+      "sha256": "8b09462678c1acd5505c01c6c29037f5807aa49cc1cc4f8023d6d5801c8c41b0"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-defined-ratio.ts",
+      "sha256": "e03ea53ccca3f6d35a66d091142c6162ef10b690190099e5662515a4d10a5bf4"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-input-scale.ts",
+      "sha256": "eb38962ccca8fa043150a391f8eacb01b2aef676116e04cb94c589542dab5d11"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-numeric-representation.ts",
+      "sha256": "32aafa5f4738761f3081f162fe27cdd27c75924d4f1b17276e71372023ce7b46"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-debt-inputs.ts",
+      "sha256": "fac4c0225448d65db7961b33afbc415bb5a517434b744496108fbc1060f89863"
+    },
+    {
+      "path": "packages/testing-fixtures/src/capital-decision-review.ts",
+      "sha256": "8a8c3fed9fb5e4ff97630ea93ed3cf3c490247cffc96d475b53fbdafb172d9a5"
+    },
+    {
+      "path": "packages/testing-fixtures/src/adopted-debt-liquidity.ts",
+      "sha256": "cf52e3261986d39eda6498d108ecb1770a5b83fff37965e0476d1f4b6e999743"
+    },
+    {
+      "path": "packages/testing-fixtures/src/adopted-financing-costs.ts",
+      "sha256": "7831c65fa5cb81e798d5def4a28e11c1818d8e556db23bf8c564f10d9b4a3a47"
+    },
+    {
+      "path": "packages/testing-fixtures/src/adopted-operating-projection.ts",
+      "sha256": "8beefaa15cb325ceba8c2dd0ffb661b6b3cd1a20b0a3f4bf315220b201651ecb"
+    },
+    {
+      "path": "packages/testing-fixtures/src/adopted-defined-ratio.ts",
+      "sha256": "197a748fa4b68009f49a5b66bf1c0d6acf127d3e00149536a4e20aaf4978e4e3"
+    },
+    {
+      "path": "packages/testing-fixtures/src/adopted-capital-period-cash.ts",
+      "sha256": "f0e8d91542abdc8391b05abd6075a057da1b22fbb3f2b82df3e6b56ed6bfa206"
+    },
+    {
+      "path": "packages/testing-fixtures/src/capital-decision-composition.ts",
+      "sha256": "faab5fb4e2ae50f074cd0e141d8798230a3349db32e7bf0cd611a7a8a19409aa"
+    },
+    {
+      "path": "packages/reconciliation/src/contextual-basis.ts",
+      "sha256": "ee6570ff63d68a922d50dd34885948321bc8c005de2ddeb3bf1ef1509ae1f594"
+    },
+    {
+      "path": "packages/reconciliation/src/debt-truth.ts",
+      "sha256": "1e6e0263a346506e57270bf947f9895d6237a4d79a56f8a7a8b4f3911c3976e6"
+    },
+    {
+      "path": "packages/reconciliation/src/calculations.ts",
+      "sha256": "777c193b50c237a73706f08ee0dc9ed220a5e486876b9e8840949e335aa81b10"
+    },
+    {
+      "path": "packages/reconciliation/src/gaps.ts",
+      "sha256": "6944a4bce6256a694c1ffd63a2e9f67e42bcd9eb7edefd803e6e9a4821e526c7"
+    },
+    {
+      "path": "packages/reconciliation/src/facts.ts",
+      "sha256": "0231c716051a2583bcfedf46e32c587cb0605b98626054a8692cad553ff1a3e9"
+    },
+    {
+      "path": "packages/reconciliation/src/rules.ts",
+      "sha256": "ea6a1ee79958c2bc8a432f3364b4cb4d093adbbd2d0794a249ca418b124cda36"
+    },
+    {
+      "path": "packages/reconciliation/src/financial-truth.ts",
+      "sha256": "96cba66cb728d59e5b43c7d9f6b891285dd9691e021d9d7da6ce9341d738d086"
+    },
+    {
+      "path": "packages/financial-core/src/depreciation.ts",
+      "sha256": "ea9bd8b4f1024d3472d85f35039b8ed72c8bcde9cc5c82b3f97f70fec0ae275a"
+    },
+    {
+      "path": "packages/financial-core/src/credit-math.ts",
+      "sha256": "b2653f48f79362030d6e6133c92f73ede00adb5c2926c7182d2306921f3e1961"
+    },
+    {
+      "path": "packages/financial-core/src/defined-ratio.ts",
+      "sha256": "c3da7f27c21124bb12359ebe18066d6087d7f977583b40aa5562b910195490e5"
+    },
+    {
+      "path": "packages/financial-core/src/financial-truth.ts",
+      "sha256": "a0c80b192ca540b8fbd301a621d8e5c82554e1055e3f3231dc0f0d2da659014c"
+    },
+    {
+      "path": "packages/financial-core/src/capital-period-cash.ts",
+      "sha256": "109415edd6d68e0e32a2642d06e75c71c47435081e88be9221bff40023f65e99"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/pool-eligibility.ts",
+      "sha256": "fd0b6f9fdade3372e0f3822119148d905a09a42bc14bd0301c6ebe9c078dc600"
+    },
+    {
+      "path": "packages/financial-core/src/assumption-unit.ts",
+      "sha256": "2fec9fdf4fa0e6d01431a07060cd0d588f81a4653d125db631acab622dfff35f"
+    },
+    {
+      "path": "packages/financial-core/src/operation.ts",
+      "sha256": "24e18ea3471e7b26d60d5b2c323fcf001e5fcb2d86d5310996e2f4f1854b9d05"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/pool-concentration.ts",
+      "sha256": "ca17f9c2ee483dccc4c7dde3338b35a6200a20c6609edbc83cd5748457576167"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/pool-waterfall.ts",
+      "sha256": "27c877893caaf92ae4881dcfdc2919110d7845cdf29b9fc301a8a961015a13ae"
+    },
+    {
+      "path": "packages/financial-core/src/indexed-debt.ts",
+      "sha256": "08da19742a8adeab327d5f4636887b2a32329f9b1b10df0f236967d74ae9c898"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/pool-shared.ts",
+      "sha256": "ec9689cf119841652ba0fff48f185df2e7cd7a3d8936a10bda76ab7f5caff7ed"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/eligibility-allocation.ts",
+      "sha256": "e6d668815a3602d96b565234b58fb3aefbaab72f5fb5d3867af44577ac47606b"
+    },
+    {
+      "path": "packages/financial-model/src/capital-decision-review.ts",
+      "sha256": "d6174386306ae2d649839cfaa77be2c483c883a62295b6db512196aed8c46dfa"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/structure-cost.ts",
+      "sha256": "0393ab7df072b6a71fb29a723ea3434c233cfd905456562b5f6f859eca31b3d6"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/pool-triggers.ts",
+      "sha256": "cd44019e6800c7f67cade698e2238852d7746852c3f4b6e807fb17bf9886d16a"
+    },
+    {
+      "path": "packages/financial-core/src/numeric-representation.ts",
+      "sha256": "4db114f1ac6285ea7fa42257ac7f0ee6ea6ca1e589606de55ca901deae2a9cee"
+    },
+    {
+      "path": "packages/financial-core/src/dated-debt.ts",
+      "sha256": "9179d053d832d254141e5f34f117003b36fb8b0d7ccf1fa8959a0ad9b7e7ddf7"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/provider-allocation.ts",
+      "sha256": "4c66699982526e2186d16e57a77290f2fd08ea1b7c4e334feb123dc7cfb1ff84"
+    },
+    {
+      "path": "packages/financial-core/src/financing-costs.ts",
+      "sha256": "486c36ec67fc959853576e5b5dce770daa60dfb880757773654dfbba4a51da60"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/pool-borrowing-base.ts",
+      "sha256": "c11cd74e99bb375e56c058beaa48586a1a67b7beedf2630012efdd986825a2cb"
+    },
+    {
+      "path": "packages/financial-core/src/structure.ts",
+      "sha256": "f2794ba314bcd6f3212502a2daebe5e28a171f5792e698299365fd9935b3ece6"
+    },
+    {
+      "path": "packages/financial-core/src/operating-cash-projection.ts",
+      "sha256": "45313d1aa916289ae59adafffdb8dd91b9f015ff13320d0d5ba400a77116aa4a"
+    },
+    {
+      "path": "packages/financial-core/src/liquidity-calendar.ts",
+      "sha256": "739763b3720c7ceddbb3ba7050019be7daf68d5ae8ea670846368f0271d43672"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/dynamic-metrics.ts",
+      "sha256": "cd6fa83a9db894a4919ed645875f6fd61a5452ec336c9d531420d550c3d3ed51"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/pool-performance.ts",
+      "sha256": "219e4a1b8d1b0e3729ce2d1a8660ef85a23202e924bb19bd0bf7f5b03f7b9e63"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/static-metrics.ts",
+      "sha256": "31af3414353b30419945ff45b8be234394feac5f0b30020420bbdc49bc84334e"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/contracts.ts",
+      "sha256": "96c8f29dbc763ada38909538a25b67e849b4f19592459e712c77f215893036b7"
+    },
+    {
+      "path": "packages/financial-core/src/receivables/pool-reconciliation.ts",
+      "sha256": "887e8f1bb3cc8ad8460b08ddf1f826ba0cd0d5919b5d3ffed24d21bc8d59a6bc"
+    },
+    {
+      "path": "packages/financial-model/src/capital-contract-output.ts",
+      "sha256": "604f62b95fb3922f9b545c45c3d43b1e8856d7f2635df676fdd9510d6f1d245a"
+    },
+    {
+      "path": "packages/credit-playbook/src/capital-planning-policy.generated.ts",
+      "sha256": "dd537b9a06856dc4a471469e5128a936a96d8baf892c4f9716798beff8ffc048"
+    },
+    {
+      "path": "packages/credit-playbook/src/types.ts",
+      "sha256": "d3171c9b4d4f059132f21e406d5e8d49e65e1c7e9961d1ae4b41a73cff48d58e"
+    },
+    {
+      "path": "packages/credit-playbook/src/archetypes.ts",
+      "sha256": "6ffdb4c0d217d22fc65488eb52a501d7555cba636780c5b03d5bc648225004e1"
+    },
+    {
+      "path": "packages/credit-playbook/src/sufficiency.ts",
+      "sha256": "00837473003a0a3ea36e1d90c49b41a11ad8d6676e27aa0fa2eafea7e1e99d26"
+    },
+    {
+      "path": "packages/credit-playbook/src/material-fields.ts",
+      "sha256": "42ad3e0475aefebfa12dc77847fd730a86ce5b2d24c0996c1aab8580e0eb5230"
+    },
+    {
+      "path": "packages/credit-playbook/src/instruments.ts",
+      "sha256": "10edd5cc2e6effb20755b2b1a2410c9a99091eaf179cc895f320f8c8d1fe5b2a"
+    },
+    {
+      "path": "packages/credit-playbook/src/taxonomy.ts",
+      "sha256": "5a63b77662e9eb05d2e4200a4fc9d7d5affb16114eb3771141140368a20ab142"
+    },
+    {
+      "path": "packages/credit-playbook/src/intake-state.ts",
+      "sha256": "5514fd8572ad4092c3ce33bc7571de9ce8f810d920057348cfea23a0d4334099"
+    },
+    {
+      "path": "packages/credit-playbook/src/covenants.ts",
+      "sha256": "a0d37161dd387b84559facea1b1c4ef14f9707266a1910df184a498cf97fb160"
+    },
+    {
+      "path": "packages/credit-playbook/src/dcm-blueprint.ts",
+      "sha256": "74e7cd95066a27ce9ba8a39573dc7f7d6c8077140117ebd253fd6dfda5a19295"
+    },
+    {
+      "path": "packages/credit-playbook/src/client-requests.ts",
+      "sha256": "fff58fcfd52979c700fa0eff2b5550b9ce4e3a11bf2b0d0fb06c9b36e788e26f"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedure-contract.ts",
+      "sha256": "31e1b838b857ce5529ebe7befffcc1d123456e894095785d35205b7589d9e1bf"
+    },
+    {
+      "path": "packages/credit-playbook/src/method-run-record.ts",
+      "sha256": "7b1e70301b5d68a18b3d14f568eb86ed15e710ebcd4fce45e9dd416d74280953"
+    },
+    {
+      "path": "packages/credit-playbook/src/method-runtime-manifest.ts",
+      "sha256": "790e132503ff43e9a393bea05765d3434841f00d527654423929dcf27516c9ad"
+    },
+    {
+      "path": "packages/credit-playbook/src/preview/index.ts",
+      "sha256": "10764eae9bacd623acd73c89e618884a74a72268051242ea6be99b2d991e8969"
+    },
+    {
+      "path": "packages/credit-playbook/src/review-record.ts",
+      "sha256": "d44342d3d38509c2a616b737e4d9f79e151305a35b918ce2e0dc9d3de5cd013a"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/index.ts",
+      "sha256": "1ed462364258cd645f442c5d1c8bbcb6fb096e2cc04eaa9061a13829adb8879d"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedure-compiler.ts",
+      "sha256": "8cd1de153e610513407158349a7e9213cc44b761df03a9290efc0e00c798883f"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/institutional-input-requests.ts",
+      "sha256": "be602bbfa88f329ab4e91f0ae770a5775309a3445f4ef771f5c48c457688ea53"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/index.ts",
+      "sha256": "5710c3b17ceef51e3b992009536963cb3feae2a0f34aa385d888409554f2076f"
+    },
+    {
+      "path": "packages/credit-playbook/src/method-component.ts",
+      "sha256": "31890cb0765548fc91a5949a3281d8eb96ee4cf56dbdf1d72a0ca15b67d90d22"
+    },
+    {
+      "path": "packages/credit-playbook/src/compose-method.ts",
+      "sha256": "11acfca9ec439a5014501a3db6ce5b1864e5e6b9642685f55a26d52a65ede69f"
+    },
+    {
+      "path": "packages/credit-playbook/src/method-data-contract.ts",
+      "sha256": "26eaac8673ce4e0fc309360442c301668a2d67b116cbf7c6e1dede1b6246d7e3"
+    },
+    {
+      "path": "packages/credit-playbook/src/receivables-routes.ts",
+      "sha256": "891db9a5d001cbfd79039f9c672bede7c2d267a0ca1a8e4a34423b088cfe35a0"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/index.ts",
+      "sha256": "d83b2c723602a7d2af1893611d1cb5715ec7c591857c65f1dfd82f1ad02d6cd2"
+    },
+    {
+      "path": "packages/credit-playbook/src/material-templates.ts",
+      "sha256": "62b6160ed664626ecc9545d4845cd9331c72e4c94bbbc93d81c60a04681e7cb7"
+    },
+    {
+      "path": "packages/credit-playbook/src/conduct-policy.ts",
+      "sha256": "4f12b3ccdca883dae2f2401700c9c6a0e2dafccd6dc371388ac58457db76e77b"
+    },
+    {
+      "path": "packages/credit-playbook/src/receivables-evidence.ts",
+      "sha256": "0cdae78b869f60dcd279d0e1e918e33be9bbda0103f93e3e35281da4acf5f10d"
+    },
+    {
+      "path": "packages/credit-playbook/src/depth-packs/index.ts",
+      "sha256": "55e47aef3157aa60e6447607a7f576f941570f9424568164248223e988b63549"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedure-markdown.ts",
+      "sha256": "5e211509012b8472efea4d351f7d6a62cb2edda42a9f4b90a0ef6108d888045b"
+    },
+    {
+      "path": "packages/credit-playbook/src/methodology.ts",
+      "sha256": "571feb777827a99b1de86e69d4106081854a1922c4e3ae1b38358749e933cfa7"
+    },
+    {
+      "path": "packages/credit-playbook/src/closing.ts",
+      "sha256": "b0f5576ecd0be8971f71a5ccbb1e9d180eb3395d278a2abdfbec0bffef4923a2"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/executive-synthesis.ts",
+      "sha256": "8a3defc67c1ae8f3fa0665e3e37d96505877b9ba3c88a65254a73f282e171d79"
+    },
+    {
+      "path": "packages/credit-playbook/src/workflow-recipe.ts",
+      "sha256": "4431580abc618c004d5dcfde6927e9e7056d6d682e26a55c2716831bab10ea02"
+    },
+    {
+      "path": "packages/credit-playbook/src/reference-data.ts",
+      "sha256": "446f22d7163f371ec027add910f411c95398be467a8cf72233bbc446190f55ae"
+    },
+    {
+      "path": "packages/credit-playbook/src/house-playbook/index.ts",
+      "sha256": "94c705a2a225059c072c765f7075666e840f0a9286a8fa32b886b90a58f68edd"
+    },
+    {
+      "path": "packages/domain-contracts/src/index.ts",
+      "sha256": "451d16e62c9b3801c2da017364a452bd99e500b08c263b3336d213b23e2d24d6"
+    },
+    {
+      "path": "packages/credit-ontology/src/index.ts",
+      "sha256": "d196ba728826f9250825b132f47535acb1ed0cab762ac832891feab58c8f1956"
+    },
+    {
+      "path": "packages/credit-playbook/src/house-playbook/source.ts",
+      "sha256": "6b048d706a3033e0d20f8385e03c3bd02292b3fc8cfb8e04159b17923fe5f8f1"
+    },
+    {
+      "path": "packages/financial-model/src/capital-decision-composition.ts",
+      "sha256": "d69e09919d4646ea4cefe30a0e1a6c124c52b170d006678f0d9a7a7002af877f"
+    },
+    {
+      "path": "packages/credit-analysis/src/index.ts",
+      "sha256": "4444e28ff5def1fc3f7a4609aa67db495b396c3698daeb99e37d4244fc89ac50"
+    },
+    {
+      "path": "packages/instrument-catalogue/src/index.ts",
+      "sha256": "3e114bd557598bbfff6e96f7d7a1aebcd7cafadb91ef52c6e2cbf4bb1b4b423e"
+    },
+    {
+      "path": "packages/market-reference/src/index.ts",
+      "sha256": "477b2ed4589b0b824329a31aa76e92a59ebca7749af523cf8f5e1d79b483173d"
+    },
+    {
+      "path": "packages/credit-playbook/src/method-runtime-manifest.generated.ts",
+      "sha256": "6780c95334f7dd74a02b64bf4b3eef744bd6f9aa6a6b7468465fe1845b94689e"
+    },
+    {
+      "path": "packages/credit-playbook/src/depth-packs/sector-context-labels.ts",
+      "sha256": "ed5a35ef1d68f717a97b8ba60952a9bf96e4ccbb42aaf7b762e057ef715be1ce"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/provider-research.ts",
+      "sha256": "6853de1106cb822cd2f6b013c96409025112d48c9eaa8ef5fc070bc7ecb83c28"
+    },
+    {
+      "path": "packages/credit-playbook/src/depth-packs/economic-catalog.ts",
+      "sha256": "5c91d37dc29e2f1a78cee85649aa8274ea851bc114a8c0b6f375a26c689f4018"
+    },
+    {
+      "path": "packages/credit-playbook/src/depth-packs/types.ts",
+      "sha256": "bca473dcdbf328bf1805113acc800ed7fb2ad0f5552136005dd27107494389c4"
+    },
+    {
+      "path": "packages/credit-playbook/src/depth-packs/registry.ts",
+      "sha256": "1bf92f8e52fdea671353eef5fe90a7b3f5a46d09d332a1dc33a14cb2ff79164c"
+    },
+    {
+      "path": "packages/credit-playbook/src/depth-packs/sector-context-catalog.ts",
+      "sha256": "5be72c3b2264c9af5bfdf47b5eefdec03c6639538915c9786b59f074da9a589f"
+    },
+    {
+      "path": "packages/credit-playbook/src/preview/synthesis.ts",
+      "sha256": "49d1fccfe92b5c3656649a0f22983addb2f2035215d9599596b62bc7849919d8"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/growth-capex.ts",
+      "sha256": "bdd03a96360e85c23c65043a0ba4aa01e36d7e33006f9302cdcf4fedd83ad799"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/language-conduct.ts",
+      "sha256": "4e179f01051fcfc59499cdb9eae3887d482b74782e80d2510bda03c056956f23"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/financial-debt-truth.ts",
+      "sha256": "e3c2a521d9ad376dca640b29bb658370325fc35008433e4a4f728d5828dbb00f"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/operation.ts",
+      "sha256": "e2b9bdfae6f3c236fd28b309d11ed196a7940b8c44a809eb4f2de9efe199d33c"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/pricing.ts",
+      "sha256": "aeec0ffb1a33a431f4381eb70c2a25b1a03d44e8f1e50a8d60f6990a33b8f56d"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/structure.ts",
+      "sha256": "9677ad020cc16e42e1e17eceb0d9932193f36856d42b3efaddfaffeafc376070"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/materials.ts",
+      "sha256": "2a33853f400f0c6236bbee2c80a9e506149427d867ffeee8094e15576d1f50e7"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/market-distribution.ts",
+      "sha256": "8fa0adc04429ed343ee4fca65db8729ec66d48053cddda78a2a4f7f64f7d4e73"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/red-flags.ts",
+      "sha256": "a2e477e26bf6bc27873d9b0dd6f74cb684e1f1b5699903ce09d6bd0abe7e3af7"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/registry.ts",
+      "sha256": "664e7359ebfe2c3e0c79d48d34fae67cc3e05a349e7992985e10d815016b8ea9"
+    },
+    {
+      "path": "packages/credit-playbook/src/procedures/documentary-work.ts",
+      "sha256": "684c614b9d00738c2eb08b622ea53774ae4892ebd490548d9149959f9193dbaa"
+    },
+    {
+      "path": "packages/credit-playbook/src/preview/workflow.ts",
+      "sha256": "f10f268a41bd9a7c3fcdebebdddbb2117bee5e59a50706496b8251c07e1972cd"
+    },
+    {
+      "path": "packages/credit-playbook/src/preview/run.ts",
+      "sha256": "8e38c203c8a0918af4772bed0f9abab91fb2fdb52c5ee8ddfbea3c0cbb7114ab"
+    },
+    {
+      "path": "packages/credit-playbook/src/preview/corpora.ts",
+      "sha256": "7925be0c13b9837317f99acf34d96f6a0f59599defd306604f80cdcaf2dfffc7"
+    },
+    {
+      "path": "packages/credit-playbook/src/preview/gaps.ts",
+      "sha256": "fe9000275c4312dc52c6cc98f0dbffd351db0f5c57cfade9ce871282ca1d4ddc"
+    },
+    {
+      "path": "packages/deal-structure/src/index.ts",
+      "sha256": "cb19ab387f986a0d142d529161bb9867911890bbefdc7d1281972205b0ad6168"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/build-interest-and-indexation-schedule.ts",
+      "sha256": "17ba3a36687b795d0fb55724224f30d068f69d62d36d5563a081e60ef7bdf6c0"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/reconcile-financial-statements.ts",
+      "sha256": "e3ae56a24ba2622c696ba6f270afc42116db15ced08097f88e0113d7ce131080"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/estimate-exit-cost-by-series.ts",
+      "sha256": "13f4cdc667c987a63310e41dc3c313ee6faa4f6793c2e35434dec961f4e9bda7"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/plan-meeting-brief.ts",
+      "sha256": "23885dc15a89ae2869c3b52bb750c1c6a11ef9abcabcc358618ea8e100cc2c33"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/build-debt-ledger.ts",
+      "sha256": "09af05824f142286f48384e8eedae17f25c4725fc2e28a76adb6c7a3b4aaaa62"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/reconcile-covenant-definitions.ts",
+      "sha256": "2d8d1d5f229ef288fa5cc31272c910853a0499ed9771d4b5c6ab85681d8570b3"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/declare-scenarios.ts",
+      "sha256": "9c0823b8da3e064a75cb859f1b9ac460fb550ea8facafbbb3a608185fdaf1701"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/diagnose-maturity-wall.ts",
+      "sha256": "2381b482ab3e82045bddaf842b92c2d5a59a53f9e0686cf482a0e27d6f77f728"
+    },
+    {
+      "path": "packages/credit-playbook/src/executors/compare-refinancing-before-after.ts",
+      "sha256": "b49d517224611ecfecc8517752c52815dbadc7dd3cc96e2b2021c78780b65cfb"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/build-debt-ledger.ts",
+      "sha256": "f27ba938e2eb8b91cae89f607d4fef24e1f3fc4731b45039fbbf1c638be0a70b"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/build-interest-and-indexation-schedule.ts",
+      "sha256": "7dc9579cfd320527dc5411afb472847adaa9d22048c7c249041f07ca85da4915"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/declare-scenarios.ts",
+      "sha256": "97a34345c3208a651048a3e4255ad980ad0995b2b7c9e40ed0b0eb721d8b57e6"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/estimate-exit-cost-by-series.ts",
+      "sha256": "6c258de7b7f99edb0d2ae51224b662b79a3177c989782594fd54ae97f220cf53"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/plan-meeting-brief.ts",
+      "sha256": "61cd0e513ef681039c3cd667361838d227d0b95fe13a934685ac3f87b3f61b30"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/reconcile-covenant-definitions.ts",
+      "sha256": "97e0aa2e8eea221c69ef88e13dab527bcd2a773769bd40ace521a45585475301"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/reconcile-financial-statements.ts",
+      "sha256": "87bd8e654a502bf194ce287107cf86185766fc07c7b21193e229c08e0d18a412"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/compare-refinancing-before-after.ts",
+      "sha256": "8f1b139160944b19511236a56194f2a3a618550562becf36f78ebc56607221fb"
+    },
+    {
+      "path": "packages/credit-playbook/src/cases/gc01/diagnose-maturity-wall.ts",
+      "sha256": "877d9910beaafda5acd5250d3a1f13b65f7e026781360a01d62db0eddb6522ac"
+    },
+    {
+      "path": "packages/domain-contracts/src/contextual-adoption.ts",
+      "sha256": "bbe50f847a84fdfce427e507836798df1ee0f8ccc7ec761d2d580ef3c58096b2"
+    },
+    {
+      "path": "packages/domain-contracts/src/domain-event.ts",
+      "sha256": "971b71a86e609bb27afa355b2063e19800789552c6633d2728df7bb726e2fba6"
+    },
+    {
+      "path": "packages/domain-contracts/src/dossier.ts",
+      "sha256": "7fb87fe96d44754c72fd593a4a3477434ee85d2c18df1fc1e8db8fe16679d1d9"
+    },
+    {
+      "path": "packages/domain-contracts/src/entity.ts",
+      "sha256": "5c1e3c9c282f24048acd8f12f54d266f5fe629058d1fed3399b558a975f30da2"
+    },
+    {
+      "path": "packages/domain-contracts/src/observation.ts",
+      "sha256": "8a9ecfd95fd9ac74d2f2824a2b708b377e8de3b03ec0968df8f0520e32e2e025"
+    },
+    {
+      "path": "packages/domain-contracts/src/document-work-product.ts",
+      "sha256": "ec9c66b87b2e496cd3697c9f7a6ecb42b971cfb16007c08f3a2b8d99920df3b9"
+    },
+    {
+      "path": "packages/domain-contracts/src/source-version.ts",
+      "sha256": "cfc11f7076ced8be453c7f3fb5751dc89e20e880bbfd2b31ec1c342c321c14c5"
+    },
+    {
+      "path": "packages/credit-ontology/src/evidence.ts",
+      "sha256": "2cef11c2ea98880b9154feb11d9e3c17fed9576f12903786497b3ab0e495252f"
+    },
+    {
+      "path": "packages/credit-ontology/src/periods.ts",
+      "sha256": "cd8ea27cf2fc83870c4961e522c80c178ae37caa8a4d8b8df08550e050e7d853"
+    },
+    {
+      "path": "packages/credit-ontology/src/documents.ts",
+      "sha256": "1e944f970aaffc91faa9857a32c7b49f52a6ce18abec3efcc24ed2954605dfd6"
+    },
+    {
+      "path": "packages/credit-ontology/src/jurisdiction-language.ts",
+      "sha256": "a636ce736aad9d5490a24192472b128603cb2dcb50abc897c43210643acb4c57"
+    },
+    {
+      "path": "packages/credit-ontology/src/reconciliation-rules.ts",
+      "sha256": "61fc0d7db133ff2d1c309ce8750733b5bb4862a0aceda2efdce9ada8dfb4518f"
+    },
+    {
+      "path": "packages/credit-ontology/src/definitions.ts",
+      "sha256": "4f0c37c9842f56f72ce2ade3e59a119bbbdce59f3c685f5e9bb761d2b1e4bb02"
+    },
+    {
+      "path": "packages/credit-ontology/src/debt-mission.ts",
+      "sha256": "6341a764d6649ead201b2ce5a807211ac367a2514d7a81151e7f1728bdc76b2b"
+    },
+    {
+      "path": "packages/credit-ontology/src/origination-taxonomy.ts",
+      "sha256": "7c6dff3662ca1dbd9d41657785c5c9443c9351a3fb5fe506472e762d4cb6651d"
+    },
+    {
+      "path": "packages/credit-ontology/src/materiality.ts",
+      "sha256": "2ed3b46966c1a04c8c4e0b317a9c0fefb93efaf247fb23735f7e6c6fffe7afd9"
+    },
+    {
+      "path": "packages/credit-ontology/src/fields.ts",
+      "sha256": "fd23911260194a8765f4efa8d1de41218315a8fd5185ed5f1d3876c606fe65d7"
+    },
+    {
+      "path": "packages/credit-ontology/src/chart-of-accounts.ts",
+      "sha256": "ce12cce21839f11c15366987f1a2391931d0da75f51e09c570c930b65ab07e38"
+    },
+    {
+      "path": "packages/instrument-catalogue/src/types.ts",
+      "sha256": "b9ef457b635d990b1f98865726e56995c3bc1899f3610ffffdc61a28487fb668"
+    },
+    {
+      "path": "packages/instrument-catalogue/src/assess.ts",
+      "sha256": "7b8d787dff17a1a5ce72197861ce97f52cb5a48b02cc0678a4b13b6b4144fa45"
+    },
+    {
+      "path": "packages/instrument-catalogue/src/catalogue.ts",
+      "sha256": "aceb73bdc6fa7b261c9dd6ef639a69df48a091926e4d152d3fe71d51172032aa"
+    },
+    {
+      "path": "packages/credit-analysis/src/analyze.ts",
+      "sha256": "7e99c185ae871bab99d7553263ab8912dcc1d1cb7bfeb5afc9ccde7ffc57b94f"
+    },
+    {
+      "path": "packages/credit-analysis/src/from-facts.ts",
+      "sha256": "ab986bf51636aaa86f667f8b1649bf7371d6fc4cefa52a0e6a986027cf116905"
+    },
+    {
+      "path": "packages/credit-analysis/src/capital-decision-sufficiency.ts",
+      "sha256": "aca5017d6b45fb97693e3023b29f1f55eecc454a2943b15980bc00c2567d1f0a"
+    },
+    {
+      "path": "packages/credit-analysis/src/rating.ts",
+      "sha256": "949d05e25428bf26375ce9b25d7724bce26aa4853c115b33d1d2a4863f2e4c74"
+    },
+    {
+      "path": "packages/credit-analysis/src/trajectory.ts",
+      "sha256": "d90c971bf6a27372a6cd828ce343bbd18916662c3e1e8069ba9aaa901da23e51"
+    },
+    {
+      "path": "packages/credit-analysis/src/parse.ts",
+      "sha256": "b916103f4f2428790c1454775476c7d9dec69cdb690db1f0655acacb06eb9535"
+    },
+    {
+      "path": "packages/credit-analysis/src/stress.ts",
+      "sha256": "385e7aedae8f06feecb7447ee81198fa5ce9efaec5519886a453a666d05f9ee0"
+    },
+    {
+      "path": "packages/credit-analysis/src/verdict.ts",
+      "sha256": "4ec80b3f367ecc4e2397313f38e2061893dd107bb6a0b174e630db93b94f311c"
+    },
+    {
+      "path": "packages/credit-analysis/src/questions.ts",
+      "sha256": "c4453807575ca7fd0cfaad924920c14ba19ef6f46ba1e111a42a559c5fcd9914"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-capital-period-cash.ts",
+      "sha256": "059135085ace4c866cdef6c8a87c61a1b888a849bb12fdfaf456ca13f1dddf08"
+    },
+    {
+      "path": "packages/market-reference/src/decision-reference.ts",
+      "sha256": "2283007eb659457f021133d1da47d8b98f77a7a2cc5de06080f37fe7fb09e151"
+    },
+    {
+      "path": "packages/market-reference/src/pricing-truth.ts",
+      "sha256": "ac32473b936e48f26a86951d53f965eb650c2fdb873e03d9a708a9ee606f0710"
+    },
+    {
+      "path": "packages/deal-structure/src/capacity.ts",
+      "sha256": "23cea0c14232fca46cb4e27653a05b79ee48937896768b2931459469c6cdc3fa"
+    },
+    {
+      "path": "packages/deal-structure/src/termsheet.ts",
+      "sha256": "c10a38685a242f0a2b3b3801df7e6442bbc6c44d618ac181907d4a71273a4f14"
+    },
+    {
+      "path": "packages/deal-structure/src/market.ts",
+      "sha256": "80fac50f78fdf891e5625fbc13b32ae214d445470d515af5d561e136c64f6cb1"
+    },
+    {
+      "path": "packages/deal-structure/src/collateral.ts",
+      "sha256": "f2e04bcdcfa7887d46e2d6fef91bd53ffecfb8eae9264dfcf817075d7cfa49c3"
+    },
+    {
+      "path": "packages/deal-structure/src/operation.ts",
+      "sha256": "a06aaf76cc2f4f29a0e2e38b4c4c295f936546d79cb89cd1836e066f3e33b32e"
+    },
+    {
+      "path": "packages/deal-structure/src/structure.ts",
+      "sha256": "f63400fc6e22bc38587cd7a238837c1f26b16965dee69a6c60312c079726ea24"
+    },
+    {
+      "path": "packages/deal-structure/src/alternatives.ts",
+      "sha256": "0af58ec5288acd4f03dde3a862801db383260a4723667f4751007791b460d5cb"
+    },
+    {
+      "path": "packages/deal-structure/src/capital-decision-conditions.ts",
+      "sha256": "3be8b6bad56ccbf0246b646e92da3b8ca016e05fa33e9238f9f69187c30089bc"
+    },
+    {
+      "path": "packages/financial-core/src/contractual-interest.ts",
+      "sha256": "6127cb90a0ecb23026db153b1d5bf3dad6a94bbbd59b1842760008ec1ca9a378"
+    },
+    {
+      "path": "packages/financial-core/src/contractual-covenants.ts",
+      "sha256": "5907346a93c78c354fb59668504298a56521dcadcb2c9344e264770ecc119fc4"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-operating-projection.ts",
+      "sha256": "06e5a49e6a49a952ad24d2f1ebed0a9e8e7f73638712963cab990d5429bcaf28"
+    },
+    {
+      "path": "packages/financial-model/src/adopted-financing-costs.ts",
+      "sha256": "631b5d588cfbcd2867441bd398a9f703e1501add586dfa6992aff16cdb2b7cd3"
+    }
+  ],
+  "result": {
+    "checks": [
+      {
+        "run": "capital-structure-decision-2026-09-20-v2-gold",
+        "count": 7,
+        "exact": true
+      },
+      {
+        "run": "capital-structure-decision-2026-09-20-v2-adversarial",
+        "count": 8,
+        "exact": true
+      },
+      {
+        "run": "capital-structure-decision-2026-09-20-v2-consistency",
+        "count": 6,
+        "exact": true
+      },
+      {
+        "run": "capital-structure-decision-2026-09-21-v3-gold",
+        "count": 9,
+        "exact": true
+      },
+      {
+        "run": "capital-structure-decision-2026-09-21-v3-adversarial",
+        "count": 8,
+        "exact": true
+      },
+      {
+        "run": "capital-structure-decision-2026-09-21-v3-consistency",
+        "count": 9,
+        "exact": true
+      },
+      "v2-adoption-fingerprint-and-origin"
+    ]
+  }
+}

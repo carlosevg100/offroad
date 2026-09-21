@@ -16,7 +16,7 @@ describe("recorded capital procedure v2 evaluations", () => {
       expect(record.humanApproval).toBe(false);
       expect(runCountsForPromotion(record)).toBe(true);
     }
-  });
+  }, 30_000); // Whole-suite replay under concurrent CI load; latency is measured separately.
   it("covers the full packet including contract divergence negative cash framing and missing evidence", () => {
     const gold = records.get(capitalProcedureV2RunIds.gold)!;
     expect(gold.cases.map(c => c.id)).toEqual([

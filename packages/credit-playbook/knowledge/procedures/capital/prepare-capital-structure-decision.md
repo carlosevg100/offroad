@@ -1,7 +1,7 @@
 ---
 id: prepare-capital-structure-decision
 version: 2026.09.21-v3
-maturity: candidate
+maturity: tested
 title_pt: Preparar alternativas de estrutura de capital para uma decisão
 title_en: Prepare capital structure alternatives for a decision
 role: credit_structuring
@@ -15,7 +15,7 @@ result_contract: capital-procedure-packet.v2
 connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: capital-procedure-packet.v2
-unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts, packages/financial-model/src/capital-contract-preparation.test.ts, packages/financial-model/src/capital-ipca-prorata.test.ts, packages/financial-model/src/capital-contract-precision.test.ts, packages/financial-model/src/capital-indexed-contracts.test.ts, packages/financial-model/src/capital-procedure-v2-runs.test.ts, packages/financial-core/src/indexed-contract-events.test.ts]
+unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts, packages/financial-model/src/capital-contract-preparation.test.ts, packages/financial-model/src/capital-ipca-prorata.test.ts, packages/financial-model/src/capital-contract-precision.test.ts, packages/financial-model/src/capital-indexed-contracts.test.ts, packages/financial-model/src/capital-procedure-v2-runs.test.ts, packages/financial-core/src/indexed-contract-events.test.ts, packages/credit-playbook/src/capital-independent-review.test.ts]
 gold_case_ids: [indexed-amortization-coupon-independent-oracle, known-indexed-contract-remains-unresolved, cash-identity-maintain-change-adverse, contractual-definition-and-adopted-basis, no-projection-no-fabricated-company, absent-source-is-not-zero, contribution-does-not-overwrite-adoption, interest-amortization-without-implied-cash-adoption, negative-cash-does-not-consume-restricted-balance]
 adversarial_case_ids: [tampered-envelope, cross-perimeter, foreign-contract-context, foreign-adoption-reference, duplicate-adoption, fabricated-authority, fabricated-result, omitted-contract-direction]
 e2e_scenario_ids: [domain:cash-identity-maintain-change-adverse, domain:contractual-definition-and-adopted-basis]
@@ -29,14 +29,15 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [capital-structure-decision-2026-09-21-v3-consistency]
 adversarial_run_ids: [capital-structure-decision-2026-09-21-v3-adversarial]
+review_ids: [prepare-capital-structure-decision-2026-09-21-v3-independent-review]
 gold_run_ids: [capital-structure-decision-2026-09-21-v3-gold]
 ---
 
 # Objetivo
-Preparar alternativas de estrutura de capital para uma decisão explícita, relacionando objetivos, investimento, caixa, dívida, riscos e restrições sob a mesma base. A proposta profissional usa motores determinísticos reais e conserva julgamentos e condições. Continua candidata: os bytes finais ainda exigem avaliação registrada, revisão independente e aprovação específica antes da publicação; execução universal não é ativada por este documento.
+Preparar alternativas de estrutura de capital para uma decisão explícita, relacionando objetivos, investimento, caixa, dívida, riscos e restrições sob a mesma base. A proposta profissional usa motores determinísticos reais e conserva julgamentos e condições. A versão foi testada e revisada independentemente; a aprovação profissional específica do fundador e a publicação auditada continuam pendentes. Execução universal não é ativada por este documento.
 
 # Produto
-Entrega estruturada da decisão: contexto, base adotada e hipóteses, alternativas comparáveis, efeitos sobre caixa e dívida, condições e restrições, sensibilidades, recomendação proposta e informação que muda a escolha. A profundidade acompanha a pergunta e a evidência, independentemente de cargo. O executor prepareCapitalProcedurePacket recompõe a entrega de decisão, a preparação contratual e os vínculos com adoções; o componente abaixo fixa seus schemas reais de entrada e saída. Registro técnico não habilita execução ou publicação.
+Entrega estruturada da decisão: contexto, base adotada e hipóteses, alternativas comparáveis, efeitos sobre caixa e dívida, condições e restrições, sensibilidades, recomendação proposta e informação que muda a escolha. A profundidade acompanha a pergunta e a evidência, independentemente de cargo. O executor prepareCapitalProcedurePacketV2 recompõe a entrega de decisão, a preparação contratual e os vínculos com adoções; o componente abaixo fixa seus schemas reais de entrada e saída. Registro técnico não habilita execução ou publicação.
 
 # Quando ativar
 - O usuário quer avaliar caminhos para financiar investimento, reorganizar vencimentos, preservar liquidez ou escolher uma estrutura de capital.
@@ -122,9 +123,9 @@ Entrega estruturada da decisão: contexto, base adotada e hipóteses, alternativ
 - Testes reais nos motores operating-cash-projection, financing-costs, capital-period-cash e defined-ratio; adaptadores adopted-operating-projection, adopted-financing-liquidity, adopted-capital-period-cash e adopted-defined-ratio; composição, revisão e entrega nos arquivos capital-decision-composition, capital-decision-review e capital-decision-delivery.
 - Casos cobrem contexto incompatível, ausência versus zero, caixa negativo/restrito, custos capitalizados, aporte/distribuição, datas, precisão, índices, cenário alterado e reprodução.
 ## Gold
-- Resultados sintéticos123/144.5/83 estão nos testes da comparação e entrega. Sete casos integrados estão registrados com expectativas e fingerprints reproduzidos pela CI; a revisão independente do gabarito continua pendente.
+- Resultados sintéticos123/144.5/83 estão nos testes da comparação e entrega. Nove casos integrados v2 estão registrados com expectativas e fingerprints reproduzidos pela CI. A revisão independente os reexecutou e conferiu também gabaritos próprios; os registros históricos foram preservados.
 ## Adversarial
-- Testes reais negam bases divergentes, definição incompatível, observação duplicada, resultado fornecido pelo chamador, contrato de executor alterado, export inexistente e promoção por rótulo. Oito casos integrados de negação e seis de consistência têm registros reproduzíveis. A revisão independente continua pendente.
+- Testes reais negam bases divergentes, definição incompatível, observação duplicada, resultado fornecido pelo chamador, contrato de executor alterado, export inexistente e promoção por rótulo. Oito casos integrados de negação e nove de consistência v2 têm registros reproduzíveis. A revisão independente técnica foi concluída com condições explícitas, sem aprovação humana.
 ## Aceitação
 - Candidata compila com executor de domínio registrado e metadados de implementação, sem task, execução em staging, ato de aprovação ou capacidade liberada. Os estados nomeados são estados reais do pacote de domínio; derived_on_demand identifica o resultado recalculado em memória, sem afirmar persistência em tabela. Os cenários end-to-end declarados são de domínio e não jornadas de usuário; conexão e persistência de execução pertencem à17. R01 publicado permanece imutável.
 - Publicação exige composição profissional completa, avaliações integradas, medição registrada da primeira resposta útil, revisão independente real, conteúdo aprovado pelo fundador e comando auditado de14 nos ambientes. Execução universal e revalidação pertencem à17.
@@ -139,9 +140,9 @@ Entrega estruturada da decisão: contexto, base adotada e hipóteses, alternativ
 - As fontes profissionais e suas limitações estão na fundamentação abaixo. Os exemplos são sintéticos e não viram defaults de produto.
 - Alteração de dependência material exige nova revisão e conserva o resultado anterior. Não reescrever decisão humana nem fabricar aprovação ou revisão independente.
 
-# Pendências de autoria antes da aprovação de conteúdo
+# Aprovação profissional e publicação pendentes
 - Rever profissionalmente a composição contratual integrada, suas convenções explícitas e os casos que permanecem parciais por falta de evidência; não remover lacunas para obter um rótulo de pronto.
-- Executar e registrar gold, adversarial, consistência e medição sobre os bytes finais, com revisão independente real. O adaptador protegido mede worker até mapa útil persistido; fila e entrega ao navegador pertencem à medição da17.
+- Gold, adversarial, consistência e revisão técnica estão registrados. A medição de domínio cobre chamada até pacote validado; o adaptador protegido mede worker até mapa útil persistido. Fila e entrega ao navegador pertencem à medição da17. Revalidar a identidade final antes de publicar.
 - Submeter esta versão completa e seu manifesto ao fundador. Aprovação de continuidade ou de onda não é aprovação profissional; somente depois registrar publicação auditada, ainda sem ativar o executor universal.
 
 # Fundamentação profissional
@@ -337,18 +338,15 @@ universais de qualquer análise de estrutura de capital.
 
 # Contrato de componentes
 
-Os schemas deste bloco vêm do registro de engenharia e da validação real do executor. A autoria profissional não edita esses contratos para fazer uma execução passar. O teto técnico de30s limita preparação determinística; não é SLA de resposta ao usuário. Custos de modelo são zero neste componente, que não chama provedor. Candidata incompleta não é publicável nem executável.
+Os schemas deste bloco vêm do registro de engenharia e da validação real do executor. A autoria profissional não edita esses contratos para fazer uma execução passar. O orçamento declarado do componente é de30s; não comprova supervisão operacional nem SLA de resposta ao usuário. Os testes agregados de regressão têm prazo próprio, separado desse orçamento. Custos de modelo são zero neste componente, que não chama provedor. Esta versão está testada e pronta para avaliação profissional. Sua publicação exige o ato humano específico e o comando auditado; a execução permanece desabilitada.
 
 A preparação v2 exige inventário por instrumento e série e termos indexados completos ou lacunas nominadas. Datas de relatório não criam eventos financeiros. Fontes, localização, estado de abertura, contagens, bases, ordem, pagamentos e arredondamento são explícitos. Resultados permanecem contribuições candidatas separadas. IPCA legado é recusado neste caminho; v1 é conservado para reprodução histórica.
 
 ```offroad-procedure
 {
   "schemaVersion": "procedure-composition.v1",
-  "authoringStatus": "incomplete",
-  "pendingContent": [
-    "Revisão independente dos bytes finais e de seus registros de avaliação.",
-    "Aprovação profissional específica e publicação auditada antes de ativação futura."
-  ],
+  "authoringStatus": "ready_for_review",
+  "pendingContent": [],
   "budget": {
     "maxModelCalls": 0,
     "maxDurationMs": 31000,
@@ -477,7 +475,9 @@ A preparação v2 exige inventário por instrumento e série e termos indexados 
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/prepare-capital-structure-decision-2026-09-21-v3-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/prepare-capital-structure-decision-2026-09-21-v3-independent-review/REVIEW-SUBJECT-BASIS.json"
       ],
       "id": "capital.procedure-packet",
       "kind": "rule",

@@ -1,0 +1,36 @@
+{
+  "base": "0ca82728",
+  "sourceHash": "b02e5ab721414840f9e09177de3bbbe6772bddb1451631da32873e1ccf0ab1ea",
+  "manifestHash": "1c98f66a493a2b9e874fb14d55f649c2410793fed0a133769ace9173e910bfd5",
+  "all265PinsUnchangedAndMatching": true,
+  "compilerAndComponentsUnchanged": true,
+  "compositionBlockAndFrontmatterUnchanged": true,
+  "recipts": [
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-adversarial/run.json",
+      "cases": 8
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-consistency/run.json",
+      "cases": 6
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-gold/run.json",
+      "cases": 7
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
+      "cases": 8
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json",
+      "cases": 9
+    },
+    {
+      "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
+      "cases": 9
+    }
+  ],
+  "caseCount": 47,
+  "review": "conditional, humanApproval=false"
+}

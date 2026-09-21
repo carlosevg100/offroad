@@ -1,7 +1,8 @@
+import {compileReviewedCapital as compileMethodDocument} from "./reviewed-capital.test-support";
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {describe, expect, it} from "vitest";
-import {compileMethodDocument, methodMayRunInStaging} from "./procedure-markdown";
+import { methodMayRunInStaging} from "./procedure-markdown";
 import {compileProcedure, procedureOutputFieldSchema} from "./procedure-contract";
 import {buildMethodManifest} from "./build-method-manifest";
 
@@ -22,15 +23,15 @@ describe("professional candidate authoring contract", () => {
     expect(nullSchema).toMatchObject({properties: {fingerprint: {type: "null"}}});
     expect(nullSchema.required).toContain("fingerprint");
   });
-  it("compiles the actual registered rule but does not publish or run the incomplete candidate", () => {
+  it("compiles the actual registered rule but does not publish or authorize the reviewed candidate", () => {
     const method = compileMethodDocument(source, path);
-    expect(method.procedure.maturity).toBe("candidate"); expect(methodMayRunInStaging(method)).toBe(false);
+    expect(method.procedure.maturity).toBe("tested"); expect(methodMayRunInStaging(method)).toBe(true);
     expect(method.procedure.implementation!.executor).toEqual({module: "@offroad/financial-model", exportName: "prepareCapitalProcedurePacketV2"});
     expect(method.procedure.implementation!.persistence).toEqual({mode: "derived_on_demand", target: "capital-procedure-packet.v2"});
     expect(method.frontmatter.task_specs).toEqual([]);
     expect(method.frontmatter.capability_availability).toBeUndefined();
     const p = buildMethodManifest(root).provenance.find(p => p.procedure.id === method.procedure.id)!;
-    expect(p).toMatchObject({grantsExecution: false, authoringStatus: "incomplete"});
+    expect(p).toMatchObject({grantsExecution: false, authoringStatus: "ready_for_review"});
     expect(method.composition!.components.find(c => c.id === "capital.procedure-packet")).toMatchObject({executor: contracts.executor});
   });
   it("supports nullable enum descriptors while retaining null in the generated enum", () => {
@@ -47,7 +48,7 @@ describe("professional candidate authoring contract", () => {
   it("does not treat the expanded professional text or calculated examples as founder approval", () => {
     const method = compileMethodDocument(source, path);
     expect(method.procedure.owner.approvedAt).toBeUndefined(); expect(method.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-21-v3-gold"]);
-    expect(() => compileMethodDocument(source.replace("maturity: candidate", "maturity: production"), path)).toThrow(/approval/);
-    expect(method.composition!.pendingContent.length).toBeGreaterThan(0);
+    expect(() => compileMethodDocument(source.replace("maturity: tested", "maturity: production"), path)).toThrow(/approval/);
+    expect(method.composition!.pendingContent).toEqual([]);
   });
 });

@@ -1,0 +1,9 @@
+{
+  "kind": "technical_review",
+  "actor": "Codex /root/stage15_independent_review (independent AI reviewer)",
+  "result": "approved",
+  "humanApproval": false,
+  "occurredAt": "2026-09-21T11:03:19Z",
+  "manifestHash": "1c98f66a493a2b9e874fb14d55f649c2410793fed0a133769ace9173e910bfd5",
+  "rationale": "Aprovação técnica limitada após revisão independente do snapshot editorial final: fonte SHA256 b02e5ab721414840f9e09177de3bbbe6772bddb1451631da32873e1ccf0ab1ea. Diff contra0ca82728 modifica somente seis trechos de prosa, corrigindo contagens e estado da revisão; frontmatter e bloco de composição idênticos. Todos265pins, nove testes declarados, runtime, compilador, componentes e seis recibos com47casos permanecem byte a byte iguais ao sujeito técnico revalidado. Gerado e recompilado são iguais. Sete gates próprios de autoridade passaram novamente: reviewed/tested sem aprovação humana, sem task/capability/roteamento; revisão ausente e production sem aprovação são recusados. Os oráculos independentes de cálculo e47reexecuções anteriores permanecem vinculados aos mesmos bytes. A revisão conditional permanece; este registro não é content_approval, não representa aprovação profissional do fundador, não habilita publicação/execução e não comprova produção ou nova validação DB. Negativas integradas são estruturais/contextuais. Check global desta alteração editorial ainda em curso no momento desta atestação; sua conclusão e os demais gates operacionais devem ser conferidos antes do merge/publicação. Orçamento declarado e timeout de testes não são supervisão operacional ou SLA. Exigir ato humano real e conferência do commit final contra os pins antes da publicação. Atestações anteriores permanecem históricas. Evidências: EDITORIAL-PUBLICATION-CHECKS.json e SUPLEMENTO-PROSA-FINAL.md no diretório outputs/etapa-15-revisao-independente-2026-09-21. Horário observado via clock; nenhum modelo específico, custo ou token foi inventado."
+}

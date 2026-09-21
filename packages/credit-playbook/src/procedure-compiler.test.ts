@@ -1,8 +1,9 @@
+import {compileReviewedCapital as compileMethodDocument} from "./reviewed-capital.test-support";
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {describe, expect, it} from "vitest";
 import {methodComponentSchema, protectedMethodInvariants, type MethodComponent} from "./method-component";
-import {compileMethodDocument, loadMethodLibrary} from "./procedure-markdown";
+import { loadMethodLibrary} from "./procedure-markdown";
 import {adaptLegacyMethodDocument, compileProcedureComposition, methodContentHash, readProcedureComposition, type ProcedureCompilerContext} from "./procedure-compiler";
 
 const root = resolve(import.meta.dirname, "../knowledge/procedures");
@@ -30,7 +31,7 @@ describe("procedure component compiler", () => {
     const result = compile();
     expect(result).toEqual(compile());
     expect(result.grantsExecution).toBe(false);
-    expect(result.procedure.maturity).toBe("candidate");
+    expect(result.procedure.maturity).toBe("tested");
     expect(result.components[0]!.executor!.hash).toMatch(/^[a-f0-9]{64}$/);
   });
   it("changes the manifest when compiler, executor, evidence or component bytes change", () => {

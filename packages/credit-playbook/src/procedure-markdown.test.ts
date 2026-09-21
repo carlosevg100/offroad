@@ -1,3 +1,4 @@
+import {compileReviewedCapital as compileMethodDocument} from "./reviewed-capital.test-support";
 import {readFileSync} from "node:fs";
 import {join} from "node:path";
 
@@ -5,7 +6,7 @@ import {offroadTaskRegistry} from "@offroad/work-plan";
 import {describe, expect, it} from "vitest";
 
 import {institutionalHouseProcedureIdSet} from "./procedures/registry";
-import {MethodCompileError, assertTaskHasProductionMethod, compileMethodDocument, loadMethodLibrary} from "./procedure-markdown";
+import {MethodCompileError, assertTaskHasProductionMethod, loadMethodLibrary} from "./procedure-markdown";
 import {referenceDataRegistry} from "./reference-data";
 
 const root = join(import.meta.dirname, "..", "knowledge", "procedures");
@@ -62,12 +63,12 @@ describe("authoring scalar safety", () => {
     expect(() => compileMethodDocument(text.replace("authorities: [CASA]", "authorities: [CASA]\nlegal_review_required: maybe"), "test.md")).toThrow();
   });
   it("rejects duplicate frontmatter keys rather than silently overriding authority", () => {
-    expect(() => compileMethodDocument(text.replace("maturity: candidate", "maturity: candidate\nmaturity: production"), "test.md")).toThrow(/duplicate/);
+    expect(() => compileMethodDocument(text.replace("maturity: tested", "maturity: tested\nmaturity: production"), "test.md")).toThrow(/duplicate/);
   });
-  it("keeps the implemented capital candidate incomplete with no task binding or approval", () => {
+  it("keeps the reviewed capital candidate unapproved with no task binding or approval", () => {
     const parsed = compileMethodDocument(text, "test.md");
-    expect(parsed.composition?.authoringStatus).toBe("incomplete");
-    expect(parsed.composition?.pendingContent.length).toBeGreaterThan(0);
+    expect(parsed.composition?.authoringStatus).toBe("ready_for_review");
+    expect(parsed.composition?.pendingContent).toEqual([]);
     expect(parsed.frontmatter.task_specs).toEqual([]);
     expect(parsed.procedure.implementation!.executor.exportName).toBe("prepareCapitalProcedurePacketV2");
     expect(parsed.procedure.owner.approvedBy).toBeUndefined();
