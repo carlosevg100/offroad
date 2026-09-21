@@ -1,6 +1,7 @@
 import {retrieveGoverned} from "@offroad/governed-retrieval";
 import type {InstitutionalModelConfiguration} from "@offroad/financial-model";
 import {createHash} from "node:crypto";
+import {setTimeout as delay} from "node:timers/promises";
 
 import {z} from "zod";
 import type {SupabaseClient} from "@supabase/supabase-js";
@@ -430,9 +431,17 @@ export function createQueueClient(
   options: {workerToken: string; leaseSeconds: number},
 ): QueueClient {
   const call = async (name: string, args: Record<string, unknown>): Promise<unknown> => {
-    const {data, error} = await supabase.rpc(name, args);
-    if (error) throw new Error(`${name} failed: ${error.message}`);
-    return data;
+    // 40P01 guarantees that PostgreSQL aborted this entire RPC transaction. Repeat
+    // only this atomic write, including its capability and current-dependency checks.
+    // Never replay the surrounding task, or an ambiguous network/serialization error.
+    for (let attempt = 0; ; attempt += 1) {
+      const {data, error} = await supabase.rpc(name, args);
+      if (!error) return data;
+      if (name !== "worker_record_capital_project_artifact" || error.code !== "40P01" || attempt >= 2) {
+        throw new Error(`${name} failed: ${error.message}`);
+      }
+      await delay(50 * (2 ** attempt) + Math.floor(Math.random() * 50));
+    }
   };
 
   return {
