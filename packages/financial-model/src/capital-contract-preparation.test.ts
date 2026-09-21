@@ -1,28 +1,8 @@
+import {capitalContractPreparationFixture as fixture} from "@offroad/testing-fixtures/capital-structure-decision";
 import {describe, expect, it} from "vitest";
 import {prepareCapitalContractEvidence} from "./capital-contract-preparation";
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const anchor = {document: "synthetic-contract", page: 1, clause: "1.1", note: "BRL"};
-const clause = {document: anchor.document, page: 1, clause: "1.1"};
-const layer = {decimals: 8, mode: "round" as const};
-function fixture() {
-  return {schemaVersion: "capital-contract-preparation-input.v1", workId: id(1), purpose: "Review capital alternatives", entityId: id(2), perimeter: "consolidated", scenario: "contract", currency: "BRL", asOf: "2026-01-01",
-    interestConventions: {schemaVersion: "interest-event-conventions.v1", series: [{seriesId: "debt", order: ["anniversary", "coupon", "amortization"], anchor}]},
-    sources: [{document: anchor.document, sourceVersionId: id(3), observationIds: [id(4)]}],
-    interest: {referenceDate: "2026-01-01", unit: "BRL", unitAnchor: anchor,
-      periods: [{id: "year", start: "2026-01-01", end: "2027-01-01", businessDays: 252, anchor}], curves: [],
-      series: [{id: "debt", label: "Synthetic debt", openingPrincipal: {value: "100", basis: "trustee_report_nominal", anchor}, openingAccrued: {value: "0", anchor},
-        indexer: "fixed", remuneration: {type: "fixed", ratePerYear: "0.1"}, couponDates: [{date: "2027-01-01", businessDaysFromPeriodStart: 252}],
-        amortization: [{date: "2027-01-01", amount: "100", businessDaysFromPeriodStart: 252}], indexationTreatment: null, indexation: null,
-        rounding: {indexFactor: layer, spreadFactor: layer, interestFactor: layer, dailyAccumulation: layer, amount: layer, anchor}, curveId: null,
-        anchors: {balance: anchor, terms: anchor, payments: anchor, amortization: anchor}}], ledgerControl: null, accountingInterestLastPeriod: null},
-    covenants: {asOfDate: "2026-01-01", unit: "BRL", unitAnchor: anchor,
-      instruments: [{source: "indenture", id: "debt", indexName: "Net debt / EBITDA", direction: "maximum", perimeter: "consolidated",
-        netDebtDefinition: "Loans less cash", netDebtComponents: ["loans_and_financings", "cash_and_equivalents"], ebitdaDefinition: "LTM EBITDA", ebitdaAdjustments: [],
-        measurement: {frequency: "annual", basis: "LTM", fiscalYearEnd: "12-31"}, tiers: [{limit: "2", condition: {type: "unconditional"}, anchor: clause}], definitionAnchors: {netDebt: clause, ebitda: clause}}],
-      referenceSettlements: [], componentValues: [{component: "loans_and_financings", covers: ["loans_and_financings"], value: "200", unit: "BRL", perimeter: "consolidated", asOf: "2026-01-01", anchor},
-        {component: "cash_and_equivalents", covers: ["cash_and_equivalents"], value: "50", unit: "BRL", perimeter: "consolidated", asOf: "2026-01-01", anchor}], candidateObligations: [],
-      ltmEbitda: {value: "100", unit: "BRL", perimeter: "consolidated", asOf: "2026-01-01", months: 12, incorporatesAdjustments: [], anchor}, reported: null}};
-}
 describe("capital contract preparation", () => {
   it("composes anchored interest amortization and covenant components as proposals", () => {
     const r = prepareCapitalContractEvidence(fixture());

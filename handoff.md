@@ -2,6 +2,14 @@
 
 O run35555393424 revelou uma corrida no teste: o status genérico de sucesso da publicação era lido antes do término da adoção, antecipando a consulta SQL. O teste agora exige a indicação específica do vínculo adotado, retornada pelo servidor, antes de conferir o banco. Mantém as asserções de autorização, histórico e persistência, sem sleeps ou relaxamento de gate. A verificação da correção na CI e produção permanece requisito de fechamento. A CI também reprova execuções flaky com failOnFlakyTests; o retry conserva diagnóstico, sem tornar o gate verde. Sem DDL ou alteração de produto.
 
+## Etapa15: registro e saída da preparação contratual (2026-09-20)
+
+Toda a saída da preparação contratual é validada: fontes, convenções, cenários, cálculos
+e lacunas. Contratos gerados e registro de engenharia fixam schemas reais e fontes
+transitivas. Seis casos novos conferem bytes, execução e forja; quatorze casos de preparação
+continuam. Compilador corrente v2026.09.20-v5; R01 preservado. Sem DDL, adoção, publicação
+ou ativação. Gates/produção no completion; autoria integrada e revisão continuam na15.
+
 ## Etapa15: mapas tipados para curvas contratuais (2026-09-20)
 
 Contratos representam valores por período/mês com tipo recursivo explícito; continuam
