@@ -1,3 +1,5 @@
+import {createProviderResearchTransport} from "./provider-research-transport";
+import {createProviderProcessingAuthorizer} from "./provider-processing";
 import {createEventOutboxConsumer} from "./event-outbox";
 import {processProviderResearchJob} from "./provider-research";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
@@ -151,20 +153,12 @@ async function main(): Promise<void> {
   // allocates those job ceilings so their possible sum cannot cross the case-wide limit.
   const adapters = {
     ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
-    ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY})} : {}),
+    ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY, ...(config.PROVIDER_CONNECTIONS_JSON.openai ? {organization: config.PROVIDER_CONNECTIONS_JSON.openai.accountRef, project: config.PROVIDER_CONNECTIONS_JSON.openai.projectRef} : {})})} : {}),
   };
   // Discovery is complementary to zero-cost official sources. Reserve the conservative maximum
   // of every configured fallback per query before giving the remainder to the writer. This stays
   // correct if OpenAI Web Search is explicitly enabled next to Perplexity; the old fixed reserve
   // understated the fallback chain.
-  const researchProviders: PublicSearchProvider[] = [
-    ...(config.PERPLEXITY_API_KEY
-      ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY})]
-      : []),
-    ...(config.ENABLE_OPENAI_WEB_SEARCH && config.OPENAI_API_KEY
-      ? [createOpenAIWebSearchProvider({apiKey: config.OPENAI_API_KEY})]
-      : []),
-  ];
   const officialEntityResolvers = [
     createCvmOpenDataEntityResolver(),
     createSecEdgarEntityResolver({userAgent: config.OFFROAD_RESEARCH_USER_AGENT}),
@@ -178,18 +172,28 @@ async function main(): Promise<void> {
     resolvers: officialEntityResolvers,
     userAgent: config.OFFROAD_RESEARCH_USER_AGENT,
   });
-  const firecrawlContentAcquirer = config.ENABLE_FIRECRAWL && config.FIRECRAWL_API_KEY
-    ? createFirecrawlPublicContentAcquirer({
-        apiKey: config.FIRECRAWL_API_KEY,
-        zeroDataRetention: config.FIRECRAWL_ZERO_DATA_RETENTION,
-      })
-    : undefined;
+  const liveResearchFor = (job: ClaimedJob) => {
+    const authorize = createProviderProcessingAuthorizer(supabase, job, config.PROVIDER_CONNECTIONS_JSON);
+    const requireEligible = async (provider: "openai" | "perplexity" | "firecrawl", model: string) => {
+      const decision = await authorize({provider, model, resources: provider === "openai" ? ["external_search", "inference", "prompt_cache"] : ["external_search"], purpose: "public_research"});
+      if (!decision.allowed) throw Object.assign(new Error("processing_resource_ineligible"), {code: "processing_resource_ineligible"});
+    };
+    return {
+      providers: [
+        ...(config.PERPLEXITY_API_KEY && config.PROVIDER_CONNECTIONS_JSON.perplexity ? [createPerplexitySearchProvider({apiKey: config.PERPLEXITY_API_KEY, fetch: createProviderResearchTransport({endpoint: "https://api.perplexity.ai/search", authorize: () => requireEligible("perplexity", "search-api")})})] : []),
+        ...(config.ENABLE_OPENAI_WEB_SEARCH && config.OPENAI_API_KEY && config.PROVIDER_CONNECTIONS_JSON.openai ? [createOpenAIWebSearchProvider({apiKey: config.OPENAI_API_KEY, fetch: createProviderResearchTransport({endpoint: "https://api.openai.com/v1/responses", authorize: () => requireEligible("openai", "gpt-5.6-terra"), ...(config.PROVIDER_CONNECTIONS_JSON.openai ? {openaiBinding: config.PROVIDER_CONNECTIONS_JSON.openai} : {})})})] : []),
+      ] as PublicSearchProvider[],
+      contentAcquirer: config.ENABLE_FIRECRAWL && config.FIRECRAWL_API_KEY && config.PROVIDER_CONNECTIONS_JSON.firecrawl
+        ? createFirecrawlPublicContentAcquirer({apiKey: config.FIRECRAWL_API_KEY, zeroDataRetention: config.FIRECRAWL_ZERO_DATA_RETENTION,
+            fetch: createProviderResearchTransport({endpoint: "https://api.firecrawl.dev/v2/scrape", authorize: () => requireEligible("firecrawl", "scrape-v2")})}) : undefined,
+    };
+  };
   // Frozen research: a gold case runs against its source pack and nothing else. Discovery,
   // official lookups and content acquisition all read the pack.
   const sourcePack = config.PUBLIC_RESEARCH_MODE === "frozen" ? await loadSourcePack(config.SOURCE_PACK_PATH!) : null;
-  const effectiveResearchProviders: PublicSearchProvider[] = sourcePack ? [createSourcePackProvider(sourcePack.pack)] : researchProviders;
+  const effectiveResearchProviders: PublicSearchProvider[] = sourcePack ? [createSourcePackProvider(sourcePack.pack)] : [];
   const effectiveOfficialResearchProviderFactory = sourcePack ? undefined : officialResearchProviderFactory;
-  const effectiveContentAcquirer = sourcePack ? createSourcePackAcquirer(sourcePack.pack, sourcePack.read) : firecrawlContentAcquirer;
+  const effectiveContentAcquirer = sourcePack ? createSourcePackAcquirer(sourcePack.pack, sourcePack.read) : undefined;
   if (sourcePack) log("research.frozen", {caseId: sourcePack.pack.caseId, entries: sourcePack.pack.entries.length});
   // A job whose project is bound to a frozen pack reads that pack and nothing else, on this same
   // worker; everyone else keeps the live set above.
@@ -223,12 +227,11 @@ async function main(): Promise<void> {
       : 0;
     const gateway = createModelGateway({
       adapters,
-      providerDataPolicy: {
-        enforce: config.ENFORCE_PROVIDER_DATA_POLICY,
-        assurances: {
-          ...(config.ANTHROPIC_DATA_ASSURANCE_JSON ? {anthropic: config.ANTHROPIC_DATA_ASSURANCE_JSON} : {}),
-          ...(config.OPENAI_DATA_ASSURANCE_JSON ? {openai: config.OPENAI_DATA_ASSURANCE_JSON} : {}),
-        },
+      processingEligibility: async ({provider, model, resources, context}) => {
+        // Older executors predate request-level handling metadata. Their purpose comes
+        // from the authorized job; classification and source rights always come from SQL.
+        const purpose = context?.purpose ?? (job.kind === "document_pipeline" ? "document_processing" : "case_analysis");
+        return createProviderProcessingAuthorizer(supabase, job, config.PROVIDER_CONNECTIONS_JSON)({provider, model, resources, purpose});
       },
       budget: {
         maxCostUsd: configuredMax - researchReserveUsd,
@@ -331,6 +334,7 @@ async function main(): Promise<void> {
     let research: Awaited<ReturnType<typeof researchFor>>;
     try {
       research = await researchFor(job);
+      if (!research.frozenCaseId && !research.sourcePackId) research = {...research, ...liveResearchFor(job)};
     } catch (error) {
       // A bound project without its pack must not run live. Fail the job with a cause a reviewer
       // can read; the binding or the image is what needs fixing.
@@ -355,7 +359,7 @@ async function main(): Promise<void> {
           researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
           ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),
           securityEvidence: {
-            providerPolicyEnforced: config.ENFORCE_PROVIDER_DATA_POLICY,
+            providerPolicyEnforced: true,
             externalToolsAllowlisted: true,
           },
           log,

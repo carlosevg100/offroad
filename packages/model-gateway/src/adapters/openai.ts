@@ -6,8 +6,10 @@ import {extractJsonText, promptedJsonInstruction, safeJsonParse} from "./anthrop
 export type OpenAIAdapterOptions = {
   /** Reads OPENAI_API_KEY when omitted. */
   apiKey?: string;
+  organization?: string;
+  project?: string;
   client?: OpenAI;
-  /** Evaluation opt-in: only the gateway may own and count retries. */
+  /** Compatibility field. SDK retries are always disabled; the gateway owns each attempt. */
   disableSdkRetries?: boolean;
 };
 
@@ -166,12 +168,12 @@ export function mapOpenAIUsage(usage: OpenAI.Responses.ResponseUsage | undefined
 }
 
 export function createOpenAIAdapter(options: OpenAIAdapterOptions = {}): ProviderAdapter {
-  const client = options.client ?? new OpenAI(options.apiKey ? {apiKey: options.apiKey} : {});
+  const client = options.client ?? new OpenAI({baseURL: "https://api.openai.com/v1", fetchOptions: {redirect: "error"}, ...(options.apiKey ? {apiKey: options.apiKey} : {}), ...(options.organization ? {organization: options.organization} : {}), ...(options.project ? {project: options.project} : {})});
   return {
     provider: "openai",
     async complete(request: AdapterRequest): Promise<AdapterResponse> {
       const params = buildOpenAIParams(request);
-      const response = await client.responses.create(params, {timeout: request.timeoutMs, ...(options.disableSdkRetries ? {maxRetries: 0} : {})});
+      const response = await client.responses.create(params, {timeout: request.timeoutMs, maxRetries: 0});
       const rawText = response.output_text ?? "";
       const originalSchema = z.toJSONSchema(request.schema) as JsonSchema;
       const adapterResponse: AdapterResponse = {

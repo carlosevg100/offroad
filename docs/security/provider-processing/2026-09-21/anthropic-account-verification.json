@@ -1,0 +1,14 @@
+{
+  "/v1/organizations/me": {
+    "id": "6189245d-6371-40a7-a470-aa38ce58a754",
+    "name": "Cadu\u2019s Individual Org",
+    "type": "organization"
+  },
+  "/v1/organizations/workspaces/wrkspc_01FviSqikt1RDKdtbfZsmCfT": {
+    "type": "error",
+    "error": {
+      "type": "authentication_error",
+      "message": "The Admin API requires an Admin API key or an organization-scoped API key."
+    }
+  }
+}

@@ -36,6 +36,7 @@ describe("worker runtime schema preflight", () => {
   "document-work-product-request-binding.v1",
   "documentary-execution-scope.v1",
   "atomic-documentary-commit.v1",
+  "provider-resource-retention.v2",
         ],
       },
       error: null,
@@ -65,7 +66,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: atomic-documentary-commit.v1");
+    }))).rejects.toThrow("missing capabilities: provider-resource-retention.v2");
   });
 
   it("refuses to start the event consumer before its database migration", async () => {
@@ -85,13 +86,16 @@ describe("worker runtime schema preflight", () => {
 
     expect(contractMigration).toBeDefined();
     const sql = readFileSync(`${migrationsDirectory}/${contractMigration}`, "utf8");
+    const retentionMigration = readdirSync(migrationsDirectory).find((name) => name.endsWith("_provider_resource_retention_eligibility.sql"));
+    expect(retentionMigration).toBeDefined();
+    expect(readFileSync(`${migrationsDirectory}/${retentionMigration}`, "utf8")).toContain("provider-resource-retention.v2");
     expect(sql.replace(/,\s*/g, ",")).toContain(`'schemaVersion','${WORKER_RUNTIME_SCHEMA_VERSION}'`);
     const accessExtension = readdirSync(migrationsDirectory).find((name) => name.endsWith("_explicit_legacy_resource_access.sql"));
     expect(accessExtension).toBeDefined();
     const accessSql = readFileSync(`${migrationsDirectory}/${accessExtension}`, "utf8");
     const accessCapabilities = ["explicit-resource-access.v1", "explicit-workspace-context.v1", "authenticated-document-storage.v1", "review-bound-execution.v1", "legacy-storage-rotation.v1"];
     for (const capability of accessCapabilities) expect(accessSql).toContain(capability);
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
       expect(sql).toContain(`'${capability}'`);
     }
     const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);

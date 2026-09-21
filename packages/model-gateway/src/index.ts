@@ -11,6 +11,8 @@ export const modelGatewayVersion = "2026.09.01-data-policy-v3";
 
 export * from "./lineage";
 export * from "./data-policy";
+export * from "./retention-matrix";
+export * from "./resource-eligibility";
 
 export * from "./types";
 export * from "./policy";

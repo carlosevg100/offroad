@@ -2591,3 +2591,22 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `trigger:private.platform_method_attestations.platform_method_attestations_immutable`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
 - `trigger:private.platform_method_candidates.platform_method_candidates_immutable`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
 - `trigger:private.platform_method_publication_events.platform_method_events_immutable`: preservar, etapa 14; Ingresso governado do corpus Offroad com aprovação humana, imutabilidade e publicação separada da execução.
+
+## Etapa 16: matriz de retenção por recurso
+
+15 superfícies privadas adicionais. Atestação pelo operador e autorização por capability; nenhuma autorização derivada de marca de provedor.
+- `function:private.guard_provider_processing_assurance_v1()`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `function:private.provider_resource_allowed_v1(p_route jsonb, p_resource text, p_purpose text, p_classification text, p_retention_limit integer)`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `function:private.record_provider_processing_assurance_v1(p_document jsonb, p_change_reference text)`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `function:private.revoke_provider_processing_assurance_v1(p_id uuid, p_change_reference text)`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `function:private.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `function:public.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `policy:private.processing_eligibility_decisions.deny_clients`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `policy:private.provider_processing_assurance_events.deny_clients`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `policy:private.provider_processing_assurances.deny_clients`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `r:private.processing_eligibility_decisions`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `r:private.provider_processing_assurance_events`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `r:private.provider_processing_assurances`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `trigger:private.processing_eligibility_decisions.processing_eligibility_decisions_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `trigger:private.provider_processing_assurance_events.provider_processing_events_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+- `trigger:private.provider_processing_assurances.provider_processing_assurance_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.

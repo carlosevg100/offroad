@@ -1,0 +1,23 @@
+{
+  "observedOn": "2026-09-21",
+  "collector": "Codex native browser observation, cross-checked with authenticated API",
+  "openai": {
+    "organizationId": "org-RduRuVoprBl49gwbfIMNQVH3",
+    "projectId": "proj_Lq9xdWylMavwBEfHbNxJMSHF",
+    "feedbackSharing": "disabled",
+    "evaluationAndFineTuningSharing": "disabled",
+    "inputOutputSharing": "disabled",
+    "apiCallLogging": "per-call; worker explicitly sends store:false",
+    "zeroRetention": "not attested"
+  },
+  "anthropic": {
+    "organizationName": "Cadu’s Individual Org",
+    "organizationId": "6189245d-6371-40a7-a470-aa38ce58a754",
+    "workspaceId": "wrkspc_01FviSqikt1RDKdtbfZsmCfT",
+    "defaultRetention": "30 days enabled",
+    "feedbackSharing": "disabled",
+    "developmentPartnerProgram": "not joined",
+    "workspaceAdminRead": "not available with production inference key",
+    "zeroRetention": "not attested"
+  }
+}
