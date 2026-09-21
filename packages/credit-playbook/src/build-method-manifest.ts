@@ -49,9 +49,9 @@ export function buildMethodManifest(repositoryRoot: string) {
   const capitalEvidencePaths = [
     "packages/credit-playbook/knowledge/reviews/prepare-capital-structure-decision-2026-09-21-v3-independent-review.json",
     "packages/credit-playbook/knowledge/reviews/evidence/prepare-capital-structure-decision-2026-09-21-v3-independent-review/REVIEW-SUBJECT-BASIS.json",
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json"
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-gold/run.json",
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-adversarial/run.json",
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-consistency/run.json"
 ];
   const provenance = library.methods.map((method) => {
     const release = released.find((entry) => entry.provenance.procedure.id === method.procedure.id && entry.provenance.procedure.version === method.procedure.version);

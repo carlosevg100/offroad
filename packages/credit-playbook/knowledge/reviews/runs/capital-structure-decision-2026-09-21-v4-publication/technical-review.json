@@ -1,0 +1,9 @@
+{
+  "kind": "technical_review",
+  "actor": "Codex /root/stage15_independent_review (independent AI reviewer)",
+  "result": "approved",
+  "humanApproval": false,
+  "occurredAt": "2026-09-21T14:08:02Z",
+  "manifestHash": "2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478",
+  "rationale": "Aprovação técnica independente limitada à publicação editorial da expertise v4, fonte64e458e9c80eb007f1a4a1bfd5f73407fd94bcb66ff2f7691e062f4dd13cb0c0, execução desabilitada. As seis condições foram conferidas no texto integral e no componente: nenhum vermelho; resíduo em lote; abertura calibrada incorporada; sem critérios genéricos sem base; cadastro/pesquisa com exceção conceitual; IOF/ANBIMA/B3/regime em parâmetros required_missing honestos; travessão proibido. Manifesto recompilado, gerado e exportado idênticos;280pins incluindo compilador/evidências conferidos;10testes declarados pinados;73casos reexecutados com resultados e fingerprints exatos aos9recibos. Cálculos/contratos/governança preservados. A tentativa de adequação parcial do legado foi retirada; policyHash antigo e runtime permanecem iguais, com risco obrigatório etapa17 para batch/schema/assessment/queue/RPC/projeção, suficiência e voz. Não atesto conformidade do legado ou gates de expertise ainda não implementados. Aprovação humana é registro separado do fundador, não deste agente; humanApproval=false. CI, commit final, implantação e publicação remota são gates posteriores que o operador deve concluir antes de declarar completion. Relatório próprio: outputs/etapa-15-publicacao-expertise-2026-09-21/REVISAO-INDEPENDENTE.md. Horário observado via clock; nenhum modelo exato, custo ou token inventado."
+}

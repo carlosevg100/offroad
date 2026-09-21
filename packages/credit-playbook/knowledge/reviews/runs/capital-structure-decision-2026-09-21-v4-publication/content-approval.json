@@ -1,0 +1,9 @@
+{
+  "kind": "content_approval",
+  "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+  "result": "approved",
+  "humanApproval": true,
+  "occurredAt": "2026-09-21T14:04:31.413195+00:00",
+  "manifestHash": "2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478",
+  "rationale": "Registro da aprovação humana condicionada recebida nesta tarefa em 21/09/2026, após incorporação das seis condições no conteúdo v4. Horário indica a formalização deste registro, não um horário presumido da mensagem. Fonte: packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-publication/founder-instruction.json; SHA-256 d6a4487443a0717772fc9f0b9d48d3f51025d6cfd436da195f1e50ef93a726f6. Aprova corpus profissional; não aprova parâmetros legais/tributários específicos, nem ativa o procedimento ou certifica conformidade do adaptador legado."
+}

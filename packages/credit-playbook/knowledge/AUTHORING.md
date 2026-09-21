@@ -42,19 +42,28 @@ O compilador atual lê objetivo, produto, passos, outputs, evidência, testes, g
 | Suficiência | Entradas mínimas por entrega, substitutos aceitos, efeito da ausência, condições para entrega parcial e pergunta que resolve a lacuna |
 | Observação e definição | Fonte/versão/âncora, entidade, escopo, moeda, unidade, período, definição e direito de uso; preservar observações conflitantes e adoção justificada |
 | Hipóteses | Autor, fonte, racional, faixa, horizonte, sensibilidade e responsável pela adoção; separar guidance, hipótese Offroad e cenário solicitado |
-| Narrativa | O que interpretar e explicar com evidência; nunca atribuir ao modelo cálculo, permissão ou publicação |
+| Narrativa | Decisão por trás do pedido; árvore do estado de conhecimento; suficiência por conclusão; desafio de premissas; voz com fato, leitura e recomendação. Profundidade por conhecimento, nunca por cargo ou turno. Nunca atribuir ao modelo cálculo, permissão ou publicação. |
 | Fórmula | Identidade, versão, domínio, operandos, unidades, datas, convenção, arredondamento, resultado, trace e exemplos calculáveis; executor financeiro real será associado pela engenharia |
-| Regra | Condição, consequência, autoridade, fonte datada, exceções e revisão; distinguir definição contratual, política da casa e hipótese analítica |
+| Regra | Definições por dialeto e pontes; seleção de métodos; administração, banco e estresse; módulos pelos oito eixos; memória privada e mercado agregado com comparabilidade/confiança; prioridades de negociação. Registrar condição, consequência, autoridade, fonte, exceções e revisão. |
 | Workflow | Ordem e dependências, suficiência por passo, retomada, invalidação e efeitos permitidos; a fila atual executa antes da futura continuidade com Temporal |
-| Template | Estrutura semântica da entrega, campos, evidências, ressalvas pertinentes e revisão; aparência não substitui conteúdo |
-| Qualidade | Invariantes, tolerâncias fundamentadas, testes negativos, critérios de aceitação e exemplos em que a conclusão deve mudar |
+| Template | Leitura e próximo ato; peças com pergunta, conclusão, apoio e origem; estados de conhecimento; tela com leitura e evidência selecionável; famílias do atlas, regras de gráfico e composição por audiência autorizada. |
+| Qualidade | Teste do MD antes de toda entrega, com dez perguntas e retorno ao ponto reprovado; checks automáticos e julgamento profissional separados; casos negativos, estado versus turno/cargo, voz, peças, privacidade e provas reais, sem transferir aprovação de outra versão. |
 
 Para cada regra ou fórmula, registre no corpo: **ID proposto; finalidade; fonte e versão; entradas; resultado esperado; ausência/incompatibilidade; exceções; pontos de ajuste; invariantes; casos de teste**. Nomes propostos não são exports nem ferramentas disponíveis. A Etapa 13 transforma essa especificação em componentes e a publicação posterior fixa as versões no manifesto.
+
+
+## Biblioteca de expertise comum: aplicação dos quatro blocos
+
+A biblioteca em `outputs/biblioteca-expertise-2026-09/`, no workspace, é a fonte profissional comum a todos os procedimentos. Começar pelo LEIA-ME.md e ler atlas, árvore, registro de definições, métodos, módulos, memória/mercado e ficha narrada nessa ordem. Para integração ao repositório, conservar fontes versionadas e fixadas; um caminho local não substitui dependência publicada.
+
+Os blocos [Narrativa, Template, Regra e Qualidade](procedures/capital/prepare-capital-structure-decision.md#narrativa) são a especificação editorial desta revisão. Em cada novo procedimento, declarar a decisão particular, aplicar o tronco geral e selecionar métodos, módulos e peças pertinentes com justificativa; não exigir métricas irrelevantes. O primeiro procedimento usa alternativas de estrutura de capital, mas nenhuma regra comum depende de existir proposta do Itaú ou de uma sequência fixa de turnos; o cadastro da companhia precede o uso e dispara pesquisa, com exceção de perguntas conceituais. Comparar propostas permanece outro procedimento.
+
+A aprovação da expertise não prova implementação. Associar requisitos a componentes e avaliações reais sem mudar cálculos ou governança por edição editorial. As fórmulas, o workflow técnico e os comandos de publicação deste molde permanecem como estavam. O exemplo é gabarito de comportamento; seus valores não são parâmetros de produção. A voz e a composição seguem o atlas v3 quando houver divergência com exemplos anteriores. Registrar conflitos e a resolução aplicada.
 
 ## Limites comuns a todos os procedimentos
 
 - O papel no trabalho altera perspectiva e apresentação quando solicitado. Cargo, senioridade ou perfil cadastral não diminuem profundidade, evidência, cálculo ou atenção às lacunas.
-- A pergunta pode existir antes da companhia identificada. Não exigir intake para aconselhar; vincular entidade e dossiê quando houver evidência suficiente para análise específica.
+- O cadastro precede o uso e dispara pesquisa sobre a companhia. O sistema recupera esse contexto e nunca diz que não conhece a companhia. Sem companhia é exceção conceitual. Sem base, reconhecer o pedido, enquadrar “boa em relação a quê” e pedir o resíduo em lote, cada pedido com motivo. Critérios genéricos não são entrega.
 - Fonte recebida para análise não é publicação no cofre. Publicação humana segue a autoridade do produto; a prosa do método não concede acesso.
 - O administrador do cliente gere pessoas, perfis e acessos no produto. A autoria não exige recertificação do fundador nem intervenção operacional da Offroad.
 - Retenção segue a política aplicada pelo gateway. Na Etapa 16 registrar não treinamento e retenção limitada nas combinações elegíveis de provedor, modelo e recurso. Retenção zero é evolução comercial futura, não pré-condição da autoria.
@@ -140,3 +149,7 @@ Dicionários por período ou mês usam o tipo estrutural map com values tipado r
 Não é um objeto livre: cada valor é validado; chaves vazias, excessivas ou de protótipo são
 recusadas. O formato específico das chaves e outros refinamentos continuam no schema real
 fixado do executor. Campos fixos e dicionários abertos não são misturados na mesma projeção.
+
+## Condições aprovadas em 21 de setembro de 2026
+
+Nenhum vermelho em gráficos; ruptura por linha, rótulo e número. Travessão proibido em qualquer texto entregue. Resíduo em lote com motivo; turno 1 da ficha 1 para cofre vazio é padrão calibrado. Cadastro e pesquisa precedem uso, com exceção conceitual sem companhia. IOF, ANBIMA/B3 e regime tributário são dados versionados com fonte, data e dono no registry existente, sob revisão especializada; sem valores aprovados, vigentes e aplicáveis não há cálculo all-in.

@@ -34,7 +34,7 @@ describe("authored integrated capital procedure", () => {
     expect(evidence).toHaveLength(5);
     for (const pin of evidence) expect(pin.hash).toBe(createHash("sha256").update(read(pin.path).content).digest("hex"));
     expect(p).toMatchObject({authoringStatus: "ready_for_review", grantsExecution: false});
-    expect(document.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-21-v3-gold"]);
+    expect(document.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-21-v4-gold"]);
     expect(document.procedure.owner.approvedAt).toBeUndefined();
   });
   it("changes manifest identity for changed evidence and refuses missing evidence bytes", () => {

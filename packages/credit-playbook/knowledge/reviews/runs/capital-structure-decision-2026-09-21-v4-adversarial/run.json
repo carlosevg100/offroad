@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "capital-structure-decision-2026-09-21-v4-adversarial",
+  "kind": "adversarial",
+  "humanApproval": false,
+  "method": {
+    "id": "prepare-capital-structure-decision",
+    "version": "2026.09.21-v4"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareCapitalProcedurePacketV2"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/capital-procedure-v2-runs.test-support.ts",
+    "exportName": "buildCapitalProcedureV2Runs"
+  },
+  "run": {
+    "startedAt": "2026-09-21T14:05:46.651Z",
+    "finishedAt": "2026-09-21T14:05:47.544Z"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "tampered-envelope",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "a7ddbfe0d3327dc3327d04dd11a13f990976c09ba8946db28e94602224dfedb4",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "cross-perimeter",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "0f2099f0af8d0b525421555dbfef5cd6a9d3eb44ed7df84e9d4e3e34e171738e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "foreign-contract-context",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b3b0a416c0c1f81e008a24d5acd282e0867b3b0bed8ae1776ff9fac107f40357",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "foreign-adoption-reference",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "7b4c4fe7ba18db7d03b7f3ec261b97132a8e1ccfd341cb7a79dcc66577c85ae9",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "duplicate-adoption",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "dd573e58f9869d565f78fdcdf502f465983d66e2bbc3d76cc70b6a7439af6a07",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-authority",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "69dc6e2ebe9bf235965ac69e414b1a0773b59f172c70fb79148bb10c99677770",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "fabricated-result",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "97db136e9419859ce7519a36fae282b1459845a9edcb8da3623c18c1f243630e",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    },
+    {
+      "id": "omitted-contract-direction",
+      "expectation": "rejected by expected boundary",
+      "observed": "rejected by expected boundary",
+      "inputFingerprint": "b62cd984f7ed86a9e686076351630415cf7b376f4405c12d38db95eecc17647b",
+      "outputFingerprint": "93bbe1c183a7014eb2a54df4b613d62785973f3dbf413073f23272c631318c43",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "3b22e2bf1593d3d3d64b56c03d263cc4d69d3fbc207dbf2b246c2ab601ac916b",
+  "notes": "Synthetic deterministic execution. Numerical expectations do not constitute independent review, content approval, live access verification or publication. Contract interpretation remains explicit."
+}

@@ -1,0 +1,17 @@
+{
+  "recordedAt": "2026-09-21T14:04:31.413195+00:00",
+  "source": "Mensagem direta do fundador nesta tarefa, 21 de setembro de 2026",
+  "author": "Carlos Eduardo Vasques Galves",
+  "verbatim": "Aprovo o conteúdo profissional desta versão (revisão profissional 2, 21 de setembro), condicionado a cinco correções de texto antes de compilar, fixar o manifesto e publicar:\n\n1. Gráficos (T3): retirar \"vermelho indica ruptura contratual\". Nenhum vermelho. A ruptura aparece pela linha do limite, pelo rótulo e pelo número.\n2. Perguntas (N3): retirar \"até duas questões substantivas por interação\". A regra é pedir o resíduo em um lote, cada pedido com motivo. O texto do turno 1 da ficha 1, para cofre vazio, é o padrão calibrado desse estado, não um exemplo.\n3. Fundamentação, \"Decisão e resultado útil\": trocar \"Sem base específica, apresentar critérios e alternativas conceituais\" por: sem base, reconhecer o pedido, enquadrar \"boa em relação a quê\", extrair o contexto e pedir o resíduo em lote. Critérios genéricos não são entrega.\n4. Companhia (N1 e Q3): o cadastro vem antes do uso e dispara a pesquisa sobre a companhia. \"Sem companhia\" é exceção para pergunta conceitual, não estado padrão. O sistema nunca diz que não conhece a companhia.\n5. Convenções (R2): IOF (Decreto 12.499/2025 e decisão do STF de julho de 2025), convenções ANBIMA/B3 e regime tributário entram como dado versionado com fonte, data e dono, pelo mecanismo que já existe para parâmetros da casa, sujeitos à revisão especializada que a governança exige. Sem isso o custo all-in não se calcula. Não deixar como \"referência editorial datada\".\n\nTravessão fica proibido em qualquer texto entregue, sem o qualificador \"retórico\".\n\nFora isso, está no padrão. Aplique as correções,compile, fixe o manifesto, faça a revisão e publique.",
+  "scope": "Aprovação de conteúdo profissional com condições, não aprovação de valores tributários nem ativação de execução",
+  "conditionsApplied": [
+    "T3: nenhum vermelho; linha, rótulo e número",
+    "N3/N3.1: resíduo em lote com motivo; texto calibrado incorporado",
+    "Fundamentação e N3: reconhecer/enquadrar/contexto/resíduo; critérios genéricos não são entrega",
+    "N1/Q3: cadastro e pesquisa antes do uso; exceção conceitual",
+    "R2: três famílias no reference-data registry, required_missing; revisão especializada obrigatória",
+    "N4: nenhum travessão em texto entregue"
+  ],
+  "manifestHash": "2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478",
+  "sourceHash": "64e458e9c80eb007f1a4a1bfd5f73407fd94bcb66ff2f7691e062f4dd13cb0c0"
+}

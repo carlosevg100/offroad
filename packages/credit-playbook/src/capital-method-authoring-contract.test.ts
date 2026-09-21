@@ -47,7 +47,7 @@ describe("professional candidate authoring contract", () => {
   });
   it("does not treat the expanded professional text or calculated examples as founder approval", () => {
     const method = compileMethodDocument(source, path);
-    expect(method.procedure.owner.approvedAt).toBeUndefined(); expect(method.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-21-v3-gold"]);
+    expect(method.procedure.owner.approvedAt).toBeUndefined(); expect(method.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-21-v4-gold"]);
     expect(() => compileMethodDocument(source.replace("maturity: tested", "maturity: production"), path)).toThrow(/approval/);
     expect(method.composition!.pendingContent).toEqual([]);
   });
