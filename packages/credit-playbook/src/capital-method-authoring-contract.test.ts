@@ -8,7 +8,7 @@ import {buildMethodManifest} from "./build-method-manifest";
 const root = resolve(import.meta.dirname, "../../..");
 const path = "capital/prepare-capital-structure-decision.md";
 const source = readFileSync(resolve(root, "packages/credit-playbook/knowledge/procedures", path), "utf8");
-const contracts = JSON.parse(readFileSync(resolve(root, "packages/financial-model/contracts/capital-procedure-packet.json"), "utf8"));
+const contracts = JSON.parse(readFileSync(resolve(root, "packages/financial-model/contracts/capital-procedure-packet-v2.json"), "utf8"));
 describe("professional candidate authoring contract", () => {
   it("keeps the documented output names identical to the actual typed executor output", () => {
     const method = compileMethodDocument(source, path);
@@ -25,8 +25,8 @@ describe("professional candidate authoring contract", () => {
   it("compiles the actual registered rule but does not publish or run the incomplete candidate", () => {
     const method = compileMethodDocument(source, path);
     expect(method.procedure.maturity).toBe("candidate"); expect(methodMayRunInStaging(method)).toBe(false);
-    expect(method.procedure.implementation!.executor).toEqual({module: "@offroad/financial-model", exportName: "prepareCapitalProcedurePacket"});
-    expect(method.procedure.implementation!.persistence).toEqual({mode: "derived_on_demand", target: "capital-procedure-packet.v1"});
+    expect(method.procedure.implementation!.executor).toEqual({module: "@offroad/financial-model", exportName: "prepareCapitalProcedurePacketV2"});
+    expect(method.procedure.implementation!.persistence).toEqual({mode: "derived_on_demand", target: "capital-procedure-packet.v2"});
     expect(method.frontmatter.task_specs).toEqual([]);
     expect(method.frontmatter.capability_availability).toBeUndefined();
     const p = buildMethodManifest(root).provenance.find(p => p.procedure.id === method.procedure.id)!;
@@ -46,7 +46,7 @@ describe("professional candidate authoring contract", () => {
   });
   it("does not treat the expanded professional text or calculated examples as founder approval", () => {
     const method = compileMethodDocument(source, path);
-    expect(method.procedure.owner.approvedAt).toBeUndefined(); expect(method.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-20-v2-gold"]);
+    expect(method.procedure.owner.approvedAt).toBeUndefined(); expect(method.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-21-v3-gold"]);
     expect(() => compileMethodDocument(source.replace("maturity: candidate", "maturity: production"), path)).toThrow(/approval/);
     expect(method.composition!.pendingContent.length).toBeGreaterThan(0);
   });

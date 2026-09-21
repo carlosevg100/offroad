@@ -3,6 +3,7 @@ import {z} from "zod";
 import {checkIdentity} from "@offroad/financial-core";
 import {adoptedDefinedRatioInputSchema, calculateAdoptedDefinedRatio} from "./adopted-defined-ratio";
 import {capitalContractPreparationInputSchema, prepareCapitalContractEvidence} from "./capital-contract-preparation";
+import {capitalContractPreparationV2InputSchema, prepareCapitalContractEvidenceV2} from "./capital-contract-preparation-v2";
 const field = z.enum(["numerator", "denominator", "limit"]);
 const hash = z.string().regex(/^[a-f0-9]{64}$/); const key = z.string().min(1).max(300);
 export const capitalContractAdoptionsInputSchema = z.strictObject({
@@ -35,6 +36,23 @@ export const capitalContractAdoptionsOutputSchema = z.strictObject({
 export function reconcileCapitalContractAdoptions(raw: unknown) {
   const input = capitalContractAdoptionsInputSchema.parse(raw);
   const preparation = prepareCapitalContractEvidence((raw as z.input<typeof capitalContractAdoptionsInputSchema>).preparation);
+  return reconcilePreparedContract(input, preparation);
+}
+
+export const capitalContractAdoptionsV2InputSchema = z.strictObject({...capitalContractAdoptionsInputSchema.shape,
+  preparation: capitalContractPreparationV2InputSchema,
+}).superRefine((i,c) => {
+  for (const entries of [i.definitions,i.origins]) if (new Set(entries.map(e=>e.field)).size!==entries.length) c.addIssue({code:"custom",message:"Duplicate contract binding"});
+});
+export function reconcileCapitalContractAdoptionsV2(raw: unknown) {
+  const input = capitalContractAdoptionsV2InputSchema.parse(raw);
+  const preparation = prepareCapitalContractEvidenceV2((raw as z.input<typeof capitalContractAdoptionsV2InputSchema>).preparation);
+  return reconcilePreparedContract(input, preparation);
+}
+function reconcilePreparedContract(
+  input: z.infer<typeof capitalContractAdoptionsInputSchema> | z.infer<typeof capitalContractAdoptionsV2InputSchema>,
+  preparation: ReturnType<typeof prepareCapitalContractEvidence> | ReturnType<typeof prepareCapitalContractEvidenceV2>,
+) {
   const ratio = calculateAdoptedDefinedRatio(input.ratio);
   const p = preparation.scope; const r = ratio;
   if (r.definitionKind !== "contractual" || p.workId !== r.scope.workId || p.purpose !== r.scope.purpose || p.entityId !== r.entityId

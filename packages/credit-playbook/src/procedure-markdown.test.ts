@@ -69,7 +69,7 @@ describe("authoring scalar safety", () => {
     expect(parsed.composition?.authoringStatus).toBe("incomplete");
     expect(parsed.composition?.pendingContent.length).toBeGreaterThan(0);
     expect(parsed.frontmatter.task_specs).toEqual([]);
-    expect(parsed.procedure.implementation!.executor.exportName).toBe("prepareCapitalProcedurePacket");
+    expect(parsed.procedure.implementation!.executor.exportName).toBe("prepareCapitalProcedurePacketV2");
     expect(parsed.procedure.owner.approvedBy).toBeUndefined();
   });
 });

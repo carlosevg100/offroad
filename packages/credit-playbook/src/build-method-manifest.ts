@@ -30,6 +30,8 @@ export function buildMethodManifest(repositoryRoot: string) {
     if (!library.methods.some((method) => method.procedure.id === release.provenance.procedure.id && method.procedure.version === release.provenance.procedure.version)) throw new Error("published_method_document_missing");
   }
   const registeredCapitalExecutors = [
+    {path: "packages/financial-model/contracts/capital-contract-preparation-v2.json", exportName: "prepareCapitalContractEvidenceV2"},
+    {path: "packages/financial-model/contracts/capital-procedure-packet-v2.json", exportName: "prepareCapitalProcedurePacketV2"},
     {path: "packages/financial-model/contracts/capital-decision-delivery.json", exportName: "prepareCapitalDecisionDelivery"},
     {path: "packages/financial-model/contracts/capital-contract-preparation.json", exportName: "prepareCapitalContractEvidence"},
     {path: "packages/financial-model/contracts/capital-procedure-packet.json", exportName: "prepareCapitalProcedurePacket"},
@@ -45,9 +47,9 @@ export function buildMethodManifest(repositoryRoot: string) {
   });
   // Actual deterministic run receipts; their hashes are not independent review or approval.
   const capitalEvidencePaths = [
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-gold/run.json",
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-adversarial/run.json",
-    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-consistency/run.json"
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json"
 ];
   const provenance = library.methods.map((method) => {
     const release = released.find((entry) => entry.provenance.procedure.id === method.procedure.id && entry.provenance.procedure.version === method.procedure.version);

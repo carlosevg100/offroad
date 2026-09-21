@@ -15,7 +15,7 @@ function manifest(): CompiledProcedureManifest {
   if (p.schemaVersion !== "compiled-procedure-manifest.v1" || !("components" in p)) throw new Error("Typed composition required");
   return p as CompiledProcedureManifest;
 }
-const contracts = JSON.parse(read("packages/financial-model/contracts/capital-procedure-packet.json").content);
+const contracts = JSON.parse(read("packages/financial-model/contracts/capital-procedure-packet-v2.json").content);
 
 describe("authored integrated capital procedure", () => {
   it("binds the full contractual packet and its transitive calculation sources", () => {
@@ -24,7 +24,7 @@ describe("authored integrated capital procedure", () => {
     expect(component.component.inputs).toEqual(contracts.inputs);
     expect(component.component.outputs).toEqual(contracts.outputs);
     expect(component.executor).toMatchObject(contracts.executor);
-    for (const file of ["capital-procedure-packet.ts", "capital-contract-preparation.ts", "capital-contract-adoptions.ts"])
+    for (const file of ["capital-procedure-packet-v2.ts", "capital-contract-preparation-v2.ts", "capital-contract-adoptions.ts"])
       expect(component.executor!.sources.map(s => s.path)).toContain(`packages/financial-model/src/${file}`);
   });
   it("pins executed run receipts while retaining the missing final review and approval", () => {
@@ -33,7 +33,7 @@ describe("authored integrated capital procedure", () => {
     expect(evidence).toHaveLength(3);
     for (const pin of evidence) expect(pin.hash).toBe(createHash("sha256").update(read(pin.path).content).digest("hex"));
     expect(p).toMatchObject({authoringStatus: "incomplete", grantsExecution: false});
-    expect(document.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-20-v2-gold"]);
+    expect(document.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-21-v3-gold"]);
     expect(document.procedure.owner.approvedAt).toBeUndefined();
   });
   it("changes manifest identity for changed evidence and refuses missing evidence bytes", () => {

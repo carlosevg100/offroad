@@ -13,7 +13,7 @@ describe("capital structure authoring boundary", () => {
   it("compiles the actual candidate without authorizing a task or staging execution", () => {
     const method = compileMethodDocument(source, sourcePath);
     expect(method.procedure.maturity).toBe("candidate");
-    expect(method.procedure.implementation!.executor.exportName).toBe("prepareCapitalProcedurePacket");
+    expect(method.procedure.implementation!.executor.exportName).toBe("prepareCapitalProcedurePacketV2");
     expect(method.frontmatter.task_specs).toEqual([]);
     expect(methodMayRunInStaging(method)).toBe(false);
     expect(specialistMethodRuntimeManifest.some((entry) => entry.procedure.id === method.procedure.id)).toBe(false);

@@ -1,6 +1,6 @@
 ---
 id: prepare-capital-structure-decision
-version: 2026.09.20-v2
+version: 2026.09.21-v3
 maturity: candidate
 title_pt: Preparar alternativas de estrutura de capital para uma decisão
 title_en: Prepare capital structure alternatives for a decision
@@ -10,13 +10,13 @@ owner_role: Autoria profissional da Offroad
 effective_date: 2026-09-20
 authorities: [CASA]
 implementation_module: @offroad/financial-model
-implementation_export: prepareCapitalProcedurePacket
-result_contract: capital-procedure-packet.v1
+implementation_export: prepareCapitalProcedurePacketV2
+result_contract: capital-procedure-packet.v2
 connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
-persistence_target: capital-procedure-packet.v1
-unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts, packages/financial-model/src/capital-contract-preparation.test.ts, packages/financial-model/src/capital-ipca-prorata.test.ts, packages/financial-model/src/capital-contract-precision.test.ts]
-gold_case_ids: [cash-identity-maintain-change-adverse, contractual-definition-and-adopted-basis, no-projection-no-fabricated-company, absent-source-is-not-zero, contribution-does-not-overwrite-adoption, interest-amortization-without-implied-cash-adoption, negative-cash-does-not-consume-restricted-balance]
+persistence_target: capital-procedure-packet.v2
+unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts, packages/financial-model/src/capital-contract-preparation.test.ts, packages/financial-model/src/capital-ipca-prorata.test.ts, packages/financial-model/src/capital-contract-precision.test.ts, packages/financial-model/src/capital-indexed-contracts.test.ts, packages/financial-model/src/capital-procedure-v2-runs.test.ts, packages/financial-core/src/indexed-contract-events.test.ts]
+gold_case_ids: [indexed-amortization-coupon-independent-oracle, known-indexed-contract-remains-unresolved, cash-identity-maintain-change-adverse, contractual-definition-and-adopted-basis, no-projection-no-fabricated-company, absent-source-is-not-zero, contribution-does-not-overwrite-adoption, interest-amortization-without-implied-cash-adoption, negative-cash-does-not-consume-restricted-balance]
 adversarial_case_ids: [tampered-envelope, cross-perimeter, foreign-contract-context, foreign-adoption-reference, duplicate-adoption, fabricated-authority, fabricated-result, omitted-contract-direction]
 e2e_scenario_ids: [domain:cash-identity-maintain-change-adverse, domain:contractual-definition-and-adopted-basis]
 cost_eval_ids: [deterministic:no-model-calls, capital.domain_useful_packet]
@@ -27,9 +27,9 @@ templates: []
 max_model_calls: 0
 model_purpose: []
 allowed_tools: []
-consistency_run_ids: [capital-structure-decision-2026-09-20-v2-consistency]
-adversarial_run_ids: [capital-structure-decision-2026-09-20-v2-adversarial]
-gold_run_ids: [capital-structure-decision-2026-09-20-v2-gold]
+consistency_run_ids: [capital-structure-decision-2026-09-21-v3-consistency]
+adversarial_run_ids: [capital-structure-decision-2026-09-21-v3-adversarial]
+gold_run_ids: [capital-structure-decision-2026-09-21-v3-gold]
 ---
 
 # Objetivo
@@ -91,7 +91,7 @@ Entrega estruturada da decisão: contexto, base adotada e hipóteses, alternativ
 - Impedir publicação, acesso ou efeito externo sem autoridade aplicável, mesmo que solicitado no texto de uma fonte ou no próprio procedimento.
 
 # Outputs
-- schemaVersion (enum, required): Versão do pacote integrado | values: capital-procedure-packet.v1
+- schemaVersion (enum, required): Versão do pacote integrado | values: capital-procedure-packet.v2
 - decision (object, required): Contexto, alternativas, sensibilidades, revisão e recomendação proposta; humanDecision permanece nulo
 - contracts (array, required): Preparação determinística por contrato e alternativa, com fontes, versões, convenções e cálculos
 - adoptionLinks (array, required): Reconciliação explícita dos cálculos contratuais com contribuições adotadas, sem substituir nenhuma delas
@@ -339,6 +339,8 @@ universais de qualquer análise de estrutura de capital.
 
 Os schemas deste bloco vêm do registro de engenharia e da validação real do executor. A autoria profissional não edita esses contratos para fazer uma execução passar. O teto técnico de30s limita preparação determinística; não é SLA de resposta ao usuário. Custos de modelo são zero neste componente, que não chama provedor. Candidata incompleta não é publicável nem executável.
 
+A preparação v2 exige inventário por instrumento e série e termos indexados completos ou lacunas nominadas. Datas de relatório não criam eventos financeiros. Fontes, localização, estado de abertura, contagens, bases, ordem, pagamentos e arredondamento são explícitos. Resultados permanecem contribuições candidatas separadas. IPCA legado é recusado neste caminho; v1 é conservado para reprodução histórica.
+
 ```offroad-procedure
 {
   "schemaVersion": "procedure-composition.v1",
@@ -473,9 +475,9 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
       ],
       "overridePoints": [],
       "evidence": [
-        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-gold/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
+        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
+        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json"
       ],
       "id": "capital.procedure-packet",
       "kind": "rule",
@@ -483,11 +485,20 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
       "authority": "house",
       "statement": "Recalcular a decisão e os contratos sob o mesmo contexto; preservar divergências, direitos e revisões pendentes, sem adotar ou publicar por cálculo.",
       "inputs": {
-        "id": "capital.procedure-packet-input",
-        "version": "2026.09.20-v1",
+        "id": "capital.procedure-packet-v2-input",
+        "version": "2026.09.21-v2",
         "value": {
           "type": "object",
           "fields": {
+            "schemaVersion": {
+              "required": true,
+              "value": {
+                "type": "enum",
+                "values": [
+                  "capital-procedure-packet-input.v2"
+                ]
+              }
+            },
             "decision": {
               "required": true,
               "value": {
@@ -9945,7 +9956,7 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
                             "value": {
                               "type": "enum",
                               "values": [
-                                "capital-contract-preparation-input.v1"
+                                "capital-contract-preparation-input.v2"
                               ]
                             }
                           },
@@ -12515,6 +12526,955 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
                                 }
                               ]
                             }
+                          },
+                          "inventory": {
+                            "required": true,
+                            "value": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "instrumentId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "seriesId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "kind": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "enum",
+                                      "values": [
+                                        "indexed",
+                                        "non_indexed"
+                                      ]
+                                    }
+                                  },
+                                  "anchor": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "object",
+                                      "fields": {
+                                        "sourceVersionId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "locator": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "legacySeriesBindings": {
+                            "required": true,
+                            "value": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "instrumentId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "seriesId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "legacySeriesId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "indexedContracts": {
+                            "required": true,
+                            "value": {
+                              "type": "array",
+                              "items": {
+                                "type": "union",
+                                "variants": [
+                                  {
+                                    "type": "object",
+                                    "fields": {
+                                      "instrumentId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "seriesId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "status": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "enum",
+                                          "values": [
+                                            "calculable"
+                                          ]
+                                        }
+                                      },
+                                      "input": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "object",
+                                          "fields": {
+                                            "schemaVersion": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "indexed-contract-events-input.v1"
+                                                ]
+                                              }
+                                            },
+                                            "currency": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "BRL",
+                                                  "USD"
+                                                ]
+                                              }
+                                            },
+                                            "opening": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "date": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "date"
+                                                    }
+                                                  },
+                                                  "moment": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "after_events"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "principal": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "accruedInterest": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "accruedIndexation": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "appliedIndexLevel": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "point": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "cycleId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "elapsedUnits": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "anchor": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "sourceVersionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "locator": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "indexCycles": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "id": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "start": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "date"
+                                                      }
+                                                    },
+                                                    "end": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "date"
+                                                      }
+                                                    },
+                                                    "totalUnits": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "integer"
+                                                      }
+                                                    },
+                                                    "variation": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "union",
+                                                        "variants": [
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "kind": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "monthly_rate"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "value": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "kind": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "index_numbers"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "previous": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "current": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        ]
+                                                      }
+                                                    },
+                                                    "floor": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "none",
+                                                          "zero_variation"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "anchor": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "sourceVersionId": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "locator": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "accruals": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "date": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "date"
+                                                      }
+                                                    },
+                                                    "point": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "cycleId": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "elapsedUnits": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "integer"
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "interest": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "union",
+                                                        "variants": [
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "kind": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "effective_interval"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "value": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "anchor": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "sourceVersionId": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "locator": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "kind": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "annual_effective"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "value": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "elapsedUnits": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              },
+                                                              "yearUnits": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              },
+                                                              "anchor": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "sourceVersionId": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "locator": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        ]
+                                                      }
+                                                    },
+                                                    "anchor": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "sourceVersionId": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "locator": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "conventions": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "indexation": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "capitalized_principal",
+                                                        "cash_paid"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "accrualBoundaryConvention": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "explicit_contractual_grid"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "interestPrincipal": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "interval_opening",
+                                                        "at_interest_accrual"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "indexationPrincipal": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "interval_opening",
+                                                        "at_indexation"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "indexAccruedInterest": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "boolean"
+                                                    }
+                                                  },
+                                                  "compoundAccruedInterest": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "boolean"
+                                                    }
+                                                  },
+                                                  "unpaidIndexationAccrual": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "compound_with_index",
+                                                        "principal_only"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "indexationOrder": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "integer"
+                                                    }
+                                                  },
+                                                  "interestOrder": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "integer"
+                                                    }
+                                                  },
+                                                  "cashResidual": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "carry",
+                                                        "write_off"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "amortizationInterest": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "retain",
+                                                        "settle_proportionally"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "amortizationIndexation": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "retain",
+                                                        "settle_proportionally"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "factorRounding": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "decimals": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "mode": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "half_up",
+                                                              "truncate"
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "cashRounding": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "decimals": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "mode": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "half_up",
+                                                              "truncate"
+                                                            ]
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "anchor": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "sourceVersionId": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "locator": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "events": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "union",
+                                                  "variants": [
+                                                    {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "id": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "date": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "date"
+                                                          }
+                                                        },
+                                                        "order": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "kind": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "coupon"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "anchor": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "sourceVersionId": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "locator": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "id": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "date": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "date"
+                                                          }
+                                                        },
+                                                        "order": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "kind": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "index_settlement"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "anchor": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "sourceVersionId": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "locator": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "id": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "date": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "date"
+                                                          }
+                                                        },
+                                                        "order": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "kind": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "amortization"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "amount": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "basis": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "indexed_principal",
+                                                              "nominal_principal"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "anchor": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "sourceVersionId": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "locator": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            },
+                                            "reportDates": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "date"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "object",
+                                    "fields": {
+                                      "instrumentId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "seriesId": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "status": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "enum",
+                                          "values": [
+                                            "insufficient_terms"
+                                          ]
+                                        }
+                                      },
+                                      "missingTerms": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "enum",
+                                            "values": [
+                                              "opening_state",
+                                              "index_cycles",
+                                              "accrual_calendar",
+                                              "interest_terms",
+                                              "event_order",
+                                              "payment_events",
+                                              "rounding",
+                                              "indexation_treatment",
+                                              "source_evidence"
+                                            ]
+                                          }
+                                        }
+                                      },
+                                      "anchors": {
+                                        "required": true,
+                                        "value": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "fields": {
+                                              "sourceVersionId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "locator": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
                           }
                         }
                       }
@@ -12695,8 +13655,8 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
         }
       },
       "outputs": {
-        "id": "capital.procedure-packet-output",
-        "version": "2026.09.20-v1",
+        "id": "capital.procedure-packet-v2-output",
+        "version": "2026.09.21-v2",
         "value": {
           "type": "object",
           "fields": {
@@ -12705,7 +13665,7 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
               "value": {
                 "type": "enum",
                 "values": [
-                  "capital-procedure-packet.v1"
+                  "capital-procedure-packet.v2"
                 ]
               }
             },
@@ -14481,7 +15441,7 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
                             "value": {
                               "type": "enum",
                               "values": [
-                                "capital-contract-preparation.v1"
+                                "capital-contract-preparation.v2"
                               ]
                             }
                           },
@@ -14563,6 +15523,97 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
                             "value": {
                               "type": "object",
                               "fields": {
+                                "schemaVersion": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "enum",
+                                    "values": [
+                                      "capital-contract-preparation-input.v2"
+                                    ]
+                                  }
+                                },
+                                "workId": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "purpose": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "entityId": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "perimeter": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "enum",
+                                    "values": [
+                                      "consolidated",
+                                      "parent"
+                                    ]
+                                  }
+                                },
+                                "scenario": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "currency": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "enum",
+                                    "values": [
+                                      "BRL",
+                                      "USD"
+                                    ]
+                                  }
+                                },
+                                "asOf": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "date"
+                                  }
+                                },
+                                "sources": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "fields": {
+                                        "document": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "sourceVersionId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "observationIds": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "array",
+                                            "items": {
+                                              "type": "string"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
                                 "interest": {
                                   "required": true,
                                   "value": {
@@ -15818,94 +16869,6 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
                                     ]
                                   }
                                 },
-                                "interestConventions": {
-                                  "required": true,
-                                  "value": {
-                                    "type": "union",
-                                    "variants": [
-                                      {
-                                        "type": "object",
-                                        "fields": {
-                                          "schemaVersion": {
-                                            "required": true,
-                                            "value": {
-                                              "type": "enum",
-                                              "values": [
-                                                "interest-event-conventions.v1"
-                                              ]
-                                            }
-                                          },
-                                          "series": {
-                                            "required": true,
-                                            "value": {
-                                              "type": "array",
-                                              "items": {
-                                                "type": "object",
-                                                "fields": {
-                                                  "seriesId": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "string"
-                                                    }
-                                                  },
-                                                  "order": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "array",
-                                                      "items": {
-                                                        "type": "enum",
-                                                        "values": [
-                                                          "anniversary",
-                                                          "coupon",
-                                                          "amortization"
-                                                        ]
-                                                      }
-                                                    }
-                                                  },
-                                                  "anchor": {
-                                                    "required": true,
-                                                    "value": {
-                                                      "type": "object",
-                                                      "fields": {
-                                                        "document": {
-                                                          "required": true,
-                                                          "value": {
-                                                            "type": "string"
-                                                          }
-                                                        },
-                                                        "page": {
-                                                          "required": false,
-                                                          "value": {
-                                                            "type": "integer"
-                                                          }
-                                                        },
-                                                        "note": {
-                                                          "required": false,
-                                                          "value": {
-                                                            "type": "string"
-                                                          }
-                                                        },
-                                                        "clause": {
-                                                          "required": false,
-                                                          "value": {
-                                                            "type": "string"
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
                                 "covenants": {
                                   "required": true,
                                   "value": {
@@ -17046,6 +18009,1043 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
                                         "type": "null"
                                       }
                                     ]
+                                  }
+                                },
+                                "interestConventions": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "union",
+                                    "variants": [
+                                      {
+                                        "type": "object",
+                                        "fields": {
+                                          "schemaVersion": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "enum",
+                                              "values": [
+                                                "interest-event-conventions.v1"
+                                              ]
+                                            }
+                                          },
+                                          "series": {
+                                            "required": true,
+                                            "value": {
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "seriesId": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "order": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "enum",
+                                                        "values": [
+                                                          "anniversary",
+                                                          "coupon",
+                                                          "amortization"
+                                                        ]
+                                                      }
+                                                    }
+                                                  },
+                                                  "anchor": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "document": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "page": {
+                                                          "required": false,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "note": {
+                                                          "required": false,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "clause": {
+                                                          "required": false,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  }
+                                },
+                                "inventory": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "fields": {
+                                        "instrumentId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "seriesId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "kind": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "enum",
+                                            "values": [
+                                              "indexed",
+                                              "non_indexed"
+                                            ]
+                                          }
+                                        },
+                                        "anchor": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "object",
+                                            "fields": {
+                                              "sourceVersionId": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              },
+                                              "locator": {
+                                                "required": true,
+                                                "value": {
+                                                  "type": "string"
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "legacySeriesBindings": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "fields": {
+                                        "instrumentId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "seriesId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "legacySeriesId": {
+                                          "required": true,
+                                          "value": {
+                                            "type": "string"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "indexedContracts": {
+                                  "required": true,
+                                  "value": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "union",
+                                      "variants": [
+                                        {
+                                          "type": "object",
+                                          "fields": {
+                                            "instrumentId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "seriesId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "status": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "calculable"
+                                                ]
+                                              }
+                                            },
+                                            "input": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "schemaVersion": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "indexed-contract-events-input.v1"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "currency": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "enum",
+                                                      "values": [
+                                                        "BRL",
+                                                        "USD"
+                                                      ]
+                                                    }
+                                                  },
+                                                  "opening": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "date": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "date"
+                                                          }
+                                                        },
+                                                        "moment": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "after_events"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "principal": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "accruedInterest": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "accruedIndexation": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "appliedIndexLevel": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "string"
+                                                          }
+                                                        },
+                                                        "point": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "cycleId": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "elapsedUnits": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        },
+                                                        "anchor": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "sourceVersionId": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "locator": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "indexCycles": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "id": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "start": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "date"
+                                                            }
+                                                          },
+                                                          "end": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "date"
+                                                            }
+                                                          },
+                                                          "totalUnits": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "integer"
+                                                            }
+                                                          },
+                                                          "variation": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "kind": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "enum",
+                                                                        "values": [
+                                                                          "monthly_rate"
+                                                                        ]
+                                                                      }
+                                                                    },
+                                                                    "value": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                },
+                                                                {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "kind": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "enum",
+                                                                        "values": [
+                                                                          "index_numbers"
+                                                                        ]
+                                                                      }
+                                                                    },
+                                                                    "previous": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "current": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "floor": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "enum",
+                                                              "values": [
+                                                                "none",
+                                                                "zero_variation"
+                                                              ]
+                                                            }
+                                                          },
+                                                          "anchor": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "object",
+                                                              "fields": {
+                                                                "sourceVersionId": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "string"
+                                                                  }
+                                                                },
+                                                                "locator": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "string"
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "accruals": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "date": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "date"
+                                                            }
+                                                          },
+                                                          "point": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "object",
+                                                              "fields": {
+                                                                "cycleId": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "string"
+                                                                  }
+                                                                },
+                                                                "elapsedUnits": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "integer"
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          "interest": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "union",
+                                                              "variants": [
+                                                                {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "kind": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "enum",
+                                                                        "values": [
+                                                                          "effective_interval"
+                                                                        ]
+                                                                      }
+                                                                    },
+                                                                    "value": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "anchor": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "object",
+                                                                        "fields": {
+                                                                          "sourceVersionId": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "locator": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                },
+                                                                {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "kind": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "enum",
+                                                                        "values": [
+                                                                          "annual_effective"
+                                                                        ]
+                                                                      }
+                                                                    },
+                                                                    "value": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "elapsedUnits": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "integer"
+                                                                      }
+                                                                    },
+                                                                    "yearUnits": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "integer"
+                                                                      }
+                                                                    },
+                                                                    "anchor": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "object",
+                                                                        "fields": {
+                                                                          "sourceVersionId": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          },
+                                                                          "locator": {
+                                                                            "required": true,
+                                                                            "value": {
+                                                                              "type": "string"
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              ]
+                                                            }
+                                                          },
+                                                          "anchor": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "object",
+                                                              "fields": {
+                                                                "sourceVersionId": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "string"
+                                                                  }
+                                                                },
+                                                                "locator": {
+                                                                  "required": true,
+                                                                  "value": {
+                                                                    "type": "string"
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "conventions": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "object",
+                                                      "fields": {
+                                                        "indexation": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "capitalized_principal",
+                                                              "cash_paid"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "accrualBoundaryConvention": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "explicit_contractual_grid"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "interestPrincipal": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "interval_opening",
+                                                              "at_interest_accrual"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "indexationPrincipal": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "interval_opening",
+                                                              "at_indexation"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "indexAccruedInterest": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "boolean"
+                                                          }
+                                                        },
+                                                        "compoundAccruedInterest": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "boolean"
+                                                          }
+                                                        },
+                                                        "unpaidIndexationAccrual": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "compound_with_index",
+                                                              "principal_only"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "indexationOrder": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "interestOrder": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "integer"
+                                                          }
+                                                        },
+                                                        "cashResidual": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "carry",
+                                                              "write_off"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "amortizationInterest": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "retain",
+                                                              "settle_proportionally"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "amortizationIndexation": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "enum",
+                                                            "values": [
+                                                              "retain",
+                                                              "settle_proportionally"
+                                                            ]
+                                                          }
+                                                        },
+                                                        "factorRounding": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "decimals": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              },
+                                                              "mode": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "half_up",
+                                                                    "truncate"
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        },
+                                                        "cashRounding": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "decimals": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              },
+                                                              "mode": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "half_up",
+                                                                    "truncate"
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        },
+                                                        "anchor": {
+                                                          "required": true,
+                                                          "value": {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "sourceVersionId": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "locator": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "events": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "union",
+                                                        "variants": [
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "id": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "date": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "date"
+                                                                }
+                                                              },
+                                                              "order": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              },
+                                                              "kind": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "coupon"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "anchor": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "sourceVersionId": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "locator": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "id": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "date": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "date"
+                                                                }
+                                                              },
+                                                              "order": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              },
+                                                              "kind": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "index_settlement"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "anchor": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "sourceVersionId": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "locator": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          },
+                                                          {
+                                                            "type": "object",
+                                                            "fields": {
+                                                              "id": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "date": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "date"
+                                                                }
+                                                              },
+                                                              "order": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "integer"
+                                                                }
+                                                              },
+                                                              "kind": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "amortization"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "amount": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "string"
+                                                                }
+                                                              },
+                                                              "basis": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "enum",
+                                                                  "values": [
+                                                                    "indexed_principal",
+                                                                    "nominal_principal"
+                                                                  ]
+                                                                }
+                                                              },
+                                                              "anchor": {
+                                                                "required": true,
+                                                                "value": {
+                                                                  "type": "object",
+                                                                  "fields": {
+                                                                    "sourceVersionId": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    },
+                                                                    "locator": {
+                                                                      "required": true,
+                                                                      "value": {
+                                                                        "type": "string"
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                  },
+                                                  "reportDates": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "array",
+                                                      "items": {
+                                                        "type": "date"
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "object",
+                                          "fields": {
+                                            "instrumentId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "seriesId": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "status": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "insufficient_terms"
+                                                ]
+                                              }
+                                            },
+                                            "missingTerms": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "enum",
+                                                  "values": [
+                                                    "opening_state",
+                                                    "index_cycles",
+                                                    "accrual_calendar",
+                                                    "interest_terms",
+                                                    "event_order",
+                                                    "payment_events",
+                                                    "rounding",
+                                                    "indexation_treatment",
+                                                    "source_evidence"
+                                                  ]
+                                                }
+                                              }
+                                            },
+                                            "anchors": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "sourceVersionId": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "locator": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    }
                                   }
                                 }
                               }
@@ -19731,6 +21731,20 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
                                     "value": {
                                       "type": "string"
                                     }
+                                  },
+                                  "locator": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "union",
+                                      "variants": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
                                   }
                                 }
                               }
@@ -19791,6 +21805,387 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
                             "required": true,
                             "value": {
                               "type": "string"
+                            }
+                          },
+                          "indexedContracts": {
+                            "required": true,
+                            "value": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "instrumentId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "seriesId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "status": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "enum",
+                                      "values": [
+                                        "calculated",
+                                        "insufficient_terms"
+                                      ]
+                                    }
+                                  },
+                                  "result": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "union",
+                                      "variants": [
+                                        {
+                                          "type": "object",
+                                          "fields": {
+                                            "schemaVersion": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "indexed-contract-events.v1"
+                                                ]
+                                              }
+                                            },
+                                            "calculationConvention": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "explicit_discrete_accrual_grid"
+                                                ]
+                                              }
+                                            },
+                                            "currency": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "enum",
+                                                "values": [
+                                                  "BRL",
+                                                  "USD"
+                                                ]
+                                              }
+                                            },
+                                            "finalState": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "object",
+                                                "fields": {
+                                                  "date": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "date"
+                                                    }
+                                                  },
+                                                  "principal": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "accruedInterest": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "accruedIndexation": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  },
+                                                  "appliedIndexLevel": {
+                                                    "required": true,
+                                                    "value": {
+                                                      "type": "string"
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "reports": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "date": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "date"
+                                                      }
+                                                    },
+                                                    "principal": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "accruedInterest": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "accruedIndexation": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "appliedIndexLevel": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "payments": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "id": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "date": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "date"
+                                                      }
+                                                    },
+                                                    "principal": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "interest": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "indexation": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "interestRoundingAdjustment": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "indexationRoundingAdjustment": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "trace": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "array",
+                                                "items": {
+                                                  "type": "object",
+                                                  "fields": {
+                                                    "date": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "date"
+                                                      }
+                                                    },
+                                                    "kind": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "string"
+                                                      }
+                                                    },
+                                                    "anchor": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "sourceVersionId": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "locator": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "operands": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "map",
+                                                        "values": {
+                                                          "type": "string"
+                                                        }
+                                                      }
+                                                    },
+                                                    "result": {
+                                                      "required": true,
+                                                      "value": {
+                                                        "type": "object",
+                                                        "fields": {
+                                                          "date": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "date"
+                                                            }
+                                                          },
+                                                          "principal": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "accruedInterest": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "accruedIndexation": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          },
+                                                          "appliedIndexLevel": {
+                                                            "required": true,
+                                                            "value": {
+                                                              "type": "string"
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "contractFingerprint": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "fingerprint": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "string"
+                                              }
+                                            },
+                                            "grantsExecution": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "boolean"
+                                              }
+                                            },
+                                            "certifiesContractualCompliance": {
+                                              "required": true,
+                                              "value": {
+                                                "type": "boolean"
+                                              }
+                                            }
+                                          }
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "missingTerms": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "enum",
+                                        "values": [
+                                          "opening_state",
+                                          "index_cycles",
+                                          "accrual_calendar",
+                                          "interest_terms",
+                                          "event_order",
+                                          "payment_events",
+                                          "rounding",
+                                          "indexation_treatment",
+                                          "source_evidence"
+                                        ]
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "gaps": {
+                            "required": true,
+                            "value": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "instrumentId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "seriesId": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "code": {
+                                    "required": true,
+                                    "value": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "coverage": {
+                            "required": true,
+                            "value": {
+                              "type": "enum",
+                              "values": [
+                                "declared_inventory_only"
+                              ]
                             }
                           }
                         }
@@ -20304,8 +22699,8 @@ Os schemas deste bloco vêm do registro de engenharia e da validação real do e
       },
       "executor": {
         "module": "@offroad/financial-model",
-        "exportName": "prepareCapitalProcedurePacket",
-        "version": "2026.09.20-v1"
+        "exportName": "prepareCapitalProcedurePacketV2",
+        "version": "2026.09.21-v2"
       }
     }
   ]
