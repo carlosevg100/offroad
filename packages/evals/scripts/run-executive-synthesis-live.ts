@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /** Synthetic author/reviewer contract evaluation, not application E2E or release approval. */
 import {mkdirSync, writeFileSync} from "node:fs";
 import {resolve} from "node:path";
@@ -14,6 +15,7 @@ async function main() {
   const directory = resolve(process.env.RUNNER_TEMP ?? ".", "executive-synthesis-live");
   mkdirSync(directory, {recursive: true});
   const calls: GatewayCallLog[] = [];
+  requireGovernedEvaluationTransport();
   const gateway = createModelGateway({adapters: {anthropic: createAnthropicAdapter({apiKey: process.env.ANTHROPIC_API_KEY}), openai: createOpenAIAdapter({apiKey: process.env.OPENAI_API_KEY})}, budget: {maxCostUsd: 3, maxCalls: 8}, onCall: call => calls.push(call)});
   const sample = generateCase(corporateGrowthScenario);
   const results: Array<{locale: string; passed: boolean; brief: CaseBrief | null; failure: string | null; summaryClaimIds: string[]; start: number; end: number; numericIssues: string[]; semanticIssues: string[]; semanticAudit?: NormalizedSemanticAudit; reviewHistory?: BriefReviewAttempt[]}> = [];

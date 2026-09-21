@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /**
  * Runs the real classifier over a gold case and scores it (E1).
  *
@@ -42,6 +43,7 @@ if (!anthropicKey && !openaiKey) {
   process.exit(2);
 }
 
+requireGovernedEvaluationTransport();
 const gateway = createModelGateway({
   adapters: {
     ...(anthropicKey ? {anthropic: createAnthropicAdapter({apiKey: anthropicKey})} : {}),

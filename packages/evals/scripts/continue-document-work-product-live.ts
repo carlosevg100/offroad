@@ -1,3 +1,4 @@
+import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /** One missing control from the second authorized evaluation; never a fresh round. */
 import {mkdirSync, readFileSync, writeFileSync} from "node:fs";
 import {resolve, dirname} from "node:path";
@@ -24,6 +25,7 @@ async function main() {
   if(!sample || !env.ANTHROPIC_API_KEY) throw new Error("continuation_source_unavailable");
   const directory=resolve(env.RUNNER_TEMP!,"documentary-continuation");mkdirSync(directory,{recursive:true});
   const calls:GatewayCallLog[]=[];
+  requireGovernedEvaluationTransport();
   const gateway=createModelGateway({adapters:{anthropic:createAnthropicAdapter({apiKey:env.ANTHROPIC_API_KEY,disableSdkRetries:true})},
     budget:{maxCalls:1,maxCostUsd:plan.maxCostUsd},budgetReservation:"conservative_text_v1",onCall:call=>calls.push(call)});
   const path=pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),"../../../apps/document-worker/src/document-work-source-review.ts")).href;
