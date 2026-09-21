@@ -1,3 +1,7 @@
+## Etapa15: sincronização da prova E2E de adoção de método
+
+O run35555393424 revelou uma corrida no teste: o status genérico de sucesso da publicação era lido antes do término da adoção, antecipando a consulta SQL. O teste agora exige a indicação específica do vínculo adotado, retornada pelo servidor, antes de conferir o banco. Mantém as asserções de autorização, histórico e persistência, sem sleeps ou relaxamento de gate. A verificação da correção na CI e produção permanece requisito de fechamento. A CI também reprova execuções flaky com failOnFlakyTests; o retry conserva diagnóstico, sem tornar o gate verde. Sem DDL ou alteração de produto.
+
 ## Etapa15: matemática contratual no núcleo financeiro em preparação
 
 Juros/indexação e reconciliação de covenants passam a financial-core, com reexports legados. Fórmulas, schemas, traces e versões são preservados;21 casos registrados reproduzem os mesmos fingerprints. Dois testes novos proíbem cálculo duplicado no playbook e dependência reversa. CI e produção serão registradas após gates reais; nenhuma publicação ou ativação de método.
