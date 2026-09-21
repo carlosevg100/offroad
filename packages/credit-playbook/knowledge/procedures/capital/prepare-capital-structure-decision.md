@@ -1,7 +1,7 @@
 ---
 id: prepare-capital-structure-decision
 version: 2026.09.21-v3
-maturity: candidate
+maturity: tested
 title_pt: Preparar alternativas de estrutura de capital para uma decisão
 title_en: Prepare capital structure alternatives for a decision
 role: credit_structuring
@@ -15,7 +15,7 @@ result_contract: capital-procedure-packet.v2
 connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: capital-procedure-packet.v2
-unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts, packages/financial-model/src/capital-contract-preparation.test.ts, packages/financial-model/src/capital-ipca-prorata.test.ts, packages/financial-model/src/capital-contract-precision.test.ts, packages/financial-model/src/capital-indexed-contracts.test.ts, packages/financial-model/src/capital-procedure-v2-runs.test.ts, packages/financial-core/src/indexed-contract-events.test.ts]
+unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts, packages/financial-model/src/capital-contract-preparation.test.ts, packages/financial-model/src/capital-ipca-prorata.test.ts, packages/financial-model/src/capital-contract-precision.test.ts, packages/financial-model/src/capital-indexed-contracts.test.ts, packages/financial-model/src/capital-procedure-v2-runs.test.ts, packages/financial-core/src/indexed-contract-events.test.ts, packages/credit-playbook/src/capital-independent-review.test.ts]
 gold_case_ids: [indexed-amortization-coupon-independent-oracle, known-indexed-contract-remains-unresolved, cash-identity-maintain-change-adverse, contractual-definition-and-adopted-basis, no-projection-no-fabricated-company, absent-source-is-not-zero, contribution-does-not-overwrite-adoption, interest-amortization-without-implied-cash-adoption, negative-cash-does-not-consume-restricted-balance]
 adversarial_case_ids: [tampered-envelope, cross-perimeter, foreign-contract-context, foreign-adoption-reference, duplicate-adoption, fabricated-authority, fabricated-result, omitted-contract-direction]
 e2e_scenario_ids: [domain:cash-identity-maintain-change-adverse, domain:contractual-definition-and-adopted-basis]
@@ -29,14 +29,15 @@ model_purpose: []
 allowed_tools: []
 consistency_run_ids: [capital-structure-decision-2026-09-21-v3-consistency]
 adversarial_run_ids: [capital-structure-decision-2026-09-21-v3-adversarial]
+review_ids: [prepare-capital-structure-decision-2026-09-21-v3-independent-review]
 gold_run_ids: [capital-structure-decision-2026-09-21-v3-gold]
 ---
 
 # Objetivo
-Preparar alternativas de estrutura de capital para uma decisão explícita, relacionando objetivos, investimento, caixa, dívida, riscos e restrições sob a mesma base. A proposta profissional usa motores determinísticos reais e conserva julgamentos e condições. Continua candidata: os bytes finais ainda exigem avaliação registrada, revisão independente e aprovação específica antes da publicação; execução universal não é ativada por este documento.
+Preparar alternativas de estrutura de capital para uma decisão explícita, relacionando objetivos, investimento, caixa, dívida, riscos e restrições sob a mesma base. A proposta profissional usa motores determinísticos reais e conserva julgamentos e condições. A versão foi testada e revisada independentemente; a aprovação profissional específica do fundador e a publicação auditada continuam pendentes. Execução universal não é ativada por este documento.
 
 # Produto
-Entrega estruturada da decisão: contexto, base adotada e hipóteses, alternativas comparáveis, efeitos sobre caixa e dívida, condições e restrições, sensibilidades, recomendação proposta e informação que muda a escolha. A profundidade acompanha a pergunta e a evidência, independentemente de cargo. O executor prepareCapitalProcedurePacket recompõe a entrega de decisão, a preparação contratual e os vínculos com adoções; o componente abaixo fixa seus schemas reais de entrada e saída. Registro técnico não habilita execução ou publicação.
+Entrega estruturada da decisão: contexto, base adotada e hipóteses, alternativas comparáveis, efeitos sobre caixa e dívida, condições e restrições, sensibilidades, recomendação proposta e informação que muda a escolha. A profundidade acompanha a pergunta e a evidência, independentemente de cargo. O executor prepareCapitalProcedurePacketV2 recompõe a entrega de decisão, a preparação contratual e os vínculos com adoções; o componente abaixo fixa seus schemas reais de entrada e saída. Registro técnico não habilita execução ou publicação.
 
 # Quando ativar
 - O usuário quer avaliar caminhos para financiar investimento, reorganizar vencimentos, preservar liquidez ou escolher uma estrutura de capital.
@@ -344,11 +345,8 @@ A preparação v2 exige inventário por instrumento e série e termos indexados 
 ```offroad-procedure
 {
   "schemaVersion": "procedure-composition.v1",
-  "authoringStatus": "incomplete",
-  "pendingContent": [
-    "Revisão independente dos bytes finais e de seus registros de avaliação.",
-    "Aprovação profissional específica e publicação auditada antes de ativação futura."
-  ],
+  "authoringStatus": "ready_for_review",
+  "pendingContent": [],
   "budget": {
     "maxModelCalls": 0,
     "maxDurationMs": 31000,
@@ -477,7 +475,9 @@ A preparação v2 exige inventário por instrumento e série e termos indexados 
       "evidence": [
         "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
         "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
-        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json"
+        "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json",
+        "packages/credit-playbook/knowledge/reviews/prepare-capital-structure-decision-2026-09-21-v3-independent-review.json",
+        "packages/credit-playbook/knowledge/reviews/evidence/prepare-capital-structure-decision-2026-09-21-v3-independent-review/REVIEW-SUBJECT-BASIS.json"
       ],
       "id": "capital.procedure-packet",
       "kind": "rule",

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "ai-independent-review.v1",
+  "reviewId": "prepare-capital-structure-decision-2026-09-21-v3-independent-review",
+  "kind": "ai_independent_review",
+  "humanApproval": false,
+  "reviewer": {
+    "provider": "OpenAI",
+    "model": "exact_serving_model_not_exposed_in_review_context",
+    "effort": "runtime_effort_not_exposed_in_review_context",
+    "tool": "Codex sub-agent /root/stage15_independent_review; independent AI reviewer, not implementation author"
+  },
+  "subject": {
+    "kind": "method",
+    "id": "prepare-capital-structure-decision",
+    "version": "2026.09.21-v3",
+    "fingerprint": "b1dbf05ddc0d25cf684d4c51f1b49a47224ab68e1db73cb11d86889a15680ef3"
+  },
+  "run": {
+    "id": "prepare-capital-structure-decision-2026-09-21-v3-independent-review-consolidation",
+    "startedAt": "2026-09-21T10:44:14Z",
+    "finishedAt": "2026-09-21T10:45:46Z"
+  },
+  "checks": {
+    "sourcesRevisited": true,
+    "numbersRecalculated": true,
+    "definitionsTested": true,
+    "exceptionsTested": true,
+    "adversarialTested": true,
+    "consistencyTested": true,
+    "baselineAdvantage": null
+  },
+  "evidence": [
+    {
+      "claim": "Fontes de implementação e contratos foram reabertos; pacote v2 chama preparação v2 e núcleo por eventos, com IPCA legado recusado e sem fallback de indexação.",
+      "source": "packages/financial-model/src/capital-procedure-packet-v2.ts; packages/financial-model/src/capital-contract-preparation-v2.ts",
+      "anchor": "PARECER-F5-INTEGRACAO-V2.md; INTEGRATION-V2-FINAL-PINS.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Oráculo próprio: principal200, índice1.1 por intervalo, juros10%, amortização50 gera principal187 e cupom45.32. No cash_paid: principal150, correção acumulada31.5, correção paga5 e cupom37.",
+      "source": "outputs/etapa-15-revisao-independente-2026-09-21/INTEGRATION-V2-FINAL-INDEPENDENT.json",
+      "anchor": "independent-P200-amort50-P187-J45.32; independent-cash-paid-P150-index31.5-interest37",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Três subconjuntos próprios de relatórios preservam estado, pagamentos e identidade contratual; retomada e resíduos passam no mesmo núcleo fixado. F5 resolvido no caminho v2, sem alegar correção retroativa do executor histórico.",
+      "source": "packages/financial-core/src/indexed-contract-events.ts",
+      "anchor": "SHA256 63991ab780a804178aea5ac07f1c4fdf37f986781e5555772d47e006419b7253",
+      "result": "corrected"
+    },
+    {
+      "claim": "F1 e F2: NI e taxa mensal equivalente produzem101.50374356; mês antes do aniversário usa dezembro1% e fecha100.498756; mês ausente bloqueia.",
+      "source": "outputs/etapa-15-revisao-independente-2026-09-21/SUPLEMENTO-F1-F4.md",
+      "anchor": "commit 1cf05614bc19a7e3b1a29c966c5ba4cfe0af282e",
+      "result": "corrected"
+    },
+    {
+      "claim": "F3 conserva16casas sem segundo corte8; F4 rejeita amortização150 sobre100. Oito execuções diretas v7 permaneceram equivalentes ao baseline histórico.",
+      "source": "outputs/etapa-15-revisao-independente-2026-09-21/SUPLEMENTO-F1-F4.md",
+      "anchor": "REVALIDACAO-F1-F4.json; PARIDADE-V7-F1-F4.json",
+      "result": "corrected"
+    },
+    {
+      "claim": "F6: cinco mutações individuais em memória de testes declarados alteraram executor e manifesto, preservando a fonte. Na candidata final, todos263pins e os oito testes declarados conferem.",
+      "source": "outputs/etapa-15-revisao-independente-2026-09-21/SUPLEMENTO-F6.md",
+      "anchor": "REVALIDACAO-F6.json; INTEGRATION-V2-FINAL-PINS.json",
+      "result": "corrected"
+    },
+    {
+      "claim": "Reexecução independente dos harnesses:21casos históricos e26novos passaram com cases e evidenceFingerprint exatamente iguais aos seis recibos; releases e recibos históricos preservados.",
+      "source": "outputs/etapa-15-revisao-independente-2026-09-21/INTEGRATION-V2-FINAL-RECORDS.json",
+      "anchor": "7+8+6 históricos; 9+8+9 v2; INTEGRATION-V2-PINS-CHECK.json",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Origem v1 em preparação v2 foi negada; origem recalculada v2 alinhou; adulterar fontes voltou a negar. Fontes estrangeiras, moeda, finalidade e duplicidade econômica foram recusadas.",
+      "source": "packages/financial-model/src/capital-contract-adoptions.ts",
+      "anchor": "INTEGRATION-V2-FINAL-RECORDS.json; INTEGRATION-V2-FINAL-INDEPENDENT.json",
+      "result": "confirmed",
+      "note": "Negativas locais estruturais/contextuais; nenhuma nova prova de acesso ao banco."
+    },
+    {
+      "claim": "K1 retomada com juros1e-104 e K2 fator de juros arredondado zero foram corrigidos; reprodução própria passou para taxa efetiva de intervalo e anual. Lacuna com IDs160+160 passou após correção de limite.",
+      "source": "outputs/etapa-15-revisao-independente-2026-09-21/SUPLEMENTO-KERNEL-EVENTOS-SNAPSHOT-3.md",
+      "anchor": "SNAPSHOT3-KERNEL-BOUNDARIES.json; INTEGRATION-V2-FINAL-INDEPENDENT.json",
+      "result": "corrected"
+    },
+    {
+      "claim": "O manifesto candidato reconstituído fixa o export prepareCapitalProcedurePacketV2 e a mesma closure examinada. Isso não comprova ativação de rota nem publicação em banco.",
+      "source": "outputs/etapa-15-revisao-independente-2026-09-21/INTEGRATION-V2-FINAL-MANIFEST.json",
+      "anchor": "643bac8205c20eb87d2cbc7c3244ca2d12e5ca0c55304ea6b7847b69fef1ebee",
+      "result": "confirmed"
+    },
+    {
+      "claim": "Não houve nesta revisão nova validação de produção, teste de usuários, benchmark generalista ou aprovação humana. Não se infere adequação jurídica de convenções sintéticas.",
+      "source": "outputs/etapa-15-revisao-independente-2026-09-21/PARECER-F5-INTEGRACAO-V2.md",
+      "anchor": "Evidências e limites",
+      "result": "limitation"
+    }
+  ],
+  "result": "conditional",
+  "conditions": [
+    "A aprovação profissional/humana do conteúdo continua ausente. Esta revisão por IA não permite marcar production nem publicar método em nome de um humano.",
+    "Confrontar commit e manifesto editorial finais com os bytes revisados e revalidar qualquer alteração antes da atestação técnica. O sujeito atual é um snapshot não commitado identificado por hashes.",
+    "Negativas desta revisão integrada são estruturais, de fonte declarada, origem e contexto em cálculo local; não constituem nova prova de RLS, acesso a banco, revogação, implantação ou produção.",
+    "A eficácia econômica depende das convenções contratuais explícitas e das fontes legitimamente obtidas. Interpretação de cláusulas, adoção contextual e revisão profissional permanecem exigidas."
+  ],
+  "notes": "Registro produzido pelo próprio revisor independente Codex /root/stage15_independent_review. startedAt/finishedAt delimitam somente a janela observada de consolidação e releitura do registro, não a duração integral da revisão anterior; horários obtidos da ferramenta clock. Identificador exato do modelo, esforço configurado, tokens e custo não foram expostos, portanto não foram inventados. subject.fingerprint é SHA256 dos bytes de REVIEW-SUBJECT-BASIS.json, que fixa fonte, manifesto e hashes das evidências. Artefatos detalhados estão em outputs/etapa-15-revisao-independente-2026-09-21 no workspace, fora do repositório offroad. O parecer inicial fail foi preservado; correções e revalidações posteriores estão em suplementos. Resultado conditional significa aptidão técnica para avaliação profissional no escopo examinado, sem aprovação humana, execução habilitada ou completion da etapa."
+}

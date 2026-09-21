@@ -1,0 +1,23 @@
+{
+  "sourceHash": "7152346a4819bdad43f0323b6c12a7efa0291f49284456365aeaed22083764ad",
+  "manifestHash": "643bac8205c20eb87d2cbc7c3244ca2d12e5ca0c55304ea6b7847b69fef1ebee",
+  "pins": 263,
+  "everyPinMatches": true,
+  "declaredTests": [
+    "packages/financial-model/src/capital-procedure-packet.test.ts",
+    "packages/financial-model/src/capital-procedure-runs.test.ts",
+    "packages/financial-model/src/capital-contract-preparation.test.ts",
+    "packages/financial-model/src/capital-ipca-prorata.test.ts",
+    "packages/financial-model/src/capital-contract-precision.test.ts",
+    "packages/financial-model/src/capital-indexed-contracts.test.ts",
+    "packages/financial-model/src/capital-procedure-v2-runs.test.ts",
+    "packages/financial-core/src/indexed-contract-events.test.ts"
+  ],
+  "allTestsPinned": true,
+  "runtimeHashes": {
+    "packages/financial-core/src/indexed-contract-events.ts": "63991ab780a804178aea5ac07f1c4fdf37f986781e5555772d47e006419b7253",
+    "packages/financial-model/src/capital-contract-adoptions.ts": "13827215ae714fce08f31605c5306317c497d43915bf4577ef462ba212b199de",
+    "packages/financial-model/src/capital-contract-preparation-v2.ts": "e4618bd3c985e02a77d254f365c3892f164430db827d821cf9dfc720798d2ba2",
+    "packages/financial-model/src/capital-procedure-packet-v2.ts": "17c467d5e7b3abf281e24d3256fef3e33d980f6fd8b33ff6eba07f39f013b68a"
+  }
+}

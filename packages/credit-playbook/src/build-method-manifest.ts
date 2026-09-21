@@ -47,6 +47,8 @@ export function buildMethodManifest(repositoryRoot: string) {
   });
   // Actual deterministic run receipts; their hashes are not independent review or approval.
   const capitalEvidencePaths = [
+    "packages/credit-playbook/knowledge/reviews/prepare-capital-structure-decision-2026-09-21-v3-independent-review.json",
+    "packages/credit-playbook/knowledge/reviews/evidence/prepare-capital-structure-decision-2026-09-21-v3-independent-review/REVIEW-SUBJECT-BASIS.json",
     "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
     "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
     "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json"
