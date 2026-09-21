@@ -64,12 +64,12 @@ describe("authoring scalar safety", () => {
   it("rejects duplicate frontmatter keys rather than silently overriding authority", () => {
     expect(() => compileMethodDocument(text.replace("maturity: candidate", "maturity: candidate\nmaturity: production"), "test.md")).toThrow(/duplicate/);
   });
-  it("keeps the capital candidate incomplete with no executor, task binding or approval", () => {
+  it("keeps the implemented capital candidate incomplete with no task binding or approval", () => {
     const parsed = compileMethodDocument(text, "test.md");
     expect(parsed.composition?.authoringStatus).toBe("incomplete");
     expect(parsed.composition?.pendingContent.length).toBeGreaterThan(0);
     expect(parsed.frontmatter.task_specs).toEqual([]);
-    expect(parsed.procedure.implementation).toBeUndefined();
+    expect(parsed.procedure.implementation!.executor.exportName).toBe("prepareCapitalProcedurePacket");
     expect(parsed.procedure.owner.approvedBy).toBeUndefined();
   });
 });

@@ -5,6 +5,7 @@ import {describe, expect, it} from "vitest";
 
 import {loadDeterministicMethodRuns, runCountsForPromotion, deterministicRunEvidenceFingerprint} from "./method-run-record";
 import {loadMethodLibrary} from "./procedure-markdown";
+import {buildMethodManifest} from "./build-method-manifest";
 
 const here = resolve(fileURLToPath(new URL(".", import.meta.url)));
 const library = loadMethodLibrary(resolve(here, "../knowledge/procedures"), resolve(here, "../knowledge/reviews"));
@@ -23,8 +24,16 @@ describe("recorded deterministic runs behind a maturity rung", () => {
       expect(record, `${method.procedure.id} declares run ${runId} which is not on record`).toBeDefined();
       expect(record!.kind).toBe(kind);
       expect(record!.method).toEqual({id: method.procedure.id, version: method.procedure.version});
-      expect(record!.executor.module).toBe(method.procedure.implementation?.executor.module);
-      expect(record!.executor.exportName).toBe(method.procedure.implementation?.executor.exportName);
+      if (method.composition) {
+        const compiled = buildMethodManifest(resolve(here, "../../..")).provenance.find(p => p.procedure.id === method.procedure.id)!;
+        if (!("components" in compiled)) throw new Error("Typed method requires compiled components");
+        const executors = (compiled as import("./procedure-compiler").CompiledProcedureManifest).components
+          .flatMap(c => c.executor ? [c.executor] : []);
+        expect(executors.filter(e => e.module === record!.executor.module && e.exportName === record!.executor.exportName)).toHaveLength(1);
+      } else {
+        expect(record!.executor.module).toBe(method.procedure.implementation?.executor.module);
+        expect(record!.executor.exportName).toBe(method.procedure.implementation?.executor.exportName);
+      }
       expect(runCountsForPromotion(record!)).toBe(true);
     }
   });
