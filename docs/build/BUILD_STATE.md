@@ -1,3 +1,13 @@
+## Etapa 17, persistência 2A: identidade e bytes imutáveis
+
+`public.work_executions`, `private.execution_input_snapshots` e `private.execution_manifests` formam um conjunto obrigatório na mesma transação. FKs compostas e validação de identidade impedem trocar organização, trabalho, principal, run, snapshot ou release. Tabelas imutáveis, RLS forçada, sem grants a cliente/worker/service_role. Auditoria mantém somente identificadores e operação. Não há produtor ou RPC novo.
+
+O serializador da execução ganha versão própria com ordenação UTF-16 explícita, sem locale. Os bytes UTF-8 são preservados e seu SHA-256 conferido no banco; JSONB é projeção derivada. O loader recusa texto não canônico, hash/algoritmo incompatível e Unicode não preservável. `fingerprintJson` histórico e métodos publicados permanecem intactos; a versão anterior deste contrato ainda não possuía consumidor ou registros persistidos.
+
+Migração 20260921230622 em produção e 20260921230303 em staging: SQL e catálogo idênticos, tabelas vazias, sem dados descartáveis em produção.
+
+TRUST-APP-01/TRUST-AI-01/TRUST-SDLC-01: SQL negativo e round-trip real passam em staging com rollback; 12 testes novos de serialização passam. A prova SQL roda no job database e a prova TS/PostgreSQL no E2E da CI. Aplicação por ambiente, CI e deploy precisam de recibos antes do completion. Rollback conserva as tabelas vazias e fechadas; não desfaz histórico ou abre grants. Engenharia de execução assume 2B: comandos idempotentes, autoridade corrente, direitos fixados, lease e orçamento. `run_work_or_intake` deve ser ampliada explicitamente antes do novo request; não reutilizar o nome de conversa para execução substantiva. Etapa 17 segue aberta.
+
 ## Etapa 17, incremento 1: contrato fixado e validação no worker
 
 Contrato aditivo em `packages/agent-contracts/src/execution-contract.ts` e binder em `apps/document-worker/src/pinned-execution.ts`. Identidade, audiência, método, insumos, ferramentas, efeitos, orçamento e tentativa são explícitos; snapshots são copiados/congelados, e dados não JSON ou com chave descartável pelo parser são recusados. Esgotamento é parcial e ferramentas/versões divergentes são negadas. Sem novo produtor, RPC, DDL ou ativação: a persistência e a revalidação SQL por tentativa são o incremento seguinte. A decomposição completa e os riscos estão em `docs/build/arcabouco/etapa-17-execucao.md`.

@@ -1,4 +1,4 @@
-import {fingerprintJson} from "@offroad/case-understanding";
+import {createHash} from "node:crypto";
 import {z} from "zod";
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -57,18 +57,39 @@ function parseSnapshot(value: unknown) {
   // Zod's record clone omits __proto__; refuse it before parsing so no input loses bytes.
   const visit = (item: unknown, depth: number): void => {
     if (depth > 128) throw new Error("execution_snapshot_depth_exceeded");
+    if (typeof item === "string" && [...item].some(character => character === "\u0000" || (character.codePointAt(0)! >= 0xd800 && character.codePointAt(0)! <= 0xdfff))) throw new Error("execution_snapshot_invalid_unicode");
     if (item === null || typeof item !== "object") return;
     if (Object.hasOwn(item, "__proto__")) throw new Error("execution_snapshot_reserved_key");
+    for (const key of Object.keys(item)) visit(key, depth + 1);
     for (const child of Object.values(item)) visit(child, depth + 1);
   };
   visit(value, 0);
   return z.json().parse(value);
 }
+/** Versioned independently of historical method fingerprints. UTF-16 key order, no locale. */
+export const executionSerializationVersion = "offroad-execution-json-utf16-v1";
+export function executionCanonicalText(value: unknown): string {
+  const json = parseSnapshot(value);
+  const encode = (item: typeof json): string => {
+    if (Array.isArray(item)) return `[${item.map(encode).join(",")}]`;
+    if (item !== null && typeof item === "object") return `{${Object.keys(item).sort().map(key => `${JSON.stringify(key)}:${encode(item[key]!)}`).join(",")}}`;
+    return JSON.stringify(item);
+  };
+  return encode(json);
+}
+const fingerprint = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
+export function loadExecutionCanonicalText(text: string, expectedFingerprint: string, version: string): unknown {
+  if (version !== executionSerializationVersion) throw new Error("execution_serialization_version_unavailable");
+  if (!hash.safeParse(expectedFingerprint).success || fingerprint(text) !== expectedFingerprint) throw new Error("execution_bytes_mismatch");
+  const parsed: unknown = JSON.parse(text);
+  if (executionCanonicalText(parsed) !== text) throw new Error("execution_bytes_not_canonical");
+  return parsed;
+}
 export function executionInputFingerprint(value: unknown): string {
-  return fingerprintJson(parseSnapshot(value));
+  return fingerprint(executionCanonicalText(value));
 }
 export function executionContractFingerprint(value: unknown): string {
-  return fingerprintJson(executionContractSchema.parse(value));
+  return fingerprint(executionCanonicalText(executionContractSchema.parse(value)));
 }
 export type Frozen<T> = T extends readonly (infer U)[] ? readonly Frozen<U>[] : T extends object ? {readonly [K in keyof T]: Frozen<T[K]>} : T;
 function freeze<T>(value: T): Frozen<T> {
@@ -80,12 +101,12 @@ function freeze<T>(value: T): Frozen<T> {
 }
 export function pinExecutionContract(value: unknown, expectedFingerprint: string): Frozen<ExecutionContract> {
   const contract = executionContractSchema.parse(value);
-  if (!hash.safeParse(expectedFingerprint).success || fingerprintJson(contract) !== expectedFingerprint) throw new Error("execution_contract_fingerprint_mismatch");
+  if (!hash.safeParse(expectedFingerprint).success || executionContractFingerprint(contract) !== expectedFingerprint) throw new Error("execution_contract_fingerprint_mismatch");
   return freeze(contract);
 }
 
 export function pinExecutionInput(value: unknown, expectedFingerprint: string): Frozen<z.infer<ReturnType<typeof z.json>>> {
   const snapshot = parseSnapshot(value);
-  if (fingerprintJson(snapshot) !== expectedFingerprint) throw new Error("execution_snapshot_mismatch");
+  if (executionInputFingerprint(snapshot) !== expectedFingerprint) throw new Error("execution_snapshot_mismatch");
   return freeze(snapshot);
 }

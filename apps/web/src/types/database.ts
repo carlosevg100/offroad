@@ -10328,6 +10328,61 @@ export type Database = {
           },
         ]
       }
+      work_executions: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          principal_id: string
+          processing_run_id: string
+          request_id: string
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          organization_id: string
+          principal_id: string
+          processing_run_id: string
+          request_id: string
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          principal_id?: string
+          processing_run_id?: string
+          request_id?: string
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_executions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_executions_organization_id_processing_run_id_fkey"
+            columns: ["organization_id", "processing_run_id"]
+            isOneToOne: true
+            referencedRelation: "processing_runs"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_executions_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       work_participants: {
         Row: {
           added_by: string | null

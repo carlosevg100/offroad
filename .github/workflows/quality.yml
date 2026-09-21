@@ -209,6 +209,11 @@ jobs:
           docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
           supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
 
+      - name: Verify execution bytes through PostgreSQL storage
+        env:
+          OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: pnpm --filter @offroad/evals exec tsx ../agent-contracts/scripts/verify-execution-bytes.ts
+
       # This stack has no document worker, so the journey test runs the deterministic extractor:
       # with the pipeline on, intake correctly waits in `processing` for a worker that does not
       # exist here and the review screen never arrives. The pipeline is measured on its own, on
