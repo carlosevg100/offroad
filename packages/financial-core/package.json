@@ -15,6 +15,10 @@
     "./contractual-covenants": {
       "types": "./src/contractual-covenants.ts",
       "default": "./src/contractual-covenants.ts"
+    },
+    "./indexed-contract-events": {
+      "types": "./src/indexed-contract-events.ts",
+      "default": "./src/indexed-contract-events.ts"
     }
   },
   "scripts": {
