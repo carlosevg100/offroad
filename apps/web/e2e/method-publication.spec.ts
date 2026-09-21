@@ -41,7 +41,12 @@ test("house method publication separates author review and publisher and preserv
   await page.setViewportSize({width:390,height:844});await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await test.info().attach("method-review-mobile",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});await page.setViewportSize({width:1440,height:1000});
   await card.getByRole("button",{name:"Publicar esta versão",exact:true}).click();await expect(card.locator(".vault-badge")).toHaveText("Publicada");
-  await card.getByRole("button",{name:"Adotar para novos trabalhos deste tipo",exact:true}).click();await expect(page.getByRole("status")).toContainText("Alteração registrada.");
+  // The generic success message may still belong to publication while adoption is pending.
+  // Wait for the adopted binding returned by the server before checking committed SQL state.
+  const adopted = card.getByText("Esta versão está vinculada a novos trabalhos. Sua retirada bloqueia o uso até uma nova adoção explícita.",{exact:true});
+  await expect(adopted).toHaveCount(0);
+  await card.getByRole("button",{name:"Adotar para novos trabalhos deste tipo",exact:true}).click();
+  await expect(adopted).toBeVisible();
   expect(sql(`select count(*) from public.method_scope_bindings where organization_id='${org}' and retired_at is null;`)).toBe("1");
   await card.getByLabel("Motivo da retirada",{exact:true}).fill("Synthetic withdrawal after review.");await card.getByRole("button",{name:"Retirar publicação",exact:true}).click();await expect(card.locator(".vault-badge")).toHaveText("Retirada");
   expect(sql(`select count(*) from public.method_review_records where organization_id='${org}';`)).toBe("1");
