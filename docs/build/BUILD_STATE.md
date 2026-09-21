@@ -4735,3 +4735,7 @@ Contrato de eventos/outbox e consumidor limitado no worker atual, com trilha at�
 ## Abertura da etapa 7 - onda 6
 
 OK do fundador recebido. Inventário renovado sobre `f4a0a7b0759e8fc361b59fed16649a17fe5e7cad`, com journals vivos e worker exato; revisão em `docs/security/INVENTORY_WAVE_6_REVIEW.md`. Implementação e eval da etapa 7 ainda pendentes; nenhuma etapa posterior autorizada.
+
+## Etapa15: avaliação integrada do pacote de decisão
+
+Seis casos em `capital-decision-domain-eval.test.ts`: oráculo independente em centavos, caixa negativo, integridade/perímetro, lacunas, consistência e duração sintética do domínio. Não comprova latência de usuário nem revisão independente. Ver `docs/build/arcabouco/etapa-15-eval-integrado.md`. Etapa15 permanece aberta; completion exige CI e produção no commit.

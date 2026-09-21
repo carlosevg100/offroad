@@ -12076,7 +12076,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/package.json",
-              "hash": "52a0b1b85baeaaada175a17fd854be642deeb788ae798e592cc52cc59be76a1d"
+              "hash": "8fbbce0a5c9df267761ec4418ef34a94a0d842a2f48f02ba26fe3865d156aeba"
             },
             {
               "path": "packages/financial-model/scripts/generate-capital-contracts.mjs",
@@ -12411,12 +12411,12 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "53b1ce608d41541e2caef4a86301482d135125dd9aaaba7ba91eed22c0bdff10"
+          "hash": "d50014aac3ca475765c4b278092bee97131970a8eae8d84a3201163bae8660e9"
         },
         "evidence": []
       }
     ],
-    "manifestHash": "9c6df20efca40c02e890ca3d5e46d5e8ab869b53acf61c66e48bb97e9874e845"
+    "manifestHash": "8901e132bec64fd2759d0599b249953c4bc1112972c7ea7edc1a44c82519c451"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
