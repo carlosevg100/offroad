@@ -1,3 +1,11 @@
+## Etapa15: mapas tipados para curvas contratuais (2026-09-20)
+
+Contratos representam valores por período/mês com tipo recursivo explícito; continuam
+proibidos objetos opacos e chaves de protótipo. Seis testes novos conferem a projeção e
+os limites: o schema integral valida formatos de chave, refinamentos e convenções.
+Compilador corrente v2026.09.20-v4; R01 preservado. Sem DDL, acesso ou publicação.
+Gates/produção exigem prova no completion. Integração final e revisão seguem na15.
+
 ## Etapa15: composição contratual e ordem dos eventos (2026-09-20)
 
 Juros/indexação e covenants são compostos como contribuições candidatas com fontes e versões.

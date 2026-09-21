@@ -135,3 +135,8 @@ No primeiro procedimento, engenharia gera os contratos a partir dos schemas efet
 aos schemas e negam divergência. O bloco técnico no Markdown deve acompanhar essa versão,
 sem alterar seu contrato para acomodar texto. O autor profissional escreve regras, exceções,
 suficiência, fundamentos e casos. Registro técnico não é aprovação profissional.
+
+Dicionários por período ou mês usam o tipo estrutural map com values tipado recursivamente.
+Não é um objeto livre: cada valor é validado; chaves vazias, excessivas ou de protótipo são
+recusadas. O formato específico das chaves e outros refinamentos continuam no schema real
+fixado do executor. Campos fixos e dicionários abertos não são misturados na mesma projeção.

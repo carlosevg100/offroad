@@ -28,6 +28,12 @@ export function matchesMethodValue(type: MethodValueType, value: unknown): boole
     case "date": return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
     case "enum": return typeof value === "string" && type.values.includes(value);
     case "array": return Array.isArray(value) && value.every((item) => matchesMethodValue(type.items, item));
+    case "map": {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+      if (![Object.prototype, null].includes(Object.getPrototypeOf(value))) return false;
+      return Object.entries(value).every(([key, entry]) => key.length > 0 && key.length <= 300
+        && !["__proto__", "prototype", "constructor"].includes(key) && matchesMethodValue(type.values, entry));
+    }
     case "object": {
       if (!value || typeof value !== "object" || Array.isArray(value)) return false;
       const record = value as Record<string, unknown>;

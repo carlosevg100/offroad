@@ -9,6 +9,7 @@ export type MethodValueType =
   | {type: "string" | "decimal_string" | "boolean" | "integer" | "date" | "null"}
   | {type: "enum"; values: string[]}
   | {type: "array"; items: MethodValueType}
+  | {type: "map"; values: MethodValueType}
   | {type: "union"; variants: MethodValueType[]}
   | {type: "object"; fields: Record<string, {required: boolean; value: MethodValueType}>};
 // Field names describe executor data, not component identities (for example `id`).
@@ -16,6 +17,7 @@ const fieldNameSchema = z.string().regex(/^[A-Za-z_][A-Za-z0-9_.-]{0,119}$/)
   .refine((name) => !["__proto__", "prototype", "constructor"].includes(name), "unsafe field name");
 function canonicalType(value: MethodValueType): string {
   if (value.type === "object") return JSON.stringify({type: value.type, fields: Object.entries(value.fields).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, field]) => [key, field.required, canonicalType(field.value)])});
+  if (value.type === "map") return JSON.stringify({type: value.type, values: canonicalType(value.values)});
   if (value.type === "array") return JSON.stringify({type: value.type, items: canonicalType(value.items)});
   if (value.type === "union") return JSON.stringify({type: value.type, variants: value.variants.map(canonicalType).sort()});
   if (value.type === "enum") return JSON.stringify({type: value.type, values: [...value.values].sort()});
@@ -25,6 +27,7 @@ export const methodValueTypeSchema: z.ZodType<MethodValueType> = z.lazy(() => z.
   z.object({type: z.enum(["string", "decimal_string", "boolean", "integer", "date", "null"])}).strict(),
   z.object({type: z.literal("enum"), values: z.array(z.string().min(1)).min(1)}).strict(),
   z.object({type: z.literal("array"), items: methodValueTypeSchema}).strict(),
+  z.object({type: z.literal("map"), values: methodValueTypeSchema}).strict(),
   z.object({type: z.literal("union"), variants: z.array(methodValueTypeSchema).min(2).refine((variants) => new Set(variants.map(canonicalType)).size === variants.length, "duplicate union variant")}).strict(),
   z.object({type: z.literal("object"), fields: z.record(fieldNameSchema, z.object({required: z.boolean(), value: methodValueTypeSchema}).strict()).refine((fields) => Object.keys(fields).length > 0, "object fields must be typed")}).strict(),
 ]));
