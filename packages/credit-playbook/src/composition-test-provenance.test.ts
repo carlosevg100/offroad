@@ -24,7 +24,7 @@ describe("composed method test provenance", () => {
     const document = compileMethodDocument(readFileSync(resolve(root, procedure), "utf8"), "capital/prepare-capital-structure-decision.md");
     const pins = candidate().components.flatMap(c => c.executor?.sources ?? []);
     const paths = document.procedure.implementation!.evaluation.unitTestFiles;
-    expect(paths.length).toBe(5);
+    expect(paths.length).toBe(8);
     for (const path of paths) {
       const hash = createHash("sha256").update(readFileSync(resolve(root, path))).digest("hex");
       expect(pins).toContainEqual({path, hash});

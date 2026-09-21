@@ -49,3 +49,6 @@ export * from "./capital-decision-delivery";
 export * from "./capital-contract-preparation";
 export * from "./capital-contract-adoptions";
 export * from "./capital-procedure-packet";
+
+export * from "./capital-contract-preparation-v2";
+export * from "./capital-procedure-packet-v2";
