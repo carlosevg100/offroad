@@ -239,7 +239,7 @@ export type InterestScheduleOutput = {
 };
 
 const d = (value: Decimal.Value) => new Decimal(value);
-const out = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
+const legacyOut = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
 const stableStringify = (value: unknown): string => JSON.stringify(value, (_key, inner: unknown) => (inner && typeof inner === "object" && !Array.isArray(inner) ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => compare(a, b))) : inner));
 const fingerprint = (value: unknown) => createHash("sha256").update(stableStringify(value)).digest("hex");
 const sortRecord = <T,>(record: Record<string, T> | null) => (record ? Object.fromEntries(Object.entries(record).sort(([a], [b]) => compare(a, b))) : null);
@@ -295,6 +295,8 @@ export function buildInterestAndIndexationScheduleWithConventions(raw: InterestS
   return projectInterestSchedule(raw, interestEventConventionsSchema.parse(conventions));
 }
 function projectInterestSchedule(raw: InterestScheduleInput, conventions: EventConventions | null): InterestScheduleOutput {
+  // v8 retains each contractual layer's precision; v7 keeps its historical serialization.
+  const out = conventions ? (value: Decimal) => value.toFixed() : legacyOut;
   const input = canonical(interestScheduleInputSchema.parse(raw));
   if (conventions) {
     for (const c of conventions.series) if (!input.series.some(s => s.id === c.seriesId)) throw new Error("interest_convention_unknown_series");
@@ -323,6 +325,8 @@ function projectInterestSchedule(raw: InterestScheduleInput, conventions: EventC
   };
 
   for (const series of input.series) {
+    const proRataMonthFor = (periodEnd: string) => addMonths(periodEnd.slice(0, 7),
+      -series.indexation!.lagMonths - (Number(periodEnd.slice(8, 10)) < series.indexation!.anniversaryDay ? 1 : 0));
     if (series.openingPrincipal.basis === "ledger_balance_including_accrued") { uncovered.push({series_id: series.id, reason: `the opening figure of ${series.label} is a ledger balance that includes accrued interest, monetary variation and transaction costs; the nominal (unit value times quantity, updated where indexed) is not in the base`, state: "insufficient_evidence"}); continue; }
     if (series.indexer === "unknown" || series.remuneration === null) { uncovered.push({series_id: series.id, reason: `no source in the base states the indexer or the remuneration of ${series.label}`, state: "insufficient_evidence"}); continue; }
     if (!series.anchors.terms) { uncovered.push({series_id: series.id, reason: `the terms of ${series.label} carry no anchor; a term without a source is not a term`, state: "insufficient_evidence"}); continue; }
@@ -342,7 +346,7 @@ function projectInterestSchedule(raw: InterestScheduleInput, conventions: EventC
       if (!curve!.monthlyRateByMonth && !curve!.indexNumberByMonth) { uncovered.push({series_id: series.id, reason: `curve ${curve!.id} carries neither monthly index variations nor index numbers; the IPCA update of ${series.label} needs one of them`, state: "insufficient_evidence"}); continue; }
       const anniversariesOf = (period: {start: string; end: string}) => series.indexation!.anniversaryDates ? series.indexation!.anniversaryDates.map((entry) => entry.date).filter((date) => date > period.start && date <= period.end) : anniversaries(period.start, period.end, series.indexation!.anniversaryDay);
       const needed = input.periods.flatMap((period) => anniversariesOf(period)).map((date) => addMonths(date.slice(0, 7), -series.indexation!.lagMonths));
-      const proRataMonths = input.periods.filter((period) => (series.indexation!.proRataByPeriod?.[period.id]?.dup ?? 0) > 0).map((period) => addMonths(period.end.slice(0, 7), -series.indexation!.lagMonths));
+      const proRataMonths = input.periods.filter((period) => (series.indexation!.proRataByPeriod?.[period.id]?.dup ?? 0) > 0).map((period) => conventions ? proRataMonthFor(period.end) : addMonths(period.end.slice(0, 7), -series.indexation!.lagMonths));
       const missing = [...needed, ...proRataMonths].filter((month) => monthlyVariationOf(curve!, month) === null);
       if (missing.length > 0) { uncovered.push({series_id: series.id, reason: `curve ${curve!.id} lacks the monthly variation of ${[...new Set(missing)].join(", ")} that the anniversaries or the pro rata of ${series.label} need; nothing is filled from another month`, state: "insufficient_evidence"}); continue; }
       if (!series.indexation.anniversaryDates) assumptions.add(`${series.id}: the base lists no anniversary dates; calendar-day anniversaries are used, applied at the start of the period rather than at their own date, without the prior-business-day adjustment the indenture writes (declared approximation)`);
@@ -407,8 +411,7 @@ function projectInterestSchedule(raw: InterestScheduleInput, conventions: EventC
       if (proRata && proRata.dup > 0) {
         // Between the last anniversary and the period end, the indenture applies the next month's variation pro rata by business days: (1 + variation)^(dup/dut).
         // Before the anniversary day of the month the update still runs on the previous month's index (a period ending in June before the anniversary uses May).
-        const beforeAnniversary = Number(period.end.slice(8, 10)) < series.indexation!.anniversaryDay;
-        const nextMonth = addMonths(period.end.slice(0, 7), -series.indexation!.lagMonths - (beforeAnniversary ? 1 : 0));
+        const nextMonth = proRataMonthFor(period.end);
         const monthly = monthlyVariationOf(curve!, nextMonth)!;
         const partial = d(monthly).plus(1).pow(d(proRata.dup).div(proRata.dut));
         factor = factor.times(partial);
@@ -472,6 +475,7 @@ function projectInterestSchedule(raw: InterestScheduleInput, conventions: EventC
             record({id: `financial.coupon_payment:${series.id}:${period.id}:${event.date}`, formula: "paid = carried + (principal + carried) * factor(businessDays to the payment date)", operands: {date: event.date, businessDays: String(days), factor: out(factor), carriedBefore: out(carried.minus(accrued)), principal: out(principal)}, result: out(carried)});
             carried = d(0);
           } else {
+            if (conventions && event.amount!.gt(principal)) throw new Error("interest_amortization_exceeds_principal");
             const amount = Decimal.min(event.amount!, principal);
             principal = principal.minus(amount);
             paid = paid!.plus(amount);
@@ -481,8 +485,8 @@ function projectInterestSchedule(raw: InterestScheduleInput, conventions: EventC
         if (positioned) {
           const proRata = series.indexation!.proRataByPeriod?.[period.id];
           if (proRata && proRata.dup > 0) {
-            const nextMonth = addMonths(period.end.slice(0, 7), -series.indexation!.lagMonths);
-            const monthly = curve!.monthlyRateByMonth![nextMonth]!;
+            const nextMonth = conventions ? proRataMonthFor(period.end) : addMonths(period.end.slice(0, 7), -series.indexation!.lagMonths);
+            const monthly = conventions ? monthlyVariationOf(curve!, nextMonth)! : curve!.monthlyRateByMonth![nextMonth]!;
             const partial = layer(d(monthly).plus(1).pow(d(proRata.dup).div(proRata.dut)).minus(1), "indexFactor");
             const partialAccrued = roundAmount(principal.times(partial));
             indexationAccrued = indexationAccrued.plus(partialAccrued);
