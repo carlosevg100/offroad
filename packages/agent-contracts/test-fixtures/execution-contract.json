@@ -1,0 +1,89 @@
+{
+  "synthetic": true,
+  "contract": {
+    "schemaVersion": "execution-contract.v1",
+    "executionId": "10000000-0000-4000-8000-000000000001",
+    "organizationId": "10000000-0000-4000-8000-000000000002",
+    "workId": "10000000-0000-4000-8000-000000000003",
+    "principalId": "10000000-0000-4000-8000-000000000004",
+    "requestId": "10000000-0000-4000-8000-000000000005",
+    "processingRunId": "10000000-0000-4000-8000-000000000006",
+    "purpose": "Compare funding alternatives",
+    "audience": {
+      "kind": "work_participants",
+      "workId": "10000000-0000-4000-8000-000000000003",
+      "policyFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "method": {
+      "platformReleaseId": "synthetic-release-v1",
+      "houseReleaseId": null,
+      "methodId": "synthetic-method",
+      "methodVersion": "1",
+      "manifestHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "baseManifestHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "compilerVersion": "1",
+      "compilerHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "executor": {
+        "key": "synthetic#calculate",
+        "version": "1",
+        "sourceClosureHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "inputContractHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "outputContractHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "formulas": [
+        {
+          "id": "synthetic.formula",
+          "version": "1",
+          "sourceHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ]
+    },
+    "inputs": {
+      "snapshotId": "10000000-0000-4000-8000-000000000007",
+      "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "sources": [
+        {
+          "resourceId": "10000000-0000-4000-8000-000000000008",
+          "sourceVersionId": "10000000-0000-4000-8000-000000000009",
+          "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "rightsRevision": "1"
+        }
+      ],
+      "adoptions": [
+        {
+          "id": "10000000-0000-4000-8000-000000000010",
+          "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "hypotheses": []
+    },
+    "policy": {
+      "version": "1",
+      "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authorityRevision": "1"
+    },
+    "tools": [
+      {
+        "id": "calculate",
+        "version": "1",
+        "effect": "compile_artifact"
+      }
+    ],
+    "allowedEffects": [
+      "read_only",
+      "compile_artifact"
+    ],
+    "budget": {
+      "maxCostMicrousd": 250000,
+      "maxModelCalls": 1,
+      "expiresAt": "2026-09-21T19:00:00Z"
+    },
+    "requestedAt": "2026-09-21T18:00:00Z"
+  },
+  "snapshot": {
+    "observations": [],
+    "decision": {
+      "purpose": "Compare funding alternatives"
+    }
+  }
+}

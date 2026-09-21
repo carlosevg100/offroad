@@ -1,0 +1,141 @@
+{
+  "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
+  "capturedAt": "2026-09-21T22:00:20.589Z",
+  "validThrough": null,
+  "source": "Codex read-only GitHub and AWS API delivery observation",
+  "origin": {
+    "repository": "carlosevg100/offroad",
+    "environmentRef": "ENV-PRODUCTION",
+    "systemRef": "SYS-GITHUB",
+    "authorityClass": "observation_only_no_attestation_authority"
+  },
+  "collector": {
+    "name": "codex-read-only-delivery-observation",
+    "version": "2",
+    "principalClass": "repository automation using existing GitHub and temporary AWS console-authenticated CLI sessions"
+  },
+  "scope": "Wave 17 opening: approved execution contract after stage 16 completion; existing live runtime inspected read-only",
+  "observation": "Exact baseline worker image, healthy outbox and provider policy enforcement observed. Account credential bindings are pinned. No production fixtures or provider inference. Historical OIDC denial remains historical, not a fresh IAM test; alarm notification actions remain unconfigured.",
+  "verificationState": "unverified_operator_observation",
+  "collection": {
+    "baselineCommit": "6d899ca5c2b4275f35ee721fc3967777f59134ef",
+    "githubReadOnly": {
+      "runId": 35634459060,
+      "headSha": "6d899ca5c2b4275f35ee721fc3967777f59134ef",
+      "conclusion": "success"
+    },
+    "runtimeReadOnly": {
+      "captured_at": "2026-09-21T21:59:00.124407+00:00",
+      "commit": "6d899ca5c2b4275f35ee721fc3967777f59134ef",
+      "task_revision": 422,
+      "desired": 1,
+      "running": 1,
+      "rollout": "COMPLETED",
+      "images": [
+        "document-worker:6d899ca5c2b4"
+      ],
+      "health_event_count": 147,
+      "sample": [
+        {
+          "at": "2026-09-21T21:58:48.852Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-21T21:58:50.891Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-21T21:58:52.912Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-21T21:58:54.963Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        },
+        {
+          "at": "2026-09-21T21:58:56.991Z",
+          "event": "outbox.health",
+          "blockedCount": 0,
+          "oldestPendingSeconds": 0
+        }
+      ],
+      "alarms": [
+        {
+          "name": "offroad-outbox-backlog",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:34.378000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-blocked",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:29.632000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-errors",
+          "state": "OK",
+          "updatedAt": "2026-09-21T10:31:44.062000-03:00",
+          "actionsConfigured": false
+        },
+        {
+          "name": "offroad-outbox-heartbeat-missing",
+          "state": "OK",
+          "updatedAt": "2026-09-16T07:47:09.565000-03:00",
+          "actionsConfigured": false
+        }
+      ],
+      "bootProof": [
+        {
+          "at": "2026-09-21T18:10:12.086Z",
+          "event": "worker.boot",
+          "providerDataPolicyEnforced": true,
+          "verifiedProviderConnections": "anthropic,openai",
+          "documentaryWorkPlanningEnabled": true
+        }
+      ],
+      "providerPins": [
+        {
+          "provider": "openai",
+          "region": "global",
+          "versionPinned": true
+        },
+        {
+          "provider": "anthropic",
+          "region": "global",
+          "versionPinned": true
+        }
+      ],
+      "read_only": true,
+      "synthetic_production_data": false
+    },
+    "oidcDeniedRead": {
+      "runId": 35081046003,
+      "action": "cloudwatch:DescribeAlarms",
+      "result": "AccessDenied"
+    },
+    "productionFixtures": false
+  },
+  "actionsRequiringEffectivePermissionVerification": [
+    "ecs:DescribeTasks",
+    "ecs:ListTasks",
+    "logs:FilterLogEvents"
+  ],
+  "requiredNextEvidence": "Role policy and policy simulation receipts for each named action and representative in-scope and out-of-scope resources; live diagnostic reads when available.",
+  "redaction": "No credentials, account identifiers, role identifiers, task identifiers, customer payloads, or raw worker logs are retained. GitHub run and commit identifiers refer only to the repository delivery history.",
+  "limitations": [
+    "Point-in-time operator observation, not independent assurance.",
+    "Alarm actions are not configured; alarm evaluation and state are observed in CloudWatch.",
+    "OIDC diagnostic permissions remain separate from the authorized operator session."
+  ],
+  "freshness": "wave_bound",
+  "waveId": "wave-17"
+}
