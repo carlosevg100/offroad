@@ -43,6 +43,15 @@ export function buildMethodManifest(repositoryRoot: string) {
       sources: [...packageClosure("@offroad/financial-model", root), registration.path,
         "packages/financial-model/scripts/generate-capital-contracts.mjs"].map(source)};
   });
+  // Build-owned test specifications. Their hashes are not execution receipts or approval.
+  const capitalEvidencePaths = [
+    "packages/financial-model/src/capital-procedure-packet.test.ts",
+    "packages/financial-model/src/capital-contract-adoptions.test.ts",
+    "packages/financial-model/src/capital-contract-preparation.test.ts",
+    "packages/financial-model/src/capital-decision-domain-eval.test.ts",
+    "packages/testing-fixtures/src/capital-structure-decision.ts",
+    "apps/document-worker/src/capital-planning-adapter.test.ts"
+];
   const provenance = library.methods.map((method) => {
     const release = released.find((entry) => entry.provenance.procedure.id === method.procedure.id && entry.provenance.procedure.version === method.procedure.version);
     if (release) {
@@ -54,7 +63,7 @@ export function buildMethodManifest(repositoryRoot: string) {
       executorSourceClosures[release.provenance.executor.sourceClosureHash] = release.executorSources;
       return release.provenance;
     }
-    if (method.composition) return compileProcedureComposition(method, method.composition, {compilerSources, executors: registeredCapitalExecutors, evidence: []});
+    if (method.composition) return compileProcedureComposition(method, method.composition, {compilerSources, executors: registeredCapitalExecutors, evidence: method.procedure.id === "prepare-capital-structure-decision" ? capitalEvidencePaths.map(source) : []});
     const adapted = adaptLegacyMethodDocument(method);
     const implementation = method.procedure.implementation;
     const evidencePaths = new Set(method.procedure.reviews.map((review) => `packages/credit-playbook/${review.recordPath}`));

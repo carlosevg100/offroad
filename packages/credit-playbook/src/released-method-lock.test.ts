@@ -15,6 +15,8 @@ function withCopy(test: (copy: string) => void) {
       else symlinkSync(join(root, "packages", name), join(copy, "packages", name));
     }
     for (const name of ["pnpm-lock.yaml", "tsconfig.base.json"]) cpSync(join(root, name), join(copy, name));
+    mkdirSync(join(copy, "apps/document-worker/src"), {recursive: true});
+    cpSync(join(root, "apps/document-worker/src/capital-planning-adapter.test.ts"), join(copy, "apps/document-worker/src/capital-planning-adapter.test.ts"));
     test(copy);
   } finally {rmSync(copy, {recursive: true, force: true});}
 }

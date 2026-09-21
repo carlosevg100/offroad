@@ -14,6 +14,8 @@ function withCandidate(test: (copy: string, component: Record<string, unknown>, 
       else symlinkSync(join(root, "packages", name), join(copy, "packages", name));
     }
     for (const name of ["pnpm-lock.yaml", "tsconfig.base.json"]) cpSync(join(root, name), join(copy, name));
+    mkdirSync(join(copy, "apps/document-worker/src"), {recursive: true});
+    cpSync(join(root, "apps/document-worker/src/capital-planning-adapter.test.ts"), join(copy, "apps/document-worker/src/capital-planning-adapter.test.ts"));
     const file = join(copy, "packages/credit-playbook/knowledge/procedures/capital/prepare-capital-structure-decision.md");
     const text = readFileSync(file, "utf8"); const block = text.match(/```offroad-procedure\n([\s\S]*?)\n```/)![1]!;
     const composition = JSON.parse(block); const contracts = JSON.parse(readFileSync(join(root, "packages/financial-model/contracts/capital-contract-preparation.json"), "utf8"));

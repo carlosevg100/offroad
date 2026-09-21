@@ -8,16 +8,19 @@ import {buildMethodManifest} from "./build-method-manifest";
 const root = resolve(import.meta.dirname, "../../..");
 const path = "capital/prepare-capital-structure-decision.md";
 const source = readFileSync(resolve(root, "packages/credit-playbook/knowledge/procedures", path), "utf8");
-const contracts = JSON.parse(readFileSync(resolve(root, "packages/financial-model/contracts/capital-decision-delivery.json"), "utf8"));
+const contracts = JSON.parse(readFileSync(resolve(root, "packages/financial-model/contracts/capital-procedure-packet.json"), "utf8"));
 describe("professional candidate authoring contract", () => {
   it("keeps the documented output names identical to the actual typed executor output", () => {
     const method = compileMethodDocument(source, path);
     expect(method.procedure.output.fields.map(f => f.id)).toEqual(Object.keys(contracts.outputs.value.fields));
   });
-  it("represents required null values without treating them as optional missing fields", () => {
+  it("retains required packet fields and required null grammar without optional substitution", () => {
     const method = compileMethodDocument(source, path); const schema = compileProcedure(method.procedure).outputSchema;
-    expect(schema).toMatchObject({properties: {humanDecision: {type: "null"}, recommendation: {type: ["object", "null"]}}});
-    expect(schema.required).toContain("humanDecision"); expect(schema.required).toContain("recommendation");
+    expect(schema).toMatchObject({properties: {decision: {type: "object"}, contracts: {type: "array"}}});
+    expect(schema.required).toContain("decision"); expect(schema.required).toContain("contracts");
+    const nullSchema = compileProcedure(compileMethodDocument(source.replace("fingerprint (string, required)", "fingerprint (null, required)"), path).procedure).outputSchema;
+    expect(nullSchema).toMatchObject({properties: {fingerprint: {type: "null"}}});
+    expect(nullSchema.required).toContain("fingerprint");
   });
   it("compiles the actual registered rule but does not publish or run the incomplete candidate", () => {
     const method = compileMethodDocument(source, path);
@@ -25,7 +28,7 @@ describe("professional candidate authoring contract", () => {
     expect(method.procedure.implementation).toBeUndefined(); expect(method.frontmatter.task_specs).toEqual([]);
     const p = buildMethodManifest(root).provenance.find(p => p.procedure.id === method.procedure.id)!;
     expect(p).toMatchObject({grantsExecution: false, authoringStatus: "incomplete"});
-    expect(method.composition!.components.find(c => c.id === "capital.decision-delivery")).toMatchObject({executor: contracts.executor});
+    expect(method.composition!.components.find(c => c.id === "capital.procedure-packet")).toMatchObject({executor: contracts.executor});
   });
   it("supports nullable enum descriptors while retaining null in the generated enum", () => {
     const changed = source.replace('status (enum, required)', 'status (enum|null, required)');
