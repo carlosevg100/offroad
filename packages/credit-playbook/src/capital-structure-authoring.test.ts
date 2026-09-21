@@ -13,7 +13,7 @@ describe("capital structure authoring boundary", () => {
   it("compiles the actual candidate without authorizing a task or staging execution", () => {
     const method = compileMethodDocument(source, sourcePath);
     expect(method.procedure.maturity).toBe("candidate");
-    expect(method.procedure.implementation).toBeUndefined();
+    expect(method.procedure.implementation!.executor.exportName).toBe("prepareCapitalProcedurePacket");
     expect(method.frontmatter.task_specs).toEqual([]);
     expect(methodMayRunInStaging(method)).toBe(false);
     expect(specialistMethodRuntimeManifest.some((entry) => entry.procedure.id === method.procedure.id)).toBe(false);
@@ -21,9 +21,11 @@ describe("capital structure authoring boundary", () => {
   });
 
   it("rejects promotion by changing only the candidate maturity label", () => {
-    for (const maturity of ["implemented", "tested", "production"]) {
+    const withoutImplementation = source.replace(/^(implementation_module|implementation_export|result_contract|persistence_mode|persistence_target):.*\n/gm, "");
+    expect(() => compileMethodDocument(withoutImplementation.replace("maturity: candidate", "maturity: implemented"), sourcePath)).toThrow(/implementation evidence/);
+    for (const maturity of ["tested", "production"]) {
       expect(() => compileMethodDocument(source.replace("maturity: candidate", `maturity: ${maturity}`), sourcePath))
-        .toThrow(/implementation evidence/);
+        .toThrow(/independent review/);
     }
     expect(() => compileMethodDocument(source.replace("maturity: candidate", "maturity: production"), sourcePath))
       .toThrow(/founder's approval/);

@@ -25,7 +25,10 @@ describe("professional candidate authoring contract", () => {
   it("compiles the actual registered rule but does not publish or run the incomplete candidate", () => {
     const method = compileMethodDocument(source, path);
     expect(method.procedure.maturity).toBe("candidate"); expect(methodMayRunInStaging(method)).toBe(false);
-    expect(method.procedure.implementation).toBeUndefined(); expect(method.frontmatter.task_specs).toEqual([]);
+    expect(method.procedure.implementation!.executor).toEqual({module: "@offroad/financial-model", exportName: "prepareCapitalProcedurePacket"});
+    expect(method.procedure.implementation!.persistence).toEqual({mode: "derived_on_demand", target: "capital-procedure-packet.v1"});
+    expect(method.frontmatter.task_specs).toEqual([]);
+    expect(method.frontmatter.capability_availability).toBeUndefined();
     const p = buildMethodManifest(root).provenance.find(p => p.procedure.id === method.procedure.id)!;
     expect(p).toMatchObject({grantsExecution: false, authoringStatus: "incomplete"});
     expect(method.composition!.components.find(c => c.id === "capital.procedure-packet")).toMatchObject({executor: contracts.executor});

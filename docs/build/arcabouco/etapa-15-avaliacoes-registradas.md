@@ -7,3 +7,5 @@ Os registros JSON sob knowledge/reviews/runs contêm expectativas, resultados ob
 O compilador fixa esses recibos, substituindo evidências que eram apenas arquivos de testes. O procedimento conserva candidate/incomplete: execução numérica não comprova revisão independente, aprovação do fundador, direitos correntes ou publicação. A etapa15 só fecha após esses atos e seus gates.
 
 Nenhuma migração, dado descartável em produção, chamada a modelo ou capacidade nova. Nove originais preservados. Limpeza: fixtures do pacote compartilhadas entre regressão e harness, sem duplicar sua montagem.
+
+Metadados de implementação vinculam o export real e o contrato capital-procedure-packet.v1. Os estados são resultados do domínio e derived_on_demand descreve recomputação em memória; não há alegação de tabela, task ou jornada de usuário conectada. Evals de ponta a ponta declarados são de domínio; execução persistida continua na17.

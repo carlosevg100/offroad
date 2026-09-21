@@ -81,7 +81,7 @@ export const procedureBuildProvenance = [
     },
     "source": {
       "path": "capital/prepare-capital-structure-decision.md",
-      "hash": "8c1d92e3e6a06c80b4c9a53b9f92f562ebb543f04dc1e39d30ad7d46e2f8fb64"
+      "hash": "f10e47d7264239613cad915fe37ab8b702118591781dd0520599fb28ddddaa84"
     },
     "compiler": {
       "version": "2026.09.20-v8",
@@ -21111,7 +21111,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "0e5d9272f36cd5f5ea5ac2465cd49ffd37509ccca2be9405b6e1718246306731"
+    "manifestHash": "6d7db4277c2fe468236d03df45682d28e7ad665a958866fa541cf56b201ecac6"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

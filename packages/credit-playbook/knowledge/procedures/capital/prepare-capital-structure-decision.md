@@ -9,6 +9,17 @@ blueprint_stage: 6
 owner_role: Autoria profissional da Offroad
 effective_date: 2026-09-20
 authorities: [CASA]
+implementation_module: @offroad/financial-model
+implementation_export: prepareCapitalProcedurePacket
+result_contract: capital-procedure-packet.v1
+connected_states: [framed, partial, prepared_for_human_review]
+persistence_mode: derived_on_demand
+persistence_target: capital-procedure-packet.v1
+unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts]
+gold_case_ids: [cash-identity-maintain-change-adverse, contractual-definition-and-adopted-basis, no-projection-no-fabricated-company, absent-source-is-not-zero, contribution-does-not-overwrite-adoption, interest-amortization-without-implied-cash-adoption, negative-cash-does-not-consume-restricted-balance]
+adversarial_case_ids: [tampered-envelope, cross-perimeter, foreign-contract-context, foreign-adoption-reference, duplicate-adoption, fabricated-authority, fabricated-result, omitted-contract-direction]
+e2e_scenario_ids: [domain:cash-identity-maintain-change-adverse, domain:contractual-definition-and-adopted-basis]
+cost_eval_ids: [deterministic:no-model-calls, capital.domain_useful_packet]
 task_specs: []
 dependencies: []
 calculation_ids: [financial.operating_cash_projection, financial.financing_cash_flows, financial.capital_period_cash, financial.defined_ratio_boundary]
@@ -115,7 +126,7 @@ Entrega estruturada da decisão: contexto, base adotada e hipóteses, alternativ
 ## Adversarial
 - Testes reais negam bases divergentes, definição incompatível, observação duplicada, resultado fornecido pelo chamador, contrato de executor alterado, export inexistente e promoção por rótulo. Oito casos integrados de negação e seis de consistência têm registros reproduzíveis. A revisão independente continua pendente.
 ## Aceitação
-- Candidata compila com executor de domínio registrado, sem task, staging execution, ato de aprovação ou capacidade liberada. R01 publicado permanece imutável.
+- Candidata compila com executor de domínio registrado e metadados de implementação, sem task, execução em staging, ato de aprovação ou capacidade liberada. Os estados nomeados são estados reais do pacote de domínio; derived_on_demand identifica o resultado recalculado em memória, sem afirmar persistência em tabela. Os cenários end-to-end declarados são de domínio e não jornadas de usuário; conexão e persistência de execução pertencem à17. R01 publicado permanece imutável.
 - Publicação exige composição profissional completa, avaliações integradas, medição registrada da primeira resposta útil, revisão independente real, conteúdo aprovado pelo fundador e comando auditado de14 nos ambientes. Execução universal e revalidação pertencem à17.
 
 # Evidência
