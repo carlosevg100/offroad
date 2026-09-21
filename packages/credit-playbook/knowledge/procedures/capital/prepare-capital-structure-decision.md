@@ -15,7 +15,7 @@ result_contract: capital-procedure-packet.v1
 connected_states: [framed, partial, prepared_for_human_review]
 persistence_mode: derived_on_demand
 persistence_target: capital-procedure-packet.v1
-unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts]
+unit_test_files: [packages/financial-model/src/capital-procedure-packet.test.ts, packages/financial-model/src/capital-procedure-runs.test.ts, packages/financial-model/src/capital-contract-preparation.test.ts, packages/financial-model/src/capital-ipca-prorata.test.ts, packages/financial-model/src/capital-contract-precision.test.ts]
 gold_case_ids: [cash-identity-maintain-change-adverse, contractual-definition-and-adopted-basis, no-projection-no-fabricated-company, absent-source-is-not-zero, contribution-does-not-overwrite-adoption, interest-amortization-without-implied-cash-adoption, negative-cash-does-not-consume-restricted-balance]
 adversarial_case_ids: [tampered-envelope, cross-perimeter, foreign-contract-context, foreign-adoption-reference, duplicate-adoption, fabricated-authority, fabricated-result, omitted-contract-direction]
 e2e_scenario_ids: [domain:cash-identity-maintain-change-adverse, domain:contractual-definition-and-adopted-basis]

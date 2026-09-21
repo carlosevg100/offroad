@@ -60,7 +60,19 @@ export function buildMethodManifest(repositoryRoot: string) {
       executorSourceClosures[release.provenance.executor.sourceClosureHash] = release.executorSources;
       return release.provenance;
     }
-    if (method.composition) return compileProcedureComposition(method, method.composition, {compilerSources, executors: registeredCapitalExecutors, evidence: method.procedure.id === "prepare-capital-structure-decision" ? capitalEvidencePaths.map(source) : []});
+    if (method.composition) {
+      const implementation = method.procedure.implementation;
+      const testSources = (implementation?.evaluation.unitTestFiles ?? []).map(path => {
+        if (!/^(packages|apps)\/[a-zA-Z0-9_./-]+\.test\.ts$/.test(path) || path.split("/").includes("..")) throw new Error("invalid_method_test_source");
+        return source(path);
+      });
+      const executors = registeredCapitalExecutors.map(executor => ({...executor,
+        sources: implementation && executor.module === implementation.executor.module && executor.exportName === implementation.executor.exportName
+          ? [...executor.sources, ...testSources.filter(test => !executor.sources.some((s: CompilerSource) => s.path === test.path))]
+          : executor.sources,
+      }));
+      return compileProcedureComposition(method, method.composition, {compilerSources, executors, evidence: method.procedure.id === "prepare-capital-structure-decision" ? capitalEvidencePaths.map(source) : []});
+    }
     const adapted = adaptLegacyMethodDocument(method);
     const implementation = method.procedure.implementation;
     const evidencePaths = new Set(method.procedure.reviews.map((review) => `packages/credit-playbook/${review.recordPath}`));
