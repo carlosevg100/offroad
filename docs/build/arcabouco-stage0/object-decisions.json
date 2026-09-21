@@ -145606,6 +145606,1615 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.execution_json_projection_v1(p_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_json_projection_v1(p_text text)",
+          "kind": "function",
+          "name": "execution_json_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_json_projection_v1(p_text text)",
+          "kind": "function",
+          "name": "execution_json_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 18,
+          "anchor": "create function private.execution_json_projection_v1(p_text text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "function:private.require_execution_storage_complete_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_execution_storage_complete_v1()",
+          "kind": "function",
+          "name": "require_execution_storage_complete_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_execution_storage_complete_v1()",
+          "kind": "function",
+          "name": "require_execution_storage_complete_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 103,
+          "anchor": "create function private.require_execution_storage_complete_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "function:private.validate_execution_json_v1(p_value json, p_depth integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.validate_execution_json_v1(p_value json, p_depth integer)",
+          "kind": "function",
+          "name": "validate_execution_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_value json, p_depth integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.validate_execution_json_v1(p_value json, p_depth integer)",
+          "kind": "function",
+          "name": "validate_execution_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_value json, p_depth integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 5,
+          "anchor": "create function private.validate_execution_json_v1(p_value json,p_depth integer default 0)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "function:private.validate_execution_storage_identity_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.validate_execution_storage_identity_v1()",
+          "kind": "function",
+          "name": "validate_execution_storage_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.validate_execution_storage_identity_v1()",
+          "kind": "function",
+          "name": "validate_execution_storage_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 65,
+          "anchor": "create function private.validate_execution_storage_identity_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_delete",
+          "kind": "policy",
+          "name": "execution_input_snapshots_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_delete",
+          "kind": "policy",
+          "name": "execution_input_snapshots_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 122,
+          "anchor": "  execute format('create policy %I on %I.%I for delete to public using(false)',t||'_deny_delete',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_insert",
+          "kind": "policy",
+          "name": "execution_input_snapshots_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_insert",
+          "kind": "policy",
+          "name": "execution_input_snapshots_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 120,
+          "anchor": "  execute format('create policy %I on %I.%I for insert to public with check(false)',t||'_deny_insert',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_select",
+          "kind": "policy",
+          "name": "execution_input_snapshots_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_select",
+          "kind": "policy",
+          "name": "execution_input_snapshots_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 119,
+          "anchor": "  execute format('create policy %I on %I.%I for select to public using(false)',t||'_deny_select',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_update",
+          "kind": "policy",
+          "name": "execution_input_snapshots_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_update",
+          "kind": "policy",
+          "name": "execution_input_snapshots_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 121,
+          "anchor": "  execute format('create policy %I on %I.%I for update to public using(false) with check(false)',t||'_deny_update',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:private.execution_manifests.execution_manifests_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_manifests.execution_manifests_deny_delete",
+          "kind": "policy",
+          "name": "execution_manifests_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_manifests",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_manifests.execution_manifests_deny_delete",
+          "kind": "policy",
+          "name": "execution_manifests_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_manifests",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 122,
+          "anchor": "  execute format('create policy %I on %I.%I for delete to public using(false)',t||'_deny_delete',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:private.execution_manifests.execution_manifests_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_manifests.execution_manifests_deny_insert",
+          "kind": "policy",
+          "name": "execution_manifests_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_manifests",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_manifests.execution_manifests_deny_insert",
+          "kind": "policy",
+          "name": "execution_manifests_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_manifests",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 120,
+          "anchor": "  execute format('create policy %I on %I.%I for insert to public with check(false)',t||'_deny_insert',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:private.execution_manifests.execution_manifests_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_manifests.execution_manifests_deny_select",
+          "kind": "policy",
+          "name": "execution_manifests_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_manifests",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_manifests.execution_manifests_deny_select",
+          "kind": "policy",
+          "name": "execution_manifests_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_manifests",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 119,
+          "anchor": "  execute format('create policy %I on %I.%I for select to public using(false)',t||'_deny_select',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:private.execution_manifests.execution_manifests_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_manifests.execution_manifests_deny_update",
+          "kind": "policy",
+          "name": "execution_manifests_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_manifests",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_manifests.execution_manifests_deny_update",
+          "kind": "policy",
+          "name": "execution_manifests_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_manifests",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 121,
+          "anchor": "  execute format('create policy %I on %I.%I for update to public using(false) with check(false)',t||'_deny_update',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:public.work_executions.work_executions_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_executions.work_executions_deny_delete",
+          "kind": "policy",
+          "name": "work_executions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "work_executions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_executions.work_executions_deny_delete",
+          "kind": "policy",
+          "name": "work_executions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "work_executions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 122,
+          "anchor": "  execute format('create policy %I on %I.%I for delete to public using(false)',t||'_deny_delete',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:public.work_executions.work_executions_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_executions.work_executions_deny_insert",
+          "kind": "policy",
+          "name": "work_executions_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "work_executions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_executions.work_executions_deny_insert",
+          "kind": "policy",
+          "name": "work_executions_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "work_executions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 120,
+          "anchor": "  execute format('create policy %I on %I.%I for insert to public with check(false)',t||'_deny_insert',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:public.work_executions.work_executions_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_executions.work_executions_deny_select",
+          "kind": "policy",
+          "name": "work_executions_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "work_executions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_executions.work_executions_deny_select",
+          "kind": "policy",
+          "name": "work_executions_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "work_executions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 119,
+          "anchor": "  execute format('create policy %I on %I.%I for select to public using(false)',t||'_deny_select',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "policy:public.work_executions.work_executions_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_executions.work_executions_deny_update",
+          "kind": "policy",
+          "name": "work_executions_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "work_executions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_executions.work_executions_deny_update",
+          "kind": "policy",
+          "name": "work_executions_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "work_executions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 121,
+          "anchor": "  execute format('create policy %I on %I.%I for update to public using(false) with check(false)',t||'_deny_update',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "r:private.execution_input_snapshots",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_input_snapshots",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_input_snapshots",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_input_snapshots",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_input_snapshots",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 37,
+          "anchor": "create table private.execution_input_snapshots (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "r:private.execution_manifests",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_manifests",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_manifests",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_manifests",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_manifests",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 47,
+          "anchor": "create table private.execution_manifests (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "r:public.work_executions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_executions",
+          "rls": true,
+          "kind": "table",
+          "name": "work_executions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_executions",
+          "rls": true,
+          "kind": "table",
+          "name": "work_executions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 27,
+          "anchor": "create table public.work_executions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_audit",
+          "kind": "trigger",
+          "name": "execution_input_snapshots_audit",
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_input_snapshots_audit AFTER INSERT ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_audit",
+          "kind": "trigger",
+          "name": "execution_input_snapshots_audit",
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_input_snapshots_audit AFTER INSERT ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 125,
+          "anchor": "  execute format('create trigger %I after insert on %I.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_immutable",
+          "kind": "trigger",
+          "name": "execution_input_snapshots_immutable",
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_input_snapshots_immutable BEFORE DELETE OR UPDATE ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_immutable",
+          "kind": "trigger",
+          "name": "execution_input_snapshots_immutable",
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_input_snapshots_immutable BEFORE DELETE OR UPDATE ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 123,
+          "anchor": "  execute format('create trigger %I before update or delete on %I.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_updated",
+          "kind": "trigger",
+          "name": "execution_input_snapshots_updated",
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_input_snapshots_updated BEFORE UPDATE ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_updated",
+          "kind": "trigger",
+          "name": "execution_input_snapshots_updated",
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_input_snapshots_updated BEFORE UPDATE ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 124,
+          "anchor": "  execute format('create trigger %I before update on %I.%I for each row execute function private.set_updated_at()',t||'_updated',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_manifests.execution_manifests_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_manifests.execution_manifests_audit",
+          "kind": "trigger",
+          "name": "execution_manifests_audit",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_manifests_audit AFTER INSERT ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_manifests.execution_manifests_audit",
+          "kind": "trigger",
+          "name": "execution_manifests_audit",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_manifests_audit AFTER INSERT ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 125,
+          "anchor": "  execute format('create trigger %I after insert on %I.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_manifests.execution_manifests_identity",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_manifests.execution_manifests_identity",
+          "kind": "trigger",
+          "name": "execution_manifests_identity",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_execution_storage_identity_v1()",
+          "definition": "CREATE TRIGGER execution_manifests_identity BEFORE INSERT ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.validate_execution_storage_identity_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_manifests.execution_manifests_identity",
+          "kind": "trigger",
+          "name": "execution_manifests_identity",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_execution_storage_identity_v1()",
+          "definition": "CREATE TRIGGER execution_manifests_identity BEFORE INSERT ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.validate_execution_storage_identity_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 100,
+          "anchor": "create trigger execution_manifests_identity before insert on private.execution_manifests for each row execute function private.validate_execution_storage_identity_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_manifests.execution_manifests_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_manifests.execution_manifests_immutable",
+          "kind": "trigger",
+          "name": "execution_manifests_immutable",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_manifests_immutable BEFORE DELETE OR UPDATE ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_manifests.execution_manifests_immutable",
+          "kind": "trigger",
+          "name": "execution_manifests_immutable",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_manifests_immutable BEFORE DELETE OR UPDATE ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 123,
+          "anchor": "  execute format('create trigger %I before update or delete on %I.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_manifests.execution_manifests_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_manifests.execution_manifests_updated",
+          "kind": "trigger",
+          "name": "execution_manifests_updated",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_manifests_updated BEFORE UPDATE ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_manifests.execution_manifests_updated",
+          "kind": "trigger",
+          "name": "execution_manifests_updated",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_manifests_updated BEFORE UPDATE ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 124,
+          "anchor": "  execute format('create trigger %I before update on %I.%I for each row execute function private.set_updated_at()',t||'_updated',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:public.work_executions.work_executions_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_executions.work_executions_audit",
+          "kind": "trigger",
+          "name": "work_executions_audit",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_executions_audit AFTER INSERT ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_executions.work_executions_audit",
+          "kind": "trigger",
+          "name": "work_executions_audit",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_executions_audit AFTER INSERT ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 125,
+          "anchor": "  execute format('create trigger %I after insert on %I.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:public.work_executions.work_executions_complete",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_executions.work_executions_complete",
+          "kind": "trigger",
+          "name": "work_executions_complete",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.require_execution_storage_complete_v1()",
+          "definition": "CREATE CONSTRAINT TRIGGER work_executions_complete AFTER INSERT ON public.work_executions DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION private.require_execution_storage_complete_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_executions.work_executions_complete",
+          "kind": "trigger",
+          "name": "work_executions_complete",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.require_execution_storage_complete_v1()",
+          "definition": "CREATE CONSTRAINT TRIGGER work_executions_complete AFTER INSERT ON public.work_executions DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION private.require_execution_storage_complete_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 110,
+          "anchor": "create constraint trigger work_executions_complete after insert on public.work_executions deferrable initially deferred",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:public.work_executions.work_executions_identity",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_executions.work_executions_identity",
+          "kind": "trigger",
+          "name": "work_executions_identity",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.validate_execution_storage_identity_v1()",
+          "definition": "CREATE TRIGGER work_executions_identity BEFORE INSERT ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.validate_execution_storage_identity_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_executions.work_executions_identity",
+          "kind": "trigger",
+          "name": "work_executions_identity",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.validate_execution_storage_identity_v1()",
+          "definition": "CREATE TRIGGER work_executions_identity BEFORE INSERT ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.validate_execution_storage_identity_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 99,
+          "anchor": "create trigger work_executions_identity before insert on public.work_executions for each row execute function private.validate_execution_storage_identity_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:public.work_executions.work_executions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_executions.work_executions_immutable",
+          "kind": "trigger",
+          "name": "work_executions_immutable",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER work_executions_immutable BEFORE DELETE OR UPDATE ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_executions.work_executions_immutable",
+          "kind": "trigger",
+          "name": "work_executions_immutable",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER work_executions_immutable BEFORE DELETE OR UPDATE ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 123,
+          "anchor": "  execute format('create trigger %I before update or delete on %I.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:public.work_executions.work_executions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_executions.work_executions_updated",
+          "kind": "trigger",
+          "name": "work_executions_updated",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_executions_updated BEFORE UPDATE ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_executions.work_executions_updated",
+          "kind": "trigger",
+          "name": "work_executions_updated",
+          "table": "work_executions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_executions_updated BEFORE UPDATE ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Executor da etapa 17 com revisão independente",
+      "decision": "preservar",
+      "stage": "17 / persistência 2A",
+      "reason": "Armazenamento imutável de execução e bytes, com integridade e acesso direto negado; comandos e autoridade corrente são o incremento 2B.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+          "line": 124,
+          "anchor": "  execute format('create trigger %I before update on %I.%I for each row execute function private.set_updated_at()',t||'_updated',s,t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
     }
   ],
   "repository_items": [
@@ -152104,6 +153713,13 @@
       "decision": "preservar",
       "stage": "16",
       "reason": "Matriz de retenção e direitos derivados; SQL com carimbo de produção e equivalência em staging."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260921230622_execution_persistence_foundation.sql",
+      "decision": "preservar",
+      "stage": "17",
+      "reason": "Identidade e bytes imutáveis; carimbo de produção e SQL idêntico em staging, sem ativação."
     }
   ],
   "staging_archive": [
@@ -152694,5 +154310,15 @@
     ],
     "new_objects": 80,
     "review": "docs/build/arcabouco/etapa-14.md"
+  },
+  "stage_17_storage_revision": {
+    "production_migrations": [
+      "20260921230622"
+    ],
+    "staging_migrations": [
+      "20260921230303"
+    ],
+    "new_objects": 31,
+    "review": "docs/build/arcabouco/etapa-17-execucao.md"
   }
 }
