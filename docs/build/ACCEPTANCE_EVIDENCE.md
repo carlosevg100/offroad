@@ -1,3 +1,7 @@
+## Etapa15: matemática contratual no núcleo financeiro em preparação
+
+Juros/indexação e reconciliação de covenants passam a financial-core, com reexports legados. Fórmulas, schemas, traces e versões são preservados;21 casos registrados reproduzem os mesmos fingerprints. Dois testes novos proíbem cálculo duplicado no playbook e dependência reversa. CI e produção serão registradas após gates reais; nenhuma publicação ou ativação de método.
+
 ## Etapa15: avaliações determinísticas registradas em preparação
 
 Sete casos gold, oito adversariais e seis de consistência executam o pacote integrado e guardam expectativas, observações e fingerprints reproduzidos pelos testes. Três testes novos verificam registros e recusa de adulteração. Candidata permanece sem revisão independente, aprovação de conteúdo ou publicação. CI e produção serão registradas no completion após gates reais;16 autorizada somente após fechamento15.

@@ -7,6 +7,14 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./contractual-interest": {
+      "types": "./src/contractual-interest.ts",
+      "default": "./src/contractual-interest.ts"
+    },
+    "./contractual-covenants": {
+      "types": "./src/contractual-covenants.ts",
+      "default": "./src/contractual-covenants.ts"
     }
   },
   "scripts": {
@@ -16,6 +24,10 @@
     "test": "vitest run --exclude 'dist/**'"
   },
   "dependencies": {
-    "decimal.js": "10.6.0"
+    "decimal.js": "10.6.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43"
   }
 }

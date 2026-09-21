@@ -1,0 +1,315 @@
+import Decimal from "decimal.js";
+
+
+
+Decimal.set({precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -30, toExpPos: 30});
+
+export type DecimalInput = Decimal.Value;
+
+export type CalculationResult = {
+  value: string;
+  trace: Array<{label: string; value: string}>;
+  warnings: string[];
+};
+
+const d = (value: DecimalInput) => new Decimal(value);
+const canonical = (value: Decimal) => value.toDecimalPlaces(8).toFixed();
+
+function result(value: Decimal, trace: CalculationResult["trace"], warnings: string[] = []): CalculationResult {
+  return {value: canonical(value), trace, warnings};
+}
+
+export function calculateAdjustedEbitda(reportedEbitda: DecimalInput, adjustments: DecimalInput[]): CalculationResult {
+  const base = d(reportedEbitda);
+  const adjustmentTotal = adjustments.reduce<Decimal>((sum, item) => sum.plus(item), new Decimal(0));
+  return result(base.plus(adjustmentTotal), [
+    {label: "reported_ebitda", value: canonical(base)},
+    {label: "approved_adjustments", value: canonical(adjustmentTotal)},
+  ]);
+}
+
+export function calculateLeverage(netDebt: DecimalInput, adjustedEbitda: DecimalInput): CalculationResult {
+  const debt = d(netDebt);
+  const ebitda = d(adjustedEbitda);
+  if (ebitda.lte(0)) {
+    throw new RangeError("adjusted EBITDA must be positive");
+  }
+  return result(debt.div(ebitda), [
+    {label: "net_debt", value: canonical(debt)},
+    {label: "adjusted_ebitda", value: canonical(ebitda)},
+  ]);
+}
+
+/**
+ * Brazilian business-day accrual: the factor an annual effective rate accumulates over `businessDays`
+ * of a 252-day year, as indentures state it ((1 + rate)^(DU/252) - 1). Rates are decimals.
+ */
+export function businessDayAccrual(annualRate: DecimalInput, businessDays: number): CalculationResult {
+  if (!Number.isInteger(businessDays) || businessDays < 0) throw new RangeError("business days must be a non-negative integer");
+  const rate = d(annualRate);
+  if (rate.lte(-1)) throw new RangeError("an annual rate below -100% has no accrual factor");
+  const factor = rate.plus(1).pow(new Decimal(businessDays).div(252)).minus(1);
+  return result(factor, [
+    {label: "annual_rate", value: canonical(rate)},
+    {label: "business_days", value: String(businessDays)},
+  ]);
+}
+
+/**
+ * The DI factor of a "p% of DI" remuneration over `businessDays`, with a flat annual DI: each day accrues
+ * p times the daily DI rate and the days compound ((1 + ((1 + DI)^(1/252) - 1) * p)^DU - 1).
+ */
+export function diPercentAccrual(annualDi: DecimalInput, percentOfDi: DecimalInput, businessDays: number): CalculationResult {
+  if (!Number.isInteger(businessDays) || businessDays < 0) throw new RangeError("business days must be a non-negative integer");
+  const di = d(annualDi);
+  const percent = d(percentOfDi);
+  if (di.lte(-1) || percent.lt(0)) throw new RangeError("the DI must be above -100% and the percentage non-negative");
+  const daily = di.plus(1).pow(new Decimal(1).div(252)).minus(1).times(percent);
+  const factor = daily.plus(1).pow(businessDays).minus(1);
+  return result(factor, [
+    {label: "annual_di", value: canonical(di)},
+    {label: "percent_of_di", value: canonical(percent)},
+    {label: "business_days", value: String(businessDays)},
+  ]);
+}
+
+/** The EBITDA a reported leverage implies for a given net debt: netDebt / index. The caller marks it derived, never a fact. */
+export function calculateImpliedEbitda(netDebt: DecimalInput, reportedIndex: DecimalInput): CalculationResult {
+  const debt = d(netDebt);
+  const index = d(reportedIndex);
+  if (index.lte(0)) {
+    throw new RangeError("a reported index must be positive to imply an EBITDA");
+  }
+  return result(debt.div(index), [
+    {label: "net_debt", value: canonical(debt)},
+    {label: "reported_index", value: canonical(index)},
+  ]);
+}
+
+export function calculateDscr(cfads: DecimalInput, debtService: DecimalInput): CalculationResult {
+  const cash = d(cfads);
+  const service = d(debtService);
+  if (service.lte(0)) {
+    throw new RangeError("debt service must be positive");
+  }
+  return result(cash.div(service), [
+    {label: "cfads", value: canonical(cash)},
+    {label: "debt_service", value: canonical(service)},
+  ]);
+}
+
+export function applyCollateralHaircuts(
+  items: Array<{name: string; grossValue: DecimalInput; haircutRate: DecimalInput}>,
+): CalculationResult {
+  const trace: CalculationResult["trace"] = [];
+  const value = items.reduce((total, item) => {
+    const gross = d(item.grossValue);
+    const haircut = d(item.haircutRate);
+    if (haircut.lt(0) || haircut.gt(1)) {
+      throw new RangeError("haircut rate must be between zero and one");
+    }
+    const eligible = gross.mul(new Decimal(1).minus(haircut));
+    trace.push({label: item.name, value: canonical(eligible)});
+    return total.plus(eligible);
+  }, new Decimal(0));
+  return result(value, trace);
+}
+
+export function solveMaximumDebtByDscr(
+  cfads: DecimalInput,
+  minimumDscr: DecimalInput,
+  annualDebtServiceFactor: DecimalInput,
+): CalculationResult {
+  const cash = d(cfads);
+  const dscr = d(minimumDscr);
+  const factor = d(annualDebtServiceFactor);
+  if (dscr.lte(0) || factor.lte(0)) {
+    throw new RangeError("minimum DSCR and debt service factor must be positive");
+  }
+  return result(cash.div(dscr).div(factor), [
+    {label: "cfads", value: canonical(cash)},
+    {label: "minimum_dscr", value: canonical(dscr)},
+    {label: "annual_debt_service_factor", value: canonical(factor)},
+  ]);
+}
+
+export function calculateAllInCost(
+  annualCashRate: DecimalInput,
+  upfrontFeeRate: DecimalInput,
+  termYears: DecimalInput,
+): CalculationResult {
+  const rate = d(annualCashRate);
+  const fee = d(upfrontFeeRate);
+  const term = d(termYears);
+  if (term.lte(0)) {
+    throw new RangeError("term must be positive");
+  }
+  return result(rate.plus(fee.div(term)), [
+    {label: "annual_cash_rate", value: canonical(rate)},
+    {label: "annualized_upfront_fee", value: canonical(fee.div(term))},
+  ], ["Simplified annualized cost; cash-flow IRR remains the approval metric."]);
+}
+
+export function calculateCapacityEnvelope(input: {
+  requested: DecimalInput;
+  cashFlowCapacity: DecimalInput;
+  collateralCapacity: DecimalInput;
+  marketCapacity: DecimalInput;
+}) {
+  const constraints = {
+    cash_flow: d(input.cashFlowCapacity),
+    collateral: d(input.collateralCapacity),
+    market: d(input.marketCapacity),
+  };
+  const binding = (Object.entries(constraints) as Array<[keyof typeof constraints, Decimal]>).reduce(
+    (lowest, current) => current[1].lt(lowest[1]) ? current : lowest,
+  );
+  return {
+    requested: canonical(d(input.requested)),
+    recommended: canonical(binding[1]),
+    bindingConstraint: binding[0],
+    capacities: Object.fromEntries(Object.entries(constraints).map(([key, value]) => [key, canonical(value)])),
+  };
+}
+
+/**
+ * Stable identifiers for deterministic calculations that depth packs may require.
+ *
+ * The registry is intentionally metadata-only: packs bind to a governed calculation id while
+ * the runtime continues to call the typed functions exported by this package. Renaming or
+ * removing a calculation therefore becomes a failing registry test instead of a silent prompt
+ * regression.
+ */
+export const financialCalculationRegistry = {
+  "financial.defined_ratio_boundary": "evaluateDefinedRatio",
+  "financial.capital_period_cash": "buildCapitalPeriodCash",
+  "financial.operating_cash_projection": "buildOperatingCashProjection",
+  "financial.normalize_currency_representation": "normalizeCurrencyRepresentation",
+  "financial.financing_cash_flows": "buildFinancingCashFlows",
+  "financial.dated_debt_cash_flows": "buildDatedDebtCashFlows",
+  "financial.dated_liquidity": "buildLiquidityCalendar",
+  "financial.adjusted_ebitda": "calculateAdjustedEbitda",
+  "financial.net_leverage": "calculateLeverage",
+  "financial.dscr": "calculateDscr",
+  "financial.collateral_haircuts": "applyCollateralHaircuts",
+  "financial.maximum_debt_by_dscr": "solveMaximumDebtByDscr",
+  "financial.all_in_cost": "calculateAllInCost",
+  "financial.capacity_envelope": "calculateCapacityEnvelope",
+  "financial.working_capital": "calculateWorkingCapital",
+  "financial.working_capital_investment": "calculateWorkingCapitalInvestment",
+  "financial.cfads": "calculateCfads",
+  "financial.cash_conversion": "calculateCashConversion",
+  "financial.accounting_identity": "checkIdentity",
+  "financial.debt_ledger_balance": "debtLedgerBalance",
+  "financial.debt_views": "aggregateDebtViews",
+  "financial.maturity_buckets": "maturityBuckets",
+  "financial.debt_grouping": "groupDebt",
+  "financial.weighted_average_life": "weightedAverageLife",
+  "financial.debt_balance_bridge": "buildDebtBalanceBridge",
+  "financial.interest_expense_bridge": "reconcileInterestExpense",
+  "financial.indexed_debt_schedule": "buildIndexedDebtSchedule",
+  "financial.indexed_debt_aggregation": "aggregateIndexedDebtSchedules",
+  "financial.liquidity_coverage": "calculateLiquidityCoverage",
+  "financial.rate_shock": "applyRateShock",
+  "financial.cross_default_propagation": "propagateDefaults",
+  "financial.seasonality": "calculateSeasonality",
+  "financial.concentration": "calculateConcentration",
+  "financial.currency_exposure": "calculateCurrencyExposure",
+  "operation.transaction_need": "calculateTransactionNeed",
+  "operation.sources_and_uses": "reconcileSourcesAndUses",
+  "operation.pro_forma_position": "calculateProFormaPosition",
+  "operation.incremental_working_capital": "calculateIncrementalWorkingCapital",
+  "operation.excess_funding_carry": "calculateExcessFundingCarry",
+  "operation.disbursement_coverage": "testDisbursementCoverage",
+  "structure.periodic_rate": "periodicRate",
+  "structure.debt_service_schedule": "buildDebtServiceSchedule",
+  "structure.coverage_series": "calculateCoverageSeries",
+  "structure.covenant_headroom": "calculateCovenantHeadroom",
+  "structure.maturity_concentration": "maturityConcentration",
+  "receivables.pool_eligibility": "classifyReceivablesPoolTitle",
+  "receivables.pool_concentration_cap": "capReceivablesPoolConcentration",
+  "receivables.pool_waterfall": "allocateReceivablesPoolWaterfall",
+  "receivables.pool_borrowing_base": "calculateReceivablesPoolBorrowingBase",
+  "receivables.pool_reconciliation": "reconcileReceivablesPoolLedgers",
+  "receivables.pool_performance": "calculateReceivablesPoolPerformance",
+  "receivables.pool_evidence_coverage": "calculateReceivablesPoolEvidenceCoverage",
+  "receivables.pool_trigger": "compareReceivablesPoolTrigger",
+} as const;
+
+export type FinancialCalculationId = keyof typeof financialCalculationRegistry;
+
+export function isFinancialCalculationId(value: string): value is FinancialCalculationId {
+  return Object.hasOwn(financialCalculationRegistry, value);
+}
+
+/** A single traced calculation with its formula and operands, for functions that return more than one figure. */
+export type CalculationTrace = {id: string; formula: string; operands: Record<string, string>; result: string};
+
+/**
+ * Present value of dated flows discounted at an annual effective rate over business days of a
+ * 252-day year: PV = sum(amount / (1 + rate)^(businessDays / 252)). Used by the exit-cost method
+ * for the make-whole prices the indentures define at a quoted rate.
+ */
+export function presentValueByBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string, options: {factorDecimals?: number; presentValueDecimals?: number} = {}): {value: string; discounted: Array<{id: string; amount: string; businessDays: number; factor: string; presentValue: string}>; trace: CalculationTrace} {
+  if (!/^\d+(\.\d+)?$/.test(annualRate)) throw new Error("annualRate must be a non-negative decimal string");
+  const rate = new Decimal(annualRate);
+  let total = new Decimal(0);
+  const discounted = flows.map((flow) => {
+    if (!Number.isInteger(flow.businessDays) || flow.businessDays < 0) throw new Error(`flow ${flow.id}: businessDays must be a non-negative integer`);
+    // An indenture may round the discount factor of each flow (FVPk at nine decimals) before dividing; the option keeps that layer.
+    const rawFactor = rate.plus(1).pow(new Decimal(flow.businessDays).div(252));
+    const factor = options.factorDecimals === undefined ? rawFactor : rawFactor.toDecimalPlaces(options.factorDecimals, Decimal.ROUND_HALF_UP);
+    const presentValue = options.presentValueDecimals === undefined ? new Decimal(flow.amount).div(factor) : new Decimal(flow.amount).div(factor).toDecimalPlaces(options.presentValueDecimals, Decimal.ROUND_HALF_UP);
+    total = total.plus(presentValue);
+    return {id: flow.id, amount: new Decimal(flow.amount).toFixed(), businessDays: flow.businessDays, factor: factor.toDecimalPlaces(12).toFixed(), presentValue: presentValue.toDecimalPlaces(8).toFixed()};
+  });
+  const value = total.toDecimalPlaces(8).toFixed();
+  return {value, discounted, trace: {id: "financial.present_value_by_business_days", formula: "sum(amount / (1 + annualRate)^(businessDays/252))", operands: {annualRate, flows: String(flows.length), factorDecimals: options.factorDecimals === undefined ? "none" : String(options.factorDecimals), presentValueDecimals: options.presentValueDecimals === undefined ? "none" : String(options.presentValueDecimals)}, result: value}};
+}
+
+/** Macaulay duration in business days of dated flows at an annual effective rate: sum(DU * PV) / sum(PV). */
+export function macaulayDurationBusinessDays(flows: Array<{id: string; amount: string; businessDays: number}>, annualRate: string, options: {factorDecimals?: number; presentValueDecimals?: number} = {}): {value: string; trace: CalculationTrace} {
+  const present = presentValueByBusinessDays(flows, annualRate, options);
+  const total = new Decimal(present.value);
+  if (total.isZero()) throw new Error("duration is undefined for flows with zero present value");
+  const weighted = present.discounted.reduce((sum, flow) => sum.plus(new Decimal(flow.presentValue).times(flow.businessDays)), new Decimal(0));
+  const value = weighted.div(total).toDecimalPlaces(8).toFixed();
+  return {value, trace: {id: "financial.macaulay_duration_business_days", formula: "sum(businessDays * presentValue) / sum(presentValue)", operands: {annualRate, flows: String(flows.length), presentValue: present.value, factorDecimals: options.factorDecimals === undefined ? "none" : String(options.factorDecimals)}, result: value}};
+}
+
+/**
+ * Accrual factor over business days of a 252-day year kept at the precision an indenture writes:
+ * (1 + annualRate)^(businessDays / 252) - 1, or, with a percentage of the index, the daily rate
+ * times the percentage compounded over the days. `decimals` and `mode` are the layer the indenture
+ * states (a DI factor at eight decimals rounded, a daily accumulation at sixteen truncated).
+ */
+/**
+ * DI accrual by the indenture convention (B3 caderno de fórmulas): each day's factor is (1 + TDI * p),
+ * the running product is cut to `dailyProductDecimals` after every day (truncated, as the indentures
+ * write), and the final Fator DI is stated at `factorDecimals` with the stated mode. `dailyRate` is the
+ * TDI already stated as a daily rate (the CDI of the day divided by 100 raised to 1/252, as published).
+ */
+export function diPercentAccrualByConvention(input: {dailyRate: DecimalInput; businessDays: number; percentOfIndex: DecimalInput; dailyProductDecimals: number; dailyProductMode: "round" | "truncate"; factorDecimals: number; factorMode: "round" | "truncate"}): {value: string; trace: CalculationTrace} {
+  if (!Number.isInteger(input.businessDays) || input.businessDays < 0) throw new Error("businessDays must be a non-negative integer");
+  const modeOf = (mode: "round" | "truncate") => (mode === "truncate" ? Decimal.ROUND_DOWN : Decimal.ROUND_HALF_UP);
+  const daily = new Decimal(1).plus(new Decimal(input.dailyRate).times(input.percentOfIndex)).toDecimalPlaces(input.dailyProductDecimals, modeOf(input.dailyProductMode));
+  let product = new Decimal(1);
+  for (let day = 0; day < input.businessDays; day += 1) product = product.times(daily).toDecimalPlaces(input.dailyProductDecimals, modeOf(input.dailyProductMode));
+  const value = product.minus(1).toDecimalPlaces(input.factorDecimals, modeOf(input.factorMode)).toFixed();
+  return {value, trace: {id: "financial.di_percent_accrual_by_convention", formula: "product over days of (1 + TDI * p), cut to the daily-product layer after each day; Fator DI - 1 at the factor layer", operands: {dailyRate: new Decimal(input.dailyRate).toFixed(), percentOfIndex: new Decimal(input.percentOfIndex).toFixed(), businessDays: String(input.businessDays), dailyFactor: daily.toFixed(), dailyProductDecimals: String(input.dailyProductDecimals), dailyProductMode: input.dailyProductMode, factorDecimals: String(input.factorDecimals), factorMode: input.factorMode}, result: value}};
+}
+
+export function accrualFactorAtPrecision(input: {annualRate: DecimalInput; businessDays: number; percentOfIndex?: DecimalInput; decimals: number; mode: "round" | "truncate"}): {value: string; trace: CalculationTrace} {
+  if (!Number.isInteger(input.businessDays) || input.businessDays < 0) throw new Error("businessDays must be a non-negative integer");
+  if (!Number.isInteger(input.decimals) || input.decimals < 0 || input.decimals > 20) throw new Error("decimals must be an integer between 0 and 20");
+  const rounding = input.mode === "truncate" ? Decimal.ROUND_DOWN : Decimal.ROUND_HALF_UP;
+  let factor: Decimal;
+  if (input.percentOfIndex === undefined) {
+    factor = new Decimal(input.annualRate).plus(1).pow(new Decimal(input.businessDays).div(252)).minus(1);
+  } else {
+    const daily = new Decimal(input.annualRate).plus(1).pow(new Decimal(1).div(252)).minus(1).times(input.percentOfIndex);
+    factor = daily.plus(1).pow(input.businessDays).minus(1);
+  }
+  const value = factor.toDecimalPlaces(input.decimals, rounding).toFixed();
+  return {value, trace: {id: "financial.accrual_factor_at_precision", formula: input.percentOfIndex === undefined ? "(1 + annualRate)^(businessDays/252) - 1, at the stated layer" : "(1 + ((1 + annualRate)^(1/252) - 1) * percent)^businessDays - 1, at the stated layer", operands: {annualRate: new Decimal(input.annualRate).toFixed(), businessDays: String(input.businessDays), percentOfIndex: input.percentOfIndex === undefined ? "n/a" : new Decimal(input.percentOfIndex).toFixed(), decimals: String(input.decimals), mode: input.mode}, result: value}};
+}
