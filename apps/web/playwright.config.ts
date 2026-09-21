@@ -13,6 +13,8 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
+  // Retries preserve diagnostics; a flaky run must never satisfy the merge gate.
+  failOnFlakyTests: !!process.env.CI,
   timeout: 240_000,
   expect: {timeout: 30_000},
   reporter: process.env.CI ? [["list"], ["html", {open: "never", outputFolder: "playwright-report"}]] : "list",
