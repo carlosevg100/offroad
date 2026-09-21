@@ -1435,8 +1435,12 @@
     {
       "version": "20260921155432",
       "name": "provider_retention_dependency_and_contract_guards"
+    },
+    {
+      "version": "20260921230622",
+      "name": "execution_persistence_foundation"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-21T15:55:19.195091+00:00"
+  "captured_at": "2026-09-21T23:14:40.978Z"
 }
