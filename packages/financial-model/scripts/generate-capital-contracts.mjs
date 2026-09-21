@@ -10,7 +10,8 @@ const temporary = await mkdtemp(join(tmpdir(), 'offroad-capital-contracts-'));
 try {
   const outfile = join(temporary, 'contracts.mjs');
   await build({entryPoints: [join(root, 'packages/financial-model/src/capital-executor-contracts.ts')], outfile, bundle: true, platform: 'node', format: 'esm', target: 'node24', logLevel: 'silent'});
-  const {capitalDecisionExecutorContracts, capitalContractPreparationExecutorContracts} = await import(pathToFileURL(outfile));
+  const {capitalDecisionExecutorContracts, capitalContractPreparationExecutorContracts, capitalProcedurePacketExecutorContracts} = await import(pathToFileURL(outfile));
   await writeFile(join(root, 'packages/financial-model/contracts/capital-decision-delivery.json'), JSON.stringify(capitalDecisionExecutorContracts()) + '\n');
   await writeFile(join(root, 'packages/financial-model/contracts/capital-contract-preparation.json'), JSON.stringify(capitalContractPreparationExecutorContracts()) + '\n');
+  await writeFile(join(root, 'packages/financial-model/contracts/capital-procedure-packet.json'), JSON.stringify(capitalProcedurePacketExecutorContracts()) + '\n');
 } finally {await rm(temporary, {recursive: true, force: true});}

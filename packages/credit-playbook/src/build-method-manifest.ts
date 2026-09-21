@@ -32,6 +32,7 @@ export function buildMethodManifest(repositoryRoot: string) {
   const registeredCapitalExecutors = [
     {path: "packages/financial-model/contracts/capital-decision-delivery.json", exportName: "prepareCapitalDecisionDelivery"},
     {path: "packages/financial-model/contracts/capital-contract-preparation.json", exportName: "prepareCapitalContractEvidence"},
+    {path: "packages/financial-model/contracts/capital-procedure-packet.json", exportName: "prepareCapitalProcedurePacket"},
   ].map(registration => {
     const contracts = JSON.parse(source(registration.path).content);
     if (contracts.schemaVersion !== "method-executor-contracts.v1" || contracts.executor?.module !== "@offroad/financial-model"

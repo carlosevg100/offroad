@@ -6,6 +6,15 @@ O run 35559883152 bloqueou o pacote: a gravação do artefato sofreu deadlock e 
 
 O run35555393424 revelou uma corrida no teste: o status genérico de sucesso da publicação era lido antes do término da adoção, antecipando a consulta SQL. O teste agora exige a indicação específica do vínculo adotado, retornada pelo servidor, antes de conferir o banco. Mantém as asserções de autorização, histórico e persistência, sem sleeps ou relaxamento de gate. A verificação da correção na CI e produção permanece requisito de fechamento. A CI também reprova execuções flaky com failOnFlakyTests; o retry conserva diagnóstico, sem tornar o gate verde. Sem DDL ou alteração de produto.
 
+## Etapa15: pacote integrado do procedimento (2026-09-20)
+
+A entrega recompõe a decisão e a preparação contratual sob o mesmo contexto. Liga índices
+às contribuições adotadas com recibos explícitos e conserva divergência. Cronogramas de
+juros não são confundidos com principal ou fluxo de caixa; revisão da ligação permanece
+visível. Termos omitidos são recusados antes de qualquer default do schema. Onze casos
+novos e14 regressões; contrato integral registrado, compilador v6. Sem DDL ou ativação.
+Gates/produção no completion; autoria final, revisão independente e publicação seguem na15.
+
 ## Etapa15: vínculo entre contrato e adoção (2026-09-20)
 
 O adaptador recompõe a preparação contratual e o índice adotado. Confere contexto, LTM,

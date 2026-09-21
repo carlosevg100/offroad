@@ -16,6 +16,19 @@ export const capitalContractAdoptionsInputSchema = z.strictObject({
   for (const entries of [i.definitions, i.origins]) if (new Set(entries.map(e => e.field)).size !== entries.length) c.addIssue({code: "custom", message: "Duplicate contract binding"});
 });
 
+const decimal = z.string().regex(/^-?\d+(?:\.\d+)?$/);
+export const capitalContractAdoptionsOutputSchema = z.strictObject({
+  schemaVersion: z.literal("capital-contract-adoption-alignment.v1"), preparationFingerprint: hash,
+  ratioFingerprint: hash, basisFingerprint: hash, scope: adoptedDefinedRatioInputSchema.shape.scope, instrumentId: key,
+  alignment: z.array(z.strictObject({operand: field, selectedDecisionId: z.uuid().nullable(), selectedObservationId: z.uuid().nullable(),
+    calculated: decimal.nullable(), selected: decimal.nullable(), numericMatch: z.boolean(), definitionBindingsMatch: z.boolean(),
+    originBindingsMatch: z.boolean(), reasons: z.array(key)})), directionMatches: z.boolean(),
+  definitions: capitalContractAdoptionsInputSchema.shape.definitions, origins: capitalContractAdoptionsInputSchema.shape.origins,
+  status: z.enum(["aligned", "divergent", "unresolved"]), sourceVersionIds: z.array(z.uuid()),
+  requiresLiveRightsCheck: z.literal(true), sourceReviewRequired: z.literal(true), pendingReviews: z.array(key),
+  mutatesWorkingBasis: z.literal(false), certifiesContractualCompliance: z.literal(false), grantsExecution: z.literal(false), fingerprint: hash,
+});
+
 /** Links proposed calculation to already-selected contributions. It never adopts, overwrites,
  * reads customer data or authorizes a receipt. The execution reader must retrieve the immutable
  * definitions, observations and derivation edges under current access/source rights. */
@@ -80,5 +93,5 @@ export function reconcileCapitalContractAdoptions(raw: unknown) {
     requiresLiveRightsCheck: true as const, sourceReviewRequired: true as const,
     pendingReviews: ["contractual_rounding", "measurement_applicability", "waiver_cure_and_legal_effects"] as const,
     mutatesWorkingBasis: false as const, certifiesContractualCompliance: false as const, grantsExecution: false as const};
-  return {...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")};
+  return capitalContractAdoptionsOutputSchema.parse({...payload, fingerprint: createHash("sha256").update(JSON.stringify(payload)).digest("hex")});
 }
