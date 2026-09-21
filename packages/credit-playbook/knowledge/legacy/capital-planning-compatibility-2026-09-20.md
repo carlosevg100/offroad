@@ -1,6 +1,9 @@
-// Generated from the frozen legacy adapter. New professional authorship does not alter this policy.
-// This preserves the existing adapter; it does not publish or activate the candidate method.
-export const capitalPlanningCompatibilityPolicy = {
+# Adaptador legado de planejamento de capital
+
+Snapshot operacional preservado da versão 2026.09.20-v1. Não é o procedimento profissional aprovado em 21/09/2026. O incremento de execução da etapa 17 deve substituir conjuntamente prompt, schemas, assessment, fila, RPC e projeção. A publicação do novo corpus não declara este legado conforme às regras novas.
+
+```capital-planning-compatibility
+{
   "schemaVersion": "capital-planning-compatibility.v1",
   "version": "2026.09.20-v1",
   "scope": "existing_public_directional_adapter",
@@ -62,7 +65,6 @@ export const capitalPlanningCompatibilityPolicy = {
       "label": "Special situations or liability management",
       "methodBoundary": "Can address a maturity or stressed liquidity problem; creditor coordination and execution risk are central."
     }
-  ],
-  "sourcePath": "packages/credit-playbook/knowledge/legacy/capital-planning-compatibility-2026-09-20.md",
-  "policyHash": "22867fa0ad79533d988d6c851f40ef17c2f438b1ae6c100b81ce8a705bce8ae0"
-} as const;
+  ]
+}
+```

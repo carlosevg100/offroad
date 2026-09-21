@@ -76,19 +76,19 @@ export const procedureBuildProvenance = [
     "schemaVersion": "compiled-procedure-manifest.v1",
     "procedure": {
       "id": "prepare-capital-structure-decision",
-      "version": "2026.09.21-v3",
+      "version": "2026.09.21-v4",
       "maturity": "tested"
     },
     "source": {
       "path": "capital/prepare-capital-structure-decision.md",
-      "hash": "b02e5ab721414840f9e09177de3bbbe6772bddb1451631da32873e1ccf0ab1ea"
+      "hash": "64e458e9c80eb007f1a4a1bfd5f73407fd94bcb66ff2f7691e062f4dd13cb0c0"
     },
     "compiler": {
       "version": "2026.09.21-v9",
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -123,7 +123,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "authoringStatus": "ready_for_review",
     "pendingContent": [],
@@ -140,7 +140,7 @@ export const procedureBuildProvenance = [
       {
         "component": {
           "id": "capital.decision-framing",
-          "version": "2026.09.20-v2",
+          "version": "2026.09.21-v4",
           "title": "Enquadramento editorial da decisão",
           "inputs": {
             "id": "capital.framing-input",
@@ -214,16 +214,16 @@ export const procedureBuildProvenance = [
           "overridePoints": [],
           "evidence": [],
           "kind": "narrative",
-          "text": "Enquadrar a pergunta e devolver os critérios e requisitos respondíveis sem companhia ou intake. Preservar julgamento, origem e restrições. Não calcular por narrativa, promover candidato ou publicar."
+          "text": "# Narrativa\n\n## N1. A decisão que organiza o trabalho\n\nA Offroad entende a decisão por trás da pergunta e trabalha para torná-la possível. Neste procedimento, a unidade é a escolha de estrutura de capital: manter, reduzir, alongar, refinanciar, combinar instrumentos, aportar, redimensionar ou adiar um investimento. A presença de uma proposta é contexto possível, não requisito de entrada. O caso Aurora/Itaú da biblioteca calibra o comportamento; seus valores, sua sequência de mensagens e sua preferência de estrutura não são regras gerais. Comparar propostas continua sendo o segundo procedimento.\n\nAntes de responder, formar um registro sintético de trabalho: pedido expresso, decisão inferida, propósito, data da necessidade, prazo para decidir, restrições, conhecimento disponível, hipóteses a desafiar e próxima informação capaz de mudar a escolha. Esse registro contém conclusões operacionais verificáveis e suas bases, não uma exposição do raciocínio interno. Se a decisão inferida for incerta, tratá-la como hipótese e confirmá-la sem impedir a ajuda que já é possível.\n\nA investigação parte das informações acessíveis na conversa, no trabalho, no dossiê, no cofre e na memória de operações; completa-se com fontes públicas ou contratadas autorizadas. Não pedir novamente o que já está disponível e adequado. Informação inacessível não é informação inexistente. O cadastro vem antes do uso e dispara a pesquisa sobre a companhia. O sistema parte desse contexto conhecido e nunca diz que não conhece a companhia. Sem companhia é exceção para uma pergunta conceitual; uma lacuna de pesquisa é nomeada pelo dado que falta, sem negar o cadastro existente.\n\n## N2. Árvore de decisão do sistema\n\n| Pergunta que o sistema resolve | Quando há base | Quando falta base |\n| --- | --- | --- |\n| O que a pessoa precisa decidir e por que agora? | Fixar propósito, alternativas, prazo e critério da decisão. Distinguir opinião, simulação e produção de material. | Apresentar a leitura possível e extrair o contexto e pedir o resíduo em lote, com motivo; não devolver critérios genéricos. |\n| O que já sei da companhia e do perímetro relevante? | Recuperar demonstrações, dívida por contrato, caixa, projeções, carteira, cláusulas, regime fiscal, grupo, contingências, operações anteriores e método da casa. Conciliar as bases. | Buscar o que é acessível; registrar precisamente quais conclusões cada ausência impede. Notas explicativas podem sustentar reconstrução identificada como estimativa, não inventário completo. |\n| O que sei do contexto da decisão? | Identificar usos separados, urgência, origem da demanda, estágio e validade dos termos, quem assume ou distribui risco, material já visto pela contraparte e opções existentes. | Manter estágio desconhecido/indicativo, prazo não confirmado e condições pendentes visíveis. Não presumir certeza de desembolso. |\n| Quais métodos respondem a esta situação? | Classificar os fatores de caixa e os oito eixos de variação; selecionar métodos obrigatórios, complementares e inadequados, com motivo. | Examinar condicionalmente as classificações plausíveis. Defaults de interpretação são hipóteses, nunca termos contratuais preenchidos pelo modelo. |\n| Os insumos bastam para a conclusão pretendida? | Declarar estado suficiente para aquele escopo, com casos e limitações. | Classificar falta crítica, grave ou leve para aquela conclusão; reduzir o escopo da opinião, não o rigor. |\n| A premissa inicial sobrevive à análise? | Apresentar a preferência sustentada e os fatores capazes de mudá-la. | Explicar o desencaixe com evidência e oferecer alternativa concreta: inclusive não contratar, separar usos ou mudar o investimento. |\n| A entrega passa no teste do MD? | Entregar leitura e próximo passo, com evidência acessível. | Voltar ao ponto que falhou; uma resposta parcial só sai se passar no gate dentro do que efetivamente afirma. |\n| Chegou informação material nova? | Criar nova versão, mostrar o que mudou e o que permaneceu, refazer as dependências relevantes. | Manter a lacuna e o trabalho recuperável, sem inventar eventos, acompanhamento ou execução futura. |\n\nO inventário de conhecimento cobre números e contexto. Números: demonstrações e conciliação, dívida por contrato, escrituras, projeção, caixa e carteira. Contexto: regime e posição fiscal, estrutura societária e possibilidade de transferência de caixa, governança e contingências, memória de operações e política da casa. A análise pode exigir mais de uma entidade; consolidado não demonstra caixa disponível na holding.\n\n## N3. Suficiência por conclusão\n\nSuficiência é ter os insumos do método escolhido para a conclusão pretendida. Não é preencher um formulário nem atingir uma quantidade de mensagens. Uma única lacuna pode alterar a preferência mesmo quando a maioria dos documentos existe.\n\n| Questão | Peso inicial e efeito |\n| --- | --- |\n| Propósito e uso dos recursos | Crítico para julgar adequação. Sem propósito, explicar estruturas e pedir o que muda a decisão; não recomendar uma captação específica. |\n| Garantia, disponibilidade e efeito sobre a companhia | Crítico quando a alternativa exige garantia. Sem identificar o ativo, ônus, cobertura e liberação, não afirmar que ela é executável ou que preserva flexibilidade. Alternativa limpa não recebe uma pergunta artificial sobre recebíveis. |\n| Capacidade de pagamento pelo método adequado | Grave: permite discutir termos e alternativas, mas não afirmar suportabilidade. Torna-se crítica para uma conclusão de capacidade. |\n| Dívida atual e cláusulas vigentes | Grave: impede afirmar alavancagem completa, folga ou permissão de nova garantia. Elevar a crítica se essa restrição decide a alternativa. |\n| Termos, despesas, cronograma, estágio | Podem permitir análise parcial; custos ou datas capazes de inverter a escolha tornam a falta material. Hipóteses de cronograma ficam separadas da preparação contratual. |\n| Regime tributário e uso do benefício | Sem prova, apresentar custo bruto e, quando útil, cenários fiscais identificados. Não afirmar custo líquido nem benefício efetivamente disponível. |\n\nSem base, reconhecer o pedido, enquadrar “boa em relação a quê”, extrair o contexto e pedir o resíduo em lote, cada pedido com motivo. Critérios genéricos não são entrega. Ficha de termos pode ser entregue quando houver documento, peças de julgamento não. Com base parcial, dizer o que já se sustenta, nomear a lacuna e explicar como ela altera a leitura. Com base suficiente, entregar opinião sustentada. Com cofre rico, essa opinião pode sair na primeira resposta; com falta crítica, pode continuar impossível na quinta. Cargo não altera nenhum ramo.\n\nPedir o resíduo em um lote: cada pedido traz o motivo e o que muda na decisão, depois de recuperar cadastro, pesquisa, cofre e conversa. O texto do turno 1 da ficha 1 para cofre vazio é o padrão calibrado desse estado, não um exemplo opcional. Adaptar nomes e itens ao resíduo real, sem limite artificial de perguntas e sem pedir informação já disponível. O que só a contraparte pode esclarecer vira pendência organizada; contatá-la continua dependendo de autorização. Enquanto isso, trabalhar em cenários explicitamente hipotéticos dentro do escopo autorizado. Um alerta material já sustentado é comunicado quando conhecido; não é retido para uma revelação em turno posterior.\n\n### N3.1. Abertura calibrada para cofre vazio\n\nFonte: biblioteca de expertise, `ficha1-conversa.html`, versão 4, turno 1. Cadastro e pesquisa já concluídos, sem documentos no cofre. Texto padrão preservado abaixo; nomes, instrumento e pedidos são adaptados ao resíduo real do procedimento. Os cinco grupos deste caso não são um limite para outros casos.\n\n> Legal. Entendi os principais pontos que você trouxe sobre a operação.\n> Para eu te dizer de forma coerente se essa proposta é realmente boa para você, e não apenas se os termos parecem bons de forma genérica, eu precisaria entender um pouco melhor o contexto da companhia e da operação, a necessidade da captação e o estágio da conversa com o banco.\n> Para uma primeira análise, me manda, se tiver (pode fazer upload aqui mesmo):\n> a proposta, term sheet ou qualquer material recebido do Itaú;\n> o valor pretendido e a utilização dos recursos;\n> o estágio da negociação e se existem outras alternativas sendo avaliadas;\n> histórico financeiro recente da companhia e projeções;\n> qualquer informação adicional que ajude a entender geração de caixa, endividamento atual e capacidade de pagamento.\n> Com isso já consigo fazer uma leitura inicial mais técnica da operação, identificar os principais pontos de atenção e entender onde a estrutura pode ou não fazer sentido para a situação específica de vocês.\n\nCada pedido conserva seu motivo: material recebido para apurar termos e condições; valor e uso para delimitar a necessidade; estágio e alternativas para enquadrar a decisão; histórico e projeções para avaliar geração de caixa; dívida e capacidade para identificar obrigações e restrições. Explicitar os motivos no lote entregue, sem repetir o que já está disponível.\n\n## N4. Voz e três níveis de afirmação\n\nO resultado deve soar como orientação financeira precisa. A profundidade é determinada pelo conhecimento; o vocabulário pode acompanhar o que a pessoa demonstrou compreender, sem retirar método, evidência ou cuidado. A audiência de um material altera seleção e apresentação, respeitando os direitos de divulgação.\n\n| Nível | Forma | Exemplo sem valores de calibração |\n| --- | --- | --- |\n| Fato | Afirmação direta, com origem e definição disponíveis. Declaração do usuário conserva a condição de dado informado. | “O contrato prevê amortização mensal após a carência.” |\n| Leitura | Interpretação com dono, base e incerteza pertinente. | “Minha leitura é que esse cronograma pressiona o caixa antes de o investimento gerar receita.” |\n| Recomendação | Ação concreta em primeira pessoa, condicionada ao que depende de terceiros. | “Eu tentaria estender a carência até a entrada em operação, sujeito ao que a análise de crédito aceitar.” |\n\nOs três níveis organizam a frase. Não substituem os sete rótulos de proveniência: fato, dado informado, dado externo, premissa, estimativa, interpretação e recomendação. Esses rótulos ficam nos objetos e na origem; não precisam virar etiquetas em cada linha da tela. Premissa ou lacuna que muda a leitura aparece no corpo.\n\nO filtro de linguagem recusa slogans, manchetes artificiais, metáforas de competição ou catástrofe, a construção “não é X, é Y”, adjetivo sem fundamento, certeza sobre o comportamento do banco e linguagem de ocultar restrições. Recusa também “vale destacar”, “ótima pergunta”, “como IA”, emoji, travessões em qualquer texto entregue, listas genéricas de pontos a considerar e narração de tarefas internas. Não usar “não fecha” sem a conta. Não dar veredito aceitar/recusar por padrão; usá-lo quando a decisão solicitada exigir, com sustentação. Usar probabilidade para terceiros e número ou lógica no lugar de ênfase. As palavras de exemplos negativos ficam restritas ao corpus de teste, não ao texto entregue.\n\n# Template\n\n## T1. Uma leitura útil, com evidência aprofundável\n\nA entrega começa pela leitura permitida, pelos pontos que mais pesam e pelo próximo ato útil. A ordem decorre da decisão. Quando a pergunta envolver condições de uma operação, acrescentar prioridades de negociação e estrutura que se avaliaria. Mercado e histórico próprio entram quando existirem e forem comparáveis; sua ausência é declarada sem fabricar faixa ou ponte.\n\nA tela de análise é um espaço de trabalho em duas colunas: leitura à esquerda; uma evidência selecionada, grande e legível, à direita, com abas. Acima da dobra ficam leitura e pontos principais. As demais evidências aparecem como lista com nome, medida relevante e ação para abrir, sem miniaturas. No chat, a resposta corresponde à coluna de leitura. Fontes, definições, premissas, riscos complementares e trilha são aprofundáveis. A estrutura “o que importa, por que importa, implicação” orienta a composição internamente; esses rótulos não são estampados na interface.\n\n| Estado | Entrega adequada |\n| --- | --- |\n| Sem base | Reconhecimento, enquadramento e perguntas pertinentes. Ficha de termos, se houver documento. Sem gráfico ou opinião que o dado não sustenta. |\n| Base parcial | Leitura limitada e evidências suportadas, com lacunas na própria peça. |\n| Base suficiente | Leitura, principais pontos, alternativas, prioridades e próximo passo; normalmente duas ou três peças, uma quarta se mudar a decisão. |\n| Base suficiente e memória rica | Mesma composição, incorporando mercado e ponte com o histórico; não aumentar texto só porque existe mais dado. |\n| “E se” | O que mudou e o que não mudou, peça recalculada com estado anterior em cinza, premissa e versão visíveis. |\n| Material solicitado | Composição adequada ao destinatário e à finalidade, a partir do mesmo modelo e sob divulgação autorizada. |\n\n## T2. Contrato editorial da peça\n\nCada peça registra família; pergunta; nome neutro; conclusão em uma frase; apoio em uma ou duas frases; ação opcional; dados e consulta ao modelo; definição, caso, período e unidade; forma, eixos e escala; elemento em destaque; fonte com âncora, data, rótulo, confiança e direitos; estado; interações; versão da peça, do modelo e dos parâmetros; identidade da renderização. Trata-se de especificação de entrega a realizar pelo protocolo de artefatos, não de um novo executor criado por este texto.\n\nEstados: prévia com lacuna, condicional com hipótese, completa no escopo verificado, atualizada e ausente por insuficiência. Um número abre sua definição, origem e cálculo. As interações pertinentes permitem alternar definição e caso, examinar tabela e fonte, simular variáveis, fixar versão e exportar quando suportado e autorizado. Exportação não altera a base econômica.\n\n| Família | Pergunta e uso |\n| --- | --- |\n| Ponte | Decomposição entre definições, operações ou EBITDA e caixa; parcelas e resíduo conciliados. |\n| Serviço da dívida anual | Concentração de vencimentos e serviço frente ao caixa disponível. |\n| Serviço da dívida trimestral/mensal | Momento da pressão e saldo de caixa frente ao mínimo; abertura do mesmo modelo. |\n| Curva com limite | Folga contratual por data e caso, com limite e primeira aproximação/ruptura. |\n| Tornado | Variáveis que mais movem a decisão, ordenadas por impacto. |\n| Mapa de calor | Combinação de duas variáveis e fronteira de ruptura. |\n| Pareto | Concentração de sacados ou credores. |\n| Comparação normalizada | Alternativas na mesma base; vantagens por dimensão e condição decisiva, sem vencedor por pontuação opaca. |\n| Posição na faixa | Referência de mercado, proposta/alternativa, amostra e confiança; custo total em peça separada quando necessário. |\n| Régua | Posição por métrica e metodologia de agência, sem converter faixa em rating atribuído. |\n| Recebíveis após cessão | Vinculado, livre, necessidade e déficit de lastro. |\n| Fontes e usos | Recursos, destinação e uso descoberto. |\n| Linha do tempo | Dependências, responsáveis e datas contra a necessidade financeira. |\n| Tabela viva | Termos e valores rastreáveis, editáveis sob autoria e versionamento. |\n| Estrutura | Entidades, dívida, caixa, garantias e transferências; necessária quando o grupo muda o risco. |\n| Trilha | Fontes, métodos e alterações que sustentam a leitura, disponível sob demanda. |\n\n## T3. Regras de gráfico e composição\n\nUma pergunta por peça; número decisivo visível no título ou no apoio; um elemento em destaque. Fundo branco, rótulos diretos, espaço em branco e escala honesta. Barras incluem zero; corte de eixo em linha é explícito; peças comparáveis usam a mesma escala. Grafite destaca o foco, oliva identifica a candidata, cinza reduz o restante. Nenhum vermelho. A ruptura aparece pela linha do limite, pelo rótulo e pelo número. Sans e números tabulares na análise; serifa reservada a materiais institucionais quando apropriado.\n\nSão inválidos pizza, 3D, gradiente, dois eixos, arco-íris, miniatura de gráfico, tile solto sem pergunta e número sem origem. Hipóteses e lacunas materiais ficam na peça. Poucas séries, em geral até quatro; detalhes secundários no hover ou na tabela. A escolha de frequência responde à pergunta, não ao cargo: uma visão anual pode resumir, mas não sustenta suficiência se o risco ocorre dentro do ano. Conclusão com número no título é orientação, não obrigação. Não forçar repetição de templates.\n\nFormato brasileiro: vírgula decimal, múltiplos como “2,3x”, “R$ 113 mi” no chat e “R$ 113 milhões” em material; “pontos” na conversa e “bps” em material técnico. Acessibilidade exige descrição da conclusão, sinais além de cor e leitura em preto e branco. O alvo de renderização inferior a um segundo após o modelo é requisito a medir, não desempenho já comprovado.\n\n## T4. Peças por destino\n\nCEO: uma página com leitura, pontos principais, ação proposta e decisão pedida. Conselho: até duas páginas, acrescentando alternativas, riscos, cenário adverso e prazo. Comitê/investidor: memorando no formato da casa, com três casos, estrutura, garantias, covenants e recomendação. Jurídico: cláusula, leitura econômica, conflito e questão que exige parecer, sem opinião jurídica atribuída ao sistema.\n\nContraproposta ao banco: cláusula atual, mudança pedida e razão verificável, na voz da companhia; não incluir projeção interna, amostra privada ou folga real sem autorização específica. Pacote para outras contrapartes: informações autorizadas, mesmo formato e prazo comparável, sem divulgar os termos de outra proposta. Esses destinos descrevem o padrão comum da biblioteca; gerar ou enviar material depende do pedido e das capacidades autorizadas, e o procedimento de comparar propostas permanece separado.\n\n# Regra\n\n## R1. Registro geral e precedência\n\nCada regra de expertise tem ID, versão, finalidade, autoridade (definição contratual, regra da casa, referência de mercado ou heurística), fonte e data, entradas, condição, consequência, ausência/incompatibilidade, exceções, pontos de ajuste e casos de teste. Os IDs N/T/R/Q deste texto são referências editoriais propostas, não nomes de RPC, tabela ou export implementado.\n\nO atlas v3 governa apresentação quando exemplos mais antigos usam rótulos, miniaturas ou veredito por padrão. Estado de conhecimento governa profundidade mesmo onde a ficha narrada fala em “turno 1”. O contrato governa o teste contratual. Método da casa só sobrepõe o padrão nos pontos declarados e permitidos; não muda lei, definição do credor, direitos, barreiras, matemática nem publicação. A parte de cálculo e governança já construída permanece intacta.\n\n## R2. Registro de definições e convenções por dialeto\n\nRegistrar separadamente escritura/contrato, S&P, Moody’s, Fitch, mercado brasileiro e casa. Cada variante conserva métrica, fórmula ou referência ao motor, itens incluídos/excluídos, perímetro, estoque ou fluxo, período, moeda/unidade, regra de caixa, ajustes, calendário, fixing, defasagem, capitalização, arredondamento, fonte primária, versão, vigência, data de verificação e estado verificado/a confirmar/superado. Conservar adoção e finalidade; “a alavancagem” sem definição não é uma medida suficiente.\n\nO registro cobre dívida financeira, arrendamentos, pensões, desmobilização, garantias a terceiros, cessões/securitização, risco sacado, híbridos, derivativos, parcelas de aquisição/earn-outs e caixa dedutível; EBITDA regulatório, ajustado, contratual e das agências; FFO, CFO, RCF, FCF, FOCF e DCF; coberturas, alavancagens, CFADS e períodos/pesos metodológicos. Incluir e excluir um item exige regra e origem próprias, nunca equivalência por nome.\n\nMercado é a referência inicial de comunicação, identificada como tal. Covenant usa a definição de cada contrato e sua data de teste. A casa é variante explícita, conciliável com mercado. Pedido de agência, rating ou discussão em que essa ótica importa ativa as variantes correspondentes e suas pontes. S&P usa sua categoria de risco e perfil de negócio; Fitch exige setor e sensibilidades pertinentes; Moody’s exige grade setorial vigente. Não criar uma tabela universal de equivalência nem apresentar rating implícito como nota atribuída. A pendência de metodologia Moody’s apontada na biblioteca permanece pendência até verificação primária.\n\nA ponte parte da mesma base reportada, lista ajustes com valor e âncora, aplica regras de dívida e caixa e reconcilia EBITDA e fluxos por variante. Mostra origem, destino, parcelas, resultado e efeito na leitura. Uma mudança de definição exige recálculo e nova versão. Se um ajuste ou metodologia não está verificado, não apresentar a ponte como validada; entregar apenas a parte comprovada, com lacuna explícita.\n\nIOF (Decreto 12.499/2025 e decisão do STF de julho de 2025), convenções ANBIMA/B3 e regime tributário entram como dados versionados com fonte, data e dono, pelo mecanismo existente de parâmetros da casa em `reference-data.ts`. Usar `reference_data_keys` para ligar as famílias ao procedimento: `policy.capital.iof`, `policy.capital.anbima-b3-conventions` e `policy.capital.tax-regime`. Cada entrada conserva `key`, `version`, `category`, `value`, `unit`, `source`, `asOf`, `validUntil`, `owner`, `scope` e `status`, sob a revisão especializada exigida pela governança. A aprovação deste conteúdo não aprova alíquota ou interpretação tributária específica.\n\nSem dados aprovados, vigentes e aplicáveis à operação, o custo all-in não se calcula. Valor ausente, em rascunho, vencido, sem fonte/data/dono ou incompatível com instrumento, período e regime não recebe zero nem estimativa do modelo. A entrega identifica o parâmetro pendente e o responsável pela revisão. Preservar DI mais spread versus percentual do DI, IPCA/cupom versus nominal, pré/pós, hedge, TLP, prazo/duration, custo bruto/líquido e taxa/all-in. A definição contratual governa as convenções que fixa. O registry deve receber os dados reais pela revisão pertinente, sem transformar texto editorial em valor aprovado.\n\n## R3. Seleção de métodos\n\nClassificar primeiro: o que move o caixa, situação da companhia e pergunta a responder. Registrar método obrigatório, complementar e enganoso, com motivo e insumos. Aplicar vários métodos quando a decisão cruza situações. Um método inadequado pode ser mostrado para responder ao argumento de uma contraparte, com a razão de sua insuficiência; não sustenta a recomendação.\n\n| Situação | Métodos que devem estruturar a análise | Método que isoladamente engana |\n| --- | --- | --- |\n| Giro sazonal | Fluxo direto de 13 semanas, extensão mensal, ciclo financeiro, NCG/Fleuriet e cobertura no pior período. | EBITDA ou DSCR anual que esconde o mês de falta de caixa. |\n| Giro estrutural | Fleuriet em série, NCG/receita, ciclo de conversão e fluxo indireto; carteira quando relevante. | Fluxo curto sem explicar a necessidade permanente. |\n| Capex/infraestrutura | Manutenção separada de expansão, construção e maturação; DSCR por período e, em projeto, LLCR/PLCR. | EBITDA corrente durante construção. |\n| Negócio estável com alta conversão | Cadeia EBITDA a caixa, FCF/dívida, cobertura e alavancagem nas definições pertinentes. | Métrica de projeto aplicada sem finalidade. |\n| Próxima de covenant | Curva por contrato/data/caso, teste reverso, liquidez 12/24 meses e refinanciamento. | Preço como critério principal. |\n| Crescimento sem EBITDA | Queima, pista de caixa, unit economics, compromissos e próxima rodada sob atraso. | Múltiplo de EBITDA, DSCR ou régua de agência sem aplicabilidade. |\n| Holding/grupo | Caixa que pode subir, dívida individual, subordinação, dupla alavancagem e garantias cruzadas. | Consolidado sozinho. |\n| Recebíveis | Aging, concentração, diluição, roll-rate, elegibilidade, avanço, subordinação e custo do veículo. | Tratar carteira como companhia ou garantia nominal como caixa. |\n| Reestruturação | Fluxo direto, prioridades de credores, garantias, liquidez e alongamentos suportáveis. | Referência normal de mercado como condição disponível. |\n| Aquisição/ponte | Fontes e usos, combinado, cláusulas, capacidade e certeza do take-out, inclusive atraso. | Sinergias integrais sem evidência ou balanço isolado da adquirente. |\n| Refinanciamento | Torre, caixa, custo e prazo da substituição, liberação de garantias e condições. | Comparar apenas spread. |\n| Números não auditados/divergentes | Conciliação gerencial-contábil, conversão em caixa, sanidade do giro e histórico bancário disponível. | EBITDA gerencial sem reconciliação. |\n\nSempre examinar qualidade dos números: balanço e variação de caixa, dívida versus notas, EBITDA versus definição, giro versus receita, capitalizações, reversões, recorrência de ajustes, partes relacionadas, auditoria e contingências. Não esconder diferença de conciliação em “outros”. Os sinais quantitativos da biblioteca (sazonalidade, folga, crescimento e conversão) são parâmetros iniciais de seleção, calibráveis e identificados como heurística, não leis de elegibilidade.\n\nO setor refina o conjunto: safra/hedge no agro; SPE, vendas e distratos em imobiliário; receita regulada e concessão em infraestrutura; sazonalidade, cartões e aluguel no varejo; glosa e operadoras em saúde; coortes e inadimplência em educação; utilização, capex e câmbio na indústria; recorrência, churn e margem em serviços/tecnologia; dividendos acessíveis em holdings. O módulo explica o risco material sem exigir métricas irrelevantes.\n\n## R4. Administração, banco e estresse\n\nToda conclusão sobre capacidade deve confrontar os três casos na mesma base. Administração: orçamento adotado e verificado contra histórico/setor; sem orçamento, projeção Offroad por drivers, editável e identificada. Banco: leitura prudente de capacidade, construída com evidência; é estimativa Offroad do que o crédito pode considerar, não conhecimento do modelo interno do banco. Estresse: teste reverso do que leva caixa ao mínimo ou folga ao limite, mais cenário combinado coerente.\n\nA biblioteca propõe, como ponto de partida do caso do banco, redução de EBITDA de 10 a 20% conforme volatilidade histórica, giro do pior dos três anos, manutenção preservada, expansão contratada, ausência de sinergias não comprovadas, curva CDI acrescida de 100 pontos e nenhum refinanciamento presumido. Para estresse combinado, propõe receita 15% menor e CDI acrescido de 300 pontos. Esses valores permanecem **premissas iniciais**, com racional, versão e revisão por caso; não são aplicados silenciosamente nem substituem o contrato de cálculo. Sem histórico suficiente, não dizer que a calibração foi medida.\n\nOs três casos são conjuntos coerentes de drivers, não três percentuais sobre o resultado final. Mostrar capacidade e primeira restrição vinculante, sensibilidade e informação capaz de inverter a preferência. Caso incompleto impede declarar capacidade completa; a parte comprovada pode sustentar uma leitura limitada. Manter a estrutura atual, adiar/não contratar e separar usos quando economicamente pertinentes.\n\n## R5. Módulos por instrumento e eixo de variação\n\nClassificar natureza do capital, instrumento, remuneração, amortização/prazo, garantia, origem/estágio, processo e moeda/contabilidade. Cada módulo acrescenta insumos, altera suficiência, seleciona métodos, aponta armadilhas, muda o julgamento e indica peças. Módulos combinam-se: uma debênture pode ser subordinada, IPCA, com PIK e garantia de subsidiária. Não reduzir a análise ao nome do instrumento.\n\n| Módulo/família | O que exige e o que muda na decisão |\n| --- | --- |\n| Sênior, subordinada e mezanino | Prioridades, intercreditor, bloqueio de pagamentos, capacidade sênior/total, retorno do uso e alternativa de equity. |\n| PIK, cash/PIK e toggle | Base e ordem de capitalização, opção de pagamento, saldo crescente, balão e covenant sobre o saldo pertinente; cobertura de caixa isolada é insuficiente. |\n| Conversível, híbrido, kicker e warrants | Gatilhos, cap/desconto, antidiluição, preferência, controle e governança; cap table e custo por cenário, sem valuation inventado. |\n| Venture debt | Pista, queima, compromissos, warrants e atraso/ausência da rodada seguinte. |\n| Project finance | Contratos do projeto, construção, sponsor, cascata, reservas, lock-up, DSCR/LLCR/PLCR e cauda da concessão. |\n| True sale, coobrigação e securitização | Risco efetivamente transferido/retido, recompra, subordinação, consolidação e definição contratual; cessão não prova baixa contábil. |\n| CCB, giro rotativo e conta garantida | Saques, disponibilidade, fee, renovação, clean-down, reciprocidade, cessão do crédito e prazo de uso. |\n| Desconto, antecipação e risco sacado | Coobrigação, prazo original/estendido, custo por pagador, efeito no giro e reclassificação por dialeto. |\n| Leasing e sale-leaseback | Custo implícito, essencialidade, opção de compra, tratamento de arrendamento e caixa liberado versus obrigações futuras. |\n| Nota comercial e debênture simples | Distribuição, custos fixos, divulgação, rating quando aplicável, waiver e certeza de colocação. |\n| Debênture incentivada e de infraestrutura | Enquadramento, destinação, benefício para investidor/emissor, regime fiscal e cronograma; não declarar elegibilidade pela atividade isolada. |\n| CRA, CRI e FIDC | Lastro, direitos, estrutura, carteira, avanço, subordinação, custos do veículo, risco retido e tempo até recursos. |\n| BNDES/Finame, FINEP, FNE/FNO/FCO | Elegibilidade de bem/projeto/região, garantias, contrapartidas, fiscalização e aprovação; ponte e custo total quando necessários. |\n| NCE/CCE, ACC/ACE, CPR/CDCA | Destinação, lastro/exportação/safra, prazo e riscos de performance, preço e câmbio conforme o instrumento. |\n| 4.131, bond, ECA e multilateral | Moeda, hedge, gross-up, tributos, divulgação, tamanho e processo; comparar na mesma base e sob condições verificadas. |\n| Mútuo de sócio/grupo | Parte relacionada, subordinação, capacidade de pagamento, cláusulas, tributação e efeitos por entidade. |\n| Ponte e take-out | Fonte de saída, evidência de compromisso, atraso, extensão, step-up e custo; intenção de saída não é funding contratado. |\n| Fiança e seguro garantia | Limite consumido, contragarantia, custo e obrigação coberta; não classificar como entrada de funding. |\n\nRemuneração acrescenta convenção e descasamento: DI/spread, percentual do DI, IPCA/cupom, pré, TLP, moeda estrangeira, step-up e metas. Amortização acrescenta datas reais, SAC/Price/bullet/customizada, carências, sweep, extensão e balão. Garantia acrescenta ativo, ônus, cobertura após cortes fundamentados, conta/liberação, garantidores, prioridade e capacidade futura. Não transferir valores típicos, prazos ou haircuts do exemplo para fatos do caso.\n\nOrigem distingue risco em balanço, distribuição, fundo, securitizadora, fomento, fintech, fornecedor, ECA e multilateral. Mandato é avaliado por fees, exclusividade, flex e execução; taxa indicativa não é condição contratada. Estágio distingue indicação, term sheet, aprovação e minuta, sempre com validade e condições. Processo distingue oferta espontânea, renovação, proposta única e competição; número de contrapartes é julgamento contextual. Moeda e contabilidade exigem exposição, hedge, caixa e imposto, IFRS 16, risco retido e dívida por dialeto.\n\n## R6. Memória de operações e inteligência de mercado\n\nSão objetos distintos, ligados ao dossiê, modelo e módulos sem fundir seus direitos. A memória é privada por contexto autorizado. Conserva operação, proposta, negociação, contraparte e evento, incluindo recusas, expiração, substituição, aditivos, waivers e pré-pagamentos. Cada campo mantém origem/âncora ou confirmação, versão, estágio, desfecho e data. Economia, garantia, cláusulas, contexto da negociação e o que a contraparte conhecia compõem o registro. Derivados incluem série de funding, custo/prazo ponderados, concentração, concessões por rodada e tempo de fechamento. Uma nova versão não apaga a anterior.\n\nA inteligência de mercado contém observação, referência, prêmio de estrutura, perfil de contraparte e contexto de mercado. Proveniência distingue fonte pública, cliente anonimizado, feedback e base contratada; também distingue oferecido, negociado, fechado, rejeitado e expirado. Uma proposta indicativa não deve entrar silenciosamente como transação concluída. Curvas, spreads, apetite e parâmetros carregam data e validade.\n\nA passagem de memória privada para mercado exige finalidade e permissão específicas para agregação, separadas de não treinamento. Documentos identificáveis não atravessam essa fronteira. Observações de cliente usam faixas para porte, valor, alavancagem e cobertura e janelas de datas; não contêm nome/CNPJ ou combinações que permitam identificar. A ligação de origem fica somente na auditoria restrita para retirada por revogação, nunca disponível pela consulta do produto. Consentimento isolado e remoção de nomes não provam anonimização suficiente.\n\nA referência exige, inicialmente, cinco origens distintas por célula. Abaixo disso, suprimir ou ampliar a célula com a mudança declarada, recomputando comparabilidade. Amostra estatística não supera o limite de privacidade. Várias propostas da mesma operação não contam como origens independentes. A política de revogação existente continua intacta: retirar insumos do uso futuro e aplicar invalidação/restrição aos derivados alcançados. Conservar um agregado histórico não autoriza reutilizá-lo como referência atual nem excepciona restrições herdadas.\n\n## R7. Comparabilidade, confiança e ponte entre operações\n\nParâmetros iniciais da biblioteca, sujeitos a calibração e versionamento: garantia 25%, risco 25%, instrumento/natureza 15%, prazo/duration 15%, setor 10%, porte 5%, amortização/carência 5%. Sem dimensão material conhecida, não fabricar similaridade. Score a partir de 0,80: direto; de 0,60 até menos de 0,80: ajustável com ajuste explícito; abaixo de 0,60: excluído. Tabela de vizinhança e ajustes devem ter fonte e versão.\n\nJanelas propostas: bancária privada/proposta de cliente, 120 dias com decaimento até 180; emissão pública, 90 com decaimento até 150. Movimento material da curva, com referência inicial de 30 pontos, exige atualização do contexto. Validade inicial de 30 dias não dispensa invalidação por mudança material. Registrar amostra por classe, fonte e estágio, recência, score, ajustes, quartis/mediana, parâmetros e data de cálculo.\n\nConfiança inicial: alta com oito ou mais diretas atuais; moderada com três a sete diretas ou oito ou mais ajustáveis; baixa com uma ou duas diretas ou três a sete ajustáveis; insuficiente abaixo disso. Aplicar primeiro o mínimo de origens distintas e os demais requisitos; a categoria de confiança nunca autoriza publicar uma célula de uma, duas ou três observações. Fonte secundária pública é qualificada como secundária e deve passar por sua própria comparabilidade e direitos. Sem base, não produzir faixa. Misturas de diretas e ajustáveis não recebem confiança alta apenas pelo total de registros.\n\nQuando houver histórico comparável, decompor a diferença de custo em mercado, risco, estrutura e resíduo. Mercado exige perfil comparável nas duas datas; risco exige mudança de perfil e prêmio fundamentado; estrutura exige garantia, duration, amortização, covenants e fees comparáveis. O resíduo pode motivar hipótese sobre relacionamento, mas não prova causa. Se faltar base de uma parcela, mostrar a decomposição parcial e o restante não explicado, sem zerar lacunas para fechar a história.\n\n## R8. Julgamento e prioridades de negociação\n\nExaminar adequação ao uso, valor, caixa por período, restrições, garantia/flexibilidade, custo total, histórico e execução. O preço é uma dimensão. A matriz traduz evidência em ação: preço acima da faixa com estrutura usual pede discussão de preço; preço competitivo com garantia pesada pede cobertura/liberação; prazo descasado pede cronograma; covenant restritivo pede definição/limite; fees excessivos pedem revisão; condições competitivas e urgência podem tornar certeza de desembolso prioritária. Competição é dimensionada por tempo, aderência, confidencialidade, relacionamento e chance de execução, não número fixo de bancos.\n\nApresentar a preferência, por que ela supera as demais para a decisão, concessões aceitáveis, informações que a mudariam e o próximo ato. Não contornar restrição contratual: explicitar incompatibilidade e alternativas com aprovação/waiver quando aplicáveis. A opinião pode antecipar questões prováveis da contraparte, sem afirmar conhecer sua decisão. Conclusão sobre risco jurídico, tributário ou elegibilidade depende das autoridades e evidências pertinentes.\n\n# Qualidade\n\n## Q1. Teste do MD antes de qualquer entrega\n\nCada entrega, inclusive parcial e resposta a “e se”, passa pelas dez perguntas. Um “não” devolve ao ponto que falhou. Não aplicável exige justificativa de escopo; não é passe automático. O registro identifica versão, evidências, resultado por pergunta, revisor e pontos corrigidos. Revisão por IA é identificada como tal e não substitui a aprovação humana exigida pela governança.\n\n1. Entendemos o problema real ou apenas respondemos ao pedido literal?\n2. Pesquisamos e verificamos o que precisava ser verificado?\n3. Questionamos as premissas relevantes e mostramos o que permanece de pé?\n4. Existe conclusão clara, compatível com o estado de conhecimento?\n5. Os números e as evidências sustentam essa conclusão?\n6. Os riscos principais e as lacunas materiais estão evidentes?\n7. Existe alternativa melhor que deveríamos apresentar, inclusive manter ou adiar?\n8. Um decisor que não viu a conversa entende o essencial em menos de um minuto?\n9. O leitor consegue aprofundar e auditar cada afirmação material?\n10. Um MD altamente qualificado assinaria essa entrega no escopo e para a audiência indicados?\n\nConclusão clara pode ser uma preferência condicional ou a identificação do que impede opinar, com próximo passo útil. Não exige veredito binário. Em entrega sem cálculo, números não são fabricados para preencher o gate. Fontes presentes não provam por si que sustentam a frase; essa relação também é revisada.\n\n## Q2. Verificação automática e revisão profissional\n\nAutomatizar onde houver contrato verificável: proveniência, versões, direitos, rótulos, dependências, números vindos do motor, bases comparáveis, presença dos três casos para capacidade, mínimo de amostra, recência, regras de peça e padrões proibidos de linguagem. Julgamento sênior avalia enquadramento, suficiência real, método escolhido, alternativas omitidas, força da evidência, proporcionalidade da recomendação e naturalidade da voz. Um filtro lexical aprovado não certifica uma boa opinião.\n\nO teste de trinta segundos avalia se a leitura permite explicar o próximo ato; o teste de cinco segundos avalia se a peça comunica seu achado. Revisão visual compara composição, escala, legibilidade e acessibilidade com o atlas. São critérios de aceite a executar e registrar; este documento não declara testes com usuários ou revisores humanos que não ocorreram.\n\n## Q3. Casos de aceite da camada de expertise\n\n| Caso proposto | Resultado exigido |\n| --- | --- |\n| Cofre completo na primeira mensagem | Opinião sustentada já na primeira resposta, sem espera artificial por turnos. |\n| Falta crítica após cinco mensagens | Ausência de conclusão específica sem base; entrega parcial honesta e pergunta de maior valor. |\n| Mesmos dados, cargo diferente | Mesma profundidade, métodos, lacunas e análise sob os mesmos direitos. |\n| Cadastro e pesquisa antes do uso; exceção conceitual | Recuperar a companhia e a pesquisa disparada pelo cadastro; nunca dizer que não a conhece. Sem companhia somente para pergunta conceitual, sem atribuição financeira fictícia. |\n| Propósito misto: safra e capex | Separar usos e testar cronogramas/rotas; não replicar automaticamente a CCB do Itaú. |\n| Sazonalidade com DSCR anual confortável | Expor o período de falta de caixa; média anual não valida capacidade. |\n| PIK e pouco juro em caixa | Mostrar saldo crescente, balão e covenant; não concluir conforto pelo DSCR isolado. |\n| Escritura versus casa/agência | Teste contratual preservado, variantes explícitas e ponte reconciliada. |\n| Metodologia de agência a confirmar | Não emitir ponte validada nem nota atribuída a partir de trecho superado. |\n| Holding com caixa consolidado | Exigir disponibilidade e transferência por entidade. |\n| Conversível, FIDC ou 4.131 | Ativar módulos próprios e mudar insumos, suficiência, julgamento e peças. |\n| Administração sem banco/estresse | Recusar conclusão completa sobre capacidade. |\n| Mercado com quatro origens | Suprimir/agregar com nova avaliação; confiança estatística não libera a célula. |\n| Oito registros da mesma operação | Não contar como oito origens independentes. |\n| Base ajustável ou vencida | Exibir ajustes/validade; negar faixa atual sem sustentação. |\n| Sem consentimento ou com revogação | Não alimentar mercado privado; cumprir retirada e restrições dos derivados. |\n| Ponte histórica sem prêmio de risco | Mostrar parcela desconhecida, sem atribuir causalidade ao relacionamento. |\n| Gráfico bonito com número sem origem | Reprovar a peça. |\n| Linguagem limpa com conclusão genérica | Reprovar julgamento do MD, mesmo passando no filtro lexical. |\n| “E se” altera uma premissa | Recalcular dependências pertinentes, conservar anterior e mostrar o que não mudou. |\n| Contraproposta externa | Respeitar audiência e autorização; não divulgar amostra privada, projeção interna ou termos de terceiros. |\n\nAurora/Itaú é gabarito de comportamento e voz. Seus números ilustrativos não substituem os oráculos financeiros já verificados. Onde o exemplo usa aproximação, hipótese jurídica ou cálculo resumido, prevalecem o motor determinístico e a interpretação contratual comprovada. Não copiar uma frase cuja certeza exceda a evidência só por ela constar do caso de ouro.\n\n## Q4. Limite desta revisão e vínculo com a implementação\n\nEsta revisão incorpora o conteúdo de expertise ao molde e ao primeiro procedimento. Não altera fórmula, executor, contrato de entrada/saída, política de acesso, comando de publicação ou liberação. Os requisitos de seleção, memória/mercado, voz, peças e teste do MD aqui especificados precisam ser vinculados a componentes, testes e evidências reais antes de serem declarados operantes. Os testes existentes da parte financeira continuam válidos para seus bytes; não comprovam automaticamente os novos gates de expertise.\n\nO fundador aprovou este conteúdo profissional ampliado em 21 de setembro de 2026, condicionado às correções incorporadas nesta versão. A submissão anterior fica substituída para fins editoriais. Antes da publicação governada, a engenharia deverá compilar a versão ampliada, fixar suas dependências e revisar seu manifesto; a atestação técnica da versão anterior não se transfere por semelhança. Isso conserva a governança existente e impede publicar a metade técnica como se demonstrasse a biblioteca profissional inteira."
         },
-        "componentHash": "9fb206ca74e155d04b68f2ba0e9f0890ef633c6b1a276a89f1850990ea045d9e",
+        "componentHash": "bdb04a186a34e51a3f1ec26764804a6f55a78a5fef1fab91abac7354dbe95593",
         "executor": null,
         "evidence": []
       },
       {
         "component": {
           "id": "capital.procedure-packet",
-          "version": "2026.09.20-v2",
+          "version": "2026.09.21-v4",
           "title": "Compor decisão, preparação contratual e contribuições adotadas",
           "inputs": {
             "id": "capital.procedure-packet-v2-input",
@@ -22441,7 +22441,7 @@ export const procedureBuildProvenance = [
           "dependencies": [
             {
               "id": "capital.decision-framing",
-              "version": "2026.09.20-v2"
+              "version": "2026.09.21-v4"
             }
           ],
           "tools": [],
@@ -22475,9 +22475,9 @@ export const procedureBuildProvenance = [
           ],
           "overridePoints": [],
           "evidence": [
-            "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
-            "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json",
+            "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-gold/run.json",
+            "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-adversarial/run.json",
+            "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-consistency/run.json",
             "packages/credit-playbook/knowledge/reviews/prepare-capital-structure-decision-2026-09-21-v3-independent-review.json",
             "packages/credit-playbook/knowledge/reviews/evidence/prepare-capital-structure-decision-2026-09-21-v3-independent-review/REVIEW-SUBJECT-BASIS.json"
           ],
@@ -22490,7 +22490,7 @@ export const procedureBuildProvenance = [
             "version": "2026.09.21-v2"
           }
         },
-        "componentHash": "ee52bb4719798565acbe9a0104b1a70493d09db1cfb45938960b3c684044c096",
+        "componentHash": "c30756462a50ffdcfbc50aa58fbee6424ec5560a14dcac436de3c8f094922b66",
         "executor": {
           "module": "@offroad/financial-model",
           "exportName": "prepareCapitalProcedurePacketV2",
@@ -22602,11 +22602,15 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/credit-playbook/src/build-capital-planning-policy.ts",
-              "hash": "ff40e8e68bf69c1096bfe703fab39015c7becc52c80dd4a046800cb6876be789"
+              "hash": "ad8e5df3544b2ab57eccd0e53ac409fcb19356a26d2a7241b17f6e217f666265"
             },
             {
               "path": "packages/credit-playbook/src/build-method-manifest.ts",
-              "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+              "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
+            },
+            {
+              "path": "packages/credit-playbook/src/capital-expertise-approval.test.ts",
+              "hash": "63746a457f25c4f296c59a20c2d49d4cf6034ef26db429c75919d76f33615951"
             },
             {
               "path": "packages/credit-playbook/src/capital-independent-review.test.ts",
@@ -22902,7 +22906,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/credit-playbook/src/reference-data.ts",
-              "hash": "446f22d7163f371ec027add910f411c95398be467a8cf72233bbc446190f55ae"
+              "hash": "9f66784c06a033de8b51e234dd665832f78eca0a8443fa8bbb014f15b7f548bb"
             },
             {
               "path": "packages/credit-playbook/src/released-method-lock.ts",
@@ -23286,11 +23290,11 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/financial-model/src/capital-procedure-v2-runs.test-support.ts",
-              "hash": "a15195773394988847fb1fd2a8cf1abcdb9be4f47653364132949de522fa28ac"
+              "hash": "69e32e7afccf3e73875a817b34da0259dbe4fae6cc56ff151e6e02716cdf80c4"
             },
             {
               "path": "packages/financial-model/src/capital-procedure-v2-runs.test.ts",
-              "hash": "2e5b1803efd238f791de880689985cf4d6e43b2e152d8c5774c2014336a9e95a"
+              "hash": "5ee7a0036aea5b1b034cdc5be3609854e3c0f77a54e9af8f30c37171a93fdace"
             },
             {
               "path": "packages/financial-model/src/capital-structure-decision.ts",
@@ -23557,20 +23561,20 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "13820a73044165a685262f6713b70666eaca7349013ecc047bbfad4b6319eca5"
+          "hash": "dfb519efacd94ed3609505ac4501ec7598f4e9bce563165e4f60fbe3a12ee14e"
         },
         "evidence": [
           {
-            "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-gold/run.json",
-            "hash": "c52d7eafe5fe3269a541c80e99f1d3f40561dcae0e1b33b1e98698575a5b5fd9"
+            "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-gold/run.json",
+            "hash": "cf376dbd7b7bd55b9fb9f593e64d98c74d5cbb7128622a43f0c4ccc281995766"
           },
           {
-            "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-adversarial/run.json",
-            "hash": "7f5b4e7a56531e68d2f4a510253a2266d15ffaf88040628d9b6c7b089bf5e400"
+            "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-adversarial/run.json",
+            "hash": "b26aff820269aa71109a5e600cabf82b8e425d6e2986f7c1c19e9c1bb917b55a"
           },
           {
-            "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v3-consistency/run.json",
-            "hash": "448cff687e0d7883941bc880d7036193b13d0d1ceced8f19505bd27fd3d37462"
+            "path": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-consistency/run.json",
+            "hash": "b4e1ddc73a058a169d4fa82c20bad6500805f2a90d03f41bf58270a8ba0ab89d"
           },
           {
             "path": "packages/credit-playbook/knowledge/reviews/prepare-capital-structure-decision-2026-09-21-v3-independent-review.json",
@@ -23583,7 +23587,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "1c98f66a493a2b9e874fb14d55f649c2410793fed0a133769ace9173e910bfd5"
+    "manifestHash": "2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -23601,7 +23605,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -23636,7 +23640,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "79f3b7b8dc8c260b8fc57e5819f0348874f03e81d6cdf16d0ee226738c75a0d8",
     "compositionStatus": "legacy_contract",
@@ -23647,7 +23651,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-debt-ledger",
       "exportName": "buildDebtLedger",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -23655,7 +23659,7 @@ export const procedureBuildProvenance = [
         "hash": "9a9aa31f9e062e0ff603d25b96908b367e0ab96bf8dd0ba3c9357a1a3ad49533"
       }
     ],
-    "manifestHash": "53826f02a219863ce6d0cbdcdb939bc76511ac1a8954681b60e487ded46a5b98"
+    "manifestHash": "8fa08f7592d422581e52a849b20b8168e6aa690eec5878dcd1cfd94f0d96e310"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -23673,7 +23677,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -23708,7 +23712,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "6364b4ea243d5c168f8b8c54e0ca8cad9c272e9950cd5855a66a81989770330d",
     "compositionStatus": "legacy_contract",
@@ -23719,7 +23723,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/build-interest-and-indexation-schedule",
       "exportName": "buildInterestAndIndexationSchedule",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -23727,7 +23731,7 @@ export const procedureBuildProvenance = [
         "hash": "4d92040831baf6f3ce75fe498929de89aa850d3d497c9013aafc6e1f8ca02685"
       }
     ],
-    "manifestHash": "0d2d1033524a919473f905cfc6e4590d39ad44ece9debc68c5d0733eb8d92f75"
+    "manifestHash": "987fff7ebd251b37afd77d3971ff20a44c8b91d726eae2cbae8d7dc1e9e971f4"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -23745,7 +23749,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -23780,7 +23784,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "6e661629c022155da1631be5ef572337cadd32cfc1d67b50ec3be749ae06df7c",
     "compositionStatus": "legacy_contract",
@@ -23791,7 +23795,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-covenant-definitions",
       "exportName": "reconcileCovenantDefinitions",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -23799,7 +23803,7 @@ export const procedureBuildProvenance = [
         "hash": "03470380a643dad767a765ec0d06875bf48ce0da0b4bce57053caf83ebf8a6b4"
       }
     ],
-    "manifestHash": "41e6905cc1b8a1bc274b243e8fd37c61b8ece0e95981e0d7959e63f18888052a"
+    "manifestHash": "09ac41cf9d27b91234091acf63c285ecd5309ba6386788115a67cf97823cb1bc"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -23817,7 +23821,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -23852,7 +23856,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "59239ddb82f3ec8ef19b7d3efce99226f0cac024a9695ea13e9f3c54911691d6",
     "compositionStatus": "legacy_contract",
@@ -23863,7 +23867,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/reconcile-financial-statements",
       "exportName": "reconcileFinancialStatements",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -23871,7 +23875,7 @@ export const procedureBuildProvenance = [
         "hash": "a08f291c6583f230b7a3a88848f4ccab014f065de0ae1867b671070575c30e05"
       }
     ],
-    "manifestHash": "030e25b2fa7a9789b0d927e751db238af790ade33de465572cffa3a109aadf3f"
+    "manifestHash": "d274e67addc1e8456344e208c295c0591efcda9a8722f02e98db6ca61161bce7"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -23889,7 +23893,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -23924,7 +23928,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "b7d5d41121e051a3147a3ffc3858187b385d2edb5e0ef97d118a0b42db35fd6b",
     "compositionStatus": "legacy_contract",
@@ -23935,7 +23939,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/plan-meeting-brief",
       "exportName": "planMeetingBrief",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -23943,7 +23947,7 @@ export const procedureBuildProvenance = [
         "hash": "19834e22ea2a03cc6d1273fdff2a3fc58da3fdd148bc0219f8e6f4d9ac042567"
       }
     ],
-    "manifestHash": "0b03bf70431b27fb1f3bf34ab039f5a98164a8369116a2427eb24a8ded1d14af"
+    "manifestHash": "e9374eb9d46c178663c9622fc262b9b325e65c7505b629d10dc2534dd30ac2c1"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -23961,7 +23965,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -23996,7 +24000,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "495babe03478b0f2d1ebe7eed8091b9b78dd530eeb57e997d89fda025745a28d",
     "compositionStatus": "legacy_contract",
@@ -24007,7 +24011,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/preview/synthesis",
       "exportName": "synthesisSkeleton",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -24015,7 +24019,7 @@ export const procedureBuildProvenance = [
         "hash": "7301ff06438a26a3b90964577b0292d71cfb456e313e91e2c2b6bfa5c5bdf06d"
       }
     ],
-    "manifestHash": "bec1e497aaf0276832d6d4953fd73da7225df347c577bec49fb6605d942c32dc"
+    "manifestHash": "7f369f1b00f2593676eae7bb4cdb48c10c0d4e9920f15fcc9baba0a717845906"
   },
   {
     "manifestHash": "17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090",
@@ -24117,7 +24121,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -24152,7 +24156,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "18e19567239919fcf991c4462a77dc997d923ab0b72704f42ea35f01928dbf4a",
     "compositionStatus": "legacy_contract",
@@ -24163,7 +24167,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/compare-refinancing-before-after",
       "exportName": "compareRefinancingBeforeAfter",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -24171,7 +24175,7 @@ export const procedureBuildProvenance = [
         "hash": "73d58853572afac424bd7323a662568c8e46ee09ea4e233ca4848c4310a10f52"
       }
     ],
-    "manifestHash": "d25753b381f6ecf6f76880d595a0781fb7ac7bbf707543f75919f571a2d9deda"
+    "manifestHash": "bcc761cc1d6d06c50efd048a5eb866522b6a97113b374aa12ab0b666049f0934"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -24189,7 +24193,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -24224,7 +24228,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "0c32ca0c53b50e0f9cd811c43dbcb0ed3791b21039a662e123f0c9e530c0a225",
     "compositionStatus": "legacy_contract",
@@ -24235,7 +24239,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/diagnose-maturity-wall",
       "exportName": "diagnoseMaturityWall",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -24243,7 +24247,7 @@ export const procedureBuildProvenance = [
         "hash": "15feca2fb00f7cadae3efffc27cc399b2e20b0e7bddd92f3a7a727ce8147b7fa"
       }
     ],
-    "manifestHash": "cb77a084da0afd215fa5eb3c8beddcaaa7e0f5d03bfafd1264c9e7ae627917c5"
+    "manifestHash": "587d11b8cbbceee948aa9d78fee53eed210d70c7968124515904a924e223fdf6"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -24261,7 +24265,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -24296,7 +24300,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "d5c086654076080458f702b19105765e1a5052b5945a38a94ac674bbe82fac07",
     "compositionStatus": "legacy_contract",
@@ -24307,7 +24311,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/estimate-exit-cost-by-series",
       "exportName": "estimateExitCostBySeries",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -24315,7 +24319,7 @@ export const procedureBuildProvenance = [
         "hash": "801eea7f0fa061c88f76f0cdd7681746b2af3dc3d9c56ee6fc7bc662666c6a5b"
       }
     ],
-    "manifestHash": "2ae1f32bd72cd328f11988ecfbd2a4d79f8aeb478d2a7278c1367bc3249e6e22"
+    "manifestHash": "9804a79d7f0f50cc0c20019449bb5c75ae5fc1d8172542e86929c668174405b1"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
@@ -24333,7 +24337,7 @@ export const procedureBuildProvenance = [
       "sources": [
         {
           "path": "packages/credit-playbook/src/build-method-manifest.ts",
-          "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+          "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
         },
         {
           "path": "packages/credit-playbook/src/method-component.ts",
@@ -24368,7 +24372,7 @@ export const procedureBuildProvenance = [
           "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
         }
       ],
-      "hash": "d84ff583ae74cbb5ad0c808950490a45ed8c27fda36c303a3dacac66d9836dd4"
+      "hash": "228e32c8ea62f5111152b2e4a96f0bad1d1ca9f1ac7c2b2d4ccce822e415e97f"
     },
     "adapterHash": "188b796cf9665f6b08d8e5e81d6634b2ecd11bf37452a79f0bdf2904dd2ff66d",
     "compositionStatus": "legacy_contract",
@@ -24379,7 +24383,7 @@ export const procedureBuildProvenance = [
     "executor": {
       "module": "@offroad/credit-playbook/executors/declare-scenarios",
       "exportName": "declareScenarios",
-      "sourceClosureHash": "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2"
+      "sourceClosureHash": "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a"
     },
     "evidence": [
       {
@@ -24387,12 +24391,12 @@ export const procedureBuildProvenance = [
         "hash": "ad57c9153addb67a306702ec35c7176c8e8328142a18603a6057b4db3b26e858"
       }
     ],
-    "manifestHash": "48b529d357e463c47967dbe9d22527e7df19ef9dc982e9cc3073afb289e2db53"
+    "manifestHash": "9ecb67b5175b988e46baee4c06901caa04eef8a0474881a73a33be349b4c2fc4"
   }
 ] as const;
 
 export const procedureExecutorSourceClosures = {
-  "86b778abeaa2770a4bba664c1bdd80f4c467c23dfbbe24203de94bc0291134d2": [
+  "59b3a4cc7cc4ea81450d96e004d8d443a0cc25576c2ad45603cc1bb35f48ea3a": [
     {
       "path": "packages/credit-ontology/package.json",
       "hash": "0f5f1ce7ae6f0ebb97b751c230cd6a3799abb49b5620c73454a78e90d09e7dc1"
@@ -24455,11 +24459,11 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/credit-playbook/src/build-capital-planning-policy.ts",
-      "hash": "ff40e8e68bf69c1096bfe703fab39015c7becc52c80dd4a046800cb6876be789"
+      "hash": "ad8e5df3544b2ab57eccd0e53ac409fcb19356a26d2a7241b17f6e217f666265"
     },
     {
       "path": "packages/credit-playbook/src/build-method-manifest.ts",
-      "hash": "adb3540967bb63cd2cf48ef5dcc163f9a0d538ae3894815457ed949bdc815114"
+      "hash": "7bd45f5b1d84213af739b0ec54b6b3848e7180bdecdddcd600ca4c68de6d2d0b"
     },
     {
       "path": "packages/credit-playbook/src/cases/gc01/build-debt-ledger.ts",
@@ -24751,7 +24755,7 @@ export const procedureExecutorSourceClosures = {
     },
     {
       "path": "packages/credit-playbook/src/reference-data.ts",
-      "hash": "446f22d7163f371ec027add910f411c95398be467a8cf72233bbc446190f55ae"
+      "hash": "9f66784c06a033de8b51e234dd665832f78eca0a8443fa8bbb014f15b7f548bb"
     },
     {
       "path": "packages/credit-playbook/src/released-method-lock.ts",

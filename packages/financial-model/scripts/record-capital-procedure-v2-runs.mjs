@@ -22,7 +22,9 @@ try {
   // A local run can include uncommitted harness bytes; the source commit is deliberately omitted
   // until those bytes are committed. The publication manifest later pins every harness source.
   const dirty = execFileSync('git', ['status', '--porcelain', '--', 'packages/financial-model', 'packages/testing-fixtures'], {cwd: root, encoding: 'utf8'}).trim();
-  const records = buildCapitalProcedureV2Runs().map(evidence => deterministicMethodRunSchema.parse({
+  const version = process.argv[2] ?? "2026.09.21-v3";
+  if (!["2026.09.21-v3", "2026.09.21-v4"].includes(version)) throw new Error("Unsupported method evaluation version");
+  const records = buildCapitalProcedureV2Runs(version).map(evidence => deterministicMethodRunSchema.parse({
     schemaVersion: 'deterministic-method-run.v1', humanApproval: false, ...evidence,
     run: {startedAt, finishedAt: new Date().toISOString(), ...(dirty ? {} : {commit})},
   }));

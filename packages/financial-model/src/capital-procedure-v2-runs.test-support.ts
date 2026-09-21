@@ -146,11 +146,11 @@ function consistencyCases(): Case[] {
   });
 }
 
-export function buildCapitalProcedureV2Runs(): Evidence[] {
+export function buildCapitalProcedureV2Runs(version: "2026.09.21-v3" | "2026.09.21-v4" = "2026.09.21-v3"): Evidence[] {
   return ([{kind: "gold", cases: goldCases()}, {kind: "adversarial", cases: adversarialCases()},
     {kind: "consistency", cases: consistencyCases()}] as const).map(({kind, cases}) => {
-    const evidence = {runId: capitalProcedureV2RunIds[kind], kind,
-      method: {id: "prepare-capital-structure-decision", version: "2026.09.21-v3"},
+    const evidence = {runId: capitalProcedureV2RunIds[kind].replace("-v3-", `-${version.split("-")[1]}-`), kind,
+      method: {id: "prepare-capital-structure-decision", version},
       executor: {module: "@offroad/financial-model", exportName: "prepareCapitalProcedurePacketV2"},
       harness: {module: "@offroad/financial-model/src/capital-procedure-v2-runs.test-support.ts", exportName: "buildCapitalProcedureV2Runs"},
       modelCalls: 0 as const, cases, result: cases.every(c => c.passed) ? "pass" as const : "fail" as const};

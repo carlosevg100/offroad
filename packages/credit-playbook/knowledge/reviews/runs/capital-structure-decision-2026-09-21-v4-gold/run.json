@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "capital-structure-decision-2026-09-21-v4-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "prepare-capital-structure-decision",
+    "version": "2026.09.21-v4"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareCapitalProcedurePacketV2"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/capital-procedure-v2-runs.test-support.ts",
+    "exportName": "buildCapitalProcedureV2Runs"
+  },
+  "run": {
+    "startedAt": "2026-09-21T14:05:46.651Z",
+    "finishedAt": "2026-09-21T14:05:47.544Z"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "cash-identity-maintain-change-adverse",
+      "expectation": "[\"12300\",\"14450\",\"8300\"]",
+      "observed": "[\"12300\",\"14450\",\"8300\"]",
+      "inputFingerprint": "c9fc96fe07beea3c002f6b965fc13d87c19c2c7c03be4a30d00c2a3dbf2ecf36",
+      "outputFingerprint": "00ddce6d7de6bd38250e208ea1385651af23d91d445259a7b2f80bad2ed46d91",
+      "passed": true
+    },
+    {
+      "id": "contractual-definition-and-adopted-basis",
+      "expectation": "{\"calculated\":[\"150\",\"100\",\"2\"],\"adopted\":\"150\",\"status\":\"aligned\",\"packet\":\"partial\"}",
+      "observed": "{\"calculated\":[\"150\",\"100\",\"2\"],\"adopted\":\"150\",\"status\":\"aligned\",\"packet\":\"partial\"}",
+      "inputFingerprint": "0d66845291104226bd88b01619df0fee46d6119ac42c8379842d30280d2cae60",
+      "outputFingerprint": "c08bce3e98fa444dbce9b93f3b99f9dd87762f9246647946c338b17ffa10c3b4",
+      "passed": true
+    },
+    {
+      "id": "no-projection-no-fabricated-company",
+      "expectation": "{\"status\":\"framed\",\"count\":0}",
+      "observed": "{\"status\":\"framed\",\"count\":0}",
+      "inputFingerprint": "5b6fe225c9823434c0e645eb56aecb853c4716ac06159500f4971569a0a015c0",
+      "outputFingerprint": "734545a59b594b95b7625304ff8444a2ffed73aba6a691dcade98ad741fb6b49",
+      "passed": true
+    },
+    {
+      "id": "absent-source-is-not-zero",
+      "expectation": "null",
+      "observed": "null",
+      "inputFingerprint": "2287921a2f54c47762da509811d5f787b9a1e604c6704a5480b91a8ebcc2ced9",
+      "outputFingerprint": "d3e3c995a8d4a1e85a44f61e6f0cf43d4598d89288b6bd3c22c86d6f408bd1d5",
+      "passed": true
+    },
+    {
+      "id": "contribution-does-not-overwrite-adoption",
+      "expectation": "{\"calculated\":\"151\",\"adopted\":\"150\",\"status\":\"divergent\"}",
+      "observed": "{\"calculated\":\"151\",\"adopted\":\"150\",\"status\":\"divergent\"}",
+      "inputFingerprint": "32621ce6cc96e6046d93e74212a81b5735bb87d4705729f9c2d90ad9f610b06c",
+      "outputFingerprint": "6a8ee1091308b4664e6490472b6572cb28166c459da3e48f92fc0423c5b0887a",
+      "passed": true
+    },
+    {
+      "id": "interest-amortization-without-implied-cash-adoption",
+      "expectation": "{\"interest\":\"10\",\"principal\":\"100\",\"closing\":\"0\",\"reviewRequired\":true}",
+      "observed": "{\"interest\":\"10\",\"principal\":\"100\",\"closing\":\"0\",\"reviewRequired\":true}",
+      "inputFingerprint": "4c44f78196f7b0f2d170eebc7c45f5cadaf62ec6ad8ffddf2e152df29265a8e3",
+      "outputFingerprint": "bf951c2acd1f7da291922eeb717fac9db40e640e21f46bc80606ff9e71e30b96",
+      "passed": true
+    },
+    {
+      "id": "negative-cash-does-not-consume-restricted-balance",
+      "expectation": "{\"available\":\"-237\",\"restricted\":\"500\",\"shortfall\":\"237\"}",
+      "observed": "{\"available\":\"-237\",\"restricted\":\"500\",\"shortfall\":\"237\"}",
+      "inputFingerprint": "d1b7e0bf125ebc781303aa3efa586fb5b225cfda74bb1714fc543866145f36e2",
+      "outputFingerprint": "76041275f3583fb7003750f93c8a2910fa712dbce11f3ab03abf8f5c1f4c9265",
+      "passed": true
+    },
+    {
+      "id": "indexed-amortization-coupon-independent-oracle",
+      "expectation": "{\"principal\":\"72.6\",\"interest\":\"0\",\"payments\":[[\"44\",\"0\"],[\"0\",\"20.57\"]],\"status\":\"partial\"}",
+      "observed": "{\"principal\":\"72.6\",\"interest\":\"0\",\"payments\":[[\"44\",\"0\"],[\"0\",\"20.57\"]],\"status\":\"partial\"}",
+      "inputFingerprint": "afd9a4e16274fb4f4f7afcb173081830111a764f67fea0111db68e6bfbbd161a",
+      "outputFingerprint": "61167a36b34588d0c7b22af77bbe2c87e18396d62b16237cb8cfc0e124f2ec49",
+      "passed": true
+    },
+    {
+      "id": "known-indexed-contract-remains-unresolved",
+      "expectation": "{\"status\":\"partial\",\"gap\":true}",
+      "observed": "{\"status\":\"partial\",\"gap\":true}",
+      "inputFingerprint": "b90f870fbd88d18813b7bd1e6408d3eacbf661e46c6d9cf9ab829516ee1dde69",
+      "outputFingerprint": "a79d32f4775a63b3a70f36a6422f24319c331b5c99a88b054b136f4933b76729",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "5b8dea99e539e9daa9e86aa06f936a282ee7d888d54a5b8a7c74f84a7233a677",
+  "notes": "Synthetic deterministic execution. Numerical expectations do not constitute independent review, content approval, live access verification or publication. Contract interpretation remains explicit."
+}

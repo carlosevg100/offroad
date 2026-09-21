@@ -6,7 +6,7 @@ import {capitalPlanningCompatibilityPolicy} from "./capital-planning-policy.gene
 const root = resolve(import.meta.dirname, "../../..");
 const markdown = () => readFileSync(resolve(root, capitalPlanningPolicyPath), "utf8");
 describe("canonical capital planning compatibility policy", () => {
-  it("reproduces the generated adapter from the single canonical procedure block", () => {
+  it("reproduces the generated adapter from the single frozen legacy block", () => {
     expect(renderCapitalPlanningPolicy(root)).toBe(readFileSync(resolve(root, "packages/credit-playbook/src/capital-planning-policy.generated.ts"), "utf8"));
     expect(compileCapitalPlanningPolicy(markdown())).toEqual(capitalPlanningCompatibilityPolicy);
   });

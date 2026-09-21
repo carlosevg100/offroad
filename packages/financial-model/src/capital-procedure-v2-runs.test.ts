@@ -6,7 +6,7 @@ import {buildCapitalProcedureV2Runs, capitalProcedureV2RunIds} from "./capital-p
 const records = loadDeterministicMethodRuns(resolve(import.meta.dirname, "../../credit-playbook/knowledge/reviews/runs"));
 describe("recorded capital procedure v2 evaluations", () => {
   it("reexecutes every gold adversarial and consistency case and reproduces its recorded fingerprint", () => {
-    for (const evidence of buildCapitalProcedureV2Runs()) {
+    for (const evidence of [...buildCapitalProcedureV2Runs(), ...buildCapitalProcedureV2Runs("2026.09.21-v4")]) {
       const record = records.get(evidence.runId)!;
       expect(record).toBeDefined();
       expect(record.cases).toEqual(evidence.cases);
