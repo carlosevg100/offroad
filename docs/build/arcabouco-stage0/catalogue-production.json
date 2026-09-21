@@ -3571,6 +3571,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.guard_provider_processing_assurance_v1()",
+      "kind": "function",
+      "name": "guard_provider_processing_assurance_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.guard_provider_research_completion_v1()",
       "kind": "function",
       "name": "guard_provider_research_completion_v1",
@@ -5582,6 +5600,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.provider_resource_allowed_v1(p_route jsonb, p_resource text, p_purpose text, p_classification text, p_retention_limit integer)",
+      "kind": "function",
+      "name": "provider_resource_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_route jsonb, p_resource text, p_purpose text, p_classification text, p_retention_limit integer",
+      "security_definer": true
+    },
+    {
       "id": "function:private.public_cache_sources_licensed_v1(p_sources jsonb, p_through timestamp with time zone)",
       "kind": "function",
       "name": "public_cache_sources_licensed_v1",
@@ -6925,6 +6961,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_provider_processing_assurance_v1(p_document jsonb, p_change_reference text)",
+      "kind": "function",
+      "name": "record_provider_processing_assurance_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_document jsonb, p_change_reference text",
+      "security_definer": false
+    },
+    {
       "id": "function:private.record_qualified_introduction_feedback(p_introduction_id uuid, p_event_type text, p_occurred_at timestamp with time zone, p_source_kind text, p_verification_state text, p_reason_code text, p_note text, p_requested_information_count integer, p_amount numeric, p_currency text, p_supersedes_event_id uuid)",
       "kind": "function",
       "name": "record_qualified_introduction_feedback",
@@ -8138,6 +8192,24 @@
       ],
       "signature": "p_principal_id uuid",
       "security_definer": true
+    },
+    {
+      "id": "function:private.revoke_provider_processing_assurance_v1(p_id uuid, p_change_reference text)",
+      "kind": "function",
+      "name": "revoke_provider_processing_assurance_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_change_reference text",
+      "security_definer": false
     },
     {
       "id": "function:private.revoke_qualified_introduction_plan(p_plan_id uuid)",
@@ -10451,6 +10523,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+      "kind": "function",
+      "name": "worker_authorize_provider_processing_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text",
       "security_definer": true
     },
     {
@@ -19036,6 +19131,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+      "kind": "function",
+      "name": "worker_authorize_provider_processing_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_bind_receivables_information_request_fields_v1(p_job_id uuid, p_capability_token text, p_projection jsonb)",
       "kind": "function",
       "name": "worker_bind_receivables_information_request_fields_v1",
@@ -22921,6 +23039,21 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.processing_eligibility_decisions.deny_clients",
+      "kind": "policy",
+      "name": "deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "processing_eligibility_decisions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.processing_run_method_pins.method_pins_deny",
       "kind": "policy",
       "name": "method_pins_deny",
@@ -22988,6 +23121,36 @@
       "schema": "private",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.provider_processing_assurance_events.deny_clients",
+      "kind": "policy",
+      "name": "deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "provider_processing_assurance_events",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.provider_processing_assurances.deny_clients",
+      "kind": "policy",
+      "name": "deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "provider_processing_assurances",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
       "with_check": "false"
     },
     {
@@ -29963,6 +30126,56 @@
       "force_rls": true
     },
     {
+      "id": "r:private.processing_eligibility_decisions",
+      "rls": true,
+      "kind": "table",
+      "name": "processing_eligibility_decisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.processing_run_method_pins",
       "rls": true,
       "kind": "table",
@@ -30017,6 +30230,106 @@
       "rls": true,
       "kind": "table",
       "name": "project_canonical_revisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.provider_processing_assurance_events",
+      "rls": true,
+      "kind": "table",
+      "name": "provider_processing_assurance_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.provider_processing_assurances",
+      "rls": true,
+      "kind": "table",
+      "name": "provider_processing_assurances",
       "grants": [
         [
           "postgres",
@@ -45208,6 +45521,16 @@
       "definition": "CREATE TRIGGER principals_updated BEFORE UPDATE ON private.principals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.processing_eligibility_decisions.processing_eligibility_decisions_immutable",
+      "kind": "trigger",
+      "name": "processing_eligibility_decisions_immutable",
+      "table": "processing_eligibility_decisions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER processing_eligibility_decisions_immutable BEFORE DELETE OR UPDATE ON private.processing_eligibility_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
       "id": "trigger:private.processing_run_method_pins.method_pins_audit",
       "kind": "trigger",
       "name": "method_pins_audit",
@@ -45256,6 +45579,26 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER project_canonical_revisions_updated BEFORE UPDATE ON private.project_canonical_revisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.provider_processing_assurance_events.provider_processing_events_immutable",
+      "kind": "trigger",
+      "name": "provider_processing_events_immutable",
+      "table": "provider_processing_assurance_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER provider_processing_events_immutable BEFORE DELETE OR UPDATE ON private.provider_processing_assurance_events FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.provider_processing_assurances.provider_processing_assurance_immutable",
+      "kind": "trigger",
+      "name": "provider_processing_assurance_immutable",
+      "table": "provider_processing_assurances",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_provider_processing_assurance_v1()",
+      "definition": "CREATE TRIGGER provider_processing_assurance_immutable BEFORE DELETE OR UPDATE ON private.provider_processing_assurances FOR EACH ROW EXECUTE FUNCTION private.guard_provider_processing_assurance_v1()"
     },
     {
       "id": "trigger:private.receivables_evidence_fragments.receivables_scope_fragment_lock",
@@ -49003,5 +49346,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-19T18:00:05.29675+00:00"
+  "captured_at": "2026-09-21T15:56:51.508034+00:00"
 }

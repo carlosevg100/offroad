@@ -7,7 +7,7 @@ export type AnthropicAdapterOptions = {
   /** Reads ANTHROPIC_API_KEY (or an `ant auth login` profile) when omitted. */
   apiKey?: string;
   client?: Anthropic;
-  /** Evaluation opt-in: only the gateway may own and count retries. */
+  /** Compatibility field. SDK retries are always disabled; the gateway owns each attempt. */
   disableSdkRetries?: boolean;
 };
 
@@ -76,7 +76,7 @@ export function mapAnthropicUsage(usage: Anthropic.Usage | undefined): Usage {
 }
 
 export function createAnthropicAdapter(options: AnthropicAdapterOptions = {}): ProviderAdapter {
-  const client = options.client ?? new Anthropic(options.apiKey ? {apiKey: options.apiKey} : {});
+  const client = options.client ?? new Anthropic({baseURL: "https://api.anthropic.com", fetchOptions: {redirect: "error"}, ...(options.apiKey ? {apiKey: options.apiKey} : {})});
   return {
     provider: "anthropic",
     async complete(request: AdapterRequest): Promise<AdapterResponse> {
@@ -85,7 +85,7 @@ export function createAnthropicAdapter(options: AnthropicAdapterOptions = {}): P
       // provider promise and throws away the otherwise valid Message (including usage and
       // request id) when a client-side constraint fails. The gateway owns validation and
       // fallback, so retain the raw structured response and validate it exactly once there.
-      const message = await client.messages.create(params, {timeout: request.timeoutMs, ...(options.disableSdkRetries ? {maxRetries: 0} : {})});
+      const message = await client.messages.create(params, {timeout: request.timeoutMs, maxRetries: 0});
       const rawText = message.content
         .filter((block): block is Anthropic.TextBlock => block.type === "text")
         .map((block) => block.text)

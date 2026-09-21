@@ -1,0 +1,537 @@
+[
+  {
+    "id": "948e14de-278d-564c-b1e1-df2163b6eae5",
+    "policyVersion": "offroad-provider-retention-v2",
+    "accountRef": "org-RduRuVoprBl49gwbfIMNQVH3",
+    "projectRef": "proj_Lq9xdWylMavwBEfHbNxJMSHF",
+    "credentialBinding": "1e0aa91f-5bad-4f46-8363-241381e647dc",
+    "region": "global",
+    "provider": "openai",
+    "models": [
+      "gpt-5.6-sol",
+      "gpt-5.6-terra"
+    ],
+    "endpoint": "https://api.openai.com/v1/responses",
+    "resource": "inference",
+    "eligibility": "supported",
+    "purposes": [
+      "public_research",
+      "document_processing",
+      "case_analysis",
+      "artifact_generation",
+      "localization",
+      "evaluation"
+    ],
+    "classifications": [
+      "public",
+      "internal",
+      "confidential",
+      "restricted"
+    ],
+    "rights": [
+      "process"
+    ],
+    "trainingUse": "prohibited",
+    "retention": {
+      "requestContentSeconds": 2592000,
+      "abuseMonitoringSeconds": 2592000,
+      "applicationStateSeconds": 0,
+      "cacheSeconds": 86400,
+      "metadataSeconds": 2592000,
+      "exceptions": [
+        "legal_hold",
+        "security_investigation",
+        "policy_enforcement"
+      ]
+    },
+    "zeroRetention": "not_contracted",
+    "evidence": [
+      {
+        "kind": "provider_terms",
+        "reference": "docs/security/provider-processing/2026-09-21/REVIEW.md",
+        "sha256": "b871d84cecb9a85ee4ce8862fb314e2f1aa2a81d30b245cb8a68215fe9b03d57"
+      },
+      {
+        "kind": "account_configuration",
+        "reference": "docs/security/provider-processing/2026-09-21/account-controls.json",
+        "sha256": "299661d263c10000ac42631be9cdd8443f21ee58d4a83bdbb4760889d270005a"
+      },
+      {
+        "kind": "credential_binding",
+        "reference": "docs/security/provider-processing/2026-09-21/provider-bindings.json",
+        "sha256": "84b217b9c266d0ddb93fb6fa3a70ec31e278cbab73e5a33521fbdedb1312d9d4"
+      }
+    ],
+    "reviewedBy": "Codex, revisão operacional autorizada da etapa 16",
+    "reviewedAt": "2026-09-21T15:55:11.208251+00:00",
+    "validThrough": "2026-10-21T00:00:00Z",
+    "revokedAt": null
+  },
+  {
+    "id": "d01cc0a5-eb50-5be8-845f-ba95af813956",
+    "policyVersion": "offroad-provider-retention-v2",
+    "accountRef": "org-RduRuVoprBl49gwbfIMNQVH3",
+    "projectRef": "proj_Lq9xdWylMavwBEfHbNxJMSHF",
+    "credentialBinding": "1e0aa91f-5bad-4f46-8363-241381e647dc",
+    "region": "global",
+    "provider": "openai",
+    "models": [
+      "gpt-5.6-sol",
+      "gpt-5.6-terra"
+    ],
+    "endpoint": "https://api.openai.com/v1/responses",
+    "resource": "inline_document",
+    "eligibility": "supported",
+    "purposes": [
+      "public_research",
+      "document_processing",
+      "case_analysis",
+      "artifact_generation",
+      "localization",
+      "evaluation"
+    ],
+    "classifications": [
+      "public",
+      "internal",
+      "confidential",
+      "restricted"
+    ],
+    "rights": [
+      "process"
+    ],
+    "trainingUse": "prohibited",
+    "retention": {
+      "requestContentSeconds": 2592000,
+      "abuseMonitoringSeconds": 2592000,
+      "applicationStateSeconds": 0,
+      "cacheSeconds": 86400,
+      "metadataSeconds": 2592000,
+      "exceptions": [
+        "legal_hold",
+        "security_investigation",
+        "policy_enforcement"
+      ]
+    },
+    "zeroRetention": "not_contracted",
+    "evidence": [
+      {
+        "kind": "provider_terms",
+        "reference": "docs/security/provider-processing/2026-09-21/REVIEW.md",
+        "sha256": "b871d84cecb9a85ee4ce8862fb314e2f1aa2a81d30b245cb8a68215fe9b03d57"
+      },
+      {
+        "kind": "account_configuration",
+        "reference": "docs/security/provider-processing/2026-09-21/account-controls.json",
+        "sha256": "299661d263c10000ac42631be9cdd8443f21ee58d4a83bdbb4760889d270005a"
+      },
+      {
+        "kind": "credential_binding",
+        "reference": "docs/security/provider-processing/2026-09-21/provider-bindings.json",
+        "sha256": "84b217b9c266d0ddb93fb6fa3a70ec31e278cbab73e5a33521fbdedb1312d9d4"
+      }
+    ],
+    "reviewedBy": "Codex, revisão operacional autorizada da etapa 16",
+    "reviewedAt": "2026-09-21T15:55:11.209341+00:00",
+    "validThrough": "2026-10-21T00:00:00Z",
+    "revokedAt": null
+  },
+  {
+    "id": "32359b2e-1577-5b52-9e63-a59c08a6ab8a",
+    "policyVersion": "offroad-provider-retention-v2",
+    "accountRef": "org-RduRuVoprBl49gwbfIMNQVH3",
+    "projectRef": "proj_Lq9xdWylMavwBEfHbNxJMSHF",
+    "credentialBinding": "1e0aa91f-5bad-4f46-8363-241381e647dc",
+    "region": "global",
+    "provider": "openai",
+    "models": [
+      "gpt-5.6-sol",
+      "gpt-5.6-terra"
+    ],
+    "endpoint": "https://api.openai.com/v1/responses",
+    "resource": "prompt_cache",
+    "eligibility": "supported",
+    "purposes": [
+      "public_research",
+      "document_processing",
+      "case_analysis",
+      "artifact_generation",
+      "localization",
+      "evaluation"
+    ],
+    "classifications": [
+      "public",
+      "internal",
+      "confidential",
+      "restricted"
+    ],
+    "rights": [
+      "process"
+    ],
+    "trainingUse": "prohibited",
+    "retention": {
+      "requestContentSeconds": 2592000,
+      "abuseMonitoringSeconds": 2592000,
+      "applicationStateSeconds": 0,
+      "cacheSeconds": 86400,
+      "metadataSeconds": 2592000,
+      "exceptions": [
+        "legal_hold",
+        "security_investigation",
+        "policy_enforcement"
+      ]
+    },
+    "zeroRetention": "not_contracted",
+    "evidence": [
+      {
+        "kind": "provider_terms",
+        "reference": "docs/security/provider-processing/2026-09-21/REVIEW.md",
+        "sha256": "b871d84cecb9a85ee4ce8862fb314e2f1aa2a81d30b245cb8a68215fe9b03d57"
+      },
+      {
+        "kind": "account_configuration",
+        "reference": "docs/security/provider-processing/2026-09-21/account-controls.json",
+        "sha256": "299661d263c10000ac42631be9cdd8443f21ee58d4a83bdbb4760889d270005a"
+      },
+      {
+        "kind": "credential_binding",
+        "reference": "docs/security/provider-processing/2026-09-21/provider-bindings.json",
+        "sha256": "84b217b9c266d0ddb93fb6fa3a70ec31e278cbab73e5a33521fbdedb1312d9d4"
+      }
+    ],
+    "reviewedBy": "Codex, revisão operacional autorizada da etapa 16",
+    "reviewedAt": "2026-09-21T15:55:11.209385+00:00",
+    "validThrough": "2026-10-21T00:00:00Z",
+    "revokedAt": null
+  },
+  {
+    "id": "1cfb9f84-4949-5c1f-bbb6-2d4d610173f3",
+    "policyVersion": "offroad-provider-retention-v2",
+    "accountRef": "org-RduRuVoprBl49gwbfIMNQVH3",
+    "projectRef": "proj_Lq9xdWylMavwBEfHbNxJMSHF",
+    "credentialBinding": "1e0aa91f-5bad-4f46-8363-241381e647dc",
+    "region": "global",
+    "provider": "openai",
+    "models": [
+      "gpt-5.6-terra"
+    ],
+    "endpoint": "https://api.openai.com/v1/responses",
+    "resource": "external_search",
+    "eligibility": "supported",
+    "purposes": [
+      "public_research"
+    ],
+    "classifications": [
+      "public"
+    ],
+    "rights": [
+      "process"
+    ],
+    "trainingUse": "prohibited",
+    "retention": {
+      "requestContentSeconds": 2592000,
+      "abuseMonitoringSeconds": 2592000,
+      "applicationStateSeconds": 0,
+      "cacheSeconds": 86400,
+      "metadataSeconds": 2592000,
+      "exceptions": [
+        "legal_hold",
+        "security_investigation",
+        "policy_enforcement"
+      ]
+    },
+    "zeroRetention": "not_contracted",
+    "evidence": [
+      {
+        "kind": "provider_terms",
+        "reference": "docs/security/provider-processing/2026-09-21/REVIEW.md",
+        "sha256": "b871d84cecb9a85ee4ce8862fb314e2f1aa2a81d30b245cb8a68215fe9b03d57"
+      },
+      {
+        "kind": "account_configuration",
+        "reference": "docs/security/provider-processing/2026-09-21/account-controls.json",
+        "sha256": "299661d263c10000ac42631be9cdd8443f21ee58d4a83bdbb4760889d270005a"
+      },
+      {
+        "kind": "credential_binding",
+        "reference": "docs/security/provider-processing/2026-09-21/provider-bindings.json",
+        "sha256": "84b217b9c266d0ddb93fb6fa3a70ec31e278cbab73e5a33521fbdedb1312d9d4"
+      }
+    ],
+    "reviewedBy": "Codex, revisão operacional autorizada da etapa 16",
+    "reviewedAt": "2026-09-21T15:55:11.209426+00:00",
+    "validThrough": "2026-10-21T00:00:00Z",
+    "revokedAt": null
+  },
+  {
+    "id": "c315edb3-f2a2-518f-a2e7-c812f0e52bf8",
+    "policyVersion": "offroad-provider-retention-v2",
+    "accountRef": "6189245d-6371-40a7-a470-aa38ce58a754",
+    "projectRef": "wrkspc_01FviSqikt1RDKdtbfZsmCfT",
+    "credentialBinding": "122470d2-ece8-4467-8a03-36f01d57761a",
+    "region": "global",
+    "provider": "anthropic",
+    "models": [
+      "claude-opus-5",
+      "claude-sonnet-5"
+    ],
+    "endpoint": "https://api.anthropic.com/v1/messages",
+    "resource": "inference",
+    "eligibility": "supported",
+    "purposes": [
+      "public_research",
+      "document_processing",
+      "case_analysis",
+      "artifact_generation",
+      "localization",
+      "evaluation"
+    ],
+    "classifications": [
+      "public",
+      "internal",
+      "confidential",
+      "restricted"
+    ],
+    "rights": [
+      "process"
+    ],
+    "trainingUse": "prohibited",
+    "retention": {
+      "requestContentSeconds": 2592000,
+      "abuseMonitoringSeconds": 2592000,
+      "applicationStateSeconds": 0,
+      "cacheSeconds": 300,
+      "metadataSeconds": 2592000,
+      "exceptions": [
+        "legal_hold",
+        "security_investigation",
+        "policy_enforcement"
+      ]
+    },
+    "zeroRetention": "not_contracted",
+    "evidence": [
+      {
+        "kind": "provider_terms",
+        "reference": "docs/security/provider-processing/2026-09-21/REVIEW.md",
+        "sha256": "b871d84cecb9a85ee4ce8862fb314e2f1aa2a81d30b245cb8a68215fe9b03d57"
+      },
+      {
+        "kind": "account_configuration",
+        "reference": "docs/security/provider-processing/2026-09-21/account-controls.json",
+        "sha256": "299661d263c10000ac42631be9cdd8443f21ee58d4a83bdbb4760889d270005a"
+      },
+      {
+        "kind": "credential_binding",
+        "reference": "docs/security/provider-processing/2026-09-21/provider-bindings.json",
+        "sha256": "84b217b9c266d0ddb93fb6fa3a70ec31e278cbab73e5a33521fbdedb1312d9d4"
+      }
+    ],
+    "reviewedBy": "Codex, revisão operacional autorizada da etapa 16",
+    "reviewedAt": "2026-09-21T15:55:11.209466+00:00",
+    "validThrough": "2026-10-21T00:00:00Z",
+    "revokedAt": null
+  },
+  {
+    "id": "94c21626-ff07-5a65-aee0-77e2255dfb16",
+    "policyVersion": "offroad-provider-retention-v2",
+    "accountRef": "6189245d-6371-40a7-a470-aa38ce58a754",
+    "projectRef": "wrkspc_01FviSqikt1RDKdtbfZsmCfT",
+    "credentialBinding": "122470d2-ece8-4467-8a03-36f01d57761a",
+    "region": "global",
+    "provider": "anthropic",
+    "models": [
+      "claude-opus-5",
+      "claude-sonnet-5"
+    ],
+    "endpoint": "https://api.anthropic.com/v1/messages",
+    "resource": "inline_document",
+    "eligibility": "supported",
+    "purposes": [
+      "public_research",
+      "document_processing",
+      "case_analysis",
+      "artifact_generation",
+      "localization",
+      "evaluation"
+    ],
+    "classifications": [
+      "public",
+      "internal",
+      "confidential",
+      "restricted"
+    ],
+    "rights": [
+      "process"
+    ],
+    "trainingUse": "prohibited",
+    "retention": {
+      "requestContentSeconds": 2592000,
+      "abuseMonitoringSeconds": 2592000,
+      "applicationStateSeconds": 0,
+      "cacheSeconds": 300,
+      "metadataSeconds": 2592000,
+      "exceptions": [
+        "legal_hold",
+        "security_investigation",
+        "policy_enforcement"
+      ]
+    },
+    "zeroRetention": "not_contracted",
+    "evidence": [
+      {
+        "kind": "provider_terms",
+        "reference": "docs/security/provider-processing/2026-09-21/REVIEW.md",
+        "sha256": "b871d84cecb9a85ee4ce8862fb314e2f1aa2a81d30b245cb8a68215fe9b03d57"
+      },
+      {
+        "kind": "account_configuration",
+        "reference": "docs/security/provider-processing/2026-09-21/account-controls.json",
+        "sha256": "299661d263c10000ac42631be9cdd8443f21ee58d4a83bdbb4760889d270005a"
+      },
+      {
+        "kind": "credential_binding",
+        "reference": "docs/security/provider-processing/2026-09-21/provider-bindings.json",
+        "sha256": "84b217b9c266d0ddb93fb6fa3a70ec31e278cbab73e5a33521fbdedb1312d9d4"
+      }
+    ],
+    "reviewedBy": "Codex, revisão operacional autorizada da etapa 16",
+    "reviewedAt": "2026-09-21T15:55:11.209505+00:00",
+    "validThrough": "2026-10-21T00:00:00Z",
+    "revokedAt": null
+  },
+  {
+    "id": "49544328-ff7c-5e95-aa52-e196a92e1cb9",
+    "policyVersion": "offroad-provider-retention-v2",
+    "accountRef": "6189245d-6371-40a7-a470-aa38ce58a754",
+    "projectRef": "wrkspc_01FviSqikt1RDKdtbfZsmCfT",
+    "credentialBinding": "122470d2-ece8-4467-8a03-36f01d57761a",
+    "region": "global",
+    "provider": "anthropic",
+    "models": [
+      "claude-opus-5",
+      "claude-sonnet-5"
+    ],
+    "endpoint": "https://api.anthropic.com/v1/messages",
+    "resource": "prompt_cache",
+    "eligibility": "supported",
+    "purposes": [
+      "public_research",
+      "document_processing",
+      "case_analysis",
+      "artifact_generation",
+      "localization",
+      "evaluation"
+    ],
+    "classifications": [
+      "public",
+      "internal",
+      "confidential",
+      "restricted"
+    ],
+    "rights": [
+      "process"
+    ],
+    "trainingUse": "prohibited",
+    "retention": {
+      "requestContentSeconds": 2592000,
+      "abuseMonitoringSeconds": 2592000,
+      "applicationStateSeconds": 0,
+      "cacheSeconds": 300,
+      "metadataSeconds": 2592000,
+      "exceptions": [
+        "legal_hold",
+        "security_investigation",
+        "policy_enforcement"
+      ]
+    },
+    "zeroRetention": "not_contracted",
+    "evidence": [
+      {
+        "kind": "provider_terms",
+        "reference": "docs/security/provider-processing/2026-09-21/REVIEW.md",
+        "sha256": "b871d84cecb9a85ee4ce8862fb314e2f1aa2a81d30b245cb8a68215fe9b03d57"
+      },
+      {
+        "kind": "account_configuration",
+        "reference": "docs/security/provider-processing/2026-09-21/account-controls.json",
+        "sha256": "299661d263c10000ac42631be9cdd8443f21ee58d4a83bdbb4760889d270005a"
+      },
+      {
+        "kind": "credential_binding",
+        "reference": "docs/security/provider-processing/2026-09-21/provider-bindings.json",
+        "sha256": "84b217b9c266d0ddb93fb6fa3a70ec31e278cbab73e5a33521fbdedb1312d9d4"
+      }
+    ],
+    "reviewedBy": "Codex, revisão operacional autorizada da etapa 16",
+    "reviewedAt": "2026-09-21T15:55:11.209542+00:00",
+    "validThrough": "2026-10-21T00:00:00Z",
+    "revokedAt": null
+  },
+  {
+    "id": "e022b26c-d76a-5343-858b-85609050fd4c",
+    "policyVersion": "offroad-provider-retention-v2",
+    "accountRef": "6189245d-6371-40a7-a470-aa38ce58a754",
+    "projectRef": "wrkspc_01FviSqikt1RDKdtbfZsmCfT",
+    "credentialBinding": "122470d2-ece8-4467-8a03-36f01d57761a",
+    "region": "global",
+    "provider": "anthropic",
+    "models": [
+      "claude-opus-5",
+      "claude-sonnet-5"
+    ],
+    "endpoint": "https://api.anthropic.com/v1/messages",
+    "resource": "schema_cache",
+    "eligibility": "supported",
+    "purposes": [
+      "public_research",
+      "document_processing",
+      "case_analysis",
+      "artifact_generation",
+      "localization",
+      "evaluation"
+    ],
+    "classifications": [
+      "public",
+      "internal",
+      "confidential",
+      "restricted"
+    ],
+    "rights": [
+      "process"
+    ],
+    "trainingUse": "prohibited",
+    "retention": {
+      "requestContentSeconds": 2592000,
+      "abuseMonitoringSeconds": 2592000,
+      "applicationStateSeconds": 0,
+      "cacheSeconds": 86400,
+      "metadataSeconds": 2592000,
+      "exceptions": [
+        "legal_hold",
+        "security_investigation",
+        "policy_enforcement"
+      ]
+    },
+    "zeroRetention": "not_contracted",
+    "evidence": [
+      {
+        "kind": "provider_terms",
+        "reference": "docs/security/provider-processing/2026-09-21/REVIEW.md",
+        "sha256": "b871d84cecb9a85ee4ce8862fb314e2f1aa2a81d30b245cb8a68215fe9b03d57"
+      },
+      {
+        "kind": "account_configuration",
+        "reference": "docs/security/provider-processing/2026-09-21/account-controls.json",
+        "sha256": "299661d263c10000ac42631be9cdd8443f21ee58d4a83bdbb4760889d270005a"
+      },
+      {
+        "kind": "credential_binding",
+        "reference": "docs/security/provider-processing/2026-09-21/provider-bindings.json",
+        "sha256": "84b217b9c266d0ddb93fb6fa3a70ec31e278cbab73e5a33521fbdedb1312d9d4"
+      }
+    ],
+    "reviewedBy": "Codex, revisão operacional autorizada da etapa 16",
+    "reviewedAt": "2026-09-21T15:55:11.209578+00:00",
+    "validThrough": "2026-10-21T00:00:00Z",
+    "revokedAt": null
+  }
+]

@@ -7,6 +7,7 @@ import {buildRepairGuidance, type RepairValidationSource} from "./repair";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
 import {conservativeTextReservationUsd} from "./conservative-reservation";
+import type {ProcessingEligibilityDecision, ProcessingResource} from "./retention-matrix";
 import {
   ModelGatewayError,
   type AdapterRequest,
@@ -39,6 +40,11 @@ export type ModelGatewayConfig = {
    * Only the evals sweep sets it (P1 plan §15.1); the denylist still applies.
    */
   experimentalModels?: readonly string[];
+  /** Live control-plane decision. Called again for every repair and provider fallback. */
+  processingEligibility?: (input: {
+    provider: Provider; model: string; resources: ProcessingResource[];
+    context: GatewayRequest<z.ZodType>["dataHandling"];
+  }) => Promise<ProcessingEligibilityDecision>;
   /** Off by default until current vendor contracts are entered; when on, every route fails closed. */
   providerDataPolicy?: {
     enforce: boolean;
@@ -118,6 +124,23 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         ...(pendingRepairIssueCodeFingerprint ? {repairValidationIssueCodeFingerprint: pendingRepairIssueCodeFingerprint} : {}),
       } : {};
       let providerPolicyVersion: string | undefined;
+      if (config.processingEligibility) {
+        const resources: ProcessingResource[] = ["inference", "prompt_cache"];
+        if (request.outputMode !== "prompted_json") resources.push("schema_cache");
+        if (input.some(part => part.type !== "text")) resources.push("inline_document");
+        const decision = await config.processingEligibility({provider: ref.provider, model: ref.model, resources, context: request.dataHandling});
+        providerPolicyVersion = decision.policyVersion;
+        if (!decision.allowed) {
+          attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: decision.reasons.join(","), ...attemptTelemetry});
+          emit(config, {request, ref, invocationId, ...repairLineage, costUsd: 0, latencyMs: 0,
+            usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette: false,
+            outcome: "policy_rejected", promptFingerprint, inputFingerprint,
+            outputFingerprint: fingerprint({outcome: "policy_rejected", reasons: decision.reasons}),
+            notCalled: true, providerPolicyVersion});
+          previousAttemptInvocationId = invocationId;
+          continue;
+        }
+      }
       if (config.providerDataPolicy?.enforce) {
         if (!request.dataHandling) {
           throw new ModelGatewayError("data handling context is required when provider policy enforcement is enabled", "data_policy_violation", {

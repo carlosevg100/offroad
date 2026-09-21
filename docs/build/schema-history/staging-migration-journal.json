@@ -1,6 +1,4 @@
 {
-  "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-19T17:51:10.737Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1485,6 +1483,16 @@
     {
       "version": "20260919173017",
       "name": "preserve_published_platform_method_identity"
+    },
+    {
+      "version": "20260921152548",
+      "name": "provider_resource_retention_eligibility"
+    },
+    {
+      "version": "20260921154159",
+      "name": "provider_retention_dependency_and_contract_guards"
     }
-  ]
+  ],
+  "project_id": "gjkkjtbfnssdsbmlhmwk",
+  "captured_at": "2026-09-21T15:55:28.114839+00:00"
 }

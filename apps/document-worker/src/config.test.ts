@@ -1,5 +1,4 @@
 import {describe, expect, it} from "vitest";
-import {providerDataPolicyVersion, type ProviderDataAssurance} from "@offroad/model-gateway";
 import {describeConfig, loadConfig} from "./config";
 
 const baseEnv = (): NodeJS.ProcessEnv => ({
@@ -10,41 +9,23 @@ const baseEnv = (): NodeJS.ProcessEnv => ({
   OFFROAD_WORKER_TOKEN: "synthetic-worker-token-with-thirty-two-characters",
 });
 
-function assurance(provider: "anthropic" | "openai"): ProviderDataAssurance {
-  return {
-    provider,
-    policyVersion: providerDataPolicyVersion,
-    approvedPurposes: ["document_processing", "case_analysis", "artifact_generation", "evaluation"],
-    allowedClassifications: ["confidential", "restricted"],
-    trainingUse: "prohibited",
-    storage: "no_store",
-    reviewedAt: "2026-09-01T12:00:00.000Z",
-    validThrough: "2027-03-01T12:00:00.000Z",
-  };
-}
-
 describe("worker provider data-policy configuration", () => {
-  it("keeps enforcement explicit and off by default", () => {
-    expect(loadConfig(baseEnv()).ENFORCE_PROVIDER_DATA_POLICY).toBe(false);
+  it("cannot disable enforcement through the retired flag", () => {
+    const config = loadConfig({...baseEnv(), ENFORCE_PROVIDER_DATA_POLICY: "false"});
+    expect(describeConfig(config).providerDataPolicyEnforced).toBe(true);
+    expect(config.PROVIDER_CONNECTIONS_JSON).toEqual({});
   });
-
-  it("refuses boot when enforcement is enabled without assurance for a configured provider", () => {
-    expect(() => loadConfig({...baseEnv(), ENFORCE_PROVIDER_DATA_POLICY: "true", ANTHROPIC_API_KEY: "synthetic-anthropic-api-key"}))
-      .toThrow(/ANTHROPIC_DATA_ASSURANCE_JSON/);
+  it("rejects malformed connection bindings without exposing their values", () => {
+    expect(() => loadConfig({...baseEnv(), PROVIDER_CONNECTIONS_JSON: "invalid"})).toThrow(/PROVIDER_CONNECTIONS_JSON/);
   });
-
-  it("parses a reviewed assurance but exposes only presence in safe configuration logs", () => {
-    const config = loadConfig({
-      ...baseEnv(),
-      ENFORCE_PROVIDER_DATA_POLICY: "true",
-      ANTHROPIC_API_KEY: "synthetic-anthropic-api-key",
-      ANTHROPIC_DATA_ASSURANCE_JSON: JSON.stringify(assurance("anthropic")),
-    });
-    expect(config.ANTHROPIC_DATA_ASSURANCE_JSON?.policyVersion).toBe(providerDataPolicyVersion);
+  it("logs only provider names, never account or credential references", () => {
+    const config = loadConfig({...baseEnv(), PROVIDER_CONNECTIONS_JSON: JSON.stringify({openai: {
+      accountRef: "synthetic-account", projectRef: "synthetic-project", credentialBinding: "synthetic-credential-version", region: "global",
+    }})});
     const described = describeConfig(config);
-    expect(described).toMatchObject({providerDataPolicyEnforced: true, anthropicDataAssurance: "present"});
-    expect(JSON.stringify(described)).not.toContain("validThrough");
-    expect(JSON.stringify(described)).not.toContain("synthetic-anthropic-api-key");
+    expect(described).toMatchObject({providerDataPolicyEnforced: true, verifiedProviderConnections: "openai"});
+    expect(JSON.stringify(described)).not.toContain("synthetic-account");
+    expect(JSON.stringify(described)).not.toContain("synthetic-credential-version");
   });
 
   it("accepts provider keys stored as plaintext or as a one-field Secrets Manager object", () => {

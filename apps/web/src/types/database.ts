@@ -12156,6 +12156,16 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_authorize_provider_processing_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_purpose: string
+          p_resources: string[]
+          p_route: Json
+        }
+        Returns: Json
+      }
       worker_bind_receivables_information_request_fields_v1: {
         Args: {
           p_capability_token: string

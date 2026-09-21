@@ -1,0 +1,34 @@
+{
+  "observedAt": "2026-09-21T15:10:33.962201+00:00",
+  "taskRevision": 420,
+  "providers": {
+    "openai": {
+      "credentialReference": "arn:aws:secretsmanager:sa-east-1:389642461544:secret:offroad/openai-api-key-F0Yxi7",
+      "credentialVersion": "1e0aa91f-5bad-4f46-8363-241381e647dc",
+      "accountHeaders": {},
+      "requestedAccountBinding": {
+        "organization": "org-RduRuVoprBl49gwbfIMNQVH3",
+        "project": "proj_Lq9xdWylMavwBEfHbNxJMSHF"
+      },
+      "httpStatus": "200",
+      "configuredModelsListed": {
+        "gpt-5.6-sol": true,
+        "gpt-5.6-terra": true
+      }
+    },
+    "anthropic": {
+      "credentialReference": "arn:aws:secretsmanager:sa-east-1:389642461544:secret:offroad/anthropic-api-key-RLpwik",
+      "credentialVersion": "122470d2-ece8-4467-8a03-36f01d57761a",
+      "accountHeaders": {
+        "anthropic-organization-id": "6189245d-6371-40a7-a470-aa38ce58a754",
+        "anthropic-workspace-id": "wrkspc_01FviSqikt1RDKdtbfZsmCfT"
+      },
+      "requestedAccountBinding": null,
+      "httpStatus": "200",
+      "configuredModelsListed": {
+        "claude-opus-5": true,
+        "claude-sonnet-5": true
+      }
+    }
+  }
+}

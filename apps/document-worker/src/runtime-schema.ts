@@ -23,6 +23,7 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "document-work-product-request-binding.v1",
   "documentary-execution-scope.v1",
   "atomic-documentary-commit.v1",
+  "provider-resource-retention.v2",
 ] as const;
 
 const runtimeSchemaContract = z.object({

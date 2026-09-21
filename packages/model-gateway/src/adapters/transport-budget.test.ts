@@ -24,13 +24,13 @@ describe("SDK transport budget boundary",()=>{
    await expect(adapter.complete({...request,model:provider==="anthropic"?"claude-sonnet-5":"gpt-5.6-terra"})).rejects.toThrow();
    expect(attempts).toBe(1);
   });
-  it(`${provider} preserves default SDK retries when opt-in is absent`,async()=>{
+  it(`${provider} disables SDK retries even without the legacy opt-in`,async()=>{
    let attempts=0;
    const fetch=async()=>{attempts++;return new Response(JSON.stringify({error:{message:"synthetic retryable failure",type:"server_error"}}),{status:503,headers:{"content-type":"application/json","retry-after-ms":"1"}});};
    const adapter=provider==="anthropic"
     ?createAnthropicAdapter({client:new Anthropic({apiKey:"synthetic-only",fetch})})
     :createOpenAIAdapter({client:new OpenAI({apiKey:"synthetic-only",fetch})});
-   await expect(adapter.complete(request)).rejects.toThrow();expect(attempts).toBe(3);
+   await expect(adapter.complete(request)).rejects.toThrow();expect(attempts).toBe(1);
   });
   for(const [label,usage,known] of [
    ["missing",undefined,false],

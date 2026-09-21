@@ -11207,6 +11207,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.guard_provider_processing_assurance_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_provider_processing_assurance_v1()",
+          "kind": "function",
+          "name": "guard_provider_processing_assurance_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_provider_processing_assurance_v1()",
+          "kind": "function",
+          "name": "guard_provider_processing_assurance_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 47,
+          "anchor": "create function private.guard_provider_processing_assurance_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
       "id": "function:private.guard_provider_research_completion_v1()",
       "kind": "function",
       "catalogues": {
@@ -17542,6 +17597,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.provider_resource_allowed_v1(p_route jsonb, p_resource text, p_purpose text, p_classification text, p_retention_limit integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.provider_resource_allowed_v1(p_route jsonb, p_resource text, p_purpose text, p_classification text, p_retention_limit integer)",
+          "kind": "function",
+          "name": "provider_resource_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_route jsonb, p_resource text, p_purpose text, p_classification text, p_retention_limit integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.provider_resource_allowed_v1(p_route jsonb, p_resource text, p_purpose text, p_classification text, p_retention_limit integer)",
+          "kind": "function",
+          "name": "provider_resource_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_route jsonb, p_resource text, p_purpose text, p_classification text, p_retention_limit integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 127,
+          "anchor": "create function private.provider_resource_allowed_v1(p_route jsonb,p_resource text,p_purpose text,p_classification text,p_retention_limit integer)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
       "id": "function:private.public_cache_sources_licensed_v1(p_sources jsonb, p_through timestamp with time zone)",
       "kind": "function",
       "catalogues": {
@@ -21952,6 +22062,61 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.record_provider_processing_assurance_v1(p_document jsonb, p_change_reference text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_provider_processing_assurance_v1(p_document jsonb, p_change_reference text)",
+          "kind": "function",
+          "name": "record_provider_processing_assurance_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_document jsonb, p_change_reference text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.record_provider_processing_assurance_v1(p_document jsonb, p_change_reference text)",
+          "kind": "function",
+          "name": "record_provider_processing_assurance_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_document jsonb, p_change_reference text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 58,
+          "anchor": "create function private.record_provider_processing_assurance_v1(p_document jsonb,p_change_reference text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
       "id": "function:private.record_qualified_introduction_feedback(p_introduction_id uuid, p_event_type text, p_occurred_at timestamp with time zone, p_source_kind text, p_verification_state text, p_reason_code text, p_note text, p_requested_information_count integer, p_amount numeric, p_currency text, p_supersedes_event_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -25898,6 +26063,61 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
+    },
+    {
+      "id": "function:private.revoke_provider_processing_assurance_v1(p_id uuid, p_change_reference text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.revoke_provider_processing_assurance_v1(p_id uuid, p_change_reference text)",
+          "kind": "function",
+          "name": "revoke_provider_processing_assurance_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_change_reference text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.revoke_provider_processing_assurance_v1(p_id uuid, p_change_reference text)",
+          "kind": "function",
+          "name": "revoke_provider_processing_assurance_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_change_reference text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 113,
+          "anchor": "create function private.revoke_provider_processing_assurance_v1(p_id uuid,p_change_reference text) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
     },
     {
       "id": "function:private.revoke_qualified_introduction_plan(p_plan_id uuid)",
@@ -33142,6 +33362,71 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+          "kind": "function",
+          "name": "worker_authorize_provider_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+          "kind": "function",
+          "name": "worker_authorize_provider_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 150,
+          "anchor": "create function private.worker_authorize_provider_processing_v1(p_job_id uuid,p_capability_token text,p_route jsonb,p_resources text[],p_purpose text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
     },
     {
       "id": "function:private.worker_bind_receivables_information_request_fields_v1(p_job_id uuid, p_capability_token text, p_projection jsonb)",
@@ -59275,6 +59560,71 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:public.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+          "kind": "function",
+          "name": "worker_authorize_provider_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+          "kind": "function",
+          "name": "worker_authorize_provider_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text",
+          "security_definer": false
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 185,
+          "anchor": "create function public.worker_authorize_provider_processing_v1(p_job_id uuid,p_capability_token text,p_route jsonb,p_resources text[],p_purpose text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
       "id": "function:public.worker_bind_receivables_information_request_fields_v1(p_job_id uuid, p_capability_token text, p_projection jsonb)",
       "kind": "function",
       "catalogues": {
@@ -71039,6 +71389,55 @@
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
+      "id": "policy:private.processing_eligibility_decisions.deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.processing_eligibility_decisions.deny_clients",
+          "kind": "policy",
+          "name": "deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "processing_eligibility_decisions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.processing_eligibility_decisions.deny_clients",
+          "kind": "policy",
+          "name": "deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "processing_eligibility_decisions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 39,
+          "anchor": " execute format('create policy deny_clients on private.%I as restrictive for all to anon,authenticated using(false) with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
       "id": "policy:private.processing_run_method_pins.method_pins_deny",
       "kind": "policy",
       "catalogues": {
@@ -71272,6 +71671,104 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.provider_processing_assurance_events.deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.provider_processing_assurance_events.deny_clients",
+          "kind": "policy",
+          "name": "deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "provider_processing_assurance_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.provider_processing_assurance_events.deny_clients",
+          "kind": "policy",
+          "name": "deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "provider_processing_assurance_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 39,
+          "anchor": " execute format('create policy deny_clients on private.%I as restrictive for all to anon,authenticated using(false) with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
+      "id": "policy:private.provider_processing_assurances.deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.provider_processing_assurances.deny_clients",
+          "kind": "policy",
+          "name": "deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "provider_processing_assurances",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.provider_processing_assurances.deny_clients",
+          "kind": "policy",
+          "name": "deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "provider_processing_assurances",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 39,
+          "anchor": " execute format('create policy deny_clients on private.%I as restrictive for all to anon,authenticated using(false) with check(false)',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
     },
     {
       "id": "policy:private.receivables_evidence_scopes.receivables_scope_deny",
@@ -94005,6 +94502,125 @@
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
+      "id": "r:private.processing_eligibility_decisions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.processing_eligibility_decisions",
+          "rls": true,
+          "kind": "table",
+          "name": "processing_eligibility_decisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.processing_eligibility_decisions",
+          "rls": true,
+          "kind": "table",
+          "name": "processing_eligibility_decisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 23,
+          "anchor": "create table private.processing_eligibility_decisions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
       "id": "r:private.processing_run_method_pins",
       "kind": "table",
       "catalogues": {
@@ -94241,6 +94857,244 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:private.provider_processing_assurance_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.provider_processing_assurance_events",
+          "rls": true,
+          "kind": "table",
+          "name": "provider_processing_assurance_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.provider_processing_assurance_events",
+          "rls": true,
+          "kind": "table",
+          "name": "provider_processing_assurance_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 16,
+          "anchor": "create table private.provider_processing_assurance_events (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
+      "id": "r:private.provider_processing_assurances",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.provider_processing_assurances",
+          "rls": true,
+          "kind": "table",
+          "name": "provider_processing_assurances",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.provider_processing_assurances",
+          "rls": true,
+          "kind": "table",
+          "name": "provider_processing_assurances",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 3,
+          "anchor": "create table private.provider_processing_assurances (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
     },
     {
       "id": "r:private.public_company_source_memory",
@@ -129964,6 +130818,45 @@
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
+      "id": "trigger:private.processing_eligibility_decisions.processing_eligibility_decisions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.processing_eligibility_decisions.processing_eligibility_decisions_immutable",
+          "kind": "trigger",
+          "name": "processing_eligibility_decisions_immutable",
+          "table": "processing_eligibility_decisions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER processing_eligibility_decisions_immutable BEFORE DELETE OR UPDATE ON private.processing_eligibility_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.processing_eligibility_decisions.processing_eligibility_decisions_immutable",
+          "kind": "trigger",
+          "name": "processing_eligibility_decisions_immutable",
+          "table": "processing_eligibility_decisions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER processing_eligibility_decisions_immutable BEFORE DELETE OR UPDATE ON private.processing_eligibility_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 44,
+          "anchor": "create trigger processing_eligibility_decisions_immutable before update or delete on private.processing_eligibility_decisions",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
       "id": "trigger:private.processing_run_method_pins.method_pins_audit",
       "kind": "trigger",
       "catalogues": {
@@ -130157,6 +131050,84 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.provider_processing_assurance_events.provider_processing_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.provider_processing_assurance_events.provider_processing_events_immutable",
+          "kind": "trigger",
+          "name": "provider_processing_events_immutable",
+          "table": "provider_processing_assurance_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER provider_processing_events_immutable BEFORE DELETE OR UPDATE ON private.provider_processing_assurance_events FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.provider_processing_assurance_events.provider_processing_events_immutable",
+          "kind": "trigger",
+          "name": "provider_processing_events_immutable",
+          "table": "provider_processing_assurance_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER provider_processing_events_immutable BEFORE DELETE OR UPDATE ON private.provider_processing_assurance_events FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 42,
+          "anchor": "create trigger provider_processing_events_immutable before update or delete on private.provider_processing_assurance_events",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
+    },
+    {
+      "id": "trigger:private.provider_processing_assurances.provider_processing_assurance_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.provider_processing_assurances.provider_processing_assurance_immutable",
+          "kind": "trigger",
+          "name": "provider_processing_assurance_immutable",
+          "table": "provider_processing_assurances",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_provider_processing_assurance_v1()",
+          "definition": "CREATE TRIGGER provider_processing_assurance_immutable BEFORE DELETE OR UPDATE ON private.provider_processing_assurances FOR EACH ROW EXECUTE FUNCTION private.guard_provider_processing_assurance_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.provider_processing_assurances.provider_processing_assurance_immutable",
+          "kind": "trigger",
+          "name": "provider_processing_assurance_immutable",
+          "table": "provider_processing_assurances",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_provider_processing_assurance_v1()",
+          "definition": "CREATE TRIGGER provider_processing_assurance_immutable BEFORE DELETE OR UPDATE ON private.provider_processing_assurances FOR EACH ROW EXECUTE FUNCTION private.guard_provider_processing_assurance_v1()"
+        }
+      },
+      "owner": "Codex, etapa 16",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+          "line": 55,
+          "anchor": "create trigger provider_processing_assurance_immutable before update or delete on private.provider_processing_assurances",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
     },
     {
       "id": "trigger:private.receivables_evidence_fragments.receivables_scope_fragment_lock",
@@ -151119,6 +152090,20 @@
       "decision": "preservar",
       "stage": "14",
       "reason": "Correção do ingresso de método-base; SQL imutável com carimbo de produção e equivalência em staging."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Matriz de retenção e direitos derivados; SQL com carimbo de produção e equivalência em staging."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260921155432_provider_retention_dependency_and_contract_guards.sql",
+      "decision": "preservar",
+      "stage": "16",
+      "reason": "Matriz de retenção e direitos derivados; SQL com carimbo de produção e equivalência em staging."
     }
   ],
   "staging_archive": [

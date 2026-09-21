@@ -86,16 +86,22 @@
         {
           "name": "SOURCE_PACKS_DIR",
           "value": "/app/source-packs"
+        },
+        {
+          "name": "PROVIDER_CONNECTIONS_JSON",
+          "value": "{\"openai\":{\"accountRef\":\"org-RduRuVoprBl49gwbfIMNQVH3\",\"projectRef\":\"proj_Lq9xdWylMavwBEfHbNxJMSHF\",\"credentialBinding\":\"1e0aa91f-5bad-4f46-8363-241381e647dc\",\"region\":\"global\"},\"anthropic\":{\"accountRef\":\"6189245d-6371-40a7-a470-aa38ce58a754\",\"projectRef\":\"wrkspc_01FviSqikt1RDKdtbfZsmCfT\",\"credentialBinding\":\"122470d2-ece8-4467-8a03-36f01d57761a\",\"region\":\"global\"}}"
         }
       ],
       "secrets": [
         {
           "name": "ANTHROPIC_API_KEY",
-          "valueFrom": "offroad/anthropic-api-key"
+          "valueFrom": "offroad/anthropic-api-key",
+          "versionId": "122470d2-ece8-4467-8a03-36f01d57761a"
         },
         {
           "name": "OPENAI_API_KEY",
-          "valueFrom": "offroad/openai-api-key"
+          "valueFrom": "offroad/openai-api-key",
+          "versionId": "1e0aa91f-5bad-4f46-8363-241381e647dc"
         },
         {
           "name": "PERPLEXITY_API_KEY",

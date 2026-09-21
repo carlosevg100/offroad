@@ -111,7 +111,7 @@ jobs:
             echo "resolved $name"
           done
           python3 - <<'PY'
-          import json, os
+          import json, os, uuid
           spec = json.load(open("apps/document-worker/task-definition.json"))
           container = spec["containerDefinitions"][0]
           container["image"] = os.environ["IMAGE_URI"]
@@ -126,12 +126,19 @@ jobs:
           flags[0]["value"] = documentary_flag
           print("Documentary work planning enabled: " + documentary_flag)
           arns = dict(line.split() for line in open("/tmp/secret-arns.txt") if line.strip())
+          bindings = json.loads(next(e["value"] for e in container["environment"] if e["name"] == "PROVIDER_CONNECTIONS_JSON"))
+          provider_names = {"OPENAI_API_KEY": "openai", "ANTHROPIC_API_KEY": "anthropic", "PERPLEXITY_API_KEY": "perplexity", "FIRECRAWL_API_KEY": "firecrawl"}
           for secret in container["secrets"]:
               secret_arn = arns[secret["valueFrom"]]
               json_key = secret.pop("jsonKey", None)
+              version = secret.pop("versionId", None)
+              provider = provider_names.get(secret["name"])
+              if provider in bindings:
+                  if not version or str(uuid.UUID(version)) != bindings[provider]["credentialBinding"]:
+                      raise ValueError("Provider credential version differs from reviewed binding")
               # ECS can inject one field from a JSON Secrets Manager value without
               # exposing or parsing the complete secret in the application.
-              secret["valueFrom"] = f"{secret_arn}:{json_key}::" if json_key else secret_arn
+              secret["valueFrom"] = f"{secret_arn}:{json_key or ''}::{version or ''}" if version or json_key else secret_arn
           json.dump(spec, open("/tmp/taskdef.json", "w"))
           PY
           ARN=$(aws ecs register-task-definition \
