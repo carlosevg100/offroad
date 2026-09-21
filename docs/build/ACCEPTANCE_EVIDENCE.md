@@ -1,3 +1,7 @@
+## Etapa15: avaliações determinísticas registradas em preparação
+
+Sete casos gold, oito adversariais e seis de consistência executam o pacote integrado e guardam expectativas, observações e fingerprints reproduzidos pelos testes. Três testes novos verificam registros e recusa de adulteração. Candidata permanece sem revisão independente, aprovação de conteúdo ou publicação. CI e produção serão registradas no completion após gates reais;16 autorizada somente após fechamento15.
+
 ## Etapa15: composição profissional integrada em preparação
 
 O documento canônico vincula o pacote contratual/de decisão e seis fontes verificáveis de testes/fixtures. Fontes não são runs ou aprovação. Três novos testes e seis regressões de autoria verificam identidade, evidências e ausência de promoção; gates finais serão registrados no completion após publicação. Sem DDL, sem ativação e R01 preservado. Runs finais, revisão independente real, aprovação profissional e publicação auditada continuam na15. A16 foi autorizada pelo fundador para depois do fechamento15. Detalhe: docs/build/arcabouco/etapa-15-composicao-profissional.md.

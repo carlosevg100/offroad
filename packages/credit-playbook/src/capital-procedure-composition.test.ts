@@ -27,13 +27,13 @@ describe("authored integrated capital procedure", () => {
     for (const file of ["capital-procedure-packet.ts", "capital-contract-preparation.ts", "capital-contract-adoptions.ts"])
       expect(component.executor!.sources.map(s => s.path)).toContain(`packages/financial-model/src/${file}`);
   });
-  it("pins real test specifications while retaining the missing final review and approval", () => {
+  it("pins executed run receipts while retaining the missing final review and approval", () => {
     const p = manifest();
     const evidence = p.components.flatMap(c => c.evidence);
-    expect(evidence).toHaveLength(6);
+    expect(evidence).toHaveLength(3);
     for (const pin of evidence) expect(pin.hash).toBe(createHash("sha256").update(read(pin.path).content).digest("hex"));
     expect(p).toMatchObject({authoringStatus: "incomplete", grantsExecution: false});
-    expect(document.procedure.testRuns.gold).toEqual([]);
+    expect(document.procedure.testRuns.gold).toEqual(["capital-structure-decision-2026-09-20-v2-gold"]);
     expect(document.procedure.owner.approvedAt).toBeUndefined();
   });
   it("changes manifest identity for changed evidence and refuses missing evidence bytes", () => {

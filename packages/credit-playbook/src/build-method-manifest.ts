@@ -43,14 +43,11 @@ export function buildMethodManifest(repositoryRoot: string) {
       sources: [...packageClosure("@offroad/financial-model", root), registration.path,
         "packages/financial-model/scripts/generate-capital-contracts.mjs"].map(source)};
   });
-  // Build-owned test specifications. Their hashes are not execution receipts or approval.
+  // Actual deterministic run receipts; their hashes are not independent review or approval.
   const capitalEvidencePaths = [
-    "packages/financial-model/src/capital-procedure-packet.test.ts",
-    "packages/financial-model/src/capital-contract-adoptions.test.ts",
-    "packages/financial-model/src/capital-contract-preparation.test.ts",
-    "packages/financial-model/src/capital-decision-domain-eval.test.ts",
-    "packages/testing-fixtures/src/capital-structure-decision.ts",
-    "apps/document-worker/src/capital-planning-adapter.test.ts"
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-gold/run.json",
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-adversarial/run.json",
+    "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-20-v2-consistency/run.json"
 ];
   const provenance = library.methods.map((method) => {
     const release = released.find((entry) => entry.provenance.procedure.id === method.procedure.id && entry.provenance.procedure.version === method.procedure.version);

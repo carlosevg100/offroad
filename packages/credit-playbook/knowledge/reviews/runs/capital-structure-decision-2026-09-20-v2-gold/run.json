@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "deterministic-method-run.v1",
+  "runId": "capital-structure-decision-2026-09-20-v2-gold",
+  "kind": "gold",
+  "humanApproval": false,
+  "method": {
+    "id": "prepare-capital-structure-decision",
+    "version": "2026.09.20-v2"
+  },
+  "executor": {
+    "module": "@offroad/financial-model",
+    "exportName": "prepareCapitalProcedurePacket"
+  },
+  "harness": {
+    "module": "@offroad/financial-model/src/capital-procedure-runs.test-support.ts",
+    "exportName": "buildCapitalProcedureRuns"
+  },
+  "run": {
+    "startedAt": "2026-09-21T02:12:12.356Z",
+    "finishedAt": "2026-09-21T02:12:13.021Z"
+  },
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "cash-identity-maintain-change-adverse",
+      "expectation": "[\"12300\",\"14450\",\"8300\"]",
+      "observed": "[\"12300\",\"14450\",\"8300\"]",
+      "inputFingerprint": "e7cbcc3b61a82e14db5da967d778091b0dcdbde83df331024c0baf7b10ac68fb",
+      "outputFingerprint": "295c06809a0a5d497fc28aa5a1d51a37cc48f4000e1ecdf8393bac6370b91593",
+      "passed": true
+    },
+    {
+      "id": "contractual-definition-and-adopted-basis",
+      "expectation": "{\"calculated\":[\"150\",\"100\",\"2\"],\"adopted\":\"150\",\"status\":\"aligned\",\"packet\":\"partial\"}",
+      "observed": "{\"calculated\":[\"150\",\"100\",\"2\"],\"adopted\":\"150\",\"status\":\"aligned\",\"packet\":\"partial\"}",
+      "inputFingerprint": "12018307aa56b8147a6f230ae65744cadf9d95e7a68da05758f3a2c741fc4672",
+      "outputFingerprint": "c0621d86f58a843aa90efdad9e1262a6b68e269f1cd96d2885e253a49196c3f8",
+      "passed": true
+    },
+    {
+      "id": "no-projection-no-fabricated-company",
+      "expectation": "{\"status\":\"framed\",\"count\":0}",
+      "observed": "{\"status\":\"framed\",\"count\":0}",
+      "inputFingerprint": "477e1f1bcb55befa435a29d2a74034a64f96d11c765fd688458063f3fe651993",
+      "outputFingerprint": "e7214e8cb847c3e01178d6fe869dfd1ffaa7f021a6976a5529af025f66e4a975",
+      "passed": true
+    },
+    {
+      "id": "absent-source-is-not-zero",
+      "expectation": "null",
+      "observed": "null",
+      "inputFingerprint": "a45ed23d2a2372c25bd30a3d1b323813d33c69b135810c2bbd927d1cad7a2cc1",
+      "outputFingerprint": "948535881b01facb45aaeb4803df4d115010830c91add1b17b9beff07e11862e",
+      "passed": true
+    },
+    {
+      "id": "contribution-does-not-overwrite-adoption",
+      "expectation": "{\"calculated\":\"151\",\"adopted\":\"150\",\"status\":\"divergent\"}",
+      "observed": "{\"calculated\":\"151\",\"adopted\":\"150\",\"status\":\"divergent\"}",
+      "inputFingerprint": "9512387705579d35975ba4a54940a8da104bd1b294bad99b82b3a1ef7467eae2",
+      "outputFingerprint": "95ac349457adfe9e075445652181b3efec666d8f32ad81d3fae1180954847adc",
+      "passed": true
+    },
+    {
+      "id": "interest-amortization-without-implied-cash-adoption",
+      "expectation": "{\"interest\":\"10\",\"principal\":\"100\",\"closing\":\"0\",\"reviewRequired\":true}",
+      "observed": "{\"interest\":\"10\",\"principal\":\"100\",\"closing\":\"0\",\"reviewRequired\":true}",
+      "inputFingerprint": "045cc6fbb093619f2ec0d817175cd5c7213c43779f69a08925345019e32da575",
+      "outputFingerprint": "0eb44107dcd496e67020e9579895a32a34d3ce81b4192c4a7545ebc15e02daaa",
+      "passed": true
+    },
+    {
+      "id": "negative-cash-does-not-consume-restricted-balance",
+      "expectation": "{\"available\":\"-237\",\"restricted\":\"500\",\"shortfall\":\"237\"}",
+      "observed": "{\"available\":\"-237\",\"restricted\":\"500\",\"shortfall\":\"237\"}",
+      "inputFingerprint": "316d50b2153164b28b5942efc9ce69182f084cfe4d745b1361e0819c7dde750c",
+      "outputFingerprint": "1a4815e65b830c0533708b73f67c6bcb22b085f7e3501f23493c07149da8107d",
+      "passed": true
+    }
+  ],
+  "result": "pass",
+  "evidenceFingerprint": "aeed5c794c40e95e03d4ae03d04879f14a1b6b61c1cc3adb74e60e9fa0d953de",
+  "notes": "Synthetic deterministic execution. Numerical expectations do not constitute independent review, content approval, live access verification or publication. Contract interpretation remains explicit."
+}
