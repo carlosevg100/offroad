@@ -3,9 +3,11 @@
 -- is a migration and nothing here runs against production.
 
 -- 1. The worker's hashed credential. The plaintext is the fixed local token the CI exports.
-insert into private.worker_tokens (label, token_sha256)
-values ('local-e2e-worker', extensions.digest(repeat('e2e-worker-token-', 4), 'sha256'))
-on conflict (token_sha256) do update set status = 'active', revoked_at = null;
+insert into private.worker_tokens (label, token_sha256, execution_account_user_id)
+values ('local-e2e-worker', extensions.digest(repeat('e2e-worker-token-', 4), 'sha256'),
+  (select id from auth.users where email = 'local-worker@offroad.invalid'))
+on conflict (token_sha256) do update set status = 'active', revoked_at = null,
+  execution_account_user_id = excluded.execution_account_user_id;
 
 -- 2. Every organization created in this stack runs the internal preview: the journey signs up a
 --    fresh workspace, so the grant has to follow the insert. The local settings row

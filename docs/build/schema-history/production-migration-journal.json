@@ -1459,8 +1459,16 @@
     {
       "version": "20260922155248",
       "name": "execution_legacy_enqueue_identity"
+    },
+    {
+      "version": "20260922194243",
+      "name": "execution_consumer_authority"
+    },
+    {
+      "version": "20260922194250",
+      "name": "execution_capital_provenance"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-22T15:54:33.527412+00:00"
+  "captured_at": "2026-09-22T19:43:10.773748+00:00"
 }

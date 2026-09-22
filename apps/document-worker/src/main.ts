@@ -1,3 +1,6 @@
+import {createFairExecutionPoller} from "./execution-poll";
+import {createExecutionQueue} from "./execution-queue";
+import {processPinnedExecution} from "./process-pinned-execution";
 import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
 import {createProviderProcessingAuthorizer} from "./provider-processing";
@@ -271,6 +274,9 @@ async function main(): Promise<void> {
     lineage: () => calls.map((call) => ({...call})),
   });
 
+  const executionQueue = createExecutionQueue(supabase, config.OFFROAD_WORKER_TOKEN);
+  const claimNext = createFairExecutionPoller(() => queue.claim(), () => executionQueue.claim(),
+    () => log("execution.poll_failed", {reason: "execution_transport_failed"}));
   let stopping = false;
   let current: Promise<unknown> | null = null;
   const shuttingDown = new AbortController();
@@ -302,7 +308,16 @@ async function main(): Promise<void> {
   while (!stopping) {
     let job: ClaimedJob | null = null;
     try {
-      job = await queue.claim();
+      const choice = await claimNext();
+      if (choice?.kind === "execution") {
+        const execution = choice.claim;
+        current = processPinnedExecution(execution, executionQueue, shuttingDown.signal)
+          .then(result => log("execution.finished", {job: execution.jobId, status: result.status}))
+          .catch(() => log("execution.interrupted", {job: execution.jobId, reason: "current_execution_failed"}));
+        await current; current = null;
+        continue;
+      }
+      job = choice?.kind === "legacy" ? choice.job : null;
     } catch (error) {
       if (error instanceof PoisonedJobError) {
         log("job.poisoned", {job: error.jobId});

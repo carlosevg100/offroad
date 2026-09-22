@@ -2099,6 +2099,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.close_exhausted_executions_v1()",
+      "kind": "function",
+      "name": "close_exhausted_executions_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.collect_vault_dependencies_v1(p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[])",
       "kind": "function",
       "name": "collect_vault_dependencies_v1",
@@ -3114,6 +3132,42 @@
         "search_path=\"\""
       ],
       "signature": "p_execution_brief_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
+      "kind": "function",
+      "name": "execution_capital_payload_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "c jsonb, payload jsonb, subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_capital_reference_current_v1(p_org uuid, p_subject uuid, p_observation uuid, p_definition uuid)",
+      "kind": "function",
+      "name": "execution_capital_reference_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_subject uuid, p_observation uuid, p_definition uuid",
       "security_definer": true
     },
     {
@@ -10983,6 +11037,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
+      "kind": "function",
+      "name": "worker_claim_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_manifest_hashes text[]",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_claim_job_v2(p_worker_token text, p_lease_seconds integer)",
       "kind": "function",
       "name": "worker_claim_job_v2",
@@ -11077,6 +11154,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_case_state jsonb, p_result jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "name": "worker_commit_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
       "security_definer": true
     },
     {
@@ -13630,6 +13730,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_renew_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_reserve_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_retry_failed_advisor_specialized_job_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
       "kind": "function",
       "name": "worker_retry_failed_advisor_specialized_job_v1",
@@ -13692,6 +13838,29 @@
       ],
       "signature": "",
       "security_definer": false
+    },
+    {
+      "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
+      "kind": "function",
+      "name": "worker_settle_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
+      "security_definer": true
     },
     {
       "id": "function:private.worker_start_capital_project_task(p_job_id uuid, p_capability_token text, p_task_id text, p_executor_key text, p_executor_version text, p_input_fingerprint text, p_context_manifest jsonb)",
@@ -19524,6 +19693,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
+      "kind": "function",
+      "name": "worker_claim_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_manifest_hashes text[]",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_claim_job_v2(p_worker_token text, p_lease_seconds integer)",
       "kind": "function",
       "name": "worker_claim_job_v2",
@@ -19651,6 +19843,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_case_state jsonb, p_result jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "name": "worker_commit_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
       "security_definer": false
     },
     {
@@ -22131,6 +22346,52 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_renew_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_reserve_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_runtime_schema_contract_v1()",
       "kind": "function",
       "name": "worker_runtime_schema_contract_v1",
@@ -22156,6 +22417,29 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
+      "kind": "function",
+      "name": "worker_settle_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
       "security_definer": false
     },
     {
@@ -51048,5 +51332,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-22T15:35:28.569909+00:00"
+  "captured_at": "2026-09-22T19:43:26.623216+00:00"
 }
