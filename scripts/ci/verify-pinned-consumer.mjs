@@ -78,6 +78,10 @@ commit;`);
   assert.equal(receipt.canonical_result,expected);assert.equal(receipt.result_fingerprint,sha(expected));
   assert.equal(receipt.input_fingerprint,sha(snapshot));assert.equal(receipt.contract_fingerprint,sha(contractText));
   assert.equal(sql(`select count(*) from private.execution_operation_receipts where execution_id='a4171000-0000-4000-9000-000000000002' and state='settled'`),'1');
+  // Keep immutable execution evidence, but retire fixture-only method releases before UI tests.
+  // These deliberately minimal SQL fixtures are not publishable product method metadata.
+  sql(`update private.platform_capability_releases set released=false where capability_key in ('synthetic-execution','synthetic-consumer-proof');`);
+  assert.equal(sql(`select count(*) from private.platform_capability_releases where capability_key in ('synthetic-execution','synthetic-consumer-proof') and released`),'0','synthetic_methods_leaked_into_product_catalog');
   console.log(JSON.stringify({event:'pinned_consumer_eval',pinnedHypotheses:173,preparationMs:governed.preparationMs,requestToPersistedResultMs:Math.ceil(performance.now()-requestedAt)}));
   console.log('pinned_consumer_deployed_integration: PASS (real queue, RPC authorization, packaged calculation, exact result, one settled operation; disposable local stack)');
 } finally {rmSync(temporary,{recursive:true,force:true});}
