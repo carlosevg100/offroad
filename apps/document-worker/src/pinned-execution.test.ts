@@ -1,7 +1,7 @@
 import {readFileSync} from "node:fs";
 import {describe, expect, it} from "vitest";
-import {executionContractFingerprint, executionInputFingerprint} from "@offroad/agent-contracts";
-import {assertCurrentExecutionAuthority, assertExecutionOperation, bindPinnedExecution, executionBudgetState, type CurrentExecutionAuthority} from "./pinned-execution";
+import {executionContractFingerprint, executionInputFingerprint, deriveExecutionProfile} from "@offroad/agent-contracts";
+import {assertCurrentExecutionAuthority, assertExecutionOperation, bindPinnedExecution, bindProfiledExecution, executionBudgetState, type CurrentExecutionAuthority} from "./pinned-execution";
 function fixture() {
   const {contract, snapshot} = JSON.parse(readFileSync(new URL("../../../packages/agent-contracts/test-fixtures/execution-contract.json", import.meta.url), "utf8"));
   contract.inputs.fingerprint = executionInputFingerprint(snapshot);
@@ -45,15 +45,37 @@ describe("worker pinned execution boundary", () => {
   });
   it("accounts for the next reservation before starting work and makes exhaustion partial", () => {
     const {contract} = bindPinnedExecution(fixture()), none = {costMicrousd: 0, modelCalls: 0};
-    expect(executionBudgetState(contract, none, {costMicrousd: 250000, modelCalls: 1}, now)).toBe("available");
-    expect(executionBudgetState(contract, {costMicrousd: 1, modelCalls: 0}, {costMicrousd: 250000, modelCalls: 1}, now)).toBe("partial_budget_exhausted");
-    expect(executionBudgetState(contract, none, {costMicrousd: 0, modelCalls: 2}, now)).toBe("partial_budget_exhausted");
-    expect(executionBudgetState(contract, none, none, new Date(contract.budget.expiresAt))).toBe("partial_budget_exhausted");
+    expect(executionBudgetState(contract, none, {costMicrousd: 250000, modelCalls: 1}, now, 0)).toBe("available");
+    expect(executionBudgetState(contract, {costMicrousd: 1, modelCalls: 0}, {costMicrousd: 250000, modelCalls: 1}, now, 0)).toBe("partial_budget_exhausted");
+    expect(executionBudgetState(contract, none, {costMicrousd: 0, modelCalls: 2}, now, 0)).toBe("partial_budget_exhausted");
+    expect(executionBudgetState(contract, none, none, new Date(contract.budget.expiresAt), 0)).toBe("partial_budget_exhausted");
   });
   it("refuses invalid usage or clocks instead of silently resetting the budget", () => {
     const {contract} = bindPinnedExecution(fixture()), none = {costMicrousd: 0, modelCalls: 0};
-    expect(() => executionBudgetState(contract, {...none, costMicrousd: NaN}, none, now)).toThrow("execution_usage_invalid");
-    expect(() => executionBudgetState(contract, none, {...none, modelCalls: -1}, now)).toThrow("execution_usage_invalid");
-    expect(() => executionBudgetState(contract, none, none, new Date(NaN))).toThrow("execution_clock_invalid");
+    expect(() => executionBudgetState(contract, {...none, costMicrousd: NaN}, none, now, 0)).toThrow("execution_usage_invalid");
+    expect(() => executionBudgetState(contract, none, {...none, modelCalls: -1}, now, 0)).toThrow("execution_usage_invalid");
+    expect(() => executionBudgetState(contract, none, none, new Date(NaN), 0)).toThrow("execution_clock_invalid");
+  });
+  it("enforces cumulative duration at the exact limit independently of the wall deadline", () => {
+    const {contract} = bindPinnedExecution(fixture()), none = {costMicrousd: 0, modelCalls: 0};
+    expect(executionBudgetState(contract, none, none, now, contract.budget.maxDurationMs - 1)).toBe("available");
+    expect(executionBudgetState(contract, none, none, now, contract.budget.maxDurationMs)).toBe("partial_budget_exhausted");
+    for (const duration of [NaN, -1, 0.1, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+      expect(() => executionBudgetState(contract, none, none, now, duration)).toThrow("execution_duration_invalid");
+    }
+  });
+  it("binds the published profile while independently requiring an installed matching executor", () => {
+    const manifest = JSON.parse(readFileSync(new URL("../../../packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-publication/manifest.json", import.meta.url), "utf8"));
+    const profile = deriveExecutionProfile(manifest, {id: "prepare-capital-structure-decision-2026.09.21-v4", manifestHash: "2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478"});
+    const input = fixture();
+    input.contract.method = profile.method; input.contract.tools = []; input.contract.allowedEffects = ["read_only"];
+    Object.assign(input.contract.budget, profile.limits);
+    input.claim.contractFingerprint = executionContractFingerprint(input.contract);
+    // Presence of the published profile cannot make a different local executor available.
+    expect(() => bindProfiledExecution({...input, profile})).toThrow("execution_method_unavailable");
+    expect(bindProfiledExecution({...input, profile, availableMethod: profile.method}).contract.method).toEqual(profile.method);
+    input.contract.budget.maxCostMicrousd = 1;
+    input.claim.contractFingerprint = executionContractFingerprint(input.contract);
+    expect(() => bindProfiledExecution({...input, profile, availableMethod: profile.method})).toThrow("execution_profile_budget_exceeded");
   });
 });

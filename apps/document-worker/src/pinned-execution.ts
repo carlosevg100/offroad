@@ -1,4 +1,4 @@
-import {pinExecutionInput, pinExecutionContract, executionMethodSchema, type ExecutionContract, type ExecutionEffect, type ExecutionMethod, type Frozen} from "@offroad/agent-contracts";
+import {pinExecutionInput, pinExecutionContract, executionMethodSchema, assertContractMatchesExecutionProfile, type ExecutionProfile, type ExecutionContract, type ExecutionEffect, type ExecutionMethod, type Frozen} from "@offroad/agent-contracts";
 import {z} from "zod";
 import {fingerprintJson} from "@offroad/case-understanding";
 
@@ -32,6 +32,13 @@ export function bindPinnedExecution(input: {claim: ExecutionClaimIdentity; contr
 }
 export type BoundExecution = ReturnType<typeof bindPinnedExecution>;
 
+/** The profile proves derivation from pinned metadata, not installed code. The
+ * separate availableMethod must still come from the verified executor registry. */
+export function bindProfiledExecution(input: Parameters<typeof bindPinnedExecution>[0] & {profile: ExecutionProfile}) {
+  assertContractMatchesExecutionProfile(input.contract, input.profile);
+  return bindPinnedExecution(input);
+}
+
 /** Must be called with a fresh capability-scoped database response at each boundary. The SQL
  * commit still owns the atomic revocation/lease check; a TypeScript receipt cannot replace it. */
 export function assertCurrentExecutionAuthority(bound: BoundExecution, value: unknown, now: Date): void {
@@ -48,11 +55,13 @@ export function assertExecutionOperation(contract: Frozen<ExecutionContract>, op
   const tool = contract.tools.find(item => item.id === operation.toolId && item.version === operation.toolVersion);
   if (!tool || tool.effect !== operation.effect || !contract.allowedEffects.includes(operation.effect)) throw new Error("execution_operation_denied");
 }
-export function executionBudgetState(contract: Frozen<ExecutionContract>, usage: ExecutionUsage, reservation: ExecutionUsage, now: Date): "available" | "partial_budget_exhausted" {
+export function executionBudgetState(contract: Frozen<ExecutionContract>, usage: ExecutionUsage, reservation: ExecutionUsage, now: Date, elapsedDurationMs: number): "available" | "partial_budget_exhausted" {
   const usageSchema = z.object({costMicrousd: z.number().int().nonnegative().safe(), modelCalls: z.number().int().nonnegative().safe()}).strict();
   if (!usageSchema.safeParse(usage).success || !usageSchema.safeParse(reservation).success) throw new Error("execution_usage_invalid");
   if (!Number.isFinite(now.getTime())) throw new Error("execution_clock_invalid");
-  return now.getTime() >= Date.parse(contract.budget.expiresAt)
+  if (!Number.isSafeInteger(elapsedDurationMs) || elapsedDurationMs < 0) throw new Error("execution_duration_invalid");
+  // Cumulative duration comes from durable accounting, never reset on a new lease.
+  return elapsedDurationMs >= contract.budget.maxDurationMs || now.getTime() >= Date.parse(contract.budget.expiresAt)
     || usage.costMicrousd > contract.budget.maxCostMicrousd - reservation.costMicrousd
     || usage.modelCalls > contract.budget.maxModelCalls - reservation.modelCalls
     ? "partial_budget_exhausted" : "available";

@@ -23,3 +23,11 @@ TRUST-APP-01, TRUST-AI-01 e TRUST-SDLC-01: sem ampliação de dados, provedor, p
 - Engenharia de método, incremento 4: texto publicado não comprova aplicação profissional. Ausência de parâmetros IOF, convenções ANBIMA/B3 ou regime tributário revisados impede all-in, sem inventar valores. Gates de suficiência, linguagem e resultado atravessam o caminho inteiro.
 - Engenharia de avaliação, incremento 5: não devolver chaves de provedor aos scripts nem substituir o guarda por flag. Prova sintética não autoriza cliente real.
 - Operação, etapa 18: os quatro alarmes precisam de destinatários; seu estado OK não comprova entrega de alerta. A revisão dos atestados da 16 ocorre nesta onda ou em mudança material, sempre antes do vencimento registrado de 21/10/2026.
+
+## Dependência identificada na 2B: perfil de execução
+
+Antes do request SQL, derivar um perfil dos bytes publicados, separado da permissão de executar. O manifesto capital v4 fixa BRL zero, zero chamadas, ferramentas vazias, efeito none e duração máxima de 31.000 ms. O contrato genérico não pode deixar o chamador substituir esses campos. Este incremento coeso precede os comandos dentro da 2B; não antecipa o consumidor nem muda a ordem da etapa.
+
+`packages/agent-contracts/src/execution-profile.ts` realiza a derivação de composição com um executor determinístico. `none` permite cálculo sem mutação de domínio, mapeado para `read_only`; persistência técnica do resultado não autoriza artefato, publicação ou adoção. Zero pode ser expresso em microUSD sem conversão cambial; valor positivo, ferramenta sem versão, efeito diverso e formatos sem adaptador são recusados. R01 permanece no caminho histórico, com adaptador específico exigido no incremento 3. Fórmulas não individualizadas ficam cobertas pela closure, com esse limite declarado no perfil.
+
+O request futuro resolve o perfil confiável, não aceita um perfil livre do cliente. O banco e o runtime devem conferir os mesmos hashes e limites. O wrapper de binding exige também o executor instalado; a existência do manifesto não o comprova. A duração acumulada precisa vir de contabilidade persistida entre tentativas; o teste local apenas verifica a fronteira numérica. Não declarar revogação, orçamento durável ou etapa 17 concluídos a partir deste incremento.

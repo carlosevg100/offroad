@@ -1,5 +1,14 @@
 ## Etapa 17, persistência 2A: identidade e bytes imutáveis
 
+## Etapa 17, 2B: perfil derivado do manifesto antes dos comandos
+
+O request precisa de limites verificáveis, e o manifesto publicado não tem o mesmo formato do contrato de execução. `execution-profile.ts` deriva identidade, executor, contratos e orçamento dos bytes fixados, recusando alterações de hash, executor ambíguo, formato desconhecido e ampliação de efeitos. O adaptador atual aceita a composição determinística com um executor: custo e chamadas zero, ferramentas vazias, efeito `none` como cálculo sem mutação de domínio. Não inventa câmbio nem uma lista de fórmulas ausente: registra cobertura pela closure do executor. R01 continua no motor histórico; esse adaptador não o substitui.
+
+O contrato novo exige `maxDurationMs`; o orçamento compara duração acumulada sem reiniciar o limite por tentativa. `bindProfiledExecution` confere o perfil e exige separadamente o executor instalado. A derivação local não prova publicação ou permissão atual. As três tabelas novas foram conferidas vazias em staging e produção antes desta alteração aditiva; não existem consumidores do contrato novo. Manifestos publicados e fingerprints históricos permanecem intactos.
+
+TRUST-APP-01/TRUST-AI-01/TRUST-SDLC-01: sem DDL, grants, transporte externo ou ativação. Testes incluem o manifesto capital v4 real e negações de executor, fórmula, compilador, custo, ferramentas, efeito e duração. CI e deploy são gates de fechamento deste incremento. A 2B continua aberta: request/claim/reserve/settle/commit, contabilidade durável, fontes/adoções, revogação e concorrência em SQL ainda são obrigatórios. Rollback mantém o núcleo fechado; nenhum perfil derivado libera clientes.
+
+
 `public.work_executions`, `private.execution_input_snapshots` e `private.execution_manifests` formam um conjunto obrigatório na mesma transação. FKs compostas e validação de identidade impedem trocar organização, trabalho, principal, run, snapshot ou release. Tabelas imutáveis, RLS forçada, sem grants a cliente/worker/service_role. Auditoria mantém somente identificadores e operação. Não há produtor ou RPC novo.
 
 O serializador da execução ganha versão própria com ordenação UTF-16 explícita, sem locale. Os bytes UTF-8 são preservados e seu SHA-256 conferido no banco; JSONB é projeção derivada. O loader recusa texto não canônico, hash/algoritmo incompatível e Unicode não preservável. `fingerprintJson` histórico e métodos publicados permanecem intactos; a versão anterior deste contrato ainda não possuía consumidor ou registros persistidos.
