@@ -106,6 +106,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.account_execution_duration_v1(p_job processing_jobs)",
+      "kind": "function",
+      "name": "account_execution_duration_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job processing_jobs",
+      "security_definer": true
+    },
+    {
       "id": "function:private.add_source_dependency_v1(p_derived_version_id uuid, p_source_version_id uuid)",
       "kind": "function",
       "name": "add_source_dependency_v1",
@@ -2063,6 +2081,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.claim_work_execution_v1(p_worker_token text, p_job_id uuid, p_lease_seconds integer)",
+      "kind": "function",
+      "name": "claim_work_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_job_id uuid, p_lease_seconds integer",
+      "security_definer": true
+    },
+    {
       "id": "function:private.collect_vault_dependencies_v1(p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[])",
       "kind": "function",
       "name": "collect_vault_dependencies_v1",
@@ -2078,6 +2114,24 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.commit_work_execution_result_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "name": "commit_work_execution_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
       "security_definer": true
     },
     {
@@ -3027,6 +3081,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.execution_basis_current_v1(p_org uuid, p_decision uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "execution_basis_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_decision uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.execution_brief_preparer_v1(p_execution_brief_id uuid)",
       "kind": "function",
       "name": "execution_brief_preparer_v1",
@@ -3063,6 +3135,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.execution_for_lease_v1(p_job uuid, p_capability text, p_lease uuid, p_allow_completed boolean)",
+      "kind": "function",
+      "name": "execution_for_lease_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_allow_completed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_inputs_current_v1(p_org uuid, p_execution uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "execution_inputs_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.execution_json_projection_v1(p_text text)",
       "kind": "function",
       "name": "execution_json_projection_v1",
@@ -3079,6 +3187,42 @@
       ],
       "signature": "p_text text",
       "security_definer": false
+    },
+    {
+      "id": "function:private.execution_policy_fingerprint_v1(p_org uuid, p_work uuid, p_principal uuid, p_revision bigint)",
+      "kind": "function",
+      "name": "execution_policy_fingerprint_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_principal uuid, p_revision bigint",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.execution_source_bytes_verified_v1(p_org uuid, p_version uuid, p_hash text)",
+      "kind": "function",
+      "name": "execution_source_bytes_verified_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid, p_hash text",
+      "security_definer": true
     },
     {
       "id": "function:private.execution_source_resource_v1(p_org uuid, p_table text, p_record jsonb)",
@@ -4462,6 +4606,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.legacy_job_sources_rights_current_v1(p_job_id uuid)",
+      "kind": "function",
+      "name": "legacy_job_sources_rights_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.licensed_corpus_use_v1(p_org uuid, p_rights uuid, p_subject uuid, p_purpose text)",
       "kind": "function",
       "name": "licensed_corpus_use_v1",
@@ -4725,6 +4887,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.lock_execution_authority_v1(p_job uuid)",
+      "kind": "function",
+      "name": "lock_execution_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid",
       "security_definer": true
     },
     {
@@ -7489,6 +7669,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.request_work_execution_v1(p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "name": "request_work_execution_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_profile_id uuid, p_contract_text text, p_snapshot_text text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.require_adoption_dependency_v1(p_org uuid, p_source uuid, p_rights uuid)",
       "kind": "function",
       "name": "require_adoption_dependency_v1",
@@ -7576,6 +7774,24 @@
         "search_path=\"\""
       ],
       "signature": "p_id uuid, p_action text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_execution_release_v1(p_profile uuid)",
+      "kind": "function",
+      "name": "require_execution_release_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_profile uuid",
       "security_definer": true
     },
     {
@@ -7738,6 +7954,24 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.reserve_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_tool text, p_version text, p_effect text, p_cost bigint, p_calls bigint)",
+      "kind": "function",
+      "name": "reserve_execution_operation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_tool text, p_version text, p_effect text, p_cost bigint, p_calls bigint",
       "security_definer": true
     },
     {
@@ -8928,6 +9162,24 @@
         "search_path=\"\""
       ],
       "signature": "p_session_id uuid, p_entry_job text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)",
+      "kind": "function",
+      "name": "settle_execution_operation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint",
       "security_definer": true
     },
     {
@@ -10168,6 +10420,24 @@
       ],
       "signature": "p_value json, p_depth integer",
       "security_definer": false
+    },
+    {
+      "id": "function:private.validate_execution_profile_storage_v1()",
+      "kind": "function",
+      "name": "validate_execution_profile_storage_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
     },
     {
       "id": "function:private.validate_execution_storage_identity_v1()",
@@ -22549,6 +22819,174 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_delete",
+      "kind": "policy",
+      "name": "execution_basis_bindings_deny_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_basis_bindings",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_insert",
+      "kind": "policy",
+      "name": "execution_basis_bindings_deny_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "execution_basis_bindings",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_select",
+      "kind": "policy",
+      "name": "execution_basis_bindings_deny_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_basis_bindings",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_update",
+      "kind": "policy",
+      "name": "execution_basis_bindings_deny_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_basis_bindings",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_delete",
+      "kind": "policy",
+      "name": "execution_budget_accounts_deny_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_budget_accounts",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_insert",
+      "kind": "policy",
+      "name": "execution_budget_accounts_deny_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "execution_budget_accounts",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_select",
+      "kind": "policy",
+      "name": "execution_budget_accounts_deny_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_budget_accounts",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_update",
+      "kind": "policy",
+      "name": "execution_budget_accounts_deny_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_budget_accounts",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_delete",
+      "kind": "policy",
+      "name": "execution_control_bindings_deny_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_control_bindings",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_insert",
+      "kind": "policy",
+      "name": "execution_control_bindings_deny_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "execution_control_bindings",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_select",
+      "kind": "policy",
+      "name": "execution_control_bindings_deny_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_control_bindings",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_update",
+      "kind": "policy",
+      "name": "execution_control_bindings_deny_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_control_bindings",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_delete",
       "kind": "policy",
       "name": "execution_input_snapshots_deny_delete",
@@ -22655,6 +23093,230 @@
         "public"
       ],
       "table": "execution_manifests",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_delete",
+      "kind": "policy",
+      "name": "execution_method_profiles_deny_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_insert",
+      "kind": "policy",
+      "name": "execution_method_profiles_deny_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_select",
+      "kind": "policy",
+      "name": "execution_method_profiles_deny_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_update",
+      "kind": "policy",
+      "name": "execution_method_profiles_deny_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_delete",
+      "kind": "policy",
+      "name": "execution_operation_receipts_deny_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_operation_receipts",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_insert",
+      "kind": "policy",
+      "name": "execution_operation_receipts_deny_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "execution_operation_receipts",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_select",
+      "kind": "policy",
+      "name": "execution_operation_receipts_deny_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_operation_receipts",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_update",
+      "kind": "policy",
+      "name": "execution_operation_receipts_deny_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_operation_receipts",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_delete",
+      "kind": "policy",
+      "name": "execution_result_receipts_deny_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_insert",
+      "kind": "policy",
+      "name": "execution_result_receipts_deny_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_select",
+      "kind": "policy",
+      "name": "execution_result_receipts_deny_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_update",
+      "kind": "policy",
+      "name": "execution_result_receipts_deny_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_delete",
+      "kind": "policy",
+      "name": "execution_source_bindings_deny_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_source_bindings",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_insert",
+      "kind": "policy",
+      "name": "execution_source_bindings_deny_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "execution_source_bindings",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_select",
+      "kind": "policy",
+      "name": "execution_source_bindings_deny_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_source_bindings",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_update",
+      "kind": "policy",
+      "name": "execution_source_bindings_deny_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_source_bindings",
       "schema": "private",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
@@ -29416,6 +30078,156 @@
       "force_rls": true
     },
     {
+      "id": "r:private.execution_basis_bindings",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_basis_bindings",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_budget_accounts",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_budget_accounts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_control_bindings",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_control_bindings",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.execution_input_snapshots",
       "rls": true,
       "kind": "table",
@@ -29470,6 +30282,206 @@
       "rls": true,
       "kind": "table",
       "name": "execution_manifests",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_method_profiles",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_method_profiles",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_operation_receipts",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_operation_receipts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_result_receipts",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_result_receipts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_source_bindings",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_source_bindings",
       "grants": [
         [
           "postgres",
@@ -45611,6 +46623,86 @@
       "definition": "CREATE TRIGGER event_outbox_updated_at BEFORE UPDATE ON private.event_outbox FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_audit",
+      "kind": "trigger",
+      "name": "execution_basis_bindings_audit",
+      "table": "execution_basis_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER execution_basis_bindings_audit AFTER INSERT OR UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_immutable",
+      "kind": "trigger",
+      "name": "execution_basis_bindings_immutable",
+      "table": "execution_basis_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER execution_basis_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_updated",
+      "kind": "trigger",
+      "name": "execution_basis_bindings_updated",
+      "table": "execution_basis_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_basis_bindings_updated BEFORE UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.execution_budget_accounts.execution_budget_accounts_audit",
+      "kind": "trigger",
+      "name": "execution_budget_accounts_audit",
+      "table": "execution_budget_accounts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER execution_budget_accounts_audit AFTER INSERT OR UPDATE ON private.execution_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.execution_budget_accounts.execution_budget_accounts_updated",
+      "kind": "trigger",
+      "name": "execution_budget_accounts_updated",
+      "table": "execution_budget_accounts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_budget_accounts_updated BEFORE UPDATE ON private.execution_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.execution_control_bindings.execution_control_bindings_audit",
+      "kind": "trigger",
+      "name": "execution_control_bindings_audit",
+      "table": "execution_control_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER execution_control_bindings_audit AFTER INSERT OR UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.execution_control_bindings.execution_control_bindings_immutable",
+      "kind": "trigger",
+      "name": "execution_control_bindings_immutable",
+      "table": "execution_control_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER execution_control_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_control_bindings.execution_control_bindings_updated",
+      "kind": "trigger",
+      "name": "execution_control_bindings_updated",
+      "table": "execution_control_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_control_bindings_updated BEFORE UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_audit",
       "kind": "trigger",
       "name": "execution_input_snapshots_audit",
@@ -45679,6 +46771,106 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER execution_manifests_updated BEFORE UPDATE ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_immutable",
+      "kind": "trigger",
+      "name": "execution_method_profiles_immutable",
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER execution_method_profiles_immutable BEFORE DELETE OR UPDATE ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_validate",
+      "kind": "trigger",
+      "name": "execution_method_profiles_validate",
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.validate_execution_profile_storage_v1()",
+      "definition": "CREATE TRIGGER execution_method_profiles_validate BEFORE INSERT ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.validate_execution_profile_storage_v1()"
+    },
+    {
+      "id": "trigger:private.execution_operation_receipts.execution_operation_receipts_audit",
+      "kind": "trigger",
+      "name": "execution_operation_receipts_audit",
+      "table": "execution_operation_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER execution_operation_receipts_audit AFTER INSERT OR UPDATE ON private.execution_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.execution_operation_receipts.execution_operation_receipts_updated",
+      "kind": "trigger",
+      "name": "execution_operation_receipts_updated",
+      "table": "execution_operation_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_operation_receipts_updated BEFORE UPDATE ON private.execution_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_audit",
+      "kind": "trigger",
+      "name": "execution_result_receipts_audit",
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER execution_result_receipts_audit AFTER INSERT OR UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_immutable",
+      "kind": "trigger",
+      "name": "execution_result_receipts_immutable",
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER execution_result_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_updated",
+      "kind": "trigger",
+      "name": "execution_result_receipts_updated",
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_result_receipts_updated BEFORE UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.execution_source_bindings.execution_source_bindings_audit",
+      "kind": "trigger",
+      "name": "execution_source_bindings_audit",
+      "table": "execution_source_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER execution_source_bindings_audit AFTER INSERT OR UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.execution_source_bindings.execution_source_bindings_immutable",
+      "kind": "trigger",
+      "name": "execution_source_bindings_immutable",
+      "table": "execution_source_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER execution_source_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_source_bindings.execution_source_bindings_updated",
+      "kind": "trigger",
+      "name": "execution_source_bindings_updated",
+      "table": "execution_source_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_source_bindings_updated BEFORE UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.human_intervention_ledger.human_intervention_ledger_immutable",
@@ -49856,5 +51048,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-21T23:16:22.690421+00:00"
+  "captured_at": "2026-09-22T15:35:28.569909+00:00"
 }

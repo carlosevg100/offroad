@@ -1439,8 +1439,24 @@
     {
       "version": "20260921230622",
       "name": "execution_persistence_foundation"
+    },
+    {
+      "version": "20260922153436",
+      "name": "execution_authority_commands"
+    },
+    {
+      "version": "20260922153443",
+      "name": "execution_verified_source_pins"
+    },
+    {
+      "version": "20260922153452",
+      "name": "execution_policy_current_clock"
+    },
+    {
+      "version": "20260922153457",
+      "name": "execution_current_read_rights"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-21T23:14:40.978Z"
+  "captured_at": "2026-09-22T15:35:43.8939+00:00"
 }

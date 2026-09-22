@@ -2727,14 +2727,20 @@
       },
       "owner": "Codex, primeira onda",
       "decision": "preservar",
-      "stage": "1B",
-      "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B.",
+      "stage": "17 / autoridade 2B",
+      "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
           "line": 351,
           "anchor": "create function private.bind_job_authority_v1()",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 160,
+          "anchor": " foreach name in array array['bind_job_authority_v1()','job_authority_is_current_v1(uuid)'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
@@ -9246,8 +9252,8 @@
       },
       "owner": "Codex, etapa 12",
       "decision": "refatorar",
-      "stage": "12",
-      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão.",
+      "stage": "17 / autoridade 2B",
+      "reason": "Integra o cofre à autoridade canônica; publicação exige ato humano e direitos atuais, sem privilégio implícito de gestão. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
@@ -9260,6 +9266,12 @@
           "line": 108,
           "anchor": " select pg_get_functiondef('private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text)'::regprocedure) into body;",
           "mechanism": "bounded_function_clone"
+        },
+        {
+          "path": "supabase/migrations/20260922153452_execution_policy_current_clock.sql",
+          "line": 6,
+          "anchor": " foreach signature in array array['private.policy_group_ids_v1(uuid,uuid)','private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text)'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
@@ -13513,8 +13525,8 @@
       },
       "owner": "Codex, etapa 7",
       "decision": "refatorar",
-      "stage": "7",
-      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega.",
+      "stage": "17 / autoridade 2B",
+      "reason": "Preserva o contrato legado e acrescenta direito vigente, herança, elegibilidade e revalidação antes da entrega. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -13527,6 +13539,12 @@
           "line": 243,
           "anchor": " select pg_get_functiondef('private.job_authority_is_current_v1(uuid)'::regprocedure) into body;",
           "mechanism": "checked_function_definition_patch"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 160,
+          "anchor": " foreach name in array array['bind_job_authority_v1()','job_authority_is_current_v1(uuid)'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
@@ -13691,8 +13709,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "substituir",
-      "stage": "1B, 3, 7",
-      "reason": "fechar membership ampla e revalidar concessão, dependências e sujeito antes de ler",
+      "stage": "17 / autoridade 2B",
+      "reason": "fechar membership ampla e revalidar concessão, dependências e sujeito antes de ler Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -13711,6 +13729,12 @@
           "line": 127,
           "anchor": "create or replace function private.job_for_capability(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 157,
+          "anchor": " select pg_get_functiondef('private.job_for_capability(uuid,text)'::regprocedure) into old;",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -13821,14 +13845,20 @@
       },
       "owner": "Codex, etapa 7",
       "decision": "preservar",
-      "stage": "7",
-      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais.",
+      "stage": "17 / autoridade 2B",
+      "reason": "Direito versionado, dependência cumulativa ou fronteira SQL que nega uso sem licença e autorização atuais. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260917025326_source_rights_and_authorized_retrieval.sql",
           "line": 232,
           "anchor": "create function private.job_sources_rights_current_v1(p_job_id uuid) returns boolean",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 223,
+          "anchor": " select pg_get_functiondef('private.job_sources_rights_current_v1(uuid)'::regprocedure) into old;",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
@@ -16150,14 +16180,20 @@
       },
       "owner": "Codex — etapa 3",
       "decision": "preservar",
-      "stage": "3",
-      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional.",
+      "stage": "17 / autoridade 2B",
+      "reason": "Fronteira única de política, grupos, barreiras ou delegação limitada; comando autorizado e trilha transacional. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
           "line": 173,
           "anchor": "create function private.policy_group_ids_v1(p_org uuid,p_principal uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922153452_execution_policy_current_clock.sql",
+          "line": 6,
+          "anchor": " foreach signature in array array['private.policy_group_ids_v1(uuid,uuid)','private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text)'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
@@ -33772,8 +33808,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "17 / autoridade 2B",
+      "reason": "preservar efeito legado mediante autorização comum e contrato versionado Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -33798,6 +33834,12 @@
           "line": 96,
           "anchor": "alter function public.worker_claim_job(text, integer) set schema private;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 152,
+          "anchor": " foreach name in array array['worker_claim_job','worker_claim_job_v2','worker_claim_job_v4'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -33856,8 +33898,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "17 / autoridade 2B",
+      "reason": "preservar efeito legado mediante autorização comum e contrato versionado Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -33870,6 +33912,12 @@
           "line": 619,
           "anchor": "create or replace function public.worker_claim_job_v2(p_worker_token text,p_lease_seconds integer default 600)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 152,
+          "anchor": " foreach name in array array['worker_claim_job','worker_claim_job_v2','worker_claim_job_v4'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -33928,14 +33976,20 @@
       },
       "owner": "Codex, etapa 10",
       "decision": "preservar",
-      "stage": "10",
-      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "stage": "17 / autoridade 2B",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
           "line": 148,
           "anchor": " body:=replace(before_body,'private.worker_claim_job_v2(', 'private.worker_claim_job_v4(');",
           "mechanism": "bounded_function_clone"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 152,
+          "anchor": " foreach name in array array['worker_claim_job','worker_claim_job_v2','worker_claim_job_v4'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
@@ -59768,8 +59822,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "17 / autoridade 2B",
+      "reason": "preservar efeito legado mediante autorização comum e contrato versionado Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -59794,6 +59848,12 @@
           "line": 96,
           "anchor": "alter function public.worker_claim_job(text, integer) set schema private;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 152,
+          "anchor": " foreach name in array array['worker_claim_job','worker_claim_job_v2','worker_claim_job_v4'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -59862,8 +59922,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "17 / autoridade 2B",
+      "reason": "preservar efeito legado mediante autorização comum e contrato versionado Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -59876,6 +59936,12 @@
           "line": 619,
           "anchor": "create or replace function public.worker_claim_job_v2(p_worker_token text,p_lease_seconds integer default 600)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 152,
+          "anchor": " foreach name in array array['worker_claim_job','worker_claim_job_v2','worker_claim_job_v4'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -60000,14 +60066,20 @@
       },
       "owner": "Codex, etapa 10",
       "decision": "preservar",
-      "stage": "10",
-      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada.",
+      "stage": "17 / autoridade 2B",
+      "reason": "Identidade direta de trabalho com intake restrito a tipos documentais e conversa delegada, autorizada e auditada. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
       "sources": [
         {
           "path": "supabase/migrations/20260917191714_persistent_work_without_intake.sql",
           "line": 156,
           "anchor": "create function public.worker_claim_job_v4(p_worker_token text,p_lease_seconds integer default 600) returns jsonb language sql security invoker set search_path='' as $$ select private.worker_claim_job_v4(p_worker_token,p_lease_seconds); $$;",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 152,
+          "anchor": " foreach name in array array['worker_claim_job','worker_claim_job_v2','worker_claim_job_v4'] loop",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
@@ -147215,6 +147287,3682 @@
         }
       ],
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "function:private.account_execution_duration_v1(p_job processing_jobs)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.account_execution_duration_v1(p_job processing_jobs)",
+          "kind": "function",
+          "name": "account_execution_duration_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.account_execution_duration_v1(p_job processing_jobs)",
+          "kind": "function",
+          "name": "account_execution_duration_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 374,
+          "anchor": "create function private.account_execution_duration_v1(p_job public.processing_jobs) returns private.execution_budget_accounts",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.claim_work_execution_v1(p_worker_token text, p_job_id uuid, p_lease_seconds integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.claim_work_execution_v1(p_worker_token text, p_job_id uuid, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "claim_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_job_id uuid, p_lease_seconds integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.claim_work_execution_v1(p_worker_token text, p_job_id uuid, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "claim_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_job_id uuid, p_lease_seconds integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 387,
+          "anchor": "create function private.claim_work_execution_v1(p_worker_token text,p_job_id uuid,p_lease_seconds integer default 60) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.commit_work_execution_result_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.commit_work_execution_result_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "commit_work_execution_result_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.commit_work_execution_result_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "commit_work_execution_result_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 463,
+          "anchor": "create function private.commit_work_execution_result_v1(p_job uuid,p_capability text,p_lease uuid,p_contract_hash text,p_input_hash text,p_result_text text,p_outcome text,p_reason text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.execution_basis_current_v1(p_org uuid, p_decision uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_basis_current_v1(p_org uuid, p_decision uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "execution_basis_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_decision uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_basis_current_v1(p_org uuid, p_decision uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "execution_basis_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_decision uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 167,
+          "anchor": "create function private.execution_basis_current_v1(p_org uuid,p_decision uuid,p_subject uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.execution_for_lease_v1(p_job uuid, p_capability text, p_lease uuid, p_allow_completed boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_for_lease_v1(p_job uuid, p_capability text, p_lease uuid, p_allow_completed boolean)",
+          "kind": "function",
+          "name": "execution_for_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_allow_completed boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_for_lease_v1(p_job uuid, p_capability text, p_lease uuid, p_allow_completed boolean)",
+          "kind": "function",
+          "name": "execution_for_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_allow_completed boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 360,
+          "anchor": "create function private.execution_for_lease_v1(p_job uuid,p_capability text,p_lease uuid,p_allow_completed boolean default false)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.execution_inputs_current_v1(p_org uuid, p_execution uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_inputs_current_v1(p_org uuid, p_execution uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "execution_inputs_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_inputs_current_v1(p_org uuid, p_execution uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "execution_inputs_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 200,
+          "anchor": "create function private.execution_inputs_current_v1(p_org uuid,p_execution uuid,p_subject uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.execution_policy_fingerprint_v1(p_org uuid, p_work uuid, p_principal uuid, p_revision bigint)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_policy_fingerprint_v1(p_org uuid, p_work uuid, p_principal uuid, p_revision bigint)",
+          "kind": "function",
+          "name": "execution_policy_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_principal uuid, p_revision bigint",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_policy_fingerprint_v1(p_org uuid, p_work uuid, p_principal uuid, p_revision bigint)",
+          "kind": "function",
+          "name": "execution_policy_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_principal uuid, p_revision bigint",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 234,
+          "anchor": "create function private.execution_policy_fingerprint_v1(p_org uuid,p_work uuid,p_principal uuid,p_revision bigint) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.execution_source_bytes_verified_v1(p_org uuid, p_version uuid, p_hash text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_source_bytes_verified_v1(p_org uuid, p_version uuid, p_hash text)",
+          "kind": "function",
+          "name": "execution_source_bytes_verified_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_hash text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_source_bytes_verified_v1(p_org uuid, p_version uuid, p_hash text)",
+          "kind": "function",
+          "name": "execution_source_bytes_verified_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_hash text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153443_execution_verified_source_pins.sql",
+          "line": 4,
+          "anchor": "create function private.execution_source_bytes_verified_v1(p_org uuid,p_version uuid,p_hash text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.legacy_job_sources_rights_current_v1(p_job_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.legacy_job_sources_rights_current_v1(p_job_id uuid)",
+          "kind": "function",
+          "name": "legacy_job_sources_rights_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.legacy_job_sources_rights_current_v1(p_job_id uuid)",
+          "kind": "function",
+          "name": "legacy_job_sources_rights_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 226,
+          "anchor": " body:=replace(body,'private.job_sources_rights_current_v1(', 'private.legacy_job_sources_rights_current_v1(');execute body;",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.lock_execution_authority_v1(p_job uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_execution_authority_v1(p_job uuid)",
+          "kind": "function",
+          "name": "lock_execution_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_execution_authority_v1(p_job uuid)",
+          "kind": "function",
+          "name": "lock_execution_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 342,
+          "anchor": "create function private.lock_execution_authority_v1(p_job uuid) returns public.processing_jobs",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.request_work_execution_v1(p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_work_execution_v1(p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_profile_id uuid, p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_work_execution_v1(p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_profile_id uuid, p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 251,
+          "anchor": "create function private.request_work_execution_v1(p_profile_id uuid,p_contract_text text,p_snapshot_text text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.require_execution_release_v1(p_profile uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_execution_release_v1(p_profile uuid)",
+          "kind": "function",
+          "name": "require_execution_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_profile uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_execution_release_v1(p_profile uuid)",
+          "kind": "function",
+          "name": "require_execution_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_profile uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 238,
+          "anchor": "create function private.require_execution_release_v1(p_profile uuid) returns private.execution_method_profiles",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.reserve_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_tool text, p_version text, p_effect text, p_cost bigint, p_calls bigint)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.reserve_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_tool text, p_version text, p_effect text, p_cost bigint, p_calls bigint)",
+          "kind": "function",
+          "name": "reserve_execution_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_tool text, p_version text, p_effect text, p_cost bigint, p_calls bigint",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.reserve_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_tool text, p_version text, p_effect text, p_cost bigint, p_calls bigint)",
+          "kind": "function",
+          "name": "reserve_execution_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_tool text, p_version text, p_effect text, p_cost bigint, p_calls bigint",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 414,
+          "anchor": "create function private.reserve_execution_operation_v1(p_job uuid,p_capability text,p_lease uuid,p_operation uuid,p_fingerprint text,p_tool text,p_version text,p_effect text,p_cost bigint,p_calls bigint)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)",
+          "kind": "function",
+          "name": "settle_execution_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)",
+          "kind": "function",
+          "name": "settle_execution_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 443,
+          "anchor": "create function private.settle_execution_operation_v1(p_job uuid,p_capability text,p_lease uuid,p_operation uuid,p_fingerprint text,p_result_hash text,p_spent bigint,p_calls bigint)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.validate_execution_profile_storage_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.validate_execution_profile_storage_v1()",
+          "kind": "function",
+          "name": "validate_execution_profile_storage_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.validate_execution_profile_storage_v1()",
+          "kind": "function",
+          "name": "validate_execution_profile_storage_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 15,
+          "anchor": "create function private.validate_execution_profile_storage_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_delete",
+          "kind": "policy",
+          "name": "execution_basis_bindings_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_delete",
+          "kind": "policy",
+          "name": "execution_basis_bindings_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 126,
+          "anchor": "  execute format('create policy %I on private.%I for delete to public using(false)',t||'_deny_delete',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_insert",
+          "kind": "policy",
+          "name": "execution_basis_bindings_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_insert",
+          "kind": "policy",
+          "name": "execution_basis_bindings_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 124,
+          "anchor": "  execute format('create policy %I on private.%I for insert to public with check(false)',t||'_deny_insert',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_select",
+          "kind": "policy",
+          "name": "execution_basis_bindings_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_select",
+          "kind": "policy",
+          "name": "execution_basis_bindings_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 123,
+          "anchor": "  execute format('create policy %I on private.%I for select to public using(false)',t||'_deny_select',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_update",
+          "kind": "policy",
+          "name": "execution_basis_bindings_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_basis_bindings.execution_basis_bindings_deny_update",
+          "kind": "policy",
+          "name": "execution_basis_bindings_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 125,
+          "anchor": "  execute format('create policy %I on private.%I for update to public using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_delete",
+          "kind": "policy",
+          "name": "execution_budget_accounts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_delete",
+          "kind": "policy",
+          "name": "execution_budget_accounts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 126,
+          "anchor": "  execute format('create policy %I on private.%I for delete to public using(false)',t||'_deny_delete',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_insert",
+          "kind": "policy",
+          "name": "execution_budget_accounts_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_insert",
+          "kind": "policy",
+          "name": "execution_budget_accounts_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 124,
+          "anchor": "  execute format('create policy %I on private.%I for insert to public with check(false)',t||'_deny_insert',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_select",
+          "kind": "policy",
+          "name": "execution_budget_accounts_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_select",
+          "kind": "policy",
+          "name": "execution_budget_accounts_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 123,
+          "anchor": "  execute format('create policy %I on private.%I for select to public using(false)',t||'_deny_select',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_update",
+          "kind": "policy",
+          "name": "execution_budget_accounts_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_budget_accounts.execution_budget_accounts_deny_update",
+          "kind": "policy",
+          "name": "execution_budget_accounts_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 125,
+          "anchor": "  execute format('create policy %I on private.%I for update to public using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_delete",
+          "kind": "policy",
+          "name": "execution_control_bindings_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_delete",
+          "kind": "policy",
+          "name": "execution_control_bindings_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 126,
+          "anchor": "  execute format('create policy %I on private.%I for delete to public using(false)',t||'_deny_delete',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_insert",
+          "kind": "policy",
+          "name": "execution_control_bindings_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_insert",
+          "kind": "policy",
+          "name": "execution_control_bindings_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 124,
+          "anchor": "  execute format('create policy %I on private.%I for insert to public with check(false)',t||'_deny_insert',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_select",
+          "kind": "policy",
+          "name": "execution_control_bindings_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_select",
+          "kind": "policy",
+          "name": "execution_control_bindings_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 123,
+          "anchor": "  execute format('create policy %I on private.%I for select to public using(false)',t||'_deny_select',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_update",
+          "kind": "policy",
+          "name": "execution_control_bindings_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_control_bindings.execution_control_bindings_deny_update",
+          "kind": "policy",
+          "name": "execution_control_bindings_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 125,
+          "anchor": "  execute format('create policy %I on private.%I for update to public using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_delete",
+          "kind": "policy",
+          "name": "execution_method_profiles_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_delete",
+          "kind": "policy",
+          "name": "execution_method_profiles_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 126,
+          "anchor": "  execute format('create policy %I on private.%I for delete to public using(false)',t||'_deny_delete',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_insert",
+          "kind": "policy",
+          "name": "execution_method_profiles_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_insert",
+          "kind": "policy",
+          "name": "execution_method_profiles_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 124,
+          "anchor": "  execute format('create policy %I on private.%I for insert to public with check(false)',t||'_deny_insert',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_select",
+          "kind": "policy",
+          "name": "execution_method_profiles_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_select",
+          "kind": "policy",
+          "name": "execution_method_profiles_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 123,
+          "anchor": "  execute format('create policy %I on private.%I for select to public using(false)',t||'_deny_select',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_update",
+          "kind": "policy",
+          "name": "execution_method_profiles_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_method_profiles.execution_method_profiles_deny_update",
+          "kind": "policy",
+          "name": "execution_method_profiles_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 125,
+          "anchor": "  execute format('create policy %I on private.%I for update to public using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_delete",
+          "kind": "policy",
+          "name": "execution_operation_receipts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_delete",
+          "kind": "policy",
+          "name": "execution_operation_receipts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 126,
+          "anchor": "  execute format('create policy %I on private.%I for delete to public using(false)',t||'_deny_delete',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_insert",
+          "kind": "policy",
+          "name": "execution_operation_receipts_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_insert",
+          "kind": "policy",
+          "name": "execution_operation_receipts_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 124,
+          "anchor": "  execute format('create policy %I on private.%I for insert to public with check(false)',t||'_deny_insert',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_select",
+          "kind": "policy",
+          "name": "execution_operation_receipts_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_select",
+          "kind": "policy",
+          "name": "execution_operation_receipts_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 123,
+          "anchor": "  execute format('create policy %I on private.%I for select to public using(false)',t||'_deny_select',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_update",
+          "kind": "policy",
+          "name": "execution_operation_receipts_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_operation_receipts.execution_operation_receipts_deny_update",
+          "kind": "policy",
+          "name": "execution_operation_receipts_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 125,
+          "anchor": "  execute format('create policy %I on private.%I for update to public using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_delete",
+          "kind": "policy",
+          "name": "execution_result_receipts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_delete",
+          "kind": "policy",
+          "name": "execution_result_receipts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 126,
+          "anchor": "  execute format('create policy %I on private.%I for delete to public using(false)',t||'_deny_delete',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_insert",
+          "kind": "policy",
+          "name": "execution_result_receipts_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_insert",
+          "kind": "policy",
+          "name": "execution_result_receipts_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 124,
+          "anchor": "  execute format('create policy %I on private.%I for insert to public with check(false)',t||'_deny_insert',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_select",
+          "kind": "policy",
+          "name": "execution_result_receipts_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_select",
+          "kind": "policy",
+          "name": "execution_result_receipts_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 123,
+          "anchor": "  execute format('create policy %I on private.%I for select to public using(false)',t||'_deny_select',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_update",
+          "kind": "policy",
+          "name": "execution_result_receipts_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_update",
+          "kind": "policy",
+          "name": "execution_result_receipts_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 125,
+          "anchor": "  execute format('create policy %I on private.%I for update to public using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_delete",
+          "kind": "policy",
+          "name": "execution_source_bindings_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_delete",
+          "kind": "policy",
+          "name": "execution_source_bindings_deny_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 126,
+          "anchor": "  execute format('create policy %I on private.%I for delete to public using(false)',t||'_deny_delete',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_insert",
+          "kind": "policy",
+          "name": "execution_source_bindings_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_insert",
+          "kind": "policy",
+          "name": "execution_source_bindings_deny_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 124,
+          "anchor": "  execute format('create policy %I on private.%I for insert to public with check(false)',t||'_deny_insert',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_select",
+          "kind": "policy",
+          "name": "execution_source_bindings_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_select",
+          "kind": "policy",
+          "name": "execution_source_bindings_deny_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 123,
+          "anchor": "  execute format('create policy %I on private.%I for select to public using(false)',t||'_deny_select',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_update",
+          "kind": "policy",
+          "name": "execution_source_bindings_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_source_bindings.execution_source_bindings_deny_update",
+          "kind": "policy",
+          "name": "execution_source_bindings_deny_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 125,
+          "anchor": "  execute format('create policy %I on private.%I for update to public using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_basis_bindings",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_basis_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_basis_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_basis_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_basis_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 70,
+          "anchor": "create table private.execution_basis_bindings (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_budget_accounts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_budget_accounts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_budget_accounts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_budget_accounts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_budget_accounts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 80,
+          "anchor": "create table private.execution_budget_accounts (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_control_bindings",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_control_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_control_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_control_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_control_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 50,
+          "anchor": "create table private.execution_control_bindings (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_method_profiles",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_method_profiles",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_method_profiles",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_method_profiles",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_method_profiles",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 4,
+          "anchor": "create table private.execution_method_profiles (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_operation_receipts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_operation_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_operation_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_operation_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_operation_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 92,
+          "anchor": "create table private.execution_operation_receipts (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_result_receipts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_result_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_result_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_result_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_result_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 106,
+          "anchor": "create table private.execution_result_receipts (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_source_bindings",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_source_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_source_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_source_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_source_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 58,
+          "anchor": "create table private.execution_source_bindings (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_audit",
+          "kind": "trigger",
+          "name": "execution_basis_bindings_audit",
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_basis_bindings_audit AFTER INSERT OR UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_audit",
+          "kind": "trigger",
+          "name": "execution_basis_bindings_audit",
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_basis_bindings_audit AFTER INSERT OR UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 129,
+          "anchor": "   execute format('create trigger %I after insert or update on private.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_immutable",
+          "kind": "trigger",
+          "name": "execution_basis_bindings_immutable",
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_basis_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_immutable",
+          "kind": "trigger",
+          "name": "execution_basis_bindings_immutable",
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_basis_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 131,
+          "anchor": "    execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_updated",
+          "kind": "trigger",
+          "name": "execution_basis_bindings_updated",
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_basis_bindings_updated BEFORE UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_updated",
+          "kind": "trigger",
+          "name": "execution_basis_bindings_updated",
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_basis_bindings_updated BEFORE UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 128,
+          "anchor": "   execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_budget_accounts.execution_budget_accounts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_budget_accounts.execution_budget_accounts_audit",
+          "kind": "trigger",
+          "name": "execution_budget_accounts_audit",
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_budget_accounts_audit AFTER INSERT OR UPDATE ON private.execution_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_budget_accounts.execution_budget_accounts_audit",
+          "kind": "trigger",
+          "name": "execution_budget_accounts_audit",
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_budget_accounts_audit AFTER INSERT OR UPDATE ON private.execution_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 129,
+          "anchor": "   execute format('create trigger %I after insert or update on private.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_budget_accounts.execution_budget_accounts_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_budget_accounts.execution_budget_accounts_updated",
+          "kind": "trigger",
+          "name": "execution_budget_accounts_updated",
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_budget_accounts_updated BEFORE UPDATE ON private.execution_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_budget_accounts.execution_budget_accounts_updated",
+          "kind": "trigger",
+          "name": "execution_budget_accounts_updated",
+          "table": "execution_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_budget_accounts_updated BEFORE UPDATE ON private.execution_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 128,
+          "anchor": "   execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_control_bindings.execution_control_bindings_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_control_bindings.execution_control_bindings_audit",
+          "kind": "trigger",
+          "name": "execution_control_bindings_audit",
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_control_bindings_audit AFTER INSERT OR UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_control_bindings.execution_control_bindings_audit",
+          "kind": "trigger",
+          "name": "execution_control_bindings_audit",
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_control_bindings_audit AFTER INSERT OR UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 129,
+          "anchor": "   execute format('create trigger %I after insert or update on private.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_control_bindings.execution_control_bindings_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_control_bindings.execution_control_bindings_immutable",
+          "kind": "trigger",
+          "name": "execution_control_bindings_immutable",
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_control_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_control_bindings.execution_control_bindings_immutable",
+          "kind": "trigger",
+          "name": "execution_control_bindings_immutable",
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_control_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 131,
+          "anchor": "    execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_control_bindings.execution_control_bindings_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_control_bindings.execution_control_bindings_updated",
+          "kind": "trigger",
+          "name": "execution_control_bindings_updated",
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_control_bindings_updated BEFORE UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_control_bindings.execution_control_bindings_updated",
+          "kind": "trigger",
+          "name": "execution_control_bindings_updated",
+          "table": "execution_control_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_control_bindings_updated BEFORE UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 128,
+          "anchor": "   execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_method_profiles.execution_method_profiles_immutable",
+          "kind": "trigger",
+          "name": "execution_method_profiles_immutable",
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_method_profiles_immutable BEFORE DELETE OR UPDATE ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_method_profiles.execution_method_profiles_immutable",
+          "kind": "trigger",
+          "name": "execution_method_profiles_immutable",
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_method_profiles_immutable BEFORE DELETE OR UPDATE ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 48,
+          "anchor": "create trigger execution_method_profiles_immutable before update or delete on private.execution_method_profiles for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_validate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_method_profiles.execution_method_profiles_validate",
+          "kind": "trigger",
+          "name": "execution_method_profiles_validate",
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_execution_profile_storage_v1()",
+          "definition": "CREATE TRIGGER execution_method_profiles_validate BEFORE INSERT ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.validate_execution_profile_storage_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_method_profiles.execution_method_profiles_validate",
+          "kind": "trigger",
+          "name": "execution_method_profiles_validate",
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_execution_profile_storage_v1()",
+          "definition": "CREATE TRIGGER execution_method_profiles_validate BEFORE INSERT ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.validate_execution_profile_storage_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 47,
+          "anchor": "create trigger execution_method_profiles_validate before insert on private.execution_method_profiles for each row execute function private.validate_execution_profile_storage_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_operation_receipts.execution_operation_receipts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_operation_receipts.execution_operation_receipts_audit",
+          "kind": "trigger",
+          "name": "execution_operation_receipts_audit",
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_operation_receipts_audit AFTER INSERT OR UPDATE ON private.execution_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_operation_receipts.execution_operation_receipts_audit",
+          "kind": "trigger",
+          "name": "execution_operation_receipts_audit",
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_operation_receipts_audit AFTER INSERT OR UPDATE ON private.execution_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 129,
+          "anchor": "   execute format('create trigger %I after insert or update on private.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_operation_receipts.execution_operation_receipts_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_operation_receipts.execution_operation_receipts_updated",
+          "kind": "trigger",
+          "name": "execution_operation_receipts_updated",
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_operation_receipts_updated BEFORE UPDATE ON private.execution_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_operation_receipts.execution_operation_receipts_updated",
+          "kind": "trigger",
+          "name": "execution_operation_receipts_updated",
+          "table": "execution_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_operation_receipts_updated BEFORE UPDATE ON private.execution_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 128,
+          "anchor": "   execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_audit",
+          "kind": "trigger",
+          "name": "execution_result_receipts_audit",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_result_receipts_audit AFTER INSERT OR UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_audit",
+          "kind": "trigger",
+          "name": "execution_result_receipts_audit",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_result_receipts_audit AFTER INSERT OR UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 129,
+          "anchor": "   execute format('create trigger %I after insert or update on private.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_immutable",
+          "kind": "trigger",
+          "name": "execution_result_receipts_immutable",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_result_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_immutable",
+          "kind": "trigger",
+          "name": "execution_result_receipts_immutable",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_result_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 131,
+          "anchor": "    execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_updated",
+          "kind": "trigger",
+          "name": "execution_result_receipts_updated",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_result_receipts_updated BEFORE UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_updated",
+          "kind": "trigger",
+          "name": "execution_result_receipts_updated",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_result_receipts_updated BEFORE UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 128,
+          "anchor": "   execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_source_bindings.execution_source_bindings_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_source_bindings.execution_source_bindings_audit",
+          "kind": "trigger",
+          "name": "execution_source_bindings_audit",
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_source_bindings_audit AFTER INSERT OR UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_source_bindings.execution_source_bindings_audit",
+          "kind": "trigger",
+          "name": "execution_source_bindings_audit",
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER execution_source_bindings_audit AFTER INSERT OR UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 129,
+          "anchor": "   execute format('create trigger %I after insert or update on private.%I for each row execute function private.capture_identity_audit_v1()',t||'_audit',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_source_bindings.execution_source_bindings_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_source_bindings.execution_source_bindings_immutable",
+          "kind": "trigger",
+          "name": "execution_source_bindings_immutable",
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_source_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_source_bindings.execution_source_bindings_immutable",
+          "kind": "trigger",
+          "name": "execution_source_bindings_immutable",
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_source_bindings_immutable BEFORE DELETE OR UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 131,
+          "anchor": "    execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_source_bindings.execution_source_bindings_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_source_bindings.execution_source_bindings_updated",
+          "kind": "trigger",
+          "name": "execution_source_bindings_updated",
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_source_bindings_updated BEFORE UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_source_bindings.execution_source_bindings_updated",
+          "kind": "trigger",
+          "name": "execution_source_bindings_updated",
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_source_bindings_updated BEFORE UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+          "line": 128,
+          "anchor": "   execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     }
   ],
   "repository_items": [
@@ -153720,6 +157468,34 @@
       "decision": "preservar",
       "stage": "17",
       "reason": "Identidade e bytes imutáveis; carimbo de produção e SQL idêntico em staging, sem ativação."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Núcleo privado de execução e correções verificadas; sem concessão, produtor ou ativação de cliente."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260922153443_execution_verified_source_pins.sql",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Núcleo privado de execução e correções verificadas; sem concessão, produtor ou ativação de cliente."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260922153452_execution_policy_current_clock.sql",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Núcleo privado de execução e correções verificadas; sem concessão, produtor ou ativação de cliente."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260922153457_execution_current_read_rights.sql",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Núcleo privado de execução e correções verificadas; sem concessão, produtor ou ativação de cliente."
     }
   ],
   "staging_archive": [
@@ -154320,5 +158096,15 @@
     ],
     "new_objects": 31,
     "review": "docs/build/arcabouco/etapa-17-execucao.md"
+  },
+  "stage_17_authority_revision": {
+    "production_migrations": [
+      "20260922153436",
+      "20260922153443",
+      "20260922153452",
+      "20260922153457"
+    ],
+    "new_objects": 68,
+    "review": "docs/build/arcabouco/etapa-17-2b-review.md"
   }
 }
