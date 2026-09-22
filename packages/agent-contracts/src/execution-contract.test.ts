@@ -5,6 +5,16 @@ const fixture = () => JSON.parse(readFileSync(new URL("../test-fixtures/executio
 const candidate = () => {const {contract, snapshot} = fixture(); contract.inputs.fingerprint = executionInputFingerprint(snapshot); return contract;};
 
 describe("pinned execution contract", () => {
+  it("requires the immutable assumption version for every adopted decision", () => {
+    const value = candidate();
+    delete value.inputs.adoptions[0].assumptionVersionId;
+    expect(executionContractSchema.safeParse(value).success).toBe(false);
+  });
+  it("detects a decision moved to a different immutable assumption version", () => {
+    const value = candidate(), fingerprint = executionContractFingerprint(value);
+    value.inputs.adoptions[0].assumptionVersionId = "30000000-0000-4000-8000-000000000002";
+    expect(() => pinExecutionContract(value, fingerprint)).toThrow("execution_contract_fingerprint_mismatch");
+  });
   it("pins a private work without manufacturing a company or intake", () => {
     const value = candidate(); const pin = pinExecutionContract(value, executionContractFingerprint(value));
     expect(pin.workId).toBe(value.workId); expect(pin).not.toHaveProperty("companyId"); expect(pin).not.toHaveProperty("intakeSessionId");
@@ -26,7 +36,7 @@ describe("pinned execution contract", () => {
   });
   it.each(["sources", "adoptions", "hypotheses"])("pins %s independently", key => {
     const value = candidate(), fingerprint = executionContractFingerprint(value);
-    if (key === "hypotheses") value.inputs.hypotheses.push({id: "20000000-0000-4000-8000-000000000001", fingerprint: "b".repeat(64)});
+    if (key === "hypotheses") value.inputs.hypotheses.push({id: "20000000-0000-4000-8000-000000000001", assumptionVersionId: "20000000-0000-4000-8000-000000000002", fingerprint: "b".repeat(64)});
     else value.inputs[key] = [];
     expect(() => pinExecutionContract(value, fingerprint)).toThrow("execution_contract_fingerprint_mismatch");
   });

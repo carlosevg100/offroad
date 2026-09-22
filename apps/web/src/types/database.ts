@@ -7830,11 +7830,13 @@ export type Database = {
           capability_sha256: string | null
           controlled_execution_id: string | null
           created_at: string
+          execution_id: string | null
           id: string
           intake_session_id: string | null
           kind: string
           last_error: Json | null
           lease_expires_at: string | null
+          lease_id: string | null
           leased_account_user_id: string | null
           leased_by: string | null
           max_attempts: number
@@ -7859,11 +7861,13 @@ export type Database = {
           capability_sha256?: string | null
           controlled_execution_id?: string | null
           created_at?: string
+          execution_id?: string | null
           id?: string
           intake_session_id?: string | null
           kind: string
           last_error?: Json | null
           lease_expires_at?: string | null
+          lease_id?: string | null
           leased_account_user_id?: string | null
           leased_by?: string | null
           max_attempts?: number
@@ -7888,11 +7892,13 @@ export type Database = {
           capability_sha256?: string | null
           controlled_execution_id?: string | null
           created_at?: string
+          execution_id?: string | null
           id?: string
           intake_session_id?: string | null
           kind?: string
           last_error?: Json | null
           lease_expires_at?: string | null
+          lease_id?: string | null
           leased_account_user_id?: string | null
           leased_by?: string | null
           max_attempts?: number
@@ -7914,6 +7920,13 @@ export type Database = {
             columns: ["organization_id", "controlled_execution_id"]
             isOneToOne: false
             referencedRelation: "controlled_case_executions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "processing_jobs_execution_fk"
+            columns: ["organization_id", "execution_id"]
+            isOneToOne: false
+            referencedRelation: "work_executions"
             referencedColumns: ["organization_id", "id"]
           },
           {
