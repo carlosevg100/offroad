@@ -3,6 +3,8 @@ import {readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {createRequire} from "node:module";
 import {releasedMethodArtifacts} from "./released-methods.generated";
+import {deriveExecutionProfile} from "@offroad/agent-contracts";
+import type * as Capital from "@offroad/financial-model";
 import type * as Receivables from "@offroad/receivables-analysis";
 
 /** Exact release lookup; unavailable versions never fall back to the current workspace. */
@@ -20,4 +22,29 @@ export function loadReleasedReceivables(): ReceivablesRelease {
   const file = new URL(`../released-methods/${release.artifactHash}.cjs`, import.meta.url);
   if (createHash("sha256").update(readFileSync(file)).digest("hex") !== release.artifactHash) throw new Error("published_method_artifact_mismatch");
   return require(fileURLToPath(file)) as ReceivablesRelease;
+}
+
+
+type CapitalRelease = Pick<typeof Capital, "prepareCapitalProcedurePacketV2" | "capitalProcedurePacketV2InputSchema" | "capitalProcedurePacketV2OutputSchema">;
+/** Only a packaged version can supply an available method. This loader grants no access. */
+export function loadReleasedCapital(identity: {methodId: string; methodVersion: string; manifestHash: string}) {
+  if (identity.methodId !== "prepare-capital-structure-decision") throw new Error("published_method_executor_unavailable");
+  const release = releasedMethodArtifact(identity);
+  const file = new URL(`../released-methods/${release.artifactHash}.cjs`, import.meta.url);
+  if (createHash("sha256").update(readFileSync(file)).digest("hex") !== release.artifactHash) throw new Error("published_method_artifact_mismatch");
+  const manifest = JSON.parse(readFileSync(new URL(`../released-methods/${release.artifactHash}.manifest.json`, import.meta.url), "utf8"));
+  const profile = deriveExecutionProfile(manifest, {id: release.platformReleaseId, manifestHash: release.manifestHash});
+  const executor = require(fileURLToPath(file)) as CapitalRelease;
+  if (typeof executor.prepareCapitalProcedurePacketV2 !== "function" || typeof executor.capitalProcedurePacketV2InputSchema?.parse !== "function"
+    || typeof executor.capitalProcedurePacketV2OutputSchema?.parse !== "function") throw new Error("published_method_exports_unavailable");
+  return Object.freeze({profile, executor: Object.freeze(executor)});
+}
+
+/** Validate installed artifacts before polling. Availability is not an execution grant. */
+export function verifyInstalledMethodArtifacts(): number {
+  loadReleasedReceivables();
+  for (const release of releasedMethodArtifacts) {
+    if (release.methodId === "prepare-capital-structure-decision") loadReleasedCapital(release);
+  }
+  return releasedMethodArtifacts.length;
 }

@@ -1,3 +1,11 @@
+## Etapa 17 / 3A: executor de capital fixado na imagem
+
+O procedimento capital v4 publicado passa a ter binário reproduzível a partir de seu commit de aprovação, com manifesto e perfil conferidos no loader. `compiled-executor-lock.json` preserva o formato de composição separado do registro histórico de R01; ambos usam o mesmo rebuild, registro de runtime e checker de imutabilidade. O worker verifica os dois artefatos antes de consultar a fila. Versão ausente ou bytes alterados impedem a inicialização, sem fallback para fontes atuais.
+
+O eval do pacote cobre oito testes novos, incluindo os 26 casos registrados de capital v4, mais quatro regressões de R01; quatro testes novos do worker verificam identidade, schemas, perfil e disponibilidade. Revisão independente estática aprovada. CI, merge e deploy ainda precisam dos comprovantes no completion; este registro não antecipa produção. Detalhes e limites em `docs/build/arcabouco/etapa-17-3a-executor.md`.
+
+TRUST-APP-01, TRUST-AI-01 e TRUST-SDLC-01: aditivo, sem migração, backfill, grants, dados de cliente ou chamada de provedor. Capital publicado permanece sem produtor/consumidor operacional. Engenharia de execução continua responsável no incremento 3 por lease/aborto, contabilidade, perfil operacional, proveniência dos inputs e adaptação de R01 ao envelope comum. Rollback retorna a imagem anterior; não há estado novo no banco. Etapa 17 permanece aberta e a 18 não começou.
+
 ## Etapa 17 / 2B: candidata do núcleo de execução fechado
 
 Request, claim, reserve, settle e commit privados preservam identidade, manifesto, bytes, lease e resultado lógico único. Perfil registrado pelo operador não concede execução. A fila atual conserva o estado agendável; claims e capabilities antigos recusam o novo tipo. As tabelas de controle têm RLS forçada e nenhum grant a anon, authenticated ou service_role. O único adaptador atual é determinístico, com custo e chamadas zero: não existe autorização de egresso, pesquisa ou fallback neste núcleo.
