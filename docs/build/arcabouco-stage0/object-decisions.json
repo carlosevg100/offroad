@@ -67407,8 +67407,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "1B, 9–20",
-      "reason": "preservar efeito legado mediante autorização comum e contrato versionado",
+      "stage": "17 / consumidor 3B",
+      "reason": "preservar efeito legado mediante autorização comum e contrato versionado Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -67427,6 +67427,12 @@
           "line": 145,
           "anchor": "create or replace function public.worker_runtime_schema_contract_v1()",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 251,
+          "anchor": " select pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure) into body;",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
@@ -98146,13 +98152,19 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "consolidar",
-      "stage": "9, 10, 17, 18",
-      "reason": "fila atual e resultados viram executor/adaptador do contrato fixado por versão",
+      "stage": "17 / consumidor 3B",
+      "reason": "fila atual e resultados viram executor/adaptador do contrato fixado por versão Etapa 17 / 3B: identidade operacional vinculada ou unicidade de operação por execução.",
       "sources": [
         {
           "path": "supabase/migrations/20260818171246_intelligence_runs_profiles_layers.sql",
           "line": 29,
           "anchor": "create table private.worker_tokens (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 3,
+          "anchor": "alter table private.worker_tokens add column execution_account_user_id uuid references auth.users(id) on delete restrict;",
           "mechanism": "direct_ddl"
         }
       ],
@@ -147392,13 +147404,19 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / consumidor 3B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 387,
           "anchor": "create function private.claim_work_execution_v1(p_worker_token text,p_job_id uuid,p_lease_seconds integer default 60) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 28,
+          "anchor": "create or replace function private.claim_work_execution_v1(p_worker_token text,p_job_id uuid,p_lease_seconds integer default 60) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -147447,13 +147465,19 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / consumidor 3B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 463,
           "anchor": "create function private.commit_work_execution_result_v1(p_job uuid,p_capability text,p_lease uuid,p_contract_hash text,p_input_hash text,p_result_text text,p_outcome text,p_reason text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 87,
+          "anchor": "create or replace function private.commit_work_execution_result_v1(p_job uuid,p_capability text,p_lease uuid,p_contract_hash text,p_input_hash text,p_result_text text,p_outcome text,p_reason text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -147557,13 +147581,19 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / consumidor 3B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 360,
           "anchor": "create function private.execution_for_lease_v1(p_job uuid,p_capability text,p_lease uuid,p_allow_completed boolean default false)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 7,
+          "anchor": "create or replace function private.execution_for_lease_v1(p_job uuid,p_capability text,p_lease uuid,p_allow_completed boolean default false)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -147612,14 +147642,20 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / consumidor 3B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 200,
           "anchor": "create function private.execution_inputs_current_v1(p_org uuid,p_execution uuid,p_subject uuid) returns boolean",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194250_execution_capital_provenance.sql",
+          "line": 161,
+          "anchor": " body:=pg_get_functiondef('private.execution_inputs_current_v1(uuid,uuid,uuid)'::regprocedure);",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
@@ -147887,14 +147923,20 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / consumidor 3B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 251,
           "anchor": "create function private.request_work_execution_v1(p_profile_id uuid,p_contract_text text,p_snapshot_text text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194250_execution_capital_provenance.sql",
+          "line": 157,
+          "anchor": " body:=pg_get_functiondef('private.request_work_execution_v1(uuid,text,text)'::regprocedure);",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
@@ -147997,13 +148039,19 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / consumidor 3B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 414,
           "anchor": "create function private.reserve_execution_operation_v1(p_job uuid,p_capability text,p_lease uuid,p_operation uuid,p_fingerprint text,p_tool text,p_version text,p_effect text,p_cost bigint,p_calls bigint)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 57,
+          "anchor": "create or replace function private.reserve_execution_operation_v1(p_job uuid,p_capability text,p_lease uuid,p_operation uuid,p_fingerprint text,p_tool text,p_version text,p_effect text,p_cost bigint,p_calls bigint)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -150018,13 +150066,19 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / consumidor 3B",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: identidade operacional vinculada ou unicidade de operação por execução.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 92,
           "anchor": "create table private.execution_operation_receipts (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 6,
+          "anchor": "create unique index execution_single_kernel_receipt on private.execution_operation_receipts(organization_id,execution_id);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -150969,6 +151023,821 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.close_exhausted_executions_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.close_exhausted_executions_v1()",
+          "kind": "function",
+          "name": "close_exhausted_executions_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.close_exhausted_executions_v1()",
+          "kind": "function",
+          "name": "close_exhausted_executions_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 127,
+          "anchor": "create function private.close_exhausted_executions_v1() returns void",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
+          "kind": "function",
+          "name": "execution_capital_payload_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "c jsonb, payload jsonb, subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
+          "kind": "function",
+          "name": "execution_capital_payload_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "c jsonb, payload jsonb, subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194250_execution_capital_provenance.sql",
+          "line": 40,
+          "anchor": "create function private.execution_capital_payload_current_v1(c jsonb, payload jsonb, subject uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.execution_capital_reference_current_v1(p_org uuid, p_subject uuid, p_observation uuid, p_definition uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_capital_reference_current_v1(p_org uuid, p_subject uuid, p_observation uuid, p_definition uuid)",
+          "kind": "function",
+          "name": "execution_capital_reference_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_subject uuid, p_observation uuid, p_definition uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_capital_reference_current_v1(p_org uuid, p_subject uuid, p_observation uuid, p_definition uuid)",
+          "kind": "function",
+          "name": "execution_capital_reference_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_subject uuid, p_observation uuid, p_definition uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194250_execution_capital_provenance.sql",
+          "line": 6,
+          "anchor": "create function private.execution_capital_reference_current_v1(p_org uuid,p_subject uuid,p_observation uuid,p_definition uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
+          "kind": "function",
+          "name": "worker_claim_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_manifest_hashes text[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
+          "kind": "function",
+          "name": "worker_claim_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_manifest_hashes text[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 150,
+          "anchor": "create function private.worker_claim_execution_v1(p_worker_token text,p_manifest_hashes text[]) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "worker_commit_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "worker_commit_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 221,
+          "anchor": "create function private.worker_commit_execution_v1(p_job uuid,p_capability text,p_lease uuid,p_contract_hash text,p_input_hash text,p_result_text text,p_outcome text,p_reason text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+          "kind": "function",
+          "name": "worker_renew_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+          "kind": "function",
+          "name": "worker_renew_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 188,
+          "anchor": "create function private.worker_renew_execution_v1(p_job uuid,p_capability text,p_lease uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+          "kind": "function",
+          "name": "worker_reserve_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+          "kind": "function",
+          "name": "worker_reserve_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 206,
+          "anchor": "create function private.worker_reserve_execution_v1(p_job uuid,p_capability text,p_lease uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
+          "kind": "function",
+          "name": "worker_settle_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
+          "kind": "function",
+          "name": "worker_settle_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 214,
+          "anchor": "create function private.worker_settle_execution_v1(p_job uuid,p_capability text,p_lease uuid,p_result_hash text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:public.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
+          "kind": "function",
+          "name": "worker_claim_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_manifest_hashes text[]",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
+          "kind": "function",
+          "name": "worker_claim_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_manifest_hashes text[]",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 230,
+          "anchor": "create function public.worker_claim_execution_v1(p_worker_token text,p_manifest_hashes text[]) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:public.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "worker_commit_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "worker_commit_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 238,
+          "anchor": "create function public.worker_commit_execution_v1(p_job uuid,p_capability text,p_lease uuid,p_contract_hash text,p_input_hash text,p_result_text text,p_outcome text,p_reason text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:public.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+          "kind": "function",
+          "name": "worker_renew_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+          "kind": "function",
+          "name": "worker_renew_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 232,
+          "anchor": "create function public.worker_renew_execution_v1(p_job uuid,p_capability text,p_lease uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:public.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+          "kind": "function",
+          "name": "worker_reserve_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
+          "kind": "function",
+          "name": "worker_reserve_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 234,
+          "anchor": "create function public.worker_reserve_execution_v1(p_job uuid,p_capability text,p_lease uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
+          "kind": "function",
+          "name": "worker_settle_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
+          "kind": "function",
+          "name": "worker_settle_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+          "line": 236,
+          "anchor": "create function public.worker_settle_execution_v1(p_job uuid,p_capability text,p_lease uuid,p_result_hash text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
     }
   ],
   "repository_items": [
@@ -157509,6 +158378,20 @@
       "decision": "preservar",
       "stage": "17 / autoridade 2B",
       "reason": "Corrige colisão da variável do enqueue legado com a nova coluna; reprodução antes/depois, sem mudança de autoridade."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor autenticado, proveniência e autorização corrente; sem produtor ou ativação de cliente."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260922194250_execution_capital_provenance.sql",
+      "decision": "preservar",
+      "stage": "17 / consumidor 3B",
+      "reason": "Consumidor autenticado, proveniência e autorização corrente; sem produtor ou ativação de cliente."
     }
   ],
   "staging_archive": [
@@ -158120,5 +159003,13 @@
     ],
     "new_objects": 68,
     "review": "docs/build/arcabouco/etapa-17-2b-review.md"
+  },
+  "stage_17_consumer_revision": {
+    "production_migrations": [
+      "20260922194243",
+      "20260922194250"
+    ],
+    "new_objects": 13,
+    "review": "docs/build/arcabouco/etapa-17-3b-consumidor.md"
   }
 }

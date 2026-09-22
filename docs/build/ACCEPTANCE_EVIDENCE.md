@@ -1,3 +1,9 @@
+## Etapa 17 / 3B: consumidor e proveniência antes da publicação
+
+A fila atual recebe consumidor de capital com conta operacional vinculada, reserva única, thread interrompível, heartbeat com autoridade corrente e settlement/commit dos mesmos bytes. Falhas da fila nova não paralisam o legado. A proveniência foi antecipada por aprovação do fundador: bases embutidas devem coincidir com versões persistidas, contexto e todos os pins; referências avulsas conservam os direitos fixados e atuais.
+
+TRUST-APP-01/TRUST-AI-01/TRUST-SDLC-01/TRUST-OPS-03. Sem produtor público, perfil operacional de cliente, chamada de provedor ou alteração do motor aprovado. Origens de cálculo sem recibo autoritativo são negadas; sua publicação vinculada e a adaptação de R01 ao envelope comum continuam obrigatórias antes do fechamento da etapa 17. Detalhes, testes, riscos e reversão em `docs/build/arcabouco/etapa-17-3b-consumidor.md`. CI e produção somente podem ser afirmadas com os comprovantes do completion; etapa 18 não iniciada.
+
 ## Etapa 17 / 3A: executor de capital fixado na imagem
 
 O procedimento capital v4 publicado passa a ter binário reproduzível a partir de seu commit de aprovação, com manifesto e perfil conferidos no loader. `compiled-executor-lock.json` preserva o formato de composição separado do registro histórico de R01; ambos usam o mesmo rebuild, registro de runtime e checker de imutabilidade. O worker verifica os dois artefatos antes de consultar a fila. Versão ausente ou bytes alterados impedem a inicialização, sem fallback para fontes atuais.

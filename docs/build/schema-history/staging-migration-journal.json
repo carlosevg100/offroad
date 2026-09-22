@@ -1491,8 +1491,40 @@
     {
       "version": "20260921154159",
       "name": "provider_retention_dependency_and_contract_guards"
+    },
+    {
+      "version": "20260921230303",
+      "name": "execution_persistence_foundation"
+    },
+    {
+      "version": "20260922131651",
+      "name": "execution_authority_commands"
+    },
+    {
+      "version": "20260922132215",
+      "name": "execution_verified_source_pins"
+    },
+    {
+      "version": "20260922132931",
+      "name": "execution_policy_current_clock"
+    },
+    {
+      "version": "20260922150256",
+      "name": "execution_current_read_rights"
+    },
+    {
+      "version": "20260922154905",
+      "name": "execution_legacy_enqueue_identity"
+    },
+    {
+      "version": "20260922181059",
+      "name": "execution_consumer_authority"
+    },
+    {
+      "version": "20260922193702",
+      "name": "execution_capital_provenance"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-21T15:55:28.114839+00:00"
+  "captured_at": "2026-09-22T19:46:42.160597+00:00"
 }

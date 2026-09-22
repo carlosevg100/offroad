@@ -19,6 +19,7 @@ describe("worker runtime schema preflight", () => {
         schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
         capabilities: [
           "domain-event-outbox.v1",
+          "pinned-execution-consumer.v1",
           "explicit-resource-access.v1",
           "explicit-workspace-context.v1",
           "authenticated-document-storage.v1",
@@ -95,7 +96,12 @@ describe("worker runtime schema preflight", () => {
     const accessSql = readFileSync(`${migrationsDirectory}/${accessExtension}`, "utf8");
     const accessCapabilities = ["explicit-resource-access.v1", "explicit-workspace-context.v1", "authenticated-document-storage.v1", "review-bound-execution.v1", "legacy-storage-rotation.v1"];
     for (const capability of accessCapabilities) expect(accessSql).toContain(capability);
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
+    const consumerExtension = readdirSync(migrationsDirectory).find((name) => name.endsWith("_execution_consumer_authority.sql"));
+    expect(consumerExtension).toBeDefined();
+    const consumerSql = readFileSync(`${migrationsDirectory}/${consumerExtension}`, "utf8");
+    expect(consumerSql).toContain("pinned-execution-consumer.v1");
+    expect(consumerSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
       expect(sql).toContain(`'${capability}'`);
     }
     const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);

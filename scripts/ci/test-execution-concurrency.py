@@ -77,7 +77,7 @@ fixture = expand(ROOT / 'supabase/tests/support/execution_commands_fixture.sql')
 # Other concurrent suites retain their own immutable fixtures until stack teardown.
 fixture = fixture.replace('a11b0000', 'a4172000').replace('a4171000', 'a4173000').replace('a11b-', 'a4172-')
 run('begin;' + fixture + "update execution_fixture set request=private.request_work_execution_v1('a4173000-0000-4000-9000-000000000001',contract::text,'{}');"
-    "insert into private.worker_tokens(id,label,token_sha256) values('a4173000-0000-4000-8000-000000000002','Synthetic second worker',extensions.digest('synthetic-second-execution-worker-token','sha256'));commit;")
+    "insert into private.worker_tokens(id,label,token_sha256,execution_account_user_id) values('a4173000-0000-4000-8000-000000000002','Synthetic second worker',extensions.digest('synthetic-second-execution-worker-token','sha256'),auth.uid());commit;")
 job = run("select id from public.processing_jobs where execution_id='" + execution + "';")
 a = "create temp table execution_claim_receipt as select private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1','" + job + "',60) as receipt;"
 b = "select private.claim_work_execution_v1('synthetic-second-execution-worker-token','" + job + "',60);"
@@ -100,9 +100,9 @@ compete(revoke, reserve, 'execution_authority_denied')
 assert run("select count(*) from private.execution_result_receipts where execution_id='" + execution + "';") == '0'
 print('execution_concurrency: PASS (two worker tokens, one claim, one operation, observed policy wait, stale authority denied)')
 
-def fresh_scope(number):
+def fresh_scope(number, lease_seconds=60):
     """Independent work and release for each terminal race; no regrant of old authority."""
-    global actor, work, execution
+    global actor, work, execution, last_job, last_claim
     org_prefix = f'a417{number}000'
     execution_prefix = f'a418{number}000'
     actor = org_prefix + '-0000-4000-8000-000000000001'
@@ -114,10 +114,13 @@ def fresh_scope(number):
     fixture = fixture.replace('a11b-', org_prefix + '-').replace('synthetic-execution', 'synthetic-execution-' + str(number))
     run('begin;' + fixture + "select private.request_work_execution_v1('" + profile + "',contract::text,'{}') from execution_fixture;commit;")
     job = run("select id from public.processing_jobs where execution_id='" + execution + "';")
-    output = run('begin;' + authorized("select private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1','" + job + "',60);") + 'commit;')
+    output = run('begin;' + authorized("select private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1','" + job + "',"+str(lease_seconds)+");") + 'commit;')
     claim = json.loads(next(line for line in output.splitlines() if line.startswith('{')))
     assert claim['claimed'] is True
+    last_job, last_claim = job, claim
     contract = json.loads(claim['contractText'])
+    run('begin;' + authorized("select private.worker_reserve_execution_v1('"+job+"','"+claim['capability']+"','"+claim['leaseId']+"');"
+        "select private.worker_settle_execution_v1('"+job+"','"+claim['capability']+"','"+claim['leaseId']+"',encode(extensions.digest('{}','sha256'),'hex'));")+'commit;')
     commit = ("select private.commit_work_execution_result_v1('" + job + "','" + claim['capability'] + "','" + claim['leaseId']
               + "','" + claim['contractFingerprint'] + "','" + contract['inputs']['fingerprint'] + "','{}','succeeded','calculated');")
     revoke = "select private.revoke_resource_access_v1('" + work + "','" + actor + "');"
@@ -140,3 +143,28 @@ compete("update private.platform_capability_releases set released=false where ca
 assert run("select count(*) from private.execution_result_receipts where execution_id='" + execution + "';") == '0'
 print('execution_release_withdrawal: PASS (observed release lock wait, commit denied, no result)')
 # Immutable synthetic records exist only in the disposable local CI stack.
+
+# A blocked exhausted organization must not hold the credential against unrelated heartbeats.
+fresh_scope(7,1)
+exhausted_job=last_job
+run("update public.processing_jobs set max_attempts=attempts where id='"+exhausted_job+"';")
+time.sleep(1.1)
+fresh_scope(8)
+blocker=subprocess.Popen(command,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
+try:
+ blocker.stdin.write("\\o /dev/null\nbegin;select pg_advisory_xact_lock(hashtextextended('resource-policy:a4177000-0000-4000-9000-000000000001',0));\n\\echo CLEANUP_POLICY_HELD\n")
+ blocker.stdin.flush()
+ deadline=time.monotonic()+20
+ while True:
+  if not select.select([blocker.stdout],[],[],max(0,deadline-time.monotonic()))[0]:raise AssertionError('Cleanup contention barrier absent')
+  if blocker.stdout.readline().strip()=='CLEANUP_POLICY_HELD':break
+ started=time.monotonic()
+ run('begin;'+authorized("select public.worker_claim_execution_v1('synthetic-policy-worker-fixture-token-v1',array[repeat('a',64)]);")+ 'commit;')
+ run('begin;'+authorized("select public.worker_renew_execution_v1('"+last_job+"','"+last_claim['capability']+"','"+last_claim['leaseId']+"');")+'commit;')
+ assert time.monotonic()-started<3,'Contended cleanup delayed unrelated worker'
+finally:
+ blocker.stdin.write('rollback;\n');blocker.stdin.close();blocker.stdin=None
+ blocker.communicate(timeout=20)
+run('begin;'+authorized("select public.worker_claim_execution_v1('synthetic-policy-worker-fixture-token-v1',array[repeat('a',64)]);")+'commit;')
+assert run("select status from public.processing_jobs where id='"+exhausted_job+"';")=='failed'
+print('execution_cleanup_contention: PASS (contended exhausted organization skipped; unrelated heartbeat progresses; cleanup completes after release)')

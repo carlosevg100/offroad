@@ -12242,6 +12242,10 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_claim_execution_v1: {
+        Args: { p_manifest_hashes: string[]; p_worker_token: string }
+        Returns: Json
+      }
       worker_claim_job: {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
@@ -12268,6 +12272,19 @@ export type Database = {
           p_result: Json
         }
         Returns: string
+      }
+      worker_commit_execution_v1: {
+        Args: {
+          p_capability: string
+          p_contract_hash: string
+          p_input_hash: string
+          p_job: string
+          p_lease: string
+          p_outcome: string
+          p_reason: string
+          p_result_text: string
+        }
+        Returns: Json
       }
       worker_commit_work_turn_v1: {
         Args: {
@@ -12928,7 +12945,24 @@ export type Database = {
         Args: { p_capability_token: string; p_chunks: Json; p_job_id: string }
         Returns: Json
       }
+      worker_renew_execution_v1: {
+        Args: { p_capability: string; p_job: string; p_lease: string }
+        Returns: Json
+      }
+      worker_reserve_execution_v1: {
+        Args: { p_capability: string; p_job: string; p_lease: string }
+        Returns: Json
+      }
       worker_runtime_schema_contract_v1: { Args: never; Returns: Json }
+      worker_settle_execution_v1: {
+        Args: {
+          p_capability: string
+          p_job: string
+          p_lease: string
+          p_result_hash: string
+        }
+        Returns: Json
+      }
       worker_start_capital_project_task: {
         Args: {
           p_capability_token: string

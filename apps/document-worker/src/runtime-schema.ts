@@ -6,6 +6,7 @@ export const WORKER_RUNTIME_SCHEMA_VERSION =
 
 export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "domain-event-outbox.v1",
+  "pinned-execution-consumer.v1",
   "explicit-resource-access.v1",
   "explicit-workspace-context.v1",
   "authenticated-document-storage.v1",

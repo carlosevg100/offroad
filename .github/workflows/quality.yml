@@ -289,6 +289,11 @@ jobs:
           if ! kill -0 "$(cat worker.pid)" 2>/dev/null; then cat worker.log; exit 1; fi
           grep -q '"event":"worker.signed_in"' worker.log || (sleep 10; grep -q '"event":"worker.signed_in"' worker.log || (cat worker.log; exit 1))
 
+      - name: Verify pinned execution through the deployed worker
+        env:
+          OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: node scripts/ci/verify-pinned-consumer.mjs
+
       # `--with-deps` runs apt-get, which stalled on the Azure mirror three times
       # (PR #57 ~30 min, PR #58 twice ~15 min each), always right after
       # "Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist". The same logs show the

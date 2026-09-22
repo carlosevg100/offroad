@@ -1,3 +1,5 @@
+-- Bind the disposable credential to this synthetic actor for the pinned consumer.
+update private.worker_tokens set execution_account_user_id=auth.uid() where token_sha256=extensions.digest('synthetic-policy-worker-fixture-token-v1','sha256');
 -- Synthetic profile and commands fixture; caller provisions the isolated legacy workspace.
 insert into private.platform_capability_releases(capability_key,released,exposure,method_id,method_version,method_maturity,approved_by,approved_at,approval_source)
 values('synthetic-execution',true,'universal','synthetic-execution','test-v1','tested','Synthetic approver',current_date,'Synthetic rollback-only fixture');
