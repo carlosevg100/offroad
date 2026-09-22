@@ -1,6 +1,6 @@
 # Third-party code in preserved method executors
 
-The R01 source snapshot includes these exact dependencies, frozen with its source graph.
+The R01 and capital-decision source snapshots include these exact dependencies, frozen with their source graphs.
 
 ## zod 4.4.3
 

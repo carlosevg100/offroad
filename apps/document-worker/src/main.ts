@@ -1,3 +1,4 @@
+import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
 import {createProviderProcessingAuthorizer} from "./provider-processing";
 import {createEventOutboxConsumer} from "./event-outbox";
@@ -90,6 +91,8 @@ async function main(): Promise<void> {
     schemaVersion: runtimeSchema.schemaVersion,
     capabilities: runtimeSchema.capabilities.length,
   });
+
+  log("worker.pinned_executors_verified", {artifacts: verifyInstalledMethodArtifacts()});
 
   await rotateLegacyStorage(supabase, config.OFFROAD_WORKER_TOKEN, () => log("worker.storage_rotation_completed"));
 

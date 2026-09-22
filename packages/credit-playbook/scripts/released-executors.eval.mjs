@@ -1,3 +1,4 @@
+import './compiled-executors.eval.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdtempSync,rmSync,mkdirSync} from 'node:fs';
