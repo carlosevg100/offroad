@@ -5,7 +5,8 @@ const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const identifier = z.string().trim().min(1).max(200);
 const revision = z.string().regex(/^[1-9][0-9]*$/);
 const timestamp = z.iso.datetime({offset: true});
-const reference = z.object({id: z.uuid(), fingerprint: hash}).strict();
+// fingerprint identifies the immutable assumption version, not a mutable decision.
+const reference = z.object({id: z.uuid(), assumptionVersionId: z.uuid(), fingerprint: hash}).strict();
 export const executionEffectSchema = z.enum(["read_only", "propose_state", "compile_artifact"]);
 export const executionMethodSchema = z.object({
   platformReleaseId: identifier, houseReleaseId: z.uuid().nullable(),
