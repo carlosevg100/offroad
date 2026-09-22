@@ -11,7 +11,10 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'../..');
 const database=new URL(process.env.OFFROAD_E2E_DATABASE_URL ?? 'invalid:');
 assert(['postgres:','postgresql:'].includes(database.protocol) && ['localhost','127.0.0.1','[::1]'].includes(database.hostname) && !database.search && !database.hash,'local_database_required');
 const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>!key.startsWith('PG')));
-const sql=query=>execFileSync('psql',['--dbname',database.href,'--no-psqlrc','-v','ON_ERROR_STOP=1','-Atq'],{input:query,env,encoding:'utf8',timeout:60000,maxBuffer:16*1024*1024,stdio:['pipe','pipe','pipe']}).trim();
+const sql=query=>{
+  try{return execFileSync('psql',['--dbname',database.href,'--no-psqlrc','-v','ON_ERROR_STOP=1','-Atq'],{input:query,env,encoding:'utf8',timeout:60000,maxBuffer:16*1024*1024,stdio:['pipe','pipe','pipe']}).trim();}
+  catch(error){throw new Error('pinned_consumer_sql_failed: '+(error.code??'sql_error')+' '+String(error.stderr??'').slice(-2000));}
+};
 const literal=text=>`convert_from(decode('${Buffer.from(text).toString('hex')}','hex'),'UTF8')`;
 const expand=path=>readFileSync(path,'utf8').replace(/^\\ir (.+)$/gm,(_line,p)=>expand(resolve(dirname(path),p)));
 const sha=text=>createHash('sha256').update(text).digest('hex');
@@ -47,6 +50,7 @@ commit;`);
   const line=setup.split('\n').find(s=>s.startsWith('CONTRACT:'));assert(line,'contract_missing');
   const basisLine=setup.split('\n').find(s=>s.startsWith('BASIS:'));assert(basisLine,'basis_missing');
   const governed=JSON.parse(basisLine.slice(6));
+  assert.equal(governed.pins.length,173,'incomplete_governed_basis');
   const remap=value=>{
     if(typeof value==='string')return governed.mapping[value]??value;
     if(Array.isArray(value))return value.map(remap);
@@ -61,6 +65,7 @@ commit;`);
   const expected=executionCanonicalText(executor.capitalProcedurePacketV2OutputSchema.parse(executor.prepareCapitalProcedurePacketV2(executor.capitalProcedurePacketV2InputSchema.parse(packet))));
   const contract=JSON.parse(line.slice(9));contract.purpose=governed.purpose;contract.inputs.hypotheses=governed.pins;contract.inputs.fingerprint=sha(snapshot);
   const contractText=executionCanonicalText(contract);
+  const requestedAt=performance.now();
   const request=JSON.parse(sql(`begin;select set_config('request.jwt.claim.sub','a11b0000-0000-4000-8000-000000000001',true);select private.request_work_execution_v1('a4171000-0000-4000-9000-000000000099',${literal(contractText)},${literal(snapshot)});commit;`).split('\n').at(-1));
   assert(request.jobId,'job_missing');
   const deadline=Date.now()+60000;let receipt;
@@ -73,5 +78,6 @@ commit;`);
   assert.equal(receipt.canonical_result,expected);assert.equal(receipt.result_fingerprint,sha(expected));
   assert.equal(receipt.input_fingerprint,sha(snapshot));assert.equal(receipt.contract_fingerprint,sha(contractText));
   assert.equal(sql(`select count(*) from private.execution_operation_receipts where execution_id='a4171000-0000-4000-9000-000000000002' and state='settled'`),'1');
+  console.log(JSON.stringify({event:'pinned_consumer_eval',pinnedHypotheses:173,preparationMs:governed.preparationMs,requestToPersistedResultMs:Math.ceil(performance.now()-requestedAt)}));
   console.log('pinned_consumer_deployed_integration: PASS (real queue, RPC authorization, packaged calculation, exact result, one settled operation; disposable local stack)');
 } finally {rmSync(temporary,{recursive:true,force:true});}
