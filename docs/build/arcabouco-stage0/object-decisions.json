@@ -8841,8 +8841,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "1B, 6, 7, 17",
-      "reason": "preservar origem e execução sob autorização de recurso e versão fixada",
+      "stage": "17 / autoridade 2B",
+      "reason": "preservar origem e execução sob autorização de recurso e versão fixada Etapa 17 renomeia a variável local para evitar colisão com processing_jobs.execution_id; replay e chave JSON legados permanecem iguais.",
       "sources": [
         {
           "path": "supabase/migrations/20260901035241_preliminary_understanding_gate.sql",
@@ -8855,6 +8855,12 @@
           "line": 4,
           "anchor": "create or replace function private.enqueue_primary_case_analysis(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260922155248_execution_legacy_enqueue_identity.sql",
+          "line": 6,
+          "anchor": " if position('execution_id uuid;' in prior)=0 or position('job.controlled_execution_id = execution_id' in prior)=0 then",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -157496,6 +157502,13 @@
       "decision": "preservar",
       "stage": "17 / autoridade 2B",
       "reason": "Núcleo privado de execução e correções verificadas; sem concessão, produtor ou ativação de cliente."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260922155248_execution_legacy_enqueue_identity.sql",
+      "decision": "preservar",
+      "stage": "17 / autoridade 2B",
+      "reason": "Corrige colisão da variável do enqueue legado com a nova coluna; reprodução antes/depois, sem mudança de autoridade."
     }
   ],
   "staging_archive": [
@@ -158102,7 +158115,8 @@
       "20260922153436",
       "20260922153443",
       "20260922153452",
-      "20260922153457"
+      "20260922153457",
+      "20260922155248"
     ],
     "new_objects": 68,
     "review": "docs/build/arcabouco/etapa-17-2b-review.md"

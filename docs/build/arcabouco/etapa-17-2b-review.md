@@ -17,3 +17,7 @@ O revisor não identificou outro bloqueio estático nos deltas, condicionado à 
 O núcleo permanece sem grants, produtor ou perfil operacional inserido. No incremento 3, engenharia de execução deve vincular o consumidor ao perfil efetivamente derivado e revisado, tratar renovação/aborto de lease e preservar a negação no transporte antes de qualquer egresso. O limite atual de 31 segundos cabe na lease de 60 segundos; esse fato não autoriza execução após expiração. R01 conserva seu motor até o adaptador específico. A ordem global de locks do legado não foi declarada corrigida.
 
 Evidências locais da reprodução e execução SQL: `outputs/etapa-17-nucleo-2026-09-22` na raiz do workspace, especialmente READ-REVOCATION-BEFORE/AFTER, BASIS-READ-REVOCATION-BEFORE/AFTER e staging-execution_release_revocation.json. O relatório de entrega deve registrar os runs finais e carimbos reais dos ambientes.
+
+## Compatibilidade do enqueue legado
+
+A CI identificou SQLSTATE 42702 causado pela nova coluna execution_id. O revisor aprovou estaticamente a migração execution_legacy_enqueue_identity: renomeia somente o identificador local inteiro, preserva controlled_execution_id, restaura a chave JSON execution_id e conserva assinatura, autoridade e grants. O teste cobre dois enqueues, mesmo job no replay, ausência de duplicação e identidade legada preservada. O revisor conferiu o recibo PASS de staging; não executou pessoalmente o teste. Nenhum bloqueio estático adicional encontrado; CI e implantação seguem como gates próprios.
