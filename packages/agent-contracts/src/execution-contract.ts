@@ -31,7 +31,7 @@ export const executionContractSchema = z.object({
   policy: z.object({version: identifier, fingerprint: hash, authorityRevision: revision}).strict(),
   tools: z.array(z.object({id: identifier, version: identifier, effect: executionEffectSchema}).strict()).max(1000),
   allowedEffects: z.array(executionEffectSchema).min(1).max(3),
-  budget: z.object({maxCostMicrousd: z.number().int().nonnegative().safe(), maxModelCalls: z.number().int().nonnegative().safe(), expiresAt: timestamp}).strict(),
+  budget: z.object({maxCostMicrousd: z.number().int().nonnegative().safe(), maxModelCalls: z.number().int().nonnegative().safe(), maxDurationMs: z.number().int().positive().safe(), expiresAt: timestamp}).strict(),
   requestedAt: timestamp,
 }).strict().superRefine((value, context) => {
   const fail = (path: (string | number)[], message: string) => context.addIssue({code: "custom", path, message});
