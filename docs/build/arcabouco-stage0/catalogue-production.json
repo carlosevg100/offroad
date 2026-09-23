@@ -51592,7 +51592,25 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER r01_preparation_receipts_updated BEFORE UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "name": "request_work_execution_as_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text",
+      "security_definer": true
     }
   ],
-  "captured_at": "2026-09-23T15:03:14.616125+00:00"
+  "captured_at": "2026-09-23T15:42:52.603204+00:00"
 }
