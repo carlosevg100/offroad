@@ -72,7 +72,9 @@ describe("R01 SQL profile parity",()=>{
  });
  it("database regression fixture uses the independently derived profile",()=>{
   const test=readFileSync(new URL("../../../supabase/tests/execution_r01_profile.sql",import.meta.url),"utf8");
-  const match=test.match(/\$profile\$([\s\S]*?)\$profile\$/);
+  expect(test).toContain("\\ir support/r01_execution_profile.sql");
+  const shared=readFileSync(new URL("../../../supabase/tests/support/r01_execution_profile.sql",import.meta.url),"utf8");
+  const match=shared.match(/\$profile\$([\s\S]*?)\$profile\$/);
   expect(match).not.toBeNull();expect(JSON.parse(match![1]!)).toEqual(derive());
  });
 });

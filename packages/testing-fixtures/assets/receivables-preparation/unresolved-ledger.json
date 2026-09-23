@@ -1,0 +1,8 @@
+{
+  "synthetic": true,
+  "description": "Ledger adjustment without a finding resolution, used to prove published readiness denial after valid replay.",
+  "rows": [
+    ["DATA", "HISTORICO", "DOCUMENTO", "DEBITO", "CREDITO", "SALDO"],
+    ["2026-08-31", "ajuste de conciliacao", "Synthetic ledger", "100", "0", "100"]
+  ]
+}
