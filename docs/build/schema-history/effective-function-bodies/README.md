@@ -33,3 +33,7 @@ A captura inicial, de 23/09/2026, veio do projeto de staging `gjkkjtbfnssdsbmlhm
 ## Limites conhecidos
 
 Migrações que reescrevem funções por formas dinâmicas não entram no alvo automático: loops sobre arrays de assinaturas, `to_regprocedure` com concatenação, `format()` com o nome da função ou seleção por conteúdo de `pg_proc`. Em 23/09/2026 isso ocorre em 16 migrações, entre elas `20260908035026_explicit_execution_brief_approval.sql`, `20260910153117_confirmed_receivables_support_sheets_v2.sql`, `20260915204116_explicit_legacy_resource_access.sql`, `20260916163753_resource_policy_and_barriers.sql` e `20260922153436_execution_authority_commands.sql`. Parte das funções que elas tocam já está aqui porque também aparece na forma literal; o restante fica para um incremento que estenda a regra de alvo.
+
+## Nota de captura, 23/09/2026
+
+Duas funções, `private.job_failure_class(jsonb)` e `private.worker_fail_job(uuid,text,jsonb,boolean,integer)`, foram recapturadas de produção porque o staging carrega remendos exclusivos dele para elas (histórico só de staging, arquivado no inventário) e o replay da CI, que segue os arquivos de migração, coincide com produção e não com staging. O staging não é fonte de verdade para corpo de função; quando divergir do replay, a captura deve vir de produção ou do stack local.

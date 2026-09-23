@@ -12,8 +12,6 @@ AS $function$
     when coalesce(p_error ->> 'code', '') in ('invalid_output', 'output_truncated') then 'model_invalid_output'
     when coalesce(p_error ->> 'code', '') in ('model_not_allowed', 'data_policy_violation', 'cassette_missing') then 'model_policy'
     when coalesce(p_error ->> 'code', '') ~* 'quality_gate' then 'quality_gate'
-    when coalesce(p_error ->> 'reason', '') = 'infected' then 'invalid_input'
-    when coalesce(p_error ->> 'reason', '') = 'unreadable_document' then 'invalid_input'
     when coalesce(p_error ->> 'reason', '') in ('infected', 'unreadable_document') then 'invalid_input'
     when coalesce(p_error ->> 'code', '') ~* 'invalid_.*input|invalid_case'
       or p_error ? 'validation' then 'invalid_input'

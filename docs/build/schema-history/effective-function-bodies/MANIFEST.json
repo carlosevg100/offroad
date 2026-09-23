@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-09-23T20:49:01Z",
-  "source": "staging gjkkjtbfnssdsbmlhmwk",
+  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -95,7 +95,7 @@
     {
       "signature": "private.job_failure_class(jsonb)",
       "file": "private.job_failure_class(jsonb).sql",
-      "sha256": "cfe3e3d09dc0aee179f19159f7ea0da47746c5cbd662e6cc98376873dc5c227b"
+      "sha256": "acc3872d527991517cd1418d57901e85db975f5d3c7fd38b176d9b4b8fd85a9f"
     },
     {
       "signature": "private.job_for_capability(uuid,text)",
@@ -230,7 +230,7 @@
     {
       "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
       "file": "private.worker_fail_job(uuid,text,jsonb,boolean,integer).sql",
-      "sha256": "1e57618ae74f3ef6ea00abc2d1d9ffcd6e696985fb604ac9e7a49a3bedcc5123"
+      "sha256": "c3789f41692c35ce6ea7e923dc1b3d358ed6e4849d41079f00ae29fb3a18faf4"
     },
     {
       "signature": "private.worker_load_agent_context(uuid,text)",

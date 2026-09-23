@@ -14,6 +14,7 @@ declare
   spent_calls integer := private.reported_spend_calls(p_error);
 begin
   perform private.assert_job_failure_record(p_error);
+
   will_retry := coalesce(p_retryable, true) and job_row.attempts < job_row.max_attempts and (not private.requires_execution_brief_approval(job_row.id) or private.execution_dispatch_is_current(job_row.id,true));
 
   update public.processing_jobs
