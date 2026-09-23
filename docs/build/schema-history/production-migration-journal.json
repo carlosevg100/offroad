@@ -1467,8 +1467,12 @@
     {
       "version": "20260922194250",
       "name": "execution_capital_provenance"
+    },
+    {
+      "version": "20260923014322",
+      "name": "execution_r01_profile_boundary"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-22T19:43:10.773748+00:00"
+  "captured_at": "2026-09-23T01:43:50.735493+00:00"
 }

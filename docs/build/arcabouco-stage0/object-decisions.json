@@ -147984,13 +147984,19 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / perfil R01 3D",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Perfil R01 exato; execução negada até ponte autoritativa de proveniência.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 238,
           "anchor": "create function private.require_execution_release_v1(p_profile uuid) returns private.execution_method_profiles",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923014322_execution_r01_profile_boundary.sql",
+          "line": 49,
+          "anchor": "create or replace function private.require_execution_release_v1(p_profile uuid) returns private.execution_method_profiles",
           "mechanism": "direct_ddl"
         }
       ],
@@ -148155,13 +148161,19 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "stage": "17 / perfil R01 3D",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Perfil R01 exato; execução negada até ponte autoritativa de proveniência.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 15,
           "anchor": "create function private.validate_execution_profile_storage_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923014322_execution_r01_profile_boundary.sql",
+          "line": 5,
+          "anchor": "create or replace function private.validate_execution_profile_storage_v1() returns trigger",
           "mechanism": "direct_ddl"
         }
       ],
@@ -158392,6 +158404,13 @@
       "decision": "preservar",
       "stage": "17 / consumidor 3B",
       "reason": "Consumidor autenticado, proveniência e autorização corrente; sem produtor ou ativação de cliente."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923014322_execution_r01_profile_boundary.sql",
+      "decision": "preservar",
+      "stage": "17 / perfil R01 3D",
+      "reason": "Atesta a derivação histórica R01 sem conceder execução; mantém fronteira fechada até a ponte de proveniência."
     }
   ],
   "staging_archive": [
