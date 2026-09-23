@@ -2117,6 +2117,7 @@
       "runCalculation": "Calculate",
       "differences": "Changes since the previous revision",
       "comparisonUnavailable": "The previous revision is unavailable under your current access. None of its data was exposed.",
+      "executions": "Executions of this analysis",
       "fields": {
         "fieldPath": "Metric",
         "type": "Value type",
@@ -2160,6 +2161,133 @@
         "denied": "You lack sufficient access to this work or one of its sources.",
         "conflict": "The basis changed after you opened it. Reload and compare before recording another revision.",
         "unavailable": "This basis could not be safely loaded or recorded. Try again."
+      }
+    },
+    "workExecutions": {
+      "title": "Capital analysis executions",
+      "back": "Back to the analysis basis",
+      "intro": "Each execution calculates the published method over one revision of the basis, with identity, authority and sources pinned by the server. The result stays available while the inputs remain valid for the reader.",
+      "request": {
+        "title": "Request an execution",
+        "help": "Choose the basis revision, write the question and the objectives. The calculation uses only what that revision adopts; whatever is missing appears as a named gap, never as an invented number.",
+        "version": "Basis revision",
+        "revision": "Revision {number}",
+        "noVersions": "Record an analysis basis before requesting an execution.",
+        "question": "Question",
+        "objectives": "Objectives",
+        "objectivesHelp": "One objective per line.",
+        "asOf": "Reference date",
+        "submit": "Request execution"
+      },
+      "states": {
+        "queued": "Queued",
+        "leased": "Calculating",
+        "succeeded": "Completed",
+        "partial": "Partial",
+        "failed": "Failed",
+        "withheld": "Result withheld",
+        "unknown": "State not reported"
+      },
+      "reasons": {
+        "calculated": "Calculated by the published method",
+        "invalid_input": "The input did not pass the method contract",
+        "calculation_failed": "The calculation did not finish",
+        "budget_exhausted": "The time budget ran out before the end",
+        "operation_uncertain": "The operation was interrupted and the result is uncertain"
+      },
+      "list": {
+        "title": "Recorded executions",
+        "empty": "No execution recorded in this work.",
+        "open": "Open execution",
+        "next": "Earlier executions"
+      },
+      "detail": {
+        "heading": "Execution",
+        "title": "Execution state",
+        "list": "All executions",
+        "refresh": "Refresh",
+        "state": "State",
+        "outcome": "Outcome",
+        "reason": "Reason",
+        "inputsCurrent": "Inputs",
+        "inputsCurrentYes": "Valid for the current reader",
+        "inputsCurrentNo": "Changed since the request or left your access",
+        "requestedAt": "Requested at",
+        "job": "Queue",
+        "attempts": "{count} attempts",
+        "lastError": "Last error",
+        "method": "Method",
+        "contractFingerprint": "Contract fingerprint",
+        "inputFingerprint": "Input fingerprint",
+        "execution": "Identifier",
+        "notInformed": "Not reported",
+        "withheldTitle": "Result withheld",
+        "withheldBody": "The result exists, but the inputs changed or a source left your access since the request. Request a new execution over the current basis.",
+        "resultTitle": "Result",
+        "resultFingerprint": "Result fingerprint",
+        "committedAt": "Recorded at",
+        "markerTitle": "No calculated packet",
+        "unreadable": "The recorded bytes do not match the published method packet; only the fingerprint is shown.",
+        "decisionStatus": "Decision status",
+        "question": "Question",
+        "asOf": "Reference date",
+        "contributions": "Contributions used",
+        "alternatives": "Alternatives",
+        "calculated": "projection calculated",
+        "notCalculated": "projection not calculated",
+        "gaps": "Information gaps",
+        "noGaps": "No gap recorded.",
+        "contractualGaps": "Contractual items pending",
+        "requirements": "Next requirements",
+        "noRequirements": "No requirement pending.",
+        "packetFingerprint": "Packet fingerprint"
+      },
+      "decisionStatus": {
+        "framed": "Framed, without numerical comparison",
+        "partial": "Partial, with named gaps",
+        "prepared_for_human_review": "Prepared for human review"
+      },
+      "gapCodes": {
+        "alternatives_required": "Alternatives to compare are missing",
+        "current_structure_required": "The current structure or the reason to exclude it is missing",
+        "projection_input_missing": "Projection input not adopted",
+        "projection_incomplete": "Projection incomplete",
+        "sensitivity_has_no_changed_operands": "Sensitivity without a changed operand"
+      },
+      "requirements": {
+        "source": "Source review",
+        "assumption": "Assumption review",
+        "contract": "Contract review",
+        "market": "Market review",
+        "implementation": "Implementation review",
+        "recommendation": "Professional recommendation",
+        "adopted_context": "Adopted context",
+        "common_opening": "Common opening",
+        "operating_budget": "Operating budget",
+        "debt_and_capital_inventory": "Debt and capital inventory",
+        "explicit_alternatives": "Explicit alternatives"
+      },
+      "kinds": {
+        "maintain": "maintain",
+        "change": "change",
+        "defer": "defer",
+        "no_financing": "no financing"
+      },
+      "errors": {
+        "invalid": "The request could not be assembled from this basis. Review the chosen revision and the reference date.",
+        "denied": "You lack sufficient access to this work.",
+        "producer_denied": "This organization cannot request executions yet. Offroad enables it.",
+        "method_unavailable": "The published method is not available for execution right now.",
+        "basis_denied": "The chosen revision is not a readable working basis for this analysis.",
+        "provenance_denied": "A source adopted in this basis is unverified or left your access. The execution was not requested.",
+        "conflict": "This request was already recorded with other content. Open the list to find it.",
+        "unavailable": "The execution could not be safely requested or read. Try again."
+      },
+      "unverified": {
+        "title": "Unverified sources:",
+        "rights_missing": "no usage rights recorded",
+        "bytes_unverified": "bytes not yet verified",
+        "binding_missing": "not bound to this work"
       }
     },
     "overview": "Overview",
