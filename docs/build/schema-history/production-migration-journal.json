@@ -1519,8 +1519,16 @@
   {
    "version": "20260923224304",
    "name": "residual_information_request_batch"
+  },
+  {
+   "version": "20260923233258",
+   "name": "execution_producer_authority"
+  },
+  {
+   "version": "20260923233409",
+   "name": "execution_producer_commands"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-23T22:43:37.276405+00:00"
+ "captured_at": "2026-09-23T23:35:20.387055+00:00"
 }

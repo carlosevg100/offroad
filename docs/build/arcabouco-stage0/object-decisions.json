@@ -10093,6 +10093,70 @@
       "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
     },
     {
+      "id": "function:private.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 27,
+          "anchor": "create function private.execution_contract_basis_v1(p_work_id uuid,p_version_id uuid,p_method_id text default 'prepare-capital-structure-decision') returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.execution_dispatch_is_current(p_job_id uuid, p_require_accepted boolean)",
       "kind": "function",
       "catalogues": {
@@ -10378,6 +10442,168 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.execution_producer_enabled_v1(p_organization uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_producer_enabled_v1(p_organization uuid)",
+          "kind": "function",
+          "name": "execution_producer_enabled_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_producer_enabled_v1(p_organization uuid)",
+          "kind": "function",
+          "name": "execution_producer_enabled_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 63,
+          "anchor": "create function private.execution_producer_enabled_v1(p_organization uuid) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_read_access_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_read_access_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "execution_read_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_read_access_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "execution_read_access_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 132,
+          "anchor": "create function private.execution_read_access_v1(p_org uuid,p_work uuid) returns void language plpgsql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_released_profile_v1(p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_released_profile_v1(p_method_id text)",
+          "kind": "function",
+          "name": "execution_released_profile_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_method_id text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_released_profile_v1(p_method_id text)",
+          "kind": "function",
+          "name": "execution_released_profile_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_method_id text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 10,
+          "anchor": "create function private.execution_released_profile_v1(p_method_id text) returns private.execution_method_profiles",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.execution_settled_result_v1(p_job uuid, p_capability text, p_lease uuid)",
@@ -11222,6 +11448,60 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.grant_execution_producer_v1(p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.grant_execution_producer_v1(p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "grant_execution_producer_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.grant_execution_producer_v1(p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "grant_execution_producer_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 68,
+          "anchor": "create function private.grant_execution_producer_v1(p_command uuid,p_organization uuid,p_enabled boolean,p_note text,p_actor_user_id uuid) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.grant_resource_access_v1(p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone)",
       "kind": "function",
       "catalogues": {
@@ -11464,6 +11744,60 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.guard_execution_producer_grant_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_execution_producer_grant_v1()",
+          "kind": "function",
+          "name": "guard_execution_producer_grant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_execution_producer_grant_v1()",
+          "kind": "function",
+          "name": "guard_execution_producer_grant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 25,
+          "anchor": "create function private.guard_execution_producer_grant_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.guard_identity_scope_v1()",
@@ -15023,6 +15357,60 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.ledger_execution_producer_grant_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.ledger_execution_producer_grant_v1()",
+          "kind": "function",
+          "name": "ledger_execution_producer_grant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.ledger_execution_producer_grant_v1()",
+          "kind": "function",
+          "name": "ledger_execution_producer_grant_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 54,
+          "anchor": "create function private.ledger_execution_producer_grant_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.ledger_execution_profile_v1()",
       "kind": "function",
       "catalogues": {
@@ -15078,6 +15466,60 @@
           "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
           "line": 23,
           "anchor": "create or replace function private.ledger_execution_profile_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.ledger_platform_capability_release_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.ledger_platform_capability_release_v1()",
+          "kind": "function",
+          "name": "ledger_platform_capability_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.ledger_platform_capability_release_v1()",
+          "kind": "function",
+          "name": "ledger_platform_capability_release_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 120,
+          "anchor": "create function private.ledger_platform_capability_release_v1() returns trigger language plpgsql security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
         }
       ]
@@ -15774,6 +16216,70 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.list_work_executions_v1(p_work_id uuid, p_before uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.list_work_executions_v1(p_work_id uuid, p_before uuid)",
+          "kind": "function",
+          "name": "list_work_executions_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_before uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.list_work_executions_v1(p_work_id uuid, p_before uuid)",
+          "kind": "function",
+          "name": "list_work_executions_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_before uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 169,
+          "anchor": "create function private.list_work_executions_v1(p_work_id uuid,p_before uuid default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
@@ -21643,6 +22149,70 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:private.read_work_execution_v1(p_execution_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_work_execution_v1(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_work_execution_v1(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 141,
+          "anchor": "create function private.read_work_execution_v1(p_execution_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.read_workspace_access_v1()",
       "kind": "function",
       "catalogues": {
@@ -25236,6 +25806,60 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:private.release_platform_capability_v1(p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.release_platform_capability_v1(p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "release_platform_capability_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.release_platform_capability_v1(p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "release_platform_capability_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 134,
+          "anchor": "create function private.release_platform_capability_v1(p_command uuid,p_capability_key text,p_released boolean,p_exposure text,p_actor_user_id uuid,p_reason text) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.release_qualified_contact(p_preparation_id uuid, p_pack_fingerprint text)",
       "kind": "function",
       "catalogues": {
@@ -25908,6 +26532,70 @@
         }
       ],
       "consumer_status": "Wrapper humano privado existente; futura ponte worker ainda não conectada. Sem grant de API."
+    },
+    {
+      "id": "function:private.request_work_execution_producer_v1(p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_work_execution_producer_v1(p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_producer_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_work_execution_producer_v1(p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_producer_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 99,
+          "anchor": "create function private.request_work_execution_producer_v1(p_contract_text text,p_snapshot_text text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.request_work_execution_v1(p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
@@ -49594,6 +50282,70 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:public.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 93,
+          "anchor": "create function public.execution_contract_basis_v1(p_work_id uuid,p_version_id uuid,p_method_id text default 'prepare-capital-structure-decision') returns jsonb language sql volatile security invoker set search_path='' as $$ select private.execution_contract_basis_v1(p_work_id,p_version_id,p_method_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
       "kind": "function",
       "catalogues": {
@@ -51104,6 +51856,70 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.list_work_executions_v1(p_work_id uuid, p_before uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.list_work_executions_v1(p_work_id uuid, p_before uuid)",
+          "kind": "function",
+          "name": "list_work_executions_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_before uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.list_work_executions_v1(p_work_id uuid, p_before uuid)",
+          "kind": "function",
+          "name": "list_work_executions_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_before uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 194,
+          "anchor": "create function public.list_work_executions_v1(p_work_id uuid,p_before uuid default null) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.list_work_executions_v1(p_work_id,p_before); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.list_work_observations_v1(p_work_id uuid, p_before_sequence text)",
@@ -53800,6 +54616,70 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:public.read_work_execution_v1(p_execution_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_work_execution_v1(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_work_execution_v1(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 165,
+          "anchor": "create function public.read_work_execution_v1(p_execution_id uuid) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.read_work_execution_v1(p_execution_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.read_workspace_access_v1()",
       "kind": "function",
       "catalogues": {
@@ -56411,6 +57291,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.request_work_execution_v1(p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.request_work_execution_v1(p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.request_work_execution_v1(p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+          "line": 126,
+          "anchor": "create function public.request_work_execution_v1(p_contract_text text,p_snapshot_text text) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.request_work_execution_producer_v1(p_contract_text,p_snapshot_text); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.resolve_analysis_scope_suggestion_command(p_organization_id uuid, p_session_id uuid, p_suggestion_event_id uuid, p_scope_event_id uuid, p_suggestion_id text, p_decision text, p_role text, p_reason text)",
@@ -74609,6 +75553,98 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "policy:private.execution_producer_grant_events.execution_producer_grant_events_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_producer_grant_events.execution_producer_grant_events_deny",
+          "kind": "policy",
+          "name": "execution_producer_grant_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_producer_grant_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_producer_grant_events.execution_producer_grant_events_deny",
+          "kind": "policy",
+          "name": "execution_producer_grant_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_producer_grant_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 47,
+          "anchor": "create policy execution_producer_grant_events_deny on private.execution_producer_grant_events as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.execution_producer_grants.execution_producer_grants_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_producer_grants.execution_producer_grants_deny",
+          "kind": "policy",
+          "name": "execution_producer_grants_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_producer_grants.execution_producer_grants_deny",
+          "kind": "policy",
+          "name": "execution_producer_grants_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 21,
+          "anchor": "create policy execution_producer_grants_deny on private.execution_producer_grants as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:private.execution_profile_registrations.execution_profile_registrations_deny",
       "kind": "policy",
       "catalogues": {
@@ -76490,6 +77526,52 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.platform_capability_release_events.platform_capability_release_events_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.platform_capability_release_events.platform_capability_release_events_deny",
+          "kind": "policy",
+          "name": "platform_capability_release_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_capability_release_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.platform_capability_release_events.platform_capability_release_events_deny",
+          "kind": "policy",
+          "name": "platform_capability_release_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_capability_release_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 114,
+          "anchor": "create policy platform_capability_release_events_deny on private.platform_capability_release_events as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "policy:private.platform_capability_releases.platform_capability_releases_deny",
@@ -99074,6 +100156,242 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "r:private.execution_producer_grant_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_producer_grant_events",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_producer_grant_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_producer_grant_events",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_producer_grant_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 31,
+          "anchor": "create table private.execution_producer_grant_events (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.execution_producer_grants",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_producer_grants",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_producer_grants",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_producer_grants",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_producer_grants",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 10,
+          "anchor": "create table private.execution_producer_grants (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "r:private.execution_profile_registrations",
       "kind": "table",
       "catalogues": {
@@ -100975,6 +102293,124 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:private.platform_capability_release_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.platform_capability_release_events",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_capability_release_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.platform_capability_release_events",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_capability_release_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 96,
+          "anchor": "create table private.platform_capability_release_events (",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "r:private.platform_capability_releases",
@@ -138134,6 +139570,234 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "trigger:private.execution_producer_grant_events.execution_producer_grant_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_producer_grant_events.execution_producer_grant_events_immutable",
+          "kind": "trigger",
+          "name": "execution_producer_grant_events_immutable",
+          "table": "execution_producer_grant_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grant_events_immutable BEFORE DELETE OR UPDATE ON private.execution_producer_grant_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_producer_grant_events.execution_producer_grant_events_immutable",
+          "kind": "trigger",
+          "name": "execution_producer_grant_events_immutable",
+          "table": "execution_producer_grant_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grant_events_immutable BEFORE DELETE OR UPDATE ON private.execution_producer_grant_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 50,
+          "anchor": "create trigger execution_producer_grant_events_immutable before update or delete on private.execution_producer_grant_events for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_producer_grant_events.execution_producer_grant_events_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_producer_grant_events.execution_producer_grant_events_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_producer_grant_events_truncate_guard",
+          "table": "execution_producer_grant_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grant_events_truncate_guard BEFORE TRUNCATE ON private.execution_producer_grant_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_producer_grant_events.execution_producer_grant_events_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_producer_grant_events_truncate_guard",
+          "table": "execution_producer_grant_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grant_events_truncate_guard BEFORE TRUNCATE ON private.execution_producer_grant_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 51,
+          "anchor": "create trigger execution_producer_grant_events_truncate_guard before truncate on private.execution_producer_grant_events for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_producer_grants.execution_producer_grants_delete_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_producer_grants.execution_producer_grants_delete_guard",
+          "kind": "trigger",
+          "name": "execution_producer_grants_delete_guard",
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_execution_producer_grant_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grants_delete_guard BEFORE DELETE ON private.execution_producer_grants FOR EACH ROW EXECUTE FUNCTION private.guard_execution_producer_grant_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_producer_grants.execution_producer_grants_delete_guard",
+          "kind": "trigger",
+          "name": "execution_producer_grants_delete_guard",
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_execution_producer_grant_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grants_delete_guard BEFORE DELETE ON private.execution_producer_grants FOR EACH ROW EXECUTE FUNCTION private.guard_execution_producer_grant_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 28,
+          "anchor": "create trigger execution_producer_grants_delete_guard before delete on private.execution_producer_grants for each row execute function private.guard_execution_producer_grant_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_producer_grants.execution_producer_grants_ledger",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_producer_grants.execution_producer_grants_ledger",
+          "kind": "trigger",
+          "name": "execution_producer_grants_ledger",
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.ledger_execution_producer_grant_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grants_ledger AFTER INSERT OR UPDATE ON private.execution_producer_grants FOR EACH ROW EXECUTE FUNCTION private.ledger_execution_producer_grant_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_producer_grants.execution_producer_grants_ledger",
+          "kind": "trigger",
+          "name": "execution_producer_grants_ledger",
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.ledger_execution_producer_grant_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grants_ledger AFTER INSERT OR UPDATE ON private.execution_producer_grants FOR EACH ROW EXECUTE FUNCTION private.ledger_execution_producer_grant_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 61,
+          "anchor": "create trigger execution_producer_grants_ledger after insert or update on private.execution_producer_grants for each row execute function private.ledger_execution_producer_grant_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_producer_grants.execution_producer_grants_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_producer_grants.execution_producer_grants_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_producer_grants_truncate_guard",
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grants_truncate_guard BEFORE TRUNCATE ON private.execution_producer_grants FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_producer_grants.execution_producer_grants_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_producer_grants_truncate_guard",
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_producer_grants_truncate_guard BEFORE TRUNCATE ON private.execution_producer_grants FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 29,
+          "anchor": "create trigger execution_producer_grants_truncate_guard before truncate on private.execution_producer_grants for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_producer_grants.execution_producer_grants_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_producer_grants.execution_producer_grants_updated_at",
+          "kind": "trigger",
+          "name": "execution_producer_grants_updated_at",
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_producer_grants_updated_at BEFORE UPDATE ON private.execution_producer_grants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_producer_grants.execution_producer_grants_updated_at",
+          "kind": "trigger",
+          "name": "execution_producer_grants_updated_at",
+          "table": "execution_producer_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_producer_grants_updated_at BEFORE UPDATE ON private.execution_producer_grants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 23,
+          "anchor": "create trigger execution_producer_grants_updated_at before update on private.execution_producer_grants for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_profile_registrations.execution_profile_registrations_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -139378,6 +141042,158 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.platform_capability_release_events.platform_capability_release_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_capability_release_events.platform_capability_release_events_immutable",
+          "kind": "trigger",
+          "name": "platform_capability_release_events_immutable",
+          "table": "platform_capability_release_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_capability_release_events_immutable BEFORE DELETE OR UPDATE ON private.platform_capability_release_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_capability_release_events.platform_capability_release_events_immutable",
+          "kind": "trigger",
+          "name": "platform_capability_release_events_immutable",
+          "table": "platform_capability_release_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_capability_release_events_immutable BEFORE DELETE OR UPDATE ON private.platform_capability_release_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 117,
+          "anchor": "create trigger platform_capability_release_events_immutable before update or delete on private.platform_capability_release_events for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.platform_capability_release_events.platform_capability_release_events_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_capability_release_events.platform_capability_release_events_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_capability_release_events_truncate_guard",
+          "table": "platform_capability_release_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_capability_release_events_truncate_guard BEFORE TRUNCATE ON private.platform_capability_release_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_capability_release_events.platform_capability_release_events_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_capability_release_events_truncate_guard",
+          "table": "platform_capability_release_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_capability_release_events_truncate_guard BEFORE TRUNCATE ON private.platform_capability_release_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 118,
+          "anchor": "create trigger platform_capability_release_events_truncate_guard before truncate on private.platform_capability_release_events for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.platform_capability_releases.platform_capability_releases_ledger",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_capability_releases.platform_capability_releases_ledger",
+          "kind": "trigger",
+          "name": "platform_capability_releases_ledger",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.ledger_platform_capability_release_v1()",
+          "definition": "CREATE TRIGGER platform_capability_releases_ledger AFTER INSERT OR DELETE OR UPDATE ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.ledger_platform_capability_release_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_capability_releases.platform_capability_releases_ledger",
+          "kind": "trigger",
+          "name": "platform_capability_releases_ledger",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.ledger_platform_capability_release_v1()",
+          "definition": "CREATE TRIGGER platform_capability_releases_ledger AFTER INSERT OR DELETE OR UPDATE ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.ledger_platform_capability_release_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 128,
+          "anchor": "create trigger platform_capability_releases_ledger after insert or update or delete on private.platform_capability_releases for each row execute function private.ledger_platform_capability_release_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.platform_capability_releases.platform_capability_releases_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_capability_releases.platform_capability_releases_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_capability_releases_truncate_guard",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_capability_releases_truncate_guard BEFORE TRUNCATE ON private.platform_capability_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_capability_releases.platform_capability_releases_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_capability_releases_truncate_guard",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_capability_releases_truncate_guard BEFORE TRUNCATE ON private.platform_capability_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+          "line": 129,
+          "anchor": "create trigger platform_capability_releases_truncate_guard before truncate on private.platform_capability_releases for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.platform_capability_releases.receivables_release_capability_truncate_guard",
@@ -161896,6 +163712,20 @@
       "decision": "preservar",
       "stage": "17 / 4B",
       "reason": "Etapa 17, incremento 4B: restabelece worker_record_agent_assessment_v1 e worker_sync_project_information_requests_v1 sem o corte de pedidos residuais, com guarda de deriva da base."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: autoridade do produtor (grants e ledgers de concessão e de liberação) e comandos do produtor (base do contrato, pedido público e leitores)."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: autoridade do produtor (grants e ledgers de concessão e de liberação) e comandos do produtor (base do contrato, pedido público e leitores)."
     }
   ],
   "staging_archive": [

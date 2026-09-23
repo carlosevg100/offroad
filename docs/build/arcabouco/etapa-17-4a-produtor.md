@@ -4,7 +4,7 @@ Até aqui o método de capital publicado (`prepare-capital-structure-decision`, 
 
 ## O que muda
 
-### Banco (migrações `20260924000200_execution_producer_authority` e `20260924000300_execution_producer_commands`)
+### Banco (migrações `20260923233258_execution_producer_authority` e `20260923233409_execution_producer_commands`)
 
 Concessão de produtor: `private.execution_producer_grants` tem uma linha por organização, ligada ou não, nunca apagada nem truncada, e cada escrita cai em `execution_producer_grant_events` com o principal que agiu e o comando. `grant_execution_producer_v1` é o único caminho com identidade: exige principal de plataforma, é idempotente por comando e recusa reaproveitar o comando para outro efeito. Habilitar um produtor para uma organização da qual nenhum principal fundador ativo é membro é liberar execução para cliente real, e exige a identidade do fundador; o espaço do próprio fundador e toda pausa são atos de operador. Uma edição direta do operador continua possível e fica ledgerada sem identidade.
 
@@ -49,4 +49,4 @@ Unitárias (PR seguinte): `packages/financial-model/src/capital-procedure-packet
 
 Suítes completas (PR seguinte): financial-model 37 arquivos e 364 testes mais o benchmark; agent-contracts 14 arquivos e 308 testes; document-worker 81 arquivos e 746 testes; web 116 arquivos e 746 testes, entre eles `messages.test.ts` (paridade estrutural dos dois catálogos), `client-messages.test.ts` (projeção de cliente) e `no-em-dash.test.ts`, que varre cada string dos dois catálogos inteiros, o texto dos pacotes, o JSX da web e o markdown que uma pessoa lê; `typecheck`, `lint` e `build` da web verdes. TRUST-APP-01, TRUST-AI-01, TRUST-SDLC-01. Nada aqui concede execução a uma organização: a concessão é um comando com identidade, ato do fundador quando a organização é um cliente real, e a liberação universal do método é ato de operador contido por essas concessões.
 
-Estampas: STAMPS_TBD
+Estampas: `execution_producer_authority` em staging `20260923211108` e produção `20260923233258`; `execution_producer_commands` em staging `20260923212248` e produção `20260923233409`, aplicadas pelo executor via MCP antes do merge; arquivos nomeados pela versão de produção. Tipos públicos regenerados de produção. Advisors de segurança zero nos dois projetos. Catálogos de produção e de staging recapturados depois das estampas (o de staging cobre também a terceira parte de 3O, aplicada antes). Os atos em produção (registro do perfil v4, grant do espaço do fundador, liberação universal da v4) ficam registrados em ACCEPTANCE_EVIDENCE depois do merge desta PR.

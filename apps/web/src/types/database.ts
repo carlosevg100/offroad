@@ -11144,6 +11144,10 @@ export type Database = {
         Returns: Json
       }
       read_source_version_v1: { Args: { p_version_id: string }; Returns: Json }
+      read_work_execution_v1: {
+        Args: { p_execution_id: string }
+        Returns: Json
+      }
       read_workspace_access_v1: { Args: never; Returns: Json }
       record_agent_change_proposal: {
         Args: {
@@ -11152,10 +11156,6 @@ export type Database = {
           p_session_id: string
         }
         Returns: string
-      }
-      read_work_execution_v1: {
-        Args: { p_execution_id: string }
-        Returns: Json
       }
       record_capital_project_work_request_v1: {
         Args: {

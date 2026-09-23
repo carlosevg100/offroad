@@ -1573,10 +1573,18 @@
    "name": "platform_operator_identity_ledger_guard"
   },
   {
+   "version": "20260923211108",
+   "name": "execution_producer_authority"
+  },
+  {
+   "version": "20260923212248",
+   "name": "execution_producer_commands"
+  },
+  {
    "version": "20260923213852",
    "name": "residual_information_request_batch"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-23T22:43:37.276405+00:00"
+ "captured_at": "2026-09-23T23:35:20.388044+00:00"
 }
