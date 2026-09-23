@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "expertise-source-lock.v1",
+  "repository": "https://github.com/carlosevg100/offroad-expertise",
+  "visibility": "private",
+  "commit": "910097c975ae48cc284f8bc4a6ef09ee160741b8",
+  "capturedAt": "2026-09-23T19:19:37Z",
+  "roots": [
+    "biblioteca-expertise-2026-09",
+    "originais-do-fundador"
+  ],
+  "files": [
+    {
+      "path": "biblioteca-expertise-2026-09/LEIA-ME.md",
+      "bytes": 3365,
+      "sha256": "59c947caadb09d616383c861ff995766c68a42b76e5e02c5d16efa67b6b2dfa4"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/arvore-proposta-recebida.html",
+      "bytes": 428112,
+      "sha256": "14be8d1ccf48aeea8eaca12309d23838529c8751f7fed0ec4e89dfc1ed17edcb"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/arvore-src.html",
+      "bytes": 74302,
+      "sha256": "9e1b2729db93564e6886d8d55722e3d07c5aa4e8434408bf7957ed4e2825d897"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/atlas-pecas.html",
+      "bytes": 68219,
+      "sha256": "8580515b94e92a129c5e060cadf2e62036e94b5a997b930686ef8a00c56b5830"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/atlas-src.html",
+      "bytes": 51344,
+      "sha256": "04b9f7b00856dec779d96418a8d9d321bfd574f2d2cf6215332d6d6bd092c0f9"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/atlas_svg.py",
+      "bytes": 9637,
+      "sha256": "5edf545dba1a2411ecf7c355355ad64d3fc6d5ede9482bf2ed8cd20162017c94"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/build.py",
+      "bytes": 4544,
+      "sha256": "c19af2d7e0d32bdde6a582cf5f5a53723a1b080c8c25ba8210a3544d914d6ba3"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/ficha1-conversa.html",
+      "bytes": 37629,
+      "sha256": "8f9b19ec68df3e14f06b1ad21ecbb2485ec7a9293d46ca46a3c94ee34467a6bf"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/metodos-analise.html",
+      "bytes": 50033,
+      "sha256": "f9c8782b78360f156668c7d6a119f17a10e3539fc7c39c962aff0bc1765c86d8"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/modulos-variacao.html",
+      "bytes": 69090,
+      "sha256": "b57369fe383d140af1f99fd3ac7dda67f873eae5a01861217a8bf75576ad7df0"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/objetos-mercado-memoria.html",
+      "bytes": 35812,
+      "sha256": "227e56f1c73a528000d0fe4b779c44349e7341b91f6ff985cc801b7c4ee7b7f9"
+    },
+    {
+      "path": "biblioteca-expertise-2026-09/registro-definicoes.html",
+      "bytes": 50535,
+      "sha256": "3a04aa49f4684fff93919ebf92ba61e26b81870f35c722444d89b41c7751036c"
+    },
+    {
+      "path": "originais-do-fundador/MANIFESTO-SHA256.txt",
+      "bytes": 942,
+      "sha256": "e47be2c3b600cc9c7bb7e5e8f4b5d7d5bccb49ace2b5ebec34622925d19513d0"
+    },
+    {
+      "path": "originais-do-fundador/apps/web/public/offroad-credit-os-prototype.html",
+      "bytes": 40382,
+      "sha256": "d5d54531cbe5c533c6849fd1deac604c4e168f2c36a78c28a6fdc172a69ff01b"
+    },
+    {
+      "path": "originais-do-fundador/docs/product/DEMANDA_CFO_COMPANHIA.md",
+      "bytes": 21863,
+      "sha256": "58c458f917495a04e9a1eb400d5e2f576c08e028b9d9ad28c065ea8a63b21a13"
+    },
+    {
+      "path": "originais-do-fundador/docs/product/OFFROAD_CREDIT_OS_EXPERIENCE_CONTRACT.md",
+      "bytes": 10044,
+      "sha256": "e804f121b5212bbcb861367c25adfbaf00bca3bb7d4ed66caadb65e211100b1f"
+    },
+    {
+      "path": "originais-do-fundador/docs/product/POSICIONAMENTO_PROMESSA.md",
+      "bytes": 6354,
+      "sha256": "50cec1d7761e4adf7f8d6031deac800c88d4f70da4c6ffdecf8417d45cbaed35"
+    },
+    {
+      "path": "originais-do-fundador/docs/research/MODEL_ML_DEEP_DIVE_2026-09-05.md",
+      "bytes": 39800,
+      "sha256": "811a8b8cbdf6901b122fe0fa2d22d19e12df59033cca37d20f8d6b800308e2c2"
+    },
+    {
+      "path": "originais-do-fundador/docs/research/agentic-os-landscape/OFFROAD_AGENTIC_CREDIT_OS_MASTER_PLAN_2026-09-05.md",
+      "bytes": 30694,
+      "sha256": "4cf05861ad0114389c17968cb5e68c2f0013d3d6f064ba54868b4fba04adbdcc"
+    },
+    {
+      "path": "originais-do-fundador/docs/research/agentic-os-landscape/report-source.md",
+      "bytes": 9724,
+      "sha256": "f71f020e6e8352076d40874075407b41189a15a6cd41e6240634dc0c8bc2dcb7"
+    },
+    {
+      "path": "originais-do-fundador/docs/research/report-source.md",
+      "bytes": 9843,
+      "sha256": "7ad2f80662080893cbaed2ef30ca78c35370ce1857917a349b5c2639deeab8cb"
+    }
+  ]
+}
