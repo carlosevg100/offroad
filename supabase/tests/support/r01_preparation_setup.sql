@@ -47,11 +47,6 @@ insert into public.processing_jobs (
   now() + interval '10 minutes', extensions.digest(repeat('u',64), 'sha256')
 );
 
-select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000731',true);
-
--- Explicit synthetic worker lease identity; the capability is not transferable between accounts.
-update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000732' where organization_id='20000000-0000-4000-8000-000000000731' and status='leased';
-
 \set r01_fixture `cat packages/testing-fixtures/assets/receivables-preparation/synthetic-complete.json`
 create temporary table r01_loader_fixture(input jsonb);
 insert into r01_loader_fixture values(:'r01_fixture'::jsonb->'input');
@@ -83,3 +78,10 @@ do $$declare x jsonb; e jsonb; c jsonb; p jsonb; patch uuid;begin
   (p#>>'{resultingDraft,revision}')::integer,encode(extensions.digest(convert_to((p->'resultingDraft')::text,'UTF8'),'sha256'),'hex'),patch,p->'resultingDraft');
  end loop;
 end $$;
+
+-- Approve the complete synthetic scope once, then bind the operational account.
+select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000731',true);
+
+-- Explicit synthetic worker lease identity; the capability is not transferable between accounts.
+update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000732' where organization_id='20000000-0000-4000-8000-000000000731' and status='leased';
+

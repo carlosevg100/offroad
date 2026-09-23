@@ -3,7 +3,6 @@ begin;
 \ir support/r01_preparation_setup.sql
 \ir support/r01_execution_profile.sql
 update private.worker_tokens set execution_account_user_id='10000000-0000-4000-8000-000000000732' where id='a3300000-0000-4000-8000-000000000001';
-select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000731',true);
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000732","role":"authenticated","aal":"aal1"}',true);
 create temporary table r01_receipt_fixture as select gen_random_uuid() id,pg_temp.insert_r01_profile(payload) profile_id from r01_profile_test;
 create function pg_temp.receipt_state() returns jsonb language sql as $$
