@@ -1966,6 +1966,7 @@ export function buildReceivablesVertical(
     if (!capability) throw new Error("receivables_specialist_capability_not_registered");
     try {
       specialistRelease = releaseReceivablesSpecialistAnalysis({
+        shadow: specialistShadow,
         taskId: "R01",
         executorKey: capability.executorKey,
         executorVersion: capability.executorVersion,
