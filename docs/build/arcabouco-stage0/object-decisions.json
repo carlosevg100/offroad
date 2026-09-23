@@ -151957,6 +151957,12 @@
           "line": 156,
           "anchor": "create function private.r01_preparation_authority_v1(p_org uuid,p_work uuid,p_session uuid,p_subject uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 157,
+          "anchor": " old:=pg_get_functiondef('private.r01_preparation_authority_v1(uuid,uuid,uuid,uuid)'::regprocedure);",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Sem grants ou consumidor; recibo e replay são requisitos anteriores à ativação."
@@ -152067,6 +152073,12 @@
           "line": 7,
           "anchor": "create function private.r01_scope_dataset_hash_v1(s jsonb) returns text",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 154,
+          "anchor": "alter function private.r01_scope_dataset_hash_v1(jsonb) stable;",
+          "mechanism": "generated_ddl"
         }
       ],
       "consumer_status": "Sem grants ou consumidor; recibo e replay são requisitos anteriores à ativação."
@@ -152125,6 +152137,540 @@
         }
       ],
       "consumer_status": "Sem grants ou consumidor; recibo e replay são requisitos anteriores à ativação."
+    },
+    {
+      "id": "function:private.load_r01_preparation_for_receipt_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.load_r01_preparation_for_receipt_v1(p_job uuid, p_capability text)",
+          "kind": "function",
+          "name": "load_r01_preparation_for_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.load_r01_preparation_for_receipt_v1(p_job uuid, p_capability text)",
+          "kind": "function",
+          "name": "load_r01_preparation_for_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 145,
+          "anchor": "create function private.load_r01_preparation_for_receipt_v1(p_job uuid,p_capability text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "function:private.record_r01_preparation_receipt_v1(p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_r01_preparation_receipt_v1(p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text)",
+          "kind": "function",
+          "name": "record_r01_preparation_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_r01_preparation_receipt_v1(p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text)",
+          "kind": "function",
+          "name": "record_r01_preparation_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 62,
+          "anchor": "create function private.record_r01_preparation_receipt_v1(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_delete",
+          "kind": "policy",
+          "name": "r01_preparation_receipts_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_delete",
+          "kind": "policy",
+          "name": "r01_preparation_receipts_delete",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 45,
+          "anchor": "create policy r01_preparation_receipts_delete on private.r01_preparation_receipts for delete to public using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_insert",
+          "kind": "policy",
+          "name": "r01_preparation_receipts_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_insert",
+          "kind": "policy",
+          "name": "r01_preparation_receipts_insert",
+          "qual": null,
+          "roles": [
+            "public"
+          ],
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 43,
+          "anchor": "create policy r01_preparation_receipts_insert on private.r01_preparation_receipts for insert to public with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_select",
+          "kind": "policy",
+          "name": "r01_preparation_receipts_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_select",
+          "kind": "policy",
+          "name": "r01_preparation_receipts_select",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 42,
+          "anchor": "create policy r01_preparation_receipts_select on private.r01_preparation_receipts for select to public using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_update",
+          "kind": "policy",
+          "name": "r01_preparation_receipts_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_update",
+          "kind": "policy",
+          "name": "r01_preparation_receipts_update",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 44,
+          "anchor": "create policy r01_preparation_receipts_update on private.r01_preparation_receipts for update to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "r:private.r01_preparation_receipts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.r01_preparation_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "r01_preparation_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.r01_preparation_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "r01_preparation_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 5,
+          "anchor": "create table private.r01_preparation_receipts (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_audit",
+          "kind": "trigger",
+          "name": "r01_preparation_receipts_audit",
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER r01_preparation_receipts_audit AFTER INSERT ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_audit",
+          "kind": "trigger",
+          "name": "r01_preparation_receipts_audit",
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER r01_preparation_receipts_audit AFTER INSERT ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 57,
+          "anchor": "create trigger r01_preparation_receipts_audit after insert on private.r01_preparation_receipts",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_immutable",
+          "kind": "trigger",
+          "name": "r01_preparation_receipts_immutable",
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER r01_preparation_receipts_immutable BEFORE DELETE OR UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_immutable",
+          "kind": "trigger",
+          "name": "r01_preparation_receipts_immutable",
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER r01_preparation_receipts_immutable BEFORE DELETE OR UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 59,
+          "anchor": "create trigger r01_preparation_receipts_immutable before update or delete on private.r01_preparation_receipts",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_updated",
+          "kind": "trigger",
+          "name": "r01_preparation_receipts_updated",
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER r01_preparation_receipts_updated BEFORE UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_updated",
+          "kind": "trigger",
+          "name": "r01_preparation_receipts_updated",
+          "table": "r01_preparation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER r01_preparation_receipts_updated BEFORE UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Afirmação privada e imutável de preparo sob autoridade corrente, sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+          "line": 55,
+          "anchor": "create trigger r01_preparation_receipts_updated before update on private.r01_preparation_receipts",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
     }
   ],
   "repository_items": [
@@ -158693,6 +159239,13 @@
       "decision": "preservar",
       "stage": "17 / preparo R01 3H",
       "reason": "Vincula fontes, sessão, respostas e adoções ao sujeito explícito, sem habilitar execução."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923145742_r01_preparation_receipts.sql",
+      "decision": "preservar",
+      "stage": "17 / recibo R01 3I",
+      "reason": "Recibo privado imutável, identidade derivada e correções de lint do loader, sem ativar execução."
     }
   ],
   "staging_archive": [

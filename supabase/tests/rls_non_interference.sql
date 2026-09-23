@@ -5659,6 +5659,14 @@ do $$ declare table_name text; begin
  if has_function_privilege('authenticated','public.record_document_verification(uuid,uuid,text,text)','EXECUTE')
  or has_function_privilege('authenticated','private.record_document_verification(uuid,uuid,text,text)','EXECUTE') then raise exception 'legacy verification entry remains open'; end if;
 end $$;
+-- Stage 17: a preparation assertion is never a public execution grant.
+do $$declare role_name text;begin
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+ if has_table_privilege(role_name,'private.r01_preparation_receipts','SELECT,INSERT,UPDATE,DELETE')
+ or has_function_privilege(role_name,'private.record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text)','EXECUTE')
+ or has_function_privilege(role_name,'private.load_r01_preparation_for_receipt_v1(uuid,text)','EXECUTE') then raise exception 'R01 preparation assertion exposed';end if;
+ end loop;
+end $$;
 rollback;
 
 do $$

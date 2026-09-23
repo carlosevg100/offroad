@@ -53145,7 +53145,179 @@
       ],
       "signature": "p_job_id uuid, p_capability_token text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.load_r01_preparation_for_receipt_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "name": "load_r01_preparation_for_receipt_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.record_r01_preparation_receipt_v1(p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text)",
+      "kind": "function",
+      "name": "record_r01_preparation_receipt_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text",
+      "security_definer": true
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_delete",
+      "kind": "policy",
+      "name": "r01_preparation_receipts_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_insert",
+      "kind": "policy",
+      "name": "r01_preparation_receipts_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_select",
+      "kind": "policy",
+      "name": "r01_preparation_receipts_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_update",
+      "kind": "policy",
+      "name": "r01_preparation_receipts_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.r01_preparation_receipts",
+      "rls": true,
+      "kind": "table",
+      "name": "r01_preparation_receipts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_audit",
+      "kind": "trigger",
+      "name": "r01_preparation_receipts_audit",
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER r01_preparation_receipts_audit AFTER INSERT ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_immutable",
+      "kind": "trigger",
+      "name": "r01_preparation_receipts_immutable",
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER r01_preparation_receipts_immutable BEFORE DELETE OR UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_updated",
+      "kind": "trigger",
+      "name": "r01_preparation_receipts_updated",
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER r01_preparation_receipts_updated BEFORE UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     }
   ],
-  "captured_at": "2026-09-22T19:40:37.094473+00:00"
+  "captured_at": "2026-09-23T15:03:23.385525+00:00"
 }
