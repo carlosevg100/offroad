@@ -3,7 +3,7 @@ import {readFileSync} from "node:fs";
 import {join} from "node:path";
 import {z} from "zod";
 
-export const capitalPlanningPolicyPath = "packages/credit-playbook/knowledge/legacy/capital-planning-compatibility-2026-09-20.md";
+export const capitalPlanningPolicyPath = "packages/credit-playbook/knowledge/adapters/capital-planning-residual-2026-09-24.md";
 const policySchema = z.strictObject({schemaVersion: z.literal("capital-planning-compatibility.v1"),
   version: z.string().regex(/^\d{4}\.\d{2}\.\d{2}-v\d+$/), scope: z.literal("existing_public_directional_adapter"),
   activatesCapitalDecisionProcedure: z.literal(false), system: z.string().min(100).max(16000),
@@ -19,5 +19,5 @@ export function compileCapitalPlanningPolicy(markdown: string) {
 }
 export function renderCapitalPlanningPolicy(root: string) {
   const policy = compileCapitalPlanningPolicy(readFileSync(join(root, capitalPlanningPolicyPath), "utf8"));
-  return `// Generated from the frozen legacy adapter. New professional authorship does not alter this policy.\n// This preserves the existing adapter; it does not publish or activate the candidate method.\nexport const capitalPlanningCompatibilityPolicy = ${JSON.stringify(policy, null, 2)} as const;\n`;
+  return `// Generated from the residual-batch adapter. New professional authorship does not alter this policy.\n// This replaces the frozen legacy adapter as the operational policy; it does not publish or activate the candidate method.\nexport const capitalPlanningCompatibilityPolicy = ${JSON.stringify(policy, null, 2)} as const;\n`;
 }

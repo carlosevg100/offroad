@@ -383,6 +383,26 @@ describe("agent-plan persistence", () => {
     });
   });
 
+  it("accepts a residual batch of seven requests from the assessment and the projection commands", async () => {
+    const rpc = vi.fn(async (name: string) => name === "worker_record_agent_assessment_v1"
+      ? {data: {agent_plan_id: "80000000-0000-4000-8000-000000000001", coverage_count: 7, request_count: 7, decision_count: 1}, error: null}
+      : {data: {open_count: 7, preserved_closed_count: 0, superseded_count: 2}, error: null});
+    const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+    const assessment = {
+      schemaVersion: "dcm-agent-assessment.v1" as const,
+      projectId: "50000000-0000-4000-8000-000000000001",
+      assessmentRef: `processing_run:${job.processing_run_id}`,
+      coverage: [], requests: [], decisions: [],
+    };
+
+    await expect(queue.recordAgentAssessment!(job, assessment)).resolves.toMatchObject({requestCount: 7, coverageCount: 7});
+    await expect(queue.syncProjectInformationRequests!({...job, kind: "capital_project_analysis"} as never, {
+      schemaVersion: "project-information-request-projection.v1",
+      projectId: "50000000-0000-4000-8000-000000000001",
+      sourceNamespace: "integration_preview", projectionRef: "artifact:A01:seven", requests: [],
+    })).resolves.toEqual({openCount: 7, preservedClosedCount: 0, supersededCount: 2});
+  });
+
   it("projects workflow questions without requiring an agent-plan row", async () => {
     const projectionJob: CapitalProjectAnalysisJob = {
       ...job,

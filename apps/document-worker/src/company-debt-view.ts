@@ -95,8 +95,9 @@ Rules:
   covenant headroom, capacity, maturity or price.
 - capacityAssessment.status can only be not_computable or directional_only. Directional_only is
   allowed only when public evidence provides a useful direction but still cannot support a number.
-- Ask for the smallest next batch of information: one to five requests, each with why it matters,
-  what decision it changes and acceptable forms of evidence.
+- Ask only for the residual information, in one batch: every request the decision still needs and
+  nothing already supported, each with why it matters, what decision it changes and acceptable
+  forms of evidence. There is no numeric cap; do not pad the batch and do not cut it.
 - Diagnostic hypotheses describe what should be tested next. They are not financing structures.
 - If a source does not support a claim, omit the claim and put the issue in unknowns or questions.
 - Do not say approved, financeable, guaranteed, market-ready or imply that a lender will accept it.
@@ -400,7 +401,7 @@ export async function processCompanyDebtViewJob(
     ]);
     await persistTask({taskId: "M05", artifactType: "diagnostic_definition", build: async () => ({content: {
       sections: ["executive_read", "company_snapshot", "evidence_coverage", "business_risk_profile", "financial_signals", "debt_liquidity", "working_capital", "risks", "capacity", "hypotheses", "information_requests", "questions", "unknowns"],
-      acceptance: ["Every company-specific claim cites a persisted public source.", "Capacity remains uncalculated without reconciled inputs.", "The next information batch contains no more than five material requests."],
+      acceptance: ["Every company-specific claim cites a persisted public source.", "Capacity remains uncalculated without reconciled inputs.", "The next information batch is the whole residual, each request with its reason and the decision it changes."],
     }})});
     await persistTask({taskId: "M06", artifactType: "company_debt_execution_plan", build: async () => ({content: {
       planId: context.plan.id, planFingerprint: context.plan.fingerprint,
@@ -594,7 +595,7 @@ function validateDiagnostic(output: Diagnostic, allowedUrls: Set<string>, source
     {id: "citation_allowlist", passed: citedUrls.every((url) => allowedUrls.has(url)), detail: "Every citation resolves to persisted public research."},
     {id: "business_evidence", passed: !requiresCitation || output.businessRiskProfile.sourceUrls.length > 0, detail: "The business reconstruction cites public evidence when evidence exists."},
     {id: "capacity_boundary", passed: ["not_computable", "directional_only"].includes(output.capacityAssessment.status), detail: "Public-only work cannot claim calculated capacity."},
-    {id: "next_batch", passed: output.informationRequests.length >= 1 && output.informationRequests.length <= 5, detail: "The next request batch stays material and short."},
+    {id: "next_batch", passed: output.informationRequests.length >= 0 && output.informationRequests.length <= 24, detail: "residual batch complete"},
     {id: "unsupported_material_numbers", passed: unsupportedNumbers.length === 0, detail: unsupportedNumbers.length ? `Unsupported tokens: ${unsupportedNumbers.join(", ")}` : "No unsupported material numeric token detected."},
     {id: "scope_boundary", passed: !prohibited, detail: "No approval, supported-capacity or lender-commitment claim detected."},
   ];

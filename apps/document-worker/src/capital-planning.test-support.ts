@@ -1,3 +1,4 @@
+import type {DcmAgentAssessment} from "@offroad/agent-contracts";
 import type {ModelGateway} from "@offroad/model-gateway";
 import {expect} from "vitest";
 
@@ -51,9 +52,21 @@ export const job: CapitalProjectAnalysisJob = {
 };
 
 
-export async function runCapitalPlanningFixture(profile: string | null, failFinalArtifact = false) {
+export type CapitalPlanningFixtureBase = "supported" | "insufficient";
+
+/** Seven residual requests, each with its reason and the decision it changes: the batch the
+ * insufficient-base variant asks instead of forcing a comparison. */
+export const residualInformationRequests = Array.from({length: 7}, (_, index) => ({
+  request: `Item residual ${index + 1}: demonstrações, dívida, usos, projeções, garantias, covenants ou perímetro.`,
+  whyItMatters: `Sem o item ${index + 1} a capacidade e a estrutura não podem ser lidas com segurança.`,
+  decisionImpact: `O item ${index + 1} define se há espaço para dívida e quais famílias permanecem comparáveis.`,
+  acceptableEvidence: ["Documento da companhia", "resposta fundamentada"],
+}));
+
+export async function runCapitalPlanningFixture(profile: string | null, failFinalArtifact = false, base: CapitalPlanningFixtureBase = "supported") {
  const requests: unknown[] = [];
     const artifacts: Array<{taskId: string; type: string; status: string; content: unknown}> = [];
+    const assessments: DcmAgentAssessment[] = [];
     let completed: Record<string, unknown> | undefined;
     const stages: Array<{stage: string; status: string; detail: unknown}> = [];
     let failed = false;
@@ -107,6 +120,10 @@ export async function runCapitalPlanningFixture(profile: string | null, failFina
         };
       },
       finishCapitalTask: async () => "ok",
+      recordAgentAssessment: async (_job: unknown, assessment: DcmAgentAssessment) => {
+        assessments.push(assessment);
+        return {agentPlanId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", coverageCount: assessment.coverage.length, requestCount: assessment.requests.length, decisionCount: assessment.decisions.length};
+      },
       complete: async (_job: unknown, result: unknown) => { completed = result as Record<string, unknown>; },
       fail: async () => { failed = true; },
     } as unknown as QueueClient;
@@ -126,6 +143,37 @@ export async function runCapitalPlanningFixture(profile: string | null, failFina
         expect(modelInput.collaborativeAdvisoryPolicy).toMatchObject({
           alternativeUniverse: "company_first_and_unconstrained",
           reasoningBasis: "objective_evidence_and_method",
+        });
+        if (base === "insufficient") return ({
+          output: {
+            executiveRead: "A necessidade declarada combina crescimento e alongamento, mas a base disponível não sustenta comparar famílias. O trabalho registra o que precisa ser recebido antes de qualquer alternativa.",
+            understoodNeed: {
+              objective: "Financiar crescimento e, se economicamente coerente, alongar o perfil de passivos.",
+              constraints: [],
+              assumptionsToConfirm: ["O volume, o cronograma de usos e o perfil atual da dívida ainda precisam ser confirmados."],
+            },
+            evidenceCoverage: {
+              status: "insufficient",
+              supported: [],
+              notYetSupported: ["Não há demonstrações, dívida instrumento a instrumento, usos, projeções ou perímetro que sustentem uma comparação."],
+            },
+            alternatives: [],
+            comparison: [],
+            directionalRecommendation: {
+              status: "not_ready", alternativeId: null,
+              rationale: "A base não sustenta comparar alternativas; o lote residual abaixo precisa ser recebido antes.",
+              conditionsBeforeConfirmation: ["Receber o lote residual completo e reconciliar a base."],
+            },
+            informationRequests: residualInformationRequests,
+            questions: [
+              {question: "Qual é o cronograma do uso dos recursos?", whyItMatters: "A urgência muda a rota executável.", answerChanges: "Pode afastar processos longos ou favorecer uma ponte."},
+              {question: "Existe intenção de alongar dívida atual junto com o crescimento?", whyItMatters: "Usos mistos mudam sources and uses.", answerChanges: "Pode exigir tranches ou uma solução combinada."},
+            ],
+            unknowns: ["Volume, prazo, amortização, garantias e capacidade não foram comprovados."],
+          },
+          provider: "anthropic",
+          model: "claude-sonnet-5",
+          usage: {inputTokens: 200, outputTokens: 400, cachedInputTokens: 0},
         });
         return ({
         output: {
@@ -205,5 +253,5 @@ export async function runCapitalPlanningFixture(profile: string | null, failFina
       }],
       now: () => new Date("2026-09-02T12:00:00.000Z"),
     });
- return {outcome, artifacts, completed, failed, stages, requests, taskIds};
+ return {outcome, artifacts, assessments, completed, failed, stages, requests, taskIds};
 }

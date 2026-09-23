@@ -1040,7 +1040,7 @@ export function createQueueClient(
       const parsed = z.object({
         agent_plan_id: z.uuid(),
         coverage_count: z.number().int().nonnegative(),
-        request_count: z.number().int().min(0).max(3),
+        request_count: z.number().int().nonnegative(),
         decision_count: z.number().int().nonnegative(),
       }).parse(data);
       return {
@@ -1058,7 +1058,7 @@ export function createQueueClient(
         p_projection: projection,
       });
       const parsed = z.object({
-        open_count: z.number().int().min(0).max(3),
+        open_count: z.number().int().nonnegative(),
         preserved_closed_count: z.number().int().nonnegative(),
         superseded_count: z.number().int().nonnegative(),
       }).parse(data);

@@ -470,8 +470,7 @@ async function ConversationalCapitalProject({
           .eq("status", "open")
           .neq("priority", "later")
           .order("information_gain", {ascending: false})
-          .order("created_at")
-          .limit(3),
+          .order("created_at"),
         supabase.from("capital_project_requirement_coverage")
           .select("id, requirement_key, label, status, materiality, missing_reason")
           .eq("organization_id", organization.id)

@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {
+  capitalPlanningMapSchema,
   companyDebtDiagnosticSchema,
   dealWorkflowAllows,
   deriveDealWorkflowState,
@@ -126,6 +127,52 @@ describe("domain contracts", () => {
     };
     expect(companyDebtDiagnosticSchema.safeParse(base).success).toBe(true);
     expect(companyDebtDiagnosticSchema.safeParse({...base, capacityAssessment: {...base.capacityAssessment, status: "supported"}}).success).toBe(false);
+  });
+
+  it("carries the whole residual request batch and refuses a forced comparison on an insufficient base", () => {
+    const request = (index: number) => ({
+      request: `Residual request ${index} ${"x".repeat(8)}`,
+      whyItMatters: `Why it matters ${index} ${"x".repeat(15)}`,
+      decisionImpact: `Decision it changes ${index} ${"x".repeat(15)}`,
+      acceptableEvidence: ["Spreadsheet"],
+    });
+    const alternative = (id: string, family: "capital_markets" | "private_credit") => ({
+      id, family, title: `Alternative ${id}`, status: "conditional",
+      fitRationale: "x".repeat(40), advantages: ["x".repeat(10)], tradeoffs: ["x".repeat(10)],
+      prerequisites: ["x".repeat(10)], disconfirmers: ["x".repeat(10)], sourceUrls: [], evidenceClass: "user_declared_only",
+    });
+    const supported = {
+      executiveRead: "x".repeat(80),
+      understoodNeed: {objective: "x".repeat(30), constraints: [], assumptionsToConfirm: ["x".repeat(10)]},
+      evidenceCoverage: {status: "public_only", supported: ["x".repeat(10)], notYetSupported: ["x".repeat(10)]},
+      alternatives: [alternative("alt_capital_markets", "capital_markets"), alternative("alt_private_credit", "private_credit")],
+      comparison: [{dimension: "Speed", observations: [
+        {alternativeId: "alt_capital_markets", assessment: "x".repeat(10)},
+        {alternativeId: "alt_private_credit", assessment: "x".repeat(10)},
+      ]}],
+      directionalRecommendation: {status: "not_ready", alternativeId: null, rationale: "x".repeat(40), conditionsBeforeConfirmation: ["x".repeat(10)]},
+      informationRequests: Array.from({length: 7}, (_, index) => request(index + 1)),
+      questions: Array.from({length: 2}, (_, index) => ({question: `Question ${index} ${"x".repeat(10)}`, whyItMatters: "x".repeat(20), answerChanges: "x".repeat(20)})),
+      unknowns: ["x".repeat(10)],
+    };
+    expect(capitalPlanningMapSchema.safeParse(supported).success).toBe(true);
+    expect(capitalPlanningMapSchema.safeParse(supported).data?.informationRequests).toHaveLength(7);
+
+    const insufficient = {
+      ...supported,
+      evidenceCoverage: {status: "insufficient", supported: [], notYetSupported: ["x".repeat(10)]},
+      alternatives: [], comparison: [],
+    };
+    expect(capitalPlanningMapSchema.safeParse(insufficient).success).toBe(true);
+    expect(capitalPlanningMapSchema.safeParse({...insufficient, informationRequests: []}).success).toBe(false);
+    expect(capitalPlanningMapSchema.safeParse({...insufficient, alternatives: supported.alternatives}).success).toBe(false);
+    expect(capitalPlanningMapSchema.safeParse({
+      ...insufficient, directionalRecommendation: {...insufficient.directionalRecommendation, status: "directional", alternativeId: "alt_capital_markets"},
+    }).success).toBe(false);
+
+    expect(capitalPlanningMapSchema.safeParse({...supported, alternatives: supported.alternatives.slice(0, 1), comparison: []}).success).toBe(false);
+    expect(capitalPlanningMapSchema.safeParse({...supported, comparison: []}).success).toBe(false);
+    expect(capitalPlanningMapSchema.safeParse({...supported, informationRequests: []}).success).toBe(true);
   });
 
   it("keeps an unconfirmed case in diagnosis and blocks paid downstream work", () => {

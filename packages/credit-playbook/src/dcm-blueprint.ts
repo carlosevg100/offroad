@@ -96,7 +96,7 @@ export const offroadDcmBlueprint: readonly DcmStage[] = [
     ],
     deskWork: [bi("Revisa exceções de alta materialidade e ajusta o plano ao caso real.", "Reviews high-materiality exceptions and adapts the plan to the actual case.")],
     outputs: [bi("Lote atual de solicitações e mapa futuro resumido", "Current request batch and summarized future roadmap")],
-    exitCriteria: [bi("Nenhuma solicitação duplicada e no máximo cinco itens ativos", "No duplicate request and no more than five active items")],
+    exitCriteria: [bi("Nenhuma solicitação duplicada; lote residual completo, cada item com motivo", "No duplicate request; complete residual batch, each item with its reason")],
     prohibitedClaims: [...neverCreditApproval, "all listed information is mandatory at intake"],
     investorReservedActivities: investorReserved,
   },

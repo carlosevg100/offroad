@@ -264,12 +264,14 @@ export const companyDebtDiagnosticSchema = z.object({
     disconfirmers: z.array(z.string().min(8).max(600)).min(1).max(8),
     sourceUrls: z.array(z.url()).min(1).max(4),
   })).max(6),
+  // The residual batch is asked whole, each request with its reason; twenty-four is a technical
+  // bound on one artifact, not a product cap, and an empty batch is a legitimate outcome.
   informationRequests: z.array(z.object({
     request: z.string().min(8).max(500),
     whyItMatters: z.string().min(15).max(700),
     decisionImpact: z.string().min(15).max(700),
     acceptableEvidence: z.array(z.string().min(3).max(300)).min(1).max(5),
-  })).min(1).max(5),
+  })).max(24),
   questions: z.array(z.object({
     question: z.string().min(10).max(500),
     whyItMatters: z.string().min(10).max(700),
@@ -337,26 +339,30 @@ export const capitalPlanningMapSchema = z.object({
     supported: z.array(z.string().min(8).max(500)).max(12),
     notYetSupported: z.array(z.string().min(8).max(500)).min(1).max(14),
   }),
-  alternatives: z.array(capitalPlanningAlternativeSchema).min(2).max(8),
+  // Alternatives and comparison are required only when the base supports them; the sufficiency
+  // rule in the refinement below decides, so an insufficient base never forces a comparison.
+  alternatives: z.array(capitalPlanningAlternativeSchema).max(8),
   comparison: z.array(z.object({
     dimension: z.string().min(3).max(120),
     observations: z.array(z.object({
       alternativeId: z.string().regex(/^alt_[a-z0-9_]{2,60}$/),
       assessment: z.string().min(8).max(600),
-    })).min(2).max(8),
-  })).min(3).max(10),
+    })).min(1).max(8),
+  })).max(10),
   directionalRecommendation: z.object({
     status: z.enum(["not_ready", "directional"]),
     alternativeId: z.string().regex(/^alt_[a-z0-9_]{2,60}$/).nullable(),
     rationale: z.string().min(30).max(1_200),
     conditionsBeforeConfirmation: z.array(z.string().min(8).max(600)).min(1).max(12),
   }),
+  // The residual batch is asked whole, each request with its reason; twenty-four is a technical
+  // bound on one artifact, not a product cap.
   informationRequests: z.array(z.object({
     request: z.string().min(8).max(500),
     whyItMatters: z.string().min(15).max(700),
     decisionImpact: z.string().min(15).max(700),
     acceptableEvidence: z.array(z.string().min(3).max(300)).min(1).max(5),
-  })).min(1).max(5),
+  })).max(24),
   questions: z.array(z.object({
     question: z.string().min(10).max(500),
     whyItMatters: z.string().min(10).max(700),
@@ -365,6 +371,30 @@ export const capitalPlanningMapSchema = z.object({
   unknowns: z.array(z.string().min(8).max(600)).min(1).max(14),
 }).superRefine((value, context) => {
   const alternativeIds = new Set(value.alternatives.map((alternative) => alternative.id));
+  // Sufficiency rule: a base that supports the work compares at least two genuinely different
+  // alternatives; a base that does not is declared insufficient, forces no comparison, selects
+  // nothing and asks for the residual instead.
+  if (value.evidenceCoverage.status !== "insufficient") {
+    if (value.alternatives.length < 2) {
+      context.addIssue({code: "custom", path: ["alternatives"], message: "a supported base compares at least two alternatives"});
+    }
+    if (value.comparison.length < 1) {
+      context.addIssue({code: "custom", path: ["comparison"], message: "a supported base carries at least one comparison dimension"});
+    }
+  } else {
+    if (value.directionalRecommendation.status !== "not_ready") {
+      context.addIssue({code: "custom", path: ["directionalRecommendation", "status"], message: "an insufficient base cannot recommend a direction"});
+    }
+    if (value.alternatives.length !== 0) {
+      context.addIssue({code: "custom", path: ["alternatives"], message: "an insufficient base does not force alternatives"});
+    }
+    if (value.comparison.length !== 0) {
+      context.addIssue({code: "custom", path: ["comparison"], message: "an insufficient base does not force a comparison"});
+    }
+    if (value.informationRequests.length < 1) {
+      context.addIssue({code: "custom", path: ["informationRequests"], message: "an insufficient base asks for the residual information"});
+    }
+  }
   if (value.directionalRecommendation.status === "not_ready" && value.directionalRecommendation.alternativeId !== null) {
     context.addIssue({code: "custom", path: ["directionalRecommendation", "alternativeId"], message: "not_ready cannot select an alternative"});
   }
