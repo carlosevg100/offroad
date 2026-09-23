@@ -2,7 +2,7 @@
 
 O settle passa a conservar os bytes exatos do resultado; uma lease posterior da mesma execução publica esses bytes sem recomputar, e o commit recusa hash de outra lease ou bytes diferentes. Recibo de resultado registra a lease da liquidação e a da publicação; transporte do worker com timeout proporcional ao payload. [Escopo e provas](arcabouco/etapa-17-3n-resultado-liquidado-recuperavel.md).
 
-3N: staging `20260923193010`, produção `20260923193243`; advisors de segurança zero nos dois ambientes; tipos regenerados; prova SQL executada em staging com rollback; 26 testes do worker PASS. Revisão independente, CI final e deploy exato ficam registrados no completion.
+3N: migrações `execution_settled_result_bytes` (staging `20260923193010`, produção `20260923193243`) e `execution_settled_outcome` (staging `20260923195039`, produção `20260923195408`); advisors de segurança zero nos dois ambientes; tipos regenerados; journals de produção e staging conciliados; prova SQL executada em staging com rollback nas três trilhas (sucesso, marcador parcial, hash v1); 28 testes do worker PASS. A revisão independente da primeira parte reprovou por desfecho invertível e journal ausente; a segunda parte corrige os dois. CI final e deploy exato ficam registrados no completion.
 
 ## Etapa 17 / 3L: integridade persistida R01
 

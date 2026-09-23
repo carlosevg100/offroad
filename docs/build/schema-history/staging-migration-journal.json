@@ -1547,8 +1547,16 @@
     {
       "version": "20260923171506",
       "name": "r01_persisted_source_integrity"
+    },
+    {
+      "version": "20260923193010",
+      "name": "execution_settled_result_bytes"
+    },
+    {
+      "version": "20260923195039",
+      "name": "execution_settled_outcome"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-23T17:20:09.19792+00:00"
+  "captured_at": "2026-09-23T19:55:31.523061+00:00"
 }

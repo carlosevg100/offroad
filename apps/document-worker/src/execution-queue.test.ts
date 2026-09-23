@@ -25,11 +25,11 @@ describe("execution queue transport",()=>{
     expect(t.rpc).toHaveBeenCalledWith("worker_reserve_execution_v1",{p_job:claim.jobId,p_lease:claim.leaseId,p_capability:claim.capability});
   });
   it("sends the exact result bytes when settling",async()=>{
-    const t=transport({settled:true,replayed:false});await t.queue.settle(claim,'{"calculation":"synthetic"}');
-    expect(t.rpc).toHaveBeenCalledWith("worker_settle_execution_v2",{p_job:claim.jobId,p_lease:claim.leaseId,p_capability:claim.capability,p_result_text:'{"calculation":"synthetic"}'});
+    const t=transport({settled:true,replayed:false});await t.queue.settle(claim,'{"calculation":"synthetic"}',"succeeded","calculated");
+    expect(t.rpc).toHaveBeenCalledWith("worker_settle_execution_v2",{p_job:claim.jobId,p_lease:claim.leaseId,p_capability:claim.capability,p_result_text:'{"calculation":"synthetic"}',p_outcome:"succeeded",p_reason:"calculated"});
   });
   it("reads the settled bytes of the current lease and rejects extended receipts",async()=>{
-    const settled={available:true,resultText:"{}",resultHash:"b".repeat(64),settledByLease:claim.leaseId};
+    const settled={available:true,resultText:"{}",resultHash:"b".repeat(64),outcome:"succeeded",reason:"calculated",settledByLease:claim.leaseId};
     const t=transport(settled);expect(await t.queue.settledResult(claim)).toEqual(settled);
     expect(t.rpc).toHaveBeenCalledWith("worker_settled_execution_result_v1",{p_job:claim.jobId,p_lease:claim.leaseId,p_capability:claim.capability});
     expect(await transport({available:false}).queue.settledResult(claim)).toEqual({available:false});

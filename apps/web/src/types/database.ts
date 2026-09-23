@@ -12968,6 +12968,8 @@ export type Database = {
           p_capability: string
           p_job: string
           p_lease: string
+          p_outcome: string
+          p_reason: string
           p_result_text: string
         }
         Returns: Json
