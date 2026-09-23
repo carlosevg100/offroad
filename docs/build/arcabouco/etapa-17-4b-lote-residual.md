@@ -14,7 +14,7 @@ Antes deste incremento o mesmo pedido era cortado em seis lugares distintos e po
 
 **Fila.** Os parsers de `request_count` e `open_count` em `queue.ts` aceitam qualquer inteiro não negativo. `EXECUTOR_VERSION` do planejamento de capital passa a `2026.09.24-v2`; as tarefas M04, S02, S05 e S10 gravam `{status: "insufficient_base", reason, informationRequestCount}` quando não há alternativas, em vez de listas vazias que pareceriam um universo pesquisado.
 
-**RPC.** Migração `20260924000100_residual_information_request_batch.sql` restabelece por completo `private.worker_record_agent_assessment_v1` e `private.worker_sync_project_information_requests_v1`, mesmas assinaturas, mesmos grants, sem nome `_v2`. O corpo base é o texto liberado mais os remendos aplicados depois no lugar (reuso de decisão sem recomendação em `20260910164327`, guarda de namespace e preflight de conflito em `20260910171808`, kind `case_analysis` em `20260907044252`). Um bloco `do` no topo confere no `pg_get_functiondef` os marcadores desses remendos e recusa rodar sobre outra base. Dentro dos corpos: o corte em três vira teto técnico de 60; todo pedido precisa de `whyItMatters` e `decisionImpact` não vazios, senão `agent_information_request_reason_required` (`22023`); o evento `question_created` fala de um lote, não de "a pergunta".
+**RPC.** Migração `20260923224304_residual_information_request_batch.sql` restabelece por completo `private.worker_record_agent_assessment_v1` e `private.worker_sync_project_information_requests_v1`, mesmas assinaturas, mesmos grants, sem nome `_v2`. O corpo base é o texto liberado mais os remendos aplicados depois no lugar (reuso de decisão sem recomendação em `20260910164327`, guarda de namespace e preflight de conflito em `20260910171808`, kind `case_analysis` em `20260907044252`). Um bloco `do` no topo confere no `pg_get_functiondef` os marcadores desses remendos e recusa rodar sobre outra base. Dentro dos corpos: o corte em três vira teto técnico de 60; todo pedido precisa de `whyItMatters` e `decisionImpact` não vazios, senão `agent_information_request_reason_required` (`22023`); o evento `question_created` fala de um lote, não de "a pergunta".
 
 **Projeção.** O trilho de pedidos abertos da página do projeto deixa de limitar em três; mantém ordem por ganho de informação e a exclusão de `later`. A tela do mapa de planejamento ganha estado vazio para zero alternativas e zero comparação, com texto em pt-BR e en-US; o texto do bloco de pedidos deixa de prometer "uma fila curta".
 
@@ -53,7 +53,7 @@ O fecho de compilação registrado para `prepare-capital-structure-decision-2026
 
 ## Publicação
 
-A migração precisa ser aplicada pelo executor em staging e em produção (MCP), com o nome do arquivo alinhado à versão gravada, antes do merge; o guarda recusa qualquer base inesperada e nada é aplicado neste incremento pelo agente. Worker e web sobem juntos depois: o worker novo envia lotes acima de três, que o RPC antigo recusaria com `agent_assessment_invalid`; a web nova lê o trilho sem limite, o que já funciona com o banco antigo. TRUST-APP-01 e TRUST-SDLC-01 sem ampliação de dados, provedor, grant ou efeito externo.
+Estampas: staging `20260923213852`, produção `20260923224304`, aplicadas pelo executor via MCP antes do merge; o guarda de deriva aceitou a base real nos dois projetos. O worker e a web sobem juntos depois do merge (worker novo contra RPC antigo falha fechado com `agent_assessment_invalid`; RPC novo contra worker antigo aceita o lote menor).
 
 ## Pendências fora deste incremento
 
