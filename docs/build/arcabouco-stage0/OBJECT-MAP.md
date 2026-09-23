@@ -2610,3 +2610,13 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `trigger:private.processing_eligibility_decisions.processing_eligibility_decisions_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
 - `trigger:private.provider_processing_assurance_events.provider_processing_events_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
 - `trigger:private.provider_processing_assurances.provider_processing_assurance_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+
+## Etapa 17 / 3N: resultado liquidado recuperável
+
+6 objetos novos e 0 atualizados. Liquidação com bytes e desfecho; leitura dos bytes liquidados pela lease atual; publicação por lease posterior só de sucesso liquidado.
+- `function:private.execution_settled_result_v1(p_job uuid, p_capability text, p_lease uuid)`
+- `function:private.settle_execution_operation_v2(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_text text, p_outcome text, p_reason text, p_spent bigint, p_calls bigint)`
+- `function:private.worker_settle_execution_v2(p_job uuid, p_capability text, p_lease uuid, p_result_text text, p_outcome text, p_reason text)`
+- `function:private.worker_settled_execution_result_v1(p_job uuid, p_capability text, p_lease uuid)`
+- `function:public.worker_settle_execution_v2(p_job uuid, p_capability text, p_lease uuid, p_result_text text, p_outcome text, p_reason text)`
+- `function:public.worker_settled_execution_result_v1(p_job uuid, p_capability text, p_lease uuid)`

@@ -57,6 +57,14 @@ export async function processPinnedExecution(c:ExecutionQueueClaim,queue:Executi
     }
     if(result.ok){resultText=executionCanonicalText(JSON.parse(result.text));reason="calculated";outcome="succeeded";}
     else{reason=result.reason;resultText=partial(reason);}
+   }else if(receipt.state==="settled"){
+    // An earlier lease settled this operation with its exact bytes and outcome: publish them as settled, never recompute.
+    const settled=await queue.settledResult(c);
+    if(settled.available){
+     const text=executionCanonicalText(JSON.parse(settled.resultText));
+     if(text!==settled.resultText || digest(text)!==settled.resultHash)throw new Error("execution_settled_bytes_mismatch");
+     resultText=text;outcome=settled.outcome;reason=settled.reason;
+    }else{reason="operation_uncertain";resultText=partial(reason);}
    }else if(receipt.state!=="partial_budget_exhausted"){
     reason="operation_uncertain";resultText=partial(reason);
    }else exhausted=true;
@@ -65,7 +73,7 @@ export async function processPinnedExecution(c:ExecutionQueueClaim,queue:Executi
   if(denied || shutdown.aborted)return {status:"aborted"};
   await renew();
   if(exhausted){reason="budget_exhausted";outcome="partial";resultText=partial(reason);}
-  if(reserved)await queue.settle(c,digest(resultText));
+  if(reserved)await queue.settle(c,resultText,outcome,reason);
   await renew();
   if(exhausted){reason="budget_exhausted";outcome="partial";resultText=partial(reason);}
   if(shutdown.aborted)return {status:"aborted"};
