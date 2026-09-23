@@ -4,7 +4,9 @@ begin;
 \ir support/execution_method_fixture.sql
 insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous)
 values('a11b0000-0000-4000-8000-000000000003','authenticated','authenticated','a11b-c@example.invalid','{}','{}',now(),now(),false,false);
-insert into private.platform_principals(user_id,role,label) values('a11b0000-0000-4000-8000-000000000003','operator','Synthetic operator two');
+insert into private.platform_principals(user_id,role,label) values
+ ('a11b0000-0000-4000-8000-000000000001','founder','Synthetic founder'),
+ ('a11b0000-0000-4000-8000-000000000003','operator','Synthetic operator two');
 create function pg_temp.expect_producer_error(command text,expected text,test_name text) returns void language plpgsql as $$
 begin
  begin execute command;exception when others then
@@ -18,7 +20,8 @@ grant select,insert,update on producer_fixture to authenticated;
 set local role authenticated;
 select pg_temp.expect_producer_error($q$select public.execution_contract_basis_v1('a11b0000-0000-4000-9000-000000000002','a9990000-0000-4000-9000-000000000003','synthetic-execution')$q$,'execution_producer_denied','basis denied without a producer grant');
 reset role;
-select private.grant_execution_producer_v1('c4173000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000001',true,'Synthetic producer grant','a11b0000-0000-4000-8000-000000000003');
+-- The fixture organization has no founder member, so enabling its producer is the founder's act; the operator's pause path is proven in execution_producer_authority.sql.
+select private.grant_execution_producer_v1('c4173000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000001',true,'Synthetic producer grant by the founder','a11b0000-0000-4000-8000-000000000001');
 -- 2. The basis carries identity, authority, policy, the released profile and the pins; the profile never comes from the client.
 set local role authenticated;
 insert into producer_fixture(basis) select public.execution_contract_basis_v1('a11b0000-0000-4000-9000-000000000002','a9990000-0000-4000-9000-000000000003','synthetic-execution');
