@@ -28,7 +28,7 @@ begin
     or coalesce(jsonb_typeof(p_assessment -> 'requests'), 'null') <> 'array'
     or coalesce(jsonb_typeof(p_assessment -> 'decisions'), 'null') <> 'array'
     or jsonb_array_length(p_assessment -> 'coverage') > 200
-    or jsonb_array_length(p_assessment -> 'requests') > 3
+    or jsonb_array_length(p_assessment -> 'requests') > 60
     or jsonb_array_length(p_assessment -> 'decisions') > 30 then
     raise exception 'agent_assessment_invalid' using errcode = '22023';
   end if;
@@ -147,6 +147,12 @@ begin
   for request_item in
     select value from jsonb_array_elements(p_assessment -> 'requests') value
   loop
+    -- Every request in the batch carries its reason and the decision it changes.
+    if nullif(trim(request_item ->> 'whyItMatters'), '') is null
+      or nullif(trim(request_item ->> 'decisionImpact'), '') is null then
+      raise exception 'agent_information_request_reason_required' using errcode = '22023';
+    end if;
+
     if request_item ->> 'projectId' <> session_row.capital_project_id::text
       or request_item ->> 'schemaVersion' <> 'dcm-information-request.v1'
       or request_item ->> 'status' <> 'open'
@@ -338,8 +344,8 @@ begin
     ) values (
       job_row.organization_id, session_row.capital_project_id, active_plan.id,
       'question_created',
-      'Priorizei os pontos que mais alteram a próxima decisão.',
-      'I prioritized the points that most affect the next decision.',
+      'Reuni em um lote as informações que ainda faltam, cada uma com o motivo e a decisão que altera.',
+      'I gathered the missing information in one batch, each item with its reason and the decision it changes.',
       jsonb_build_object('assessment_ref', assessment_reference, 'request_count', request_count)
     );
   end if;

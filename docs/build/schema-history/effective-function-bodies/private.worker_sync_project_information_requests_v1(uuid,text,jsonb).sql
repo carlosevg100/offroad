@@ -21,7 +21,7 @@ begin
     or coalesce(jsonb_typeof(p_projection), 'null') <> 'object'
     or p_projection ->> 'schemaVersion' <> 'project-information-request-projection.v1'
     or coalesce(jsonb_typeof(p_projection -> 'requests'), 'null') <> 'array'
-    or jsonb_array_length(p_projection -> 'requests') > 3 then
+    or jsonb_array_length(p_projection -> 'requests') > 60 then
     raise exception 'information_request_projection_invalid' using errcode = '22023';
   end if;
 
@@ -78,6 +78,12 @@ begin
     from jsonb_array_elements(p_projection -> 'requests') value
     order by value ->> 'requirementKey'
   loop
+    -- Every request in the batch carries its reason and the decision it changes.
+    if nullif(trim(request_item ->> 'whyItMatters'), '') is null
+      or nullif(trim(request_item ->> 'decisionImpact'), '') is null then
+      raise exception 'agent_information_request_reason_required' using errcode = '22023';
+    end if;
+
     if request_item ->> 'projectId' <> session_row.capital_project_id::text
       or request_item ->> 'schemaVersion' <> 'dcm-information-request.v1'
       or request_item ->> 'status' <> 'open'
@@ -167,8 +173,8 @@ begin
     ) values (
       job_row.organization_id, session_row.capital_project_id, active_plan_id,
       'question_created',
-      'Separei a pergunta que mais pode alterar o próximo passo.',
-      'I surfaced the question most likely to change the next step.',
+      'Reuni em um lote as perguntas que ainda faltam, cada uma com o motivo e a decisão que altera.',
+      'I gathered the remaining questions in one batch, each with its reason and the decision it changes.',
       jsonb_build_object(
         'projection_ref', projection_reference,
         'source_namespace', projection_namespace,

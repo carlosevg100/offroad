@@ -55,7 +55,7 @@ O fecho de compilação registrado para `prepare-capital-structure-decision-2026
 
 Estampas: staging `20260923213852`, produção `20260923224304`, aplicadas pelo executor via MCP antes do merge; o guarda de deriva aceitou a base real nos dois projetos. O worker e a web sobem juntos depois do merge (worker novo contra RPC antigo falha fechado com `agent_assessment_invalid`; RPC novo contra worker antigo aceita o lote menor).
 
-Catálogo de produção recapturado em 2026-09-23T22:59:15Z, depois da estampa: 2215 objetos, nenhum novo e nenhum alterado, porque a migração só restabelece duas funções e o catálogo registra identidade, segurança e grants, que não mudaram. Journals de produção e de staging carregam a linha do 4B. O catálogo de staging fica para a PR do 4A, que revisa os objetos que staging já carrega. Branch rebaseado sobre main depois de #742 e #745; gate de inventário limpo em modo produção.
+Catálogo de produção recapturado em 2026-09-23T22:59:15Z, depois da estampa: 2215 objetos, nenhum novo e nenhum alterado, porque a migração só restabelece duas funções e o catálogo registra identidade, segurança e grants, que não mudaram. Journals de produção e de staging carregam a linha do 4B. O catálogo de staging fica para a PR do 4A, que revisa os objetos que staging já carrega. Branch rebaseado sobre main depois de #742, #745 e #743; gate de inventário limpo em modo produção. As duas funções restabelecidas estão no registro M6 de corpos efetivos (`docs/build/schema-history/effective-function-bodies`): os corpos foram recapturados de produção depois da estampa (19557 e 9838 bytes) e o verificador em modo offline confere as 72 funções.
 
 ## Pendências fora deste incremento
 
