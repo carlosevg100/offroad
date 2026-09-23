@@ -1,3 +1,7 @@
+## Etapa 17 / 3K: pausa concorrente R01
+
+Leitor e writer disputam o mesmo advisory transacional, com conflito explícito e retry integral; primeira pausa e mudanças da capability ficam cobertas. Demais capabilities preservam sua concorrência. [Escopo e gates](arcabouco/etapa-17-3k-pausa-r01.md). 3J mesclado em `6ca2ed8d509653af54ad2f473d3dd3caa148ab04`; CI de main e deploy em verificação.
+
 ## Etapa 17 / 3J: sujeito humano explícito
 
 Request interno recebe sujeito explícito, wrapper humano mantém identidade da sessão e o job deriva o humano do manifesto/run persistidos. Nenhum grant, JWT reescrito ou ativação R01. [Escopo e gates](arcabouco/etapa-17-3j-sujeito-execucao.md). 3I fechado em `afd50cc3845cf17e53de25f0f9dae1457f9c3511`: Quality `35881387687`, Security `35881387738`, worker `35881387712` PASS, worker435 e Vercel6617742935 verificados. Completion externo `outputs/etapa-17-r01-recibo-2026-09-23/COMPLETION-ETAPA-17-3I.md`.

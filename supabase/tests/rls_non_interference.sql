@@ -5730,6 +5730,9 @@ select 'rls_non_interference_passed' as result;
 -- Internal explicit-subject core is never an API impersonation surface.
 do $$declare actor text;begin
  foreach actor in array array['anon','authenticated','service_role'] loop
+  if has_function_privilege(actor,'private.guard_receivables_release_write_v1()','EXECUTE') then
+   raise exception 'R01 release concurrency guard exposed: %',actor;
+  end if;
   if has_function_privilege(actor,'private.request_work_execution_as_subject_v1(uuid,uuid,text,text)','EXECUTE')
   or has_function_privilege(actor,'private.request_work_execution_v1(uuid,text,text)','EXECUTE') then
    raise exception 'Execution subject selection exposed: %',actor;
