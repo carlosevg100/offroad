@@ -14,6 +14,8 @@ A revisão independente da primeira parte encontrou uma inversão possível: o w
 
 O transporte dimensiona o timeout pelo tamanho do payload: 5 s mais 2 s por MiB, teto de 30 s. Reserva replicada como `settled` busca os bytes liquidados, confere forma canônica e hash, e publica sem recomputar; sem bytes disponíveis, continua `operation_uncertain`. O settle envia os bytes exatos.
 
+A prova de comandos (`execution_commands.sql`) passa a reservar e liquidar a operação com id de operação igual ao id da execução, que é a convenção do worker para o único kernel fixado; um sucesso terminal só é aceito com o recibo liquidado dessa operação.
+
 ## Provas
 
 `supabase/tests/execution_settled_bytes.sql`: sucesso com motivo de falha recusado, bytes não JSON recusados, replay idêntico, conflito de bytes e de desfecho, hash e desfecho armazenados, perda de lease e nova claim, lease antiga não liquida nem lê, bytes estranhos recusados no commit, publicação sob a lease nova com as duas leases registradas; marcador parcial liquidado continua parcial e nunca vira sucesso; liquidação v1 só por hash de outra lease não publica sucesso e fecha como incerta; grants estreitos. Worker: `process-pinned-execution.test.ts` (publica bytes liquidados por lease anterior sem recomputar; recusa hash ou forma canônica divergente) e `execution-queue.test.ts` (settle v2 com bytes, leitura dos bytes, escala do timeout). Nada aqui concede execução, amplia grant ou toca o produtor. TRUST-APP-01 e TRUST-SDLC-01 sem ampliação de dados ou provedor.
