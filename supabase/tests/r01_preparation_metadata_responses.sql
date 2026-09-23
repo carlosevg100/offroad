@@ -117,6 +117,21 @@ do $$declare h jsonb;p jsonb;d jsonb;patch_id uuid;m uuid;request_id uuid;revisi
  encode(extensions.digest(convert_to(d::text,'UTF8'),'sha256'),'hex'),patch_id,d);
  end loop;
 end $$;
+-- The answers change the approval input and a job carries exactly one dispatch, so the same job cannot be
+-- approved again: the post-answer preparation runs on a new job of the same run and session, approved for the
+-- current inputs and bound to the same operational account.
+insert into public.processing_jobs(id,organization_id,processing_run_id,intake_session_id,kind,status,payload,attempts,lease_expires_at,capability_sha256,leased_by)
+select '80000000-0000-4000-8000-000000000732',organization_id,processing_run_id,intake_session_id,kind,'leased',payload,attempts,now()+interval '10 minutes',capability_sha256,leased_by
+from public.processing_jobs where id='80000000-0000-4000-8000-000000000731';
+select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000732',true);
+update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000732' where id='80000000-0000-4000-8000-000000000732';
+create or replace function pg_temp.receipt_state() returns jsonb language sql as $$
+ select private.load_r01_preparation_for_receipt_v1('80000000-0000-4000-8000-000000000732',repeat('u',64));
+$$;
+create or replace function pg_temp.record_receipt(input_text text default '{}',expected text default null) returns uuid language sql as $$
+ select private.record_r01_preparation_receipt_v1(f.id,'80000000-0000-4000-8000-000000000732',repeat('u',64),f.profile_id,
+ coalesce(expected,s.state->>'authoritySnapshotHash'),input_text) from r01_receipt_fixture f cross join r01_receipt_loaded s;
+$$;
 update r01_receipt_fixture set id=gen_random_uuid();
 update r01_receipt_loaded set state=pg_temp.receipt_state();
 select pg_temp.record_receipt();
