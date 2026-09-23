@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-09-23T20:49:01Z",
-  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them",
+  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them; receivables_scope_sources_current(uuid,uuid,jsonb) and record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text), rewritten by the 3M migration merged after the capture, captured from production on 2026-09-23",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -143,6 +143,11 @@
       "sha256": "c944abc5d68244f37c4bdd373073fec484834c5073213e671d4efd941c81b22e"
     },
     {
+      "signature": "private.receivables_scope_sources_current(uuid,uuid,jsonb)",
+      "file": "private.receivables_scope_sources_current(uuid,uuid,jsonb).sql",
+      "sha256": "b2961da9bcc3a8bff03d1ffb3f55389e12b1de53f557e19b04b3ca02beac4818"
+    },
+    {
       "signature": "private.record_capital_project_plan(uuid,jsonb)",
       "file": "private.record_capital_project_plan(uuid,jsonb).sql",
       "sha256": "b7f86e65d0f1922d052335b1ba5bc956675ab7455384d14417f17b1a99c6cd91"
@@ -151,6 +156,11 @@
       "signature": "private.record_execution_proposal_plan_as_actor(uuid,jsonb,uuid)",
       "file": "private.record_execution_proposal_plan_as_actor(uuid,jsonb,uuid).sql",
       "sha256": "cbfde21ffafa6434b332e0a0bfc4883575e9acb1add20eb3233be03ddaa78f6a"
+    },
+    {
+      "signature": "private.record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text)",
+      "file": "private.record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text).sql",
+      "sha256": "062ca74d883819de06ec07fd2e82d5bc98e3d4d0ad03a1cc293f3f0ea1626eff"
     },
     {
       "signature": "private.request_documentary_work_revision_v1(uuid,uuid,text,uuid,text,text,jsonb)",
