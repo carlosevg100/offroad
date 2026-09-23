@@ -130,7 +130,7 @@ savepoint denied_session;
 -- Same source is readable through its origin and another binding; only the target
 -- session is denied. This isolates the loader's session guard from source-use checks.
 update public.sources set origin_resource_id='30000000-0000-4000-8000-000000000731',origin_resource_reference='30000000-0000-4000-8000-000000000731'
-where id='10000000-0000-4000-8000-000000000001';
+where organization_id='20000000-0000-4000-8000-000000000731' and id=(select source_id from public.source_versions where organization_id='20000000-0000-4000-8000-000000000731' and id='10000000-0000-4000-8000-000000000001');
 insert into public.source_bindings(organization_id,source_version_id,resource_id,resource_reference,request_id,created_by)
 values('20000000-0000-4000-8000-000000000731','10000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000731',
 '30000000-0000-4000-8000-000000000731',gen_random_uuid(),'10000000-0000-4000-8000-000000000731');
