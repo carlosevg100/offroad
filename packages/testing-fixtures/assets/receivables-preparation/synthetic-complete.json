@@ -1,0 +1,4309 @@
+{
+  "synthetic": true,
+  "description": "Two fictitious receivables; no production or client data. Frozen preparation acceptance input.",
+  "input": {
+    "sessionId": "10000000-0000-4000-8000-000000000090",
+    "evidence": [
+      {
+        "source_document_id": "10000000-0000-4000-8000-000000000001",
+        "document_version": 1,
+        "content_kind": "document_layer",
+        "schema_version": "2026.08.28-v1",
+        "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "content_sha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+        "payload_sha256": "d25db4c14c0a6f70bae48513a2ec73b51f907a77f8570bd3253ea2c0fbacde2b",
+        "codec": "gzip-json-v1",
+        "uncompressed_bytes": 7076,
+        "payload_base64": "H4sIAAAAAAACE7VZ247bNhD9lYBA32xHF9/fKInrZSKRAim5iy0CwVkriVvHLmx3myDYr+kn9K2v+2OFZFOS1+TIxaJ+WGAxx0fUcM6ZIf0DrZZoimzr+OmWf/rFn7H69/SxUQd9Wq1ztviaoynaL9aL7jLvLhfL7b73bb3/dorfLvZf0BR9fOUHddB68T3foekPtNw+/PE13xzof1jq/kueH/Zo+ssPtDmu2MciIVRg1EEP+Xp9jO3yT2iKcPGNRzRFLI2yhCZpyFEHHYrXRE8dhfIUymfxu0xiHwc6mF+R8YiYYYGCBUlGIiol1qFIAzUnzKcRYYkOeKOA81CYX2GmUJImKfa1j8TOCZN0j6m8yIMC2I7bHwxHRfrtyUSXCoWU3zeHL/lh9fCGb3JdMhTQsZxh1xp3tQ8m56hJ17V0maiWZ1m6+EzFsUeENpfYbWTA0WVAASbj0XDQd50iA9qH+e5FBpI/t7oMuFdl4AxlW11Xh7pRqIE+Aa4hAR8KjFILCQhLCCSWEySjASQWge8xzyT3KQ4htcQ4JmEmiZhTn7IZVJgP+TLfHLpgbfolJn8je7gHVeaRKzckgbNE8JDIWlGvtA5JEi6u8I5CxYL4xKMBz2IiKIdNROIw4BllOKBRHJ52zmgmgvhpTAQGuStHCWiYUh9D2FmDmUexwAD2tlpz6skiYy3ctFFvdE50RfROQUIsE8GzORH0hhpy/L5e64wWcA0mVBjOUqmJR3VuZJwm+gexurRFQjJBQuxTznCAX+W6j4td/usWqmnHsjpa5Vc2a0HuCpoq6Ki64C0UpCq4X33V7Sscfq/Cu/zzan/YLZa6tIQKtV497nTNJ1KAzfNfOgLWEr++Xaw2y+d/9ofdagG1ioFp99yqsekBdXfQx6u+YHfgxqDdRyhIXXgf4fB796p9dNv20W3ZR328afhHyy1nLAmZPQ2yBhQy/AAnuAVbmz4OuWgBB1f1G3LdqFpZfNHocDanzE9DvT9VDh+kcVhaaxYQyMdEm4+59ltr/LYYZF7nZSbDJPWY2nP7g95wNH5bzGld7ah6A1tNZXGQ/kWb/tVsp53aGvrvwfo3+Qypx9LeaDjo9V3n+MawGxje2L1445ejEfZoCKnkOJSUSJmdVEAEpJZY8DnVn4T8xohRaRQYG6pCtF1TCdUHGQOgrsIXntzMRMxDmlAfPFf6OIpBmyilD71FhO8ynAgseRZQLEFhWVCRFkSxwPc8EyTCjEi/HOJNpFXLGGtZ+4qVskwSLDmjbGYk64MrHJyi5I7OqMjM4543ACsXD8+JrhkKvSFMOapnRlFUsnFy9BRy+3G3+rw4PP+9W2mHhnG1SD9MqciqSVKbuTG8vMkLsnLilM2RU8s6gVlt6wUtZ+WhQctVgU1kZ0cgUko3ogk10Sn4Ybvc7rWETWn4nBV1LIo7DXO/8+xa8T9pOV0T50ykBgW7LZRNiag7qIyEZGaq7uobJsZBk5EXh/hU4FOZawkHLYRDLSFU5dVXTJSjS9/Sqt6rkCamcYNJHUW1ROMWokmDSJ1TtUQTmMixGulSR2nDoiqsics+e7s5EbPilg9njf56SWq3kDomUkzvtK/stOjCcc+KmN6VC/RpSA1Cc1pU4fR1hC0zqOdoldFsxkQmIi2q9//txsdJPaTsFsNzBdiKcTDHzCeZwNrrGq8lhyoZfE6Ez8MQJ0TgkN7jhHKWRZRBLdjuOINvUBeWqcdFQFnpfgayFl8Zns2BkjCqzao3hNM1OqOJyD1mlIG910A0Pl+PekF9BY9hrkk1EBRXluV9V9EsUu0lp9fiKFXv/LnYwxschidNFEMBZ8ZGYcFrrHpoTVvdr2Y3hIB918TpXHC+SwWXwPbaLXKoOmhNGQvKfBrjEKJ1W2j7F7RqsyijhuvoZvO1wOZbs0IV2Wi9Z8eHD53qV615vtuvths0tTvot9Wm+I1r//suXyzLn7DQ09O/IKjbVaQbAAA="
+      }
+    ],
+    "confirmedScope": {
+      "state": "current",
+      "sourceManifest": {
+        "schemaVersion": "receivables-evidence-manifest.v1",
+        "fingerprint": "9f90a9be5e8cfec481008230f87241c1239c45b71320908271af5fdc40b6a98c",
+        "sources": [
+          {
+            "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+            "documentVersion": 1,
+            "contentKind": "document_layer",
+            "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "contentSha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+            "schemaVersion": "2026.08.28-v1",
+            "fileName": "sala-de-dados.xlsx"
+          }
+        ]
+      },
+      "candidates": [
+        {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "fileName": "sala-de-dados.xlsx",
+          "sheet": "CARTEIRA",
+          "headerRow": 1
+        }
+      ],
+      "supportSheetCandidates": [
+        {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "CEDENTE"
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "CONTABIL"
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "CONTROLES_TITULO"
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "ESTRUTURA"
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "POLITICA"
+        },
+        {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "RECEBIMENTOS"
+        }
+      ],
+      "scope": {
+        "schemaVersion": "receivables-evidence-scope.v2",
+        "id": "10000000-0000-4000-8000-000000000080",
+        "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "sourceManifestFingerprint": "9f90a9be5e8cfec481008230f87241c1239c45b71320908271af5fdc40b6a98c",
+        "primaryTape": {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "CARTEIRA",
+          "headerRow": 1
+        },
+        "primarySupportSheets": [
+          "CEDENTE",
+          "CONTABIL",
+          "CONTROLES_TITULO",
+          "ESTRUTURA",
+          "POLITICA",
+          "RECEBIMENTOS"
+        ],
+        "complementDocumentIds": [],
+        "reportingDate": "2026-08-31",
+        "sourceRevisions": [
+          {
+            "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+            "documentVersion": 1,
+            "contentKind": "document_layer",
+            "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "contentSha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+            "schemaVersion": "2026.08.28-v1",
+            "fileName": "sala-de-dados.xlsx"
+          }
+        ],
+        "confirmedBy": "10000000-0000-4000-8000-000000000081",
+        "confirmedAt": "2026-09-23T00:00:00Z"
+      }
+    },
+    "history": [
+      {
+        "patch": {
+          "schemaVersion": "2026.09.07-v1",
+          "patchId": "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4",
+          "sourceDatasetHash": "2f825e42d7b1f9ce7f564c55f66ab9ba4822bc6af38586f2c4e42715f4eb5fb8",
+          "suppliedBy": {
+            "actorType": "document_worker",
+            "actorId": "receivables-document-adapter:2026.09.10-v2",
+            "suppliedAt": "2026-08-31T00:00:00.000Z",
+            "evidence": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+              },
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+              },
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+              },
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+              },
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+              },
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+              },
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+              }
+            ]
+          },
+          "sections": {
+            "cedent": {
+              "value": {
+                "id": "cedent-1",
+                "legalName": "Cedente S.A.",
+                "servicingRole": "cedent"
+              }
+            },
+            "titles": {
+              "value": [
+                {
+                  "sourceReceivableId": "T-001:2:1",
+                  "debtorSector": "varejo",
+                  "collectedInPeriod": "200.00",
+                  "defaultedBalance": "0.00",
+                  "recoveredInPeriod": "0.00",
+                  "dilutionInPeriod": "0.00",
+                  "repurchasedInPeriod": "0.00",
+                  "substitutedInPeriod": "0.00",
+                  "assignable": true,
+                  "evidenceVerified": true,
+                  "registration": "registered",
+                  "encumbrance": "free",
+                  "disputed": false,
+                  "relatedParty": false
+                },
+                {
+                  "sourceReceivableId": "T-002:3:2",
+                  "debtorSector": "indústria",
+                  "collectedInPeriod": "50.00",
+                  "defaultedBalance": "10.00",
+                  "recoveredInPeriod": "2.00",
+                  "dilutionInPeriod": "1.00",
+                  "repurchasedInPeriod": "0.00",
+                  "substitutedInPeriod": "0.00",
+                  "assignable": true,
+                  "evidenceVerified": true,
+                  "registration": "registered",
+                  "encumbrance": "free",
+                  "disputed": false,
+                  "relatedParty": false
+                }
+              ]
+            },
+            "cashReceipts": {
+              "value": [
+                {
+                  "id": "R-001",
+                  "receivedAt": "2026-08-31",
+                  "amount": "200.00",
+                  "sourceReceivableId": "T-001:2:1",
+                  "debtorId": "12345678000199",
+                  "linkedAccount": true,
+                  "duplicateOf": null,
+                  "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+                  "sourceAnchor": "sheet:RECEBIMENTOS;row:2;key:R-001",
+                  "anchorVerified": true
+                },
+                {
+                  "id": "R-002",
+                  "receivedAt": "2026-08-31",
+                  "amount": "50.00",
+                  "sourceReceivableId": "T-002:3:2",
+                  "debtorId": "98765432000100",
+                  "linkedAccount": true,
+                  "duplicateOf": null,
+                  "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+                  "sourceAnchor": "sheet:RECEBIMENTOS;row:3;key:R-002",
+                  "anchorVerified": true
+                }
+              ]
+            },
+            "accounting": {
+              "value": {
+                "grossReceivablesBalance": "1300.00",
+                "allowanceBalance": "10.00",
+                "reportedCollectionsInPeriod": "250.00"
+              }
+            }
+          },
+          "fields": [
+            {
+              "path": "/policy/maxDaysPastDue",
+              "value": 30
+            },
+            {
+              "path": "/policy/maxRemainingTermDays",
+              "value": 180
+            },
+            {
+              "path": "/policy/minSeasoningDays",
+              "value": 30
+            },
+            {
+              "path": "/policy/requireAssignable",
+              "value": true
+            },
+            {
+              "path": "/policy/requireEvidenceVerified",
+              "value": true
+            },
+            {
+              "path": "/policy/registrationRule",
+              "value": "required"
+            },
+            {
+              "path": "/policy/excludeDisputed",
+              "value": true
+            },
+            {
+              "path": "/policy/excludeRelatedParties",
+              "value": true
+            },
+            {
+              "path": "/policy/excludeEncumbered",
+              "value": true
+            },
+            {
+              "path": "/policy/allowedDebtorSectors",
+              "value": []
+            },
+            {
+              "path": "/policy/maxSingleDebtorShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/maxDebtorGroupShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/minimumEligibleShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/minimumEvidenceCoverage",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/minimumRegistrationCoverage",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/maximumDelinquency30Share",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/maximumDilutionShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/maximumRepurchaseShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/minimumRecoveryRate",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/maximumAccountingMismatchShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/maximumCashMismatchShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/minimumMappedCashShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/policy/minimumLinkedAccountCashShare",
+              "value": "0.1"
+            },
+            {
+              "path": "/structure/requestedFacility",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/advanceRate",
+              "value": "0.1"
+            },
+            {
+              "path": "/structure/requiredOvercollateralization",
+              "value": "1.25"
+            },
+            {
+              "path": "/structure/requiredSubordinationRate",
+              "value": "0.1"
+            },
+            {
+              "path": "/structure/actualSeniorAmount",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/actualMezzanineAmount",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/actualSubordinatedAmount",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/reserveRate",
+              "value": "0.1"
+            },
+            {
+              "path": "/structure/waterfall/availableCash",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/waterfall/servicingFeeDue",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/waterfall/seniorInterestDue",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/waterfall/seniorPrincipalDue",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/waterfall/reserveOpening",
+              "value": "100.00"
+            },
+            {
+              "path": "/structure/waterfall/mezzanineDue",
+              "value": "100.00"
+            }
+          ],
+          "evidence": {
+            "cedentAndServicing": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+              }
+            ],
+            "titleLegalControls": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+              }
+            ],
+            "performanceHistory": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+              }
+            ],
+            "cashReconciliation": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+              }
+            ],
+            "accountingReconciliation": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+              }
+            ],
+            "eligibilityPolicy": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+              }
+            ],
+            "facilityAndWaterfall": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+              }
+            ]
+          }
+        },
+        "resultingDraft": {
+          "schemaVersion": "2026.09.07-v1",
+          "sourceDatasetHash": "2f825e42d7b1f9ce7f564c55f66ab9ba4822bc6af38586f2c4e42715f4eb5fb8",
+          "revision": 1,
+          "appliedPatchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sections": {
+            "cedent": {
+              "value": {
+                "id": "cedent-1",
+                "legalName": "Cedente S.A.",
+                "servicingRole": "cedent"
+              },
+              "fingerprint": "68a9e0913b0dff07024172dfef60ddb20527e251867dbdd4cc43a0d6b20331e9",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "titles": {
+              "value": [
+                {
+                  "sourceReceivableId": "T-001:2:1",
+                  "debtorSector": "varejo",
+                  "collectedInPeriod": "200.00",
+                  "defaultedBalance": "0.00",
+                  "recoveredInPeriod": "0.00",
+                  "dilutionInPeriod": "0.00",
+                  "repurchasedInPeriod": "0.00",
+                  "substitutedInPeriod": "0.00",
+                  "assignable": true,
+                  "evidenceVerified": true,
+                  "registration": "registered",
+                  "encumbrance": "free",
+                  "disputed": false,
+                  "relatedParty": false
+                },
+                {
+                  "sourceReceivableId": "T-002:3:2",
+                  "debtorSector": "indústria",
+                  "collectedInPeriod": "50.00",
+                  "defaultedBalance": "10.00",
+                  "recoveredInPeriod": "2.00",
+                  "dilutionInPeriod": "1.00",
+                  "repurchasedInPeriod": "0.00",
+                  "substitutedInPeriod": "0.00",
+                  "assignable": true,
+                  "evidenceVerified": true,
+                  "registration": "registered",
+                  "encumbrance": "free",
+                  "disputed": false,
+                  "relatedParty": false
+                }
+              ],
+              "fingerprint": "d09afc1721fcaf82b1cd0a089fb0e4ada7196305ffac2492c436e0a2d73c9c43",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "cashReceipts": {
+              "value": [
+                {
+                  "id": "R-001",
+                  "receivedAt": "2026-08-31",
+                  "amount": "200.00",
+                  "sourceReceivableId": "T-001:2:1",
+                  "debtorId": "12345678000199",
+                  "linkedAccount": true,
+                  "duplicateOf": null,
+                  "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+                  "sourceAnchor": "sheet:RECEBIMENTOS;row:2;key:R-001",
+                  "anchorVerified": true
+                },
+                {
+                  "id": "R-002",
+                  "receivedAt": "2026-08-31",
+                  "amount": "50.00",
+                  "sourceReceivableId": "T-002:3:2",
+                  "debtorId": "98765432000100",
+                  "linkedAccount": true,
+                  "duplicateOf": null,
+                  "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+                  "sourceAnchor": "sheet:RECEBIMENTOS;row:3;key:R-002",
+                  "anchorVerified": true
+                }
+              ],
+              "fingerprint": "6a5f92cdfd8dd70f474015c83d912a4de3ec53bc0bb0266b3ee597f40361d1a6",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "accounting": {
+              "value": {
+                "grossReceivablesBalance": "1300.00",
+                "allowanceBalance": "10.00",
+                "reportedCollectionsInPeriod": "250.00"
+              },
+              "fingerprint": "17ef2a085fb28b598b96077c3d8de0180761bc53ee250e2f0f3762aabcc48cdf",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            }
+          },
+          "fields": {
+            "/policy/maxDaysPastDue": {
+              "value": 30,
+              "fingerprint": "624b60c58c9d8bfb6ff1886c2fd605d2adeb6ea4da576068201b6c6958ce93f4",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/maxRemainingTermDays": {
+              "value": 180,
+              "fingerprint": "7b69759630f869f2723875f873935fed29d2d12b10ef763c1c33b8e0004cb405",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/minSeasoningDays": {
+              "value": 30,
+              "fingerprint": "624b60c58c9d8bfb6ff1886c2fd605d2adeb6ea4da576068201b6c6958ce93f4",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/requireAssignable": {
+              "value": true,
+              "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/requireEvidenceVerified": {
+              "value": true,
+              "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/registrationRule": {
+              "value": "required",
+              "fingerprint": "cf51937bad8b2f6948b8edf1bd3289f3bc332ec610f99df2f5aff0218b3a554b",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/excludeDisputed": {
+              "value": true,
+              "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/excludeRelatedParties": {
+              "value": true,
+              "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/excludeEncumbered": {
+              "value": true,
+              "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/allowedDebtorSectors": {
+              "value": [],
+              "fingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/maxSingleDebtorShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/maxDebtorGroupShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/minimumEligibleShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/minimumEvidenceCoverage": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/minimumRegistrationCoverage": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/maximumDelinquency30Share": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/maximumDilutionShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/maximumRepurchaseShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/minimumRecoveryRate": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/maximumAccountingMismatchShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/maximumCashMismatchShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/minimumMappedCashShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/policy/minimumLinkedAccountCashShare": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/requestedFacility": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/advanceRate": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/requiredOvercollateralization": {
+              "value": "1.25",
+              "fingerprint": "81f93ffa78c1d07ab2dc6a157f60979d7aafa6c63837bfb2863545d21405f481",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/requiredSubordinationRate": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/actualSeniorAmount": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/actualMezzanineAmount": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/actualSubordinatedAmount": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/reserveRate": {
+              "value": "0.1",
+              "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/waterfall/availableCash": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/waterfall/servicingFeeDue": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/waterfall/seniorInterestDue": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/waterfall/seniorPrincipalDue": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/waterfall/reserveOpening": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            },
+            "/structure/waterfall/mezzanineDue": {
+              "value": "100.00",
+              "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+              "patchIds": [
+                "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+              ],
+              "sources": [
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+                },
+                {
+                  "sourceClass": "provided_document",
+                  "sourceId": "10000000-0000-4000-8000-000000000001",
+                  "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+                }
+              ]
+            }
+          },
+          "evidence": {
+            "cedentAndServicing": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+              }
+            ],
+            "titleLegalControls": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+              }
+            ],
+            "performanceHistory": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+              }
+            ],
+            "cashReconciliation": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+              }
+            ],
+            "accountingReconciliation": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+              }
+            ],
+            "eligibilityPolicy": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+              }
+            ],
+            "facilityAndWaterfall": [
+              {
+                "sourceClass": "provided_document",
+                "sourceId": "10000000-0000-4000-8000-000000000001",
+                "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+              }
+            ]
+          },
+          "conflicts": []
+        }
+      }
+    ],
+    "currentDraft": {
+      "schemaVersion": "2026.09.07-v1",
+      "sourceDatasetHash": "2f825e42d7b1f9ce7f564c55f66ab9ba4822bc6af38586f2c4e42715f4eb5fb8",
+      "revision": 1,
+      "appliedPatchIds": [
+        "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+      ],
+      "sections": {
+        "cedent": {
+          "value": {
+            "id": "cedent-1",
+            "legalName": "Cedente S.A.",
+            "servicingRole": "cedent"
+          },
+          "fingerprint": "68a9e0913b0dff07024172dfef60ddb20527e251867dbdd4cc43a0d6b20331e9",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "titles": {
+          "value": [
+            {
+              "sourceReceivableId": "T-001:2:1",
+              "debtorSector": "varejo",
+              "collectedInPeriod": "200.00",
+              "defaultedBalance": "0.00",
+              "recoveredInPeriod": "0.00",
+              "dilutionInPeriod": "0.00",
+              "repurchasedInPeriod": "0.00",
+              "substitutedInPeriod": "0.00",
+              "assignable": true,
+              "evidenceVerified": true,
+              "registration": "registered",
+              "encumbrance": "free",
+              "disputed": false,
+              "relatedParty": false
+            },
+            {
+              "sourceReceivableId": "T-002:3:2",
+              "debtorSector": "indústria",
+              "collectedInPeriod": "50.00",
+              "defaultedBalance": "10.00",
+              "recoveredInPeriod": "2.00",
+              "dilutionInPeriod": "1.00",
+              "repurchasedInPeriod": "0.00",
+              "substitutedInPeriod": "0.00",
+              "assignable": true,
+              "evidenceVerified": true,
+              "registration": "registered",
+              "encumbrance": "free",
+              "disputed": false,
+              "relatedParty": false
+            }
+          ],
+          "fingerprint": "d09afc1721fcaf82b1cd0a089fb0e4ada7196305ffac2492c436e0a2d73c9c43",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "cashReceipts": {
+          "value": [
+            {
+              "id": "R-001",
+              "receivedAt": "2026-08-31",
+              "amount": "200.00",
+              "sourceReceivableId": "T-001:2:1",
+              "debtorId": "12345678000199",
+              "linkedAccount": true,
+              "duplicateOf": null,
+              "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+              "sourceAnchor": "sheet:RECEBIMENTOS;row:2;key:R-001",
+              "anchorVerified": true
+            },
+            {
+              "id": "R-002",
+              "receivedAt": "2026-08-31",
+              "amount": "50.00",
+              "sourceReceivableId": "T-002:3:2",
+              "debtorId": "98765432000100",
+              "linkedAccount": true,
+              "duplicateOf": null,
+              "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+              "sourceAnchor": "sheet:RECEBIMENTOS;row:3;key:R-002",
+              "anchorVerified": true
+            }
+          ],
+          "fingerprint": "6a5f92cdfd8dd70f474015c83d912a4de3ec53bc0bb0266b3ee597f40361d1a6",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "accounting": {
+          "value": {
+            "grossReceivablesBalance": "1300.00",
+            "allowanceBalance": "10.00",
+            "reportedCollectionsInPeriod": "250.00"
+          },
+          "fingerprint": "17ef2a085fb28b598b96077c3d8de0180761bc53ee250e2f0f3762aabcc48cdf",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        }
+      },
+      "fields": {
+        "/policy/maxDaysPastDue": {
+          "value": 30,
+          "fingerprint": "624b60c58c9d8bfb6ff1886c2fd605d2adeb6ea4da576068201b6c6958ce93f4",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/maxRemainingTermDays": {
+          "value": 180,
+          "fingerprint": "7b69759630f869f2723875f873935fed29d2d12b10ef763c1c33b8e0004cb405",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/minSeasoningDays": {
+          "value": 30,
+          "fingerprint": "624b60c58c9d8bfb6ff1886c2fd605d2adeb6ea4da576068201b6c6958ce93f4",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/requireAssignable": {
+          "value": true,
+          "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/requireEvidenceVerified": {
+          "value": true,
+          "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/registrationRule": {
+          "value": "required",
+          "fingerprint": "cf51937bad8b2f6948b8edf1bd3289f3bc332ec610f99df2f5aff0218b3a554b",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/excludeDisputed": {
+          "value": true,
+          "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/excludeRelatedParties": {
+          "value": true,
+          "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/excludeEncumbered": {
+          "value": true,
+          "fingerprint": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/allowedDebtorSectors": {
+          "value": [],
+          "fingerprint": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/maxSingleDebtorShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/maxDebtorGroupShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/minimumEligibleShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/minimumEvidenceCoverage": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/minimumRegistrationCoverage": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/maximumDelinquency30Share": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/maximumDilutionShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/maximumRepurchaseShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/minimumRecoveryRate": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/maximumAccountingMismatchShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/maximumCashMismatchShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/minimumMappedCashShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/policy/minimumLinkedAccountCashShare": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/requestedFacility": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/advanceRate": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/requiredOvercollateralization": {
+          "value": "1.25",
+          "fingerprint": "81f93ffa78c1d07ab2dc6a157f60979d7aafa6c63837bfb2863545d21405f481",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/requiredSubordinationRate": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/actualSeniorAmount": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/actualMezzanineAmount": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/actualSubordinatedAmount": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/reserveRate": {
+          "value": "0.1",
+          "fingerprint": "5a4747fcdafec66d8d8812022e3b7d2666d886ec0e0ee7926ec8c50db40f29d5",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/waterfall/availableCash": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/waterfall/servicingFeeDue": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/waterfall/seniorInterestDue": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/waterfall/seniorPrincipalDue": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/waterfall/reserveOpening": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        },
+        "/structure/waterfall/mezzanineDue": {
+          "value": "100.00",
+          "fingerprint": "451795fec7bc40ebfb086d5fa0d1c7f16d7fb5918a7d9edf7f21fa21b92cdc3e",
+          "patchIds": [
+            "document-adapter:eeb4709a7256449baf0fcfb7b04ea5673a5d71ec8273bc21a2e1e94937d3cfe4"
+          ],
+          "sources": [
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+            },
+            {
+              "sourceClass": "provided_document",
+              "sourceId": "10000000-0000-4000-8000-000000000001",
+              "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+            }
+          ]
+        }
+      },
+      "evidence": {
+        "cedentAndServicing": [
+          {
+            "sourceClass": "provided_document",
+            "sourceId": "10000000-0000-4000-8000-000000000001",
+            "anchor": "sheet:CEDENTE;header:1;key:CEDENTE_ID"
+          }
+        ],
+        "titleLegalControls": [
+          {
+            "sourceClass": "provided_document",
+            "sourceId": "10000000-0000-4000-8000-000000000001",
+            "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+          }
+        ],
+        "performanceHistory": [
+          {
+            "sourceClass": "provided_document",
+            "sourceId": "10000000-0000-4000-8000-000000000001",
+            "anchor": "sheet:CONTROLES_TITULO;header:1;key:NUM_TITULO"
+          }
+        ],
+        "cashReconciliation": [
+          {
+            "sourceClass": "provided_document",
+            "sourceId": "10000000-0000-4000-8000-000000000001",
+            "anchor": "sheet:RECEBIMENTOS;header:1;key:ID_RECEBIMENTO"
+          }
+        ],
+        "accountingReconciliation": [
+          {
+            "sourceClass": "provided_document",
+            "sourceId": "10000000-0000-4000-8000-000000000001",
+            "anchor": "sheet:CONTABIL;header:1;key:SALDO_CONTAS_A_RECEBER"
+          }
+        ],
+        "eligibilityPolicy": [
+          {
+            "sourceClass": "provided_document",
+            "sourceId": "10000000-0000-4000-8000-000000000001",
+            "anchor": "sheet:POLITICA;header:1;key:CAMPO"
+          }
+        ],
+        "facilityAndWaterfall": [
+          {
+            "sourceClass": "provided_document",
+            "sourceId": "10000000-0000-4000-8000-000000000001",
+            "anchor": "sheet:ESTRUTURA;header:1;key:CAMPO"
+          }
+        ]
+      },
+      "conflicts": []
+    },
+    "responses": [],
+    "resolvedValues": []
+  }
+}

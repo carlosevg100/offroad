@@ -1,6 +1,7 @@
 import {createFairExecutionPoller} from "./execution-poll";
 import {createExecutionQueue} from "./execution-queue";
 import {processPinnedExecution} from "./process-pinned-execution";
+import {verifyInstalledPreparers} from "./released-preparer";
 import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
 import {createProviderProcessingAuthorizer} from "./provider-processing";
@@ -96,6 +97,7 @@ async function main(): Promise<void> {
   });
 
   log("worker.pinned_executors_verified", {artifacts: verifyInstalledMethodArtifacts()});
+  log("worker.pinned_preparers_verified", {artifacts: verifyInstalledPreparers()});
 
   await rotateLegacyStorage(supabase, config.OFFROAD_WORKER_TOKEN, () => log("worker.storage_rotation_completed"));
 
