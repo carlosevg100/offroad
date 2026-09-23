@@ -1,3 +1,7 @@
+## Etapa 17 / 3E: cálculo R01 único
+
+Shadow e release passam a usar o mesmo resultado verificado, sem segundo cálculo. Recibo local não autoriza execução no banco; a ponte de proveniência continua necessária e fechada. [Escopo e gates](arcabouco/etapa-17-3e-r01-calculo-unico.md). Sem DDL ou mudança do método publicado; CI e deploy pertencem ao completion.
+
 ## Etapa 17 / 3D: perfil R01 e fronteira SQL
 
 Perfil histórico reconhecido por igualdade integral; execução R01 recusada até a ponte autoritativa. Sem perfil operacional, concessão ou ativação. [Escopo e gates](arcabouco/etapa-17-3d-r01-perfil-sql.md). Provas de staging, produção e CI pertencem ao completion do incremento; etapa 17 continua em andamento.

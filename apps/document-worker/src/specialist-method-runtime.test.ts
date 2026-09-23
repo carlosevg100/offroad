@@ -1,5 +1,7 @@
 import {procedureBuildProvenance} from "@offroad/credit-playbook";
-import {describe, expect, it} from "vitest";
+import {afterEach, describe, expect, it, vi} from "vitest";
+import * as releasedExecutor from "./released-method-executor";
+afterEach(() => vi.restoreAllMocks());
 import {
   diversifiedReceivablesCase,
   receivablesPoolInputAssemblyVersion,
@@ -80,7 +82,7 @@ const assembly = {
   },
   evidence,
   findingResolutions: [],
-  input: {currency: "BRL", case: caseInput},
+  input: {currency: "BRL" as const, case: caseInput},
 };
 
 describe("specialist method shadow runtime", () => {
@@ -157,6 +159,7 @@ const releaseInput = {
   executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
   executorVersion: "2026.09.06-v1",
   phaseOne, detection, assembly, organizationId, release,
+  shadow: executeReceivablesSpecialistShadow({taskId: "R01", executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool", executorVersion: "2026.09.06-v1", phaseOne, detection, assembly}),
 };
 /** The bundled production policy after the founder's approval of 10 September 2026. */
 const bundledMethod = {
@@ -180,7 +183,7 @@ describe("released analytical result for every organization", () => {
       taskId: "R01", executorKey: "@offroad/receivables-analysis#underwriteReceivablesPool",
       executorVersion: "2026.09.06-v1", phaseOne, detection, assembly,
     });
-    const released = releaseReceivablesSpecialistAnalysis(releaseInput);
+    const released = releaseReceivablesSpecialistAnalysis({...releaseInput, shadow});
     expect(released).toMatchObject({
       mode: "analytical_release",
       taskId: "R01",
@@ -264,5 +267,59 @@ describe("released analytical result for every organization", () => {
       .toBe("receivables_specialist_shadow_policy_mismatch");
     expect(evaluateReceivablesSpecialistPolicy("analytical_release", bundledMethod, {...bundledCapability, availability: "specified"}))
       .toBe("receivables_specialist_shadow_policy_mismatch");
+  });
+});
+
+
+describe("one verified R01 calculation for both projections", () => {
+  it("calls the published kernel once and shares the exact frozen output across projections", () => {
+    const published = releasedExecutor.loadReleasedReceivables();
+    const calculate = vi.fn(published.underwriteReceivablesPool);
+    vi.spyOn(releasedExecutor, "loadReleasedReceivables").mockReturnValue({...published, underwriteReceivablesPool: calculate});
+    const shadow = executeReceivablesSpecialistShadow(releaseInput);
+    const result = releaseReceivablesSpecialistAnalysis({...releaseInput, shadow});
+    const replay = releaseReceivablesSpecialistAnalysis({...releaseInput, shadow});
+    expect(calculate).toHaveBeenCalledTimes(1);
+    expect(result.artifact.content).toBe(shadow.artifact.content);
+    expect(replay).toEqual(result);
+    expect(result.artifact.content).toEqual(published.underwriteReceivablesPool(assembly.input));
+    expect(result.qualityResults).toBe(shadow.qualityResults);
+    expect(result.artifact.evidenceRefs).toBe(shadow.artifact.evidenceRefs);
+    expect(Object.isFrozen(shadow.artifact.content)).toBe(true);
+    expect(Object.isFrozen(shadow.qualityResults[0])).toBe(true);
+  });
+  it("refuses a serialized or forged result even when all fingerprints match", () => {
+    const shadow = executeReceivablesSpecialistShadow(releaseInput);
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, shadow: structuredClone(shadow)}))
+      .toThrow("receivables_calculation_receipt_required");
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, shadow: {...shadow}}))
+      .toThrow("receivables_calculation_receipt_required");
+  });
+  it.each(["assembly", "phaseOne", "detection"])("refuses changed %s instead of reusing or recalculating stale inputs", field => {
+    const input = structuredClone(releaseInput);
+    const shadow = executeReceivablesSpecialistShadow(input);
+    if (field === "assembly") input.assembly.evidence = {...input.assembly.evidence, eligibilityPolicy: [{sourceClass: "house_method", sourceId: "changed", anchor: "changed"}]};
+    if (field === "phaseOne") input.phaseOne.universe.dates.reportingDate = "2026-01-01";
+    if (field === "detection") input.detection.evidenceCoverage.complete = false;
+    expect(() => releaseReceivablesSpecialistAnalysis({...input, shadow})).toThrow("receivables_calculation_input_changed");
+  });
+  it("preserves equivalent input copies without relying on caller object identity", () => {
+    const shadow = executeReceivablesSpecialistShadow(releaseInput);
+    const input = structuredClone(releaseInput);
+    expect(releaseReceivablesSpecialistAnalysis({...input, shadow}).artifact.content).toBe(shadow.artifact.content);
+  });
+  it("refuses projection if installed artifact integrity fails after calculation", () => {
+    const shadow = executeReceivablesSpecialistShadow(releaseInput);
+    vi.spyOn(releasedExecutor, "loadReleasedReceivables").mockImplementation(() => {throw new Error("published_method_artifact_mismatch");});
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, shadow})).toThrow("published_method_artifact_mismatch");
+  });
+  it("does not recalculate when the current release is paused", () => {
+    const published = releasedExecutor.loadReleasedReceivables();
+    const calculate = vi.fn(published.underwriteReceivablesPool);
+    vi.spyOn(releasedExecutor, "loadReleasedReceivables").mockReturnValue({...published, underwriteReceivablesPool: calculate});
+    const shadow = executeReceivablesSpecialistShadow(releaseInput);
+    expect(() => releaseReceivablesSpecialistAnalysis({...releaseInput, shadow, release: {...release, open: false}}))
+      .toThrow("receivables_analytical_release_paused");
+    expect(calculate).toHaveBeenCalledTimes(1);
   });
 });

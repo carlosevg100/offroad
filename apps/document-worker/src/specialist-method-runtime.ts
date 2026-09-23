@@ -1,3 +1,4 @@
+import {isDeepStrictEqual} from "node:util";
 import {loadReleasedReceivables} from "./released-method-executor";
 import {assertPublishedMethodBinding, type PublishedMethodBinding} from "./published-method-binding";
 import {
@@ -216,8 +217,23 @@ type SpecialistExecutionInput = {
   assembly: unknown;
 };
 
-function execute(mode: SpecialistMethodMode, input: SpecialistExecutionInput) {
-  const runtime = methodRuntime(mode);
+// In-process calculation provenance only. This is not a persisted execution receipt
+// and grants no database authority. Copied/loaded JSON can never enter this map.
+const completedCalculations = new WeakMap<ReceivablesSpecialistShadowResult, SpecialistExecutionInput>();
+function calculationInput(input: SpecialistExecutionInput): SpecialistExecutionInput {
+  return {taskId: input.taskId, executorKey: input.executorKey, executorVersion: input.executorVersion,
+    phaseOne: input.phaseOne, detection: input.detection, assembly: input.assembly};
+}
+function freezeCalculation<T>(value: T): T {
+  if (value !== null && typeof value === "object") {
+    Object.values(value).forEach(freezeCalculation);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+function calculateShadow(input: SpecialistExecutionInput) {
+  const runtime = methodRuntime("internal_shadow");
   if (input.taskId !== taskId) throw new Error("specialist_task_not_supported");
   if (input.executorKey !== executorKey || input.executorVersion !== runtime.method.procedure.version) {
     throw new Error("specialist_executor_binding_mismatch");
@@ -251,8 +267,9 @@ function execute(mode: SpecialistMethodMode, input: SpecialistExecutionInput) {
  * the session is the separate mode below, and it requires the release to be open.
  */
 export function executeReceivablesSpecialistShadow(input: SpecialistExecutionInput): ReceivablesSpecialistShadowResult {
-  const {runtime, result, checks, evidenceRefs} = execute("internal_shadow", input);
-  return {
+  const snapshot = structuredClone(calculationInput(input));
+  const {runtime, result, checks, evidenceRefs} = calculateShadow(snapshot);
+  const shadow: ReceivablesSpecialistShadowResult = freezeCalculation({
     mode: "internal_shadow",
     taskId,
     executorKey,
@@ -268,7 +285,9 @@ export function executeReceivablesSpecialistShadow(input: SpecialistExecutionInp
     },
     qualityResults: checks,
     externalEffectAllowed: false,
-  };
+  });
+  completedCalculations.set(shadow, snapshot);
+  return shadow;
 }
 
 /**
@@ -280,7 +299,7 @@ export function executeReceivablesSpecialistShadow(input: SpecialistExecutionInp
  * organization did not confirm can never enter a released analysis.
  */
 export function releaseReceivablesSpecialistAnalysis(
-  input: SpecialistExecutionInput & {organizationId: string; release: ReceivablesAnalyticalRelease},
+  input: SpecialistExecutionInput & {shadow: ReceivablesSpecialistShadowResult; organizationId: string; release: ReceivablesAnalyticalRelease},
 ): ReceivablesSpecialistReleaseResult {
   const {release} = input;
   if (!release.open) throw new Error("receivables_analytical_release_paused");
@@ -293,8 +312,15 @@ export function releaseReceivablesSpecialistAnalysis(
   }
   const methodBinding = assertPublishedMethodBinding(release.methodBinding);
   if (methodBinding.methodId !== "underwrite-receivables-pool" || methodBinding.methodVersion !== input.executorVersion) throw new Error("method_release_executor_mismatch");
-  const {runtime, assembly, result, checks, evidenceRefs} = execute("analytical_release", input);
-  if (assembly.source.datasetHash !== release.sourceDatasetHash) {
+  const snapshot = completedCalculations.get(input.shadow);
+  if (!snapshot) throw new Error("receivables_calculation_receipt_required");
+  if (!isDeepStrictEqual(snapshot, calculationInput(input))) throw new Error("receivables_calculation_input_changed");
+  const runtime = methodRuntime("analytical_release");
+  // Recheck installed publication integrity without running the financial kernel again.
+  loadReleasedReceivables();
+  const {content: result, evidenceRefs} = input.shadow.artifact;
+  const checks = input.shadow.qualityResults;
+  if (snapshot.phaseOne.datasetHash !== release.sourceDatasetHash) {
     throw new Error("receivables_analytical_release_dataset_mismatch");
   }
   return {
