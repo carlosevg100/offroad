@@ -139,8 +139,11 @@ async function main(): Promise<void> {
     return {id, text: turn.message};
   });
 
+  // The complete base: the schema requires the turns, the documents and the sources, and the
+  // hash below must cover every byte the model would read, the documents included.
   const base = baselineInformationBaseSchema.parse({
     caseId: spec.caseId, caseVersion: spec.caseVersion, language: "pt-BR", asOfDate: spec.asOfDate,
+    turns, documents, sources,
   });
   const rendered = renderInformationBase(base);
   const baseHash = informationBaseHash(base);
