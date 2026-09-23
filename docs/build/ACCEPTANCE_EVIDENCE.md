@@ -1,3 +1,7 @@
+## Etapa 17 / 3H: loader privado de autoridade R01
+
+Leitura vinculada ao sujeito do job, com autoridade do trabalho e da sessão, conjunto exato de fontes, hashes e histórico contínuo; respostas humanas cruzadas com pedidos e bindings; adoções conservam dimensões e versões. Sem grants nem autorização para executar. [Escopo e gates](arcabouco/etapa-17-3h-r01-loader.md). Migração, CI e implantação são confirmadas no completion externo; recibo e compatibilidade semântica continuam no incremento 3.
+
 ## Etapa 17 / 3G: preparador técnico fixado
 
 Preparação R01 capturada de main, reconstruída offline e verificada por bytes no boot, separadamente do método financeiro. Registro append-only na CI, paridade sintética e ausência de fallback. [Escopo e gates](arcabouco/etapa-17-3g-r01-preparador-fixado.md). Sem DDL ou habilitação R01; recibo SQL continua no incremento 3. Check, CI e implantação pertencem ao completion externo.

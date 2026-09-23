@@ -1,0 +1,197 @@
+{
+  "synthetic": true,
+  "vectors": [
+    {
+      "label": "v1 ASCII",
+      "scope": {
+        "schemaVersion": "receivables-evidence-scope.v1",
+        "id": "10000000-0000-4000-8000-000000000080",
+        "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "sourceManifestFingerprint": "9f90a9be5e8cfec481008230f87241c1239c45b71320908271af5fdc40b6a98c",
+        "primaryTape": {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "ASCII",
+          "headerRow": 1
+        },
+        "complementDocumentIds": [],
+        "reportingDate": "2026-08-31",
+        "sourceRevisions": [
+          {
+            "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+            "documentVersion": 1,
+            "contentKind": "document_layer",
+            "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "contentSha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+            "schemaVersion": "2026.08.28-v1",
+            "fileName": "ASCII.xlsx"
+          }
+        ],
+        "confirmedBy": "10000000-0000-4000-8000-000000000081",
+        "confirmedAt": "2026-09-23T00:00:00Z"
+      },
+      "hash": "3fcb4ad0d1266199c142b6a573a98889ccdd072554c7c0001857e8a36423d182"
+    },
+    {
+      "label": "v1 A / \"quote\" \\ tab\t newline\n",
+      "scope": {
+        "schemaVersion": "receivables-evidence-scope.v1",
+        "id": "10000000-0000-4000-8000-000000000080",
+        "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "sourceManifestFingerprint": "9f90a9be5e8cfec481008230f87241c1239c45b71320908271af5fdc40b6a98c",
+        "primaryTape": {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "A / \"quote\" \\ tab\t newline\n",
+          "headerRow": 1
+        },
+        "complementDocumentIds": [],
+        "reportingDate": "2026-08-31",
+        "sourceRevisions": [
+          {
+            "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+            "documentVersion": 1,
+            "contentKind": "document_layer",
+            "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "contentSha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+            "schemaVersion": "2026.08.28-v1",
+            "fileName": "A / \"quote\" \\ tab\t newline\n.xlsx"
+          }
+        ],
+        "confirmedBy": "10000000-0000-4000-8000-000000000081",
+        "confirmedAt": "2026-09-23T00:00:00Z"
+      },
+      "hash": "32b9bf2e051220e76944eab43789719b0d96162d5cc2445610ccf2a79d6f91b3"
+    },
+    {
+      "label": "v1 é 𐀀 漢字",
+      "scope": {
+        "schemaVersion": "receivables-evidence-scope.v1",
+        "id": "10000000-0000-4000-8000-000000000080",
+        "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "sourceManifestFingerprint": "9f90a9be5e8cfec481008230f87241c1239c45b71320908271af5fdc40b6a98c",
+        "primaryTape": {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "é 𐀀 漢字",
+          "headerRow": 1
+        },
+        "complementDocumentIds": [],
+        "reportingDate": "2026-08-31",
+        "sourceRevisions": [
+          {
+            "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+            "documentVersion": 1,
+            "contentKind": "document_layer",
+            "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "contentSha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+            "schemaVersion": "2026.08.28-v1",
+            "fileName": "é 𐀀 漢字.xlsx"
+          }
+        ],
+        "confirmedBy": "10000000-0000-4000-8000-000000000081",
+        "confirmedAt": "2026-09-23T00:00:00Z"
+      },
+      "hash": "f8e8bb2a0a7602617a16a3f3eee94e47941195d26ba77dd1b3643de5944ad9de"
+    },
+    {
+      "label": "v2 ASCII",
+      "scope": {
+        "schemaVersion": "receivables-evidence-scope.v2",
+        "id": "10000000-0000-4000-8000-000000000080",
+        "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "sourceManifestFingerprint": "9f90a9be5e8cfec481008230f87241c1239c45b71320908271af5fdc40b6a98c",
+        "primaryTape": {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "ASCII",
+          "headerRow": 1
+        },
+        "primarySupportSheets": [
+          "A / quote",
+          "é 𐀀"
+        ],
+        "complementDocumentIds": [],
+        "reportingDate": "2026-08-31",
+        "sourceRevisions": [
+          {
+            "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+            "documentVersion": 1,
+            "contentKind": "document_layer",
+            "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "contentSha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+            "schemaVersion": "2026.08.28-v1",
+            "fileName": "ASCII.xlsx"
+          }
+        ],
+        "confirmedBy": "10000000-0000-4000-8000-000000000081",
+        "confirmedAt": "2026-09-23T00:00:00Z"
+      },
+      "hash": "56148a47be8ef9808a58653b4edaebfa8e08729f091ddcb1a70c270fb9af984e"
+    },
+    {
+      "label": "v2 A / \"quote\" \\ tab\t newline\n",
+      "scope": {
+        "schemaVersion": "receivables-evidence-scope.v2",
+        "id": "10000000-0000-4000-8000-000000000080",
+        "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "sourceManifestFingerprint": "9f90a9be5e8cfec481008230f87241c1239c45b71320908271af5fdc40b6a98c",
+        "primaryTape": {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "A / \"quote\" \\ tab\t newline\n",
+          "headerRow": 1
+        },
+        "primarySupportSheets": [
+          "A / quote",
+          "é 𐀀"
+        ],
+        "complementDocumentIds": [],
+        "reportingDate": "2026-08-31",
+        "sourceRevisions": [
+          {
+            "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+            "documentVersion": 1,
+            "contentKind": "document_layer",
+            "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "contentSha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+            "schemaVersion": "2026.08.28-v1",
+            "fileName": "A / \"quote\" \\ tab\t newline\n.xlsx"
+          }
+        ],
+        "confirmedBy": "10000000-0000-4000-8000-000000000081",
+        "confirmedAt": "2026-09-23T00:00:00Z"
+      },
+      "hash": "b3dbe4406704c43ad2d327ddf8610450f7e1fcb16d1ebb7f0c5c3e78111063dd"
+    },
+    {
+      "label": "v2 é 𐀀 漢字",
+      "scope": {
+        "schemaVersion": "receivables-evidence-scope.v2",
+        "id": "10000000-0000-4000-8000-000000000080",
+        "fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "sourceManifestFingerprint": "9f90a9be5e8cfec481008230f87241c1239c45b71320908271af5fdc40b6a98c",
+        "primaryTape": {
+          "documentId": "10000000-0000-4000-8000-000000000001",
+          "sheet": "é 𐀀 漢字",
+          "headerRow": 1
+        },
+        "primarySupportSheets": [
+          "A / quote",
+          "é 𐀀"
+        ],
+        "complementDocumentIds": [],
+        "reportingDate": "2026-08-31",
+        "sourceRevisions": [
+          {
+            "sourceDocumentId": "10000000-0000-4000-8000-000000000001",
+            "documentVersion": 1,
+            "contentKind": "document_layer",
+            "sourceSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "contentSha256": "22723d0a0c0133eb61d362f8d1a233a379063344013ebb5dc7e1ce3c1c39ca98",
+            "schemaVersion": "2026.08.28-v1",
+            "fileName": "é 𐀀 漢字.xlsx"
+          }
+        ],
+        "confirmedBy": "10000000-0000-4000-8000-000000000081",
+        "confirmedAt": "2026-09-23T00:00:00Z"
+      },
+      "hash": "6cbce7e21f7360c31a347c2690071ac376d38bae5456049fc75351a9967eaec4"
+    }
+  ]
+}
