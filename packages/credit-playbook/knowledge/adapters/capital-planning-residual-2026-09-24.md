@@ -1,6 +1,9 @@
-// Generated from the residual-batch adapter. New professional authorship does not alter this policy.
-// This replaces the frozen legacy adapter as the operational policy; it does not publish or activate the candidate method.
-export const capitalPlanningCompatibilityPolicy = {
+# Adaptador de planejamento de capital: lote residual
+
+Substitui o adaptador legado congelado em `../legacy/capital-planning-compatibility-2026-09-20.md` como política operacional do fluxo público direcional (etapa 17, incremento 4B). Mesmo escopo, mesmo schema e mesmas famílias; muda o que o sistema pede e o que ele recusa: o pedido à companhia é só o resíduo, em um lote, cada item com o motivo e a decisão que altera, sem teto numérico; base insuficiente não força comparação de alternativas. Não é o procedimento profissional aprovado em 21/09/2026 e não o ativa.
+
+```capital-planning-compatibility
+{
   "schemaVersion": "capital-planning-compatibility.v1",
   "version": "2026.09.24-v2",
   "scope": "existing_public_directional_adapter",
@@ -62,7 +65,6 @@ export const capitalPlanningCompatibilityPolicy = {
       "label": "Special situations or liability management",
       "methodBoundary": "Can address a maturity or stressed liquidity problem; creditor coordination and execution risk are central."
     }
-  ],
-  "sourcePath": "packages/credit-playbook/knowledge/adapters/capital-planning-residual-2026-09-24.md",
-  "policyHash": "31ca5d156de399e5b8c3db53c50bd67003d05709711894cda6fb36c7f2265516"
-} as const;
+  ]
+}
+```

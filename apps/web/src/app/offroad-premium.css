@@ -6453,6 +6453,19 @@ body:has(> #main-content) {
   gap: 12px;
 }
 
+.capital-planning-insufficient {
+  display: flex;
+  margin: 0;
+  padding: 14px 15px;
+  align-items: flex-start;
+  gap: 8px;
+  border: 1px solid #d8dfe1;
+  color: var(--muted);
+  background: #f7f8f8;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
 .capital-planning-alternatives > article {
   padding: 24px;
   border: 1px solid var(--line);

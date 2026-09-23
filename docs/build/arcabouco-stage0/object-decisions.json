@@ -42235,6 +42235,12 @@
           "line": 346,
           "anchor": "create or replace function public.worker_record_agent_assessment_v1(",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923224304_residual_information_request_batch.sql",
+          "line": 55,
+          "anchor": "create or replace function private.worker_record_agent_assessment_v1(",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -45757,6 +45763,12 @@
           "path": "supabase/migrations/20260907044225_project_information_request_projection.sql",
           "line": 214,
           "anchor": "create or replace function public.worker_sync_project_information_requests_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923224304_residual_information_request_batch.sql",
+          "line": 439,
+          "anchor": "create or replace function private.worker_sync_project_information_requests_v1(",
           "mechanism": "direct_ddl"
         }
       ],
@@ -161877,6 +161889,13 @@
       "decision": "preservar",
       "stage": "17 / 3O",
       "reason": "Etapa 17, correção 3O, terceira parte: condições da segunda revisão independente (ledger de perfis verificado, revogação com usuário da sessão, rótulo aparado, truncamento recusado)."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923224304_residual_information_request_batch.sql",
+      "decision": "preservar",
+      "stage": "17 / 4B",
+      "reason": "Etapa 17, incremento 4B: restabelece worker_record_agent_assessment_v1 e worker_sync_project_information_requests_v1 sem o corte de pedidos residuais, com guarda de deriva da base."
     }
   ],
   "staging_archive": [

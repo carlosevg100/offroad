@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-09-23T20:49:01Z",
-  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them; receivables_scope_sources_current(uuid,uuid,jsonb) and record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text), rewritten by the 3M migration merged after the capture, captured from production on 2026-09-23",
+  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them; receivables_scope_sources_current(uuid,uuid,jsonb) and record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text), rewritten by the 3M migration merged after the capture, captured from production on 2026-09-23; worker_record_agent_assessment_v1(uuid,text,jsonb) and worker_sync_project_information_requests_v1(uuid,text,jsonb), restated in full by the 4B migration 20260923224304, re-captured from production on 2026-09-23 after that apply",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -310,7 +310,7 @@
     {
       "signature": "private.worker_record_agent_assessment_v1(uuid,text,jsonb)",
       "file": "private.worker_record_agent_assessment_v1(uuid,text,jsonb).sql",
-      "sha256": "ce195a0b8c6a86510b84bf101466779bac20599fbf13cf0ab54369d0bd2f4f33"
+      "sha256": "7e8b4db5060861a99c8cf855aa734ffd6e56396ecdf3b76c3f797ec4f0e3c59b"
     },
     {
       "signature": "private.worker_record_agent_stage_event_v1(uuid,text,text,text,jsonb)",
@@ -345,7 +345,7 @@
     {
       "signature": "private.worker_sync_project_information_requests_v1(uuid,text,jsonb)",
       "file": "private.worker_sync_project_information_requests_v1(uuid,text,jsonb).sql",
-      "sha256": "b17898544d59bf8c58514b8290719906744d30f0e3c49643bf764d4e7b735ed0"
+      "sha256": "954a4a37c966038ee13d87fa12249796d4a1acbd9aefb64148e96db3860a0a5d"
     },
     {
       "signature": "private.worker_sync_receivables_information_requests_v1(uuid,text,jsonb)",

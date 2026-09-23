@@ -156,7 +156,9 @@ export const dcmAgentAssessmentSchema = z.object({
   projectId: z.uuid(),
   assessmentRef: z.string().trim().min(1).max(300),
   coverage: z.array(dcmRequirementCoverageSchema).max(200),
-  requests: z.array(dcmInformationRequestSchema).max(3),
+  // The batch is the whole residual, one active request per requirement; sixty is a technical
+  // bound on one payload, never a product cap.
+  requests: z.array(dcmInformationRequestSchema).max(60),
   decisions: z.array(dcmDecisionRecordSchema).max(30),
 }).superRefine((assessment, context) => {
   const scoped = [...assessment.coverage, ...assessment.requests, ...assessment.decisions]
@@ -274,9 +276,10 @@ export function createDcmPlanRevision(
   return dcmPlanRevisionSchema.parse({...payload, fingerprint: fingerprintJson(payload)});
 }
 
+/** Orders every open request by decision value. The batch is not cut: the company receives the
+ * whole residual at once, each item with its reason; only deferred (`later`) items stay out. */
 export function rankInformationRequests(
   requests: readonly DcmInformationRequest[],
-  limit = 3,
 ): DcmInformationRequest[] {
   return requests
     .filter((request) => request.status === "open" && request.priority !== "later")
@@ -288,7 +291,6 @@ export function rankInformationRequests(
         - request.redundancyPenalty,
     }))
     .sort((left, right) => right.score - left.score || left.request.createdAt.localeCompare(right.request.createdAt))
-    .slice(0, Math.max(0, Math.min(limit, 3)))
     .map(({request}) => request);
 }
 

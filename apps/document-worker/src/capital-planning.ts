@@ -68,7 +68,7 @@ const contextSchema = z.object({
 });
 
 const EXECUTOR_KEY = "offroad.capital_planning";
-const EXECUTOR_VERSION = "2026.09.20-v1";
+const EXECUTOR_VERSION = "2026.09.24-v2";
 const ARTIFACT_SCHEMA_VERSION = "capital-artifact.v1";
 const REQUIRED_TASKS = [
   "M01", "M02", "M03", "M04", "M05", "M06",
@@ -375,12 +375,19 @@ function planningTaskArtifact(taskId: string, input: {
   website: string | null;
 }): {type: string; content: Record<string, unknown>; publicEvidence: boolean} {
   const status = (reason: string) => ({status: "not_computable_public_only", reason});
+  // An insufficient base forces no alternative universe and no comparison: the tasks that would
+  // carry them record the outcome and the size of the residual batch asked instead.
+  const insufficientBase = input.planningMap.alternatives.length === 0 ? {
+    status: "insufficient_base",
+    reason: "The available base does not support a comparison of alternatives; the residual information batch was requested instead.",
+    informationRequestCount: input.planningMap.informationRequests.length,
+  } : null;
   const publicEvidence = ["C01", "C02", "C09", "C11", "S02", "S05", "S06", "S10"].includes(taskId);
   const byTask: Record<string, {type: string; content: Record<string, unknown>}> = {
     M01: {type: "company_scope", content: {company: input.companyName, website: input.website, legalEntity: "pending_official_resolution_or_user_confirmation"}},
     M02: {type: "capital_intent", content: {capitalIntent: input.context.brief.content.capitalIntent, informationClass: "user_declaration"}},
     M03: {type: "constraint_register", content: {knownConstraints: input.context.brief.content.knownConstraints ?? null, boundaries: ["no_underwriting", "no_sizing_without_reconciled_inputs", "no_live_pricing", "no_lender_contact"]}},
-    M04: {type: "candidate_archetypes", content: {families: input.planningMap.alternatives.map((alternative) => ({id: alternative.id, family: alternative.family, status: alternative.status}))}},
+    M04: {type: "candidate_archetypes", content: insufficientBase ?? {families: input.planningMap.alternatives.map((alternative) => ({id: alternative.id, family: alternative.family, status: alternative.status}))}},
     M05: {type: "deliverable_definition", content: {workProduct: "alternative_map", gate: "user_confirmation_before_structuring"}},
     M06: {type: "capital_planning_execution_plan", content: {planId: input.context.plan.id, planFingerprint: input.context.plan.fingerprint, tasks: input.context.tasks.map((task) => ({id: task.id, batch: task.batch, dependencies: task.dependencies})), modelCalls: [{taskId: "S11", maximum: 1}], externalSearchQueries: 8}},
     D01: {type: "document_ingestion_status", content: {status: "not_applicable_public_only", documents: []}},
@@ -402,15 +409,15 @@ function planningTaskArtifact(taskId: string, input: {
     C10: {type: "capacity_assessment", content: status("Capacity cannot be calculated from an intent and public snippets.")},
     C11: {type: "structuring_thesis", content: {status: "directional_hypotheses_only", executiveRead: input.planningMap.executiveRead, recommendation: input.planningMap.directionalRecommendation}},
     S01: {type: "request_need_comparison", content: {status: "objective_only", objective: input.planningMap.understoodNeed.objective, sizing: null}},
-    S02: {type: "instrument_universe", content: {alternatives: input.planningMap.alternatives.map(({id, family, title, status: alternativeStatus}) => ({id, family, title, status: alternativeStatus}))}},
+    S02: {type: "instrument_universe", content: insufficientBase ?? {alternatives: input.planningMap.alternatives.map(({id, family, title, status: alternativeStatus}) => ({id, family, title, status: alternativeStatus}))}},
     S03: {type: "legal_economic_filters", content: status("Legal, tax, accounting and economic eligibility inputs are not yet confirmed.")},
     S04: {type: "collateral_map", content: status("Collateral existence, ownership, value, liquidity and enforceability are not yet evidenced.")},
-    S05: {type: "structure_alternatives", content: {alternatives: input.planningMap.alternatives}},
+    S05: {type: "structure_alternatives", content: insufficientBase ?? {alternatives: input.planningMap.alternatives}},
     S06: {type: "pricing_terms_research", content: {...researchContent(input.research, ["market"]), boundary: "No live pricing or comparable term was treated as a house reference."}},
     S07: {type: "total_cost_comparison", content: status("No quoted rates, fees, tax or executable terms are available.")},
     S08: {type: "covenant_protection_design", content: status("Protections require downside cases, capacity and structure terms.")},
     S09: {type: "sources_uses", content: {status: "intent_only", objective: input.planningMap.understoodNeed.objective, sources: null, uses: null}},
-    S10: {type: "alternative_comparison", content: {comparison: input.planningMap.comparison, recommendation: input.planningMap.directionalRecommendation}},
+    S10: {type: "alternative_comparison", content: insufficientBase ?? {comparison: input.planningMap.comparison, recommendation: input.planningMap.directionalRecommendation}},
   };
   const selected = byTask[taskId];
   if (!selected) throw codedError(`capital_planning_task_${taskId.toLowerCase()}_unsupported`);

@@ -1515,8 +1515,12 @@
   {
    "version": "20260923223307",
    "name": "platform_operator_identity_ledger_guard"
+  },
+  {
+   "version": "20260923224304",
+   "name": "residual_information_request_batch"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-23T22:35:02.738325+00:00"
+ "captured_at": "2026-09-23T22:43:37.276405+00:00"
 }

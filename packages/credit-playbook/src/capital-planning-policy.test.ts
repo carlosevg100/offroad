@@ -6,15 +6,15 @@ import {capitalPlanningCompatibilityPolicy} from "./capital-planning-policy.gene
 const root = resolve(import.meta.dirname, "../../..");
 const markdown = () => readFileSync(resolve(root, capitalPlanningPolicyPath), "utf8");
 describe("canonical capital planning compatibility policy", () => {
-  it("reproduces the generated adapter from the single frozen legacy block", () => {
+  it("reproduces the generated adapter from the single residual-batch block", () => {
     expect(renderCapitalPlanningPolicy(root)).toBe(readFileSync(resolve(root, "packages/credit-playbook/src/capital-planning-policy.generated.ts"), "utf8"));
     expect(compileCapitalPlanningPolicy(markdown())).toEqual(capitalPlanningCompatibilityPolicy);
   });
-  it("keeps the frozen legacy policy apart from publication of the capital decision procedure", () => {
+  it("keeps the residual-batch policy apart from publication of the capital decision procedure", () => {
     expect(capitalPlanningCompatibilityPolicy.activatesCapitalDecisionProcedure).toBe(false);
     expect(capitalPlanningCompatibilityPolicy.scope).toBe("existing_public_directional_adapter");
     expect(capitalPlanningCompatibilityPolicy.families).toHaveLength(11);
-    expect(capitalPlanningCompatibilityPolicy.policyHash).toBe("22867fa0ad79533d988d6c851f40ef17c2f438b1ae6c100b81ce8a705bce8ae0");
+    expect(capitalPlanningCompatibilityPolicy.policyHash).toBe("31ca5d156de399e5b8c3db53c50bd67003d05709711894cda6fb36c7f2265516");
   });
   it("rejects ambiguous missing and malformed canonical compatibility blocks", () => {
     expect(() => compileCapitalPlanningPolicy("no policy")).toThrow();

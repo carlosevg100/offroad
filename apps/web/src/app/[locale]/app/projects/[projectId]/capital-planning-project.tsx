@@ -85,7 +85,7 @@ export async function CapitalPlanningProject({locale, projectId}: Props) {
 
               <section className="origination-brief__section">
                 <header><Lightbulb aria-hidden="true" size={16} /><div><span>{t("map.alternatives")}</span><p>{t("map.alternativesBody")}</p></div></header>
-                <div className="capital-planning-alternatives">{parsed.data.alternatives.map((alternative) => <article key={alternative.id}>
+                {parsed.data.alternatives.length === 0 ? <p className="capital-planning-insufficient"><AlertCircle aria-hidden="true" size={14} />{t("map.insufficientAlternatives", {count: parsed.data.informationRequests.length})}</p> : <div className="capital-planning-alternatives">{parsed.data.alternatives.map((alternative) => <article key={alternative.id}>
                   <header><div><small>{t(`families.${alternative.family}`)}</small><h3>{alternative.title}</h3></div><span>{t(`alternativeStatus.${alternative.status}`)}</span></header>
                   <p>{alternative.fitRationale}</p>
                   <div className="capital-planning-alternative-grid">
@@ -95,12 +95,12 @@ export async function CapitalPlanningProject({locale, projectId}: Props) {
                     <section><strong>{t("map.disconfirmers")}</strong><List items={alternative.disconfirmers} /></section>
                   </div>
                   <SourceLinks label={t("map.sources")} urls={alternative.sourceUrls} />
-                </article>)}</div>
+                </article>)}</div>}
               </section>
 
               <section className="origination-brief__section">
                 <header><GitCompareArrows aria-hidden="true" size={16} /><div><span>{t("map.comparison")}</span><p>{t("map.comparisonBody")}</p></div></header>
-                <div className="capital-planning-comparison">{parsed.data.comparison.map((dimension) => <section key={dimension.dimension}><strong>{dimension.dimension}</strong><div>{dimension.observations.map((observation) => <p key={`${dimension.dimension}-${observation.alternativeId}`}><span>{parsed.data.alternatives.find((item) => item.id === observation.alternativeId)?.title ?? observation.alternativeId}</span>{observation.assessment}</p>)}</div></section>)}</div>
+                {parsed.data.comparison.length === 0 ? <p className="capital-planning-insufficient"><AlertCircle aria-hidden="true" size={14} />{t("map.insufficientComparison")}</p> : <div className="capital-planning-comparison">{parsed.data.comparison.map((dimension) => <section key={dimension.dimension}><strong>{dimension.dimension}</strong><div>{dimension.observations.map((observation) => <p key={`${dimension.dimension}-${observation.alternativeId}`}><span>{parsed.data.alternatives.find((item) => item.id === observation.alternativeId)?.title ?? observation.alternativeId}</span>{observation.assessment}</p>)}</div></section>)}</div>}
               </section>
 
               <section className={`capital-planning-recommendation is-${parsed.data.directionalRecommendation.status}`}>

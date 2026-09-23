@@ -55,8 +55,9 @@ export type DirectionalDecision = {
 
 /**
  * Projects the deterministic private-case sufficiency engine into the durable project work map.
- * Files and typed answers discharge requirements automatically; only the three highest-value
- * unresolved items become active client requests.
+ * Files and typed answers discharge requirements automatically; every unresolved item that is
+ * needed now or for structuring becomes an active client request, in one batch ordered by
+ * decision value, each with its reason.
  */
 export function buildPrivateCaseAssessment(input: {
   projectId: string;
@@ -132,7 +133,8 @@ export function buildPublicWorkAssessment(input: {
 }
 
 /** Preliminary understanding can expose genuine unknowns before an archetype has been confirmed.
- * These are not converted into a long questionnaire; ranking still caps the active batch at three. */
+ * Each open point becomes one request with its reason and the decision it changes; the batch is
+ * ordered by decision value and never cut. */
 export function buildPreliminaryAssessment(input: {
   projectId: string;
   assessmentRef: string;
@@ -175,7 +177,7 @@ function assessment(
 ): DcmAgentAssessment {
   const uniqueCoverage = uniqueBy(coverage, (item) => item.requirementKey);
   const uniqueRequests = uniqueBy(requests, (item) => item.requirementKey);
-  const selectedRequests = rankInformationRequests(uniqueRequests, 3);
+  const selectedRequests = rankInformationRequests(uniqueRequests);
   const decisionRecords = decisions.map((decision) => createDcmDecisionRecord({
     id: randomUUID(),
     projectId: input.projectId,

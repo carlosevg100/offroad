@@ -156,7 +156,7 @@ end;
 $$;
 
 -- Exercise the complete worker command, including actor attribution, replay idempotency and the
--- three-question guard. The transaction is rolled back below.
+-- residual request batch. The transaction is rolled back below.
 insert into auth.users (
   id, aud, role, email, raw_app_meta_data, raw_user_meta_data,
   created_at, updated_at, is_sso_user, is_anonymous
@@ -439,17 +439,98 @@ begin
   exception when sqlstate 'ZX009' then null;
   end;
 
+  -- The residual batch is not cut: seven distinct requests, each with its reason and the decision
+  -- it changes, persist through one assessment and all seven reach the open question rail in the
+  -- shape the project page reads. The fixture rolls back so the single open question above keeps
+  -- serving the answer proof below.
+  declare
+    residual jsonb;
+  begin
+    select jsonb_agg((assessment #> '{requests,0}') || jsonb_build_object(
+      'id', ('7400000' || n || '-0000-4000-8000-000000000393')::uuid,
+      'requirementKey', 'residual.item_' || n,
+      'question', 'Pergunta residual ' || n || ': qual é a base desta informação?',
+      'whyItMatters', 'Motivo do item ' || n || ': altera a leitura da capacidade e da estrutura.',
+      'decisionImpact', 'Decisão do item ' || n || ': muda prazo, garantia ou viabilidade da alternativa.',
+      'priority', case when n = 1 then 'blocking' else 'high_value' end,
+      'informationGain', round(1 - (n * 0.05), 2)
+    ) order by n) into residual
+    from generate_series(1, 7) as n;
+    recorded := public.worker_record_agent_assessment_v1(
+      ids.job_id, repeat('c', 64), assessment || jsonb_build_object(
+        'assessmentRef', 'residual-batch-seven', 'coverage', '[]'::jsonb,
+        'decisions', '[]'::jsonb, 'requests', residual
+      )
+    );
+    if recorded ->> 'request_count' <> '7' then
+      raise exception 'agent assessment cut the residual batch: %', recorded;
+    end if;
+    if (select count(*) from public.capital_project_information_requests r
+        where r.capital_project_id = ids.project_id and r.source_namespace = 'agent_assessment'
+          and r.status = 'open' and r.requirement_key like 'residual.item\_%'
+          and char_length(trim(r.why_it_matters)) > 0 and char_length(trim(r.decision_impact)) > 0) <> 7 then
+      raise exception 'residual batch rows lost their reason or decision impact';
+    end if;
+    if (select count(*) from (
+          select r.requirement_key from public.capital_project_information_requests r
+          where r.organization_id = '20000000-0000-4000-8000-000000000393'
+            and r.capital_project_id = ids.project_id
+            and r.status = 'open' and r.priority <> 'later'
+          order by r.information_gain desc, r.created_at) rail
+        where rail.requirement_key like 'residual.item\_%') <> 7
+      or (select r.requirement_key from public.capital_project_information_requests r
+          where r.capital_project_id = ids.project_id and r.status = 'open' and r.priority <> 'later'
+          order by r.information_gain desc, r.created_at limit 1) <> 'residual.item_1'
+      or not exists (select 1 from public.capital_project_agent_events e
+          where e.capital_project_id = ids.project_id and e.event_type = 'question_created'
+            and e.detail ->> 'assessment_ref' = 'residual-batch-seven'
+            and e.detail ->> 'request_count' = '7') then
+      raise exception 'the open question rail does not carry the whole residual batch';
+    end if;
+    raise exception 'rollback residual batch fixture' using errcode = 'ZX011';
+  exception when sqlstate 'ZX011' then null;
+  end;
+
+  -- A request without its reason, or without the decision it changes, is refused as such.
+  rejected := false;
   begin
     perform public.worker_record_agent_assessment_v1(
       ids.job_id, repeat('c', 64), assessment || jsonb_build_object(
-        'assessmentRef', 'too-many-questions',
-        'requests', (assessment -> 'requests') || (assessment -> 'requests') ||
-          (assessment -> 'requests') || (assessment -> 'requests')
+        'assessmentRef', 'blank-reason',
+        'requests', jsonb_build_array((assessment #> '{requests,0}') || jsonb_build_object('whyItMatters', '   '))
       )
     );
-  exception when invalid_parameter_value then rejected := true;
+  exception when invalid_parameter_value then
+    rejected := sqlerrm = 'agent_information_request_reason_required';
   end;
-  if not rejected then raise exception 'agent assessment accepted more than three questions'; end if;
+  if not rejected then raise exception 'agent assessment accepted a request without its reason'; end if;
+  rejected := false;
+  begin
+    perform public.worker_record_agent_assessment_v1(
+      ids.job_id, repeat('c', 64), assessment || jsonb_build_object(
+        'assessmentRef', 'missing-decision-impact',
+        'requests', jsonb_build_array((assessment #> '{requests,0}') - 'decisionImpact')
+      )
+    );
+  exception when invalid_parameter_value then
+    rejected := sqlerrm = 'agent_information_request_reason_required';
+  end;
+  if not rejected then raise exception 'agent assessment accepted a request without its decision impact'; end if;
+
+  -- Sixty is a technical bound on one payload, not a product rule; sixty-one is refused.
+  rejected := false;
+  begin
+    perform public.worker_record_agent_assessment_v1(
+      ids.job_id, repeat('c', 64), assessment || jsonb_build_object(
+        'assessmentRef', 'beyond-technical-bound',
+        'requests', (select jsonb_agg((assessment #> '{requests,0}') || jsonb_build_object('requirementKey', 'bound.item_' || n))
+                     from generate_series(1, 61) as n)
+      )
+    );
+  exception when invalid_parameter_value then
+    rejected := sqlerrm = 'agent_assessment_invalid';
+  end;
+  if not rejected then raise exception 'agent assessment accepted more than the technical bound of sixty requests'; end if;
 end;
 $$;
 
@@ -609,6 +690,80 @@ begin
           and detail ->> 'projection_ref' = 'preview_meeting_brief:first') <> 1 then
     raise exception 'workflow question projection is not idempotent: %, %', first_result, replay_result;
   end if;
+
+  -- The workflow projection carries the whole residual batch too: seven requests under one producer
+  -- namespace, none cut, all reaching the open question rail while the other producer's question
+  -- stays untouched. Rolled back afterwards.
+  declare
+    residual jsonb;
+    batch_result jsonb;
+  begin
+    select jsonb_agg((projection #> '{requests,0}') || jsonb_build_object(
+      'id', ('7500000' || n || '-0000-4000-8000-000000000393')::uuid,
+      'requirementKey', 'residual.projection_' || n,
+      'question', 'Pergunta residual ' || n || ': qual é a base desta informação?',
+      'whyItMatters', 'Motivo do item ' || n || ': altera a leitura da capacidade e da estrutura.',
+      'decisionImpact', 'Decisão do item ' || n || ': muda prazo, garantia ou viabilidade da alternativa.',
+      'answerKind', 'text', 'choices', '[]'::jsonb,
+      'priority', case when n = 1 then 'blocking' else 'high_value' end,
+      'informationGain', round(1 - (n * 0.05), 2)
+    ) order by n) into residual
+    from generate_series(1, 7) as n;
+    batch_result := public.worker_sync_project_information_requests_v1(
+      ids.job_id, repeat('c', 64), projection || jsonb_build_object(
+        'sourceNamespace', 'residual_batch_proof', 'projectionRef', 'residual-batch:seven', 'requests', residual
+      )
+    );
+    if batch_result ->> 'open_count' <> '7'
+      or (select count(*) from public.capital_project_information_requests r
+          where r.capital_project_id = ids.project_id and r.source_namespace = 'residual_batch_proof'
+            and r.status = 'open'
+            and char_length(trim(r.why_it_matters)) > 0 and char_length(trim(r.decision_impact)) > 0) <> 7
+      or (select count(*) from (
+            select r.requirement_key from public.capital_project_information_requests r
+            where r.organization_id = '20000000-0000-4000-8000-000000000393'
+              and r.capital_project_id = ids.project_id
+              and r.status = 'open' and r.priority <> 'later'
+            order by r.information_gain desc, r.created_at) rail
+          where rail.requirement_key like 'residual.projection\_%') <> 7
+      or (select status from public.capital_project_information_requests
+          where id = '71000000-0000-4000-8000-000000000393') <> 'open' then
+      raise exception 'workflow projection cut the residual batch: %', batch_result;
+    end if;
+    raise exception 'rollback residual projection fixture' using errcode = 'ZX012';
+  exception when sqlstate 'ZX012' then null;
+  end;
+
+  -- A request without the decision it changes is refused as such; sixty-one requests exceed the
+  -- technical bound on one payload.
+  declare
+    rejected boolean := false;
+  begin
+    begin
+      perform public.worker_sync_project_information_requests_v1(
+        ids.job_id, repeat('c', 64), projection || jsonb_build_object(
+          'projectionRef', 'preview_meeting_brief:blank-reason',
+          'requests', jsonb_build_array((projection #> '{requests,0}') || jsonb_build_object('decisionImpact', ' '))
+        )
+      );
+    exception when invalid_parameter_value then
+      rejected := sqlerrm = 'agent_information_request_reason_required';
+    end;
+    if not rejected then raise exception 'workflow projection accepted a request without its decision impact'; end if;
+    rejected := false;
+    begin
+      perform public.worker_sync_project_information_requests_v1(
+        ids.job_id, repeat('c', 64), projection || jsonb_build_object(
+          'projectionRef', 'preview_meeting_brief:beyond-bound',
+          'requests', (select jsonb_agg((projection #> '{requests,0}') || jsonb_build_object('requirementKey', 'bound.item_' || n))
+                       from generate_series(1, 61) as n)
+        )
+      );
+    exception when invalid_parameter_value then
+      rejected := sqlerrm = 'information_request_projection_invalid';
+    end;
+    if not rejected then raise exception 'workflow projection accepted more than the technical bound of sixty requests'; end if;
+  end;
 end;
 $$;
 

@@ -4,6 +4,7 @@ import {
   createDcmDecisionRecord,
   createInitialDcmPlan,
   createDcmPlanRevision,
+  dcmAgentAssessmentSchema,
   dcmRequirementCoverageSchema,
   dcmWorkItemSchema,
   rankInformationRequests,
@@ -82,17 +83,35 @@ describe("agentic DCM work contracts", () => {
     }).success).toBe(false);
   });
 
-  it("asks at most three questions ranked by decision value", () => {
+  it("orders every open request by decision value without cutting the batch", () => {
     const ranked = rankInformationRequests([
       request({id: crypto.randomUUID(), requirementKey: "low.value", informationGain: 0.2}),
       request({id: crypto.randomUUID(), requirementKey: "high.value", informationGain: 1}),
       request({id: crypto.randomUUID(), requirementKey: "medium.value", informationGain: 0.6}),
       request({id: crypto.randomUUID(), requirementKey: "blocking.value", priority: "blocking", materiality: 1}),
+      request({id: crypto.randomUUID(), requirementKey: "fifth.value", informationGain: 0.5}),
+      request({id: crypto.randomUUID(), requirementKey: "sixth.value", informationGain: 0.4}),
+      request({id: crypto.randomUUID(), requirementKey: "seventh.value", informationGain: 0.3}),
       request({id: crypto.randomUUID(), requirementKey: "later.value", priority: "later", informationGain: 1}),
-    ], 10);
-    expect(ranked).toHaveLength(3);
-    expect(ranked[0]?.requirementKey).toBe("high.value");
+      request({id: crypto.randomUUID(), requirementKey: "answered.value", status: "answered", informationGain: 1}),
+    ]);
+    expect(ranked).toHaveLength(7);
+    expect(ranked.map((item) => item.requirementKey)).toEqual([
+      "high.value", "blocking.value", "medium.value", "fifth.value", "sixth.value", "seventh.value", "low.value",
+    ]);
     expect(ranked.some((item) => item.requirementKey === "later.value")).toBe(false);
+  });
+
+  it("accepts a residual batch of seven requests in one assessment and refuses a duplicate requirement", () => {
+    const requests = Array.from({length: 7}, (_, index) => request({
+      id: crypto.randomUUID(), requirementKey: `residual.item_${index + 1}`, informationGain: 1 - (index * 0.05),
+    }));
+    const assessment = {
+      schemaVersion: "dcm-agent-assessment.v1", projectId, assessmentRef: "processing_run:test",
+      coverage: [], requests, decisions: [],
+    };
+    expect(dcmAgentAssessmentSchema.safeParse(assessment).success).toBe(true);
+    expect(dcmAgentAssessmentSchema.safeParse({...assessment, requests: [...requests, requests[0]]}).success).toBe(false);
   });
 
   it("runs independent work in parallel but never bypasses requirements or approval", () => {

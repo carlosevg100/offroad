@@ -1,3 +1,4 @@
+import {assessSufficiency} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
 
 import {
@@ -33,12 +34,26 @@ describe("agent assessment projection", () => {
       .toMatchObject({status: "verified", evidence: [{id: "document:doc-financials"}]});
     expect(assessment.coverage.find((item) => item.requirementKey.endsWith("debt_schedule")))
       .toMatchObject({status: "verified", evidence: [{id: "document:doc-debt"}]});
-    expect(assessment.requests).toHaveLength(3);
+    // The batch is the residual: every requirement the engine still misses now or for structuring
+    // (later-stage items stay out) plus the finding, each with its reason; nothing covered by a
+    // document is asked again and nothing is cut.
+    const residual = assessSufficiency("other", [
+      {id: "doc-financials", kind: "audited_financial_statements"},
+      {id: "doc-debt", kind: "debt_schedule"},
+    ]).missing.filter((status) => (status.stage === "now" || status.stage === "structuring") && status.requirement.source !== "notice");
+    expect(assessment.requests).toHaveLength(residual.length + 1);
+    expect(assessment.requests.length).toBeGreaterThan(3);
     expect(assessment.requests[0]).toMatchObject({
       requirementKey: "finding.stack-vs-balance",
       priority: "blocking",
     });
+    for (const request of assessment.requests) {
+      expect(request.whyItMatters.trim().length).toBeGreaterThan(0);
+      expect(request.decisionImpact.trim().length).toBeGreaterThan(0);
+    }
     expect(assessment.requests.some((request) => request.requirementKey.endsWith("financials_historical")))
+      .toBe(false);
+    expect(assessment.requests.some((request) => request.requirementKey.endsWith("debt_schedule")))
       .toBe(false);
   });
 
@@ -74,28 +89,38 @@ describe("agent assessment projection", () => {
     });
   });
 
-  it("caps preliminary clarification at three decision-useful points", () => {
+  it("turns every preliminary open point into one request with its reason and the decision it changes", () => {
+    const openPoints = [
+      {question: "Qual é o objetivo?", whyItMatters: "Define a destinação dos recursos.", category: "operation" as const},
+      {question: "Qual é o montante?", whyItMatters: "Define o dimensionamento inicial.", category: "operation" as const},
+      {question: "Qual é o prazo?", whyItMatters: "Define o perfil de amortização.", category: "operation" as const},
+      {question: "Quais garantias existem?", whyItMatters: "Define as estruturas elegíveis.", category: "operation" as const},
+      {question: "Qual é o perímetro?", whyItMatters: "Define as entidades analisadas.", category: "company" as const},
+      {question: "Qual é o setor de atuação?", whyItMatters: "Define os drivers e as referências.", category: "sector" as const},
+      {question: "Qual é o escopo da entrega?", whyItMatters: "Define o que deve ser priorizado.", category: "scope" as const},
+    ];
     const assessment = buildPreliminaryAssessment({
       projectId,
       assessmentRef: "processing_run:20000000-0000-4000-8000-000000000003",
       locale: "pt-BR",
       assessedAt,
-      openPoints: [
-        {question: "Qual é o objetivo?", whyItMatters: "Define a destinação dos recursos.", category: "operation"},
-        {question: "Qual é o montante?", whyItMatters: "Define o dimensionamento inicial.", category: "operation"},
-        {question: "Qual é o prazo?", whyItMatters: "Define o perfil de amortização.", category: "operation"},
-        {question: "Quais garantias existem?", whyItMatters: "Define as estruturas elegíveis.", category: "operation"},
-        {question: "Qual é o perímetro?", whyItMatters: "Define as entidades analisadas.", category: "company"},
-      ],
+      openPoints,
     });
 
-    expect(assessment.requests).toHaveLength(3);
-    expect(assessment.coverage).toHaveLength(5);
+    expect(assessment.requests).toHaveLength(7);
+    expect(assessment.coverage).toHaveLength(7);
+    expect(new Set(assessment.requests.map((request) => request.requirementKey)).size).toBe(7);
     expect(assessment.requests[0]).toMatchObject({
       question: "Qual é o objetivo?",
       whyItMatters: "Define a destinação dos recursos.",
       decisionImpact: "Pode alterar o desenho, o dimensionamento ou a prioridade da operação.",
+      priority: "blocking",
     });
+    for (const [index, request] of assessment.requests.entries()) {
+      expect(request.question).toBe(openPoints[index]!.question);
+      expect(request.whyItMatters).toBe(openPoints[index]!.whyItMatters);
+      expect(request.decisionImpact.length).toBeGreaterThan(0);
+    }
   });
 
   it("keeps repeated public prompts addressable without key collisions", () => {
