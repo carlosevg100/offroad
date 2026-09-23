@@ -36,7 +36,16 @@ select pg_temp.expect_producer_error($q$delete from private.execution_producer_g
 select pg_temp.expect_producer_error($q$truncate private.execution_producer_grants$q$,'platform_ledger_immutable','producer grants cannot be truncated');
 select pg_temp.expect_producer_error($q$truncate private.execution_producer_grant_events$q$,'platform_ledger_immutable','producer ledger cannot be truncated');
 select pg_temp.expect_producer_error($q$delete from private.execution_producer_grant_events where organization_id='a11b0000-0000-4000-9000-000000000001'$q$,'contribution_revision_immutable','producer ledger is immutable');
--- 2. Capability releases: ledgered on every write; universal activation is the founder's act.
+-- A real client, an organization the founder does not belong to, is granted only by the founder.
+insert into public.organizations(id,organization_type,name,created_by) values('a11b0000-0000-4000-9000-000000000011','company','Synthetic client organization','a11b0000-0000-4000-8000-000000000003');
+select pg_temp.expect_producer_error($q$select private.grant_execution_producer_v1('c4172000-0000-4000-9000-000000000003','a11b0000-0000-4000-9000-000000000011',true,'Synthetic client grant by an operator','a11b0000-0000-4000-8000-000000000003')$q$,'platform_principal_required','operator cannot enable a real client');
+select private.grant_execution_producer_v1('c4172000-0000-4000-9000-000000000003','a11b0000-0000-4000-9000-000000000011',true,'Synthetic client grant by the founder','a11b0000-0000-4000-8000-000000000001');
+select private.grant_execution_producer_v1('c4172000-0000-4000-9000-000000000004','a11b0000-0000-4000-9000-000000000011',false,'Synthetic client pause by an operator','a11b0000-0000-4000-8000-000000000003');
+do $$begin
+ if private.execution_producer_enabled_v1('a11b0000-0000-4000-9000-000000000011') then raise exception 'client pause ineffective';end if;
+ if not exists(select 1 from private.execution_producer_grant_events where command_id='c4172000-0000-4000-9000-000000000003' and granted_by_user_id='a11b0000-0000-4000-8000-000000000001' and enabled) then raise exception 'founder client grant not ledgered';end if;
+end $$;
+-- 2. Capability releases: ledgered on every write; releasing is an operator act contained by producer grants.
 do $$begin
  if not exists(select 1 from private.platform_capability_release_events where capability_key='synthetic-execution' and operation='INSERT' and actor_user_id is null and command_id is null) then raise exception 'fixture release insert not ledgered';end if;
 end $$;
@@ -48,15 +57,14 @@ do $$begin
  if not exists(select 1 from private.platform_capability_release_events where command_id='c4172000-0000-4000-9000-000000000011' and actor_user_id='a11b0000-0000-4000-8000-000000000003' and reason='Synthetic pause of the release by an operator' and operation='UPDATE') then raise exception 'release ledger missing the acting principal';end if;
 end $$;
 select pg_temp.expect_producer_error($q$select private.release_platform_capability_v1('c4172000-0000-4000-9000-000000000011','synthetic-execution',false,'none','a11b0000-0000-4000-8000-000000000003','Synthetic pause of the release by an operator')$q$,'platform_method_request_reused','release command id cannot change its effect');
-select pg_temp.expect_producer_error($q$select private.release_platform_capability_v1('c4172000-0000-4000-9000-000000000012','synthetic-execution',true,'universal','a11b0000-0000-4000-8000-000000000003','Synthetic universal release by an operator')$q$,'platform_principal_required','operator cannot release to every tenant');
 select pg_temp.expect_producer_error($q$select private.release_platform_capability_v1('c4172000-0000-4000-9000-000000000012','synthetic-execution',true,'universal','a11b0000-0000-4000-8000-000000000099','Synthetic universal release by an unknown identity')$q$,'platform_principal_required','unknown identity cannot release');
 select pg_temp.expect_producer_error($q$select private.release_platform_capability_v1('c4172000-0000-4000-9000-000000000012','finance.receivables-released-analysis',false,'internal','a11b0000-0000-4000-8000-000000000001','Synthetic attempt on the R01 key')$q$,'platform_capability_release_invalid','R01 key keeps its own command');
 select pg_temp.expect_producer_error($q$select private.release_platform_capability_v1('c4172000-0000-4000-9000-000000000012','synthetic-execution',true,'everyone','a11b0000-0000-4000-8000-000000000001','Synthetic bad exposure')$q$,'platform_capability_release_invalid','exposure must be a known value');
 select pg_temp.expect_producer_error($q$select private.release_platform_capability_v1('c4172000-0000-4000-9000-000000000012','synthetic-missing',true,'universal','a11b0000-0000-4000-8000-000000000001','Synthetic unknown capability')$q$,'platform_capability_release_invalid','unknown capability cannot be released');
-select private.release_platform_capability_v1('c4172000-0000-4000-9000-000000000012','synthetic-execution',true,'universal','a11b0000-0000-4000-8000-000000000001','Synthetic universal release by the founder');
+select private.release_platform_capability_v1('c4172000-0000-4000-9000-000000000012','synthetic-execution',true,'universal','a11b0000-0000-4000-8000-000000000003','Synthetic universal release by an operator');
 do $$begin
- if not exists(select 1 from private.platform_capability_releases where capability_key='synthetic-execution' and released and exposure='universal') then raise exception 'founder release ineffective';end if;
- if not exists(select 1 from private.platform_capability_release_events where command_id='c4172000-0000-4000-9000-000000000012' and actor_user_id='a11b0000-0000-4000-8000-000000000001' and released and exposure='universal') then raise exception 'founder release not ledgered with identity';end if;
+ if not exists(select 1 from private.platform_capability_releases where capability_key='synthetic-execution' and released and exposure='universal') then raise exception 'operator release ineffective';end if;
+ if not exists(select 1 from private.platform_capability_release_events where command_id='c4172000-0000-4000-9000-000000000012' and actor_user_id='a11b0000-0000-4000-8000-000000000003' and released and exposure='universal') then raise exception 'operator release not ledgered with identity';end if;
  if (select current_setting('offroad.command_reason',true))<>'' then raise exception 'reason setting leaked past the command';end if;
 end $$;
 -- A release row whose corpus never reached publication cannot be released.

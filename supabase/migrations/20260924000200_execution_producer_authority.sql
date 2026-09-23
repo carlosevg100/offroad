@@ -1,8 +1,9 @@
 -- Stage 17, increment 4A, first part: the producer path gets its authority before any tenant can
 -- request an execution. A producer grant per organization is written only by an identity-bound
 -- operator command and ledgered; the platform capability release row, until now edited by loose
--- SQL, gets a ledger of every write and an identity-bound command whose universal activation is
--- the founder's act. Nothing here requests, claims or executes anything.
+-- SQL, gets a ledger of every write and an identity-bound command. Enabling a producer for an
+-- organization the founder does not belong to is the founder's act. Nothing here requests, claims
+-- or executes anything.
 set search_path='';
 
 -- 1. Producer grants: one row per organization, enabled or not, never deleted, always ledgered.
@@ -67,10 +68,14 @@ revoke all on function private.execution_producer_enabled_v1(uuid) from public,a
 create function private.grant_execution_producer_v1(p_command uuid,p_organization uuid,p_enabled boolean,p_note text,p_actor_user_id uuid) returns void
 language plpgsql security invoker set search_path='' as $$
 declare p private.platform_principals;prior private.execution_producer_grant_events;begin
- p:=private.require_platform_principal_v1(p_actor_user_id);
  if p_command is null or p_organization is null or p_enabled is null or (p_note is not null and char_length(p_note)>500) then raise exception 'execution_producer_grant_invalid' using errcode='22023';end if;
  perform 1 from public.organizations where id=p_organization;
  if not found then raise exception 'execution_producer_grant_invalid' using errcode='22023';end if;
+ -- Enabling a producer for an organization the founder does not belong to is releasing execution
+ -- to a real client: the founder's act. The founder's own workspace and every pause are operator acts.
+ p:=private.require_platform_principal_v1(p_actor_user_id,p_enabled and not exists(
+  select 1 from public.organization_memberships m join private.platform_principals f on f.user_id=m.user_id and f.role='founder' and f.revoked_at is null
+  where m.organization_id=p_organization and m.status='active'));
  perform pg_advisory_xact_lock(hashtextextended('platform-command:'||p_command::text,0));
  select * into prior from private.execution_producer_grant_events where command_id=p_command order by sequence desc limit 1;
  if found then
@@ -123,12 +128,13 @@ revoke all on function private.ledger_platform_capability_release_v1() from publ
 create trigger platform_capability_releases_ledger after insert or update or delete on private.platform_capability_releases for each row execute function private.ledger_platform_capability_release_v1();
 create trigger platform_capability_releases_truncate_guard before truncate on private.platform_capability_releases for each statement execute function private.guard_platform_ledger_truncate_v1();
 
--- Releasing a capability to every tenant is the founder's act; narrowing or pausing it is an
--- operator's. The R01 key keeps its own serialized command from correction 3K.
+-- Releasing a capability is an operator act: the corpus behind it already carries the founder's
+-- content approval, and reaching a real client is contained by the producer grant above. The R01
+-- key keeps its own serialized command from correction 3K.
 create function private.release_platform_capability_v1(p_command uuid,p_capability_key text,p_released boolean,p_exposure text,p_actor_user_id uuid,p_reason text) returns void
 language plpgsql security invoker set search_path='' as $$
 declare c private.platform_capability_releases;prior private.platform_capability_release_events;begin
- perform private.require_platform_principal_v1(p_actor_user_id,p_released and p_exposure='universal');
+ perform private.require_platform_principal_v1(p_actor_user_id);
  if p_command is null or p_capability_key is null or p_released is null or p_exposure not in ('universal','allowlisted','internal','none')
  or p_reason is null or length(btrim(p_reason)) not between 10 and 2000 or p_capability_key='finance.receivables-released-analysis'
  then raise exception 'platform_capability_release_invalid' using errcode='22023';end if;
