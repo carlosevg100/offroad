@@ -5664,7 +5664,9 @@ do $$declare role_name text;begin
  foreach role_name in array array['anon','authenticated','service_role'] loop
  if has_table_privilege(role_name,'private.r01_preparation_receipts','SELECT,INSERT,UPDATE,DELETE')
  or has_function_privilege(role_name,'private.record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text)','EXECUTE')
- or has_function_privilege(role_name,'private.load_r01_preparation_for_receipt_v1(uuid,text)','EXECUTE') then raise exception 'R01 preparation assertion exposed';end if;
+ or has_function_privilege(role_name,'private.load_r01_preparation_for_receipt_v1(uuid,text)','EXECUTE')
+ or has_function_privilege(role_name,'private.r01_preparation_metadata_v2(uuid,uuid,uuid,uuid)','EXECUTE')
+ or has_function_privilege(role_name,'private.r01_preparation_receipt_current_v1(uuid,uuid,uuid)','EXECUTE') then raise exception 'R01 preparation assertion exposed';end if;
  end loop;
 end $$;
 rollback;

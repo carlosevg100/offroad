@@ -151,7 +151,14 @@ with Held(predicate) as first:
 assert run(predicate)=='t'
 print('r01_release_shared_upgrade_retries: PASS')
 
-for table in ['receivables_analytical_release_grants','platform_capability_releases']:
+# Since correction 3O the platform ledgers refuse truncation, so a cascade from the capability release table is
+# refused outright before any serialization: a stronger barrier than the advisory. The grants table keeps the
+# serialized truncate of 3K.
+refused=raw('begin;truncate private.platform_capability_releases cascade;rollback;')
+assert refused.returncode!=0 and 'platform_ledger_immutable' in refused.stderr,refused.stderr
+assert run(predicate)=='t'
+print('r01_release_truncate_platform_capability_releases_refused: PASS')
+for table in ['receivables_analytical_release_grants']:
     with Held(f'truncate private.{table} cascade;'):denied(predicate)
     assert run(predicate)=='t'
     # TRUNCATE first needs an AccessExclusiveLock, before any trigger can execute.

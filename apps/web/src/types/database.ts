@@ -12963,6 +12963,21 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_settle_execution_v2: {
+        Args: {
+          p_capability: string
+          p_job: string
+          p_lease: string
+          p_outcome: string
+          p_reason: string
+          p_result_text: string
+        }
+        Returns: Json
+      }
+      worker_settled_execution_result_v1: {
+        Args: { p_capability: string; p_job: string; p_lease: string }
+        Returns: Json
+      }
       worker_start_capital_project_task: {
         Args: {
           p_capability_token: string

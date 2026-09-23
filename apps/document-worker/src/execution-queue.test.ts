@@ -1,6 +1,6 @@
 import {describe, expect, it, vi} from "vitest";
 import type {SupabaseClient} from "@supabase/supabase-js";
-import {createExecutionQueue, type ExecutionQueueClaim} from "./execution-queue";
+import {createExecutionQueue, executionTransportTimeoutMs, type ExecutionQueueClaim} from "./execution-queue";
 import {releasedMethodArtifacts} from "./released-methods.generated";
 
 const claim: ExecutionQueueClaim = {claimed:true, jobId:"20000000-0000-4000-8000-000000000001", leaseId:"20000000-0000-4000-8000-000000000002", executionId:"20000000-0000-4000-8000-000000000003", capability:"x".repeat(64), attempt:1, contractText:"{}", contractFingerprint:"a".repeat(64), snapshotText:"{}", elapsedDurationMs:0, leaseExpiresAt:"2026-09-22T20:00:00Z", budgetExpired:false};
@@ -24,9 +24,20 @@ describe("execution queue transport",()=>{
     const t=transport({operationId:claim.executionId,state:"reserved",replayed:false,mayExecute:true});await t.queue.reserve(claim);
     expect(t.rpc).toHaveBeenCalledWith("worker_reserve_execution_v1",{p_job:claim.jobId,p_lease:claim.leaseId,p_capability:claim.capability});
   });
-  it("sends the exact result hash when settling",async()=>{
-    const t=transport({settled:true,replayed:false});await t.queue.settle(claim,"b".repeat(64));
-    expect(t.rpc).toHaveBeenCalledWith("worker_settle_execution_v1",{p_job:claim.jobId,p_lease:claim.leaseId,p_capability:claim.capability,p_result_hash:"b".repeat(64)});
+  it("sends the exact result bytes when settling",async()=>{
+    const t=transport({settled:true,replayed:false});await t.queue.settle(claim,'{"calculation":"synthetic"}',"succeeded","calculated");
+    expect(t.rpc).toHaveBeenCalledWith("worker_settle_execution_v2",{p_job:claim.jobId,p_lease:claim.leaseId,p_capability:claim.capability,p_result_text:'{"calculation":"synthetic"}',p_outcome:"succeeded",p_reason:"calculated"});
+  });
+  it("reads the settled bytes of the current lease and rejects extended receipts",async()=>{
+    const settled={available:true,resultText:"{}",resultHash:"b".repeat(64),outcome:"succeeded",reason:"calculated",settledByLease:claim.leaseId};
+    const t=transport(settled);expect(await t.queue.settledResult(claim)).toEqual(settled);
+    expect(t.rpc).toHaveBeenCalledWith("worker_settled_execution_result_v1",{p_job:claim.jobId,p_lease:claim.leaseId,p_capability:claim.capability});
+    expect(await transport({available:false}).queue.settledResult(claim)).toEqual({available:false});
+    await expect(transport({...settled,executionOverride:true}).queue.settledResult(claim)).rejects.toThrow();
+  });
+  it("scales the transport budget with the payload and caps it",()=>{
+    expect(executionTransportTimeoutMs(0)).toBe(5_000);expect(executionTransportTimeoutMs(1)).toBe(7_000);
+    expect(executionTransportTimeoutMs(1_048_576)).toBe(7_000);expect(executionTransportTimeoutMs(8_388_608)).toBe(21_000);expect(executionTransportTimeoutMs(64*1_048_576)).toBe(30_000);
   });
   it("refuses a terminal receipt with a different outcome",async()=>{
     await expect(transport({committed:true,replayed:false,outcome:"partial"}).queue.commit(claim,"b".repeat(64),"{}","succeeded","calculated")).rejects.toThrow("execution_commit_mismatch");

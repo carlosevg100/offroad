@@ -143,3 +143,66 @@ for table,label,column,message in [
 assert run(f'select count(*) from {patches}'+scope+';')=='1'
 assert run(f'select count(*) from {drafts}'+scope+';')=='1'
 print('r01_integrity_concurrency: PASS (real producer, both orders, retry and rollback)')
+
+# Stage 17/3M: compact continuity uses the same real fixture after integrity proof.
+receipt='b3300000-0000-4000-8000-000000000001'
+current=f"select private.r01_preparation_receipt_current_v1('{org}','{receipt}','{subject}');"
+run(r"""begin;
+\i supabase/tests/support/r01_execution_profile.sql
+update private.worker_tokens set execution_account_user_id='10000000-0000-4000-8000-000000000732' where id='a3300000-0000-4000-8000-000000000001';
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000732","role":"authenticated","aal":"aal1"}',true);
+select private.record_r01_preparation_receipt_v1('b3300000-0000-4000-8000-000000000001',
+ '80000000-0000-4000-8000-000000000731',repeat('u',64),pg_temp.insert_r01_profile(payload),
+ private.load_r01_preparation_for_receipt_v1('80000000-0000-4000-8000-000000000731',repeat('u',64))->>'authoritySnapshotHash','{}') from r01_profile_test;
+commit;
+""")
+assert run(current)=='t'
+print('r01_metadata_current_baseline: PASS')
+for label,sql in mutations.items():
+    message='receivables_fragment_concurrent_change' if label.startswith('fragment') else 'receivables_history_concurrent_change'
+    with Held(current):denied(sql,message=message)
+    print('r01_metadata_reader_first_'+label+': PASS')
+
+pause=f"insert into private.receivables_analytical_release_grants(organization_id,enabled,note,granted_by) values('{org}',false,'Synthetic concurrency','synthetic');"
+with Held(current):denied(pause,message='receivables_release_concurrent_change')
+with Held(pause):denied(current,message='receivables_release_concurrent_change')
+assert run(current)=='t'
+print('r01_metadata_pause_both_orders: PASS')
+
+# The historical producer may finish; its old lease is not consumer authority.
+assert run(f"begin;update public.processing_jobs set lease_expires_at=clock_timestamp()-interval '1 second' where id='{job}';"+current+'rollback;')=='t'
+print('r01_metadata_finished_producer_not_consumer_lease: PASS')
+
+ancestor='10000000-0000-4000-8000-000000000882'
+source='10000000-0000-4000-8000-000000000001'
+run(f"""begin;
+insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,sha256,processing_status,scan_result,created_by)
+values('{ancestor}','{org}','{session}','{org}/{session}/synthetic-ancestor.txt','synthetic-ancestor.txt',repeat('9',64),'ready','{{"verdict":"clean"}}','{subject}');
+insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+values('{org}','{ancestor}',1,array['read','process','store','derive'],array['analysis'],'authorized_workspace',now(),'human_declaration','{ancestor}',repeat('b',64),'{subject}');
+commit;""")
+assert run(current)=='t'
+dependency=f"select set_config('request.jwt.claims','{{\"sub\":\"{subject}\",\"role\":\"authenticated\",\"aal\":\"aal1\"}}',true);select private.add_source_dependency_v1('{source}','{ancestor}');"
+with Held(current) as reader:
+    contender=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    try:
+        contender.stdin.write("set application_name='r01_metadata_dependency';begin;set local statement_timeout='10s';"+dependency+'rollback;\n')
+        contender.stdin.close();contender.stdin=None
+        wait_locked('r01_metadata_dependency',contender);reader.end()
+        _,err=contender.communicate(timeout=15);assert contender.returncode==0,err
+    finally:
+        if contender.poll() is None:contender.kill();contender.wait(timeout=10)
+assert run(current)=='t'
+print('r01_metadata_reader_serializes_real_dependency_command: PASS')
+
+with Held(dependency) as writer:
+    contender=subprocess.Popen(cmd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    try:
+        contender.stdin.write("set application_name='r01_metadata_reader';begin;set local statement_timeout='10s';"+current+'commit;\n')
+        contender.stdin.close();contender.stdin=None
+        wait_locked('r01_metadata_reader',contender);writer.end(commit=True)
+        out,err=contender.communicate(timeout=15);assert contender.returncode==0 and out.strip()=='f',(out,err)
+    finally:
+        if contender.poll() is None:contender.kill();contender.wait(timeout=10)
+print('r01_metadata_dependency_first_denies_prior_receipt: PASS')
+print('r01_metadata_concurrency: PASS (real dependency command, both orders and current snapshot)')

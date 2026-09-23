@@ -588,6 +588,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.attest_platform_method_candidate_v2(p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor_user_id uuid, p_evidence jsonb)",
+      "kind": "function",
+      "name": "attest_platform_method_candidate_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor_user_id uuid, p_evidence jsonb",
+      "security_definer": false
+    },
+    {
       "id": "function:private.attest_qualified_introduction_plan_technical_review(p_plan_id uuid, p_material_fingerprint text, p_reviewer_id uuid)",
       "kind": "function",
       "name": "attest_qualified_introduction_plan_technical_review",
@@ -929,6 +947,24 @@
       "id": "function:private.bind_persistent_work_v1()",
       "kind": "function",
       "name": "bind_persistent_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.bind_platform_attestation_actor_v1()",
+      "kind": "function",
+      "name": "bind_platform_attestation_actor_v1",
       "grants": [
         [
           "postgres",
@@ -3338,6 +3374,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.execution_settled_result_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "execution_settled_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.execution_source_bytes_verified_v1(p_org uuid, p_version uuid, p_hash text)",
       "kind": "function",
       "name": "execution_source_bytes_verified_v1",
@@ -3810,6 +3864,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.guard_platform_ledger_truncate_v1()",
+      "kind": "function",
+      "name": "guard_platform_ledger_truncate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_platform_principal_v1()",
+      "kind": "function",
+      "name": "guard_platform_principal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.guard_project_canonical_revision()",
       "kind": "function",
       "name": "guard_project_canonical_revision",
@@ -3885,6 +3975,42 @@
       "id": "function:private.guard_provider_research_completion_v1()",
       "kind": "function",
       "name": "guard_provider_research_completion_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_receivables_history_mutation_v1()",
+      "kind": "function",
+      "name": "guard_receivables_history_mutation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_receivables_release_write_v1()",
+      "kind": "function",
+      "name": "guard_receivables_release_write_v1",
       "grants": [
         [
           "postgres",
@@ -4737,6 +4863,42 @@
       "security_definer": false
     },
     {
+      "id": "function:private.ledger_execution_profile_v1()",
+      "kind": "function",
+      "name": "ledger_execution_profile_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.ledger_receivables_release_pause_v1()",
+      "kind": "function",
+      "name": "ledger_receivables_release_pause_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.legacy_job_sources_rights_current_v1(p_job_id uuid)",
       "kind": "function",
       "name": "legacy_job_sources_rights_current_v1",
@@ -5000,6 +5162,24 @@
         "search_path=\"\""
       ],
       "signature": "p_work_id uuid, p_search text, p_offset integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.load_r01_preparation_for_receipt_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "name": "load_r01_preparation_for_receipt_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text",
       "security_definer": true
     },
     {
@@ -5431,6 +5611,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.pause_receivables_release_v1(p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid)",
+      "kind": "function",
+      "name": "pause_receivables_release_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:private.pin_contribution_sources_v1(p_org uuid, p_revision uuid, p_sources uuid[], p_parent uuid, p_base uuid)",
       "kind": "function",
       "name": "pin_contribution_sources_v1",
@@ -5482,6 +5680,60 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_method_id text, p_work_type text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.platform_actor_identity_v1()",
+      "kind": "function",
+      "name": "platform_actor_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.platform_actor_setting_v1(p_name text)",
+      "kind": "function",
+      "name": "platform_actor_setting_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_name text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.platform_founder_registered_v1()",
+      "kind": "function",
+      "name": "platform_founder_registered_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
       "security_definer": true
     },
     {
@@ -6178,6 +6430,114 @@
       ],
       "signature": "p_project_id uuid",
       "security_definer": true
+    },
+    {
+      "id": "function:private.r01_adopted_value_v1(p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid)",
+      "kind": "function",
+      "name": "r01_adopted_value_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.r01_preparation_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "r01_preparation_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_session uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.r01_preparation_metadata_v2(p_org uuid, p_work uuid, p_session uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "r01_preparation_metadata_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_session uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.r01_preparation_receipt_current_v1(p_org uuid, p_receipt uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "r01_preparation_receipt_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_receipt uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.r01_response_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "r01_response_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.r01_scope_dataset_hash_v1(s jsonb)",
+      "kind": "function",
+      "name": "r01_scope_dataset_hash_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "s jsonb",
+      "security_definer": false
     },
     {
       "id": "function:private.read_adoption_basis_v1(p_version_id uuid)",
@@ -7561,6 +7921,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_r01_preparation_receipt_v1(p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text)",
+      "kind": "function",
+      "name": "record_r01_preparation_receipt_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.record_storage_rotation_v1(p_rotation_id uuid, p_capability text, p_sha256 text, p_byte_length bigint, p_complete boolean)",
       "kind": "function",
       "name": "record_storage_rotation_v1",
@@ -7600,6 +7978,24 @@
       ],
       "signature": "",
       "security_definer": true
+    },
+    {
+      "id": "function:private.register_execution_method_profile_v1(p_command uuid, p_profile uuid, p_release text, p_canonical_payload text, p_adapter_source_commit text, p_review_evidence jsonb, p_actor_user_id uuid, p_reason text)",
+      "kind": "function",
+      "name": "register_execution_method_profile_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command uuid, p_profile uuid, p_release text, p_canonical_payload text, p_adapter_source_commit text, p_review_evidence jsonb, p_actor_user_id uuid, p_reason text",
+      "security_definer": false
     },
     {
       "id": "function:private.register_intake_document_command(p_organization_id uuid, p_session_id uuid, p_event_id uuid, p_document_id uuid, p_bucket_id text, p_object_path text, p_original_name text, p_mime_type text, p_byte_size bigint, p_sha256 text)",
@@ -8030,6 +8426,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "name": "request_work_execution_as_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.request_work_execution_v1(p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
       "kind": "function",
       "name": "request_work_execution_v1",
@@ -8207,6 +8621,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.require_platform_principal_v1(p_user_id uuid, p_founder boolean)",
+      "kind": "function",
+      "name": "require_platform_principal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_user_id uuid, p_founder boolean",
       "security_definer": false
     },
     {
@@ -9587,6 +10019,24 @@
         "search_path=\"\""
       ],
       "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.settle_execution_operation_v2(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_text text, p_outcome text, p_reason text, p_spent bigint, p_calls bigint)",
+      "kind": "function",
+      "name": "settle_execution_operation_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_text text, p_outcome text, p_reason text, p_spent bigint, p_calls bigint",
       "security_definer": true
     },
     {
@@ -13075,6 +13525,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_load_receivables_preparation_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_receivables_preparation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_load_receivables_provider_context(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "worker_load_receivables_provider_context",
@@ -14213,6 +14681,52 @@
         "search_path=\"\""
       ],
       "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_settle_execution_v2(p_job uuid, p_capability text, p_lease uuid, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "name": "worker_settle_execution_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_text text, p_outcome text, p_reason text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_settled_execution_result_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_settled_execution_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid",
       "security_definer": true
     },
     {
@@ -23104,6 +23618,52 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_settle_execution_v2(p_job uuid, p_capability text, p_lease uuid, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "name": "worker_settle_execution_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_text text, p_outcome text, p_reason text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_settled_execution_result_v1(p_job uuid, p_capability text, p_lease uuid)",
+      "kind": "function",
+      "name": "worker_settled_execution_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_lease uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_start_capital_project_task(p_job_id uuid, p_capability_token text, p_task_id text, p_executor_key text, p_executor_version text, p_input_fingerprint text, p_context_manifest jsonb)",
       "kind": "function",
       "name": "worker_start_capital_project_task",
@@ -24156,6 +24716,20 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.execution_profile_registrations.execution_profile_registrations_deny",
+      "kind": "policy",
+      "name": "execution_profile_registrations_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_profile_registrations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_delete",
       "kind": "policy",
       "name": "execution_result_receipts_deny_delete",
@@ -24774,6 +25348,20 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.platform_principals.platform_principals_deny",
+      "kind": "policy",
+      "name": "platform_principals_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "platform_principals",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.principals.principals_deny_delete",
       "kind": "policy",
       "name": "principals_deny_delete",
@@ -24945,6 +25533,62 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_delete",
+      "kind": "policy",
+      "name": "r01_preparation_receipts_delete",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_insert",
+      "kind": "policy",
+      "name": "r01_preparation_receipts_insert",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_select",
+      "kind": "policy",
+      "name": "r01_preparation_receipts_select",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_update",
+      "kind": "policy",
+      "name": "r01_preparation_receipts_update",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.receivables_evidence_scopes.receivables_scope_deny",
       "kind": "policy",
       "name": "receivables_scope_deny",
@@ -24953,6 +25597,20 @@
         "public"
       ],
       "table": "receivables_evidence_scopes",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.receivables_release_pause_events.receivables_release_pause_events_deny",
+      "kind": "policy",
+      "name": "receivables_release_pause_events_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "receivables_release_pause_events",
       "schema": "private",
       "command": "ALL",
       "permissive": "RESTRICTIVE",
@@ -31527,6 +32185,56 @@
       "force_rls": true
     },
     {
+      "id": "r:private.execution_profile_registrations",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_profile_registrations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.execution_result_receipts",
       "rls": true,
       "kind": "table",
@@ -32527,6 +33235,56 @@
       "force_rls": true
     },
     {
+      "id": "r:private.platform_principals",
+      "rls": true,
+      "kind": "table",
+      "name": "platform_principals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.principals",
       "rls": true,
       "kind": "table",
@@ -32927,6 +33685,56 @@
       "force_rls": false
     },
     {
+      "id": "r:private.r01_preparation_receipts",
+      "rls": true,
+      "kind": "table",
+      "name": "r01_preparation_receipts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.receivables_analytical_release_grants",
       "rls": false,
       "kind": "table",
@@ -33325,6 +34133,56 @@
       ],
       "schema": "private",
       "force_rls": false
+    },
+    {
+      "id": "r:private.receivables_release_pause_events",
+      "rls": true,
+      "kind": "table",
+      "name": "receivables_release_pause_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
     },
     {
       "id": "r:private.receivables_released_results",
@@ -48642,6 +49500,16 @@
       "definition": "CREATE TRIGGER execution_method_profiles_immutable BEFORE DELETE OR UPDATE ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
     },
     {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_ledger",
+      "kind": "trigger",
+      "name": "execution_method_profiles_ledger",
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.ledger_execution_profile_v1()",
+      "definition": "CREATE TRIGGER execution_method_profiles_ledger AFTER INSERT ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.ledger_execution_profile_v1()"
+    },
+    {
       "id": "trigger:private.execution_method_profiles.execution_method_profiles_validate",
       "kind": "trigger",
       "name": "execution_method_profiles_validate",
@@ -48670,6 +49538,26 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER execution_operation_receipts_updated BEFORE UPDATE ON private.execution_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.execution_profile_registrations.execution_profile_registrations_immutable",
+      "kind": "trigger",
+      "name": "execution_profile_registrations_immutable",
+      "table": "execution_profile_registrations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER execution_profile_registrations_immutable BEFORE DELETE OR UPDATE ON private.execution_profile_registrations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_profile_registrations.execution_profile_registrations_truncate_guard",
+      "kind": "trigger",
+      "name": "execution_profile_registrations_truncate_guard",
+      "table": "execution_profile_registrations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER execution_profile_registrations_truncate_guard BEFORE TRUNCATE ON private.execution_profile_registrations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     },
     {
       "id": "trigger:private.execution_result_receipts.execution_result_receipts_audit",
@@ -48972,6 +49860,36 @@
       "definition": "CREATE TRIGGER platform_capability_accreditations_immutable BEFORE DELETE OR UPDATE ON private.platform_capability_accreditations FOR EACH ROW EXECUTE FUNCTION private.reject_control_ledger_mutation()"
     },
     {
+      "id": "trigger:private.platform_capability_releases.receivables_release_capability_truncate_guard",
+      "kind": "trigger",
+      "name": "receivables_release_capability_truncate_guard",
+      "table": "platform_capability_releases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_receivables_release_write_v1()",
+      "definition": "CREATE TRIGGER receivables_release_capability_truncate_guard BEFORE TRUNCATE ON private.platform_capability_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+    },
+    {
+      "id": "trigger:private.platform_capability_releases.receivables_release_capability_write_guard",
+      "kind": "trigger",
+      "name": "receivables_release_capability_write_guard",
+      "table": "platform_capability_releases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_receivables_release_write_v1()",
+      "definition": "CREATE TRIGGER receivables_release_capability_write_guard BEFORE INSERT OR DELETE OR UPDATE ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+    },
+    {
+      "id": "trigger:private.platform_method_attestations.platform_method_attestations_actor",
+      "kind": "trigger",
+      "name": "platform_method_attestations_actor",
+      "table": "platform_method_attestations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.bind_platform_attestation_actor_v1()",
+      "definition": "CREATE TRIGGER platform_method_attestations_actor BEFORE INSERT ON private.platform_method_attestations FOR EACH ROW EXECUTE FUNCTION private.bind_platform_attestation_actor_v1()"
+    },
+    {
       "id": "trigger:private.platform_method_attestations.platform_method_attestations_immutable",
       "kind": "trigger",
       "name": "platform_method_attestations_immutable",
@@ -49010,6 +49928,26 @@
       "enabled": "O",
       "function": "private.guard_contribution_immutable_v1()",
       "definition": "CREATE TRIGGER platform_method_immutable BEFORE DELETE OR UPDATE ON private.platform_method_releases FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.platform_principals.platform_principals_guard",
+      "kind": "trigger",
+      "name": "platform_principals_guard",
+      "table": "platform_principals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_principal_v1()",
+      "definition": "CREATE TRIGGER platform_principals_guard BEFORE DELETE OR UPDATE ON private.platform_principals FOR EACH ROW EXECUTE FUNCTION private.guard_platform_principal_v1()"
+    },
+    {
+      "id": "trigger:private.platform_principals.platform_principals_truncate_guard",
+      "kind": "trigger",
+      "name": "platform_principals_truncate_guard",
+      "table": "platform_principals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER platform_principals_truncate_guard BEFORE TRUNCATE ON private.platform_principals FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     },
     {
       "id": "trigger:private.principals.principals_policy_event",
@@ -49112,6 +50050,56 @@
       "definition": "CREATE TRIGGER provider_processing_assurance_immutable BEFORE DELETE OR UPDATE ON private.provider_processing_assurances FOR EACH ROW EXECUTE FUNCTION private.guard_provider_processing_assurance_v1()"
     },
     {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_audit",
+      "kind": "trigger",
+      "name": "r01_preparation_receipts_audit",
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER r01_preparation_receipts_audit AFTER INSERT ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_immutable",
+      "kind": "trigger",
+      "name": "r01_preparation_receipts_immutable",
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER r01_preparation_receipts_immutable BEFORE DELETE OR UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_updated",
+      "kind": "trigger",
+      "name": "r01_preparation_receipts_updated",
+      "table": "r01_preparation_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER r01_preparation_receipts_updated BEFORE UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.receivables_analytical_release_grants.receivables_release_pause_ledger",
+      "kind": "trigger",
+      "name": "receivables_release_pause_ledger",
+      "table": "receivables_analytical_release_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.ledger_receivables_release_pause_v1()",
+      "definition": "CREATE TRIGGER receivables_release_pause_ledger AFTER INSERT OR DELETE OR UPDATE ON private.receivables_analytical_release_grants FOR EACH ROW EXECUTE FUNCTION private.ledger_receivables_release_pause_v1()"
+    },
+    {
+      "id": "trigger:private.receivables_analytical_release_grants.receivables_release_pause_write_guard",
+      "kind": "trigger",
+      "name": "receivables_release_pause_write_guard",
+      "table": "receivables_analytical_release_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_receivables_release_write_v1()",
+      "definition": "CREATE TRIGGER receivables_release_pause_write_guard BEFORE INSERT OR DELETE OR UPDATE OR TRUNCATE ON private.receivables_analytical_release_grants FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+    },
+    {
       "id": "trigger:private.receivables_evidence_fragments.receivables_scope_fragment_lock",
       "kind": "trigger",
       "name": "receivables_scope_fragment_lock",
@@ -49130,6 +50118,46 @@
       "enabled": "O",
       "function": "private.guard_receivables_scope_immutable()",
       "definition": "CREATE TRIGGER receivables_scope_immutable BEFORE UPDATE ON private.receivables_evidence_scopes FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_scope_immutable()"
+    },
+    {
+      "id": "trigger:private.receivables_method_supplement_drafts.receivables_draft_history_guard",
+      "kind": "trigger",
+      "name": "receivables_draft_history_guard",
+      "table": "receivables_method_supplement_drafts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_receivables_history_mutation_v1()",
+      "definition": "CREATE TRIGGER receivables_draft_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_drafts FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.receivables_method_supplement_patches.receivables_patch_history_guard",
+      "kind": "trigger",
+      "name": "receivables_patch_history_guard",
+      "table": "receivables_method_supplement_patches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_receivables_history_mutation_v1()",
+      "definition": "CREATE TRIGGER receivables_patch_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_patches FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.receivables_release_pause_events.receivables_release_pause_events_immutable",
+      "kind": "trigger",
+      "name": "receivables_release_pause_events_immutable",
+      "table": "receivables_release_pause_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER receivables_release_pause_events_immutable BEFORE DELETE OR UPDATE ON private.receivables_release_pause_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.receivables_release_pause_events.receivables_release_pause_events_truncate_guard",
+      "kind": "trigger",
+      "name": "receivables_release_pause_events_truncate_guard",
+      "table": "receivables_release_pause_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER receivables_release_pause_events_truncate_guard BEFORE TRUNCATE ON private.receivables_release_pause_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     },
     {
       "id": "trigger:private.resource_access_grants.resource_access_grants_audit",
@@ -53055,373 +54083,7 @@
       ],
       "schema": "private",
       "force_rls": false
-    },
-    {
-      "id": "function:private.r01_adopted_value_v1(p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid)",
-      "kind": "function",
-      "name": "r01_adopted_value_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid",
-      "security_definer": true
-    },
-    {
-      "id": "function:private.r01_preparation_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_subject uuid)",
-      "kind": "function",
-      "name": "r01_preparation_authority_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_org uuid, p_work uuid, p_session uuid, p_subject uuid",
-      "security_definer": true
-    },
-    {
-      "id": "function:private.r01_response_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid)",
-      "kind": "function",
-      "name": "r01_response_authority_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid",
-      "security_definer": true
-    },
-    {
-      "id": "function:private.r01_scope_dataset_hash_v1(s jsonb)",
-      "kind": "function",
-      "name": "r01_scope_dataset_hash_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "s jsonb",
-      "security_definer": false
-    },
-    {
-      "id": "function:private.worker_load_receivables_preparation_v1(p_job_id uuid, p_capability_token text)",
-      "kind": "function",
-      "name": "worker_load_receivables_preparation_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_job_id uuid, p_capability_token text",
-      "security_definer": true
-    },
-    {
-      "id": "function:private.load_r01_preparation_for_receipt_v1(p_job uuid, p_capability text)",
-      "kind": "function",
-      "name": "load_r01_preparation_for_receipt_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_job uuid, p_capability text",
-      "security_definer": true
-    },
-    {
-      "id": "function:private.record_r01_preparation_receipt_v1(p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text)",
-      "kind": "function",
-      "name": "record_r01_preparation_receipt_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_receipt uuid, p_job uuid, p_capability text, p_profile uuid, p_expected_authority_snapshot_hash text, p_canonical_input text",
-      "security_definer": true
-    },
-    {
-      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_delete",
-      "kind": "policy",
-      "name": "r01_preparation_receipts_delete",
-      "qual": "false",
-      "roles": [
-        "public"
-      ],
-      "table": "r01_preparation_receipts",
-      "schema": "private",
-      "command": "DELETE",
-      "permissive": "PERMISSIVE",
-      "with_check": null
-    },
-    {
-      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_insert",
-      "kind": "policy",
-      "name": "r01_preparation_receipts_insert",
-      "qual": null,
-      "roles": [
-        "public"
-      ],
-      "table": "r01_preparation_receipts",
-      "schema": "private",
-      "command": "INSERT",
-      "permissive": "PERMISSIVE",
-      "with_check": "false"
-    },
-    {
-      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_select",
-      "kind": "policy",
-      "name": "r01_preparation_receipts_select",
-      "qual": "false",
-      "roles": [
-        "public"
-      ],
-      "table": "r01_preparation_receipts",
-      "schema": "private",
-      "command": "SELECT",
-      "permissive": "PERMISSIVE",
-      "with_check": null
-    },
-    {
-      "id": "policy:private.r01_preparation_receipts.r01_preparation_receipts_update",
-      "kind": "policy",
-      "name": "r01_preparation_receipts_update",
-      "qual": "false",
-      "roles": [
-        "public"
-      ],
-      "table": "r01_preparation_receipts",
-      "schema": "private",
-      "command": "UPDATE",
-      "permissive": "PERMISSIVE",
-      "with_check": "false"
-    },
-    {
-      "id": "r:private.r01_preparation_receipts",
-      "rls": true,
-      "kind": "table",
-      "name": "r01_preparation_receipts",
-      "grants": [
-        [
-          "postgres",
-          "DELETE",
-          false
-        ],
-        [
-          "postgres",
-          "INSERT",
-          false
-        ],
-        [
-          "postgres",
-          "MAINTAIN",
-          false
-        ],
-        [
-          "postgres",
-          "REFERENCES",
-          false
-        ],
-        [
-          "postgres",
-          "SELECT",
-          false
-        ],
-        [
-          "postgres",
-          "TRIGGER",
-          false
-        ],
-        [
-          "postgres",
-          "TRUNCATE",
-          false
-        ],
-        [
-          "postgres",
-          "UPDATE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "force_rls": true
-    },
-    {
-      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_audit",
-      "kind": "trigger",
-      "name": "r01_preparation_receipts_audit",
-      "table": "r01_preparation_receipts",
-      "schema": "private",
-      "enabled": "O",
-      "function": "private.capture_identity_audit_v1()",
-      "definition": "CREATE TRIGGER r01_preparation_receipts_audit AFTER INSERT ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
-    },
-    {
-      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_immutable",
-      "kind": "trigger",
-      "name": "r01_preparation_receipts_immutable",
-      "table": "r01_preparation_receipts",
-      "schema": "private",
-      "enabled": "O",
-      "function": "private.guard_contribution_immutable_v1()",
-      "definition": "CREATE TRIGGER r01_preparation_receipts_immutable BEFORE DELETE OR UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
-    },
-    {
-      "id": "trigger:private.r01_preparation_receipts.r01_preparation_receipts_updated",
-      "kind": "trigger",
-      "name": "r01_preparation_receipts_updated",
-      "table": "r01_preparation_receipts",
-      "schema": "private",
-      "enabled": "O",
-      "function": "private.set_updated_at()",
-      "definition": "CREATE TRIGGER r01_preparation_receipts_updated BEFORE UPDATE ON private.r01_preparation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
-    },
-    {
-      "id": "function:private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
-      "kind": "function",
-      "name": "request_work_execution_as_subject_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text",
-      "security_definer": true
-    },
-    {
-      "id": "function:private.guard_receivables_release_write_v1()",
-      "kind": "function",
-      "name": "guard_receivables_release_write_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "",
-      "security_definer": true
-    },
-    {
-      "id": "trigger:private.platform_capability_releases.receivables_release_capability_truncate_guard",
-      "kind": "trigger",
-      "name": "receivables_release_capability_truncate_guard",
-      "table": "platform_capability_releases",
-      "schema": "private",
-      "enabled": "O",
-      "function": "private.guard_receivables_release_write_v1()",
-      "definition": "CREATE TRIGGER receivables_release_capability_truncate_guard BEFORE TRUNCATE ON private.platform_capability_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
-    },
-    {
-      "id": "trigger:private.platform_capability_releases.receivables_release_capability_write_guard",
-      "kind": "trigger",
-      "name": "receivables_release_capability_write_guard",
-      "table": "platform_capability_releases",
-      "schema": "private",
-      "enabled": "O",
-      "function": "private.guard_receivables_release_write_v1()",
-      "definition": "CREATE TRIGGER receivables_release_capability_write_guard BEFORE INSERT OR DELETE OR UPDATE ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
-    },
-    {
-      "id": "trigger:private.receivables_analytical_release_grants.receivables_release_pause_write_guard",
-      "kind": "trigger",
-      "name": "receivables_release_pause_write_guard",
-      "table": "receivables_analytical_release_grants",
-      "schema": "private",
-      "enabled": "O",
-      "function": "private.guard_receivables_release_write_v1()",
-      "definition": "CREATE TRIGGER receivables_release_pause_write_guard BEFORE INSERT OR DELETE OR UPDATE OR TRUNCATE ON private.receivables_analytical_release_grants FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
-    },
-    {
-      "id": "function:private.guard_receivables_history_mutation_v1()",
-      "kind": "function",
-      "name": "guard_receivables_history_mutation_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "",
-      "security_definer": true
-    },
-    {
-      "id": "trigger:private.receivables_method_supplement_drafts.receivables_draft_history_guard",
-      "kind": "trigger",
-      "name": "receivables_draft_history_guard",
-      "table": "receivables_method_supplement_drafts",
-      "schema": "private",
-      "enabled": "O",
-      "function": "private.guard_receivables_history_mutation_v1()",
-      "definition": "CREATE TRIGGER receivables_draft_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_drafts FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
-    },
-    {
-      "id": "trigger:private.receivables_method_supplement_patches.receivables_patch_history_guard",
-      "kind": "trigger",
-      "name": "receivables_patch_history_guard",
-      "table": "receivables_method_supplement_patches",
-      "schema": "private",
-      "enabled": "O",
-      "function": "private.guard_receivables_history_mutation_v1()",
-      "definition": "CREATE TRIGGER receivables_patch_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_patches FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
     }
   ],
-  "captured_at": "2026-09-23T17:19:51.580248+00:00"
+  "captured_at": "2026-09-23T20:38:41.46797+00:00"
 }
