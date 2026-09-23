@@ -97,7 +97,15 @@ jobs:
           # recycled hosted runner. Remove only this repository's exact local stack before boot.
           supabase stop --no-backup || true
           docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
-          supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,mailpit,logflare,vector
+          # ghcr.io rate limits shared hosted runners (toomanyrequests). Retry the boot a few times
+          # with a pause instead of failing the whole gate on a registry hiccup.
+          for attempt in 1 2 3 4 5; do
+            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,mailpit,logflare,vector; then break; fi
+            if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
+            echo "supabase start failed on attempt $attempt; waiting 90s before retrying"
+            supabase stop --no-backup || true
+            sleep 90
+          done
 
       - name: Resolve local database URL
         id: db
@@ -222,7 +230,15 @@ jobs:
         run: |
           supabase stop --no-backup || true
           docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
-          supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta
+          # ghcr.io rate limits shared hosted runners (toomanyrequests). Retry the boot a few times
+          # with a pause instead of failing the whole gate on a registry hiccup.
+          for attempt in 1 2 3 4 5; do
+            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta; then break; fi
+            if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
+            echo "supabase start failed on attempt $attempt; waiting 90s before retrying"
+            supabase stop --no-backup || true
+            sleep 90
+          done
 
       - name: Verify execution bytes through PostgreSQL storage
         env:
