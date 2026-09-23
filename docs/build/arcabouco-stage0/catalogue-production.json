@@ -51658,7 +51658,45 @@
       "enabled": "O",
       "function": "private.guard_receivables_release_write_v1()",
       "definition": "CREATE TRIGGER receivables_release_pause_write_guard BEFORE INSERT OR DELETE OR UPDATE OR TRUNCATE ON private.receivables_analytical_release_grants FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+    },
+    {
+      "id": "function:private.guard_receivables_history_mutation_v1()",
+      "kind": "function",
+      "name": "guard_receivables_history_mutation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "trigger:private.receivables_method_supplement_drafts.receivables_draft_history_guard",
+      "kind": "trigger",
+      "name": "receivables_draft_history_guard",
+      "table": "receivables_method_supplement_drafts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_receivables_history_mutation_v1()",
+      "definition": "CREATE TRIGGER receivables_draft_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_drafts FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.receivables_method_supplement_patches.receivables_patch_history_guard",
+      "kind": "trigger",
+      "name": "receivables_patch_history_guard",
+      "table": "receivables_method_supplement_patches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_receivables_history_mutation_v1()",
+      "definition": "CREATE TRIGGER receivables_patch_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_patches FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
     }
   ],
-  "captured_at": "2026-09-23T16:31:16.176685+00:00"
+  "captured_at": "2026-09-23T17:19:41.681603+00:00"
 }

@@ -14883,6 +14883,12 @@
           "line": 188,
           "anchor": "create function private.lock_receivables_scope_fragment() returns trigger language plpgsql security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923171852_r01_persisted_source_integrity.sql",
+          "line": 51,
+          "anchor": "create or replace function private.lock_receivables_scope_fragment() returns trigger",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -152916,6 +152922,139 @@
         }
       ],
       "consumer_status": "Guarda interna dos callers existentes; sem grants novos ou ativação R01."
+    },
+    {
+      "id": "function:private.guard_receivables_history_mutation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_receivables_history_mutation_v1()",
+          "kind": "function",
+          "name": "guard_receivables_history_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_receivables_history_mutation_v1()",
+          "kind": "function",
+          "name": "guard_receivables_history_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / integridade persistida 3L",
+      "reason": "Identidade histórica fixa; mutações disputam sessão/trabalho sem espera circular, preservando exclusão e FKs.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923171852_r01_persisted_source_integrity.sql",
+          "line": 14,
+          "anchor": "create function private.guard_receivables_history_mutation_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Guarda privada de armazenamento; sem novo grant, consumidor ou ativação R01."
+    },
+    {
+      "id": "trigger:private.receivables_method_supplement_drafts.receivables_draft_history_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.receivables_method_supplement_drafts.receivables_draft_history_guard",
+          "kind": "trigger",
+          "name": "receivables_draft_history_guard",
+          "table": "receivables_method_supplement_drafts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_history_mutation_v1()",
+          "definition": "CREATE TRIGGER receivables_draft_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_drafts FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.receivables_method_supplement_drafts.receivables_draft_history_guard",
+          "kind": "trigger",
+          "name": "receivables_draft_history_guard",
+          "table": "receivables_method_supplement_drafts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_history_mutation_v1()",
+          "definition": "CREATE TRIGGER receivables_draft_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_drafts FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / integridade persistida 3L",
+      "reason": "Identidade histórica fixa; mutações disputam sessão/trabalho sem espera circular, preservando exclusão e FKs.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923171852_r01_persisted_source_integrity.sql",
+          "line": 48,
+          "anchor": "create trigger receivables_draft_history_guard before insert or update or delete",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Guarda privada de armazenamento; sem novo grant, consumidor ou ativação R01."
+    },
+    {
+      "id": "trigger:private.receivables_method_supplement_patches.receivables_patch_history_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.receivables_method_supplement_patches.receivables_patch_history_guard",
+          "kind": "trigger",
+          "name": "receivables_patch_history_guard",
+          "table": "receivables_method_supplement_patches",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_history_mutation_v1()",
+          "definition": "CREATE TRIGGER receivables_patch_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_patches FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.receivables_method_supplement_patches.receivables_patch_history_guard",
+          "kind": "trigger",
+          "name": "receivables_patch_history_guard",
+          "table": "receivables_method_supplement_patches",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_history_mutation_v1()",
+          "definition": "CREATE TRIGGER receivables_patch_history_guard BEFORE INSERT OR DELETE OR UPDATE ON private.receivables_method_supplement_patches FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / integridade persistida 3L",
+      "reason": "Identidade histórica fixa; mutações disputam sessão/trabalho sem espera circular, preservando exclusão e FKs.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923171852_r01_persisted_source_integrity.sql",
+          "line": 46,
+          "anchor": "create trigger receivables_patch_history_guard before insert or update or delete",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Guarda privada de armazenamento; sem novo grant, consumidor ou ativação R01."
     }
   ],
   "repository_items": [
@@ -159505,6 +159644,13 @@
       "decision": "preservar",
       "stage": "17 / pausa concorrente 3K",
       "reason": "Primeira pausa e mudanças globais disputam autoridade atual com retry integral, sem grant ou ativação."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923171852_r01_persisted_source_integrity.sql",
+      "decision": "preservar",
+      "stage": "17 / integridade persistida 3L",
+      "reason": "Três CHECKs validados de digest e guardas de identidade/contenção, preservando FKs e exclusões legítimas."
     }
   ],
   "staging_archive": [

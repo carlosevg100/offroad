@@ -77,7 +77,7 @@ insert into private.receivables_evidence_fragments (
   '20000000-0000-4000-8000-000000000731', '40000000-0000-4000-8000-000000000731',
   '50000000-0000-4000-8000-000000000731', 1, '70000000-0000-4000-8000-000000000731',
   'document_layer', 'receivables-evidence-fragment.v1',
-  repeat('4',64), repeat('2',64), repeat('3',64), 'gzip-json-v1', 2, '\x1f8b'::bytea
+  repeat('4',64), repeat('2',64), encode(extensions.digest('\x1f8b'::bytea,'sha256'),'hex'), 'gzip-json-v1', 2, '\x1f8b'::bytea
 );
 update public.document_intake_sessions
   set current_run_id = '70000000-0000-4000-8000-000000000731',

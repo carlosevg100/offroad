@@ -3,8 +3,8 @@ begin;
 create function pg_temp.load_r01(subject uuid default '10000000-0000-4000-8000-000000000731') returns jsonb language sql as $$
  select private.r01_preparation_authority_v1('20000000-0000-4000-8000-000000000731','30000000-0000-4000-8000-000000000731','10000000-0000-4000-8000-000000000090',subject);
 $$;
-create function pg_temp.r01_denied(label text,command text) returns void language plpgsql as $$begin
- begin execute command;exception when insufficient_privilege then raise notice 'PASS: %',label;return;end;
+create function pg_temp.r01_denied(label text,command text,expected_code text default '42501') returns void language plpgsql as $$begin
+ begin execute command;exception when others then if sqlstate<>expected_code then raise;end if;raise notice 'PASS: %',label;return;end;
  raise exception 'Missing R01 denial: %',label;
 end $$;
 do $$declare got jsonb;want jsonb;begin
@@ -21,18 +21,9 @@ savepoint changed_scope;
 update public.document_intake_sessions set result_summary=jsonb_set(result_summary,'{case_state,receivablesVertical,sourceManifest,fingerprint}',to_jsonb(repeat('a',64))) where id='10000000-0000-4000-8000-000000000090';
 select pg_temp.r01_denied('changed manifest denies preparation',$q$select pg_temp.load_r01()$q$);
 rollback to changed_scope;
-savepoint altered_history;
-update private.receivables_method_supplement_drafts set revision=2 where intake_session_id='10000000-0000-4000-8000-000000000090';
-select pg_temp.r01_denied('gap in draft revisions denies preparation',$q$select pg_temp.load_r01()$q$);
-rollback to altered_history;
-savepoint altered_patch;
-update private.receivables_method_supplement_patches set patch=jsonb_set(patch,'{sections,accounting,value,allowanceBalance}','"999"') where intake_session_id='10000000-0000-4000-8000-000000000090';
-select pg_temp.r01_denied('altered stored patch bytes deny preparation',$q$select pg_temp.load_r01()$q$);
-rollback to altered_patch;
-savepoint altered_fragment;
-update private.receivables_evidence_fragments set compressed_payload=compressed_payload||decode('00','hex') where intake_session_id='10000000-0000-4000-8000-000000000090';
-select pg_temp.r01_denied('altered fragment bytes deny preparation',$q$select pg_temp.load_r01()$q$);
-rollback to altered_fragment;
+select pg_temp.r01_denied('revision mutation denied before corrupting history',$q$update private.receivables_method_supplement_drafts set revision=2 where intake_session_id='10000000-0000-4000-8000-000000000090'$q$);
+select pg_temp.r01_denied('altered stored patch bytes denied at write',$q$update private.receivables_method_supplement_patches set patch=jsonb_set(patch,'{sections,accounting,value,allowanceBalance}','"999"') where intake_session_id='10000000-0000-4000-8000-000000000090'$q$,'23514');
+select pg_temp.r01_denied('altered fragment bytes denied at write',$q$update private.receivables_evidence_fragments set compressed_payload=compressed_payload||decode('00','hex') where intake_session_id='10000000-0000-4000-8000-000000000090'$q$,'23514');
 savepoint newer_unrelated_dataset;
 insert into private.receivables_method_supplement_drafts(organization_id,capital_project_id,intake_session_id,source_dataset_hash,revision,draft_fingerprint,caused_by_patch_id,draft)
 select organization_id,capital_project_id,intake_session_id,repeat('0',64),revision,draft_fingerprint,caused_by_patch_id,draft

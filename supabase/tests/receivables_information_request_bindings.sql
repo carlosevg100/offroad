@@ -194,6 +194,9 @@ insert into public.preliminary_understandings (
   '{"schemaVersion":"2026.08.31-v1"}'::jsonb,
   '10000000-0000-4000-8000-000000000741', now()
 );
+create function pg_temp.binding_draft_fingerprint() returns text language sql immutable as $$
+ select encode(extensions.digest(convert_to(('{"schemaVersion":"2026.09.07-v1","sourceDatasetHash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","revision":1,"appliedPatchIds":["seed-complete-draft"],"sections":{},"fields":{},"evidence":{},"conflicts":[]}'::jsonb)::text,'UTF8'),'sha256'),'hex');
+$$;
 insert into private.receivables_method_supplement_patches (
   id, organization_id, capital_project_id, intake_session_id, processing_run_id,
   processing_job_id, source_dataset_hash, patch_id, patch_fingerprint, patch
@@ -201,7 +204,7 @@ insert into private.receivables_method_supplement_patches (
   'a0000000-0000-4000-8000-000000000741', '20000000-0000-4000-8000-000000000741',
   '30000000-0000-4000-8000-000000000741', '40000000-0000-4000-8000-000000000741',
   '70000000-0000-4000-8000-000000000741', '80000000-0000-4000-8000-000000000741',
-  repeat('a',64), 'seed-complete-draft', repeat('e',64),
+  repeat('a',64), 'seed-complete-draft', encode(extensions.digest(convert_to(('{"schemaVersion":"2026.09.07-v1","seed":true}'::jsonb)::text,'UTF8'),'sha256'),'hex'),
   '{"schemaVersion":"2026.09.07-v1","seed":true}'::jsonb
 );
 insert into private.receivables_method_supplement_drafts (
@@ -210,7 +213,7 @@ insert into private.receivables_method_supplement_drafts (
 ) values (
   'b0000000-0000-4000-8000-000000000741', '20000000-0000-4000-8000-000000000741',
   '30000000-0000-4000-8000-000000000741', '40000000-0000-4000-8000-000000000741',
-  repeat('a',64), 1, repeat('d',64), 'a0000000-0000-4000-8000-000000000741',
+  repeat('a',64), 1, pg_temp.binding_draft_fingerprint(), 'a0000000-0000-4000-8000-000000000741',
   '{"schemaVersion":"2026.09.07-v1","sourceDatasetHash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","revision":1,"appliedPatchIds":["seed-complete-draft"],"sections":{},"fields":{},"evidence":{},"conflicts":[]}'::jsonb
 );
 
@@ -222,14 +225,14 @@ declare
   replay_result jsonb;
 begin
   first_result := public.worker_enqueue_receivables_method_refresh_v1(
-    '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64), repeat('f',64)
+    '80000000-0000-4000-8000-000000000742', repeat('v',64), pg_temp.binding_draft_fingerprint(), repeat('f',64)
   );
   if (first_result ->> 'replayed')::boolean
     or first_result ->> 'compiled_supplement_fingerprint' <> repeat('f',64) then
     raise exception 'worker did not receive the bounded refresh reference: %', first_result;
   end if;
   replay_result := public.worker_enqueue_receivables_method_refresh_v1(
-    '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64), repeat('f',64)
+    '80000000-0000-4000-8000-000000000742', repeat('v',64), pg_temp.binding_draft_fingerprint(), repeat('f',64)
   );
   if not (replay_result ->> 'replayed')::boolean
     or replay_result ->> 'processing_run_id' <> first_result ->> 'processing_run_id' then
@@ -255,7 +258,7 @@ begin
   select stored.* into strict refresh
   from private.receivables_method_refreshes stored
   where stored.organization_id = '20000000-0000-4000-8000-000000000741'
-    and stored.draft_fingerprint = repeat('d',64);
+    and stored.draft_fingerprint = pg_temp.binding_draft_fingerprint();
   select run.* into strict run_row from public.processing_runs run
   where run.organization_id = refresh.organization_id and run.id = refresh.processing_run_id;
   select job.* into strict job_row from public.processing_jobs job
@@ -285,7 +288,7 @@ declare accepted boolean := false;
 begin
   begin
     perform public.worker_enqueue_receivables_method_refresh_v1(
-      '80000000-0000-4000-8000-000000000742', repeat('v',64), repeat('d',64), repeat('0',64)
+      '80000000-0000-4000-8000-000000000742', repeat('v',64), pg_temp.binding_draft_fingerprint(), repeat('0',64)
     );
     accepted := true;
   exception when unique_violation then accepted := false;
