@@ -49,6 +49,12 @@ do $$declare r jsonb;begin
  if not (r->>'replayed')::boolean then raise exception 'producer request not idempotent';end if;
  raise notice 'PASS: producer requested one execution through the public wrapper';
 end $$;
+do $$declare d text;begin
+ begin perform public.request_work_execution_v1(jsonb_set(contract,'{purpose}','"Changed purpose"')::text,'{}') from producer_fixture;raise exception 'changed bytes under the same request id were accepted';
+ exception when unique_violation then get stacked diagnostics d=pg_exception_detail;
+  if sqlerrm<>'execution_request_conflict' or d<>'a4173000-0000-4000-9000-000000000002' then raise;end if;end;
+ raise notice 'PASS: a conflicting retry names the execution the request already created';
+end $$;
 reset role;
 do $$begin
  if (select count(*) from public.work_executions)<>1 then raise exception 'replay created a second execution';end if;

@@ -98,7 +98,7 @@ grant execute on function public.execution_contract_basis_v1(uuid,uuid,text) to 
 -- profile for the contract's method and refuses any method bytes that differ from it.
 create function private.request_work_execution_producer_v1(p_contract_text text,p_snapshot_text text) returns jsonb
 language plpgsql volatile security definer set search_path='' as $$
-declare c jsonb;w public.capital_projects;p private.execution_method_profiles;begin
+declare c jsonb;w public.capital_projects;p private.execution_method_profiles;ex uuid;begin
  if auth.uid() is null then raise exception 'execution_subject_required' using errcode='42501';end if;
  if p_contract_text is null or octet_length(p_contract_text)>1048576 or p_snapshot_text is null or octet_length(p_snapshot_text)>8388608
  then raise exception 'execution_contract_denied' using errcode='42501';end if;
@@ -110,7 +110,15 @@ declare c jsonb;w public.capital_projects;p private.execution_method_profiles;be
  if not private.execution_producer_enabled_v1(w.organization_id) then raise exception 'execution_producer_denied' using errcode='42501';end if;
  p:=private.execution_released_profile_v1(c#>>'{method,methodId}');
  if c->'method' is distinct from p.payload->'method' then raise exception 'execution_contract_denied' using errcode='42501';end if;
- return private.request_work_execution_v1(p.id,p_contract_text,p_snapshot_text);
+ begin
+  return private.request_work_execution_v1(p.id,p_contract_text,p_snapshot_text);
+ exception when unique_violation then
+  if sqlerrm<>'execution_request_conflict' then raise;end if;
+  -- The same request id already produced an execution of this human: name it, so the caller follows it instead of duplicating.
+  select e.id into ex from public.work_executions e join private.principals h on h.organization_id=e.organization_id and h.id=e.principal_id
+   where e.organization_id=w.organization_id and h.user_id=auth.uid() and e.request_id=(c->>'requestId')::uuid;
+  raise exception 'execution_request_conflict' using errcode='23505',detail=coalesce(ex::text,'');
+ end;
 exception when data_exception then raise exception 'execution_contract_denied' using errcode='42501';
 end $$;
 revoke all on function private.request_work_execution_producer_v1(text,text) from public,anon,authenticated,service_role;
