@@ -1,3 +1,7 @@
+## Etapa 17 / 3J: sujeito humano explícito
+
+Request interno recebe sujeito explícito, wrapper humano mantém identidade da sessão e o job deriva o humano do manifesto/run persistidos. Nenhum grant, JWT reescrito ou ativação R01. [Escopo e gates](docs/build/arcabouco/etapa-17-3j-sujeito-execucao.md). 3I mesclado em `afd50cc3845cf17e53de25f0f9dae1457f9c3511`; CI de main e implantação em verificação.
+
 ## Etapa 17 / 3I: recibo privado e preparo limitado
 
 Preparo fixado e readiness publicado em thread terminável; recibo imutável deriva identidade do job e recarrega autoridade. Sem grant ou habilitação R01; ligação transacional permanece no incremento 3. [Escopo e gates](docs/build/arcabouco/etapa-17-3i-r01-recibo.md). 3H fechado em main `1c24f5898ec15b67fc62bfaa1c5398a161364eeb`, CI e deploy verificados; completion externo `outputs/etapa-17-r01-loader-2026-09-23/COMPLETION-ETAPA-17-3H.md`.
