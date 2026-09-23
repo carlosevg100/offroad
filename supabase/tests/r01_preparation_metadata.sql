@@ -117,9 +117,13 @@ do $$declare r text;begin
 end $$;
 
 savepoint temporal_ancestor;
+-- The expiring ancestor lives in a second session of the same project: a new document in the job's own
+-- session would change the approval input and hold the job, which is a different scenario.
+insert into public.document_intake_sessions(id,organization_id,capital_project_id,started_by,journey,locale)
+values('10000000-0000-4000-8000-000000000091','20000000-0000-4000-8000-000000000731','30000000-0000-4000-8000-000000000731','10000000-0000-4000-8000-000000000731','company','pt-BR');
 insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,sha256,processing_status,scan_result,created_by)
-values('10000000-0000-4000-8000-000000000884','20000000-0000-4000-8000-000000000731','10000000-0000-4000-8000-000000000090',
- '20000000-0000-4000-8000-000000000731/10000000-0000-4000-8000-000000000090/synthetic-expiring.txt','synthetic-expiring.txt',encode(extensions.digest('synthetic-expiring-884','sha256'),'hex'),'ready','{"verdict":"clean"}',
+values('10000000-0000-4000-8000-000000000884','20000000-0000-4000-8000-000000000731','10000000-0000-4000-8000-000000000091',
+ '20000000-0000-4000-8000-000000000731/10000000-0000-4000-8000-000000000091/synthetic-expiring.txt','synthetic-expiring.txt',encode(extensions.digest('synthetic-expiring-884','sha256'),'hex'),'ready','{"verdict":"clean"}',
  '10000000-0000-4000-8000-000000000731');
 insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,expires_at,evidence_kind,evidence_reference,evidence_sha256,created_by)
 select organization_id,source_version_id,2,operations,purposes,audience,valid_from,clock_timestamp()+interval '3 seconds',evidence_kind,evidence_reference,evidence_sha256,created_by
@@ -127,9 +131,6 @@ from private.source_rights_versions where source_version_id='10000000-0000-4000-
 insert into private.resource_dependencies(organization_id,derived_version_id,source_version_id,source_rights_version_id,created_by)
 select organization_id,'10000000-0000-4000-8000-000000000001',source_version_id,id,created_by from private.source_rights_versions
 where source_version_id='10000000-0000-4000-8000-000000000884' and revision=2;
--- A new document in the session changes the approval input; the job is held again and the dispatch approved again, restoring the seeded lease, before any loader runs.
-update public.processing_jobs set status='awaiting_approval' where id='80000000-0000-4000-8000-000000000731';
-select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000731',true);
 update r01_receipt_fixture set id=gen_random_uuid();
 update r01_receipt_loaded set state=pg_temp.receipt_state();
 select pg_temp.record_receipt();
