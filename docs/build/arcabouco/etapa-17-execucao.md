@@ -1,6 +1,6 @@
 # Etapa 17: contrato de execução
 
-O fundador autorizou a etapa após o completion da 16 em 21/09/2026. As decisões técnicas cabem ao executor com revisão independente; a autorização não libera execução para clientes reais. A fila atual permanece. R01 e o conteúdo profissional aprovado não são reescritos.
+A etapa segue a autoridade permanente de execução de 21/09/2026 e a instrução do fundador de 23/09/2026 de concluir a 17 e preparar a 18, registradas em `docs/build/arcabouco-stage0/FOUNDER-ACTS.md`. As decisões técnicas cabem ao executor com revisão independente; nada aqui libera execução para clientes reais. A fila atual permanece. R01 e o conteúdo profissional aprovado não são reescritos.
 
 ## Incrementos e ordem de publicação
 
