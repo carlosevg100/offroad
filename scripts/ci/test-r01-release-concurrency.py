@@ -91,7 +91,7 @@ insert into public.organization_memberships(organization_id,user_id,role,status)
 select set_config('request.jwt.claim.sub','{actor}',true);
 insert into public.capital_projects(id,organization_id,project_name,created_by,private_access_granted_at,private_access_granted_by) values('{work}','{org}','Synthetic release race','{actor}',now(),'{actor}');
 insert into private.platform_capability_releases(capability_key,released,exposure,method_id,method_version,method_maturity,approved_by,approved_at,approval_source)
-values('synthetic-r01-other',true,'universal','synthetic-r01-other','v1','tested','Synthetic approver',current_date,'Synthetic disposable fixture');
+values('synthetic-r01-other',true,'universal','synthetic-r01-other','1.0.0','tested','Synthetic approver',current_date,'Synthetic disposable fixture');
 commit;""")
 reset();assert run(predicate)=='t'
 assert run('begin read only;'+predicate+'rollback;')=='t'
