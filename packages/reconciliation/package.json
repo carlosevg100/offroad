@@ -24,6 +24,6 @@
     "@offroad/domain-contracts": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43"
+    "@types/node": "^26.6.2"
   }
 }

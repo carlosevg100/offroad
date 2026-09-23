@@ -46,7 +46,7 @@
     "fakeco:receivables": "tsx scripts/build-fakeco-receivables.ts"
   },
   "devDependencies": {
-    "@types/node": "^20.19.43"
+    "@types/node": "^26.6.2"
   },
   "dependencies": {
     "@offroad/financial-core": "workspace:*",
