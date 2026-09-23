@@ -153,6 +153,11 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-execution-concurrency.py
 
+      - name: Concurrent R01 pause, release and policy revocation
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-r01-release-concurrency.py
+
       - name: Check stage-zero access surface and every file version against production journal
         run: |
           set -euo pipefail
