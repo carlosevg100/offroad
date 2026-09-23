@@ -1,8 +1,12 @@
+## Etapa 17 / 3L: integridade persistida R01
+
+CHECKs de digest em fragmentos e histórico; identidade fixa, mutação com locks sem espera circular e exclusão preservando FKs. [Escopo e gates](docs/build/arcabouco/etapa-17-3l-integridade-r01.md). 3K fechado em `5b47a510781741f07a4f0ce73687445f6a550768`: Quality `35891920175`, Security `35891920200`, worker `35891987100` PASS; worker437/Vercel6619574038 no mesmo commit. Completion externo `outputs/etapa-17-r01-pausa-2026-09-23/COMPLETION-ETAPA-17-3K.md`. Nenhum grant, consumidor ou ativação R01 novo.
+
 ## Etapa 17 / 3K: pausa concorrente R01
 
 Leitor e writer disputam o mesmo advisory transacional, com conflito explícito e retry integral; primeira pausa e mudanças da capability ficam cobertas. Demais capabilities preservam sua concorrência. [Escopo e gates](docs/build/arcabouco/etapa-17-3k-pausa-r01.md). 3J fechado em `6ca2ed8d509653af54ad2f473d3dd3caa148ab04`: Quality `35886385928`, Security `35886385910` e worker `35887037856` PASS; worker436 e Vercel6618616136 no mesmo commit. Completion externo `outputs/etapa-17-execution-subject-2026-09-23/COMPLETION-ETAPA-17-3J.md`.
 
-3K: staging `20260923162842`, produção `20260923163027`; quatro objetos novos e duas definições conferidos, checkers e 18 testes PASS, seis asserções SQL e concorrência em duas sessões PASS. Segurança zero e tipos públicos sem mudança. CI final, merge e implantação pendentes.
+3K: staging `20260923162842`, produção `20260923163027`; quatro objetos novos e duas definições conferidos, checkers e 18 testes PASS, seis asserções SQL e concorrência em duas sessões PASS. Segurança zero e tipos públicos sem mudança. CI final, merge e implantação fechados no completion 3K acima.
 
 ## Etapa 17 / 3J: sujeito humano explícito
 
