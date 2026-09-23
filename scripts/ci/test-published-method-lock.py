@@ -12,4 +12,8 @@ class PublishedLockTests(unittest.TestCase):
   with self.assertRaises(AssertionError):module.verify(self.before,changed)
  def test_duplicate_identity_is_rejected(self):
   with self.assertRaises(AssertionError):module.verify(self.before,{'releases':self.before['releases']*2})
+ def test_technical_preparer_identity_is_append_only(self):
+  before={'releases':[{'id':'preparer-v1','artifactHash':'fixed'}]}
+  module.verify(before,{'releases':before['releases']+[{'id':'preparer-v2','artifactHash':'new'}]},'id')
+  with self.assertRaises(AssertionError):module.verify(before,{'releases':[{'id':'preparer-v1','artifactHash':'changed'}]},'id')
 if __name__=='__main__':unittest.main()

@@ -7,7 +7,7 @@
     "build": "tsc -p tsconfig.json --noEmit && node build.mjs",
     "lint": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node ../../packages/credit-playbook/scripts/build-released-executors.mjs && vitest run --exclude 'dist/**'",
+    "test": "node ../../packages/credit-playbook/scripts/build-released-executors.mjs && node scripts/preparer-release.mjs build && node --test scripts/preparer-release.eval.mjs && vitest run --exclude 'dist/**'",
     "start": "node dist/main.js"
   },
   "dependencies": {

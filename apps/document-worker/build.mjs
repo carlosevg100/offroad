@@ -26,7 +26,9 @@ import {fileURLToPath} from "node:url";
 import {dirname, join} from "node:path";
 
 import {buildReleasedExecutors} from "../../packages/credit-playbook/scripts/build-released-executors.mjs";
+import {buildPreparers} from "./scripts/preparer-release.mjs";
 await buildReleasedExecutors();
+await buildPreparers();
 
 const here = dirname(fileURLToPath(import.meta.url));
 

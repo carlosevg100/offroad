@@ -1,3 +1,7 @@
+## Etapa 17 / 3G: preparador técnico fixado
+
+Preparação R01 capturada de main, reconstruída offline e verificada por bytes no boot, separadamente do método financeiro. Registro append-only na CI, paridade sintética e ausência de fallback. [Escopo e gates](arcabouco/etapa-17-3g-r01-preparador-fixado.md). Sem DDL ou habilitação R01; recibo SQL continua no incremento 3. Check, CI e implantação pertencem ao completion externo.
+
 ## Etapa 17 / 3F: preparação R01 e precedência do rascunho
 
 Rascunho atual prevalece sobre montagem histórica, inclusive para recusar conflito ou incompletude. Preparador reconstrói fragmentos, histórico e origens por valor; não concede autoridade SQL ou readiness. Sua captura imutável e o recibo persistido continuam no incremento 3. [Escopo e gates](arcabouco/etapa-17-3f-r01-preparo.md). Sem DDL; CI e implantação precisam do completion. A etapa 17 continua em execução.
