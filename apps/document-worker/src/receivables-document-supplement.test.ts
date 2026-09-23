@@ -1,6 +1,8 @@
 import {describe, expect, it} from "vitest";
 import {
   applyReceivablesSupplementPatch,
+  buildReceivablesRawUniverse,
+  type ReceivablesEvidenceScopeContext,
   compileReceivablesSupplementDraft,
   newReceivablesSupplementDraft,
   receivablesDocumentSupplementContract,
@@ -8,6 +10,11 @@ import {
   type ReceivablesPhaseOneInput,
 } from "@offroad/receivables-analysis";
 
+import {encodeReceivablesEvidence, type ReceivablesEvidenceEnvelope} from "./receivables-evidence";
+import {discoverReceivablesEvidence, resolveConfirmedReceivablesScope} from "./receivables-scope-resolution";
+import {prepareReceivablesExecutionInput} from "./receivables-preparer-entry";
+import {prepareReceivablesInputWithOrigins} from "./receivables-preparation";
+import {replayReceivablesPreparationHistory} from "./receivables-preparation-history";
 import {buildReceivablesDocumentSupplementPatch} from "./receivables-document-supplement";
 
 const datasetHash = "a".repeat(64);
@@ -226,5 +233,100 @@ describe("document supplement integrity", () => {
   it.each([["1.234,56", "1234.56"], ["1,234.56", "1234.56"], ["1234.50", "1234.50"]])("preserves explicit monetary convention %s", (value, expected) => {
     const result = buildReceivablesDocumentSupplementPatch({phaseOne, documents: [changeCell(evidenceDocument(), "CONTABIL", "A2", value!)]});
     expect(result.patch?.sections.accounting?.value.grossReceivablesBalance).toBe(expected);
+  });
+});
+
+
+describe("document preparation history", () => {
+  it("replays only the patch reproduced from the selected document bytes", () => {
+    const documents = [evidenceDocument()];
+    const patch = buildReceivablesDocumentSupplementPatch({phaseOne,documents}).patch!;
+    const currentDraft = applyReceivablesSupplementPatch({draft: newReceivablesSupplementDraft(datasetHash),patch});
+    const input = {phaseOne,documents,history: [{patch,resultingDraft:currentDraft}],currentDraft,responses:[],resolvedValues:[]};
+    expect(replayReceivablesPreparationHistory(input)).toEqual(currentDraft);
+    const changed = structuredClone(patch);
+    changed.sections.accounting!.value.allowanceBalance = "99.00";
+    expect(() => replayReceivablesPreparationHistory({...input,history:[{patch:changed,resultingDraft:currentDraft}]}))
+      .toThrow("receivables_preparation_document_patch_changed");
+  });
+  it("refuses a draft whose history was omitted or altered", () => {
+    const documents = [evidenceDocument()];
+    const patch = buildReceivablesDocumentSupplementPatch({phaseOne,documents}).patch!;
+    const currentDraft = applyReceivablesSupplementPatch({draft: newReceivablesSupplementDraft(datasetHash),patch});
+    const input = {phaseOne,documents,history:[{patch,resultingDraft:currentDraft}],currentDraft,responses:[],resolvedValues:[]};
+    expect(() => replayReceivablesPreparationHistory({...input,history:[]})).toThrow("receivables_preparation_history_incomplete");
+    expect(() => replayReceivablesPreparationHistory({...input,history:[...input.history,...input.history]})).toThrow("receivables_preparation_repeated_patch");
+    expect(() => replayReceivablesPreparationHistory({...input,history:[{patch,resultingDraft:{...currentDraft,revision:2}}]}))
+      .toThrow("receivables_preparation_history_changed");
+  });
+});
+
+
+function preparerFixture() {
+  const id = "10000000-0000-4000-8000-000000000001";
+  const sessionId = "10000000-0000-4000-8000-000000000090";
+  const document = evidenceDocument({assumptions:"complete"});
+  document.id = id;
+  document.layer.documentId = id;
+  document.layer.sheets = [sheet("CARTEIRA", ["NUM_TITULO","CNPJ_SACADO","NOME_SACADO","DT_EMISSAO","DT_VENCIMENTO","VLR_TITULO","SITUACAO"], [
+    ["T-001","12345678000199","Synthetic One","2026-08-01","2026-09-30","1000","ABERTO"],
+    ["T-002","98765432000100","Synthetic Two","2026-08-01","2026-10-31","500","ABERTO"],
+  ]),...document.layer.sheets!];
+  const encoded = encodeReceivablesEvidence({...document,layer:{...document.layer,documentVersion:1,kind:"spreadsheet",
+    sheets:document.layer.sheets!.map(item => ({...item,cells:item.cells.map(cell => ({...cell,t:typeof cell.v === "number" ? "n" : typeof cell.v === "boolean" ? "b" : "s"}))}))}});
+  const envelope: ReceivablesEvidenceEnvelope = {source_document_id:id,document_version:1,content_kind:"document_layer",schema_version:encoded.schemaVersion,
+    source_sha256:fileHash,content_sha256:encoded.contentSha256,payload_sha256:encoded.payloadSha256,codec:"gzip-json-v1",uncompressed_bytes:encoded.uncompressedBytes,payload_base64:encoded.payloadBase64};
+  const discovery = discoverReceivablesEvidence([envelope]);
+  const candidate = discovery.candidates[0]!;
+  const confirmedScope: ReceivablesEvidenceScopeContext = {state:"current",sourceManifest:discovery.sourceManifest,candidates:discovery.candidates,supportSheetCandidates:discovery.supportSheetCandidates,
+    scope:{schemaVersion:"receivables-evidence-scope.v2",id:"10000000-0000-4000-8000-000000000080",fingerprint:"d".repeat(64),sourceManifestFingerprint:discovery.sourceManifest.fingerprint,
+      primaryTape:{documentId:id,sheet:candidate.sheet,headerRow:candidate.headerRow},primarySupportSheets:discovery.supportSheetCandidates.map(item=>item.sheet),complementDocumentIds:[],reportingDate:"2026-08-31",
+      sourceRevisions:discovery.sourceManifest.sources,confirmedBy:"10000000-0000-4000-8000-000000000081",confirmedAt:"2026-09-23T00:00:00Z"}};
+  const selected = resolveConfirmedReceivablesScope(discovery,confirmedScope);
+  if (selected.state !== "current") throw new Error(selected.code);
+  const universeId = `${sessionId}:pool:${id}:${encodeURIComponent(candidate.sheet)}:${candidate.headerRow}`;
+  const phaseOne = buildReceivablesRawUniverse({universeId,datasetHash:selected.datasetHash,reportingDate:selected.scope.reportingDate,documents:selected.documents}).phaseOne!;
+  const patch = buildReceivablesDocumentSupplementPatch({phaseOne,documents:selected.documents}).patch!;
+  const currentDraft = applyReceivablesSupplementPatch({draft:newReceivablesSupplementDraft(phaseOne.datasetHash),patch});
+  return {sessionId,evidence:[envelope],confirmedScope,history:[{patch,resultingDraft:currentDraft}],currentDraft,responses:[],resolvedValues:[]};
+}
+describe("R01 preparation entry", () => {
+  it("reconstructs a complete input from verified fragments, selected sheets and exact history", () => {
+    const input = preparerFixture();
+    const result = prepareReceivablesExecutionInput(input);
+    expect(result.assembly.input.case.portfolio).toHaveLength(2);
+    expect(result.assembly.input.case.accounting.grossReceivablesBalance).toBe("1300.00");
+    expect(result.inputFingerprint).toMatch(/^[a-f0-9]{64}$/);
+    expect(result).toEqual(prepareReceivablesExecutionInput(input));
+    expect(result).not.toHaveProperty("ready");
+    expect(result).not.toHaveProperty("output");
+  });
+  it("refuses unconfirmed or changed scope and tampered fragment bytes before preparing", () => {
+    const input = preparerFixture();
+    expect(() => prepareReceivablesExecutionInput({...input,confirmedScope:null})).toThrow("scope_confirmation_required");
+    expect(() => prepareReceivablesExecutionInput({...input,confirmedScope:{...input.confirmedScope,scope:{...input.confirmedScope.scope,sourceManifestFingerprint:"0".repeat(64)}}})).toThrow("scope_stale");
+    expect(() => prepareReceivablesExecutionInput({...input,evidence:[{...input.evidence[0]!,payload_sha256:"0".repeat(64)}]})).toThrow();
+    expect(() => prepareReceivablesExecutionInput({...input,history:[]})).toThrow("history_incomplete");
+  });
+  it("follows source title identity when supplement rows are reordered and preserves an unlinked receipt", () => {
+    const patch = buildReceivablesDocumentSupplementPatch({phaseOne,documents:[evidenceDocument({assumptions:"complete"})]}).patch!;
+    patch.sections.titles!.value.reverse();
+    patch.sections.cashReceipts!.value[0]!.sourceReceivableId = null;
+    const draft = applyReceivablesSupplementPatch({draft:newReceivablesSupplementDraft(datasetHash),patch});
+    const result = prepareReceivablesInputWithOrigins({phaseOne,draft});
+    expect(result.values.find(value => value.path === "/case/portfolio/0/debtorSector"))
+      .toMatchObject({value:"varejo",origins:[{kind:"draft",path:"/sections/titles/value/1/debtorSector",value:"varejo"},{kind:"universe",id:"source-title-1"}]});
+    expect(result.values.find(value => value.path === "/case/cashReceipts/0/receivableId"))
+      .toMatchObject({value:null,origins:[{kind:"draft",path:"/sections/cashReceipts/value/0/sourceReceivableId",value:null},{kind:"preparer",rule:"cash-title-link"}]});
+  });
+  it("maps an incremental list field to the exact stored field value", () => {
+    const documents = [evidenceDocument({assumptions:"complete"})];
+    const patch = buildReceivablesDocumentSupplementPatch({phaseOne,documents}).patch!;
+    const list = patch.fields.find(field => field.path === "/policy/allowedDebtorSectors")!;
+    list.value = ["varejo","indústria"];
+    const draft = applyReceivablesSupplementPatch({draft:newReceivablesSupplementDraft(datasetHash),patch});
+    const result = prepareReceivablesInputWithOrigins({phaseOne,draft});
+    expect(result.values.find(value => value.path === "/case/policy/allowedDebtorSectors/1"))
+      .toMatchObject({value:"indústria",origins:[{kind:"draft",path:"/fields/~1policy~1allowedDebtorSectors/value/1",value:"indústria"}]});
   });
 });
