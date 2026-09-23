@@ -1547,8 +1547,12 @@
     {
       "version": "20260923171506",
       "name": "r01_persisted_source_integrity"
+    },
+    {
+      "version": "20260923194444",
+      "name": "platform_operator_identity"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-23T17:20:09.19792+00:00"
+  "captured_at": "2026-09-23T20:01:25.124110+00:00"
 }
