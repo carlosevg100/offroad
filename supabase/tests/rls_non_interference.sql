@@ -5728,3 +5728,10 @@ do $$ declare t text;begin
  if has_function_privilege('service_role','public.publish_method_release_v1(uuid,uuid,text)','EXECUTE')
  or has_function_privilege('authenticated','private.worker_record_receivables_before_method_pin_v1(uuid,text,uuid,jsonb)','EXECUTE') then raise exception 'Method publication or legacy result bypass exposed';end if;
 end $$;
+
+-- Stage 17: preparations are private reads, not public execution authority.
+do $$ declare f text; begin
+ foreach f in array array['private.r01_preparation_authority_v1(uuid,uuid,uuid,uuid)','private.worker_load_receivables_preparation_v1(uuid,text)','private.r01_response_authority_v1(uuid,uuid,uuid,text,uuid,uuid,uuid)','private.r01_adopted_value_v1(uuid,uuid,text,uuid,uuid,text,uuid)'] loop
+  if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') then raise exception 'Preparation authority exposed: %',f;end if;
+ end loop;
+end $$;

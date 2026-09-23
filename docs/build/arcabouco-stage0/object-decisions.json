@@ -151850,6 +151850,281 @@
         }
       ],
       "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.r01_adopted_value_v1(p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.r01_adopted_value_v1(p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid)",
+          "kind": "function",
+          "name": "r01_adopted_value_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.r01_adopted_value_v1(p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid)",
+          "kind": "function",
+          "name": "r01_adopted_value_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / preparo R01 3H",
+      "reason": "Leitura privada de autoridade persistida para replay do preparador fixado; sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923140356_r01_preparation_authority_loader.sql",
+          "line": 39,
+          "anchor": "create function private.r01_adopted_value_v1(p_org uuid,p_work uuid,p_dataset text,p_version uuid,p_decision uuid,p_path text,p_subject uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants ou consumidor; recibo e replay são requisitos anteriores à ativação."
+    },
+    {
+      "id": "function:private.r01_preparation_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.r01_preparation_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "r01_preparation_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_session uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.r01_preparation_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "r01_preparation_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_session uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / preparo R01 3H",
+      "reason": "Leitura privada de autoridade persistida para replay do preparador fixado; sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923140356_r01_preparation_authority_loader.sql",
+          "line": 156,
+          "anchor": "create function private.r01_preparation_authority_v1(p_org uuid,p_work uuid,p_session uuid,p_subject uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants ou consumidor; recibo e replay são requisitos anteriores à ativação."
+    },
+    {
+      "id": "function:private.r01_response_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.r01_response_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "r01_response_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.r01_response_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "r01_response_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / preparo R01 3H",
+      "reason": "Leitura privada de autoridade persistida para replay do preparador fixado; sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923140356_r01_preparation_authority_loader.sql",
+          "line": 63,
+          "anchor": "create function private.r01_response_authority_v1(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants ou consumidor; recibo e replay são requisitos anteriores à ativação."
+    },
+    {
+      "id": "function:private.r01_scope_dataset_hash_v1(s jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.r01_scope_dataset_hash_v1(s jsonb)",
+          "kind": "function",
+          "name": "r01_scope_dataset_hash_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "s jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.r01_scope_dataset_hash_v1(s jsonb)",
+          "kind": "function",
+          "name": "r01_scope_dataset_hash_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "s jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / preparo R01 3H",
+      "reason": "Leitura privada de autoridade persistida para replay do preparador fixado; sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923140356_r01_preparation_authority_loader.sql",
+          "line": 7,
+          "anchor": "create function private.r01_scope_dataset_hash_v1(s jsonb) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants ou consumidor; recibo e replay são requisitos anteriores à ativação."
+    },
+    {
+      "id": "function:private.worker_load_receivables_preparation_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_load_receivables_preparation_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_receivables_preparation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_load_receivables_preparation_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_receivables_preparation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / preparo R01 3H",
+      "reason": "Leitura privada de autoridade persistida para replay do preparador fixado; sem concessão de execução.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923140356_r01_preparation_authority_loader.sql",
+          "line": 282,
+          "anchor": "create function private.worker_load_receivables_preparation_v1(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Sem grants ou consumidor; recibo e replay são requisitos anteriores à ativação."
     }
   ],
   "repository_items": [
@@ -158411,6 +158686,13 @@
       "decision": "preservar",
       "stage": "17 / perfil R01 3D",
       "reason": "Atesta a derivação histórica R01 sem conceder execução; mantém fronteira fechada até a ponte de proveniência."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923140356_r01_preparation_authority_loader.sql",
+      "decision": "preservar",
+      "stage": "17 / preparo R01 3H",
+      "reason": "Vincula fontes, sessão, respostas e adoções ao sujeito explícito, sem habilitar execução."
     }
   ],
   "staging_archive": [
