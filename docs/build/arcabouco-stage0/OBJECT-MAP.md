@@ -2610,3 +2610,34 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `trigger:private.processing_eligibility_decisions.processing_eligibility_decisions_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
 - `trigger:private.provider_processing_assurance_events.provider_processing_events_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
 - `trigger:private.provider_processing_assurances.provider_processing_assurance_immutable`: preservar, etapa 16; Elegibilidade de processamento por conta, modelo e recurso, com atestado imutável, revogação e auditoria por job.
+
+## Etapa 17, correção 3O: identidade do operador (23/09/2026)
+
+27 objetos novos e 0 atualizados. Identidade do operador e do fundador: principais registrados, comandos ligados a uma identidade ativa, ledgers imutáveis de registro de perfil e de pausa de liberação, atestação e publicação exigindo identidade do fundador.
+- `function:private.attest_platform_method_candidate_v2(p_id uuid, p_candidate uuid, p_fingerprint text, p_kind text, p_actor_user_id uuid, p_evidence jsonb)`
+- `function:private.bind_platform_attestation_actor_v1()`
+- `function:private.guard_platform_ledger_truncate_v1()`
+- `function:private.guard_platform_principal_v1()`
+- `function:private.ledger_execution_profile_v1()`
+- `function:private.ledger_receivables_release_pause_v1()`
+- `function:private.pause_receivables_release_v1(p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid)`
+- `function:private.platform_actor_identity_v1()`
+- `function:private.platform_actor_setting_v1(p_name text)`
+- `function:private.platform_founder_registered_v1()`
+- `function:private.register_execution_method_profile_v1(p_command uuid, p_profile uuid, p_release text, p_canonical_payload text, p_adapter_source_commit text, p_review_evidence jsonb, p_actor_user_id uuid, p_reason text)`
+- `function:private.require_platform_principal_v1(p_user_id uuid, p_founder boolean)`
+- `policy:private.execution_profile_registrations.execution_profile_registrations_deny`
+- `policy:private.platform_principals.platform_principals_deny`
+- `policy:private.receivables_release_pause_events.receivables_release_pause_events_deny`
+- `r:private.execution_profile_registrations`
+- `r:private.platform_principals`
+- `r:private.receivables_release_pause_events`
+- `trigger:private.execution_method_profiles.execution_method_profiles_ledger`
+- `trigger:private.execution_profile_registrations.execution_profile_registrations_immutable`
+- `trigger:private.execution_profile_registrations.execution_profile_registrations_truncate_guard`
+- `trigger:private.platform_method_attestations.platform_method_attestations_actor`
+- `trigger:private.platform_principals.platform_principals_guard`
+- `trigger:private.platform_principals.platform_principals_truncate_guard`
+- `trigger:private.receivables_analytical_release_grants.receivables_release_pause_ledger`
+- `trigger:private.receivables_release_pause_events.receivables_release_pause_events_immutable`
+- `trigger:private.receivables_release_pause_events.receivables_release_pause_events_truncate_guard`
