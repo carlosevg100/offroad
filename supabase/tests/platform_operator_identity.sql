@@ -18,12 +18,15 @@ select pg_temp.expect_identity_error($q$update private.platform_principals set r
 select pg_temp.expect_identity_error($q$delete from private.platform_principals where user_id='a11b0000-0000-4000-8000-000000000002'$q$,'platform_principal_immutable','principal is never deleted');
 select pg_temp.expect_identity_error($q$update private.platform_principals set revoked_at=now() where user_id='a11b0000-0000-4000-8000-000000000002'$q$,'platform_principal_revocation_reason_required','revocation needs a reason');
 update private.platform_principals set revoked_at=now(),revoked_reason='Synthetic revocation for the proof' where user_id='a11b0000-0000-4000-8000-000000000002';
-do $$begin if not exists(select 1 from private.platform_principals where user_id='a11b0000-0000-4000-8000-000000000002' and revoked_by='postgres' and revoked_reason='Synthetic revocation for the proof') then raise exception 'revocation not recorded with who and why';end if;end $$;
+do $$begin if not exists(select 1 from private.platform_principals where user_id='a11b0000-0000-4000-8000-000000000002' and revoked_by=session_user and revoked_reason='Synthetic revocation for the proof') then raise exception 'revocation not recorded with who and why';end if;end $$;
 select pg_temp.expect_identity_error($q$update private.platform_principals set revoked_at=null,revoked_by=null,revoked_reason=null where user_id='a11b0000-0000-4000-8000-000000000002'$q$,'platform_principal_immutable','revocation is final');
 insert into private.platform_principals(user_id,role,label) values('a11b0000-0000-4000-8000-000000000002','operator','Synthetic operator again') on conflict(user_id) do nothing;
 select pg_temp.expect_identity_error($q$select private.pause_receivables_release_v1(gen_random_uuid(),'a11b0000-0000-4000-9000-000000000001',false,null,'a11b0000-0000-4000-8000-000000000002')$q$,'platform_principal_required','revoked principal cannot act');
 -- A fresh operator for the rest of the proof.
 insert into private.platform_principals(user_id,role,label) values('a11b0000-0000-4000-8000-000000000003','operator','Synthetic operator two');
+insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous)
+values('a11b0000-0000-4000-8000-000000000004','authenticated','authenticated','a11b-d@example.invalid','{}','{}',now(),now(),false,false);
+select pg_temp.expect_identity_error($q$insert into private.platform_principals(user_id,role,label) values('a11b0000-0000-4000-8000-000000000004','operator',' Synthetic padded label ')$q$,'new row for relation "platform_principals" violates check constraint "platform_principals_label_trimmed"','principal label is stored trimmed');
 update auth.users set banned_until=clock_timestamp()+interval '1 hour' where id='a11b0000-0000-4000-8000-000000000003';
 select pg_temp.expect_identity_error($q$select private.pause_receivables_release_v1(gen_random_uuid(),'a11b0000-0000-4000-9000-000000000001',false,null,'a11b0000-0000-4000-8000-000000000003')$q$,'platform_principal_required','banned principal cannot act');
 update auth.users set banned_until=null where id='a11b0000-0000-4000-8000-000000000003';
@@ -33,6 +36,11 @@ do $$begin
  then raise exception 'direct profile insert not ledgered';end if;
 end $$;
 create temporary table profile_payload as select jsonb_set(payload,'{method,executor,version}','"test-v2"') payload from private.execution_method_profiles where id='a4171000-0000-4000-9000-000000000001';
+select set_config('offroad.actor_user_id','a11b0000-0000-4000-8000-000000000099',true);
+select pg_temp.expect_identity_error($q$insert into private.execution_method_profiles(id,platform_release_id,serialization_version,canonical_payload,payload_fingerprint,adapter_source_commit,review_evidence) select 'a4171000-0000-4000-9000-000000000009','synthetic-execution-test-v1','offroad-execution-json-utf16-v1',jsonb_set(payload,'{method,executor,version}','"test-v3"')::text,encode(extensions.digest(convert_to(jsonb_set(payload,'{method,executor,version}','"test-v3"')::text,'UTF8'),'sha256'),'hex'),repeat('c',40),(select review_evidence from private.execution_method_profiles where id='a4171000-0000-4000-9000-000000000001') from profile_payload$q$,'platform_principal_required','forged identity cannot enter the profile ledger');
+select set_config('offroad.actor_user_id','not-a-uuid',true);
+select pg_temp.expect_identity_error($q$insert into private.execution_method_profiles(id,platform_release_id,serialization_version,canonical_payload,payload_fingerprint,adapter_source_commit,review_evidence) select 'a4171000-0000-4000-9000-000000000009','synthetic-execution-test-v1','offroad-execution-json-utf16-v1',jsonb_set(payload,'{method,executor,version}','"test-v3"')::text,encode(extensions.digest(convert_to(jsonb_set(payload,'{method,executor,version}','"test-v3"')::text,'UTF8'),'sha256'),'hex'),repeat('c',40),(select review_evidence from private.execution_method_profiles where id='a4171000-0000-4000-9000-000000000001') from profile_payload$q$,'platform_principal_required','malformed identity is refused');
+select set_config('offroad.actor_user_id','',true);
 select pg_temp.expect_identity_error($q$select private.register_execution_method_profile_v1('c4171000-0000-4000-9000-000000000001','a4171000-0000-4000-9000-000000000003','synthetic-execution-test-v1',payload::text,repeat('c',40),jsonb_build_object('result','approved','subjectCommit',repeat('c',40),'reviewer','Synthetic independent reviewer','sourcePath','packages/credit-playbook/knowledge/reviews/synthetic-profile-review.json','sourceHash',repeat('d',64)),'a11b0000-0000-4000-8000-000000000099','Synthetic registration by an unknown identity') from profile_payload$q$,'platform_principal_required','unknown identity cannot register a profile');
 select pg_temp.expect_identity_error($q$select private.register_execution_method_profile_v1('c4171000-0000-4000-9000-000000000001','a4171000-0000-4000-9000-000000000003','synthetic-execution-test-v1',payload::text,repeat('c',40),jsonb_build_object('result','approved','subjectCommit',repeat('c',40),'reviewer','Synthetic independent reviewer','sourceHash',repeat('d',64)),'a11b0000-0000-4000-8000-000000000001','Synthetic registration without review path') from profile_payload$q$,'execution_profile_registration_invalid','review without a pinned path is refused');
 select private.register_execution_method_profile_v1('c4171000-0000-4000-9000-000000000001','a4171000-0000-4000-9000-000000000003','synthetic-execution-test-v1',payload::text,repeat('c',40),jsonb_build_object('result','approved','subjectCommit',repeat('c',40),'reviewer','Synthetic independent reviewer','sourcePath','packages/credit-playbook/knowledge/reviews/synthetic-profile-review.json','sourceHash',repeat('d',64)),'a11b0000-0000-4000-8000-000000000001','Synthetic registration by the founder') from profile_payload;
@@ -67,6 +75,10 @@ end $$;
 select pg_temp.expect_identity_error($q$truncate private.receivables_release_pause_events$q$,'platform_ledger_immutable','pause ledger cannot be truncated');
 select pg_temp.expect_identity_error($q$truncate private.execution_profile_registrations$q$,'platform_ledger_immutable','profile ledger cannot be truncated');
 select pg_temp.expect_identity_error($q$truncate private.platform_principals$q$,'platform_ledger_immutable','principals cannot be truncated');
+select pg_temp.expect_identity_error($q$truncate private.platform_method_attestations$q$,'platform_ledger_immutable','attestations cannot be truncated');
+select pg_temp.expect_identity_error($q$truncate private.platform_method_publication_events$q$,'platform_ledger_immutable','publication events cannot be truncated');
+select pg_temp.expect_identity_error($q$truncate private.platform_method_releases cascade$q$,'platform_ledger_immutable','releases cannot be truncated, even in cascade');
+select pg_temp.expect_identity_error($q$truncate private.execution_method_profiles cascade$q$,'platform_ledger_immutable','profiles cannot be truncated, even in cascade');
 -- 4. Content approval publishes only with the founder's identity once a founder is registered.
 do $$declare x record;e jsonb;approval_evidence jsonb;begin
  select * into x from platform_method_fixture;
@@ -99,6 +111,9 @@ do $$declare x record;e jsonb;approval_evidence jsonb;begin
  perform set_config('offroad.actor_user_id','a11b0000-0000-4000-8000-000000000099',true);
  begin perform private.attest_platform_method_candidate_v1('b5141000-0000-4000-9000-000000000029',x.id,x.fingerprint,'technical_review','Synthetic founder',e);raise exception 'unknown identity accepted';exception when insufficient_privilege then if sqlerrm<>'platform_principal_required' then raise;end if;end;
  perform set_config('offroad.actor_user_id','',true);
+ update auth.users set banned_until=clock_timestamp()+interval '1 hour' where id='a11b0000-0000-4000-8000-000000000003';
+ begin insert into private.platform_method_attestations(id,candidate_id,kind,candidate_fingerprint,actor,actor_user_id,evidence) values('b5141000-0000-4000-9000-000000000028',x.id,'technical_review',x.fingerprint,'Synthetic operator two','a11b0000-0000-4000-8000-000000000003',e);raise exception 'banned identity attested directly';exception when insufficient_privilege then if sqlerrm<>'platform_principal_required' then raise;end if;end;
+ update auth.users set banned_until=null where id='a11b0000-0000-4000-8000-000000000003';
  perform private.attest_platform_method_candidate_v2('b5141000-0000-4000-9000-000000000022',x.id,x.fingerprint,'technical_review','a11b0000-0000-4000-8000-000000000003',e);
  approval_evidence:=e||jsonb_build_object('sourcePath','packages/credit-playbook/knowledge/reviews/synthetic-platform-approval.json','sourceHash',repeat('b',64),'humanApproval',true);
  perform private.attest_platform_method_candidate_v2('b5141000-0000-4000-9000-000000000023',x.id,x.fingerprint,'content_approval','a11b0000-0000-4000-8000-000000000001',approval_evidence);
@@ -117,7 +132,7 @@ end $$;
 reset role;
 do $$declare role_name text;sig text;begin
  foreach role_name in array array['anon','authenticated','service_role'] loop
-  foreach sig in array array['private.register_execution_method_profile_v1(uuid,uuid,text,text,text,jsonb,uuid,text)','private.pause_receivables_release_v1(uuid,uuid,boolean,text,uuid)','private.attest_platform_method_candidate_v2(uuid,uuid,text,text,uuid,jsonb)','private.require_platform_principal_v1(uuid,boolean)','private.platform_actor_identity_v1()','private.guard_platform_ledger_truncate_v1()','private.request_work_execution_as_subject_v1(uuid,uuid,text,text)'] loop
+  foreach sig in array array['private.register_execution_method_profile_v1(uuid,uuid,text,text,text,jsonb,uuid,text)','private.pause_receivables_release_v1(uuid,uuid,boolean,text,uuid)','private.attest_platform_method_candidate_v2(uuid,uuid,text,text,uuid,jsonb)','private.require_platform_principal_v1(uuid,boolean)','private.platform_actor_identity_v1()','private.platform_principal_live_v1(uuid)','private.guard_platform_ledger_truncate_v1()','private.request_work_execution_as_subject_v1(uuid,uuid,text,text)'] loop
    if has_function_privilege(role_name,sig,'EXECUTE') then raise exception 'command exposed to %: %',role_name,sig;end if;
   end loop;
   if has_table_privilege(role_name,'private.platform_principals','SELECT,INSERT,UPDATE,DELETE') or has_table_privilege(role_name,'private.execution_profile_registrations','SELECT,INSERT,UPDATE,DELETE') or has_table_privilege(role_name,'private.receivables_release_pause_events','SELECT,INSERT,UPDATE,DELETE') then raise exception 'ledger exposed to %',role_name;end if;

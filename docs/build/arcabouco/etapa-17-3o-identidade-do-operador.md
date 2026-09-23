@@ -30,6 +30,17 @@ O id de usuário do fundador aparece na migração que o registra como principal
 
 Estampas: staging `20260923202101`, produção `20260923203112`. Oito funções, três gatilhos e três colunas com definição idêntica nos dois projetos; advisors de segurança zero. Em staging a migração rodou com um backfill condicionado a um principal fundador que lá não existe; o texto final, sem o backfill, tem efeito idêntico.
 
+## Terceira parte, após a segunda revisão independente
+
+A revisão do endurecimento aprovou com duas condições e quatro pontos menores. A migração `platform_operator_identity_ledger_guard` fecha todos:
+
+- O ledger de perfis verifica a identidade declarada com `platform_actor_identity_v1`, como o ledger de pausas; um valor que não é uuid é recusado como principal ausente, e não como erro de formato.
+- A revogação grava `session_user`, quem de fato entrou na sessão, e não o dono da função.
+- Uma atestação com identidade explícita também exige conta viva, não só principal ativo; o rótulo do principal é guardado sem espaços nas pontas.
+- Atestações, eventos de publicação, releases e perfis também recusam truncamento.
+
+Estampas: staging `20260923205449`, produção `20260923223307`. Prova executada em staging com rollback, com as asserções novas: identidade forjada e identidade malformada não entram no ledger de perfis; `revoked_by` é o usuário da sessão; rótulo com espaços recusado; atestação direta por conta banida recusada; truncamento recusado em cascata nas duas tabelas referenciadas por chave estrangeira.
+
 ## Provas
 
 `supabase/tests/platform_operator_identity.sql`: imutabilidade e revogação final de principais; inserção direta ledgerada sem identidade; comando de perfil por identidade desconhecida ou revisão sem caminho fixado recusado; registro, replay e reuso de comando; perfil e ledger imutáveis; pausa por comando com principal, replay, edição direta ledgerada; aprovação por operador ou identidade desconhecida recusada; aprovação por rótulo não publica com fundador registrado; aprovação v2 do fundador publica com a identidade na coluna privada; atestação imutável; comandos negados ao tenant e sem grant de API; registro de chamadores. Segunda parte: revogação exige razão e grava quem revogou; principal banido não age; edição direta do ledger de pausa fica com identidade nula; replay de pausa com outra nota recusado; truncamento recusado nos três ledgers; atestação v2 sobre atestação v1 recusada como reuso de comando; identidade forjada por GUC recusada; release com a coluna privada e sem `approvedByUserId` no JSON; grants negados também para `platform_actor_identity_v1` e `guard_platform_ledger_truncate_v1`. Executada em staging com rollback nas duas partes. Nada aqui concede execução, amplia grant de API ou toca o produtor. TRUST-APP-01, TRUST-SDLC-01.

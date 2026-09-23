@@ -3032,6 +3032,12 @@
           "line": 54,
           "anchor": "create or replace function private.bind_platform_attestation_actor_v1() returns trigger language plpgsql security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 46,
+          "anchor": "create or replace function private.bind_platform_attestation_actor_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -12016,6 +12022,12 @@
           "line": 12,
           "anchor": "create or replace function private.guard_platform_principal_v1() returns trigger language plpgsql security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 31,
+          "anchor": "create or replace function private.guard_platform_principal_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -15061,6 +15073,12 @@
           "line": 77,
           "anchor": "create function private.ledger_execution_profile_v1() returns trigger language plpgsql security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 23,
+          "anchor": "create or replace function private.ledger_execution_profile_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -17487,6 +17505,12 @@
           "line": 35,
           "anchor": "create function private.platform_actor_identity_v1() returns uuid language plpgsql stable security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 14,
+          "anchor": "create or replace function private.platform_actor_identity_v1() returns uuid language plpgsql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -17652,6 +17676,60 @@
         }
       ],
       "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "function:private.platform_principal_live_v1(p_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.platform_principal_live_v1(p_user_id uuid)",
+          "kind": "function",
+          "name": "platform_principal_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_user_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.platform_principal_live_v1(p_user_id uuid)",
+          "kind": "function",
+          "name": "platform_principal_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_user_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 3O",
+      "reason": "Terceira parte da identidade do operador: verificação de conta viva para identidades declaradas e guardas de truncamento nos ledgers de atestação, publicação, releases e perfis.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 8,
+          "anchor": "create function private.platform_principal_live_v1(p_user_id uuid) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.policy_admin_context_v1()",
@@ -137889,6 +137967,44 @@
       ]
     },
     {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_method_profiles.execution_method_profiles_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_method_profiles_truncate_guard",
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_method_profiles_truncate_guard BEFORE TRUNCATE ON private.execution_method_profiles FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_method_profiles.execution_method_profiles_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_method_profiles_truncate_guard",
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_method_profiles_truncate_guard BEFORE TRUNCATE ON private.execution_method_profiles FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 3O",
+      "reason": "Terceira parte da identidade do operador: verificação de conta viva para identidades declaradas e guardas de truncamento nos ledgers de atestação, publicação, releases e perfis.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 61,
+          "anchor": "create trigger execution_method_profiles_truncate_guard before truncate on private.execution_method_profiles for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_method_profiles.execution_method_profiles_validate",
       "kind": "trigger",
       "catalogues": {
@@ -139407,6 +139523,44 @@
       "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
     },
     {
+      "id": "trigger:private.platform_method_attestations.platform_method_attestations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_method_attestations.platform_method_attestations_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_method_attestations_truncate_guard",
+          "table": "platform_method_attestations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_method_attestations_truncate_guard BEFORE TRUNCATE ON private.platform_method_attestations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_method_attestations.platform_method_attestations_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_method_attestations_truncate_guard",
+          "table": "platform_method_attestations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_method_attestations_truncate_guard BEFORE TRUNCATE ON private.platform_method_attestations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 3O",
+      "reason": "Terceira parte da identidade do operador: verificação de conta viva para identidades declaradas e guardas de truncamento nos ledgers de atestação, publicação, releases e perfis.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 58,
+          "anchor": "create trigger platform_method_attestations_truncate_guard before truncate on private.platform_method_attestations for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.platform_method_candidates.platform_method_candidates_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -139485,6 +139639,44 @@
       "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
     },
     {
+      "id": "trigger:private.platform_method_publication_events.platform_method_publication_events_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_method_publication_events.platform_method_publication_events_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_method_publication_events_truncate_guard",
+          "table": "platform_method_publication_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_method_publication_events_truncate_guard BEFORE TRUNCATE ON private.platform_method_publication_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_method_publication_events.platform_method_publication_events_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_method_publication_events_truncate_guard",
+          "table": "platform_method_publication_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_method_publication_events_truncate_guard BEFORE TRUNCATE ON private.platform_method_publication_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 3O",
+      "reason": "Terceira parte da identidade do operador: verificação de conta viva para identidades declaradas e guardas de truncamento nos ledgers de atestação, publicação, releases e perfis.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 59,
+          "anchor": "create trigger platform_method_publication_events_truncate_guard before truncate on private.platform_method_publication_events for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.platform_method_releases.platform_method_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -139522,6 +139714,44 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.platform_method_releases.platform_method_releases_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_method_releases.platform_method_releases_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_method_releases_truncate_guard",
+          "table": "platform_method_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_method_releases_truncate_guard BEFORE TRUNCATE ON private.platform_method_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_method_releases.platform_method_releases_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_method_releases_truncate_guard",
+          "table": "platform_method_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_method_releases_truncate_guard BEFORE TRUNCATE ON private.platform_method_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 3O",
+      "reason": "Terceira parte da identidade do operador: verificação de conta viva para identidades declaradas e guardas de truncamento nos ledgers de atestação, publicação, releases e perfis.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+          "line": 60,
+          "anchor": "create trigger platform_method_releases_truncate_guard before truncate on private.platform_method_releases for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.platform_principals.platform_principals_guard",
@@ -161640,6 +161870,13 @@
       "decision": "preservar",
       "stage": "17 / 3M",
       "reason": "Etapa 17, incremento 3M: metadados atuais de preparação R01 e conferência do recibo corrente, com patches textuais das funções de autoridade e recibo."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
+      "decision": "preservar",
+      "stage": "17 / 3O",
+      "reason": "Etapa 17, correção 3O, terceira parte: condições da segunda revisão independente (ledger de perfis verificado, revogação com usuário da sessão, rótulo aparado, truncamento recusado)."
     }
   ],
   "staging_archive": [

@@ -2657,3 +2657,12 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 2 objetos novos e 0 atualizados. Continuidade R01 por metadados: projeção privada da autoridade atual de preparação e comparação do recibo corrente sem ler bytes comprimidos, JSON de histórico ou entrada canônica; não autoriza execução.
 - `function:private.r01_preparation_metadata_v2(p_org uuid, p_work uuid, p_session uuid, p_subject uuid)`
 - `function:private.r01_preparation_receipt_current_v1(p_org uuid, p_receipt uuid, p_subject uuid)`
+
+## Etapa 17, correção 3O, terceira parte (23/09/2026)
+
+5 objetos novos e 0 atualizados. Terceira parte da identidade do operador: verificação de conta viva para identidades declaradas e guardas de truncamento nos ledgers de atestação, publicação, releases e perfis.
+- `function:private.platform_principal_live_v1(p_user_id uuid)`
+- `trigger:private.execution_method_profiles.execution_method_profiles_truncate_guard`
+- `trigger:private.platform_method_attestations.platform_method_attestations_truncate_guard`
+- `trigger:private.platform_method_publication_events.platform_method_publication_events_truncate_guard`
+- `trigger:private.platform_method_releases.platform_method_releases_truncate_guard`
