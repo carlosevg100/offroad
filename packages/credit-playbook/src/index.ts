@@ -54,4 +54,8 @@ export * from "./compose-method";
 
 export * from "./method-data-contract";
 
+export * from "./conventions-gate";
+export * from "./method-selection";
+export * from "./md-test-rubric";
+
 export {capitalPlanningCompatibilityPolicy} from "./capital-planning-policy.generated";
