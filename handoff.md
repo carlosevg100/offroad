@@ -1,3 +1,9 @@
+## Etapa 17 / 3M: continuidade R01 por metadados
+
+Projeção compacta `r01_preparation_metadata_v2` comum ao loader pesado e à conferência privada do recibo (`r01_preparation_receipt_current_v1`): pins completos de fonte, direitos atuais e fixados, fechamento de dependências, histórico integral e respostas revalidadas, sem ler blobs nessa fronteira. Loader, gravador de recibo e leitura de escopo atualizados para a mesma projeção. Desenho, revisão e testes vieram do rascunho anterior; a execução R01 continua recusada e nenhum grant muda. [Escopo e gates](docs/build/arcabouco/etapa-17-3m-metadados-r01.md).
+
+3M: staging `20260923200518`, produção `20260923200643`; cinco definições idênticas nos dois ambientes por md5; advisors de segurança zero; journals conciliados. As provas SQL desta fatia (`r01_preparation_metadata.sql`, `r01_preparation_metadata_responses.sql`, concorrência real em `test-r01-integrity-concurrency.py`) rodam na CI do zero; não foram executadas em staging pelo tamanho da fixture. Revisão independente, CI final e deploy exato ficam registrados no completion.
+
 ## Etapa 17 / 3L: integridade persistida R01
 
 CHECKs de digest em fragmentos e histórico; identidade fixa, mutação com locks sem espera circular e exclusão preservando FKs. [Escopo e gates](docs/build/arcabouco/etapa-17-3l-integridade-r01.md). 3K fechado em `5b47a510781741f07a4f0ce73687445f6a550768`: Quality `35891920175`, Security `35891920200`, worker `35891987100` PASS; worker437/Vercel6619574038 no mesmo commit. Completion externo `outputs/etapa-17-r01-pausa-2026-09-23/COMPLETION-ETAPA-17-3K.md`. Nenhum grant, consumidor ou ativação R01 novo.

@@ -1547,8 +1547,12 @@
     {
       "version": "20260923171506",
       "name": "r01_persisted_source_integrity"
+    },
+    {
+      "version": "20260923200518",
+      "name": "r01_current_preparation_metadata"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-23T17:20:09.19792+00:00"
+  "captured_at": "2026-09-23T20:07:48.544161+00:00"
 }
