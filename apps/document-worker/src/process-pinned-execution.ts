@@ -5,7 +5,9 @@ import {bindProfiledExecution,assertCurrentExecutionAuthority} from "./pinned-ex
 import {loadReleasedExecutionProfile} from "./released-method-executor";
 import {calculatePinnedMethod,type CalculationResult} from "./execution-calculation";
 import type {ExecutionQueue,ExecutionQueueClaim,ExecutionOutcome,ExecutionReason,ExecutionRenewal} from "./execution-queue";
-const digest=(text:string)=>createHash("sha256").update(text,"utf8").digest("hex");
+/** Worker-side twin of the SQL result hash, encode(digest(convert_to(p_result_text,'UTF8'),'sha256'),'hex'): what settle and commit store for the exact bytes. */
+export const executionResultFingerprint=(text:string)=>createHash("sha256").update(text,"utf8").digest("hex");
+const digest=executionResultFingerprint;
 const partial=(reason:ExecutionReason)=>executionCanonicalText({status:"partial",reason});
 
 /** A failed authorization request aborts CPU work. Only the current SQL commit publishes. */
