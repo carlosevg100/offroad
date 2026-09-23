@@ -1,3 +1,9 @@
+## Etapa 17 / 3N: resultado liquidado recuperável
+
+O settle passa a conservar os bytes exatos do resultado; uma lease posterior da mesma execução publica esses bytes sem recomputar, e o commit recusa hash de outra lease ou bytes diferentes. Recibo de resultado registra a lease da liquidação e a da publicação; transporte do worker com timeout proporcional ao payload. [Escopo e provas](docs/build/arcabouco/etapa-17-3n-resultado-liquidado-recuperavel.md).
+
+3N: staging `20260923193010`, produção `20260923193243`; advisors de segurança zero nos dois ambientes; tipos regenerados; prova SQL executada em staging com rollback; 26 testes do worker PASS. Revisão independente, CI final e deploy exato ficam registrados no completion.
+
 ## Etapa 17 / 3L: integridade persistida R01
 
 CHECKs de digest em fragmentos e histórico; identidade fixa, mutação com locks sem espera circular e exclusão preservando FKs. [Escopo e gates](docs/build/arcabouco/etapa-17-3l-integridade-r01.md). 3K fechado em `5b47a510781741f07a4f0ce73687445f6a550768`: Quality `35891920175`, Security `35891920200`, worker `35891987100` PASS; worker437/Vercel6619574038 no mesmo commit. Completion externo `outputs/etapa-17-r01-pausa-2026-09-23/COMPLETION-ETAPA-17-3K.md`. Nenhum grant, consumidor ou ativação R01 novo.

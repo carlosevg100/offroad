@@ -18,7 +18,7 @@ function fixture(methodIdentity=identity,snapshot:unknown={}){
  contractText:executionCanonicalText(contract),contractFingerprint:executionContractFingerprint(contract),snapshotText:executionCanonicalText(snapshot),elapsedDurationMs:0,leaseExpiresAt:new Date(Date.now()+60000).toISOString(),budgetExpired:false};
  const renewal:ExecutionRenewal={allowed:true,jobId:c.jobId,leaseId:c.leaseId,executionId:c.executionId,organizationId:contract.organizationId,workId:contract.workId,principalId:contract.principalId,
  processingRunId:contract.processingRunId,contractFingerprint:c.contractFingerprint,leaseExpiresAt:c.leaseExpiresAt,elapsedDurationMs:0,remainingDurationMs:31000};
- const q:ExecutionQueue={claim:vi.fn(async()=>c),renew:vi.fn(async()=>({...renewal})),reserve:vi.fn(async()=>({operationId:c.executionId,state:"reserved" as const,replayed:false,mayExecute:true})),settle:vi.fn(async()=>{}),commit:vi.fn(async()=>{})};
+ const q:ExecutionQueue={claim:vi.fn(async()=>c),renew:vi.fn(async()=>({...renewal})),reserve:vi.fn(async()=>({operationId:c.executionId,state:"reserved" as const,replayed:false,mayExecute:true})),settledResult:vi.fn(async()=>({available:false as const})),settle:vi.fn(async()=>{}),commit:vi.fn(async()=>{})};
  const calculate=vi.fn(async()=>({ok:true as const,text:'{"calculation":"synthetic"}'}));
  return {c,q,renewal,calculate,shutdown:new AbortController()};
 }
@@ -28,7 +28,7 @@ describe("pinned execution consumer",()=>{
   const f=fixture({methodId:"underwrite-receivables-pool",methodVersion:"2026.09.06-v1",manifestHash:"17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090"},input);
   const expected=executionCanonicalText(loadReleasedReceivables().underwriteReceivablesPool(input));
   expect(await processPinnedExecution(f.c,f.q,f.shutdown.signal)).toEqual({status:"succeeded"});
-  expect(f.q.settle).toHaveBeenCalledWith(f.c,createHash("sha256").update(expected).digest("hex"));
+  expect(f.q.settle).toHaveBeenCalledWith(f.c,expected);
   expect(f.q.commit).toHaveBeenCalledWith(f.c,executionInputFingerprint(input),expected,"succeeded","calculated");
  });
  it("denies R01 commit when current authority is withdrawn after calculation",async()=>{
@@ -38,10 +38,21 @@ describe("pinned execution consumer",()=>{
   expect(f.q.settle).not.toHaveBeenCalled();expect(f.q.commit).not.toHaveBeenCalled();
  });
  it("settles the exact calculated bytes before current-authority commit",async()=>{const f=fixture();expect(await processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).toEqual({status:"succeeded"});
- expect(f.q.settle).toHaveBeenCalledWith(f.c,createHash("sha256").update('{"calculation":"synthetic"}').digest("hex"));expect(f.q.commit).toHaveBeenCalledWith(f.c,executionInputFingerprint({}),'{"calculation":"synthetic"}',"succeeded","calculated");});
+ expect(f.q.settle).toHaveBeenCalledWith(f.c,'{"calculation":"synthetic"}');expect(f.q.commit).toHaveBeenCalledWith(f.c,executionInputFingerprint({}),'{"calculation":"synthetic"}',"succeeded","calculated");});
  it("refuses altered snapshot or claim before any calculation",async()=>{const f=fixture();f.c.snapshotText='{"changed":true}';await expect(processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).rejects.toThrow();expect(f.calculate).not.toHaveBeenCalled();expect(f.q.reserve).not.toHaveBeenCalled();});
  it("does not calculate after cumulative budget exhaustion",async()=>{const f=fixture();f.renewal.remainingDurationMs=0;expect(await processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).toEqual({status:"partial"});expect(f.calculate).not.toHaveBeenCalled();expect(f.q.commit).toHaveBeenLastCalledWith(f.c,executionInputFingerprint({}),'{"reason":"budget_exhausted","status":"partial"}',"partial","budget_exhausted");});
- it.each(["uncertain","settled"] as const)("does not repeat a %s logical operation after restart",async(state)=>{const f=fixture();f.q.reserve=vi.fn(async()=>({operationId:f.c.executionId,state,replayed:true,mayExecute:false}));expect(await processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).toEqual({status:"partial"});expect(f.calculate).not.toHaveBeenCalled();expect(f.q.settle).not.toHaveBeenCalled();expect(f.q.commit).toHaveBeenLastCalledWith(f.c,executionInputFingerprint({}),'{"reason":"operation_uncertain","status":"partial"}',"partial","operation_uncertain");});
+ it.each(["uncertain","settled"] as const)("does not repeat a %s logical operation after restart when no settled bytes exist",async(state)=>{const f=fixture();f.q.reserve=vi.fn(async()=>({operationId:f.c.executionId,state,replayed:true,mayExecute:false}));expect(await processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).toEqual({status:"partial"});expect(f.calculate).not.toHaveBeenCalled();expect(f.q.settle).not.toHaveBeenCalled();expect(f.q.commit).toHaveBeenLastCalledWith(f.c,executionInputFingerprint({}),'{"reason":"operation_uncertain","status":"partial"}',"partial","operation_uncertain");});
+ it("publishes the bytes settled by an earlier lease without recomputing",async()=>{const f=fixture();const text='{"calculation":"synthetic"}';
+  f.q.reserve=vi.fn(async()=>({operationId:f.c.executionId,state:"settled" as const,replayed:true,mayExecute:false}));
+  f.q.settledResult=vi.fn(async()=>({available:true as const,resultText:text,resultHash:createHash("sha256").update(text).digest("hex"),settledByLease:"20000000-0000-4000-8000-000000000009"}));
+  expect(await processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).toEqual({status:"succeeded"});
+  expect(f.calculate).not.toHaveBeenCalled();expect(f.q.settle).not.toHaveBeenCalled();
+  expect(f.q.commit).toHaveBeenCalledWith(f.c,executionInputFingerprint({}),text,"succeeded","calculated");});
+ it("refuses settled bytes whose hash or canonical form does not match",async()=>{for(const settled of [
+  {available:true as const,resultText:'{"calculation":"synthetic"}',resultHash:"c".repeat(64),settledByLease:"20000000-0000-4000-8000-000000000009"},
+  {available:true as const,resultText:'{"z":1,"a":2}',resultHash:createHash("sha256").update('{"z":1,"a":2}').digest("hex"),settledByLease:"20000000-0000-4000-8000-000000000009"}]){
+  const f=fixture();f.q.reserve=vi.fn(async()=>({operationId:f.c.executionId,state:"settled" as const,replayed:true,mayExecute:false}));f.q.settledResult=vi.fn(async()=>settled);
+  await expect(processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).rejects.toThrow("execution_settled_bytes_mismatch");expect(f.q.commit).not.toHaveBeenCalled();}});
  it("refuses authorization for another scope and a reset duration",async()=>{for(const override of [{leaseId:"20000000-0000-4000-8000-000000000099"},{elapsedDurationMs:0}]){const f=fixture();f.c.elapsedDurationMs=10;Object.assign(f.renewal,override);await expect(processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).rejects.toThrow();expect(f.calculate).not.toHaveBeenCalled();}});
  it("cannot commit after authority fails between calculation and settlement",async()=>{const f=fixture();vi.mocked(f.q.renew).mockResolvedValueOnce(f.renewal).mockRejectedValueOnce(Error("denied"));await expect(processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).rejects.toThrow();expect(f.q.settle).not.toHaveBeenCalled();expect(f.q.commit).not.toHaveBeenCalled();});
  it("cannot commit after settlement loses its authority",async()=>{const f=fixture();vi.mocked(f.q.renew).mockResolvedValueOnce(f.renewal).mockResolvedValueOnce(f.renewal).mockRejectedValueOnce(Error("denied"));await expect(processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).rejects.toThrow();expect(f.q.settle).toHaveBeenCalledOnce();expect(f.q.commit).not.toHaveBeenCalled();});
