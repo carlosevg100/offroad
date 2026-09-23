@@ -1,0 +1,357 @@
+{
+  "capturedAt": "2026-09-23T20:49:01Z",
+  "source": "staging gjkkjtbfnssdsbmlhmwk",
+  "functions": [
+    {
+      "signature": "private.accept_workspace_invite_v1(uuid)",
+      "file": "private.accept_workspace_invite_v1(uuid).sql",
+      "sha256": "a3a7938aeb3026fd41fd12037c1176672349348e336c70e43a46bc4ff18eca9b"
+    },
+    {
+      "signature": "private.attest_platform_method_candidate_v1(uuid,uuid,text,text,text,jsonb)",
+      "file": "private.attest_platform_method_candidate_v1(uuid,uuid,text,text,text,jsonb).sql",
+      "sha256": "31b901cec476b0992292ee23a96d6b8abd71d1afa75ee25bf641c984470afab5"
+    },
+    {
+      "signature": "private.authorize_qualified_introduction_plan(uuid,text)",
+      "file": "private.authorize_qualified_introduction_plan(uuid,text).sql",
+      "sha256": "8fff7210853ef9f640dfabc45641dd3774d618644a07725258e83433618dd62b"
+    },
+    {
+      "signature": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)",
+      "file": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb).sql",
+      "sha256": "5aaa386e83c9ad5810d04a96cf3b6e2c51cdb4356d5914db6f9a44f5817000b0"
+    },
+    {
+      "signature": "private.bind_job_authority_v1()",
+      "file": "private.bind_job_authority_v1().sql",
+      "sha256": "8512f1e209229571c416622a2880de2dee1cf87745ca7bb662f85d0716369c7e"
+    },
+    {
+      "signature": "private.capital_project_review_action_allowed(uuid,uuid,text,uuid)",
+      "file": "private.capital_project_review_action_allowed(uuid,uuid,text,uuid).sql",
+      "sha256": "2d6f1bc6fc7811da59770e672d79bbf453719f01ccda8affd92bc2baff1c4f7d"
+    },
+    {
+      "signature": "private.capital_project_review_roles(uuid,uuid,uuid)",
+      "file": "private.capital_project_review_roles(uuid,uuid,uuid).sql",
+      "sha256": "0889eaa39709a73188b6c3b50d5667e1ac058331b9bcda9a15222d593e5fb461"
+    },
+    {
+      "signature": "private.capture_authority_domain_event_v1()",
+      "file": "private.capture_authority_domain_event_v1().sql",
+      "sha256": "8b298da49b08167a00b1ccec74a1bd70ba567311bb94b678729ce0b1a9affd4c"
+    },
+    {
+      "signature": "private.compose_method_v1(uuid,text,jsonb,uuid,text)",
+      "file": "private.compose_method_v1(uuid,text,jsonb,uuid,text).sql",
+      "sha256": "0912339b6a4cf98c15c819d792885adcf1d8828d2bf40c127959ec10b41e9fef"
+    },
+    {
+      "signature": "private.enqueue_primary_case_analysis(uuid,uuid,uuid)",
+      "file": "private.enqueue_primary_case_analysis(uuid,uuid,uuid).sql",
+      "sha256": "c6648ea92c0dff02a8a5fff444384aa4132483c6369905f5769338f6b262b633"
+    },
+    {
+      "signature": "private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text)",
+      "file": "private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text).sql",
+      "sha256": "1f857eb3aba254546b9f191405cc4eb91143a96e6ed4ff0f12ad420180c4a3ff"
+    },
+    {
+      "signature": "private.execution_approval_input_fingerprint(uuid,uuid)",
+      "file": "private.execution_approval_input_fingerprint(uuid,uuid).sql",
+      "sha256": "6123e40b297c8c10c9da3630350cf875a63529c105d61231b3e281f5e1b9486c"
+    },
+    {
+      "signature": "private.execution_inputs_current_v1(uuid,uuid,uuid)",
+      "file": "private.execution_inputs_current_v1(uuid,uuid,uuid).sql",
+      "sha256": "c71a43458bbec8b7b2e3d1364ede76f22a802ab0570a70c95deaed1db11865d2"
+    },
+    {
+      "signature": "private.get_workspace_bootstrap()",
+      "file": "private.get_workspace_bootstrap().sql",
+      "sha256": "c5b904887fdb2b4958479fa5363b8c0ef2da60206c5b88a498bb2011cc67d7eb"
+    },
+    {
+      "signature": "private.grant_resource_access_v1(uuid,uuid,text,timestamptz)",
+      "file": "private.grant_resource_access_v1(uuid,uuid,text,timestamptz).sql",
+      "sha256": "e95460fe059b496e0cde6c270f7088827cc05a00dd743cdc31bef36515182b9c"
+    },
+    {
+      "signature": "private.guard_execution_approval_queue()",
+      "file": "private.guard_execution_approval_queue().sql",
+      "sha256": "2952fbe405388f3f684fdf92515e7420436371506f6c5ab48efaf5dae8b3de3e"
+    },
+    {
+      "signature": "private.is_released_documentary_plan_v1(jsonb,text)",
+      "file": "private.is_released_documentary_plan_v1(jsonb,text).sql",
+      "sha256": "1038a9570d8a80d4112b1fecce9f1cd1baad022b0eb6f38c5adbeb1204942fce"
+    },
+    {
+      "signature": "private.job_authority_is_current_v1(uuid)",
+      "file": "private.job_authority_is_current_v1(uuid).sql",
+      "sha256": "03a6bf2b7cf27b8c256a39658bf183e623358244b85a368ada3e2b749b78dfb1"
+    },
+    {
+      "signature": "private.job_failure_class(jsonb)",
+      "file": "private.job_failure_class(jsonb).sql",
+      "sha256": "cfe3e3d09dc0aee179f19159f7ea0da47746c5cbd662e6cc98376873dc5c227b"
+    },
+    {
+      "signature": "private.job_for_capability(uuid,text)",
+      "file": "private.job_for_capability(uuid,text).sql",
+      "sha256": "7b57e018c3815777ae914e6af671201668fd43b8bbfe187e44df202e9fe6c5c6"
+    },
+    {
+      "signature": "private.job_sources_rights_current_v1(uuid)",
+      "file": "private.job_sources_rights_current_v1(uuid).sql",
+      "sha256": "ca08bf0d07ea24a556c9bbb3b67eeccd4e3bb8bf31c8541765e06ab148ce44c6"
+    },
+    {
+      "signature": "private.list_method_releases_v1(integer)",
+      "file": "private.list_method_releases_v1(integer).sql",
+      "sha256": "cdc093a9d644d46aca9ef59c813ab1522635bf3f3912a5b71d3503aedf951b82"
+    },
+    {
+      "signature": "private.lock_job_authority_v1(uuid)",
+      "file": "private.lock_job_authority_v1(uuid).sql",
+      "sha256": "4e40ca5a31c68bccfac716002a77e2298c3898576df529a385cc9e1cc7680827"
+    },
+    {
+      "signature": "private.pin_contribution_sources_v1(uuid,uuid,uuid[],uuid,uuid)",
+      "file": "private.pin_contribution_sources_v1(uuid,uuid,uuid[],uuid,uuid).sql",
+      "sha256": "60f5e30cb947dd22f29688ff4b64c5dcc96ea81ecbb2c10409916c748ec758a3"
+    },
+    {
+      "signature": "private.promote_contribution_to_work_v1(uuid,uuid,uuid)",
+      "file": "private.promote_contribution_to_work_v1(uuid,uuid,uuid).sql",
+      "sha256": "d4d7d8f2d5b47be8885eea415856d47e3baa83852e52235dae7930795c9a1ac8"
+    },
+    {
+      "signature": "private.r01_preparation_authority_v1(uuid,uuid,uuid,uuid)",
+      "file": "private.r01_preparation_authority_v1(uuid,uuid,uuid,uuid).sql",
+      "sha256": "ebbee15ae484b27a0e97e42ad85db12020122c38442782d474cc6718624b8d75"
+    },
+    {
+      "signature": "private.read_capital_project_execution_brief_progress_v1(uuid)",
+      "file": "private.read_capital_project_execution_brief_progress_v1(uuid).sql",
+      "sha256": "7d3f010b7f139085d916e238f957f676c2633f9d88794f386277b02cbebbce50"
+    },
+    {
+      "signature": "private.read_receivables_evidence_scope_v1(uuid)",
+      "file": "private.read_receivables_evidence_scope_v1(uuid).sql",
+      "sha256": "c944abc5d68244f37c4bdd373073fec484834c5073213e671d4efd941c81b22e"
+    },
+    {
+      "signature": "private.record_capital_project_plan(uuid,jsonb)",
+      "file": "private.record_capital_project_plan(uuid,jsonb).sql",
+      "sha256": "b7f86e65d0f1922d052335b1ba5bc956675ab7455384d14417f17b1a99c6cd91"
+    },
+    {
+      "signature": "private.record_execution_proposal_plan_as_actor(uuid,jsonb,uuid)",
+      "file": "private.record_execution_proposal_plan_as_actor(uuid,jsonb,uuid).sql",
+      "sha256": "cbfde21ffafa6434b332e0a0bfc4883575e9acb1add20eb3233be03ddaa78f6a"
+    },
+    {
+      "signature": "private.request_documentary_work_revision_v1(uuid,uuid,text,uuid,text,text,jsonb)",
+      "file": "private.request_documentary_work_revision_v1(uuid,uuid,text,uuid,text,text,jsonb).sql",
+      "sha256": "f52557bcfbf97b60225311bed5d1011a092415ac6e07eb80da0b6e2eacfd0f4d"
+    },
+    {
+      "signature": "private.request_work_execution_v1(uuid,text,text)",
+      "file": "private.request_work_execution_v1(uuid,text,text).sql",
+      "sha256": "36de286910f434c13397a2866362aa528d69e050db58ccd18fddc39e95a0bc83"
+    },
+    {
+      "signature": "private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text)",
+      "file": "private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text).sql",
+      "sha256": "53e38293886c6ed52b53aca6253e3c285479d5d304aa8e284c529107a74aeb4b"
+    },
+    {
+      "signature": "private.save_guided_company_profile(uuid,text,text,text,text,bytea,text)",
+      "file": "private.save_guided_company_profile(uuid,text,text,text,text,bytea,text).sql",
+      "sha256": "4cf5de3b76324008ef6841c83f1d8fe21ee6226afacf74eae293ce184d303b2b"
+    },
+    {
+      "signature": "private.save_project_company_profile(uuid,text,text,text,text,bytea,text)",
+      "file": "private.save_project_company_profile(uuid,text,text,text,text,bytea,text).sql",
+      "sha256": "71e9e3cddb0e8d4a6830a138ea881a36c4ba4e1c68ab4f45e5a07cf7cafc12bf"
+    },
+    {
+      "signature": "private.set_resource_policy_grant_v1(uuid,uuid,uuid,text,text,boolean,timestamptz)",
+      "file": "private.set_resource_policy_grant_v1(uuid,uuid,uuid,text,text,boolean,timestamptz).sql",
+      "sha256": "56be50a4f60001af0d139e80e742907f474d27a0ab88239e243692f93522e02c"
+    },
+    {
+      "signature": "private.start_provider_case_fit_project_v1(uuid,text,text,text,jsonb,uuid,uuid,text,jsonb)",
+      "file": "private.start_provider_case_fit_project_v1(uuid,text,text,text,jsonb,uuid,uuid,text,jsonb).sql",
+      "sha256": "717d9c6e65b784447bbb257e4833848d3ebeacad8759fc1ac9737ef57abbf5e1"
+    },
+    {
+      "signature": "private.submit_advisor_execution_brief_edit_v1(uuid,uuid,text,uuid,text,text)",
+      "file": "private.submit_advisor_execution_brief_edit_v1(uuid,uuid,text,uuid,text,text).sql",
+      "sha256": "d147c5c37c60b9ebf27978c3a2b07ef882c365f42148e1205f4835bce8aaad74"
+    },
+    {
+      "signature": "private.submit_advisor_turn_v1(uuid,uuid,text,text)",
+      "file": "private.submit_advisor_turn_v1(uuid,uuid,text,text).sql",
+      "sha256": "e8d171ce04650360665e270a102135f9358a65845fe5f349a04d05e922487de5"
+    },
+    {
+      "signature": "private.submit_institutional_model_setup_v1(uuid,text,jsonb,jsonb,uuid,text)",
+      "file": "private.submit_institutional_model_setup_v1(uuid,text,jsonb,jsonb,uuid,text).sql",
+      "sha256": "72b39b3be74244f970dbaca50a6a063fc186af5d029f0c48035d6c52dba4774b"
+    },
+    {
+      "signature": "private.submit_platform_method_candidate_v1(uuid,text,jsonb,text)",
+      "file": "private.submit_platform_method_candidate_v1(uuid,text,jsonb,text).sql",
+      "sha256": "19b1a2dad37015982a2bf100877162c2524aff93fd55e55e66b507f89e8e95a6"
+    },
+    {
+      "signature": "private.validate_receivables_scope_brief(uuid,uuid,jsonb,jsonb)",
+      "file": "private.validate_receivables_scope_brief(uuid,uuid,jsonb,jsonb).sql",
+      "sha256": "eaf6ca549432e7da405fabb40ae44762d292166198ddad000e331d37318caf4b"
+    },
+    {
+      "signature": "private.worker_bind_receivables_information_request_fields_v1(uuid,text,jsonb)",
+      "file": "private.worker_bind_receivables_information_request_fields_v1(uuid,text,jsonb).sql",
+      "sha256": "5b019207559021f8ab74b37df4ba5d1e0ad130b22fa85b038c59bfcf1bfba1f4"
+    },
+    {
+      "signature": "private.worker_claim_job(text,integer)",
+      "file": "private.worker_claim_job(text,integer).sql",
+      "sha256": "4b49d3c328eb20f0624c8d39a049d209a168c62b796e5459f995c95f1c1c1229"
+    },
+    {
+      "signature": "private.worker_claim_job_v2(text,integer)",
+      "file": "private.worker_claim_job_v2(text,integer).sql",
+      "sha256": "fcc195956e69dd60114fa3c3a964d75480848884e64f3de7adad5470e78bf0ab"
+    },
+    {
+      "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
+      "file": "private.worker_fail_job(uuid,text,jsonb,boolean,integer).sql",
+      "sha256": "1e57618ae74f3ef6ea00abc2d1d9ffcd6e696985fb604ac9e7a49a3bedcc5123"
+    },
+    {
+      "signature": "private.worker_load_agent_context(uuid,text)",
+      "file": "private.worker_load_agent_context(uuid,text).sql",
+      "sha256": "142dfd1dd4a7b6abfc7c3754ad3f7596cc01e42bba219c471122e784ced0b7da"
+    },
+    {
+      "signature": "private.worker_load_agent_context_before_professional_context_v1(uuid,text)",
+      "file": "private.worker_load_agent_context_before_professional_context_v1(uuid,text).sql",
+      "sha256": "288cb123a2260197fde477d379396018cc4c842e1db48077c3defd2d3f1edcf8"
+    },
+    {
+      "signature": "private.worker_load_agent_context_v2(uuid,text)",
+      "file": "private.worker_load_agent_context_v2(uuid,text).sql",
+      "sha256": "64155ebd16682a2b847ba5aa6600a9197199082074c4c205b991b3cb83de4316"
+    },
+    {
+      "signature": "private.worker_load_agent_context_v3(uuid,text)",
+      "file": "private.worker_load_agent_context_v3(uuid,text).sql",
+      "sha256": "72edafbe73b260e88abd8fc0017b38d7a263021f8ff008fd4b8e4b545fff1db5"
+    },
+    {
+      "signature": "private.worker_load_capital_project_context_v6(uuid,text)",
+      "file": "private.worker_load_capital_project_context_v6(uuid,text).sql",
+      "sha256": "020dbce34d6f50666d61c9f8540a9d234b0938b6df275721bfa127961e5aa7ff"
+    },
+    {
+      "signature": "private.worker_load_case_bundle_before_scope(uuid,text)",
+      "file": "private.worker_load_case_bundle_before_scope(uuid,text).sql",
+      "sha256": "6820f909e672a6ff8a94f2af9c9773b7114c30a552adfa89cb08409b86656c64"
+    },
+    {
+      "signature": "private.worker_load_case_input(uuid,text)",
+      "file": "private.worker_load_case_input(uuid,text).sql",
+      "sha256": "a4d04935ec7e1e46aa48bcd3f542fc359d21a4934cf81bdd948ba0dd406c3973"
+    },
+    {
+      "signature": "private.worker_load_execution_brief_proposal_v1(uuid,text)",
+      "file": "private.worker_load_execution_brief_proposal_v1(uuid,text).sql",
+      "sha256": "0242dbab1828f28423bf5bcc4fd508ffbeddf56948beacdeef2bd04c2c71c6b5"
+    },
+    {
+      "signature": "private.worker_load_execution_brief_proposal_v2(uuid,text)",
+      "file": "private.worker_load_execution_brief_proposal_v2(uuid,text).sql",
+      "sha256": "40ae61d594798e089fa96b68224de40d61086eb1d2a47f659b1f5d25d54f5a97"
+    },
+    {
+      "signature": "private.worker_load_execution_brief_proposal_v3(uuid,text)",
+      "file": "private.worker_load_execution_brief_proposal_v3(uuid,text).sql",
+      "sha256": "59bbc7db0be5716facf678d03517fc511155d0744a2ceef61b114cad642e7fc9"
+    },
+    {
+      "signature": "private.worker_load_public_company_memory(uuid,text,text)",
+      "file": "private.worker_load_public_company_memory(uuid,text,text).sql",
+      "sha256": "e0371ad59379b36ccc7ce6a0cf0b758a6812e735c3f1ceb7281634a32982b000"
+    },
+    {
+      "signature": "private.worker_load_public_research_cache(uuid,text,text[])",
+      "file": "private.worker_load_public_research_cache(uuid,text,text[]).sql",
+      "sha256": "0119852f2db800761525a6a7050f4385b41474cc4bc804a4da27e9e3df1ccb99"
+    },
+    {
+      "signature": "private.worker_load_receivables_analytical_release_v1(uuid,text)",
+      "file": "private.worker_load_receivables_analytical_release_v1(uuid,text).sql",
+      "sha256": "08f328f99eb3c6993b78f25af35e06526dd542657e452881a2e9d60532a8541c"
+    },
+    {
+      "signature": "private.worker_record_agent_assessment_v1(uuid,text,jsonb)",
+      "file": "private.worker_record_agent_assessment_v1(uuid,text,jsonb).sql",
+      "sha256": "ce195a0b8c6a86510b84bf101466779bac20599fbf13cf0ab54369d0bd2f4f33"
+    },
+    {
+      "signature": "private.worker_record_agent_stage_event_v1(uuid,text,text,text,jsonb)",
+      "file": "private.worker_record_agent_stage_event_v1(uuid,text,text,text,jsonb).sql",
+      "sha256": "328246d04649053d32f972e148b9be166bf322292dd3004bf732200376a65307"
+    },
+    {
+      "signature": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)",
+      "file": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb).sql",
+      "sha256": "276a595e3f1f9825aa8326c377f1bd9593154a42d8b5664485c4f21ae0fbbb3f"
+    },
+    {
+      "signature": "private.worker_record_execution_brief_proposal_v1(uuid,text,jsonb,jsonb,text,jsonb)",
+      "file": "private.worker_record_execution_brief_proposal_v1(uuid,text,jsonb,jsonb,text,jsonb).sql",
+      "sha256": "b1d99cc2ded61416f91c5686815b71b4d5e0a4f7e4257a7483cec988e67ffc33"
+    },
+    {
+      "signature": "private.worker_record_operating_control_snapshot_v1(uuid,text,text,text,text,jsonb,jsonb)",
+      "file": "private.worker_record_operating_control_snapshot_v1(uuid,text,text,text,text,jsonb,jsonb).sql",
+      "sha256": "b0b759ebcc1d21f68fbeb287605744a1576a99e4f66847274b2342bc5732d693"
+    },
+    {
+      "signature": "private.worker_store_public_company_memory(uuid,text,jsonb)",
+      "file": "private.worker_store_public_company_memory(uuid,text,jsonb).sql",
+      "sha256": "73de6fd4e104320708e21986bd0f295e6419f023705311b8f731d8373907e760"
+    },
+    {
+      "signature": "private.worker_store_public_research_cache(uuid,text,jsonb)",
+      "file": "private.worker_store_public_research_cache(uuid,text,jsonb).sql",
+      "sha256": "1db70dc7cd3748f12a0d6ce0fb72db750eaef151933d7bac6b30dbca1474991f"
+    },
+    {
+      "signature": "private.worker_sync_project_information_requests_v1(uuid,text,jsonb)",
+      "file": "private.worker_sync_project_information_requests_v1(uuid,text,jsonb).sql",
+      "sha256": "b17898544d59bf8c58514b8290719906744d30f0e3c49643bf764d4e7b735ed0"
+    },
+    {
+      "signature": "private.worker_sync_receivables_information_requests_v1(uuid,text,jsonb)",
+      "file": "private.worker_sync_receivables_information_requests_v1(uuid,text,jsonb).sql",
+      "sha256": "21ac368fd48d8281f65233544647f54a3693032217ce50ce09f4798500b3ec1d"
+    },
+    {
+      "signature": "public.worker_load_case_input(uuid,text)",
+      "file": "public.worker_load_case_input(uuid,text).sql",
+      "sha256": "4d5f3c1ce05b5b77373b66f54745a8857401e43070c59b800ba91442eb105acf"
+    },
+    {
+      "signature": "public.worker_runtime_schema_contract_v1()",
+      "file": "public.worker_runtime_schema_contract_v1().sql",
+      "sha256": "3c4a33d54ff539c810b06b8638a00d6ead897b32be0f3d0ce0647e36d6546a45"
+    }
+  ],
+  "missing": []
+}
