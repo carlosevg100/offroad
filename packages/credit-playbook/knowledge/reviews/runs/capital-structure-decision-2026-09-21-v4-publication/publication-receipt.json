@@ -1,0 +1,71 @@
+{
+  "kind": "publication_receipt",
+  "capturedAt": "2026-09-23T20:20:00Z",
+  "capturedFrom": "private schema of the production project ifnogpksgdadruooqydi, read only, by the stage 17 executor",
+  "release": {
+    "id": "prepare-capital-structure-decision-2026.09.21-v4",
+    "manifestHash": "2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478",
+    "capabilityKey": "method.prepare-capital-structure-decision.2026.09.21-v4",
+    "createdAt": "2026-09-21T14:50:27.142679+00:00",
+    "approval": {
+      "approvedBy": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+      "approvedAt": "2026-09-21T14:04:31.413195+00:00",
+      "approvalSource": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-publication/content-approval.json",
+      "sourceHash": "69679b43785c80bca49a8b02658329a3eab8d8bfeaef72fb5347a0178f3c358b",
+      "sourceCommit": "82b8d0d3b930a6a128e716888f98ff6921a3cd51",
+      "candidateFingerprint": "46da14c8fcb82d5b3ff3aa2890afa0ccc414c5cb2645d744573860b78e71430c",
+      "executionEnabled": false
+    }
+  },
+  "candidate": {
+    "id": "0bf642e7-35fa-4362-ad95-421ffd5cbb89",
+    "author": "Codex /root, implementação da autoria aprovada",
+    "submittedBy": "postgres",
+    "createdAt": "2026-09-21T14:50:27.142679+00:00"
+  },
+  "attestations": [
+    {
+      "id": "355a9f5e-275f-4574-ab40-da13233c52f3",
+      "kind": "technical_review",
+      "actor": "Codex /root/stage15_independent_review (independent AI reviewer)",
+      "occurredAt": "2026-09-21T14:08:02Z",
+      "sourcePath": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-publication/technical-review.json",
+      "sourceHash": "238d5c95c6a938fc0d842cf97e7adb610c9904367e956c0d05027d0a73d0e716",
+      "recordedBy": "postgres"
+    },
+    {
+      "id": "c60fe3cb-4e88-4d9c-9649-817cb59859a6",
+      "kind": "content_approval",
+      "actor": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+      "occurredAt": "2026-09-21T14:04:31.413195+00:00",
+      "sourcePath": "packages/credit-playbook/knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-publication/content-approval.json",
+      "sourceHash": "69679b43785c80bca49a8b02658329a3eab8d8bfeaef72fb5347a0178f3c358b",
+      "recordedBy": "postgres"
+    }
+  ],
+  "publicationEvents": [
+    {
+      "sequence": 1,
+      "commandId": "a90faf50-457b-4c91-969d-ba74f3e43550",
+      "action": "published",
+      "requestFingerprint": "7528415ee05568aca1c34347596971f065520d79ea2b3bfebb4ae40d446dac9f",
+      "reason": "Publicação do conteúdo profissional v4 aprovado pelo fundador, após correções e revisão independente. Corpus publicado; execução desabilitada.",
+      "recordedBy": "postgres",
+      "createdAt": "2026-09-21T14:50:27.142679+00:00"
+    }
+  ],
+  "capabilityRelease": {
+    "capabilityKey": "method.prepare-capital-structure-decision.2026.09.21-v4",
+    "released": false,
+    "exposure": "internal",
+    "methodMaturity": "tested",
+    "note": "Published corpus only; execution remains disabled."
+  },
+  "staging": {
+    "release": "prepare-capital-structure-decision-2026.09.21-v4",
+    "approvedBy": "Carlos Eduardo Vasques Galves, fundador da Offroad",
+    "executionEnabled": false,
+    "verifiedAt": "2026-09-23T19:10:00Z"
+  },
+  "note": "Recibo do comando auditado da etapa 14 (publish_platform_method_v1) para a v4, lido do catálogo. A identidade do fundador passou a ser vinculada por auth.users a partir da correção 3O; esta publicação anterior conserva o ator por rótulo e a instrução verbatim com hash em founder-instruction.json."
+}
