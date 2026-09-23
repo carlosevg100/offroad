@@ -5609,6 +5609,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.platform_principal_live_v1(p_user_id uuid)",
+      "kind": "function",
+      "name": "platform_principal_live_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_user_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.policy_admin_context_v1()",
       "kind": "function",
       "name": "policy_admin_context_v1",
@@ -47935,6 +47953,16 @@
       "definition": "CREATE TRIGGER execution_method_profiles_ledger AFTER INSERT ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.ledger_execution_profile_v1()"
     },
     {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_truncate_guard",
+      "kind": "trigger",
+      "name": "execution_method_profiles_truncate_guard",
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER execution_method_profiles_truncate_guard BEFORE TRUNCATE ON private.execution_method_profiles FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
       "id": "trigger:private.execution_method_profiles.execution_method_profiles_validate",
       "kind": "trigger",
       "name": "execution_method_profiles_validate",
@@ -48325,6 +48353,16 @@
       "definition": "CREATE TRIGGER platform_method_attestations_immutable BEFORE DELETE OR UPDATE ON private.platform_method_attestations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
     },
     {
+      "id": "trigger:private.platform_method_attestations.platform_method_attestations_truncate_guard",
+      "kind": "trigger",
+      "name": "platform_method_attestations_truncate_guard",
+      "table": "platform_method_attestations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER platform_method_attestations_truncate_guard BEFORE TRUNCATE ON private.platform_method_attestations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
       "id": "trigger:private.platform_method_candidates.platform_method_candidates_immutable",
       "kind": "trigger",
       "name": "platform_method_candidates_immutable",
@@ -48345,6 +48383,16 @@
       "definition": "CREATE TRIGGER platform_method_events_immutable BEFORE DELETE OR UPDATE ON private.platform_method_publication_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
     },
     {
+      "id": "trigger:private.platform_method_publication_events.platform_method_publication_events_truncate_guard",
+      "kind": "trigger",
+      "name": "platform_method_publication_events_truncate_guard",
+      "table": "platform_method_publication_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER platform_method_publication_events_truncate_guard BEFORE TRUNCATE ON private.platform_method_publication_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
       "id": "trigger:private.platform_method_releases.platform_method_immutable",
       "kind": "trigger",
       "name": "platform_method_immutable",
@@ -48353,6 +48401,16 @@
       "enabled": "O",
       "function": "private.guard_contribution_immutable_v1()",
       "definition": "CREATE TRIGGER platform_method_immutable BEFORE DELETE OR UPDATE ON private.platform_method_releases FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.platform_method_releases.platform_method_releases_truncate_guard",
+      "kind": "trigger",
+      "name": "platform_method_releases_truncate_guard",
+      "table": "platform_method_releases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER platform_method_releases_truncate_guard BEFORE TRUNCATE ON private.platform_method_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     },
     {
       "id": "trigger:private.platform_principals.platform_principals_guard",
@@ -52360,5 +52418,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-23T20:38:31.655683+00:00"
+  "captured_at": "2026-09-23T22:39:23.541081+00:00"
 }
