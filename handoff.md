@@ -1,3 +1,7 @@
+## Registro: atos do fundador e recibo de publicação, 23/09/2026
+
+Três "o fundador aprovou" da etapa 17 (autorização da 17, aplicação da 2B, antecipação da proveniência em 3B) foram reescritos como decisões do executor sob a autoridade permanente de 21/09/2026; a instrução do fundador de 23/09/2026 (concluir a 17 e preparar a 18) entrou verbatim em `FOUNDER-ACTS.md`. O recibo do comando auditado de publicação da v4 (candidata, duas atestações, evento de publicação, capability e release) foi lido do catálogo de produção e gravado em `knowledge/reviews/runs/capital-structure-decision-2026-09-21-v4-publication/publication-receipt.json`. As PRs 731 a 733 tiveram seus critérios conferidos e marcados com a nota de auditoria.
+
 ## Etapa 17 / 3L: integridade persistida R01
 
 CHECKs de digest em fragmentos e histórico; identidade fixa, mutação com locks sem espera circular e exclusão preservando FKs. [Escopo e gates](docs/build/arcabouco/etapa-17-3l-integridade-r01.md). 3K fechado em `5b47a510781741f07a4f0ce73687445f6a550768`: Quality `35891920175`, Security `35891920200`, worker `35891987100` PASS; worker437/Vercel6619574038 no mesmo commit. Completion externo `outputs/etapa-17-r01-pausa-2026-09-23/COMPLETION-ETAPA-17-3K.md`. Nenhum grant, consumidor ou ativação R01 novo.

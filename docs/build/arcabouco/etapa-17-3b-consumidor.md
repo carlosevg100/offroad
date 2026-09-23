@@ -12,7 +12,7 @@ A alternância da fila ocorre antes da consulta: erro no consumidor novo não im
 
 ## Proveniência antecipada
 
-O fundador aprovou antecipar esta fronteira antes de publicar o consumidor. Hash confere integridade, não origem ou direito de uso. `execution_capital_payload_current_v1` exige capital v4 exato e vincula o corpo do pacote ao trabalho, finalidade e pins. Envelopes embutidos precisam conservar bytes e fingerprint da versão persistida. Cada entrada dessa versão precisa estar no grupo correto de adoções/hipóteses, com decisão, versão e fingerprint. Referências em seletores, recomendações, condições e âncoras também são verificadas.
+Antecipar esta fronteira antes de publicar o consumidor foi decisão do executor sob a autoridade permanente de 21/09/2026, com revisão independente; não houve ato do fundador. Hash confere integridade, não origem ou direito de uso. `execution_capital_payload_current_v1` exige capital v4 exato e vincula o corpo do pacote ao trabalho, finalidade e pins. Envelopes embutidos precisam conservar bytes e fingerprint da versão persistida. Cada entrada dessa versão precisa estar no grupo correto de adoções/hipóteses, com decisão, versão e fingerprint. Referências em seletores, recomendações, condições e âncoras também são verificadas.
 
 Definições contratuais conferem identidade, texto, fonte e âncora. Observações conferem a relação com a fonte; referências avulsas fecham entidade/dossiê/definição/fontes, direitos fixados e direitos atuais. Uma revisão ampla atual não substitui a restrição da revisão guardada na observação ou definição. A validação ocorre no request e nas revalidações da execução, incluindo o commit.
 
