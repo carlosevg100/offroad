@@ -2666,3 +2666,7 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `trigger:private.platform_method_attestations.platform_method_attestations_truncate_guard`
 - `trigger:private.platform_method_publication_events.platform_method_publication_events_truncate_guard`
 - `trigger:private.platform_method_releases.platform_method_releases_truncate_guard`
+
+## Etapa 17, incremento 4B: lote residual (23/09/2026)
+
+0 objetos novos e 0 atualizados. Lote residual de pedidos de informação: os dois RPCs restabelecidos sem o corte de três pedidos, com motivo e decisão obrigatórios por pedido.
