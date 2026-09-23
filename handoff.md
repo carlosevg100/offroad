@@ -2,6 +2,8 @@
 
 Preparo fixado e readiness publicado em thread terminável; recibo imutável deriva identidade do job e recarrega autoridade. Sem grant ou habilitação R01; ligação transacional permanece no incremento 3. [Escopo e gates](docs/build/arcabouco/etapa-17-3i-r01-recibo.md). 3H fechado em main `1c24f5898ec15b67fc62bfaa1c5398a161364eeb`, CI e deploy verificados; completion externo `outputs/etapa-17-r01-loader-2026-09-23/COMPLETION-ETAPA-17-3H.md`.
 
+3I: migração aplicada em produção `20260923145742` e staging `20260923145522`; dez objetos revisados, checkers de catálogo/journal e 18 testes passaram. SQL real com rollback e segurança sem alertas. Merge e deploy aguardam a CI final.
+
 ## Etapa 17 / 3H: loader privado de autoridade R01
 
 Leitura vinculada ao sujeito do job, com autoridade do trabalho e da sessão, conjunto exato de fontes, hashes e histórico contínuo; respostas humanas cruzadas com pedidos e bindings; adoções conservam dimensões e versões. Sem grants nem autorização para executar. [Escopo e gates](docs/build/arcabouco/etapa-17-3h-r01-loader.md). Migração, CI e implantação são confirmadas no completion externo; recibo e compatibilidade semântica continuam no incremento 3.

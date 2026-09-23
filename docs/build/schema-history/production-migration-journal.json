@@ -1,4 +1,6 @@
 {
+  "project_id": "ifnogpksgdadruooqydi",
+  "captured_at": "2026-09-23T15:03:43.175Z",
   "rows": [
     {
       "version": "20260815014649",
@@ -1475,8 +1477,10 @@
     {
       "version": "20260923140356",
       "name": "r01_preparation_authority_loader"
+    },
+    {
+      "version": "20260923145742",
+      "name": "r01_preparation_receipts"
     }
-  ],
-  "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-23T14:05:46.093732+00:00"
+  ]
 }
