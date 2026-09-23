@@ -1,3 +1,7 @@
+## Etapa 17 / 3D: perfil R01 e fronteira SQL
+
+Perfil histórico reconhecido por igualdade integral; execução R01 recusada até a ponte autoritativa. Sem perfil operacional, concessão ou ativação. [Escopo e gates](docs/build/arcabouco/etapa-17-3d-r01-perfil-sql.md). Provas de staging, produção e CI pertencem ao completion do incremento; etapa 17 continua em andamento.
+
 ## Etapa 17 / 3C: adaptador R01 instalado, fila ainda restrita a capital
 
 R01 passa a ter perfil exato no contrato comum, descritores de schemas vinculados ao artefato publicado e política operacional explícita, separada do manifesto legado sem orçamento numérico. O runtime compartilhado executa capital e R01 em thread interrompível, confere metadados no boot e em cada uso e conserva todos os resultados históricos. Não há DDL, perfil operacional novo ou ativação. A fila segue aceitando somente capital até o próximo vínculo de proveniência, autoridade e contabilidade SQL de R01.

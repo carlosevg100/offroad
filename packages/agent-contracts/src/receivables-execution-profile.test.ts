@@ -1,4 +1,4 @@
-import {readFileSync} from "node:fs";
+import {readFileSync,readdirSync} from "node:fs";
 import {describe,expect,it} from "vitest";
 import {assertContractMatchesExecutionProfile,deriveReceivablesExecutionProfile} from "./execution-profile";
 import {executionInputFingerprint as hash} from "./execution-contract";
@@ -55,5 +55,24 @@ describe("exact legacy R01 execution adapter",()=>{
   if(change==="tool")c.tools=[{id:"tool",version:"1",effect:"read_only"}];
   if(change==="effect")c.allowedEffects=["compile_artifact"];
   expect(()=>assertContractMatchesExecutionProfile(c,derive())).toThrow();
+ });
+});
+
+describe("R01 SQL profile parity",()=>{
+ const migrations=new URL("../../../supabase/migrations/",import.meta.url);
+ const migration=readdirSync(migrations).find(name=>name.endsWith("_execution_r01_profile_boundary.sql"))!;
+ const sql=readFileSync(new URL(migration,migrations),"utf8");
+ it("SQL accepts exactly the profile derived from the historical release",()=>{
+  const match=sql.match(/\$r01_profile\$([\s\S]*?)\$r01_profile\$/);
+  expect(match).not.toBeNull();expect(JSON.parse(match![1]!)).toEqual(derive());
+ });
+ it("SQL release attestation preserves every published manifest field",()=>{
+  const match=sql.match(/\$r01_manifest\$([\s\S]*?)\$r01_manifest\$/);
+  expect(match).not.toBeNull();expect(JSON.parse(match![1]!)).toEqual(locked.provenance);
+ });
+ it("database regression fixture uses the independently derived profile",()=>{
+  const test=readFileSync(new URL("../../../supabase/tests/execution_r01_profile.sql",import.meta.url),"utf8");
+  const match=test.match(/\$profile\$([\s\S]*?)\$profile\$/);
+  expect(match).not.toBeNull();expect(JSON.parse(match![1]!)).toEqual(derive());
  });
 });
