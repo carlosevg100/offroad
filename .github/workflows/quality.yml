@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 concurrency:
   group: quality-${{ github.ref }}
@@ -91,6 +92,9 @@ jobs:
       # `auth.users` and reads `auth.uid()`, and the DB URL is resolved from `supabase status`.
       # Dropping those is plausible but unverified, and this job is the last gate before a
       # migration reaches the only Supabase project we have.
+      - name: Log in to ghcr.io so image pulls are not anonymous and rate limited
+        run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
       - name: Start local Supabase and apply migrations
         run: |
           # A previous CLI attempt can leave a stopped-but-not-removed project container on a
@@ -226,6 +230,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       # Full local stack: Auth (OTP e-mails land in the local mail sink), PostgREST, Storage, Kong.
+      - name: Log in to ghcr.io so image pulls are not anonymous and rate limited
+        run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
       - name: Start local Supabase and apply migrations
         run: |
           supabase stop --no-backup || true
