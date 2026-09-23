@@ -1,8 +1,20 @@
+## Etapa 17 / 3O: identidade do operador e do fundador
+
+Fundador e operadores viram principais ligados a `auth.users`; perfis de método, pausas de release e aprovações de conteúdo passam a ser registrados com o principal que agiu e ledgerados; publicação exige a identidade do fundador quando há fundador registrado; o pedido de execução com sujeito explícito tem registro de chamadores. [Escopo e provas](docs/build/arcabouco/etapa-17-3o-identidade-do-operador.md).
+
+3O: primeira migração em staging `20260923194444` e produção `20260923200029`; endurecimento após a revisão independente em staging `20260923202101` e produção `20260923203112`. Fundador registrado em produção; identidade declarada verificada contra principal ativo; ledgers sem herança de identidade e sem truncamento; releases anteriores ao registro ficam sem identidade vinculada, por decisão registrada no documento. Advisors de segurança zero nos dois ambientes; 27 objetos no inventário; journals conciliados; prova SQL executada em staging com rollback. CI final e deploy exato ficam registrados no completion.
+
 ## Etapa 17 / 3N: resultado liquidado recuperável
 
 O settle passa a conservar os bytes exatos do resultado; uma lease posterior da mesma execução publica esses bytes sem recomputar, e o commit recusa hash de outra lease ou bytes diferentes. Recibo de resultado registra a lease da liquidação e a da publicação; transporte do worker com timeout proporcional ao payload. [Escopo e provas](docs/build/arcabouco/etapa-17-3n-resultado-liquidado-recuperavel.md).
 
 3N: migrações `execution_settled_result_bytes` (staging `20260923193010`, produção `20260923193243`) e `execution_settled_outcome` (staging `20260923195039`, produção `20260923195408`); advisors de segurança zero nos dois ambientes; tipos regenerados; journals de produção e staging conciliados; prova SQL executada em staging com rollback nas três trilhas (sucesso, marcador parcial, hash v1); 28 testes do worker PASS. A revisão independente da primeira parte reprovou por desfecho invertível e journal ausente; a segunda parte corrige os dois. CI final e deploy exato ficam registrados no completion.
+
+## Etapa 17 / 3M: continuidade R01 por metadados
+
+Projeção compacta `r01_preparation_metadata_v2` comum ao loader pesado e à conferência privada do recibo (`r01_preparation_receipt_current_v1`): pins completos de fonte, direitos atuais e fixados, fechamento de dependências, histórico integral e respostas revalidadas, sem ler blobs nessa fronteira. Loader, gravador de recibo e leitura de escopo atualizados para a mesma projeção. Desenho, revisão e testes vieram do rascunho anterior; a execução R01 continua recusada e nenhum grant muda. [Escopo e gates](docs/build/arcabouco/etapa-17-3m-metadados-r01.md).
+
+3M: staging `20260923200518`, produção `20260923200643`; cinco definições idênticas nos dois ambientes por md5; advisors de segurança zero; journals conciliados. As provas SQL desta fatia (`r01_preparation_metadata.sql`, `r01_preparation_metadata_responses.sql`, concorrência real em `test-r01-integrity-concurrency.py`) rodam na CI do zero; não foram executadas em staging pelo tamanho da fixture. Revisão independente, CI final e deploy exato ficam registrados no completion.
 
 ## Etapa 17 / 3L: integridade persistida R01
 
