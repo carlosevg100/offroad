@@ -119,7 +119,7 @@ end $$;
 savepoint temporal_ancestor;
 insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,sha256,processing_status,scan_result,created_by)
 values('10000000-0000-4000-8000-000000000884','20000000-0000-4000-8000-000000000731','10000000-0000-4000-8000-000000000090',
- '20000000-0000-4000-8000-000000000731/10000000-0000-4000-8000-000000000090/synthetic-expiring.txt','synthetic-expiring.txt',repeat('b',64),'ready','{"verdict":"clean"}',
+ '20000000-0000-4000-8000-000000000731/10000000-0000-4000-8000-000000000090/synthetic-expiring.txt','synthetic-expiring.txt',encode(extensions.digest('synthetic-expiring-884','sha256'),'hex'),'ready','{"verdict":"clean"}',
  '10000000-0000-4000-8000-000000000731');
 insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,expires_at,evidence_kind,evidence_reference,evidence_sha256,created_by)
 select organization_id,source_version_id,2,operations,purposes,audience,valid_from,clock_timestamp()+interval '3 seconds',evidence_kind,evidence_reference,evidence_sha256,created_by
