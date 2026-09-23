@@ -3,18 +3,19 @@ import {createHash} from "node:crypto";
 import {Worker} from "node:worker_threads";
 import {describe,it,expect,vi} from "vitest";
 import {executionCanonicalText,executionContractFingerprint,executionInputFingerprint} from "@offroad/agent-contracts";
-import {loadReleasedCapital} from "./released-method-executor";
+import {loadReleasedExecutionProfile,loadReleasedReceivables} from "./released-method-executor";
+import {diversifiedReceivablesCase} from "@offroad/receivables-analysis";
 import {processPinnedExecution} from "./process-pinned-execution";
 import {calculatePinnedCapital,awaitExecutionThread} from "./execution-calculation";
 import type {ExecutionQueue,ExecutionQueueClaim,ExecutionRenewal} from "./execution-queue";
 const identity={methodId:"prepare-capital-structure-decision",methodVersion:"2026.09.21-v4",manifestHash:"2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478"};
-function fixture(){
+function fixture(methodIdentity=identity,snapshot:unknown={}){
  const {contract}=JSON.parse(readFileSync(new URL("../../../packages/agent-contracts/test-fixtures/execution-contract.json",import.meta.url),"utf8"));
- const {profile}=loadReleasedCapital(identity);
+ const profile=loadReleasedExecutionProfile(methodIdentity);
  contract.method=profile.method;contract.tools=profile.tools;contract.allowedEffects=profile.allowedEffects;
- contract.inputs.fingerprint=executionInputFingerprint({});contract.budget={...profile.limits,expiresAt:new Date(Date.now()+60000).toISOString()};contract.requestedAt=new Date().toISOString();
+ contract.inputs.fingerprint=executionInputFingerprint(snapshot);contract.budget={...profile.limits,expiresAt:new Date(Date.now()+60000).toISOString()};contract.requestedAt=new Date().toISOString();
  const c:ExecutionQueueClaim={claimed:true,jobId:"20000000-0000-4000-8000-000000000001",leaseId:"20000000-0000-4000-8000-000000000002",capability:"x".repeat(64),attempt:1,executionId:contract.executionId,
- contractText:executionCanonicalText(contract),contractFingerprint:executionContractFingerprint(contract),snapshotText:"{}",elapsedDurationMs:0,leaseExpiresAt:new Date(Date.now()+60000).toISOString(),budgetExpired:false};
+ contractText:executionCanonicalText(contract),contractFingerprint:executionContractFingerprint(contract),snapshotText:executionCanonicalText(snapshot),elapsedDurationMs:0,leaseExpiresAt:new Date(Date.now()+60000).toISOString(),budgetExpired:false};
  const renewal:ExecutionRenewal={allowed:true,jobId:c.jobId,leaseId:c.leaseId,executionId:c.executionId,organizationId:contract.organizationId,workId:contract.workId,principalId:contract.principalId,
  processingRunId:contract.processingRunId,contractFingerprint:c.contractFingerprint,leaseExpiresAt:c.leaseExpiresAt,elapsedDurationMs:0,remainingDurationMs:31000};
  const q:ExecutionQueue={claim:vi.fn(async()=>c),renew:vi.fn(async()=>({...renewal})),reserve:vi.fn(async()=>({operationId:c.executionId,state:"reserved" as const,replayed:false,mayExecute:true})),settle:vi.fn(async()=>{}),commit:vi.fn(async()=>{})};
@@ -22,6 +23,20 @@ function fixture(){
  return {c,q,renewal,calculate,shutdown:new AbortController()};
 }
 describe("pinned execution consumer",()=>{
+ it("uses the common contract and exact settlement bytes for the installed R01 adapter",async()=>{
+  const input={currency:"BRL" as const,case:diversifiedReceivablesCase("common-envelope")};
+  const f=fixture({methodId:"underwrite-receivables-pool",methodVersion:"2026.09.06-v1",manifestHash:"17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090"},input);
+  const expected=executionCanonicalText(loadReleasedReceivables().underwriteReceivablesPool(input));
+  expect(await processPinnedExecution(f.c,f.q,f.shutdown.signal)).toEqual({status:"succeeded"});
+  expect(f.q.settle).toHaveBeenCalledWith(f.c,createHash("sha256").update(expected).digest("hex"));
+  expect(f.q.commit).toHaveBeenCalledWith(f.c,executionInputFingerprint(input),expected,"succeeded","calculated");
+ });
+ it("denies R01 commit when current authority is withdrawn after calculation",async()=>{
+  const f=fixture({methodId:"underwrite-receivables-pool",methodVersion:"2026.09.06-v1",manifestHash:"17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090"});
+  vi.mocked(f.q.renew).mockResolvedValueOnce(f.renewal).mockRejectedValueOnce(Error("revoked"));
+  await expect(processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).rejects.toThrow("revoked");
+  expect(f.q.settle).not.toHaveBeenCalled();expect(f.q.commit).not.toHaveBeenCalled();
+ });
  it("settles the exact calculated bytes before current-authority commit",async()=>{const f=fixture();expect(await processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).toEqual({status:"succeeded"});
  expect(f.q.settle).toHaveBeenCalledWith(f.c,createHash("sha256").update('{"calculation":"synthetic"}').digest("hex"));expect(f.q.commit).toHaveBeenCalledWith(f.c,executionInputFingerprint({}),'{"calculation":"synthetic"}',"succeeded","calculated");});
  it("refuses altered snapshot or claim before any calculation",async()=>{const f=fixture();f.c.snapshotText='{"changed":true}';await expect(processPinnedExecution(f.c,f.q,f.shutdown.signal,f.calculate)).rejects.toThrow();expect(f.calculate).not.toHaveBeenCalled();expect(f.q.reserve).not.toHaveBeenCalled();});

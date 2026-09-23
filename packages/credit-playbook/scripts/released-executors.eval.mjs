@@ -39,3 +39,24 @@ test('real worker loader refuses missing or modified artifact, even after a vali
   assert.throws(()=>loader.loadReleasedReceivables(),/published_method_artifact_mismatch/);
  }finally{rmSync(tmp,{recursive:true,force:true});}
 });
+test('R01 profile loader rejects missing and substituted adapter metadata after a valid cached load',async()=>{
+ const tmp=mkdtempSync(join(tmpdir(),'offroad-r01-adapter-'));
+ try{
+  mkdirSync(join(tmp,'src'));mkdirSync(join(tmp,'released-methods'));
+  const outfile=join(tmp,'src/loader.mjs');
+  await build({entryPoints:[join(root,'apps/document-worker/src/released-method-executor.ts')],outfile,bundle:true,platform:'node',format:'esm',target:'node24',logLevel:'silent'});
+  const {loadReleasedExecutionProfile}=await import(pathToFileURL(outfile));
+  const identity={methodId:release.provenance.procedure.id,methodVersion:release.provenance.procedure.version,manifestHash:release.provenance.manifestHash};
+  const {artifact}=await rebuildReleasedExecutor(release);
+  const artifactPath=join(tmp,'released-methods',release.artifactHash+'.cjs');writeFileSync(artifactPath,artifact);
+  assert.throws(()=>loadReleasedExecutionProfile(identity),/ENOENT/);
+  const metadata={schemaVersion:'r01-execution-adapter-source.v1',platformReleaseId:release.platformReleaseId,artifactHash:release.artifactHash,manifest:release.provenance,capability:release.capabilities[0],executorSources:release.executorSources};
+  const path=join(tmp,'released-methods',release.artifactHash+'.adapter.json');writeFileSync(path,JSON.stringify(metadata));
+  assert.equal(loadReleasedExecutionProfile(identity).adapter,'legacy-r01-artifact.v1');
+  metadata.capability={...metadata.capability,maximumEffect:'commit'};writeFileSync(path,JSON.stringify(metadata));
+  assert.throws(()=>loadReleasedExecutionProfile(identity),/execution_r01_source_mismatch/);
+  metadata.capability=release.capabilities[0];writeFileSync(path,JSON.stringify(metadata));
+  writeFileSync(artifactPath,Buffer.concat([artifact,Buffer.from('\n// changed')]));
+  assert.throws(()=>loadReleasedExecutionProfile(identity),/published_method_artifact_mismatch/);
+ }finally{rmSync(tmp,{recursive:true,force:true});}
+});

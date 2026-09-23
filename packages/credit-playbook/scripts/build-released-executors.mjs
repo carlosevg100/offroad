@@ -71,6 +71,13 @@ export async function buildReleasedExecutors() {
     if (release.manifestPath) {
       const {manifestBytes} = await validateCompiledExecutorRelease(release, sourceDirectory);
       writeFileSync(join(directory, release.artifactHash + '.manifest.json'), manifestBytes);
+    } else {
+      if (release.provenance.schemaVersion !== 'legacy-procedure-adapter.v1' || release.capabilities.length !== 1) throw new Error('release_legacy_adapter_unavailable');
+      writeFileSync(join(directory, release.artifactHash + '.adapter.json'), JSON.stringify({
+        schemaVersion: 'r01-execution-adapter-source.v1', platformReleaseId: release.platformReleaseId,
+        artifactHash: release.artifactHash, manifest: release.provenance,
+        capability: release.capabilities[0], executorSources: release.executorSources,
+      }));
     }
   }
 }
