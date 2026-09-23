@@ -1539,8 +1539,12 @@
     {
       "version": "20260923153636",
       "name": "execution_explicit_human_subject"
+    },
+    {
+      "version": "20260923162842",
+      "name": "r01_release_pause_serialization"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-09-23T15:43:19.126528+00:00"
+  "captured_at": "2026-09-23T16:31:26.405541+00:00"
 }

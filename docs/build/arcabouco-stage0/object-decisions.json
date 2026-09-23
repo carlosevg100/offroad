@@ -19794,6 +19794,12 @@
           "line": 59,
           "anchor": "create or replace function private.receivables_analytical_release_enabled(p_organization_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923163027_r01_release_pause_serialization.sql",
+          "line": 41,
+          "anchor": "create or replace function private.receivables_analytical_release_enabled(p_organization_id uuid)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -152738,6 +152744,178 @@
         }
       ],
       "consumer_status": "Wrapper humano privado existente; futura ponte worker ainda não conectada. Sem grant de API."
+    },
+    {
+      "id": "function:private.guard_receivables_release_write_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_receivables_release_write_v1()",
+          "kind": "function",
+          "name": "guard_receivables_release_write_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_receivables_release_write_v1()",
+          "kind": "function",
+          "name": "guard_receivables_release_write_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / pausa concorrente 3K",
+      "reason": "Serializar pausa R01 e autorização atual, incluindo primeira inserção, sem espera circular.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923163027_r01_release_pause_serialization.sql",
+          "line": 5,
+          "anchor": "create function private.guard_receivables_release_write_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Guarda interna dos callers existentes; sem grants novos ou ativação R01."
+    },
+    {
+      "id": "trigger:private.platform_capability_releases.receivables_release_capability_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_capability_releases.receivables_release_capability_truncate_guard",
+          "kind": "trigger",
+          "name": "receivables_release_capability_truncate_guard",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_release_write_v1()",
+          "definition": "CREATE TRIGGER receivables_release_capability_truncate_guard BEFORE TRUNCATE ON private.platform_capability_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_capability_releases.receivables_release_capability_truncate_guard",
+          "kind": "trigger",
+          "name": "receivables_release_capability_truncate_guard",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_release_write_v1()",
+          "definition": "CREATE TRIGGER receivables_release_capability_truncate_guard BEFORE TRUNCATE ON private.platform_capability_releases FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / pausa concorrente 3K",
+      "reason": "Serializar pausa R01 e autorização atual, incluindo primeira inserção, sem espera circular.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923163027_r01_release_pause_serialization.sql",
+          "line": 37,
+          "anchor": "create trigger receivables_release_capability_truncate_guard",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Guarda interna dos callers existentes; sem grants novos ou ativação R01."
+    },
+    {
+      "id": "trigger:private.platform_capability_releases.receivables_release_capability_write_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_capability_releases.receivables_release_capability_write_guard",
+          "kind": "trigger",
+          "name": "receivables_release_capability_write_guard",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_release_write_v1()",
+          "definition": "CREATE TRIGGER receivables_release_capability_write_guard BEFORE INSERT OR DELETE OR UPDATE ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_capability_releases.receivables_release_capability_write_guard",
+          "kind": "trigger",
+          "name": "receivables_release_capability_write_guard",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_release_write_v1()",
+          "definition": "CREATE TRIGGER receivables_release_capability_write_guard BEFORE INSERT OR DELETE OR UPDATE ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / pausa concorrente 3K",
+      "reason": "Serializar pausa R01 e autorização atual, incluindo primeira inserção, sem espera circular.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923163027_r01_release_pause_serialization.sql",
+          "line": 34,
+          "anchor": "create trigger receivables_release_capability_write_guard",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Guarda interna dos callers existentes; sem grants novos ou ativação R01."
+    },
+    {
+      "id": "trigger:private.receivables_analytical_release_grants.receivables_release_pause_write_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.receivables_analytical_release_grants.receivables_release_pause_write_guard",
+          "kind": "trigger",
+          "name": "receivables_release_pause_write_guard",
+          "table": "receivables_analytical_release_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_release_write_v1()",
+          "definition": "CREATE TRIGGER receivables_release_pause_write_guard BEFORE INSERT OR DELETE OR UPDATE OR TRUNCATE ON private.receivables_analytical_release_grants FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.receivables_analytical_release_grants.receivables_release_pause_write_guard",
+          "kind": "trigger",
+          "name": "receivables_release_pause_write_guard",
+          "table": "receivables_analytical_release_grants",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_receivables_release_write_v1()",
+          "definition": "CREATE TRIGGER receivables_release_pause_write_guard BEFORE INSERT OR DELETE OR UPDATE OR TRUNCATE ON private.receivables_analytical_release_grants FOR EACH STATEMENT EXECUTE FUNCTION private.guard_receivables_release_write_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / pausa concorrente 3K",
+      "reason": "Serializar pausa R01 e autorização atual, incluindo primeira inserção, sem espera circular.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923163027_r01_release_pause_serialization.sql",
+          "line": 31,
+          "anchor": "create trigger receivables_release_pause_write_guard",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Guarda interna dos callers existentes; sem grants novos ou ativação R01."
     }
   ],
   "repository_items": [
@@ -159320,6 +159498,13 @@
       "decision": "preservar",
       "stage": "17 / sujeito explícito 3J",
       "reason": "Request privado com sujeito humano explícito e derivação do job pelo manifesto/run, sem novo grant."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923163027_r01_release_pause_serialization.sql",
+      "decision": "preservar",
+      "stage": "17 / pausa concorrente 3K",
+      "reason": "Primeira pausa e mudanças globais disputam autoridade atual com retry integral, sem grant ou ativação."
     }
   ],
   "staging_archive": [
