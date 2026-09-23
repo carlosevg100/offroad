@@ -2,18 +2,18 @@ import {createHash} from "node:crypto";
 import {setTimeout as delay} from "node:timers/promises";
 import {executionSerializationVersion,loadExecutionCanonicalText,executionContractSchema,executionCanonicalText} from "@offroad/agent-contracts";
 import {bindProfiledExecution,assertCurrentExecutionAuthority} from "./pinned-execution";
-import {loadReleasedCapital} from "./released-method-executor";
-import {calculatePinnedCapital,type CalculationResult} from "./execution-calculation";
+import {loadReleasedExecutionProfile} from "./released-method-executor";
+import {calculatePinnedMethod,type CalculationResult} from "./execution-calculation";
 import type {ExecutionQueue,ExecutionQueueClaim,ExecutionOutcome,ExecutionReason,ExecutionRenewal} from "./execution-queue";
 const digest=(text:string)=>createHash("sha256").update(text,"utf8").digest("hex");
 const partial=(reason:ExecutionReason)=>executionCanonicalText({status:"partial",reason});
 
 /** A failed authorization request aborts CPU work. Only the current SQL commit publishes. */
 export async function processPinnedExecution(c:ExecutionQueueClaim,queue:ExecutionQueue,shutdown:AbortSignal,
- calculate:typeof calculatePinnedCapital=calculatePinnedCapital):Promise<{status:"succeeded"|"partial"|"aborted"}> {
+ calculate:typeof calculatePinnedMethod=calculatePinnedMethod):Promise<{status:"succeeded"|"partial"|"aborted"}> {
  const contract=executionContractSchema.parse(loadExecutionCanonicalText(c.contractText,c.contractFingerprint,executionSerializationVersion));
  const snapshot=loadExecutionCanonicalText(c.snapshotText,contract.inputs.fingerprint,executionSerializationVersion);
- const {profile}=loadReleasedCapital(contract.method);
+ const profile=loadReleasedExecutionProfile(contract.method);
  const bound=bindProfiledExecution({claim:{jobId:c.jobId,leaseId:c.leaseId,executionId:c.executionId,organizationId:contract.organizationId,workId:contract.workId,
  principalId:contract.principalId,processingRunId:contract.processingRunId,contractFingerprint:c.contractFingerprint},contract,snapshot,profile,availableMethod:profile.method});
  const abort=new AbortController(),stop=new AbortController();

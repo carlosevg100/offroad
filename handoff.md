@@ -1,3 +1,9 @@
+## Etapa 17 / 3C: adaptador R01 instalado, fila ainda restrita a capital
+
+R01 passa a ter perfil exato no contrato comum, descritores de schemas vinculados ao artefato publicado e política operacional explícita, separada do manifesto legado sem orçamento numérico. O runtime compartilhado executa capital e R01 em thread interrompível, confere metadados no boot e em cada uso e conserva todos os resultados históricos. Não há DDL, perfil operacional novo ou ativação. A fila segue aceitando somente capital até o próximo vínculo de proveniência, autoridade e contabilidade SQL de R01.
+
+TRUST-APP-01/TRUST-AI-01/TRUST-SDLC-01. Testes, limites, transição e riscos em `docs/build/arcabouco/etapa-17-3c-r01-adaptador.md`. O incremento 3B anterior está fechado em produção no commit `0d1ef1f6`, PR 724, com CI e web/worker conferidos no completion externo. Este registro descreve a implementação de 3C; seu completion deve comprovar CI e implantação. A etapa 17 permanece aberta e a 18 não começou.
+
 ## Etapa 17 / 3B: consumidor e proveniência antes da publicação
 
 A fila atual recebe consumidor de capital com conta operacional vinculada, reserva única, thread interrompível, heartbeat com autoridade corrente e settlement/commit dos mesmos bytes. Falhas da fila nova não paralisam o legado. A proveniência foi antecipada por aprovação do fundador: bases embutidas devem coincidir com versões persistidas, contexto e todos os pins; referências avulsas conservam os direitos fixados e atuais.

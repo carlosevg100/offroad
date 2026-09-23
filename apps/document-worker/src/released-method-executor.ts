@@ -3,7 +3,7 @@ import {readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {createRequire} from "node:module";
 import {releasedMethodArtifacts} from "./released-methods.generated";
-import {deriveExecutionProfile} from "@offroad/agent-contracts";
+import {deriveExecutionProfile, deriveReceivablesExecutionProfile, type ExecutionProfile} from "@offroad/agent-contracts";
 import type * as Capital from "@offroad/financial-model";
 import type * as Receivables from "@offroad/receivables-analysis";
 
@@ -40,11 +40,24 @@ export function loadReleasedCapital(identity: {methodId: string; methodVersion: 
   return Object.freeze({profile, executor: Object.freeze(executor)});
 }
 
+/** Dispatch metadata is fixed by the installed release, never supplied by the caller. */
+export function loadReleasedExecutionProfile(identity: {methodId: string; methodVersion: string; manifestHash: string}): ExecutionProfile {
+  const release = releasedMethodArtifact(identity);
+  if (identity.methodId === "prepare-capital-structure-decision") return loadReleasedCapital(identity).profile;
+  if (identity.methodId !== "underwrite-receivables-pool") throw new Error("published_method_executor_unavailable");
+  const executor = loadReleasedReceivables();
+  for (const schema of [executor.receivablesPoolUnderwritingInputSchema, executor.receivablesPoolUnderwritingSchema]) {
+    if (typeof schema?.parse !== "function") throw new Error("published_method_exports_unavailable");
+  }
+  if (typeof executor.underwriteReceivablesPool !== "function") throw new Error("published_method_exports_unavailable");
+  const source = JSON.parse(readFileSync(new URL(`../released-methods/${release.artifactHash}.adapter.json`, import.meta.url), "utf8"));
+  return deriveReceivablesExecutionProfile(source, {id: release.platformReleaseId, manifestHash: release.manifestHash, artifactHash: release.artifactHash});
+}
+
 /** Validate installed artifacts before polling. Availability is not an execution grant. */
 export function verifyInstalledMethodArtifacts(): number {
-  loadReleasedReceivables();
   for (const release of releasedMethodArtifacts) {
-    if (release.methodId === "prepare-capital-structure-decision") loadReleasedCapital(release);
+    loadReleasedExecutionProfile(release);
   }
   return releasedMethodArtifacts.length;
 }

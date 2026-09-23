@@ -99,7 +99,66 @@ export function deriveExecutionProfile(raw: unknown, release: {id: string; manif
   trustedProfiles.add(result);
   return result;
 }
-export type ExecutionProfile = ReturnType<typeof deriveExecutionProfile>;
+/** R01's historical publication has no numeric budget or typed component contracts.
+ * These are adapter descriptors and an explicit runtime containment policy, not
+ * retroactive additions to that publication. The SQL adapter must enforce the same
+ * cumulative limits before this profile can be activated in the queue. */
+const r01Source = z.object({
+  schemaVersion: z.literal("r01-execution-adapter-source.v1"),
+  platformReleaseId: z.literal("r01-2026.09.06-v1"), artifactHash: hash,
+  manifest: z.object({
+    schemaVersion: z.literal("legacy-procedure-adapter.v1"), manifestHash: hash,
+    procedure: z.object({id, version: id}).passthrough(),
+    compiler: z.object({version: id, sources: z.array(pin).min(1), hash}).strict(),
+    executor: z.object({module: id, exportName: id, sourceClosureHash: hash}).strict(),
+    grantsExecution: z.literal(false),
+  }).passthrough(),
+  capability: z.object({
+    taskId: z.literal("R01"), executorKey: id, executorVersion: id,
+    procedure: z.object({id, version: id}).strict(),
+    allowedProviderIds: z.array(z.string()).length(0), allowedToolIds: z.array(z.string()).length(0),
+    providerRequired: z.literal(false), maximumEffect: z.literal("none"),
+  }).passthrough(),
+  executorSources: z.array(pin).min(1),
+}).strict();
+
+export function deriveReceivablesExecutionProfile(raw: unknown, release: {id: string; manifestHash: string; artifactHash: string}) {
+  // An arbitrary caller cannot replace the source and bless it with a new hash.
+  if (executionInputFingerprint(raw) !== "9e71b791b0f5a9c586c2865e6c3d61b8490d56d34918b1f8c1ea0fe9a8054c3a") throw new Error("execution_r01_source_mismatch");
+  const source = r01Source.parse(raw), manifest = source.manifest;
+  const {manifestHash, ...manifestPayload} = manifest;
+  if (release.id !== source.platformReleaseId || release.manifestHash !== manifestHash || release.artifactHash !== source.artifactHash
+    || methodHash(manifestPayload) !== manifestHash) throw new Error("execution_r01_release_mismatch");
+  if (methodHash(manifest.compiler.sources) !== manifest.compiler.hash || methodHash(source.executorSources) !== manifest.executor.sourceClosureHash) throw new Error("execution_r01_closure_mismatch");
+  if (source.capability.executorKey !== `${manifest.executor.module}#${manifest.executor.exportName}`
+    || source.capability.executorVersion !== manifest.procedure.version
+    || source.capability.procedure.id !== manifest.procedure.id || source.capability.procedure.version !== manifest.procedure.version) throw new Error("execution_r01_capability_mismatch");
+  const descriptor = (exportName: string) => ({schemaVersion: "published-artifact-schema-export.v1" as const, artifactHash: source.artifactHash, exportName});
+  const descriptors = {input: descriptor("receivablesPoolUnderwritingInputSchema"), output: descriptor("receivablesPoolUnderwritingSchema")};
+  const containment = {version: "r01-runtime-containment.2026-09-22.v1" as const, maxCostMicrousd: 0 as const, maxModelCalls: 0 as const, maxDurationMs: 31000};
+  const method = executionMethodSchema.parse({
+    platformReleaseId: source.platformReleaseId, houseReleaseId: null,
+    methodId: manifest.procedure.id, methodVersion: manifest.procedure.version,
+    manifestHash, baseManifestHash: manifestHash,
+    compilerVersion: manifest.compiler.version, compilerHash: manifest.compiler.hash,
+    executor: {key: source.capability.executorKey, version: source.capability.executorVersion,
+      sourceClosureHash: manifest.executor.sourceClosureHash, inputContractHash: methodHash(descriptors.input), outputContractHash: methodHash(descriptors.output)},
+    formulas: [],
+  });
+  const profile = {
+    schemaVersion: "execution-profile.v1" as const, adapter: "legacy-r01-artifact.v1" as const,
+    manifestHashAlgorithm: "method-stable-json-utf16-sha256-v1" as const,
+    contractHashAlgorithm: "published-artifact-schema-export-sha256-v1" as const,
+    selectedComponentId: "legacy:R01", method, descriptors,
+    formulaCoverage: "executor_source_closure" as const, tools: [] as never[], allowedEffects: ["read_only"] as const,
+    limits: {maxCostMicrousd: containment.maxCostMicrousd, maxModelCalls: containment.maxModelCalls, maxDurationMs: containment.maxDurationMs},
+    originalBudget: null, containment, sourceFingerprint: executionInputFingerprint(raw), grantsExecution: false as const,
+  };
+  const result = freeze({...profile, fingerprint: executionInputFingerprint(profile)});
+  trustedProfiles.add(result);
+  return result;
+}
+export type ExecutionProfile = ReturnType<typeof deriveExecutionProfile> | ReturnType<typeof deriveReceivablesExecutionProfile>;
 
 /** Local consistency boundary only. A serialized/caller-built profile is not accepted;
  * reconstruct from the trusted pinned manifest. Live release/rights remain SQL gates. */
