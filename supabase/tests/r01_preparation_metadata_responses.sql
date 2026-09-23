@@ -87,12 +87,16 @@ select public.submit_advisor_information_response_v1('30000000-0000-4000-8000-00
  (select updated_at from public.capital_project_information_requests where id='50000000-0000-4000-8000-000000000731'),
  '90000000-0000-4000-8000-000000000731','pt-BR','custom','72,5%');
 reset role;
+-- The next answer needs the previous turn finished; a second queued user message is refused as in progress.
+update public.agent_messages set status='completed' where organization_id='20000000-0000-4000-8000-000000000731' and role='user' and status in ('queued','processing');
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000731","role":"authenticated","aal":"aal1"}',true);
 set local role authenticated;
 select public.submit_advisor_information_response_v1('30000000-0000-4000-8000-000000000731','50000000-0000-4000-8000-000000000732',
  (select updated_at from public.capital_project_information_requests where id='50000000-0000-4000-8000-000000000732'),
  '90000000-0000-4000-8000-000000000732','pt-BR','custom','3%');
 reset role;
+-- The next answer needs the previous turn finished; a second queued user message is refused as in progress.
+update public.agent_messages set status='completed' where organization_id='20000000-0000-4000-8000-000000000731' and role='user' and status in ('queued','processing');
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000732","role":"authenticated","aal":"aal1"}',true);
 -- Persist synthetic derivations of the two actual human answers; this SQL test does
 -- not claim semantic financial readiness or substitute for preparer replay.
