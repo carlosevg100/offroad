@@ -1471,8 +1471,12 @@
     {
       "version": "20260923014322",
       "name": "execution_r01_profile_boundary"
+    },
+    {
+      "version": "20260923140356",
+      "name": "r01_preparation_authority_loader"
     }
   ],
   "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-09-23T01:43:50.735493+00:00"
+  "captured_at": "2026-09-23T14:05:46.093732+00:00"
 }

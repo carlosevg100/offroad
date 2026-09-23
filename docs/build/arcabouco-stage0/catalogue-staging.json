@@ -53055,6 +53055,96 @@
       ],
       "schema": "private",
       "force_rls": false
+    },
+    {
+      "id": "function:private.r01_adopted_value_v1(p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid)",
+      "kind": "function",
+      "name": "r01_adopted_value_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_dataset text, p_version uuid, p_decision uuid, p_path text, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.r01_preparation_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "r01_preparation_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_session uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.r01_response_authority_v1(p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "r01_response_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_session uuid, p_dataset text, p_message_id uuid, p_request_id uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.r01_scope_dataset_hash_v1(s jsonb)",
+      "kind": "function",
+      "name": "r01_scope_dataset_hash_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "s jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.worker_load_receivables_preparation_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_receivables_preparation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
     }
   ],
   "captured_at": "2026-09-22T19:40:37.094473+00:00"

@@ -17,3 +17,7 @@ TRUST-APP-01, TRUST-AI-01 e TRUST-SDLC-01. Migração, carimbos dos dois ambient
 ## Próximo vínculo do mesmo incremento 3
 
 O recibo revalida o snapshot sob locks e fixa os direitos inicialmente utilizados, além dos atuais. Adoções precisam ter moeda, escala, unidade, período, cenário, entidade/perímetro e definição compatíveis com o destino antes do cálculo; o loader conserva esses dados e não afirma essa compatibilidade. O consumidor faz replay obrigatório e aplica readiness do método publicado. Request, claim, heartbeat, commit, leitura e callback legado precisam consumir o mesmo recibo. Pausa concorrente, inclusive primeira linha de pausa de uma organização, pertence a essa ligação. `execution_r01_provenance_unavailable` permanece até os testes integrados passarem. Nenhuma etapa 18 nem ativação para clientes decorre deste incremento.
+
+## Prova de banco em 23/09/2026
+
+Migração aplicada em staging sob `20260923140154` e em produção sob `20260923140356`, sem reaplicação. As cinco definições e grants conferem nos dois catálogos; nenhuma função é executável por anon, authenticated ou service_role. Os quatro testes SQL novos passaram em staging com rollback e na CI 35870932377; a rodada final atualiza o journal capturado de produção. Advisors de segurança: zero alertas nos dois ambientes. Tipos públicos regenerados sem alteração semântica. O resultado de CI final, merge e deploy pertence ao completion, ainda não presumido.
