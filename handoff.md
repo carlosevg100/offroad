@@ -1,3 +1,7 @@
+## Etapa 17 / 3F: preparação R01 e precedência do rascunho
+
+Rascunho atual prevalece sobre montagem histórica, inclusive para recusar conflito ou incompletude. Preparador reconstrói fragmentos, histórico e origens por valor; não concede autoridade SQL ou readiness. Sua captura imutável e o recibo persistido continuam no incremento 3. [Escopo e gates](docs/build/arcabouco/etapa-17-3f-r01-preparo.md). Sem DDL; CI e implantação precisam do completion. A etapa 17 continua em execução.
+
 ## Etapa 17 / 3E: cálculo R01 único
 
 Shadow e release passam a usar o mesmo resultado verificado, sem segundo cálculo. Recibo local não autoriza execução no banco; a ponte de proveniência continua necessária e fechada. [Escopo e gates](docs/build/arcabouco/etapa-17-3e-r01-calculo-unico.md). Sem DDL ou mudança do método publicado; CI e deploy pertencem ao completion.

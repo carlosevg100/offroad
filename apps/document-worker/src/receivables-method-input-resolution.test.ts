@@ -6,6 +6,7 @@ import {
 } from "@offroad/receivables-analysis";
 import {describe, expect, it} from "vitest";
 
+import {prepareReceivablesInputWithOrigins} from "./receivables-preparation";
 import {resolveReceivablesMethodInput} from "./receivables-method-input-resolution";
 
 const datasetHash = "b".repeat(64);
@@ -67,5 +68,94 @@ describe("receivables specialist input resolution", () => {
   it("does not execute an incomplete or stale draft", () => {
     expect(resolveReceivablesMethodInput({phaseOne, supplementDraft: newReceivablesSupplementDraft(datasetHash)})).toMatchObject({assembly: null, draftState: "incomplete"});
     expect(resolveReceivablesMethodInput({phaseOne, supplementDraft: newReceivablesSupplementDraft("c".repeat(64))})).toMatchObject({assembly: null, draftState: "stale"});
+  });
+
+  it("uses a successor contribution instead of reviving the stored assembly", () => {
+    const prior = completeDraft();
+    const stored = resolveReceivablesMethodInput({phaseOne, supplementDraft: prior}).assembly!;
+    const next = applyReceivablesSupplementPatch({draft: prior, patch: {
+      schemaVersion: receivablesSupplementPatchVersion, patchId: "revised-policy", sourceDatasetHash: datasetHash,
+      suppliedBy: {actorType: "user", actorId: "reviewer", suppliedAt: "2026-09-23T00:00:00.000Z", evidence: [source("revised-policy")]},
+      sections: {policy: {value: {...stored.input.case.policy, maxDaysPastDue: 15}, supersedesFingerprint: prior.sections.policy!.fingerprint}}, fields: [],
+      evidence: {eligibilityPolicy: [source("revised-policy")]},
+    }});
+    const resolved = resolveReceivablesMethodInput({phaseOne, storedAssembly: stored, supplementDraft: next});
+    expect(resolved.origin).toBe("compiled_draft");
+    expect(resolved.assembly?.input.case.policy.maxDaysPastDue).toBe(15);
+    expect(stored.input.case.policy.maxDaysPastDue).toBe(30);
+  });
+
+  it("does not hide an incomplete draft behind an earlier assembly", () => {
+    const storedAssembly = resolveReceivablesMethodInput({phaseOne, supplementDraft: completeDraft()}).assembly;
+    expect(resolveReceivablesMethodInput({phaseOne, storedAssembly, supplementDraft: newReceivablesSupplementDraft(datasetHash)}))
+      .toMatchObject({assembly: null, origin: "none", draftState: "incomplete"});
+  });
+
+  it("does not hide a stale draft behind an assembly with a matching dataset hash", () => {
+    const storedAssembly = resolveReceivablesMethodInput({phaseOne, supplementDraft: completeDraft()}).assembly;
+    expect(resolveReceivablesMethodInput({phaseOne, storedAssembly, supplementDraft: newReceivablesSupplementDraft("c".repeat(64))}))
+      .toMatchObject({assembly: null, origin: "none", draftState: "stale"});
+  });
+
+  it("preserves the stored-assembly compatibility path only when no draft exists", () => {
+    const storedAssembly = resolveReceivablesMethodInput({phaseOne, supplementDraft: completeDraft()}).assembly;
+    expect(resolveReceivablesMethodInput({phaseOne, storedAssembly})).toMatchObject({assembly: storedAssembly, origin: "stored_assembly"});
+  });
+
+  it("refuses an unresolved successor conflict even when a previous assembly is valid", () => {
+    const prior = completeDraft();
+    const storedAssembly = resolveReceivablesMethodInput({phaseOne, supplementDraft: prior}).assembly!;
+    const conflicted = applyReceivablesSupplementPatch({draft: prior, patch: {
+      schemaVersion: receivablesSupplementPatchVersion, patchId: "conflicting-policy", sourceDatasetHash: datasetHash,
+      suppliedBy: {actorType: "user", actorId: "reviewer", suppliedAt: "2026-09-23T00:00:00.000Z", evidence: [source("conflicting-policy")]},
+      sections: {policy: {value: {...storedAssembly.input.case.policy, maxDaysPastDue: 15}}}, fields: [],
+      evidence: {eligibilityPolicy: [source("conflicting-policy")]},
+    }});
+    expect(resolveReceivablesMethodInput({phaseOne, storedAssembly, supplementDraft: conflicted}))
+      .toMatchObject({assembly: null, origin: "none", draftState: "conflicted"});
+  });
+
+});
+
+
+describe("R01 preparation value origins", () => {
+  it("binds every input value, including empty eligibility lists, without changing the assembled input", () => {
+    const draft = completeDraft();
+    const prepared = prepareReceivablesInputWithOrigins({phaseOne, draft});
+    expect(prepared.assembly).toEqual(resolveReceivablesMethodInput({phaseOne, supplementDraft: draft}).assembly);
+    expect(JSON.parse(prepared.inputText)).toEqual(prepared.assembly.input);
+    expect(new Set(prepared.values.map(value => value.path)).size).toBe(prepared.values.length);
+    expect(prepared.values.find(value => value.path === "/case/policy/allowedDebtorSectors")).toMatchObject({value: [], origins: [{kind: "draft", path: "/sections/policy/value/allowedDebtorSectors", value: []}]});
+    for (const entry of prepared.values) {
+      let resolved: unknown = prepared.assembly.input;
+      for (const key of entry.path.split("/").slice(1)) resolved = (resolved as Record<string,unknown>)[key.replace(/~1/g,"/").replace(/~0/g,"~")];
+      expect(resolved).toEqual(entry.value);
+      expect(entry.origins.length).toBeGreaterThan(0);
+    }
+    expect(prepared.evidence).toHaveLength(7);
+  });
+  it("records the settlement sources and computation behind paid amount", () => {
+    const prepared = prepareReceivablesInputWithOrigins({phaseOne, draft: completeDraft()});
+    expect(prepared.values.find(value => value.path === "/case/portfolio/0/paidAmount")).toMatchObject({value: "200.00", origins: [
+      {kind: "universe", collection: "receivables", id: "title-1", field: "id"},
+      {kind: "universe", collection: "settlements", id: "settlement-1", field: "amount", source: {fileId: "cash-1"}},
+      {kind: "preparer", rule: "sum-settlements-decimal-2"},
+    ]});
+  });
+  it("retains the source link before cash receipt IDs are translated to method IDs", () => {
+    const prepared = prepareReceivablesInputWithOrigins({phaseOne, draft: completeDraft()});
+    expect(prepared.values.find(value => value.path === "/case/cashReceipts/0/receivableId")).toMatchObject({origins: [
+      {kind: "draft", path: "/sections/cashReceipts/value/0/sourceReceivableId", value: "title-1"},
+      {kind: "preparer", rule: "cash-title-link"},
+    ]});
+  });
+  it("keeps financial tape values separate from supplied title controls", () => {
+    const prepared = prepareReceivablesInputWithOrigins({phaseOne, draft: completeDraft()});
+    expect(prepared.values.find(value => value.path === "/case/portfolio/0/outstandingBalance")).toMatchObject({origins: [{kind: "universe",field: "openValue"}]});
+    expect(prepared.values.find(value => value.path === "/case/portfolio/0/assignable")).toMatchObject({origins: [{kind: "draft",path: "/sections/titles/value/0/assignable", value: true}, {kind: "universe",field: "id"}]});
+  });
+  it("refuses missing or stale preparation rather than treating a historic assembly as evidence", () => {
+    expect(() => prepareReceivablesInputWithOrigins({phaseOne,draft: newReceivablesSupplementDraft(datasetHash)})).toThrow("receivables_preparation_draft_not_complete");
+    expect(() => prepareReceivablesInputWithOrigins({phaseOne,draft: {...completeDraft(),sourceDatasetHash:"c".repeat(64)}})).toThrow("receivables_preparation_dataset_mismatch");
   });
 });
