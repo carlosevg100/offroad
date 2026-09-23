@@ -127,7 +127,8 @@ from private.source_rights_versions where source_version_id='10000000-0000-4000-
 insert into private.resource_dependencies(organization_id,derived_version_id,source_version_id,source_rights_version_id,created_by)
 select organization_id,'10000000-0000-4000-8000-000000000001',source_version_id,id,created_by from private.source_rights_versions
 where source_version_id='10000000-0000-4000-8000-000000000884' and revision=2;
--- A new document in the session changes the approval input; the dispatch must be approved again before any loader runs.
+-- A new document in the session changes the approval input; the job is held again and the dispatch approved again, restoring the seeded lease, before any loader runs.
+update public.processing_jobs set status='awaiting_approval' where id='80000000-0000-4000-8000-000000000731';
 select pg_temp.fixture_approve_execution('80000000-0000-4000-8000-000000000731',true);
 update r01_receipt_fixture set id=gen_random_uuid();
 update r01_receipt_loaded set state=pg_temp.receipt_state();
