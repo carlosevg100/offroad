@@ -39,7 +39,7 @@ A revisão do endurecimento aprovou com duas condições e quatro pontos menores
 - Uma atestação com identidade explícita também exige conta viva, não só principal ativo; o rótulo do principal é guardado sem espaços nas pontas.
 - Atestações, eventos de publicação, releases e perfis também recusam truncamento.
 
-Estampas: staging `20260923205449`, produção `PROD_STAMP_TBD`. Prova executada em staging com rollback, com as asserções novas: identidade forjada e identidade malformada não entram no ledger de perfis; `revoked_by` é o usuário da sessão; rótulo com espaços recusado; atestação direta por conta banida recusada; truncamento recusado em cascata nas duas tabelas referenciadas por chave estrangeira.
+Estampas: staging `20260923205449`, produção `20260923223307`. Prova executada em staging com rollback, com as asserções novas: identidade forjada e identidade malformada não entram no ledger de perfis; `revoked_by` é o usuário da sessão; rótulo com espaços recusado; atestação direta por conta banida recusada; truncamento recusado em cascata nas duas tabelas referenciadas por chave estrangeira.
 
 ## Provas
 

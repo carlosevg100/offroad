@@ -1511,8 +1511,12 @@
   {
    "version": "20260923203112",
    "name": "platform_operator_identity_hardening"
+  },
+  {
+   "version": "20260923223307",
+   "name": "platform_operator_identity_ledger_guard"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-23T20:41:34.309682+00:00"
+ "captured_at": "2026-09-23T22:35:02.738325+00:00"
 }
