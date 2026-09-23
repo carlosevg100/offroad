@@ -177,7 +177,7 @@ ancestor='10000000-0000-4000-8000-000000000882'
 source='10000000-0000-4000-8000-000000000001'
 run(f"""begin;
 insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,sha256,processing_status,scan_result,created_by)
-values('{ancestor}','{org}','{session}','{org}/{session}/synthetic-ancestor.txt','synthetic-ancestor.txt',repeat('b',64),'ready','{{"verdict":"clean"}}','{subject}');
+values('{ancestor}','{org}','{session}','{org}/{session}/synthetic-ancestor.txt','synthetic-ancestor.txt',repeat('9',64),'ready','{{"verdict":"clean"}}','{subject}');
 insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
 values('{org}','{ancestor}',1,array['read','process','store','derive'],array['analysis'],'authorized_workspace',now(),'human_declaration','{ancestor}',repeat('b',64),'{subject}');
 commit;""")
