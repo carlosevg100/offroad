@@ -107,6 +107,35 @@ describe("bound capital packet composer", () => {
     expect(envelopes).toBeGreaterThan(0); expect(packet.adoptionLinks).toEqual([]);
   });
 
+  it("borrows the definition reference of a missing operand from an operand this packet resolved before the basis's first entry", () => {
+    const f = adoptedCapitalPeriodFixture(); const snapshot = f.snapshot as Snapshot;
+    // The first contribution of the basis is never resolved by the packet; the basis carries no entry for the missing operand.
+    const first = {...structuredClone(snapshot.entries[0]!), decisionId: "c1500000-0000-4000-9000-000000000001", slotKey: "e".repeat(64), fieldPath: "financials.other",
+      dimensions: {...snapshot.entries[0]!.dimensions, definitionVersionId: "c1500000-0000-4000-9000-000000000009"}};
+    snapshot.entries = [first, ...snapshot.entries.filter(e => e.fieldPath !== "operating_projection.revenue.quantities")];
+    const {envelope, scope, basis} = seal(snapshot);
+    const packet = composeBoundCapitalPacketV2({envelope, scope, ...framing, asOf: "2026-12-31", ...deriveBoundCapitalScope(basis, "2026-12-31")});
+    const revenue = packet.decision.review.composition.alternatives[0]!.projection.operating.revenue;
+    if (revenue.mode !== "drivers") throw new Error("driver revenue expected");
+    const resolved: Array<{decisionId: string | null; definitionVersionId: string}> = [];
+    walk(packet, node => {if ("missingReason" in node && node.decisionId !== null) resolved.push(node as typeof resolved[number]);});
+    const lowest = resolved.map(s => s.definitionVersionId).sort()[0]!;
+    expect(revenue.quantities.decisionId).toBeNull();
+    expect(revenue.quantities.definitionVersionId).toBe(lowest); expect(lowest).not.toBe(first.dimensions.definitionVersionId);
+    expect(revenue.quantities.missingReason).toContain("an operand this packet resolved"); expect(revenue.quantities.missingReason).toContain("placeholder");
+    expect(prepareCapitalProcedurePacketV2(packet).decision.informationGaps.some(g => g.reason.startsWith("operating_projection.revenue.quantities"))).toBe(true);
+  });
+
+  it("falls back to the basis's first contribution only when nothing resolves", () => {
+    const f = capitalStructureDecisionFixture(); const {envelope, scope, basis} = seal(f.snapshot as Snapshot);
+    const packet = composeBoundCapitalPacketV2({envelope, scope, ...framing, asOf: "2027-12-31", ...deriveBoundCapitalScope(basis, "2027-12-31")});
+    const first = [...basis.entries].sort((a, b) => a.decisionId < b.decisionId ? -1 : 1)[0]!;
+    const selections: Array<{decisionId: string | null; definitionVersionId: string; definitionKind: string; missingReason: string | null}> = [];
+    walk(packet, node => {if ("missingReason" in node) selections.push(node as typeof selections[number]);});
+    expect(selections.every(s => s.decisionId === null && s.definitionVersionId === first.dimensions.definitionVersionId && s.definitionKind === first.definitionKind)).toBe(true);
+    expect(selections.every(s => s.missingReason!.includes("the first contribution of the basis") && s.missingReason!.includes("placeholder"))).toBe(true);
+  });
+
   it("produces the same bytes for the same inputs and refuses a basis outside the scope", () => {
     const f = adoptedCapitalPeriodFixture(); const {envelope, scope, basis} = seal(f.snapshot as Snapshot);
     const input = {envelope, scope, ...framing, asOf: "2026-12-31", ...deriveBoundCapitalScope(basis, "2026-12-31")};

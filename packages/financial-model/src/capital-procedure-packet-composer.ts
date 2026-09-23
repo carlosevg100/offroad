@@ -20,6 +20,7 @@ export type BoundCapitalPacketInput = z.infer<typeof boundCapitalPacketInputSche
 export type BoundCapitalPacketV2Input = z.infer<typeof capitalProcedurePacketV2InputSchema>;
 type Selection = z.infer<typeof adoptedValueSelectionSchema>;
 type ValueType = AdoptionBasisEntry["value"]["type"];
+type Reference = {fieldPath: string; definitionVersionId: string; definitionKind: Selection["definitionKind"]};
 
 const next = (value: string) => {const d = new Date(`${value}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10);};
 const yearLater = (value: string) => {const d = new Date(`${value}T00:00:00Z`); d.setUTCFullYear(d.getUTCFullYear() + 1); return d.toISOString().slice(0, 10);};
@@ -59,17 +60,19 @@ export function deriveBoundCapitalScope(basis: AdoptionBasisSnapshot, asOf: stri
  * dimensions, and every operand the basis does not carry declared missing with its reason. The
  * packet never proposes a change, a recommendation, a contract or an adoption link; contracts and
  * links stay empty until they are prepared and reviewed on their own. The packet schema requires a
- * definition reference on every selection, resolved or not: a missing operand borrows the
- * reference of the same metric elsewhere in the basis, or else of the basis's first contribution,
- * and its reason says so. The executor ignores that reference for a missing operand. */
+ * definition reference on every selection, resolved or not. A missing operand takes, in this
+ * order, the definition the basis records for the same field path in another dimension, the
+ * lowest definition id among the operands this packet did resolve, or the first contribution of
+ * the basis; the reason names a borrowed reference as a placeholder. The executor ignores the
+ * reference of a missing operand. */
 export function composeBoundCapitalPacketV2(raw: unknown): BoundCapitalPacketV2Input {
   const input = boundCapitalPacketInputSchema.parse(raw);
   const basis = readContextualBasis(input.envelope, input.scope);
   const entries = [...basis.entries].sort((a, b) => a.decisionId < b.decisionId ? -1 : 1);
   const consumedDecisions = new Set<string>(); const consumedObservations = new Set<string>();
+  const resolved: Reference[] = []; const missing: Array<{selection: Selection; fieldPath: string; reason: string}> = [];
   const firstDate = next(input.openingDate);
   const inScope = (e: AdoptionBasisEntry) => e.dimensions.entityId === input.entityId && e.dimensions.perimeter === input.perimeter && e.dimensions.currency === input.currency;
-  const placeholder = (fieldPath: string) => entries.find(e => e.fieldPath === fieldPath) ?? null;
   const period = (opening: boolean) => opening ? `the opening position at ${input.openingDate} (${input.openingScenario})` : `the period ${firstDate} to ${input.endDate} (${input.scenario})`;
   function select(fieldPath: string, unit: string, type: ValueType, opening = false): Selection {
     const d = {periodStart: opening ? null : firstDate, periodEnd: opening ? input.openingDate : input.endDate, scenario: opening ? input.openingScenario : input.scenario};
@@ -78,13 +81,15 @@ export function composeBoundCapitalPacketV2(raw: unknown): BoundCapitalPacketV2I
       && (unit === "currency" || hasUnitScale(e.dimensions.scale)) && !consumedDecisions.has(e.decisionId) && !(e.observationId && consumedObservations.has(e.observationId)));
     if (matches.length === 1) {
       const e = matches[0]!; consumedDecisions.add(e.decisionId); if (e.observationId) consumedObservations.add(e.observationId);
+      resolved.push({fieldPath, definitionVersionId: e.dimensions.definitionVersionId!, definitionKind: e.definitionKind});
       return {decisionId: e.decisionId, definitionVersionId: e.dimensions.definitionVersionId!, definitionKind: e.definitionKind, missingReason: null};
     }
-    const same = placeholder(fieldPath); const reference = same ?? entries[0]!;
     const reason = matches.length ? `${matches.length} contributions match ${fieldPath} for ${period(opening)}; keep one value per slot in the working basis`
       : `No contribution adopted for ${fieldPath} for ${period(opening)}`;
-    const note = same ? "" : `; the definition reference ${reference.dimensions.definitionVersionId} is a placeholder the packet schema requires, not this operand's definition`;
-    return {decisionId: null, definitionVersionId: reference.dimensions.definitionVersionId!, definitionKind: reference.definitionKind, missingReason: reason + note};
+    // The reference is settled once every operand of the packet has been read (see settle below).
+    const selection: Selection = {decisionId: null, definitionVersionId: entries[0]!.dimensions.definitionVersionId!, definitionKind: entries[0]!.definitionKind, missingReason: reason};
+    missing.push({selection, fieldPath, reason});
+    return selection;
   }
   const present = (fieldPath: string) => entries.some(e => e.fieldPath === fieldPath && inScope(e));
   const list = (fieldPath: string, unit = "currency") => select(fieldPath, unit, "list");
@@ -130,6 +135,15 @@ export function composeBoundCapitalPacketV2(raw: unknown): BoundCapitalPacketV2I
   const capitalMovements = present("capital.movements.ids") ? {ids: list("capital.movements.ids", "identity"), economicIds: list("capital.movements.economicIds", "identity"),
     dates: list("capital.movements.dates", "date"), amounts: list("capital.movements.amounts"), accounts: list("capital.movements.accounts", "convention"),
     kinds: list("capital.movements.kinds", "convention"), reasons: list("capital.movements.reasons", "explanation")} : null;
+  // Settle the reference of every missing operand now that the packet's resolved operands are known.
+  const borrowed = [...resolved].sort((a, b) => a.definitionVersionId < b.definitionVersionId ? -1 : 1)[0] ?? null;
+  for (const m of missing) {
+    const same = entries.find(e => e.fieldPath === m.fieldPath);
+    const reference: Reference & {note: string} = same ? {fieldPath: m.fieldPath, definitionVersionId: same.dimensions.definitionVersionId!, definitionKind: same.definitionKind, note: ""}
+      : borrowed ? {...borrowed, note: `; the definition reference ${borrowed.definitionVersionId} belongs to ${borrowed.fieldPath}, an operand this packet resolved, and is a placeholder the packet schema requires, not this operand's definition`}
+      : {fieldPath: entries[0]!.fieldPath, definitionVersionId: entries[0]!.dimensions.definitionVersionId!, definitionKind: entries[0]!.definitionKind, note: `; the definition reference ${entries[0]!.dimensions.definitionVersionId} belongs to ${entries[0]!.fieldPath}, the first contribution of the basis, and is a placeholder the packet schema requires, not this operand's definition`};
+    m.selection.definitionVersionId = reference.definitionVersionId; m.selection.definitionKind = reference.definitionKind; m.selection.missingReason = m.reason + reference.note;
+  }
   const packet = {schemaVersion: "capital-procedure-packet-input.v2", decision: {review: {
     composition: {workId: scope.workId, purpose: scope.purpose, question: input.question, objectives: input.objectives,
       alternatives: [{id: "current", label: "Current structure as recorded in the working basis", kind: "maintain",
