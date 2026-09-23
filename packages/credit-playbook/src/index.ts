@@ -24,6 +24,7 @@ export * from "./procedure-contract";
 export * from "./reference-data";
 export * from "./material-templates";
 export * from "./conduct-policy";
+export * from "./voice-filter";
 export * from "./procedures";
 export * from "./house-playbook";
 export * from "./receivables-routes";
