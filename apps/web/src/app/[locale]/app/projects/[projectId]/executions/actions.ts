@@ -10,7 +10,6 @@ import {requireWorkspace} from "@/lib/auth/workspace";
 import {capitalDecisionPurpose} from "@/lib/advisor/adoption-basis-reader";
 import {composeExecutionContract, executionContractBasisSchema, executionContractText, type ExecutionContractBasis} from "@/lib/execution/contract";
 import {executionRequestFailure, type ExecutionRequestError} from "@/lib/execution/failure";
-import {workExecutionListSchema} from "@/lib/execution/read";
 
 const route = z.object({locale: z.enum(["pt-BR", "en-US"]), projectId: z.uuid()});
 const text = z.string().trim().min(1).max(2000);
@@ -46,14 +45,13 @@ export async function requestCapitalExecution(input: unknown): Promise<Success |
   } catch { return failure({code: "22023"}); }
   const requested = await supabase.rpc("request_work_execution_v1", {p_contract_text: contractText, p_snapshot_text: snapshotText});
   if (requested.error) {
-    const refused = failure(requested.error);
-    if (refused.error !== "conflict") return refused;
-    // The same request id was submitted before with other bytes (a retry carries a new
-    // timestamp). The database kept the first execution; point at it instead of failing.
-    const listed = await supabase.rpc("list_work_executions_v1", {p_work_id: projectId});
-    const prior = listed.error ? null : workExecutionListSchema.safeParse(listed.data).data?.find(row => row.requestId === requestId) ?? null;
-    if (!prior) return refused;
-    return {ok: true, executionId: prior.executionId, replayed: true};
+    // A retry carries a new timestamp, so its bytes differ from the first submission. The database
+    // kept the execution this human's request already created and names it in the error detail.
+    if (requested.error.code === "23505" && requested.error.message.includes("execution_request_conflict")) {
+      const prior = z.uuid().safeParse(requested.error.details ?? "");
+      return prior.success ? {ok: true, executionId: prior.data, replayed: true} : {ok: false, error: "conflict"};
+    }
+    return failure(requested.error);
   }
   const result = z.object({executionId: z.uuid(), replayed: z.boolean()}).loose().safeParse(requested.data);
   if (!result.success) return failure(null);
