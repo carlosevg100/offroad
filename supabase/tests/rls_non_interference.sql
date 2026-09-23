@@ -5727,6 +5727,16 @@ end $$;
 
 select 'rls_non_interference_passed' as result;
 
+-- Internal explicit-subject core is never an API impersonation surface.
+do $$declare actor text;begin
+ foreach actor in array array['anon','authenticated','service_role'] loop
+  if has_function_privilege(actor,'private.request_work_execution_as_subject_v1(uuid,uuid,text,text)','EXECUTE')
+  or has_function_privilege(actor,'private.request_work_execution_v1(uuid,text,text)','EXECUTE') then
+   raise exception 'Execution subject selection exposed: %',actor;
+  end if;
+ end loop;
+end $$;
+
 -- Stage 14: published method authority is never a worker or direct table-write capability.
 do $$ declare t text;begin
  foreach t in array array['method_components','method_component_versions','method_releases','method_release_components','method_review_records','method_scope_bindings'] loop

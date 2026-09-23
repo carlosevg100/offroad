@@ -1,3 +1,9 @@
+## Etapa 17 / 3J: sujeito humano explícito
+
+Request interno recebe sujeito explícito, wrapper humano mantém identidade da sessão e o job deriva o humano do manifesto/run persistidos. Nenhum grant, JWT reescrito ou ativação R01. [Escopo e gates](arcabouco/etapa-17-3j-sujeito-execucao.md). 3I fechado em `afd50cc3845cf17e53de25f0f9dae1457f9c3511`: Quality `35881387687`, Security `35881387738`, worker `35881387712` PASS, worker435 e Vercel6617742935 verificados. Completion externo `outputs/etapa-17-r01-recibo-2026-09-23/COMPLETION-ETAPA-17-3I.md`.
+
+3J: staging `20260923153636`, produção `20260923154150`; definições idênticas, 15 asserções novas PASS, checkers e segurança aprovados. Revisão independente fechada; CI final e deploy ainda em execução.
+
 ## Etapa 17 / 3I: recibo privado e preparo limitado
 
 Preparo fixado e readiness publicado em thread terminável; recibo imutável deriva identidade do job e recarrega autoridade. Sem grant ou habilitação R01; ligação transacional permanece no incremento 3. [Escopo e gates](arcabouco/etapa-17-3i-r01-recibo.md). 3H fechado em main `1c24f5898ec15b67fc62bfaa1c5398a161364eeb`, CI e deploy verificados; completion externo `outputs/etapa-17-r01-loader-2026-09-23/COMPLETION-ETAPA-17-3H.md`.

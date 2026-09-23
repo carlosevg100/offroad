@@ -2727,8 +2727,8 @@
       },
       "owner": "Codex, primeira onda",
       "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente.",
+      "stage": "17 / sujeito explícito 3J",
+      "reason": "Fronteira explícita e revogável de recurso, contexto, execução ou armazenamento implementada na 1B. Etapa 17 preserva o caminho único e nega atalhos para execuções fixadas; permissões expiram pelo relógio corrente. Etapa 17 preserva o humano do manifesto/run em execuções, sem substituir pelo transportador técnico.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -2740,6 +2740,12 @@
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 160,
           "anchor": " foreach name in array array['bind_job_authority_v1()','job_authority_is_current_v1(uuid)'] loop",
+          "mechanism": "generated_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923154150_execution_explicit_human_subject.sql",
+          "line": 36,
+          "anchor": " original:=pg_get_functiondef('private.bind_job_authority_v1()'::regprocedure);",
           "mechanism": "generated_ddl"
         }
       ],
@@ -147923,8 +147929,8 @@
       },
       "owner": "Engenharia de execução, etapa 17",
       "decision": "preservar",
-      "stage": "17 / consumidor 3B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir.",
+      "stage": "17 / sujeito explícito 3J",
+      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único. Etapa 17 / 3B: conta vinculada, operação única, resultado liquidado e proveniência vinculada antes de consumir. Etapa 17 preserva o humano do manifesto/run em execuções, sem substituir pelo transportador técnico.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
@@ -147937,6 +147943,12 @@
           "line": 157,
           "anchor": " body:=pg_get_functiondef('private.request_work_execution_v1(uuid,text,text)'::regprocedure);",
           "mechanism": "generated_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260923154150_execution_explicit_human_subject.sql",
+          "line": 24,
+          "anchor": "create or replace function private.request_work_execution_v1(p_profile_id uuid,p_contract_text text,p_snapshot_text text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
@@ -152671,6 +152683,61 @@
         }
       ],
       "consumer_status": "Sem grants públicos ou consumidor; replay independente e vínculo à execução são requisitos para ativação."
+    },
+    {
+      "id": "function:private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_as_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_as_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / sujeito explícito 3J",
+      "reason": "Núcleo privado único recebe o humano autorizado sem reescrever a sessão; wrapper humano deriva auth.uid.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260923154150_execution_explicit_human_subject.sql",
+          "line": 15,
+          "anchor": " revised:=replace(original,needle,'private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)');",
+          "mechanism": "generated_ddl"
+        }
+      ],
+      "consumer_status": "Wrapper humano privado existente; futura ponte worker ainda não conectada. Sem grant de API."
     }
   ],
   "repository_items": [
@@ -159246,6 +159313,13 @@
       "decision": "preservar",
       "stage": "17 / recibo R01 3I",
       "reason": "Recibo privado imutável, identidade derivada e correções de lint do loader, sem ativar execução."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260923154150_execution_explicit_human_subject.sql",
+      "decision": "preservar",
+      "stage": "17 / sujeito explícito 3J",
+      "reason": "Request privado com sujeito humano explícito e derivação do job pelo manifesto/run, sem novo grant."
     }
   ],
   "staging_archive": [
