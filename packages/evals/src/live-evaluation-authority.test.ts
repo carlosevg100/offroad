@@ -60,17 +60,83 @@ function inspect(text: string) {
   visit(root);
   return {failures, statements, bindings};
 }
+
+/**
+ * Every way a script can name a provider key: a property or element read (`process.env.X_API_KEY`,
+ * `env["X_API_KEY"]`, an alias of process.env included), a destructured binding, or any string or
+ * template text that carries the name (a computed read, `Reflect.get`). Comments are not code.
+ */
+const providerKey = /_API_KEY$/;
+function providerKeyReads(text: string): string[] {
+  const root = parse(text), reads: string[] = [];
+  const literal = (node: ts.Node | undefined): string | null =>
+    node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) ? node.text : null;
+  function visit(node: ts.Node) {
+    if (ts.isPropertyAccessExpression(node) && providerKey.test(node.name.text)) reads.push(node.getText(root));
+    if (ts.isElementAccessExpression(node) && providerKey.test(literal(node.argumentExpression) ?? "")) reads.push(node.getText(root));
+    if (ts.isBindingElement(node) && ts.isObjectBindingPattern(node.parent)) {
+      const name = node.propertyName ?? node.name;
+      if ((ts.isIdentifier(name) || ts.isStringLiteral(name)) && providerKey.test(name.text)) reads.push(node.getText(root));
+    }
+    if ((ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node) || ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node))
+      && node.text.includes("_API_KEY")) reads.push(node.getText(root));
+    ts.forEachChild(node, visit);
+  }
+  visit(root);
+  return [...new Set(reads)];
+}
+
+/** Names imported from the model gateway: a converted script may keep its constants, never a factory. */
+function gatewayImports(text: string): string[] {
+  return parse(text).statements.flatMap((node) => {
+    if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier) || !node.moduleSpecifier.text.startsWith("@offroad/model-gateway")) return [];
+    const named = node.importClause?.namedBindings;
+    return named && ts.isNamedImports(named) ? named.elements.map((item) => (item.propertyName ?? item.name).text) : ["<namespace or default>"];
+  });
+}
+function importsFrom(text: string, module: string): string[] {
+  return parse(text).statements.flatMap((node) => {
+    if (!ts.isImportDeclaration(node) || !ts.isStringLiteral(node.moduleSpecifier) || node.moduleSpecifier.text !== module) return [];
+    const named = node.importClause?.namedBindings;
+    return named && ts.isNamedImports(named) ? named.elements.map((item) => item.propertyName ? `${item.propertyName.text} as ${item.name.text}` : item.name.text) : ["<namespace or default>"];
+  });
+}
+function identifiers(text: string): Set<string> {
+  const root = parse(text), names = new Set<string>();
+  const visit = (node: ts.Node) => { if (ts.isIdentifier(node)) names.add(node.text); ts.forEachChild(node, visit); };
+  visit(root);
+  return names;
+}
+
 const directory = new URL("../scripts/", import.meta.url);
-const entries = readdirSync(directory).filter(name => name.endsWith(".ts")).map(name => ({name, text: readFileSync(new URL(name, directory), "utf8")}));
+const files = readdirSync(directory);
+const entries = files.filter(name => name.endsWith(".ts")).map(name => ({name, text: readFileSync(new URL(name, directory), "utf8")}));
 const live = entries.filter(entry => inspect(entry.text).bindings.size > 0);
+/**
+ * The scripts that still construct a provider and stay contained until their family moves to the
+ * governed transport. A converted script leaves this list in the same change that proves its path.
+ */
+const contained = [
+  "continue-document-work-product-live.ts",
+  "measure-classification.ts",
+  "measure-extraction.ts",
+  "probe-structured-output.ts",
+  "run-advisor-response-live.ts",
+  "run-document-work-product-live.ts",
+  "run-executive-synthesis-live.ts",
+  "run-intent-router-gold.ts",
+];
 
 describe("historical live evaluation containment", () => {
   it("denies execution without an environment opt-out", () => {
     expect(() => requireGovernedEvaluationTransport()).toThrow("live_evaluation_requires_worker_retention_authority");
   });
   it("checks every script for real provider construction without the trusted barrier", () => {
-    expect(live).toHaveLength(9);
+    expect(live.map(entry => entry.name).sort()).toEqual(contained);
     for (const entry of entries) expect(inspect(entry.text).failures, entry.name).toEqual([]);
+  });
+  it("reads every file under scripts as a TypeScript entry, so no script escapes these rules by its extension", () => {
+    expect(files.filter(name => !name.endsWith(".ts"))).toEqual([]);
   });
   for (const entry of live) it(`stops before any provider constructor in ${entry.name}`, () => {
     const result = inspect(entry.text), construct = vi.fn(() => { throw new Error("provider constructed"); });
@@ -98,13 +164,59 @@ describe("historical live evaluation containment", () => {
     'const SDK=await import(moduleName); new SDK.default();',
   ])("detects unreviewed dynamic provider loading: %s", text => expect(inspect(text).failures).toContain("unreviewed dynamic import/require"));
   it("detects direct SDK imports", () => expect(inspect('import OpenAI from "openai"; new OpenAI();').failures).toContain("direct SDK import"));
-  it("preserves the baseline offline return before containment", () => {
-    const source = parse(readFileSync(fileURLToPath(new URL("run-gold-baseline.ts", directory)), "utf8"));
+});
+
+describe("provider keys in evaluation scripts", () => {
+  it("are read by no script outside the contained eight", () => {
+    for (const entry of entries) if (!contained.includes(entry.name)) expect(providerKeyReads(entry.text), entry.name).toEqual([]);
+  });
+  it.each([
+    ["a property read", "const key = process.env.ANTHROPIC_API_KEY;"],
+    ["an element read", 'const key = process.env["OPENAI_API_KEY"];'],
+    ["a template element read", "const key = process.env[`OPENAI_API_KEY`];"],
+    ["a destructured read", "const {ANTHROPIC_API_KEY} = process.env;"],
+    ["a renamed destructured read", "const {OPENAI_API_KEY: key} = process.env;"],
+    ["a read through an alias of the environment", "const env = process.env; const key = env.PERPLEXITY_API_KEY;"],
+    ["a computed name", "const key = process.env[`${provider.toUpperCase()}_API_KEY`];"],
+    ["a reflective read", 'const key = Reflect.get(process.env, "FIRECRAWL_API_KEY");'],
+  ])("detects %s", (_label, text) => expect(providerKeyReads(text).length).toBeGreaterThan(0));
+  it("ignores comments and unrelated environment reads", () => {
+    expect(providerKeyReads("// ANTHROPIC_API_KEY is never read here\nconst url = process.env.SUPABASE_URL;")).toEqual([]);
+  });
+});
+
+describe("the baseline through the governed transport", () => {
+  const baseline = entries.find(entry => entry.name === "run-gold-baseline.ts")!;
+  const client = readFileSync(fileURLToPath(new URL("./governed-transport.ts", import.meta.url)), "utf8");
+
+  it("imports the governed transport client and no gateway factory, guard or provider key", () => {
+    expect(importsFrom(baseline.text, "../src/governed-transport")).toEqual(expect.arrayContaining(["requestGovernedEvaluation", "readGovernedTransportEnvironment"]));
+    expect(gatewayImports(baseline.text).filter(name => !/^[a-z][A-Za-z]*$/.test(name) || name.startsWith("create"))).toEqual([]);
+    expect(importsFrom(baseline.text, "../src/live-evaluation-authority")).toEqual([]);
+    const names = identifiers(baseline.text);
+    for (const name of ["createModelGateway", "createAnthropicAdapter", "createOpenAIAdapter", guard]) expect(names.has(name), name).toBe(false);
+    expect(providerKeyReads(baseline.text)).toEqual([]);
+    expect(inspect(baseline.text)).toMatchObject({failures: [], bindings: new Set()});
+  });
+
+  it("keeps the client itself free of any adapter, gateway, SDK or provider key", () => {
+    expect(gatewayImports(client)).toEqual(["modelGatewayVersion"]);
+    expect(inspect(client).failures).toEqual([]);
+    const names = identifiers(client);
+    for (const name of ["createModelGateway", "createAnthropicAdapter", "createOpenAIAdapter"]) expect(names.has(name), name).toBe(false);
+    expect(providerKeyReads(client)).toEqual([]);
+  });
+
+  it("preserves the baseline offline return before the governed request", () => {
+    const source = parse(baseline.text);
     const main = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "main") as ts.FunctionDeclaration;
     const statements = main.body!.statements;
     const dry = statements.findIndex(node => ts.isIfStatement(node) && node.expression.getText(source) === "dryRun");
-    const barrier = statements.findIndex(node => ts.isExpressionStatement(node) && node.getText(source) === `${guard}();`);
-    expect(dry).toBeGreaterThan(-1); expect(barrier).toBeGreaterThan(dry);
+    const request = statements.findIndex(node => node.getText(source).includes("requestGovernedEvaluation("));
+    const environment = statements.findIndex(node => node.getText(source).includes("readGovernedTransportEnvironment("));
+    expect(dry).toBeGreaterThan(-1);
+    expect(request).toBeGreaterThan(dry);
+    expect(environment).toBeGreaterThan(dry);
     const branch = statements[dry] as ts.IfStatement;
     const log = vi.fn();
     runInNewContext(`(function() { ${branch.getText(source)}; throw new Error("reached live path"); })()`, {dryRun: true, console: {log}});
