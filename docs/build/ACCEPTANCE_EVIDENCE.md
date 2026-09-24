@@ -1,3 +1,11 @@
+## Etapa 17 / 5: document work product, advisor e síntese executiva pelo transporte governado
+
+Os scripts do document work product (execução e continuação), do advisor e da síntese executiva pedem pelo transporte governado quatro famílias do worker, com rotas fixadas sem fallback e a partição de orçamento de cada script conferindo cada envio antes da reserva. A prova da CI roda os quatro scripts contra a pilha descartável com cassete e, com a garantia revogada, `partial/transport_denied` sem chamadas. A evidência sintética do run 34467680287 entrou como fixture para exercitar a continuação. Tetos padrão mantidos; a síntese executiva só termina se o gasto medido antes do segundo resumo ficar abaixo de cerca de US$ 1,85. [Detalhes](arcabouco/etapa-17-5-avaliacoes-governadas.md).
+
+## Etapa 17 / 5: medições de extração e classificação e sonda pelo transporte governado
+
+Os scripts de medição de extração, de classificação e a sonda de saída estruturada pedem pelo transporte governado três famílias do worker que publicam só a parte que depende do modelo; a pontuação contra o gabarito fica no script e o gabarito nunca entra no produto. A prova da CI roda os três scripts contra a pilha descartável com cassete e, com as garantias revogadas, `partial/transport_denied` sem chamadas. Os workflows exigem `max_cost` sem valor padrão, porque gasto é decisão do fundador; a extração do caso rede-horizonte chega a US$ 37,99 no pior caso. [Detalhes](arcabouco/etapa-17-5-avaliacoes-governadas.md).
+
 ## Etapa 17 / 5: roteador de intenção pelo transporte governado
 
 O script do portão do roteador de intenção pede pelo transporte governado a família `intent_router_gold`: snapshot com as 52 observações byte a byte iguais às de antes e sem gabarito, pontuação fora do worker, linha de guarda e chaves removidas. A prova da CI roda o script contra a pilha descartável (184 tentativas reservadas e liquidadas, commit avaliado) e, com a garantia revogada, `partial/transport_denied` sem chamadas. Com o teto padrão de US$ 3, a execução só termina se o gasto medido ficar abaixo de cerca de US$ 2,80; gasto é decisão do fundador. [Detalhes](arcabouco/etapa-17-5-avaliacoes-governadas.md).

@@ -17,6 +17,7 @@ import {
 import {documentLayerSchema} from "@offroad/document-intelligence";
 import type {AdapterRequest, AdapterResponse, Provider, ProviderAdapter} from "@offroad/model-gateway";
 import {evaluationFamilies} from "./evaluation-families";
+import {measurementEvaluationFamilies} from "./measurement-evaluation-families";
 import type {EvaluationOperation, EvaluationQueue, EvaluationQueueClaim, EvaluationReservation} from "./evaluation-queue";
 import {governedEvaluationToolVersion} from "./governed-evaluation-gateway";
 import {processGovernedEvaluation, type GovernedEvaluationDependencies} from "./process-governed-evaluation";
@@ -91,8 +92,9 @@ const revenue = {field_path: "historical_financials.2025.revenue", value_raw: "1
  anchor: {kind: "table_cell", id: "p2.t1.r1.c2", page: 2}, quote: "1.234.567,89", confidence: 0.9};
 
 describe("measurement families in the registry", () => {
- it("registers each family under its script's file name, beside the baseline", () => {
-  expect(Object.keys(evaluationFamilies).sort()).toEqual(["measure-classification", "measure-extraction", "probe-structured-output", "run-gold-baseline"]);
+ it("registers each family under its script's file name", () => {
+  expect(Object.keys(measurementEvaluationFamilies).sort()).toEqual(["measure-classification", "measure-extraction", "probe-structured-output"]);
+  for (const [scriptId, family] of Object.entries(measurementEvaluationFamilies)) expect(evaluationFamilies[scriptId]).toBe(family);
   expect(Object.isFrozen(evaluationFamilies)).toBe(true);
  });
 });

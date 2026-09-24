@@ -27,14 +27,8 @@ function inspect(text: string) {
   function visit(node: ts.Node) {
     if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword
       || ts.isIdentifier(node.expression) && node.expression.text === "require")) {
-      const argument = node.arguments[0]?.getText(root);
-      const approvedLocal = node.expression.kind === ts.SyntaxKind.ImportKeyword && (
-        argument === 'new URL("../../../apps/document-worker/src/agent-operation-brief.ts",import.meta.url).href'
-        || argument === "path" && text.includes('const path=pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),"../../../apps/document-worker/src/document-work-source-review.ts")).href;')
-        || /^workerPath\("(document-work-selection|document-work-source-review|document-work-product)"\)$/.test(argument ?? "")
-          && text.includes('const workerPath=(name:string)=>pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),`../../../apps/document-worker/src/${name}.ts`)).href;')
-      );
-      if (!approvedLocal) failures.push("unreviewed dynamic import/require");
+      // Every family runs in the worker now, so no script loads worker code at run time.
+      failures.push("unreviewed dynamic import/require");
     }
     if (ts.isIdentifier(node) && bindings.has(node.text) && !ts.isImportSpecifier(node.parent)) {
       if (!ts.isCallExpression(node.parent) || node.parent.expression !== node) failures.push("factory alias/escape");
@@ -251,6 +245,12 @@ describe("the intent router gate through the governed transport", () => {
     expect(trust).toBeGreaterThan(dry);
     expect(request).toBeGreaterThan(trust);
     expect(environment).toBeGreaterThan(trust);
+    const branch = statements[dry] as ts.IfStatement;
+    const log = vi.fn();
+    runInNewContext(`(function() { ${branch.getText(source)}; throw new Error("reached live path"); })()`, {dryRun: true, console: {log}});
+    expect(log).toHaveBeenCalledWith("dry run: no model called");
+  });
+});
 
 describe("the extraction, classification and probe measurements through the governed transport", () => {
   const converted = ["measure-extraction.ts", "measure-classification.ts", "probe-structured-output.ts"]
@@ -283,6 +283,8 @@ describe("the extraction, classification and probe measurements through the gove
     const log = vi.fn();
     runInNewContext(`(function() { ${branch.getText(source)}; throw new Error("reached live path"); })()`, {dryRun: true, console: {log}});
     expect(log).toHaveBeenCalledWith("dry run: no model called");
+  });
+});
 
 // Stage 17, increment 5: the document work product family (four scripts) through the governed transport.
 describe("the document work product family through the governed transport", () => {

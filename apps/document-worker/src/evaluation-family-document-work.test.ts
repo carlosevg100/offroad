@@ -115,9 +115,9 @@ async function evaluate(scriptId: string, snapshot: unknown, options: {deny?: bo
 }
 
 describe("document work product families through the governed consumer", () => {
- it("registers the four scripts beside the baseline, each under its own file name", () => {
-  expect(Object.keys(evaluationFamilies).sort()).toEqual(["continue-document-work-product-live", "run-advisor-response-live", "run-document-work-product-live",
-   "run-executive-synthesis-live", "run-gold-baseline"]);
+ it("registers the four scripts, each under its own file name", () => {
+  expect(Object.keys(documentWorkEvaluationFamilies).sort()).toEqual(["continue-document-work-product-live", "run-advisor-response-live", "run-document-work-product-live",
+   "run-executive-synthesis-live"]);
   for (const [scriptId, family] of Object.entries(documentWorkEvaluationFamilies)) expect(evaluationFamilies[scriptId]).toBe(family);
  });
 
