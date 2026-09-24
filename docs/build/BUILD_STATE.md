@@ -1,7 +1,10 @@
+## Etapa 17 / 4C: cadastro da companhia pela base da análise
+
+O gate de cadastro da 4C (#755, #759) recusaria todo pedido real de execução: o produto não tinha caminho para tornar a entidade da base sujeito ativo de um dossiê do trabalho, nem para verificar a companhia legada, e em produção não havia nenhuma companhia verificada nem vínculo de entidade. A identificação de entidade na base da análise passa a registrar também o papel na análise (companhia analisada por padrão, controladora, controlada, garantidora ou ativo) e o perímetro contábil, por `link_dossier_entity_v1`, sem migração. Repetir o registro com o mesmo papel e perímetro não cria um segundo vínculo; com outro perímetro, o papel registrado é mantido e a tela diz isso. A tela mostra qual é a companhia analisada, e a recusa da execução diz onde cadastrar. Provas: seis testes da ação, a jornada E2E de adoção contextual confere na tela e no banco o vínculo `subject:consolidated`, 810 testes da web, typecheck e lint.
+
 ## Fontes proprietárias fora do repositório público, 23/09/2026
 
 Os originais do fundador (demanda do CFO, contrato de experiência, posicionamento, pesquisa e protótipo) e a biblioteca de expertise saíram da árvore de trabalho do repositório público e passaram a viver no repositório privado `carlosevg100/offroad-expertise` (commit `910097c9`), com manifesto de hashes. O repositório público os referencia só por hash em `packages/credit-playbook/knowledge/sources/biblioteca-expertise.lock.json`, verificável com `python3 scripts/expertise-lock.py verify` a partir de um clone local. Os caminhos antigos entraram no `.gitignore` para impedir publicação acidental, e o gate local volta a passar sem arquivos soltos. Nenhum byte foi alterado: os hashes conferem com o registro `originals-final.json` da etapa 15.
-
 ## Etapa 17 / 5: consumidor de avaliações
 
 Porta do avaliador por sessão, consumidor de avaliações no worker com uma reserva por tentativa e commit pelo motivo que o banco exige, família baseline compartilhada entre script e worker e prova ponta a ponta com cassete na CI. [Detalhes](arcabouco/etapa-17-5-avaliacoes-governadas.md).

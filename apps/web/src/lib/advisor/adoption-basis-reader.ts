@@ -1,7 +1,7 @@
 import "server-only";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
-import {observationDimensionsSchema, observationValueSchema} from "@offroad/domain-contracts";
+import {dossierEntityLinkSchema, observationDimensionsSchema, observationValueSchema} from "@offroad/domain-contracts";
 import {readContextualBasis, type AdoptionBasisEnvelope, type AdoptionBasisSnapshot} from "@offroad/reconciliation";
 import {compareContextualAdoptionBases, type AdoptionDifference} from "@offroad/case-understanding";
 import type {Database} from "@/types/database";
@@ -19,7 +19,8 @@ export type AdoptionWorkContext = {
   basis: AdoptionBasisSnapshot | null; envelope: AdoptionBasisEnvelope | null;
   differences: AdoptionDifference[] | null; comparisonUnavailable: boolean;
   versions: Array<{id: string; revision: number}>;
-  entities: Array<{id: string; legal_name: string}>;
+  /** Roles come from the active reviewed links; "subject" is the company under analysis. */
+  entities: Array<{id: string; legal_name: string; roles: Array<z.infer<typeof dossierEntityLinkSchema>["relationship"]>}>;
   definitions: Array<{id: string; label: string}>;
   dossiers: Array<{id: string}>;
 };
@@ -36,12 +37,16 @@ export async function loadAdoptionWorkContext(client: SupabaseClient<Database>, 
   const {data: dossiers, error: dossierError} = await client.from("dossiers").select("id").eq("organization_id", organizationId).in("resource_id", resourceIds);
   if (dossierError) throw new Error("adoption_context_unavailable");
   const dossierIds = (dossiers ?? []).map((d) => d.id);
-  const [entityResult, metricResult, versionResult] = await Promise.all([
+  const now = new Date().toISOString();
+  const [entityResult, linkResult, metricResult, versionResult] = await Promise.all([
     dossierIds.length ? client.from("entities").select("id,legal_name").eq("organization_id", organizationId).in("origin_dossier_id", dossierIds).order("legal_name") : Promise.resolve({data: [], error: null}),
+    dossierIds.length ? client.from("dossier_entity_links").select("entity_id,relationship").eq("organization_id", organizationId).in("dossier_id", dossierIds).is("withdrawn_at", null).lte("valid_from", now).or(`valid_until.is.null,valid_until.gt.${now}`) : Promise.resolve({data: [], error: null}),
     dossierIds.length ? client.from("metric_definitions").select("id,metric_key,kind").eq("organization_id", organizationId).in("dossier_id", dossierIds) : Promise.resolve({data: [], error: null}),
     sets.data ? client.from("assumption_versions").select("id,revision").eq("organization_id", organizationId).eq("set_id", sets.data.id).eq("classification", "working_basis").order("revision", {ascending: false}).limit(50) : Promise.resolve({data: [], error: null}),
   ]);
-  if (entityResult.error || metricResult.error || versionResult.error) throw new Error("adoption_context_unavailable");
+  if (entityResult.error || linkResult.error || metricResult.error || versionResult.error) throw new Error("adoption_context_unavailable");
+  const links = z.array(z.object({entity_id: z.uuid(), relationship: dossierEntityLinkSchema.shape.relationship})).parse(linkResult.data ?? []);
+  const entities = (entityResult.data ?? []).map((entity) => ({...entity, roles: [...new Set(links.filter((link) => link.entity_id === entity.id).map((link) => link.relationship))]}));
   const metrics = metricResult.data ?? [];
   const definitions: AdoptionWorkContext["definitions"] = [];
   if (metrics.length) {
@@ -70,5 +75,5 @@ export async function loadAdoptionWorkContext(client: SupabaseClient<Database>, 
       }
     }
   }
-  return {candidates: candidates.slice(0, 25), nextCursor: candidates.length > 25 ? candidates[24]!.sequence : null, basis, envelope, differences, comparisonUnavailable, versions: versionResult.data ?? [], entities: entityResult.data ?? [], definitions, dossiers: dossiers ?? []};
+  return {candidates: candidates.slice(0, 25), nextCursor: candidates.length > 25 ? candidates[24]!.sequence : null, basis, envelope, differences, comparisonUnavailable, versions: versionResult.data ?? [], entities, definitions, dossiers: dossiers ?? []};
 }
