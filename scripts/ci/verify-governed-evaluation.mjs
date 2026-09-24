@@ -332,4 +332,207 @@ commit;`);
   sql(`select private.release_governed_evaluation_transport_v1('${id('a000', 32)}',false,'${users.operator}','Synthetic governed evaluation proof finished');`);
   assert.equal(sql(`select released from private.platform_capability_releases where capability_key='governed-evaluation-transport';`), 'f');
   console.log(JSON.stringify({event: 'governed_evaluation_proof', runMs, scriptMs, cassetteHits: hits, cassetteCalls: calls, spentMicrousd: costs[0] + costs[1]}));
+  await proveDocumentWorkProductFamily({m, consumer, evaluator, call, scriptEnvironment, tsxCli, evalsDir, outputTail, claimScriptEvaluation});
 } finally { rmSync(temporary, {recursive: true, force: true}); }
+
+// ---------------------------------------------------------------------------------------------
+// Stage 17, increment 5: the document work product family, called from one line at the end of the
+// proof above. Its four scripts (the documentary executor with its controls, the one-control
+// continuation, the advisor response probe and the executive synthesis) run live through the same
+// evaluator session, worker consumer and disposable stack, each on the protected run it checks and
+// with no provider key in its environment. The consumer answers each from a cassette recorded from
+// the family itself for the exact snapshot the script sent, so a request the family would not make
+// misses. Every provider, model and resource the family uses has its own assurance, on a synthetic
+// connection of its own. Then, with the family's inference assurance revoked, each script receives
+// partial/transport_denied, the cassette is called zero times and nothing but the evaluation
+// evidence (and the continuation's claim) is written. Everything is synthetic.
+// ---------------------------------------------------------------------------------------------
+async function proveDocumentWorkProductFamily({m, consumer, evaluator, call, scriptEnvironment, tsxCli, evalsDir, outputTail, claimScriptEvaluation}) {
+  const {copyFileSync, mkdirSync} = await import('node:fs');
+  // The family's own bundle: its worker families, to record the cassette, and its tests' synthetic answers.
+  const outfile = join(temporary, 'document-work-family.mjs');
+  await build({stdin: {contents: `export {documentWorkEvaluationFamilies} from './src/evaluation-family-document-work.ts';
+export {documentWorkSyntheticAnswer} from './src/evaluation-family-document-work.test-support.ts';
+export {cassetteKey, createModelGateway, defaultTaskPolicies} from '@offroad/model-gateway';
+export {z} from 'zod';`, resolveDir: join(root, 'apps/document-worker'), loader: 'ts'}, outfile, bundle: true, platform: 'node', format: 'esm', target: 'node24', logLevel: 'silent'});
+  const f = await import(pathToFileURL(outfile));
+
+  // Every provider, model and resource the four scripts use, for evaluation only, on a connection of
+  // its own: the baseline's assurances above neither help these evaluations nor overlap them.
+  const connection = {accountRef: `synthetic-document-work-account-${prefix}`, projectRef: 'synthetic-document-work-project', credentialBinding: 'synthetic-document-work-binding', region: 'global'};
+  const providers = {
+    anthropic: {endpoint: 'https://api.anthropic.com/v1/messages', models: ['claude-sonnet-5', 'claude-opus-5']},
+    openai: {endpoint: 'https://api.openai.com/v1/responses', models: ['gpt-5.6-terra', 'gpt-5.6-sol']},
+  };
+  const resources = ['inference', 'prompt_cache', 'schema_cache'];
+  const assuranceIds = Object.fromEntries(Object.keys(providers).flatMap((provider, p) => resources.map((resource, r) => [`${provider}:${resource}`, id('d0c0', 11 + p * 10 + r)])));
+  const recordAssurance = (provider, resource) => `select private.record_provider_processing_assurance_v1(jsonb_build_object(
+ 'id','${assuranceIds[`${provider}:${resource}`]}','policyVersion','offroad-provider-retention-v2','accountRef','${connection.accountRef}','projectRef','${connection.projectRef}',
+ 'credentialBinding','${connection.credentialBinding}','provider','${provider}','models','${JSON.stringify(providers[provider].models)}'::jsonb,'endpoint','${providers[provider].endpoint}',
+ 'resource','${resource}','region','${connection.region}','eligibility','supported','purposes','["evaluation"]'::jsonb,'classifications','["restricted"]'::jsonb,
+ 'rights','["process"]'::jsonb,'trainingUse','prohibited',
+ 'retention',jsonb_build_object('requestContentSeconds',0,'abuseMonitoringSeconds',2592000,'applicationStateSeconds',0,'cacheSeconds',86400,'metadataSeconds',2592000,'exceptions','["legal_hold"]'::jsonb),
+ 'zeroRetention','not_contracted',
+ 'evidence',(select jsonb_agg(jsonb_build_object('kind',k,'reference','synthetic-document-work-proof','sha256',repeat('a',64))) from unnest(array['provider_terms','account_configuration','credential_binding']) k),
+ 'reviewedBy','Synthetic reviewer','reviewedAt',clock_timestamp()-interval '1 hour','validThrough',clock_timestamp()+interval '1 day','revokedAt',null),
+ 'Synthetic document work product family proof');`;
+  sql(`begin;
+${Object.keys(providers).flatMap(provider => resources.map(resource => recordAssurance(provider, resource))).join('\n')}
+select private.release_governed_evaluation_transport_v1('${id('d0c0', 1)}',true,'${users.operator}','Synthetic opening for the document work product family proof');
+commit;`);
+
+  // The continuation derives its plan from the pinned receipt of its source run, kept as a fixture.
+  const receiptPath = join(evalsDir, 'fixtures/document-work-product-live-34467680287-evidence.json');
+  const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
+  const micro = usd => Math.round(usd * 1_000_000);
+  const continuationMicrousd = Math.min(500_000 - micro(receipt.sourceReviewControlSpend.costUsd),
+    3_000_000 - micro(receipt.spent.costUsd) - micro(receipt.sourceReviewControlSpend.costUsd));
+  const families = [
+    {script: 'run-document-work-product-live', workflow: 'document-work-product-live.yml', output: 'document-work-product-live', budget: [3_000_000, 26], calls: 20,
+      provenance: ['gitSha', 'runId', 'runAttempt', 'workflowRef']},
+    {script: 'continue-document-work-product-live', workflow: 'document-work-product-continuation.yml', output: 'documentary-continuation', budget: [continuationMicrousd, 1], calls: 1,
+      provenance: ['runId', 'gitSha', 'runAttempt'], continuation: true},
+    {script: 'run-advisor-response-live', workflow: 'document-work-product-live.yml', output: 'advisor-response-live', budget: [1_000_000, 8], calls: 4, provenance: ['gitSha', 'runId']},
+    {script: 'run-executive-synthesis-live', workflow: 'document-work-product-live.yml', output: 'executive-synthesis-live', budget: [3_000_000, 8], calls: 6, provenance: ['gitSha', 'runId']},
+  ];
+
+  // Each script as its protected workflow runs it: the run it checks, and the evaluator's session
+  // of the stack above in place of any provider key.
+  const provenance = {gitSha: prefix.padEnd(40, '0'), runId: '424242', runAttempt: '1'};
+  const workflowRef = workflow => `carlosevg100/offroad/.github/workflows/${workflow}@refs/heads/main`;
+  const providerCredential = /_API_KEY$|(^|_)(ANTHROPIC|OPENAI|PERPLEXITY|FIRECRAWL)(_|$)/;
+  const runScript = (family, runnerTemp) => {
+    if (family.continuation) {
+      mkdirSync(join(runnerTemp, 'documentary-parent/document-work-product-live'), {recursive: true});
+      copyFileSync(receiptPath, join(runnerTemp, 'documentary-parent/document-work-product-live/evidence.json'));
+    }
+    const environment = {...scriptEnvironment, RUNNER_TEMP: runnerTemp, GITHUB_ACTIONS: 'true', GITHUB_REPOSITORY: 'carlosevg100/offroad', GITHUB_REF: 'refs/heads/main',
+      GITHUB_RUN_ATTEMPT: provenance.runAttempt, GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_WORKFLOW_REF: workflowRef(family.workflow), GITHUB_SHA: provenance.gitSha,
+      GITHUB_RUN_ID: provenance.runId};
+    assert.deepEqual(Object.keys(environment).filter(name => providerCredential.test(name)), [], `${family.script} runs with no provider key in its environment`);
+    const child = spawn(process.execPath, [tsxCli, `scripts/${family.script}.ts`, '--poll-seconds', '1'], {cwd: evalsDir, env: environment, stdio: ['ignore', 'pipe', 'pipe']});
+    const run = {child, stdout: '', stderr: '', ended: null};
+    child.stdout.on('data', chunk => { run.stdout += chunk; });
+    child.stderr.on('data', chunk => { run.stderr += chunk; });
+    const timer = setTimeout(() => child.kill('SIGKILL'), 300_000);
+    run.exited = new Promise((done, fail) => {
+      child.on('error', fail);
+      child.on('close', code => { clearTimeout(timer); run.ended = code ?? -1; done(run); });
+    });
+    return run;
+  };
+
+  // The cassette: recorded by running the family itself, in this process, over the snapshot the
+  // script sent, with the synthetic answers of its tests; keyed by the exact request. The worker's
+  // run replays it, and a request with any other byte misses and fails. Every call is counted.
+  const recorded = new Map();
+  let calls = 0, hits = 0;
+  const recordFamily = async (scriptId, snapshot) => {
+    const prepared = f.documentWorkEvaluationFamilies[scriptId].prepare(snapshot);
+    const controls = snapshot.sourceReviewControls ?? (snapshot.control ? [snapshot.control] : []);
+    let requests = 0;
+    const answering = provider => ({provider, async complete(request) {
+      requests += 1;
+      const response = f.documentWorkSyntheticAnswer(request, controls);
+      recorded.set(f.cassetteKey(provider, request, f.z.toJSONSchema(request.schema)), response);
+      return structuredClone(response);
+    }});
+    const gateway = f.createModelGateway({adapters: {anthropic: answering('anthropic'), openai: answering('openai')},
+      policies: {...f.defaultTaskPolicies, ...prepared.policies}, budgetReservation: 'conservative_text_v1'});
+    await prepared.run(gateway, () => new Date());
+    return {prepared, requests};
+  };
+  const replaying = provider => ({provider, async complete(request) {
+    calls += 1;
+    const response = recorded.get(m.cassetteKey(provider, request, m.z.toJSONSchema(request.schema)));
+    if (!response) throw new Error('cassette_missing');
+    hits += 1;
+    return structuredClone(response);
+  }});
+  const dependencies = {adapters: {anthropic: replaying('anthropic'), openai: replaying('openai')}, connections: {anthropic: connection, openai: connection}, heartbeatMs: 2_000};
+
+  // Each script live: its request under the evaluator's session, the worker's claim, a reservation and
+  // a settlement per cassette send, the commit, and the script's own read of the committed record.
+  const snapshots = new Map();
+  for (const family of families) {
+    const runnerTemp = join(temporary, `document-work-${family.script}-succeeded`);
+    mkdirSync(runnerTemp, {recursive: true});
+    const run = runScript(family, runnerTemp);
+    const claim = await claimScriptEvaluation(run);
+    snapshots.set(family.script, claim.snapshotText);
+    const contract = JSON.parse(claim.contractText);
+    const recording = await recordFamily(family.script, JSON.parse(claim.snapshotText));
+    assert.deepEqual([contract.organizationId, contract.purpose, contract.audience.kind, contract.audience.scriptId], [organization, 'evaluation', 'evaluation_panel', family.script]);
+    assert.deepEqual({caseId: contract.audience.caseId, caseVersion: contract.audience.caseVersion}, recording.prepared.audience);
+    assert.deepEqual(contract.tools, recording.prepared.routes.map(route => ({id: `provider:${route.provider}:${route.model}`, version: m.governedEvaluationToolVersion, effect: 'read_only'})),
+      `${family.script} declares every route its family may take, at the gateway version`);
+    assert.deepEqual([contract.budget.maxCostMicrousd, contract.budget.maxModelCalls], family.budget, `${family.script} declares the ceiling it always kept`);
+    assert.equal(contract.inputs.fingerprint, sha(claim.snapshotText));
+    assert.deepEqual(contract.inputs.sources.map(source => source.contentHash), recording.prepared.contentHashes);
+    assert.equal(recording.requests, family.calls);
+    const callsBefore = calls, hitsBefore = hits;
+    assert.deepEqual(await m.processGovernedEvaluation(claim, consumer, new AbortController().signal, dependencies), {status: 'succeeded', reason: 'evaluated', replayed: false});
+    assert.deepEqual([calls - callsBefore, hits - hitsBefore], [family.calls, family.calls], `${family.script}: each request of the family reaches the cassette once, and only those`);
+    await run.exited;
+    assert.equal(run.ended, 0, `${family.script} failed\n${outputTail(run)}`);
+    assert.match(run.stdout, new RegExp(`^evaluation committed: succeeded/evaluated, \\d+ microusd over ${family.calls} calls$`, 'm'));
+    const directory = join(runnerTemp, family.output);
+    assert.deepEqual(readdirSync(directory).sort(), [...(family.continuation ? ['started.json'] : []), 'evaluation.json', 'evidence.json', 'summary.md'].sort());
+    const read = await call(evaluator, 'read_governed_evaluation_session_v1', {p_execution_id: claim.executionId});
+    assert.deepEqual([read.requestedBy, read.outcome, read.reason, read.contractFingerprint, read.inputFingerprint],
+      [users.evaluator, 'succeeded', 'evaluated', claim.contractFingerprint, sha(claim.snapshotText)]);
+    const committed = JSON.parse(read.result.canonicalResult);
+    assert.equal(committed.passed, true, `${family.script}: the committed record passes its gates`);
+    const stamped = {...provenance, workflowRef: workflowRef(family.workflow)};
+    assert.deepEqual(JSON.parse(readFileSync(join(directory, 'evidence.json'), 'utf8')), {...committed, ...Object.fromEntries(family.provenance.map(name => [name, stamped[name]]))},
+      `${family.script}: the evidence is the committed record with the requesting run's provenance`);
+    assert.match(readFileSync(join(directory, 'summary.md'), 'utf8'), /^# [^\n]+\n\nPASS/);
+    const evidence = JSON.parse(readFileSync(join(directory, 'evaluation.json'), 'utf8'));
+    assert.deepEqual([evidence.executionId, evidence.request, evidence.outcome, evidence.reason, evidence.contractFingerprint, evidence.inputFingerprint, evidence.resultFingerprint],
+      [claim.executionId, 'created', 'succeeded', 'evaluated', claim.contractFingerprint, sha(claim.snapshotText), read.result.resultFingerprint]);
+    assert.deepEqual(evidence.cost, read.cost);
+    assert.equal(read.receipts.length, family.calls);
+    for (const receipt of read.receipts) {
+      assert.deepEqual([receipt.state, receipt.spentCalls, receipt.reservedCalls, receipt.toolVersion], ['settled', 1, 1, m.governedEvaluationToolVersion]);
+      assert(contract.tools.some(tool => tool.id === receipt.toolId), 'every reservation on a declared route');
+      assert(receipt.reservedMicrousd >= receipt.spentMicrousd, 'spend within its reservation');
+    }
+    const routes = new Set(read.receipts.map(receipt => JSON.stringify([receipt.route, receipt.resources]))).size;
+    assert.equal(read.decisions.length, family.calls + routes, 'one decision per reservation and one revalidation per route at publication');
+    assert(read.decisions.every(decision => decision.allowed && decision.purpose === 'evaluation'));
+    assert.deepEqual([read.cost.spentCalls, read.cost.reservedCalls, read.cost.reservedMicrousd], [family.calls, 0, 0]);
+    assert.equal(sql(`select count(*) from private.governed_evaluation_request_events where evaluation_id='${claim.executionId}' and actor_user_id='${users.evaluator}';`), '1');
+    console.log(`governed_document_work_script ${family.script}: PASS (no provider key, evaluator session request, worker claim, ${family.calls} reservations and cassette sends, commit succeeded/evaluated, evidence equal to the committed record)`);
+  }
+
+  // With the family's inference assurance revoked, the same scripts again: the same bytes, the first
+  // reservation denied and journaled, nothing sent, and each script receives partial/transport_denied.
+  sql(`select private.revoke_provider_processing_assurance_v1('${assuranceIds['anthropic:inference']}','Synthetic revocation for the document work product family proof');`);
+  for (const family of families) {
+    const runnerTemp = join(temporary, `document-work-${family.script}-denied`);
+    mkdirSync(runnerTemp, {recursive: true});
+    const run = runScript(family, runnerTemp);
+    const claim = await claimScriptEvaluation(run);
+    assert.equal(claim.snapshotText, snapshots.get(family.script), `${family.script} assembles the same bytes on every run`);
+    const callsBefore = calls;
+    assert.deepEqual(await m.processGovernedEvaluation(claim, consumer, new AbortController().signal, dependencies), {status: 'partial', reason: 'transport_denied', replayed: false});
+    assert.equal(calls, callsBefore, `${family.script}: a revoked assurance lets nothing reach the cassette`);
+    await run.exited;
+    assert.equal(run.ended, 3, `${family.script} must end partial\n${outputTail(run)}`);
+    assert.match(run.stdout, /^evaluation committed: partial\/transport_denied, 0 microusd over 0 calls$/m);
+    assert.match(run.stderr, new RegExp(`^evaluation ${claim.executionId} is partial: transport_denied$`, 'm'));
+    const directory = join(runnerTemp, family.output);
+    assert.deepEqual(readdirSync(directory).sort(), family.continuation ? ['evaluation.json', 'started.json'] : ['evaluation.json'], `${family.script}: a partial evaluation writes no record`);
+    const evidence = JSON.parse(readFileSync(join(directory, 'evaluation.json'), 'utf8'));
+    assert.deepEqual([evidence.executionId, evidence.outcome, evidence.reason, evidence.receipts.length, evidence.cost.spentMicrousd, evidence.totalCostMicrousd],
+      [claim.executionId, 'partial', 'transport_denied', 0, 0, 0]);
+    assert.deepEqual(evidence.decisions.map(decision => [decision.allowed, decision.purpose, decision.reasons.includes('processing_resource_ineligible:inference')]),
+      [[false, 'evaluation', true]]);
+    console.log(`governed_document_work_script_revoked_assurance ${family.script}: PASS (reservation denied and journaled, zero cassette calls, partial/transport_denied, no record written)`);
+  }
+
+  // The disposable database ends with the transport closed again.
+  sql(`select private.release_governed_evaluation_transport_v1('${id('d0c0', 2)}',false,'${users.operator}','Synthetic document work product family proof finished');`);
+  assert.equal(sql(`select released from private.platform_capability_releases where capability_key='governed-evaluation-transport';`), 'f');
+  console.log(JSON.stringify({event: 'governed_document_work_family_proof', scripts: families.length, cassetteCalls: calls, cassetteHits: hits}));
+}
