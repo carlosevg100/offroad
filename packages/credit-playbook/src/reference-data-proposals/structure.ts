@@ -82,6 +82,26 @@ const collateralHaircuts = proposal(
   },
 );
 
+const maturityWall = proposal(
+  "policy.structure.maturity_wall",
+  "fração da dívida bruta",
+  {
+    title: "Pronunciamento Técnico CPC 40 (R1), item 39 e parágrafo B11C: análise de vencimentos de passivos financeiros e alocação no período mais próximo exigível",
+    url: "https://www.cpc.org.br/CPC/Documentos-Emitidos/Pronunciamentos/Pronunciamento?Id=71",
+  },
+  {
+    shareOfGrossDebt: "0.20",
+    comparator: "strictly_greater",
+    attentionShareOfGrossDebt: "0.15",
+    rule: "estritamente acima do limiar; igual ao limiar não é parede; denominador é a dívida bruta da nota",
+    denominator: "dívida bruta da nota explicativa de empréstimos, financiamentos e debêntures, conciliada ao ledger (D-24), na mesma data-base, unidade e perímetro dos períodos",
+    bucket: "período de 12 meses contado da data-base; quando a companhia reporta o cronograma por exercício ou safra, o período reportado",
+    allocation: "obrigação exigível a critério do credor entra no primeiro período em que pode ser exigida; o cronograma contratual e o cronograma em cenário de quebra de covenant ficam separados e nunca se somam",
+    adjustmentRows: "custos de transação a amortizar e outras linhas de ajuste sem data não formam período e não entram na participação",
+    attentionRule: "período com participação acima de 0,15 e até 0,20 é nomeado no memo como concentração em observação, sem o rótulo de parede",
+  },
+);
+
 const covenantHeadroom = proposal(
   "policy.structure.covenant_headroom",
   "fração do limite",
@@ -211,6 +231,127 @@ const coverageFloors = proposal(
   },
 );
 
+const repaymentDesign = proposal(
+  "policy.structure.repayment-design",
+  "regras de desenho; prazos em meses, participações em fração do principal e DSCR em múltiplo",
+  {
+    title: "Lei nº 12.431/2011, art. 1º, § 1º, e art. 2º, § 1º: prazo médio ponderado, periodicidade de rendimentos e vedação de resgate de debêntures incentivadas",
+    url: "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12431.htm",
+  },
+  {
+    governingTest: "DSCR de cada período no caso downside acima do piso de policy.structure.coverage-floors em todos os períodos (ES-05); formato que falha volta para ES-40",
+    formats: [
+      {format: "sac", useWhen: "o CFADS de downside do primeiro período de amortização cobre o serviço com o piso", reason: "menor juro total"},
+      {format: "price", useWhen: "o SAC viola o piso nos primeiros períodos e o Price o respeita em todos", reason: "nivela o serviço no início"},
+      {format: "sculpted", useWhen: "fluxo de projeto ou sazonal previsível; parcela desenhada para DSCR alvo constante", targetDscrBufferOverFloor: "0.10"},
+      {format: "balloon", useWhen: "amortização regular com parcela final maior", maxBalloonShareWithoutNamedSource: "0.30", maxBalloonShareWithNamedSource: "0.50", aboveMaximum: "acima de 0,50 o balão segue as regras de bullet"},
+      {format: "bullet", useWhen: "fonte de repagamento nomeada e evidenciada (venda de ativo com liquidez, emissão com mandato, caixa acumulado em conta travada)", requires: ["fonte nomeada e evidenciada no term sheet", "cash sweep ou conta travada ligada à fonte (ES-29)", "alavancagem projetada no vencimento, no downside, dentro da zona aceitável de policy.structure.leverage-bands", "ICR de policy.structure.coverage-floors atendido em todos os períodos"]},
+    ],
+    grace: {
+      defaultInterest: "paid",
+      principalGraceNonProjectMaxMonths: 12,
+      principalGraceProjectRule: "carência ≥ prazo físico até a operação comercial + margem de policy.structure.construction-delay + ramp-up até o CFADS de downside cobrir o piso, arredondada para a próxima data de pagamento",
+      capitalizedInterest: "somente com ramp-up documentado; tabela do saldo ano a ano obrigatória no term sheet; no máximo 24 meses de juros capitalizados; o saldo acrescido entra em alavancagem e covenants",
+      prohibited: "capitalização escondida em carência total",
+    },
+    pik: {
+      allowedWhen: ["ramp-up documentado de projeto", "mezanino ou venture debt com evento de pagamento datado"],
+      requires: "saldo capitalizado período a período, covenant sobre o saldo acrescido e balão com fonte nomeada",
+    },
+    seasonality: {
+      trigger: "policy.seasonality.materiality excedida",
+      designs: ["parcelas concentradas no semestre forte", "parcela constante com conta reserva de policy.structure.reserve-account"],
+      prohibited: "parcela constante sobre fluxo sazonal sem colchão de liquidez",
+      covenantWindow: "índices de cobertura em janelas móveis de 12 meses",
+    },
+    tenor: {
+      maxShareOfRemainingUsefulLife: "0.80",
+      projectTailMinMonths: 24,
+      merchantTailMinMonths: 36,
+      tailDefinition: "meses entre o vencimento final da dívida e o fim da concessão, autorização ou contrato de venda que gera a receita",
+    },
+    paymentFrequency: {
+      bankLoans: "mensal ou trimestral",
+      capitalMarkets: "semestral ou anual, casada ao caixa",
+      seasonal: "casada à safra ou ao ciclo",
+    },
+    instrumentConstraints: {
+      incentivizedDebenture: {
+        remuneration: "prefixada, vinculada a índice de preço ou à TR; vedada taxa pós-fixada",
+        weightedAverageLifeYearsStrictlyAbove: "4",
+        minimumIntervalBetweenInterestPaymentsDays: 180,
+        noBuybackOrEarlyRedemptionYears: 2,
+        earlyRedemptionException: "na forma regulamentada pelo Conselho Monetário Nacional",
+        issuanceDeadline: "2030-12-31",
+        source: "Lei nº 12.431/2011, art. 1º, § 1º, e art. 2º, § 1º; Lei nº 14.801/2024, art. 2º, § 5º, para debêntures de infraestrutura",
+      },
+    },
+  },
+);
+
+const constructionDelay = proposal(
+  "policy.structure.construction-delay",
+  "meses de margem sobre o cronograma físico, com piso em meses e fração do cronograma",
+  {
+    title: "ANEEL, Relatório de Acompanhamento da Expansão da Oferta de Geração de Energia Elétrica (RALIE), dados abertos de 18/09/2026",
+    url: "https://dadosabertos.aneel.gov.br/dataset/ralie-relatorio-de-acompanhamento-da-expansao-da-oferta-de-geracao-de-energia-eletrica",
+  },
+  {
+    formula: "margem = maior entre marginMonthsFloor e arredondamento para cima de (marginShareOfSchedule × meses do cronograma físico até a operação comercial)",
+    graceRule: "carência de principal ≥ cronograma físico + margem + ramp-up (policy.structure.repayment-design); carência menor é bloqueada (ES-09)",
+    archetypes: [
+      {id: "equipment_installation", description: "instalação de máquinas em planta existente, sem obra civil relevante nem licença nova", marginMonthsFloor: 2, marginShareOfSchedule: "0.20"},
+      {id: "brownfield_expansion", description: "ampliação em sítio existente com licença de operação vigente e obra civil moderada", marginMonthsFloor: 4, marginShareOfSchedule: "0.25"},
+      {id: "greenfield_building", description: "unidade nova (planta, centro de distribuição, loja, hospital, escola) com licença de instalação emitida e contrato de obra a preço e prazo", marginMonthsFloor: 6, marginShareOfSchedule: "0.30"},
+      {id: "wind_or_solar_with_contracted_connection", description: "geração eólica ou solar com EPC a preço e prazo fechados, licença de instalação emitida e contrato de uso do sistema (CUST ou CUSD) assinado", marginMonthsFloor: 6, marginShareOfSchedule: "0.30"},
+      {id: "hydro_thermal_linear_or_unconnected", description: "PCH, UHE, térmica, transmissão, saneamento, rodovia, ou geração sem conexão contratada: dependência de licenciamento, desapropriação ou acesso à rede", marginMonthsFloor: 12, marginShareOfSchedule: "0.50"},
+      {id: "real_estate_development", description: "incorporação imobiliária com patrimônio de afetação", marginMonthsFloor: 6, marginShareOfSchedule: "0.25", legalAnchor: "Lei nº 4.591/1964, art. 43-A: entrega em até 180 dias após a data contratada sem resolução nem penalidade"},
+    ],
+    mitigantsWhenMarginDoesNotFit: ["garantia de conclusão dos acionistas até a operação comercial", "seguro garantia de execução com vigência igual à da obra (Circular SUSEP nº 662/2022)", "conta reserva de juros pré-constituída até a operação comercial mais a margem", "aporte antecipado do capital próprio antes do primeiro desembolso"],
+    evidence: ["cronograma físico-financeiro do contrato de obra ou EPC", "estágio das licenças (Lei nº 15.190/2025, art. 5º)", "contrato de conexão quando houver", "relatório de engenheiro independente quando o desembolso for por marco (OP-08)"],
+    dealStructureMapping: {constructionDelayMonths: "margem calculada para o arquétipo do caso, em meses inteiros"},
+    observations: [
+      {date: "2026-09-18", source: "ANEEL RALIE, usinas com obra em andamento e datas de operação comercial outorgada e prevista (138 usinas)", reading: "68,1% com previsão até meio mês da data outorgada; 73,2% até 6 meses; 75,4% até 12 meses; 87,7% até 18 meses; 91,3% até 24 meses. Até 6 meses: eólicas 92% (66), solares 59% (29), térmicas 64% (22), PCH 40% (20). Entre as atrasadas, atraso mediano de 14,5 meses"},
+    ],
+  },
+);
+
+const reserveAccount = proposal(
+  "policy.structure.reserve-account",
+  "meses de serviço da dívida programado (juros e principal)",
+  {
+    title: "Revista do BNDES, v. 7, n. 14, dez. 2000, p. 115: conta de reserva de caixa vinculada ao serviço da dívida em project finance",
+    url: "https://web.bndes.gov.br/bib/jspui/bitstream/1408/13419/2/RB%2014%20Project%20Finance%20para%20a%20Ind%C3%BAstria_Estrutura%C3%A7%C3%A3o%20de%20Financiamento_P_BD.pdf",
+  },
+  {
+    sizingBasis: "serviço da dívida programado (juros + principal) dos próximos N meses do cronograma, no caso base; em pagamento semestral, a próxima parcela",
+    profiles: [
+      {profile: "seasonal", required: true, months: 3, rule: "o maior entre 3 meses de serviço e a soma das parcelas que vencem na estação fraca"},
+      {profile: "project_ramp_up", required: true, months: 6, rule: "6 meses de serviço, ou a próxima parcela semestral, a partir da operação comercial"},
+      {profile: "project_finance_operational", required: true, months: 6, rule: "6 meses de serviço, ou a próxima parcela semestral"},
+      {profile: "receivables_backed_monthly", required: true, months: 1, rule: "1 parcela mensal, para absorver o descasamento entre liquidação da carteira e vencimento"},
+      {profile: "acquisition_stretched_leverage", required: true, months: 3, rule: "enquanto a alavancagem estiver na zona tensionada de policy.structure.leverage-bands"},
+      {profile: "corporate_stable", required: false, months: 0, rule: "não exigida; se negociada, até 3 meses"},
+      {profile: "venture_debt", required: false, months: 0, rule: "fora desta chave; caixa mínimo e pista são tratados como covenant próprio"},
+    ],
+    constructionInterestReserve: "quando os juros são pagos durante a obra, reserva de juros até a operação comercial mais a margem de policy.structure.construction-delay, constituída no primeiro desembolso",
+    funding: {
+      preferred: "no desembolso, deduzida dos recursos",
+      alternative: "retenção de caixa antes de qualquer distribuição, completa em até 6 meses do desembolso",
+      substitution: "fiança bancária ou seguro garantia do mesmo valor, nas condições de policy.structure.collateral_haircuts",
+    },
+    replenishment: {
+      businessDays: 40,
+      rule: "reposição com o primeiro caixa disponível na cascata, no prazo de 40 dias úteis após o uso",
+      whileBelowTarget: "trava de dividendos, juros sobre capital próprio, mútuos e pagamentos a partes relacionadas (ES-25)",
+      failure: "não reposição no prazo é evento de inadimplemento com o tratamento de policy.structure.cure-waiver",
+    },
+    permittedInvestments: "títulos públicos federais, compromissadas lastreadas neles, CDB de instituição dos segmentos S1 ou S2 e fundos DI com resgate em D+0 ou D+1, cedidos fiduciariamente ao credor",
+    carryCost: "custo de carregamento = saldo da reserva × (custo all-in da dívida − rendimento da aplicação), somado ao all-in (PR-10)",
+    dealStructureMapping: {reserveMonths: "months do perfil do caso, como texto decimal"},
+  },
+);
+
 const collateralCoverage = proposal(
   "policy.structure.collateral-coverage",
   "múltiplo (x) de valor pós-haircut sobre o saldo devedor",
@@ -265,11 +406,39 @@ const appraisalValidity = proposal(
   },
 );
 
+const maturityConcentration = proposal(
+  "policy.structure.maturity-concentration",
+  "fração da dívida consolidada pró-forma por período de 12 meses",
+  {
+    title: "Pronunciamento Técnico CPC 40 (R1), item 39 e parágrafo B11C: análise de vencimentos de passivos financeiros",
+    url: "https://www.cpc.org.br/CPC/Documentos-Emitidos/Pronunciamentos/Pronunciamento?Id=71",
+  },
+  {
+    maxShareOfConsolidatedDebtPerPeriod: "0.20",
+    comparator: "less_than_or_equal",
+    attentionShare: "0.15",
+    base: "principal existente (ledger D-24, cronograma de D-03) somado ao principal da operação proposta, por período de 12 meses contado da data-base",
+    rules: {
+      absolute: "nenhum período do perfil consolidado pró-forma acima de 0,20 da dívida consolidada",
+      noWorsening: "período que já estava acima de 0,20 antes da operação passa se a operação não somar principal a ele e a sua participação pró-forma cair",
+      newBulletPlacement: "bullet ou balão da operação nova não vence em período cuja participação pró-forma supere 0,15",
+      consistency: "o limite de desenho coincide com o limiar de parede de policy.structure.maturity_wall: a casa não propõe estrutura que o próprio diagnóstico chamaria de parede",
+    },
+    notApplicable: ["SPE com dívida única de amortização esculpida, testada por DSCR", "venture debt de facilidade única, testada por caixa e pista"],
+    dealStructureMapping: {maturityConcentrationLimit: "0.20"},
+  },
+);
+
 export const structureProposals: ReferenceDataProposalFamily = {
   "policy.structure.collateral_haircuts": collateralHaircuts,
+  "policy.structure.maturity_wall": maturityWall,
   "policy.structure.covenant_headroom": covenantHeadroom,
   "policy.structure.leverage-bands": leverageBands,
   "policy.structure.coverage-floors": coverageFloors,
+  "policy.structure.repayment-design": repaymentDesign,
+  "policy.structure.construction-delay": constructionDelay,
+  "policy.structure.reserve-account": reserveAccount,
   "policy.structure.collateral-coverage": collateralCoverage,
   "policy.structure.appraisal-validity": appraisalValidity,
+  "policy.structure.maturity-concentration": maturityConcentration,
 };
