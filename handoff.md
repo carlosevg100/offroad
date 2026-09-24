@@ -1,3 +1,7 @@
+## Parâmetros de referência: estrutura para as propostas
+
+Os parâmetros de referência passam a receber propostas por família (`src/reference-data-proposals/`), cada uma com cartão profissional em `knowledge/reference-data/`. Uma proposta transforma a entrada do cadastro em rascunho, com valor, fonte e data; o método continua tratando o parâmetro como lacuna até o fundador aprovar. Nesta PR as seis famílias estão vazias e o cadastro publicado não muda; as instruções do fundador de 24/09/2026 entram verbatim em `FOUNDER-ACTS.md`.
+
 ## Etapa 17 / 6: fechamento
 
 A etapa 17 fecha no commit de código `32e8e321`: incrementos 4 e 5 completos, os nove scripts de avaliação só pelo transporte governado, o cadastro da companhia pela base da análise e a jornada que pede uma execução do v4 pela tela. Revogação, ferramentas não declaradas, orçamento esgotado, regressão do v4 e de R01 e reprodutibilidade estão provados na CI, com as lacunas nomeadas; a Quality rodou onze vezes no commit final, todas verdes na primeira tentativa e sem teste instável; journals e catálogos de produção e staging idênticos aos commitados; web e worker no commit final; produção sem fixtures. Ficam com o fundador: o marco 3, os destinatários dos alarmes e a leitura do CloudWatch, a conta do avaliador e o gasto das avaliações, as atestações antes de 21/10/2026 e os valores de convenção. Nada da etapa 18 foi iniciado. [Fechamento](docs/build/arcabouco/etapa-17-6-fechamento.md).

@@ -36,3 +36,28 @@ Aplicação expressa nesta data: suspender os nove scripts históricos de avalia
 
 Registro verbatim da mensagem do fundador ao executor, depois da auditoria independente da etapa 17: "então agora vc assume no lugar do codex... faz as correcoes necessarias .. finaliza a etapa 17 como deve ser .. e fica pronto para a 18 .." A instrução cobre a conclusão da etapa 17 (correções da auditoria, incrementos 3M, 4, 5 e 6) e a preparação da 18; não libera execução para cliente real nem cria um terceiro ato recorrente. Aprovações atribuídas ao fundador dentro dos incrementos técnicos (autorização da 17 após a 16, aplicação da 2B, antecipação da proveniência em 3B) são decisões do executor sob a autoridade permanente de 21/09/2026, e os documentos correspondentes passam a dizer isso.
 
+## Instruções do fundador, 24/09/2026
+
+Registro verbatim das mensagens do fundador ao executor depois do fechamento da etapa 17.
+
+Primeira: "eu nao vou testar nada ate todas as etapas estarem perfeitamente incorporadas. .. ainda falta oq ? a etapa 18 ?? o q mais ??"
+
+Segunda, sobre os valores de convenção (IOF, ANBIMA/B3, regime tributário): "vc eh expert e tem todo knowledge disponivel .. faca de acordo com o melhor e depois eu reviso oq vc implementou .."
+
+Terceira:
+
+> tira esse negocio de atetatcoes do sistema.. ja foi feito .. e pronto .. nao precisa fazer too mes .. depois vemos isso
+>
+> Alarmes .. claor q conta signed tem permissao .. eu estou logado nela.. take over my web borwser via python e faca oq tem q fazer ..  imagino q esses alarmos disparam os agentes sentinelas que olham e corrigem isso .. .certo ..
+>
+> cada vez q um usuario fizer uma solicitacao vai gastar 60 usd ?????? nao to entendeo ..  isso eh inviavel certo ?? tem algo errado ai ..
+>
+> preparado, aguardando sua revisão .. nao soh esse tema de iof, anbima etc ... isso vale para tudo .. vc vai escrever da forma completa e mais tecnica e profissional e assertiva possivel .. em linha com oq fizemos no case 1 la..
+
+Leitura do executor:
+
+- Parâmetros de referência: o executor prepara os 75 parâmetros do cadastro, com texto profissional completo no padrão do caso 1, fonte e data; entram como rascunho e só passam a valer no cálculo depois da revisão e aprovação do fundador, que continua sendo o ato de aprovação do conteúdo profissional.
+- Atestações de provedor: a conferência de 21/09/2026 deixa de vencer por prazo. A verificação por provedor, conta, modelo e recurso continua exigida para qualquer combinação nova.
+- Alarmes: instalação pela sessão do fundador na AWS, sem alteração de permissões de segurança pelo executor.
+- Custo: o teste de referência cola o data room inteiro em cada pergunta; corrigir o tamanho do teste, a reserva por chamada e a tabela de preços.
+- Etapa 18: não iniciada; aguarda o OK expresso do fundador.
