@@ -40,7 +40,9 @@ const provenancePaths = [
 ];
 const settled = {q1: "pass", q2: "pass", q3: "pass", q4: "pass", q5: "not_applicable", q6: "pass", q7: "pass", q8: "human_required", q9: "pass", q10: "human_required"};
 
-describe("capital MD test", () => {
+// Packets are rebuilt from fixtures many times per test; under the concurrent CI suite that
+// takes seconds, not milliseconds. Latency is not what these tests measure.
+describe("capital MD test", {timeout: 30_000}, () => {
   it("evaluates every rubric question of the base packet with its status and the paths it read", () => {
     const packet = base();
     const result = evaluate(packet);

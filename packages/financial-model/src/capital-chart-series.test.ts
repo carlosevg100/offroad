@@ -41,7 +41,9 @@ const piece = (series: CapitalChartSeries, questionCode: string, alternativeId: 
 const values = (series: CapitalChartSeries, questionCode: string, alternativeId: string) =>
   piece(series, questionCode, alternativeId).points.map((point) => [point.periodLabel, point.value]);
 
-describe("capital chart series", () => {
+// Packets are rebuilt from fixtures many times per test; under the concurrent CI suite that
+// takes seconds, not milliseconds. Latency is not what these tests measure.
+describe("capital chart series", {timeout: 30_000}, () => {
   it.each(capitalPacketFixtures)("derives two pieces per calculated alternative from the %s packet, each point read from its path", (_name, build) => {
     const packet = build();
     const series = deriveCapitalChartSeries(packet);
