@@ -44,3 +44,11 @@ docs/product/gold-cases/reviews/**/codex-events.jsonl
 
 # Reproducible executors built only from published source snapshots.
 apps/document-worker/released-methods/
+
+# Originais do fundador e biblioteca de expertise vivem no repositório privado offroad-expertise.
+# Nunca entram no repositório público; o lock em packages/credit-playbook/knowledge/sources referencia-os por hash.
+docs/product/DEMANDA_CFO_COMPANHIA.md
+docs/product/OFFROAD_CREDIT_OS_EXPERIENCE_CONTRACT.md
+docs/product/POSICIONAMENTO_PROMESSA.md
+docs/research/
+apps/web/public/offroad-credit-os-prototype.html
