@@ -3,14 +3,39 @@ name: Intent router gold gate
 # Manual promotion evidence for the semantic router. It uses only the canonical synthetic turns,
 # the exact production classifier prompt/schema and short-lived AWS OIDC credentials. No customer
 # content enters this workflow and a passing run never changes the production route by itself.
+#
+# This job holds no provider key. The script requests a governed evaluation through the
+# evaluator's own Supabase session; the worker runs the provider preflight and the 52 observations
+# of the intent router family with the provider credentials it already holds, reserving every
+# send, repair and fallback in the database first, and the script scores the run the database
+# committed and verifies its call ledger, writing the gate record and report as before.
+# `offroadGitHubEvalsRole` reads only the evaluator secret and the publishable key the worker also
+# reads.
+#
+# NOT USABLE YET, by design. The secret `offroad/evaluator` (JSON with `email`, `password` and
+# `organizationId`), the evaluator account it names and the evaluation organization do not exist
+# yet: they are created by the founder's decision, together with the role's read grant on that
+# secret and on `offroad/supabase-publishable-key`, the provider assurances for purpose
+# `evaluation` and the opening of the transport switch. The worker must also run an image that
+# registers the intent router family. Until then this job fails closed with a named message and
+# requests nothing.
+#
+# Budget: each attempt reserves the list-price upper bound of its whole request before it is sent
+# (about 0.20 USD for a router call and 0.13 USD for an extractor call on the primary route), and
+# the reservation is released to the measured cost once the attempt settles; a run stops partial
+# with budget_exhausted the moment its spend plus the next reservation would pass the budget.
 
 on:
   workflow_dispatch:
     inputs:
       max_cost:
-        description: "Hard gateway budget in USD (max 10)"
+        description: "Budget in USD for the whole run, reservations included (max 10)"
         required: false
         default: "3"
+      request_id:
+        description: "Resume an earlier request by its id instead of creating another evaluation"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -26,7 +51,10 @@ jobs:
     if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main'
     environment: intent-router-gold-main
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The script waits for the committed result until the evaluation budget expires (every allowed
+    # call at its task's whole timeout, plus the queue allowance), plus a grace: the runner's
+    # ceiling. A run cut short is resumed with request_id; the evaluation itself continues.
+    timeout-minutes: 360
 
     steps:
       - name: Checkout
@@ -55,30 +83,57 @@ jobs:
           role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
           aws-region: sa-east-1
 
-      - name: Run the canonical router gate
+      - name: Run the canonical router gate through the governed evaluation transport
         env:
           MAX_COST: ${{ inputs.max_cost || '3' }}
+          REQUEST_ID: ${{ inputs.request_id }}
+          # The production project, as the worker's task definition names it; not a secret.
+          SUPABASE_URL: https://ifnogpksgdadruooqydi.supabase.co
         run: |
           set -euo pipefail
-          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
-          echo "::add-mask::$ANTHROPIC_API_KEY"
-          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
-          echo "::add-mask::$OPENAI_API_KEY"
-          export ANTHROPIC_API_KEY OPENAI_API_KEY
+          # The evaluator's credential and the evaluation organization. Absent until the founder
+          # creates them: fail closed, by name, before anything is requested. Nothing read here is
+          # ever printed, and each value is masked the moment it exists.
+          if ! evaluator="$(aws secretsmanager get-secret-value --secret-id offroad/evaluator --query SecretString --output text 2>/dev/null)" || [ -z "$evaluator" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator is absent or not readable by offroadGitHubEvalsRole. The evaluator account, the evaluation organization and this secret are created by the founder's decision; nothing was requested."
+            exit 1
+          fi
+          while IFS= read -r line; do if [ -n "$line" ]; then echo "::add-mask::$line"; fi; done <<<"$evaluator"
+          field() { jq -er --arg key "$1" '.[$key] | select(type == "string" and length > 0)' <<<"$evaluator" 2>/dev/null; }
+          if ! OFFROAD_EVALUATOR_EMAIL="$(field email)" || ! OFFROAD_EVALUATOR_PASSWORD="$(field password)" || ! OFFROAD_EVALUATION_ORGANIZATION_ID="$(field organizationId)"; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator must hold email, password and organizationId; nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$OFFROAD_EVALUATOR_EMAIL"
+          echo "::add-mask::$OFFROAD_EVALUATOR_PASSWORD"
+          echo "::add-mask::$OFFROAD_EVALUATION_ORGANIZATION_ID"
+          unset evaluator
+          if ! SUPABASE_PUBLISHABLE_KEY="$(aws secretsmanager get-secret-value --secret-id offroad/supabase-publishable-key --query SecretString --output text 2>/dev/null)" || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/supabase-publishable-key is not readable by offroadGitHubEvalsRole; the founder's setup grants it with the evaluator secret. Nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$SUPABASE_PUBLISHABLE_KEY"
+          export SUPABASE_URL SUPABASE_PUBLISHABLE_KEY OFFROAD_EVALUATOR_EMAIL OFFROAD_EVALUATOR_PASSWORD OFFROAD_EVALUATION_ORGANIZATION_ID
 
-          set +e
-          pnpm --filter @offroad/evals intent-router:gold -- \
-            --max-cost "$MAX_COST" \
-            --out "$RUNNER_TEMP/intent-router-gold"
-          gate_status=$?
-          set -e
+          resume=()
+          if [ -n "$REQUEST_ID" ]; then resume=(--request-id "$REQUEST_ID"); fi
+          status=0
+          pnpm --filter @offroad/evals intent-router:gold -- --max-cost "$MAX_COST" --out "$RUNNER_TEMP/intent-router-gold" ${resume[@]+"${resume[@]}"} 2>&1 \
+            | tee /tmp/intent-router-gold.log || status=$?
           if [[ -f "$RUNNER_TEMP/intent-router-gold/intent-router-gold.md" ]]; then
             cat "$RUNNER_TEMP/intent-router-gold/intent-router-gold.md" >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "## Intent router gold gate"
+              echo
+              grep -E '^evaluation' /tmp/intent-router-gold.log | sed 's/^/- /' || true
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
-          exit "$gate_status"
+          # Status 1 is a failed gate or preflight, 3 a partial evaluation: the evidence is uploaded below.
+          exit "$status"
 
-      - name: Upload compact evidence
-        if: always()
+      - name: Upload compact evidence (gate record, report and evaluation evidence)
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: intent-router-gold
