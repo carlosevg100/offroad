@@ -13,34 +13,45 @@ import {capitalProcedurePacketV2OutputSchema} from "./capital-procedure-packet-v
  *
  * Every question ends as `pass`, `fail` with reason codes, `not_applicable` with a scope code, or
  * `human_required` with a code, always with the paths it read (`packet.` for the packet, `gates.`
- * for the gate states). A question the rubric marks `human_required` is never evaluated here. The
- * result counts outcomes and carries no overall verdict: Q1 keeps approval with a human, and a
+ * for the gate states). A `pass` means only that the verifiable contract behind the question
+ * holds. Per Q2, senior judgment still reviews framing, real sufficiency, the method chosen,
+ * omitted alternatives, strength of evidence, proportionality of the recommendation and the
+ * naturalness of the voice, and a clean lexical filter does not certify a good opinion. The result
+ * never approves on its own: it counts outcomes, carries no overall verdict, and a
  * `not_applicable` is not a pass. The evaluator is identified as deterministic, as Q1 asks of any
- * automated review.
+ * automated review, and a question the rubric marks `human_required` is never evaluated here.
  *
- * Mapping, from the 4C plan:
+ * Mapping:
  * - q1: question and objectives present, and at least one situation of the R3 catalogue selected.
- * - q2: sources pinned (every projection carries its adopted basis fingerprint, every market
- *   reference its source version, and contracts their source versions) and research recorded or
- *   abstained.
- * - q3: every alternative's `disconfirmers` not empty and `informationGaps` not empty.
+ * - q2: company registered, research recorded or abstained, and sources pinned (every projection
+ *   carries its adopted basis fingerprint, every market reference its source version, and
+ *   contracts their source versions).
+ * - q3: every alternative has at least one disconfirmer; with no alternative, `not_applicable`.
+ *   An empty gap list does not mean the premises went unquestioned: gaps belong to q6.
  * - q4: with a recommendation, a status other than `framed` and the facts that would change it;
  *   without one, `nextRequirements` not empty, since Q1 accepts "what prevents an opinion" with a
  *   useful next step as a clear conclusion.
  * - q5: when the packet status is `prepared_for_human_review`, every alternative's projection rows
- *   and summary are not null; any other status is `not_applicable` with the status as scope.
+ *   and summary are not null; any other status is `not_applicable` with the status as scope. No
+ *   figure of the packet is computed under the IOF, ANBIMA/B3 or tax-regime conventions: it
+ *   carries no all-in cost, `nominalFinancingCostInHorizon` excludes inferred taxes, annualized
+ *   cost and business-day calendars by construction, and contract schedules apply the conventions
+ *   their indentures write (R2). q5 therefore reads no convention gate.
  * - q6: gaps named (every gap has a code, and a status short of `prepared_for_human_review` names
- *   at least one gap, unresolved item or pending review domain) and, when an alternative's
- *   projection is calculated, a calculated sensitivity that is adverse: its available cash closes
- *   below its base alternative's in at least one period.
+ *   at least one gap, unresolved item or pending review domain); when an alternative's projection
+ *   is calculated, a calculated sensitivity that is adverse (its available cash closes below its
+ *   base alternative's in at least one period); and every convention the gate reports as a gap is
+ *   cited among the paths as a material gap.
  * - q7: two alternatives or a maintenance exclusion; otherwise `not_applicable` with a scope code.
- * - q8 and q9: fingerprints (packet, input, decision, review and every calculation), `observationIds`
+ * - q8: understanding the essential in under a minute is senior judgment, so the answer is
+ *   `human_required`. It fails deterministically only when the voice gate reports a block finding
+ *   or when a summary needed to state the essential is missing: every alternative's in a packet
+ *   prepared for human review, and the recommended alternative's. The packet schema makes the
+ *   status mandatory, so a status cannot be missing.
+ * - q9: fingerprints (packet, input, decision, review and every calculation), `observationIds`
  *   (the packet list carries every decision observation, and a projection built on observations
  *   has observations listed) and the pinned-input requirement.
  * - q10: always `human_required`.
- *
- * The gate states for company registration, conventions and voice are validated and recorded in
- * the result, but no question of this mapping reads them.
  */
 export const capitalMdTestVersion = "2026.09.24-v1";
 
@@ -62,10 +73,10 @@ export const capitalMdTestFailCodes = [
   "objectives_missing",
   "situation_not_selected",
   "situation_unknown",
+  "company_registration_missing",
   "research_missing",
   "sources_unpinned",
   "disconfirmers_missing",
-  "information_gaps_empty",
   "recommendation_status_incompatible",
   "recommendation_change_facts_missing",
   "next_requirements_missing",
@@ -73,6 +84,8 @@ export const capitalMdTestFailCodes = [
   "gap_code_missing",
   "partial_status_without_named_gap",
   "adverse_sensitivity_missing",
+  "voice_blocked",
+  "summary_missing",
   "fingerprint_missing",
   "observation_ids_incomplete",
   "observation_ids_missing",
@@ -84,11 +97,12 @@ export const capitalMdTestScopeCodes = [
   "no_alternatives",
   "single_alternative_without_maintenance_exclusion",
 ] as const;
-export const capitalMdTestHumanCodes = ["rubric_human_required", "mapping_not_defined"] as const;
+export const capitalMdTestHumanCodes = ["rubric_human_required", "comprehension_requires_senior_judgment", "mapping_not_defined"] as const;
 export const capitalMdTestStatuses = ["pass", "fail", "not_applicable", "human_required"] as const;
 
 type FailCode = (typeof capitalMdTestFailCodes)[number];
 type ScopeCode = (typeof capitalMdTestScopeCodes)[number];
+type HumanCode = (typeof capitalMdTestHumanCodes)[number];
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const questionIdSchema = z.enum(MD_TEST_RUBRIC.map((question) => question.id) as [MdTestQuestionId, ...MdTestQuestionId[]]);
@@ -132,7 +146,8 @@ type Context = {packet: Packet; gates: CapitalMdTestGates};
 type Outcome =
   | {status: "pass"; paths: string[]}
   | {status: "fail"; reasonCodes: FailCode[]; paths: string[]}
-  | {status: "not_applicable"; scopeCode: ScopeCode; paths: string[]};
+  | {status: "not_applicable"; scopeCode: ScopeCode; paths: string[]}
+  | {status: "human_required"; reasonCode: HumanCode; paths: string[]};
 
 const Exact = Decimal.clone({precision: 100, rounding: Decimal.ROUND_HALF_UP});
 const knownSituations = new Set<string>(structuringSituations.map((situation) => situation.situationId));
@@ -170,8 +185,9 @@ function q1({packet, gates}: Context): Outcome {
 }
 
 function q2({packet, gates}: Context): Outcome {
-  const paths = ["gates.research"];
+  const paths = ["gates.companyRegistration", "gates.research"];
   const failures: FailCode[] = [];
+  if (gates.companyRegistration !== "registered") failures.push("company_registration_missing");
   if (gates.research === "missing") failures.push("research_missing");
   for (const {path, projection} of projections(packet)) {
     paths.push(`${path}.basisFingerprint`);
@@ -189,14 +205,14 @@ function q2({packet, gates}: Context): Outcome {
 }
 
 function q3({packet}: Context): Outcome {
+  const alternatives = packet.decision.alternatives;
+  if (alternatives.length === 0) return {status: "not_applicable", scopeCode: "no_alternatives", paths: ["packet.decision.alternatives"]};
   const paths: string[] = [];
   const failures: FailCode[] = [];
-  packet.decision.alternatives.forEach((alternative, index) => {
+  alternatives.forEach((alternative, index) => {
     paths.push(`packet.decision.alternatives[${index}].disconfirmers`);
     if (!alternative.disconfirmers.some((entry) => !blank(entry))) failures.push("disconfirmers_missing");
   });
-  paths.push("packet.decision.informationGaps");
-  if (packet.decision.informationGaps.length === 0) failures.push("information_gaps_empty");
   return outcome(failures, paths);
 }
 
@@ -230,13 +246,18 @@ function q5({packet}: Context): Outcome {
   return outcome(failures, paths);
 }
 
-function q6({packet}: Context): Outcome {
+function q6({packet, gates}: Context): Outcome {
   const decision = packet.decision;
   const paths = ["packet.status", "packet.decision.informationGaps", "packet.contractualGaps", "packet.decision.unresolved", "packet.decision.pendingReviewDomains"];
   const failures: FailCode[] = [];
   if ([...decision.informationGaps, ...packet.contractualGaps].some((gap) => blank(gap.code))) failures.push("gap_code_missing");
   const named = decision.informationGaps.length + packet.contractualGaps.length + decision.unresolved.length + decision.pendingReviewDomains.length;
   if (packet.status !== "prepared_for_human_review" && named === 0) failures.push("partial_status_without_named_gap");
+  // A convention without an approved, current entry is a material gap: it is cited, never filled.
+  paths.push("gates.conventions");
+  gates.conventions.forEach((convention, index) => {
+    if (convention.effective === "gap") paths.push(`gates.conventions[${index}]`);
+  });
   const calculated = decision.alternatives.flatMap((alternative, index) => (alternative.projection.rows === null ? [] : [index]));
   if (calculated.length > 0) {
     calculated.forEach((index) => paths.push(`packet.decision.alternatives[${index}].projection.rows`));
@@ -264,8 +285,29 @@ function q7({packet}: Context): Outcome {
   return {status: "not_applicable", scopeCode: alternatives === 0 ? "no_alternatives" : "single_alternative_without_maintenance_exclusion", paths};
 }
 
-/** q8 and q9 share the mapping: the packet stands on its own record. */
-function provenance({packet}: Context): Outcome {
+/** Comprehension is senior judgment; only a blocked voice or a missing summary fails it here. */
+function q8({packet, gates}: Context): Outcome {
+  const paths: string[] = [];
+  const failures: FailCode[] = [];
+  if (gates.voice === null) {
+    paths.push("gates.voice");
+  } else {
+    paths.push("gates.voice.blockCount");
+    if (gates.voice.blockCount > 0) failures.push("voice_blocked");
+  }
+  paths.push("packet.status", "packet.decision.recommendation");
+  const recommended = packet.decision.recommendation?.alternativeId ?? null;
+  packet.decision.alternatives.forEach((alternative, index) => {
+    if (packet.status !== "prepared_for_human_review" && alternative.id !== recommended) return;
+    paths.push(`packet.decision.alternatives[${index}].projection.summary`);
+    if (alternative.projection.summary === null) failures.push("summary_missing");
+  });
+  if (failures.length) return outcome(failures, paths);
+  return {status: "human_required", reasonCode: "comprehension_requires_senior_judgment", paths: [...new Set(paths)]};
+}
+
+/** The packet stands on its own record: every material number can be traced and reproduced. */
+function q9({packet}: Context): Outcome {
   const decision = packet.decision;
   const failures: FailCode[] = [];
   const fingerprints: Array<[string, string]> = [
@@ -292,9 +334,7 @@ function provenance({packet}: Context): Outcome {
   return outcome(failures, paths);
 }
 
-const mappings: Partial<Record<MdTestQuestionId, (context: Context) => Outcome>> = {
-  q1, q2, q3, q4, q5, q6, q7, q8: provenance, q9: provenance,
-};
+const mappings: Partial<Record<MdTestQuestionId, (context: Context) => Outcome>> = {q1, q2, q3, q4, q5, q6, q7, q8, q9};
 
 export function evaluateMdTest(input: {packet: unknown; gates: CapitalMdTestGates}): CapitalMdTestResult {
   const context = inputSchema.parse(input);
