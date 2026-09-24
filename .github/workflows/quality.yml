@@ -179,6 +179,11 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-execution-concurrency.py
 
+      - name: Concurrent governed evaluation reservation and assurance revocation
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-evaluation-concurrency.py
+
       - name: Concurrent R01 pause, release and policy revocation
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
