@@ -10894,6 +10894,10 @@ export type Database = {
         Args: { p_method_id?: string; p_version_id: string; p_work_id: string }
         Returns: Json
       }
+      execution_contract_basis_v2: {
+        Args: { p_method_id?: string; p_version_id: string; p_work_id: string }
+        Returns: Json
+      }
       explain_my_access_v1: {
         Args: { p_action?: string; p_purpose?: string; p_resource_id: string }
         Returns: Json
@@ -11145,6 +11149,10 @@ export type Database = {
       }
       read_source_version_v1: { Args: { p_version_id: string }; Returns: Json }
       read_work_execution_v1: {
+        Args: { p_execution_id: string }
+        Returns: Json
+      }
+      read_work_execution_v2: {
         Args: { p_execution_id: string }
         Returns: Json
       }
@@ -11458,6 +11466,14 @@ export type Database = {
       }
       request_work_execution_v1: {
         Args: { p_contract_text: string; p_snapshot_text: string }
+        Returns: Json
+      }
+      request_work_execution_v2: {
+        Args: {
+          p_contract_text: string
+          p_gates_text: string
+          p_snapshot_text: string
+        }
         Returns: Json
       }
       resolve_analysis_scope_suggestion_command: {
