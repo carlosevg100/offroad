@@ -328,6 +328,11 @@ begin
     or not (claim ->> 'integration_preview')::boolean then
     raise exception 'the preview run was not claimed as such: %', claim;
   end if;
+  -- The activation writes the preview's production ceiling (migration production_budget_ceilings).
+  if (claim #>> '{payload,model_budget,max_cost_usd}')::numeric is distinct from 0.60
+    or (claim #>> '{payload,model_budget,max_calls}')::integer is distinct from 4 then
+    raise exception 'the preview run did not carry its model budget: %', claim #> '{payload,model_budget}';
+  end if;
   context := public.worker_load_capital_project_context_v6((claim ->> 'job_id')::uuid, claim ->> 'capability_token');
   if jsonb_array_length(context -> 'tasks') <> 2 or context ->> 'mode' <> 'integration_preview' then
     raise exception 'the preview context did not carry the preview plan tasks: %', context -> 'tasks';
