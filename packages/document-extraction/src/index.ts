@@ -10,3 +10,4 @@ export const documentExtractionVersion = "2026.08.19-e3-v1";
 export * from "./evidence";
 export * from "./prompt";
 export * from "./extract";
+export * from "./measurement";
