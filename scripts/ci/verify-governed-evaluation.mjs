@@ -328,8 +328,194 @@ commit;`);
     [[false, 'evaluation', true]]);
   console.log('governed_baseline_script_revoked_assurance: PASS (script with no provider key, reservation denied and journaled, zero cassette calls, script received partial/transport_denied and wrote no record)');
 
+  await proveIntentRouterGoldFamily({call, evaluator, consumer, m, evalsDir, tsxCli, scriptEnvironment, providerCredential, outputTail});
+
   // The disposable database ends with the transport closed again.
   sql(`select private.release_governed_evaluation_transport_v1('${id('a000', 32)}',false,'${users.operator}','Synthetic governed evaluation proof finished');`);
   assert.equal(sql(`select released from private.platform_capability_releases where capability_key='governed-evaluation-transport';`), 'f');
   console.log(JSON.stringify({event: 'governed_evaluation_proof', runMs, scriptMs, cassetteHits: hits, cassetteCalls: calls, spentMicrousd: costs[0] + costs[1]}));
 } finally { rmSync(temporary, {recursive: true, force: true}); }
+
+// Intent router gold family. run-intent-router-gold.ts runs live through the same stack, as its
+// workflow runs it: a child process with the synthetic evaluator's credential, the trusted
+// post-merge workflow context the gate requires before it requests anything, and no provider key.
+// It requests the canonical gold snapshot under the evaluator's session; the worker's consumer runs
+// the family with two simulated providers in place of Anthropic and OpenAI, and every preflight,
+// observation, repair and fallback attempt is reserved, sent and settled on its own; the script
+// scores the committed run and writes its gate record, which must carry the committed ledger and
+// pass every lineage check except the extractions the simulation deliberately leaves empty. With
+// the family's inference assurance revoked, a second run reaches no provider at all and ends
+// partial/transport_denied. The family's assurances live under their own synthetic account, apart
+// from every other route this proof attests.
+async function proveIntentRouterGoldFamily({call, evaluator, consumer, m, evalsDir, tsxCli, scriptEnvironment, providerCredential, outputTail}) {
+  const bundle = join(temporary, 'intent-router-gold.mjs');
+  await build({stdin: {contents: `export {executionCanonicalText, intentClassifierOutputSchema, intentRouterGoldResultSchema, validateSemanticObjectOutput} from '@offroad/agent-contracts';
+export {buildIntentRouterGoldSnapshot} from './src/intent-router-gold-transport.ts';
+export {verifyIntentRouterEvidenceRecord} from './src/intent-router-call-evidence.ts';`, resolveDir: evalsDir, loader: 'ts'}, outfile: bundle, bundle: true, platform: 'node', format: 'esm', target: 'node24', logLevel: 'silent'});
+  const g = await import(pathToFileURL(bundle));
+  const scriptId = 'run-intent-router-gold';
+  const routeConnection = {accountRef: `synthetic-evaluation-account-${prefix}-intent-router`, projectRef: 'synthetic-evaluation-project', credentialBinding: 'synthetic-evaluation-binding', region: 'global'};
+  const routes = [
+    {provider: 'anthropic', model: 'claude-sonnet-5', endpoint: 'https://api.anthropic.com/v1/messages', assurances: {inference: id('b17e', 1), prompt_cache: id('b17e', 2)}},
+    {provider: 'openai', model: 'gpt-5.6-terra', endpoint: 'https://api.openai.com/v1/responses', assurances: {inference: id('b17e', 3), prompt_cache: id('b17e', 4)}},
+  ];
+  // Prompted JSON: each attempt uses inference and the prompt cache, never a compiled schema.
+  const assurance = (route, resource) => `select private.record_provider_processing_assurance_v1(jsonb_build_object(
+ 'id','${route.assurances[resource]}','policyVersion','offroad-provider-retention-v2','accountRef','${routeConnection.accountRef}','projectRef','${routeConnection.projectRef}',
+ 'credentialBinding','${routeConnection.credentialBinding}','provider','${route.provider}','models','["${route.model}"]'::jsonb,'endpoint','${route.endpoint}',
+ 'resource','${resource}','region','${routeConnection.region}','eligibility','supported','purposes','["evaluation"]'::jsonb,'classifications','["restricted"]'::jsonb,
+ 'rights','["process"]'::jsonb,'trainingUse','prohibited',
+ 'retention',jsonb_build_object('requestContentSeconds',0,'abuseMonitoringSeconds',2592000,'applicationStateSeconds',0,'cacheSeconds',86400,'metadataSeconds',2592000,'exceptions','["legal_hold"]'::jsonb),
+ 'zeroRetention','not_contracted',
+ 'evidence',(select jsonb_agg(jsonb_build_object('kind',k,'reference','synthetic-evaluation-proof','sha256',repeat('a',64))) from unnest(array['provider_terms','account_configuration','credential_binding']) k),
+ 'reviewedBy','Synthetic reviewer','reviewedAt',clock_timestamp()-interval '1 hour','validThrough',clock_timestamp()+interval '1 day','revokedAt',null),
+ 'Synthetic intent router gold family proof');`;
+  sql(`begin;\n${routes.flatMap(route => ['inference', 'prompt_cache'].map(resource => assurance(route, resource))).join('\n')}\ncommit;`);
+
+  // The simulated providers read each request as a model would: the task from its schema, the turn
+  // from its input. The router gets a schema-valid abstention on every turn; the extractor gets an
+  // attributable extraction of the preflight turn's two heads, and an empty extraction otherwise,
+  // which the extractor's deterministic gate rejects wherever the turn names a head: those passes go
+  // through the same-model repair and the provider fallback, each reserved and settled on its own.
+  const snapshot = g.buildIntentRouterGoldSnapshot();
+  const preflightMessage = snapshot.preflight.objectInput.latestUserMessage;
+  const routed = g.intentClassifierOutputSchema.parse({
+    routingCore: {action: {value: ['understand'], state: 'unknown'}, object: {value: [], state: 'unknown'}, decisionType: {value: 'none', state: 'not_applicable'},
+      audienceType: {value: 'unspecified', state: 'unknown'}, depth: {value: 'point', state: 'unknown'}, continuity: {value: 'new', state: 'unknown'}, workResponsibility: {value: [], state: 'unknown'}},
+    inferableContext: {jurisdiction: {value: [], state: 'unknown'}, asOfDate: {value: null, state: 'unknown'}, currency: {value: null, state: 'unknown'}, deadline: {value: null, state: 'unknown'},
+      sponsorInstruction: {value: null, state: 'unknown'}, constraints: {value: [], state: 'unknown'}, urgency: {value: null, state: 'unknown'}, availableInputs: {value: [], state: 'unknown'}},
+    primaryWorks: [], composition: null, firstQuestion: null, abstain: true, abstainReason: 'Resposta sintética da prova de CI.',
+  });
+  const span = text => ({source: 'latest_user_message', messageIndex: null, start: preflightMessage.indexOf(text), end: preflightMessage.indexOf(text) + text.length, text});
+  const empty = {objects: [], activeContextReferences: [], unresolvedReferences: [], excludedQuantitativeSpans: [], excludedSemanticHeadSpans: []};
+  const preflightExtraction = {...empty, objects: [
+    {candidateId: 'candidate-1', kind: 'company', head: {key: 'entity', span: span('Camil')}, modifiers: []},
+    {candidateId: 'candidate-2', kind: 'operation', head: {key: 'subject', span: span('refinanciamento')}, modifiers: []},
+  ]};
+  assert.deepEqual(g.validateSemanticObjectOutput(snapshot.preflight.objectInput, preflightExtraction), {accepted: true}, 'the preflight extraction is attributable');
+  const extractionFor = message => message === preflightMessage ? preflightExtraction : empty;
+  const usage = {inputTokens: 120, outputTokens: 30, cachedInputTokens: 0};
+  let providerCalls = 0;
+  const simulated = provider => ({provider, async complete(request) {
+    providerCalls += 1;
+    const message = JSON.parse(request.input[0].text).latestUserMessage;
+    const output = request.schemaName === 'shadow_routing_output' ? routed : extractionFor(message);
+    return {output: structuredClone(output), rawText: JSON.stringify(output), usage, model: request.model, stopReason: 'end'};
+  }});
+  const deps = {adapters: {anthropic: simulated('anthropic'), openai: simulated('openai')}, connections: {anthropic: routeConnection, openai: routeConnection}, heartbeatMs: 2_000};
+  // Every route call once; each extractor call once when its extraction is accepted, else three times.
+  const attemptsOf = objectInput => g.validateSemanticObjectOutput(objectInput, extractionFor(objectInput.latestUserMessage)).accepted ? 1 : 3;
+  const expectedCalls = 4 + snapshot.observations.reduce((sum, observation) => sum + 1 + attemptsOf(observation.objectInput), 0);
+  const rejected = snapshot.observations.filter(observation => attemptsOf(observation.objectInput) === 3).map(({turnId, repeat}) => `${turnId}:${repeat}:intent_object_gold`);
+  assert(rejected.length > 0 && rejected.length < snapshot.observations.length, 'the simulation exercises both accepted and rejected extractions');
+
+  const trustedWorkflow = {GITHUB_ACTIONS: 'true', GITHUB_REPOSITORY: 'carlosevg100/offroad', GITHUB_REF: 'refs/heads/main', GITHUB_SHA: 'e5a1e000'.repeat(5),
+    GITHUB_WORKFLOW_REF: 'carlosevg100/offroad/.github/workflows/intent-router-gold.yml@refs/heads/main', GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_RUN_ID: '1', GITHUB_RUN_ATTEMPT: '1'};
+  const environment = {...scriptEnvironment, ...trustedWorkflow};
+  assert.deepEqual(Object.keys(environment).filter(name => providerCredential.test(name)), [], 'the intent router script runs with no provider key in its environment');
+  const runGate = out => {
+    const child = spawn(process.execPath, [tsxCli, 'scripts/run-intent-router-gold.ts', '--out', out, '--poll-seconds', '1'], {cwd: evalsDir, env: environment, stdio: ['ignore', 'pipe', 'pipe']});
+    const run = {child, stdout: '', stderr: '', ended: null};
+    child.stdout.on('data', chunk => { run.stdout += chunk; });
+    child.stderr.on('data', chunk => { run.stderr += chunk; });
+    const timer = setTimeout(() => child.kill('SIGKILL'), 300_000);
+    run.exited = new Promise((done, fail) => {
+      child.on('error', fail);
+      child.on('close', code => { clearTimeout(timer); run.ended = code ?? -1; done(run); });
+    });
+    return run;
+  };
+  const claimGate = async run => {
+    for (const deadline = Date.now() + 240_000; Date.now() < deadline;) {
+      const claim = await consumer.claim();
+      if (claim) {
+        assert.equal(JSON.parse(claim.contractText).audience.scriptId, scriptId, 'another evaluation claimed');
+        return claim;
+      }
+      if (run.ended !== null) throw new Error(`intent_router_script_ended_before_its_request_was_claimed: ${run.ended}\n${outputTail(run)}`);
+      await new Promise(done => setTimeout(done, 500));
+    }
+    run.child.kill('SIGKILL');
+    throw new Error(`intent_router_script_request_not_claimed\n${outputTail(run)}`);
+  };
+
+  // Live: the canonical gold snapshot, every attempt reserved and settled, the gate record written.
+  const dir = join(temporary, 'intent-router-gold-succeeded');
+  const started = performance.now();
+  const run = runGate(dir);
+  const claim = await claimGate(run);
+  const contract = JSON.parse(claim.contractText);
+  assert.deepEqual([contract.organizationId, contract.purpose, contract.audience], [organization, 'evaluation', {kind: 'evaluation_panel', ...snapshot.audience, scriptId}]);
+  assert.deepEqual(contract.tools, routes.map(route => ({id: `provider:${route.provider}:${route.model}`, version: m.governedEvaluationToolVersion, effect: 'read_only'})),
+    'every route the family may take, at the gateway version');
+  assert.deepEqual([contract.budget.maxCostMicrousd, contract.budget.maxModelCalls, contract.budget.maxDurationMs, contract.inputs.sources], [3_000_000, 320, 320 * 60_000, []]);
+  assert.equal(claim.snapshotText, g.executionCanonicalText(snapshot), 'the script sends the canonical gold snapshot');
+  assert.equal(contract.inputs.fingerprint, sha(claim.snapshotText));
+  const before = providerCalls;
+  assert.deepEqual(await m.processGovernedEvaluation(claim, consumer, new AbortController().signal, deps), {status: 'succeeded', reason: 'evaluated', replayed: false});
+  assert.equal(providerCalls - before, expectedCalls, 'every attempt the gate makes reaches a simulated provider once');
+  await run.exited;
+  const gateMs = Math.ceil(performance.now() - started);
+  // The evaluation succeeds; the gate it records fails on the simulated answers, with its usual status.
+  assert.equal(run.ended, 1, `the intent router script did not record its gate\n${outputTail(run)}`);
+  assert.match(run.stdout, new RegExp(`^evaluation committed: succeeded/evaluated, \\d+ microusd over ${expectedCalls} calls$`, 'm'));
+  assert.match(run.stdout, /^gate=FAIL turns=40 observations=52 /m);
+  assert.deepEqual(readdirSync(dir).sort(), ['evaluation.json', 'intent-router-gold.json', 'intent-router-gold.md']);
+  const read = await call(evaluator, 'read_governed_evaluation_session_v1', {p_execution_id: claim.executionId});
+  assert.deepEqual([read.requestedBy, read.outcome, read.reason, read.contractFingerprint], [users.evaluator, 'succeeded', 'evaluated', claim.contractFingerprint]);
+  const committed = g.intentRouterGoldResultSchema.parse(JSON.parse(read.result.canonicalResult));
+  assert.equal(committed.outcome, 'observed');
+  const record = JSON.parse(readFileSync(join(dir, 'intent-router-gold.json'), 'utf8'));
+  assert.deepEqual(record.calls, committed.calls, 'the gate record keeps the committed call ledger');
+  assert.deepEqual([record.providerPreflight, record.gatewaySpent], [committed.providerPreflight, committed.gatewaySpent]);
+  assert.deepEqual(record.runs.map(run => [run.turnId, run.repeat, run.rawActualFingerprint, run.rawObjectActualFingerprint, run.actualFingerprint, run.error]),
+    committed.observations.map(observation => [observation.turnId, observation.repeat, observation.rawActualFingerprint, observation.rawObjectActualFingerprint, observation.actualFingerprint, observation.error]));
+  assert(g.verifyIntentRouterEvidenceRecord(record), 'the gate record fingerprint verifies from the written file');
+  assert.deepEqual([record.provenance.gitSha, record.provenance.workflowRef, record.provenance.eventName], [trustedWorkflow.GITHUB_SHA, trustedWorkflow.GITHUB_WORKFLOW_REF, 'workflow_dispatch']);
+  assert.equal(record.manifestPassed, true);
+  assert.deepEqual([record.callEvidence.linkedPreflightOperations, record.callEvidence.linkedObservationOperations, record.callEvidence.providerAttempts], [4, 104, expectedCalls]);
+  assert.deepEqual([...record.callEvidence.issues].sort(), rejected.flatMap(operation => [`terminal_success_count:${operation}:0`, `output_mismatch:${operation}`]).sort(),
+    'the ledger passes every prompt, input, repair, topology, preflight and cost check; only the rejected extractions miss their success');
+  assert.equal(read.receipts.length, expectedCalls);
+  for (const receipt of read.receipts) {
+    const model = receipt.toolId.split(':')[2];
+    assert(routes.some(route => receipt.toolId === `provider:${route.provider}:${route.model}`), 'a declared route');
+    assert.deepEqual([receipt.state, receipt.toolVersion, receipt.resources, receipt.reservedCalls, receipt.spentCalls], ['settled', m.governedEvaluationToolVersion, ['inference', 'prompt_cache'], 1, 1]);
+    assert.equal(receipt.spentMicrousd, m.microusdCeil(m.estimateCostUsd(model, usage)));
+    assert(receipt.reservedMicrousd >= receipt.spentMicrousd, 'spend within its reservation');
+  }
+  assert(read.receipts.some(receipt => receipt.toolId === 'provider:openai:gpt-5.6-terra'), 'provider fallbacks were reserved on their own route');
+  assert.equal(read.decisions.length, expectedCalls + routes.length, 'one decision per reservation and one revalidation per route at publication');
+  assert(read.decisions.every(decision => decision.allowed && decision.purpose === 'evaluation'));
+  const spent = read.receipts.reduce((sum, receipt) => sum + receipt.spentMicrousd, 0);
+  assert.deepEqual([read.cost.spentMicrousd, read.cost.reservedMicrousd, read.cost.spentCalls, read.cost.reservedCalls, read.totalCostMicrousd], [spent, 0, expectedCalls, 0, spent]);
+  const evidence = JSON.parse(readFileSync(join(dir, 'evaluation.json'), 'utf8'));
+  assert.deepEqual([evidence.executionId, evidence.request, evidence.outcome, evidence.reason, evidence.resultFingerprint, evidence.receipts.length],
+    [claim.executionId, 'created', 'succeeded', 'evaluated', read.result.resultFingerprint, expectedCalls]);
+  assert(evidence.receipts.every(receipt => !('route' in receipt)));
+  assert.equal(sql(`select count(*) from private.governed_evaluation_request_events where evaluation_id='${claim.executionId}' and actor_user_id='${users.evaluator}';`), '1');
+  console.log(`governed_intent_router_gold_script: PASS (script with no provider key, evaluator session request of the 52-observation gold snapshot, ${expectedCalls} reserved and settled attempts including repairs and fallbacks, commit succeeded/evaluated, gate record carrying the committed ledger)`);
+
+  // Revoked: the family's inference assurance on the primary route is revoked before the claim.
+  sql(`select private.revoke_provider_processing_assurance_v1('${routes[0].assurances.inference}','Synthetic revocation before the intent router gold run');`);
+  const deniedDir = join(temporary, 'intent-router-gold-denied');
+  const deniedRun = runGate(deniedDir);
+  const deniedClaim = await claimGate(deniedRun);
+  assert.notEqual(deniedClaim.executionId, claim.executionId);
+  assert.equal(deniedClaim.snapshotText, claim.snapshotText, 'the script assembles the same bytes on every run');
+  const beforeDenial = providerCalls;
+  assert.deepEqual(await m.processGovernedEvaluation(deniedClaim, consumer, new AbortController().signal, deps), {status: 'partial', reason: 'transport_denied', replayed: false});
+  assert.equal(providerCalls, beforeDenial, 'a revoked assurance lets nothing of the gate reach a provider');
+  await deniedRun.exited;
+  assert.equal(deniedRun.ended, 3, `the intent router script must end partial\n${outputTail(deniedRun)}`);
+  assert.match(deniedRun.stdout, /^evaluation committed: partial\/transport_denied, 0 microusd over 0 calls$/m);
+  assert.match(deniedRun.stderr, new RegExp(`^evaluation ${deniedClaim.executionId} is partial: transport_denied$`, 'm'));
+  assert.deepEqual(readdirSync(deniedDir), ['evaluation.json'], 'a partial evaluation writes no gate record');
+  const deniedEvidence = JSON.parse(readFileSync(join(deniedDir, 'evaluation.json'), 'utf8'));
+  assert.deepEqual([deniedEvidence.outcome, deniedEvidence.reason, deniedEvidence.receipts.length, deniedEvidence.cost.spentMicrousd, deniedEvidence.totalCostMicrousd],
+    ['partial', 'transport_denied', 0, 0, 0]);
+  assert.deepEqual(deniedEvidence.decisions.map(decision => [decision.allowed, decision.purpose, decision.reasons.includes('processing_resource_ineligible:inference')]),
+    [[false, 'evaluation', true]]);
+  console.log('governed_intent_router_gold_script_revoked_assurance: PASS (script with no provider key, first reservation denied and journaled, zero provider calls, script received partial/transport_denied and wrote no gate record)');
+  console.log(JSON.stringify({event: 'governed_intent_router_gold_proof', gateMs, providerCalls, expectedCalls, spentMicrousd: spent}));
+}

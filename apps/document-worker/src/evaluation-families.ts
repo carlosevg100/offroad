@@ -1,5 +1,7 @@
 import {baselineGeneralistSnapshotSchema, baselineSnapshotContentHashes, runBaselineGeneralist, type BaselineGeneralistResult} from "@offroad/agent-contracts";
 import {defaultTaskPolicies, type ModelGateway, type ModelRef, type TaskKind, type TaskPolicy} from "@offroad/model-gateway";
+import type {GatewayCallLog} from "@offroad/model-gateway";
+import {intentRouterGoldFamily} from "./intent-router-gold-family";
 
 /**
  * An evaluation family turns one snapshot into model calls through the governed gateway it
@@ -17,6 +19,8 @@ export type PreparedEvaluation = {
  /** Task policies the gateway uses, derived from the snapshot's model settings only. */
  policies: Partial<Record<TaskKind, TaskPolicy>>;
  run(gateway: ModelGateway, clock: () => Date): Promise<unknown>;
+ /** Receives each call log of the run's gateway, in order, for a family whose result keeps its call ledger. */
+ onCall?: (log: GatewayCallLog) => void;
 };
 export type EvaluationFamily = {id: string; prepare(snapshot: unknown): PreparedEvaluation};
 
@@ -43,4 +47,4 @@ export const baselineGeneralistFamily: EvaluationFamily = {
 };
 
 /** The contract's audience.scriptId selects the family; a script without one sends nothing. */
-export const evaluationFamilies: Readonly<Record<string, EvaluationFamily>> = Object.freeze({"run-gold-baseline": baselineGeneralistFamily});
+export const evaluationFamilies: Readonly<Record<string, EvaluationFamily>> = Object.freeze({"run-gold-baseline": baselineGeneralistFamily, "run-intent-router-gold": intentRouterGoldFamily});

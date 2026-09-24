@@ -41,6 +41,14 @@ Workflow `gold-baseline.yml`: sem passos de chave de provedor; lê `offroad/eval
 
 Achado de orçamento: cada turno do gc01 reserva cerca de US$ 37,54 a preço de tabela na rota principal (US$ 24,17 no fallback). Com o teto padrão de US$ 25, uma execução termina `budget_exhausted` sem gastar nada. O teto não foi alterado, porque gasto é decisão do fundador.
 
+## Família do roteador de intenção
+
+`packages/evals/scripts/run-intent-router-gold.ts` pede pelo transporte a família `intent_router_gold` (laço puro, pré-voo e esquemas em `packages/agent-contracts/src/intent-router-gold.ts`; registro no worker em `apps/document-worker/src/intent-router-gold-family.ts`). O snapshot `intent-router-gold-snapshot.v1` leva a audiência versionada pela impressão do manifesto de 52 observações, as configurações de modelo do roteador e do extrator, o turno de pré-voo e as entradas de cada observação, byte a byte as mesmas que o script enviava; não leva gabarito. O resultado traz o pré-voo, as 52 observações, o registro completo de chamadas e o gasto do gateway; a pontuação contra o gabarito e a verificação do registro de chamadas continuam fora do worker, no script. A linha de guarda, as duas fábricas de provedor e as duas leituras de chave saíram. Roteador e extrator passam a rodar um depois do outro, porque o gateway governado admite uma tentativa por vez, e um erro de provedor com uso desconhecido torna a avaliação inteira parcial (`operation_uncertain`), em vez de uma observação falha. O worker ganhou um gancho opcional `onCall` para repassar o registro de chamadas à família.
+
+Prova na CI: o script roda em modo real contra a pilha descartável, com garantias próprias para as duas rotas, 184 tentativas reservadas, enviadas uma vez e liquidadas (inclusive reparos no mesmo modelo e fallback), commit `succeeded/evaluated`, registro igual ao resultado gravado e o portão reprovado de propósito pelas respostas simuladas (saída 1, como antes para portão reprovado). Com a garantia revogada: zero chamadas, `partial/transport_denied`, saída 3. O workflow `intent-router-gold.yml` passa a ler a credencial do avaliador, falha fechado sem ela e tem prazo de 360 minutos, porque o script espera até o fim do orçamento.
+
+Custo a preço de tabela, com o teto padrão de US$ 3, que não mudou: a maior reserva isolada é US$ 0,197; as 108 primeiras tentativas somam US$ 17,45 reservados um de cada vez, cada um liberado ao custo medido. Uma execução só termina se o gasto medido ficar abaixo de cerca de US$ 2,80; se não, termina `budget_exhausted`, sem registro.
+
 ## O que falta para religar os scripts
 
 - Os outros oito scripts, em três famílias e pelo padrão do baseline, cada um removendo a sua linha de guarda na mesma PR da prova do caminho (gateway com cassete na pilha descartável: pedido, claim, reserva, liquidação, commit e leitura; depois a garantia revogada e zero chamadas).

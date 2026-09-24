@@ -530,3 +530,4 @@ function containsNumber(value: unknown): boolean {
 
 export * from "./economic-context";
 export * from "./execution-profile";
+export * from "./intent-router-gold";

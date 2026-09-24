@@ -1,57 +1,48 @@
-import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /**
+ * `pnpm --filter @offroad/evals intent-router:gold [--dry-run] [--out <dir>] [--max-cost <usd>]
+ *  [--request-id <uuid>] [--poll-seconds <n>]`
+ *
  * Runs the production Intent Classifier contract on the canonical synthetic turns.
  *
  * All canonical turns run once for accuracy. Six plan-changing turns additionally run through two
  * authored paraphrases to prove that the same meaning preserves workflow identity. Each observation
- * runs the production router and the independent attributable-span extractor in parallel, then
- * compiles semantic objects before canonicalization. The report is promotion evidence only when all
- * 52 manifest entries pass; this script never promotes or changes the production router.
+ * runs the production router and the independent attributable-span extractor, then compiles
+ * semantic objects before canonicalization. The report is promotion evidence only when all 52
+ * manifest entries pass; this script never promotes or changes the production router.
+ *
+ * The live run never reaches a provider from this process. It requests a governed evaluation
+ * through the evaluator's own session (`../src/governed-transport`); the worker runs the provider
+ * preflight and every observation of the intent router family under the database's reservations,
+ * one attempt at a time; and this script scores the committed run against the gold and verifies its
+ * call ledger offline, with the same gate and call-evidence verifiers as before, writing
+ * `intent-router-gold.json` and `intent-router-gold.md` (or `provider-preflight.json` when a
+ * configured route fails its preflight) beside `evaluation.json` with the evaluation's identity,
+ * fingerprints, reservations and cost. The environment carries the evaluator's credential and the
+ * evaluation organization (SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, OFFROAD_EVALUATOR_EMAIL,
+ * OFFROAD_EVALUATOR_PASSWORD, OFFROAD_EVALUATION_ORGANIZATION_ID), never a provider key.
+ * `--request-id` resumes an earlier request instead of creating another evaluation. A partial
+ * evaluation writes only `evaluation.json` and exits with status 3. `--dry-run` assembles the
+ * snapshot and the budget without requesting anything.
  */
+import {createHash} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {resolve} from "node:path";
 
-import {
-  INTENT_CLASSIFIER_SYSTEM,
-  SEMANTIC_OBJECT_EXTRACTOR_SYSTEM,
-  applySemanticObjectCompilation,
-  canonicalizeIntentClassifierOutput,
-  compileSemanticObjects,
-  intentClassifierOutputSchema,
-  semanticObjectExtractorOutputSchema,
-  validateSemanticObjectOutput,
-  type SemanticObjectCompilation,
-  type SemanticObjectExtractorOutput,
-  type IntentClassifierOutput,
-} from "@offroad/agent-contracts";
-import {fingerprintJson} from "@offroad/case-understanding";
-import {
-  createAnthropicAdapter,
-  createModelGateway,
-  createOpenAIAdapter,
-  defaultTaskPolicies,
-  type GatewayCallLog,
-  type ModelRef,
-} from "@offroad/model-gateway";
+import {executionCanonicalText, intentRouterGoldRoutes, intentRouterGoldSnapshotContentHashes} from "@offroad/agent-contracts";
 
-import {assertCanonicalIntentGold, intentGoldTurns, stabilityIntentTurnIds} from "../src/intent-gold";
+import {governedEvaluationEvidence, readGovernedTransportEnvironment, requestGovernedEvaluation} from "../src/governed-transport";
+import type {GatewaySpentEvidence, verifyIntentRouterCallEvidence} from "../src/intent-router-call-evidence";
+import type {IntentRouterGateObservation, summarizeIntentRouterGate} from "../src/intent-router-gate";
 import {
-  expectedIntentRouterManifest,
-  fingerprintIntentMessage,
-  intentRouterGateObservationSchema,
-  intentRoutingFingerprint,
-  scoreIntentGoldTurn,
-  summarizeIntentRouterGate,
-  type IntentRouterGateObservation,
-} from "../src/intent-router-gate";
-import {intentGoldClassifierInput, intentGoldMessage, intentGoldObjectInput} from "../src/intent-router-gate-input";
-import {fingerprintIntentRouterEvidenceRecord, verifyIntentRouterCallEvidence} from "../src/intent-router-call-evidence";
+  buildIntentRouterGoldSnapshot,
+  intentRouterGoldBudget,
+  intentRouterGoldPreflightRecord,
+  intentRouterGoldRecord,
+  intentRouterGoldScriptId,
+  readIntentRouterGovernedResult,
+} from "../src/intent-router-gold-transport";
 import {assertTrustedPaidGateEnvironment, paidGateProvenance} from "../src/intent-router-gate-trust";
-import {
-  IntentRouterProviderPreflightError,
-  preflightIntentRouterProviders,
-  type IntentRouterProviderPreflight,
-} from "../src/intent-router-preflight";
+import {IntentRouterProviderPreflightError, type IntentRouterProviderPreflight} from "../src/intent-router-preflight";
 
 const args = process.argv.slice(2);
 const option = (name: string, fallback: string): string => {
@@ -63,266 +54,77 @@ const maxCostUsd = Number(option("max-cost", "3"));
 if (!Number.isFinite(maxCostUsd) || maxCostUsd <= 0 || maxCostUsd > 10) {
   throw new Error("--max-cost must be greater than 0 and no more than 10 USD");
 }
-
-const stabilityTurnIds = new Set(stabilityIntentTurnIds);
-
-const calls: GatewayCallLog[] = [];
+const dryRun = args.includes("--dry-run");
+const pollSeconds = Number(option("poll-seconds", "5"));
+const requestId = option("request-id", "");
+if (!Number.isFinite(pollSeconds) || pollSeconds < 1) throw new Error("--poll-seconds must be at least 1");
 
 async function main(): Promise<void> {
+  // The snapshot of the gate: the canonical gold, checked first, and the production contracts' inputs.
+  const snapshot = buildIntentRouterGoldSnapshot();
+  const plannedObservations = snapshot.observations.length;
+  if (plannedObservations !== 52) throw new Error(`intent_router_manifest_must_have_52_observations:${plannedObservations}`);
+  const snapshotText = executionCanonicalText(snapshot);
+  console.log(`evaluation snapshot: ${Buffer.byteLength(snapshotText, "utf8")} bytes, sha256 ${createHash("sha256").update(snapshotText, "utf8").digest("hex").slice(0, 16)}, ${plannedObservations} observations, audience ${snapshot.audience.caseVersion}`);
+  const budget = intentRouterGoldBudget(snapshot, maxCostUsd);
+  console.log(`evaluation budget: ${budget.maxCostMicrousd} microusd, ${budget.maxModelCalls} calls, ${budget.maxDurationMs} ms of work`);
+  if (dryRun) {
+    console.log("dry run: no model called");
+    return;
+  }
+
+  // Paid gate evidence comes only from the trusted post-merge workflow; the database then decides
+  // whether this evaluator may ask and whether each send, repair and fallback may go.
   const gateEnvironment = {
     githubActions: process.env.GITHUB_ACTIONS, repository: process.env.GITHUB_REPOSITORY,
     ref: process.env.GITHUB_REF, sha: process.env.GITHUB_SHA, workflowRef: process.env.GITHUB_WORKFLOW_REF,
     eventName: process.env.GITHUB_EVENT_NAME, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT,
   };
   assertTrustedPaidGateEnvironment(gateEnvironment);
-  assertCanonicalIntentGold();
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
-  const routePolicy = defaultTaskPolicies.route_intent;
-  const objectPolicy = defaultTaskPolicies.extract_semantic_objects;
-  const routeProviders = uniqueModelRefs([routePolicy.primary, ...(routePolicy.fallback ? [routePolicy.fallback] : [])]);
-  const objectProviders = uniqueModelRefs([objectPolicy.primary, ...(objectPolicy.fallback ? [objectPolicy.fallback] : [])]);
-  const configuredProviders = uniqueModelRefs([...routeProviders, ...objectProviders]);
-  const missingProviderKeys = configuredProviders.filter(({provider}) =>
-    provider === "anthropic" ? !anthropicKey : !openaiKey).map(({provider}) => provider);
-  if (missingProviderKeys.length > 0) {
-    throw new Error(`configured route_intent provider credentials missing: ${missingProviderKeys.join(",")}; run this gate through its OIDC workflow`);
-  }
 
-  const plannedObservations = expectedIntentRouterManifest().length;
-  const plannedProviderOperations = plannedObservations * 2;
-  if (plannedObservations !== 52) throw new Error(`intent_router_manifest_must_have_52_observations:${plannedObservations}`);
-  mkdirSync(outDir, {recursive: true});
-  requireGovernedEvaluationTransport();
-  const gateway = createModelGateway({
-    adapters: {
-      anthropic: createAnthropicAdapter({apiKey: anthropicKey!}),
-      openai: createOpenAIAdapter({apiKey: openaiKey!}),
+  // Live: the worker runs the intent router family under the governed transport. This process holds
+  // no provider key and builds no adapter or gateway; it asks through the evaluator's session and
+  // scores what the database committed.
+  const evaluation = await requestGovernedEvaluation({
+    audience: {...snapshot.audience, scriptId: intentRouterGoldScriptId},
+    routes: intentRouterGoldRoutes(snapshot),
+    budget,
+    snapshot,
+    sourceContentHashes: intentRouterGoldSnapshotContentHashes(snapshot),
+    ...(requestId ? {requestId} : {}),
+  }, {
+    environment: readGovernedTransportEnvironment(),
+    pollIntervalMs: pollSeconds * 1000,
+    onProgress: (progress) => {
+      if (progress.phase === "requested") console.log(`evaluation requested: ${progress.executionId} (${progress.request}), request ${progress.requestId}`);
+      if (progress.phase === "waiting") console.log(`evaluation waiting: job ${progress.job ?? "unknown"}, run ${progress.run ?? "unknown"}, attempts ${progress.attempts ?? 0}`);
     },
-    budget: {maxCostUsd, maxCalls: plannedProviderOperations * 3 + configuredProviders.length * 4},
-    onCall: (call) => calls.push(call),
   });
-  const observations: IntentRouterGateObservation[] = [];
-  const preflightTurn = intentGoldTurns[0]!;
-  let providerPreflight: IntentRouterProviderPreflight[] = [];
-  let preflightFailed = false;
-  try {
-    providerPreflight.push(...await preflightIntentRouterProviders(gateway, routeProviders, {
-      task: "route_intent",
-      system: INTENT_CLASSIFIER_SYSTEM,
-      input: [{type: "text", text: JSON.stringify(intentGoldClassifierInput(preflightTurn, preflightTurn.message))}],
-      schema: intentClassifierOutputSchema,
-      schemaName: "shadow_routing_output",
-      outputMode: "prompted_json",
-      thinking: "off",
-      metadata: {caseId: preflightTurn.caseId, turnId: preflightTurn.id},
-    }));
-  } catch (cause) {
-    if (cause instanceof IntentRouterProviderPreflightError) providerPreflight.push(...cause.results);
-    preflightFailed = true;
+
+  mkdirSync(outDir, {recursive: true});
+  writeFileSync(resolve(outDir, "evaluation.json"), `${JSON.stringify(governedEvaluationEvidence(evaluation), null, 2)}\n`, "utf8");
+  console.log(`evaluation committed: ${evaluation.outcome}/${evaluation.reason}, ${evaluation.cost.spentMicrousd} microusd over ${evaluation.cost.spentCalls} calls`);
+  if (evaluation.outcome !== "succeeded") {
+    // A partial evaluation publishes only its reason: there is no run to score and no record to write.
+    console.error(`evaluation ${evaluation.executionId} is partial: ${evaluation.reason}`);
+    process.exitCode = 3;
+    return;
   }
-  const preflightObjectInput = intentGoldObjectInput(preflightTurn, preflightTurn.message);
-  try {
-    providerPreflight.push(...await preflightIntentRouterProviders(gateway, objectProviders, {
-      task: "extract_semantic_objects",
-      system: SEMANTIC_OBJECT_EXTRACTOR_SYSTEM,
-      input: [{type: "text", text: JSON.stringify(preflightObjectInput)}],
-      schema: semanticObjectExtractorOutputSchema,
-      schemaName: "semantic_object_extractor_output",
-      outputMode: "prompted_json",
-      thinking: "off",
-      metadata: {caseId: preflightTurn.caseId, turnId: preflightTurn.id},
-      validateOutput: (output) => validateSemanticObjectOutput(preflightObjectInput, output),
-    }));
-  } catch (cause) {
-    if (cause instanceof IntentRouterProviderPreflightError) providerPreflight.push(...cause.results);
-    preflightFailed = true;
-  }
-  if (preflightFailed) {
-    writeFileSync(resolve(outDir, "provider-preflight.json"), `${JSON.stringify({
-      generatedAt: new Date().toISOString(),
-      passed: false,
-      providers: providerPreflight,
-      gatewaySpent: gateway.spent(),
-      calls,
-    }, null, 2)}\n`, "utf8");
-    writeFileSync(resolve(outDir, "intent-router-gold.md"), renderPreflightFailure(providerPreflight, gateway.spent()), "utf8");
-    throw new IntentRouterProviderPreflightError(providerPreflight);
+  const result = readIntentRouterGovernedResult(evaluation.result, snapshot);
+  if (result.outcome === "preflight_failed") {
+    const preflight = intentRouterGoldPreflightRecord({result, generatedAt: new Date().toISOString()});
+    writeFileSync(resolve(outDir, "provider-preflight.json"), `${JSON.stringify(preflight, null, 2)}\n`, "utf8");
+    writeFileSync(resolve(outDir, "intent-router-gold.md"), renderPreflightFailure(result.providerPreflight, result.gatewaySpent), "utf8");
+    throw new IntentRouterProviderPreflightError(result.providerPreflight);
   }
 
-  for (const turn of intentGoldTurns) {
-    const repeats = stabilityTurnIds.has(turn.id) ? 3 : 1;
-    for (let repeat = 1; repeat <= repeats; repeat += 1) {
-      const message = intentGoldMessage(turn, repeat);
-      const classifierInput = intentGoldClassifierInput(turn, message);
-      const objectInput = intentGoldObjectInput(turn, message);
-      const startedAt = Date.now();
-      const spentBefore = gateway.spent();
-      let actual: IntentClassifierOutput | null = null;
-      let rawActual: IntentClassifierOutput | null = null;
-      let rawObjectActual: SemanticObjectExtractorOutput | null = null;
-      let objectCompilation: SemanticObjectCompilation | null = null;
-      let error: string | null = null;
-      let provider: string | null = null;
-      let model: string | null = null;
-      let objectProvider: string | null = null;
-      let objectModel: string | null = null;
-      let routeAttemptCount = 0;
-      let routeCostUsd = 0;
-      let routeLatencyMs = 0;
-      let objectAttemptCount = 0;
-      let objectCostUsd = 0;
-      let objectLatencyMs = 0;
-      let costUsd = 0;
-      let latencyMs = 0;
-      try {
-        const [routeResult, objectResult] = await Promise.allSettled([
-          gateway.complete({
-            task: "route_intent",
-            system: INTENT_CLASSIFIER_SYSTEM,
-            input: [{type: "text", text: JSON.stringify(classifierInput)}],
-            schema: intentClassifierOutputSchema,
-            schemaName: "shadow_routing_output",
-            outputMode: "prompted_json",
-            thinking: "off",
-            metadata: {surface: "intent_router_gold", caseId: turn.caseId, turnId: turn.id, repeat: String(repeat)},
-          }),
-          gateway.complete({
-            task: "extract_semantic_objects",
-            system: SEMANTIC_OBJECT_EXTRACTOR_SYSTEM,
-            input: [{type: "text", text: JSON.stringify(objectInput)}],
-            schema: semanticObjectExtractorOutputSchema,
-            schemaName: "semantic_object_extractor_output",
-            outputMode: "prompted_json",
-            thinking: "off",
-            metadata: {surface: "intent_object_gold", caseId: turn.caseId, turnId: turn.id, repeat: String(repeat)},
-            validateOutput: (output) => validateSemanticObjectOutput(objectInput, output),
-          }),
-        ]);
-        if (routeResult.status === "fulfilled") {
-          rawActual = routeResult.value.output;
-          provider = routeResult.value.provider;
-          model = routeResult.value.model;
-        }
-        if (objectResult.status === "fulfilled") {
-          rawObjectActual = objectResult.value.output;
-          objectProvider = objectResult.value.provider;
-          objectModel = objectResult.value.model;
-        }
-        if (routeResult.status === "rejected" || objectResult.status === "rejected") {
-          const failures = [routeResult, objectResult]
-            .filter((result): result is PromiseRejectedResult => result.status === "rejected")
-            .map(({reason}) => reason instanceof Error ? `${reason.name}: ${reason.message}` : String(reason));
-          throw new Error(failures.join(" | "));
-        }
-        objectCompilation = compileSemanticObjects(objectInput, objectResult.value.output);
-        actual = canonicalizeIntentClassifierOutput(
-          applySemanticObjectCompilation(routeResult.value.output, objectCompilation),
-          classifierInput,
-        );
-      } catch (cause) {
-        error = (cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause)).slice(0, 800);
-      }
-      const spentAfter = gateway.spent();
-      costUsd = spentAfter.costUsd - spentBefore.costUsd;
-      latencyMs = Date.now() - startedAt;
-      const recordedObjectAttempts = calls.filter((call) => call.metadata?.surface === "intent_object_gold"
-        && call.metadata.turnId === turn.id && call.metadata.repeat === String(repeat)
-        && call.costStatus !== "not_called");
-      objectAttemptCount = recordedObjectAttempts.length;
-      objectCostUsd = recordedObjectAttempts.reduce((sum, call) => sum + call.costUsd, 0);
-      objectLatencyMs = recordedObjectAttempts.reduce((sum, call) => sum + call.latencyMs, 0);
-      const recordedRouteAttempts = calls.filter((call) => call.metadata?.surface === "intent_router_gold"
-        && call.metadata.turnId === turn.id && call.metadata.repeat === String(repeat)
-        && call.costStatus !== "not_called");
-      routeAttemptCount = recordedRouteAttempts.length;
-      routeCostUsd = recordedRouteAttempts.reduce((sum, call) => sum + call.costUsd, 0);
-      routeLatencyMs = recordedRouteAttempts.reduce((sum, call) => sum + call.latencyMs, 0);
-      observations.push({
-        turnId: turn.id,
-        suite: turn.suite,
-        repeat,
-        messageFingerprint: fingerprintIntentMessage(message),
-        expected: turn.expected,
-        rawActual,
-        rawActualFingerprint: rawActual ? fingerprintJson(rawActual) : null,
-        rawObjectActual,
-        rawObjectActualFingerprint: rawObjectActual ? fingerprintJson(rawObjectActual) : null,
-        classifierInputFingerprint: fingerprintJson(classifierInput),
-        objectInputFingerprint: fingerprintJson(objectInput),
-        objectCompilation,
-        actual,
-        actualFingerprint: actual ? fingerprintJson(actual) : null,
-        error,
-        checks: scoreIntentGoldTurn(turn, actual, rawActual, objectCompilation),
-        routingFingerprint: actual ? intentRoutingFingerprint(actual) : null,
-        provider,
-        model,
-        routeAttemptCount,
-        routeCostUsd,
-        routeLatencyMs,
-        objectProvider,
-        objectModel,
-        objectAttemptCount,
-        objectCostUsd,
-        objectLatencyMs,
-        costUsd,
-        latencyMs,
-      });
-      const status = actual ? (observations.at(-1)!.checks.composition ? "ok" : "mismatch") : "error";
-      console.log(`${turn.id} repeat=${repeat} ${status} composition=${actual?.composition ?? "none"} model=${model ?? "none"}`);
-    }
-  }
-
-  const parsedObservations = observations.map((observation) => intentRouterGateObservationSchema.parse(observation));
-  const summary = summarizeIntentRouterGate(parsedObservations);
-  const spent = gateway.spent();
-  const callEvidence = verifyIntentRouterCallEvidence({observations: parsedObservations, calls, providerPreflight, gatewaySpent: spent});
-  const gatePassed = summary.passed && callEvidence.passed;
-  const observationCalls = calls.filter(({metadata}) => metadata?.surface === "intent_router_gold");
-  const objectCalls = calls.filter(({metadata}) => metadata?.surface === "intent_object_gold");
-  const preflightCalls = calls.filter(({metadata}) => metadata?.surface === "intent_router_provider_preflight");
-  const attemptTelemetry = {
-    observations: parsedObservations.length,
-    totalProviderAttempts: spent.calls,
-    observationProviderAttempts: observationCalls.filter(({costStatus}) => costStatus !== "not_called").length,
-    objectProviderAttempts: objectCalls.filter(({costStatus}) => costStatus !== "not_called").length,
-    preflightProviderAttempts: preflightCalls.filter(({costStatus}) => costStatus !== "not_called").length,
-    sameModelRepairAttempts: calls.filter(({isSameModelRepair}) => isSameModelRepair === true).length,
-    providerFallbackAttempts: calls.filter(({usedProviderFallback}) => usedProviderFallback === true).length,
-    unknownCostAttempts: spent.unknownCostCalls,
-  };
-  const unsignedRecord = {
-    ...summary,
-    passed: gatePassed,
-    generatedAt: new Date().toISOString(),
-    stabilityRepeats: 3,
-    stabilityTurnIds: [...stabilityTurnIds],
-    budget: {maxCostUsd, plannedObservations, plannedProviderOperations, plannedPreflightOperations: providerPreflight.length},
-    provenance: paidGateProvenance(gateEnvironment),
-    gatewaySpent: spent,
-    providerPreflight,
-    callEvidence,
-    attemptTelemetry,
-    contract: {
-      router: {schemaName: "shadow_routing_output", outputMode: "prompted_json", task: "route_intent"},
-      semanticObjects: {schemaName: "semantic_object_extractor_output", outputMode: "prompted_json", task: "extract_semantic_objects", activeWorkContext: "null_in_current_gold_fixture"},
-    },
-    expectedManifest: expectedIntentRouterManifest(),
-    runs: parsedObservations,
-    calls,
-  };
-  const record = {...unsignedRecord, evidenceFingerprint: fingerprintIntentRouterEvidenceRecord(unsignedRecord)};
+  const record = intentRouterGoldRecord({result, maxCostUsd, provenance: paidGateProvenance(gateEnvironment), generatedAt: new Date().toISOString()});
+  const spent = record.gatewaySpent;
   writeFileSync(resolve(outDir, "intent-router-gold.json"), `${JSON.stringify(record, null, 2)}\n`, "utf8");
   writeFileSync(resolve(outDir, "intent-router-gold.md"), renderMarkdown(record), "utf8");
-  console.log(`gate=${gatePassed ? "PASS" : "FAIL"} turns=${summary.uniqueTurns} observations=${summary.observations} fingerprint_invariance=${percent(summary.fingerprintInvarianceRate)} qualified_stability=${percent(summary.qualifiedStabilityRate)} attempts=${spent.calls} measured_cost=$${spent.costUsd.toFixed(4)} conservative_exposure=$${spent.budgetExposureUsd.toFixed(4)}`);
+  console.log(`gate=${record.passed ? "PASS" : "FAIL"} turns=${record.uniqueTurns} observations=${record.observations} fingerprint_invariance=${percent(record.fingerprintInvarianceRate)} qualified_stability=${percent(record.qualifiedStabilityRate)} attempts=${spent.calls} measured_cost=$${spent.costUsd.toFixed(4)} conservative_exposure=$${spent.budgetExposureUsd.toFixed(4)}`);
   console.log(`report=${resolve(outDir, "intent-router-gold.md")}`);
-  if (!gatePassed) process.exitCode = 1;
-}
-
-function uniqueModelRefs(refs: readonly ModelRef[]): ModelRef[] {
-  return refs.filter((ref, index, values) => values.findIndex((candidate) =>
-    candidate.provider === ref.provider && candidate.model === ref.model && candidate.effort === ref.effort) === index);
+  if (!record.passed) process.exitCode = 1;
 }
 
 function percent(value: number): string {
@@ -331,7 +133,7 @@ function percent(value: number): string {
 
 function renderMarkdown(record: ReturnType<typeof summarizeIntentRouterGate> & {
   generatedAt: string;
-  gatewaySpent: ReturnType<ReturnType<typeof createModelGateway>["spent"]>;
+  gatewaySpent: GatewaySpentEvidence;
   providerPreflight: IntentRouterProviderPreflight[];
   callEvidence: ReturnType<typeof verifyIntentRouterCallEvidence>;
   attemptTelemetry: {
@@ -401,7 +203,7 @@ function renderMarkdown(record: ReturnType<typeof summarizeIntentRouterGate> & {
 
 function renderPreflightFailure(
   providers: IntentRouterProviderPreflight[],
-  spent: ReturnType<ReturnType<typeof createModelGateway>["spent"]>,
+  spent: GatewaySpentEvidence,
 ): string {
   return [
     "# Intent Router Gold Gate",
