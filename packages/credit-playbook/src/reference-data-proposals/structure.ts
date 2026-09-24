@@ -429,6 +429,133 @@ const maturityConcentration = proposal(
   },
 );
 
+const crossDefaultThreshold = proposal(
+  "policy.structure.cross-default-threshold",
+  "reais (BRL); percentuais em fração do patrimônio líquido e do EBITDA consolidados",
+  {
+    title: "Lei nº 6.404/1976, art. 61: direitos, garantias e demais cláusulas ou condições da escritura de emissão",
+    url: "https://www.planalto.gov.br/ccivil_03/leis/l6404consol.htm",
+  },
+  {
+    formula: "limiar = maior entre (piso da faixa de porte, 0,03 × patrimônio líquido consolidado, 0,05 × EBITDA consolidado dos últimos 12 meses), pelas últimas demonstrações auditadas ou revisadas",
+    equityShare: "0.03",
+    ebitdaShare: "0.05",
+    floorsByEbitdaBand: [
+      {ebitdaLtmUpToBRL: "50000000", floorBRL: "1000000"},
+      {ebitdaLtmUpToBRL: "200000000", floorBRL: "5000000"},
+      {ebitdaLtmUpToBRL: "1000000000", floorBRL: "20000000"},
+      {ebitdaLtmUpToBRL: null, floorBRL: "50000000"},
+    ],
+    negativeOrZeroEbitda: "piso da primeira faixa ou 5% do valor da operação, o maior",
+    indexation: "pisos em reais corrigidos anualmente pelo IPCA a partir da data de emissão",
+    recalculation: "percentuais sobre patrimônio líquido e EBITDA recalculados a cada demonstração anual; piso em reais fixado na emissão pela faixa de porte daquela data, sem troca de faixa depois",
+    aggregation: "valor individual ou agregado",
+    scope: {
+      entities: "emissora, garantidoras e controladas relevantes (10% ou mais do EBITDA ou do ativo consolidados)",
+      obligations: "dívida financeira e de mercado de capitais, inclusive como garantidora",
+      excluded: ["obrigação discutida de boa-fé com exigibilidade suspensa ou garantida em juízo", "fornecedores e tributos em parcelamento adimplente", "dívida sem recurso de SPE não garantida pelo grupo"],
+    },
+    mechanics: {
+      crossAcceleration: "vencimento antecipado declarado de dívida financeira acima do limiar",
+      crossDefault: "inadimplemento pecuniário de dívida financeira acima do limiar não sanado no prazo de cura do próprio contrato",
+      protest: "protesto acima do limiar não cancelado, suspenso ou garantido em 15 dias úteis",
+      judgment: "decisão condenatória exequível acima do limiar, sem efeito suspensivo",
+      companyPreference: "inadimplemento não pecuniário de outro contrato só conta quando o outro credor declara o vencimento (cross-acceleration)",
+    },
+    reverseTest: "a dívida nova entra na base dos cross-defaults dos contratos vigentes: quando o valor dela supera o limiar desses contratos, a cascata consolidada de D-29 é refeita antes do term sheet",
+    observations: [
+      {date: "2025-10-10", source: "Escritura da 15ª emissão de debêntures da Camil Alimentos S.A., cláusula 7.26.3, itens IV a VII", reading: "R$ 90 milhões individual ou agregado, e depois da quitação do CRA de referência o maior entre R$ 120 milhões e 3% do patrimônio líquido, para vencimento antecipado cruzado, inadimplemento, protesto e condenação; um emissor de grande porte, não amostra de mercado"},
+    ],
+  },
+);
+
+const reportingCadence = proposal(
+  "policy.structure.reporting-cadence",
+  "dias corridos e dias úteis indicados em cada campo",
+  {
+    title: "Resolução CVM nº 80/2022, arts. 30 e 31 (DFP em até 3 meses do fim do exercício e ITR em até 45 dias do fim do trimestre)",
+    url: "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol080.html",
+  },
+  {
+    deadlineRule: "prazo proposto = maior entre o prazo regulatório aplicável e o tempo de fechamento medido (EMP-16) mais a folga da capacidade, limitado ao teto da capacidade; obrigação que a companhia não cumpre no próprio histórico não entra",
+    capabilities: [
+      {id: "A", description: "companhia aberta registrada na CVM", quarterlyStatementsDays: 45, auditedAnnualStatementsMonths: 3, covenantCertificateBusinessDays: 5, closeBufferDays: 0, basis: "Resolução CVM nº 80/2022, arts. 30 e 31; certificado de covenant com memória de cálculo junto das demonstrações"},
+      {id: "B", description: "companhia fechada ou limitada com demonstrações anuais auditadas e fechamento mensal em até 30 dias", quarterlyStatementsDays: 60, auditedAnnualStatementsMonths: 4, auditedAnnualStatementsMonthsWhenTraded: 3, covenantCertificateBusinessDays: 10, closeBufferDays: 20, basis: "Lei nº 6.404/1976, art. 132, e Resolução CVM nº 160/2022, art. 89, IV, quando o título é negociado em mercado regulamentado"},
+      {id: "C", description: "sem histórico de auditoria ou com fechamento mensal acima de 30 dias", quarterlyStatementsDays: 75, auditedAnnualStatementsMonths: 5, covenantCertificateBusinessDays: 15, closeBufferDays: 30, firstAuditRequirement: "primeiras demonstrações anuais auditadas do exercício corrente como obrigação datada"},
+    ],
+    observations: [
+      {date: "2025-10-10", source: "Escritura da 15ª emissão de debêntures da Camil Alimentos S.A., obrigações adicionais da emissora", reading: "demonstrações anuais auditadas em até 3 meses do fim do exercício, com memória de cálculo dos índices financeiros; ITR com revisão especial em até 45 dias dos três primeiros trimestres; aviso de evento de vencimento antecipado em até 1 dia útil"},
+    ],
+    monthlyAssetReporting: {appliesTo: "estrutura com base de empréstimo, cessão fiduciária de recebíveis ou estoque monitorado", businessDaysAfterMonthEnd: 10, content: "carteira analítica, aging, diluição, base elegível e cobertura"},
+    eventNotices: {
+      defaultOrPotentialDefaultBusinessDays: 2,
+      defaultNoticeAcceptableMinimumBusinessDays: 1,
+      materialLitigationAboveCrossDefaultThresholdBusinessDays: 5,
+      changeOfControl: "comunicação prévia à efetivação",
+      publicCompanies: "fato relevante na forma da Resolução CVM nº 44/2021",
+    },
+    covenantCertificateContent: "índices na definição do contrato, memória de cálculo com as rubricas, reconciliação com as demonstrações e declaração de ausência de evento de inadimplemento, assinada por diretor estatutário",
+  },
+);
+
+const cureWaiver = proposal(
+  "policy.structure.cure-waiver",
+  "dias úteis ou corridos indicados em cada campo; número de usos",
+  {
+    title: "Lei nº 6.404/1976, arts. 71 e 124, e Resolução CVM nº 17/2021, art. 12, § 2º: convocação de assembleia e maioria absoluta para modificar condições ou deixar de adotar medida",
+    url: "https://www.planalto.gov.br/ccivil_03/leis/l6404consol.htm",
+  },
+  {
+    cureMatrix: [
+      {event: "payment_default", curePeriodBusinessDays: 2, acceptableMinimumBusinessDays: 1, rule: "principal ou juros; falha operacional comprovada de sistema de pagamento conta o prazo a partir da correção"},
+      {event: "non_monetary_obligation", curePeriodCalendarDays: 30, acceptableMinimumCalendarDays: 10, startsFrom: "notificação do credor ou do agente fiduciário", rule: "não se aplica à obrigação com prazo específico próprio"},
+      {event: "information_delivery", curePeriodCalendarDays: 30, startsFrom: "fim do prazo de entrega", rule: "segundo atraso no mesmo exercício reduz a cura a 10 dias"},
+      {event: "misrepresentation", curePeriodCalendarDays: 15, startsFrom: "comunicação da inexatidão", rule: "declaração falsa dolosa ou material não tem cura"},
+      {event: "security_deterioration", curePeriodBusinessDays: 20, startsFrom: "notificação", rule: "reforço ou substituição de garantia até a cobertura mínima de policy.structure.collateral-coverage"},
+      {event: "reserve_account_shortfall", curePeriodBusinessDays: 40, startsFrom: "uso da reserva", rule: "reposição pela cascata, com trava de distribuição enquanto abaixo do alvo"},
+      {event: "financial_covenant_breach", cureMechanism: "equity cure", rule: "ver equityCure"},
+    ],
+    equityCure: {
+      maxUsesPerFourConsecutiveTests: 2,
+      maxUsesLifetime: 4,
+      consecutiveUsesAllowed: false,
+      contributionDeadlineBusinessDays: 20,
+      form: "aumento de capital ou mútuo de sócio subordinado, sem juros em caixa nem vencimento antes da dívida",
+      application: "valor aplicado na redução da dívida líquida (pré-pagamento ou depósito em conta travada), nunca somado ao EBITDA",
+      overcure: "limitado ao valor que restabelece o índice",
+      annualTests: "covenant apurado apenas anualmente admite 1 uso em 2 exercícios consecutivos, 2 na vida da operação",
+    },
+    accelerationMechanics: {
+      automatic: ["inadimplemento pecuniário não sanado", "pedido de recuperação judicial, falência ou liquidação"],
+      nonAutomaticDefault: "declared_only_by_assembly",
+      rule: "evento não automático só vence a dívida por deliberação dos credores; falta de quórum não declara vencimento; a casa recusa a fórmula de vencimento declarado salvo deliberação em contrário",
+    },
+    waiverProcess: {
+      debenturesAndCommercialNotes: {
+        quorum: "maioria absoluta dos títulos em circulação, em qualquer convocação: o mínimo da Lei nº 6.404/1976, art. 71, § 5º, e da Resolução CVM nº 17/2021, art. 12, § 2º",
+        noticeDaysPublicCompany: {firstCall: 21, secondCall: 8},
+        noticeDaysPrivateCompany: {firstCall: 8, secondCall: 5},
+      },
+      securitization: {
+        quorum: "50% mais um dos títulos em circulação em primeira convocação; em segunda, 50% mais um dos presentes, com presença mínima de 30% dos títulos em circulação",
+        legalMinimum: "a Resolução CVM nº 60/2021, arts. 28 e 30, admite instalação com qualquer número e maioria dos presentes, salvo quórum distinto no instrumento",
+        noticeDays: {firstCall: 21, secondCall: 8},
+      },
+      entrenchedMatters: {
+        matters: "remuneração, amortização, datas de pagamento, vencimento, eventos de vencimento antecipado e quóruns",
+        maxQualifiedQuorumShareOfOutstanding: "0.70",
+        rule: "a casa aceita quórum qualificado de até 70% dos títulos em circulação nessas matérias e recusa quórum qualificado para o waiver de covenant financeiro",
+      },
+      bilateral: {responseBusinessDays: 10, rule: "resposta do credor em até 10 dias úteis do pedido completo; silêncio não é consentimento"},
+      standstill: "durante o prazo de cura, o credor não declara vencimento pelo mesmo evento",
+    },
+    observations: [
+      {date: "2025-10-10", source: "Escritura da 15ª emissão de debêntures da Camil Alimentos S.A., cláusula 7.26", reading: "cura de 1 dia útil para obrigação pecuniária, com vencimento automático; 10 dias para obrigação não pecuniária; 15 dias para declaração inexata; evento não automático vence salvo deliberação contrária, e falta de quórum em segunda convocação leva à declaração"},
+      {date: "2025-10-10", source: "Termo de securitização do CRA 389 da Eco Securitizadora (devedora Camil Alimentos S.A.), cláusulas 17.6.6 a 17.9.3", reading: "convocação com 21 dias em primeira e 8 dias em segunda; waiver por 50% mais um dos CRA em circulação em primeira convocação, ou por 50% mais um dos presentes com 30% presentes em segunda; 70% para remuneração, amortização, datas, vencimento e eventos de vencimento"},
+    ],
+  },
+);
+
 export const structureProposals: ReferenceDataProposalFamily = {
   "policy.structure.collateral_haircuts": collateralHaircuts,
   "policy.structure.maturity_wall": maturityWall,
@@ -441,4 +568,7 @@ export const structureProposals: ReferenceDataProposalFamily = {
   "policy.structure.collateral-coverage": collateralCoverage,
   "policy.structure.appraisal-validity": appraisalValidity,
   "policy.structure.maturity-concentration": maturityConcentration,
+  "policy.structure.cross-default-threshold": crossDefaultThreshold,
+  "policy.structure.reporting-cadence": reportingCadence,
+  "policy.structure.cure-waiver": cureWaiver,
 };
