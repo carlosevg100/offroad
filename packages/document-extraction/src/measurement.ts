@@ -238,8 +238,10 @@ export function readExtractionMeasurementResult(value: unknown, snapshot: Extrac
     const entry = result.documents[index]!;
     if (entry.name !== document.name) throw mismatch(`document ${index + 1}`);
     const {chunks, usage} = entry.extraction;
+    // A failed evidence window counts among the windows and a failed table pass among all passes,
+    // as the extractor reports them, so each failure sits inside the document's total.
     if (chunks.failed > chunks.total || usage.calls !== chunks.total - chunks.failed || entry.failures.length !== chunks.failed
-      || entry.failures.some((failure) => failure.of !== chunks.total || failure.pass > chunks.total)
+      || entry.failures.some((failure) => failure.pass > failure.of || failure.of > chunks.total)
       || (plan !== undefined && plan[index] !== chunks.total)) {
       throw mismatch(`passes of ${document.name}`);
     }
