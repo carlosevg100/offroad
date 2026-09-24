@@ -55,7 +55,8 @@ The only door to LLM providers (P1 plan §13.3, §15). Nothing in the monorepo c
 - **Production job ceilings**: `production-budgets.ts` names the model-spend ceiling of every
   production job kind and the run budget the web app sends to the database, each re-derived for
   the calibrated reservation from the largest request the job's code builds, with the reasoning in
-  place.
+  place. The worker (`apps/document-worker/src/model-budgets.ts`) enforces the smallest of that
+  ceiling, the job's database budget and the optional `MODEL_MAX_COST_USD_PER_JOB` override.
 - **Minimization** — CPFs and e-mails in text parts are masked before leaving the
   perimeter (CNPJs and amounts are kept). Disable only for tasks whose object is the
   identifier itself.

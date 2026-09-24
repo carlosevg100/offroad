@@ -60,10 +60,6 @@
           "value": "por+eng"
         },
         {
-          "name": "MODEL_MAX_COST_USD_PER_JOB",
-          "value": "1"
-        },
-        {
           "name": "MODEL_MAX_CALLS_PER_JOB",
           "value": "8"
         },

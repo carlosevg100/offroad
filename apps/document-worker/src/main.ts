@@ -50,6 +50,7 @@ import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
 import {modelCallLogDetail, safeModelSpend} from "./model-call-log";
+import {jobModelBudget} from "./model-budgets";
 import {assertWorkerRuntimeSchema} from "./runtime-schema";
 import {createMaterialRenderInspector, materialRenderToolsAvailable} from "./material-render-inspection";
 
@@ -160,7 +161,8 @@ async function main(): Promise<void> {
   // shared across the loop would spend the whole allowance on the first few documents and then
   // refuse every document after them: a spend problem turned into an outage. A fresh instance
   // per job makes the ceiling mean "this document" or "this case analysis". The database then
-  // allocates those job ceilings so their possible sum cannot cross the case-wide limit.
+  // allocates those job ceilings so their possible sum cannot cross the case-wide limit. Every
+  // attempt reserves its calibrated upper bound before it is sent, so the ceiling holds.
   const adapters = {
     ...(config.ANTHROPIC_API_KEY ? {anthropic: createAnthropicAdapter({apiKey: config.ANTHROPIC_API_KEY})} : {}),
     ...(config.OPENAI_API_KEY ? {openai: createOpenAIAdapter({apiKey: config.OPENAI_API_KEY, ...(config.PROVIDER_CONNECTIONS_JSON.openai ? {organization: config.PROVIDER_CONNECTIONS_JSON.openai.accountRef, project: config.PROVIDER_CONNECTIONS_JSON.openai.projectRef} : {})})} : {}),
@@ -219,22 +221,16 @@ async function main(): Promise<void> {
   });
   const newGateway = (job: ClaimedJob, research: Awaited<ReturnType<typeof researchFor>>) => {
     const calls: GatewayCallLog[] = [];
-    const requestedBudget = "model_budget" in job.payload ? job.payload.model_budget : undefined;
-    const configuredMax = Math.min(
-      config.MODEL_MAX_COST_USD_PER_JOB,
-      requestedBudget?.max_cost_usd ?? config.MODEL_MAX_COST_USD_PER_JOB,
-    );
-    const maximumDiscoveryCostPerQuery = research.providers.reduce(
-      (total, provider) => total + (provider.maxCostUsdPerCall ?? 0),
-      0,
-    );
-    const researchQueryCount = job.kind === "capital_project_analysis" && job.payload.analysis_scope !== "provider_research" && job.payload.analysis_scope !== "provider_case_fit" && !job.payload.revision_of_artifact_id
-      ? job.payload.analysis_scope === "origination_thesis" ? 12 : 8
-      : job.kind === "case_analysis" || job.kind === "preliminary_analysis" ? 5 : 0;
-    const requestedResearchReserve = researchQueryCount * maximumDiscoveryCostPerQuery;
-    const researchReserveUsd = research.providers.length > 0
-      ? Math.min(requestedResearchReserve, Math.max(0, configuredMax - 0.01))
-      : 0;
+    // The job kind's derived ceiling, the database's budget for the job and the operator's
+    // optional override: the smallest wins, less the worst cost of the job's public research.
+    const budget = jobModelBudget({
+      job,
+      researchCostPerQueryUsd: research.providers.reduce((total, provider) => total + (provider.maxCostUsdPerCall ?? 0), 0),
+      researchProvidersConfigured: research.providers.length > 0,
+      overrideMaxCostUsd: config.MODEL_MAX_COST_USD_PER_JOB,
+      maxCallsPerJob: config.MODEL_MAX_CALLS_PER_JOB,
+    });
+    const researchReserveUsd = budget.researchReserveUsd;
     const gateway = createModelGateway({
       adapters,
       processingEligibility: async ({provider, model, resources, context}) => {
@@ -243,10 +239,7 @@ async function main(): Promise<void> {
         const purpose = context?.purpose ?? (job.kind === "document_pipeline" ? "document_processing" : "case_analysis");
         return createProviderProcessingAuthorizer(supabase, job, config.PROVIDER_CONNECTIONS_JSON)({provider, model, resources, purpose});
       },
-      budget: {
-        maxCostUsd: configuredMax - researchReserveUsd,
-        maxCalls: Math.min(config.MODEL_MAX_CALLS_PER_JOB, requestedBudget?.max_calls ?? config.MODEL_MAX_CALLS_PER_JOB),
-      },
+      budget: {maxCostUsd: budget.maxCostUsd, maxCalls: budget.maxCalls},
       onCall: (call) => {
         calls.push(call);
         log("model.call", modelCallLogDetail(job.job_id, call));
