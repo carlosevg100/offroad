@@ -79,7 +79,15 @@ def wait_locked(name,process):
     raise AssertionError('Existing lock contention was not observed')
 
 run("begin;\n\\i supabase/tests/support/r01_preparation_setup.sql\ncommit;\n")
-assert run("select count(*) from pg_trigger where tgname in ('zzz_fixture_source_rights','zz_synthetic_legacy_workspace_capabilities','zz_synthetic_policy_lease');")=='0', 'Synthetic provisioning trigger survived its setup session'
+# The synthetic triggers call pg_temp functions, so they disappear when the setup backend drops its
+# temporary namespace. That happens during backend exit, after psql has already returned, so a new
+# session can still see them for a moment on a loaded runner. Wait for the drop; never proceed with
+# a live fixture adapter.
+fixture_triggers="select count(*) from pg_trigger where tgname in ('zzz_fixture_source_rights','zz_synthetic_legacy_workspace_capabilities','zz_synthetic_policy_lease');"
+deadline=time.monotonic()+15
+while run(fixture_triggers)!='0':
+    assert time.monotonic()<deadline,'Synthetic provisioning trigger survived its setup session'
+    time.sleep(.1)
 print('r01_integrity_no_live_fixture_adapters: PASS')
 scope=f" where organization_id='{org}' and intake_session_id='{session}'"
 patches='private.receivables_method_supplement_patches'
