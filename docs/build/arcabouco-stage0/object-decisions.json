@@ -10093,6 +10093,60 @@
       "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
     },
     {
+      "id": "function:private.execution_company_basis_v1(p_org uuid, p_work uuid, p_entries jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_company_basis_v1(p_org uuid, p_work uuid, p_entries jsonb)",
+          "kind": "function",
+          "name": "execution_company_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_entries jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_company_basis_v1(p_org uuid, p_work uuid, p_entries jsonb)",
+          "kind": "function",
+          "name": "execution_company_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_entries jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 39,
+          "anchor": "create function private.execution_company_basis_v1(p_org uuid,p_work uuid,p_entries jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
       "kind": "function",
       "catalogues": {
@@ -10152,6 +10206,70 @@
           "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
           "line": 27,
           "anchor": "create function private.execution_contract_basis_v1(p_work_id uuid,p_version_id uuid,p_method_id text default 'prepare-capital-structure-decision') returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_contract_basis_v2(p_work_id uuid, p_version_id uuid, p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_contract_basis_v2(p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_contract_basis_v2(p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 67,
+          "anchor": "create function private.execution_contract_basis_v2(p_work_id uuid,p_version_id uuid,p_method_id text default 'prepare-capital-structure-decision') returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -10271,6 +10389,114 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.execution_gates_canonical_text_v1(p_value jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_gates_canonical_text_v1(p_value jsonb)",
+          "kind": "function",
+          "name": "execution_gates_canonical_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_value jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_gates_canonical_text_v1(p_value jsonb)",
+          "kind": "function",
+          "name": "execution_gates_canonical_text_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_value jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 87,
+          "anchor": "create function private.execution_gates_canonical_text_v1(p_value jsonb) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_gates_projection_v1(p_gates_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_gates_projection_v1(p_gates_text text)",
+          "kind": "function",
+          "name": "execution_gates_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_gates_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_gates_projection_v1(p_gates_text text)",
+          "kind": "function",
+          "name": "execution_gates_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_gates_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 103,
+          "anchor": "create function private.execution_gates_projection_v1(p_gates_text text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.execution_inputs_current_v1(p_org uuid, p_execution uuid, p_subject uuid)",
@@ -22213,6 +22439,70 @@
       ]
     },
     {
+      "id": "function:private.read_work_execution_v2(p_execution_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_work_execution_v2(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_work_execution_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_work_execution_v2(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_work_execution_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 237,
+          "anchor": "create function private.read_work_execution_v2(p_execution_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.read_workspace_access_v1()",
       "kind": "function",
       "catalogues": {
@@ -26593,6 +26883,70 @@
           "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
           "line": 99,
           "anchor": "create function private.request_work_execution_producer_v1(p_contract_text text,p_snapshot_text text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.request_work_execution_producer_v2(p_contract_text text, p_snapshot_text text, p_gates_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_work_execution_producer_v2(p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "request_work_execution_producer_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_work_execution_producer_v2(p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "request_work_execution_producer_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 190,
+          "anchor": "create function private.request_work_execution_producer_v2(p_contract_text text,p_snapshot_text text,p_gates_text text) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -50274,6 +50628,70 @@
       ]
     },
     {
+      "id": "function:public.execution_contract_basis_v2(p_work_id uuid, p_version_id uuid, p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.execution_contract_basis_v2(p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.execution_contract_basis_v2(p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 76,
+          "anchor": "create function public.execution_contract_basis_v2(p_work_id uuid,p_version_id uuid,p_method_id text default 'prepare-capital-structure-decision') returns jsonb language sql volatile security invoker set search_path='' as $$ select private.execution_contract_basis_v2(p_work_id,p_version_id,p_method_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.explain_my_access_v1(p_resource_id uuid, p_action text, p_purpose text)",
       "kind": "function",
       "catalogues": {
@@ -54608,6 +55026,70 @@
       ]
     },
     {
+      "id": "function:public.read_work_execution_v2(p_execution_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_work_execution_v2(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_work_execution_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_work_execution_v2(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_work_execution_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 248,
+          "anchor": "create function public.read_work_execution_v2(p_execution_id uuid) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.read_work_execution_v2(p_execution_id); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.read_workspace_access_v1()",
       "kind": "function",
       "catalogues": {
@@ -57280,6 +57762,70 @@
           "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
           "line": 126,
           "anchor": "create function public.request_work_execution_v1(p_contract_text text,p_snapshot_text text) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.request_work_execution_producer_v1(p_contract_text,p_snapshot_text); $$;",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.request_work_execution_v2(p_contract_text text, p_snapshot_text text, p_gates_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.request_work_execution_v2(p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "request_work_execution_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.request_work_execution_v2(p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "request_work_execution_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 232,
+          "anchor": "create function public.request_work_execution_v2(p_contract_text text,p_snapshot_text text,p_gates_text text) returns jsonb language sql volatile security invoker set search_path='' as $$ select private.request_work_execution_producer_v2(p_contract_text,p_snapshot_text,p_gates_text); $$;",
           "mechanism": "direct_ddl"
         }
       ]
@@ -74686,6 +75232,52 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "policy:private.execution_gate_receipts.execution_gate_receipts_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_gate_receipts.execution_gate_receipts_deny",
+          "kind": "policy",
+          "name": "execution_gate_receipts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_gate_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_gate_receipts.execution_gate_receipts_deny",
+          "kind": "policy",
+          "name": "execution_gate_receipts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_gate_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 180,
+          "anchor": "create policy execution_gate_receipts_deny on private.execution_gate_receipts as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "policy:private.execution_input_snapshots.execution_input_snapshots_deny_delete",
@@ -99559,6 +100151,124 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_gate_receipts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_gate_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_gate_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_gate_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_gate_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 162,
+          "anchor": "create table private.execution_gate_receipts (",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "r:private.execution_input_snapshots",
@@ -138952,6 +139662,82 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "trigger:private.execution_gate_receipts.execution_gate_receipts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_gate_receipts.execution_gate_receipts_immutable",
+          "kind": "trigger",
+          "name": "execution_gate_receipts_immutable",
+          "table": "execution_gate_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_gate_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_gate_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_gate_receipts.execution_gate_receipts_immutable",
+          "kind": "trigger",
+          "name": "execution_gate_receipts_immutable",
+          "table": "execution_gate_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_gate_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_gate_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 182,
+          "anchor": "create trigger execution_gate_receipts_immutable before update or delete on private.execution_gate_receipts for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_gate_receipts.execution_gate_receipts_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_gate_receipts.execution_gate_receipts_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_gate_receipts_truncate_guard",
+          "table": "execution_gate_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_gate_receipts_truncate_guard BEFORE TRUNCATE ON private.execution_gate_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_gate_receipts.execution_gate_receipts_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_gate_receipts_truncate_guard",
+          "table": "execution_gate_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_gate_receipts_truncate_guard BEFORE TRUNCATE ON private.execution_gate_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+          "line": 183,
+          "anchor": "create trigger execution_gate_receipts_truncate_guard before truncate on private.execution_gate_receipts for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_audit",
       "kind": "trigger",
       "catalogues": {
@@ -163641,6 +164427,13 @@
       "decision": "preservar",
       "stage": "17 / 6",
       "reason": "Etapa 17, incremento 6: retira worker_settle_execution_v1 (público e privado) e settle_execution_operation_v1, a liquidação só por hash."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260924005237_execution_gate_receipts.sql",
+      "decision": "preservar",
+      "stage": "17 / 4C-3",
+      "reason": "Etapa 17, incremento 4C-3: recibos de gates, base v2, produtor v2 e leitor v2; funções v1 inalteradas."
     }
   ],
   "staging_archive": [

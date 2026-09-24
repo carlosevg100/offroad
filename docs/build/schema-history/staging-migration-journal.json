@@ -1587,8 +1587,12 @@
   {
    "version": "20260924001737",
    "name": "retire_hash_only_settlement"
+  },
+  {
+   "version": "20260924003703",
+   "name": "execution_gate_receipts"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-24T00:23:13.748482+00:00"
+ "captured_at": "2026-09-24T00:53:39.341970+00:00"
 }
