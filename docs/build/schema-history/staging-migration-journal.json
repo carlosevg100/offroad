@@ -1599,8 +1599,12 @@
   {
    "version": "20260924011941",
    "name": "execution_time_to_value"
+  },
+  {
+   "version": "20260924015406",
+   "name": "governed_evaluation_session_access"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-24T02:01:51.641324+00:00"
+ "captured_at": "2026-09-24T02:25:41.380444+00:00"
 }

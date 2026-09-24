@@ -22061,6 +22061,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.read_governed_evaluation_session_v1(p_execution_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_governed_evaluation_session_v1(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_governed_evaluation_session_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_governed_evaluation_session_v1(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_governed_evaluation_session_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: porta de entrada do avaliador por sessão; o ator vem de auth.uid() e precisa ser principal avaliador vivo; delega aos comandos de operador.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924022447_governed_evaluation_session_access.sql",
+          "line": 17,
+          "anchor": "create function private.read_governed_evaluation_session_v1(p_execution_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.read_governed_evaluation_v1(p_execution_id uuid, p_actor_user_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -27457,6 +27521,70 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_governed_evaluation_session_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_governed_evaluation_session_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: porta de entrada do avaliador por sessão; o ator vem de auth.uid() e precisa ser principal avaliador vivo; delega aos comandos de operador.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924022447_governed_evaluation_session_access.sql",
+          "line": 10,
+          "anchor": "create function private.request_governed_evaluation_session_v1(p_contract_text text,p_snapshot_text text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.request_governed_evaluation_v1(p_contract_text text, p_snapshot_text text, p_actor_user_id uuid)",
@@ -55195,6 +55323,70 @@
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
+      "id": "function:public.read_governed_evaluation_session_v1(p_execution_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_governed_evaluation_session_v1(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_governed_evaluation_session_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_governed_evaluation_session_v1(p_execution_id uuid)",
+          "kind": "function",
+          "name": "read_governed_evaluation_session_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: porta de entrada do avaliador por sessão; o ator vem de auth.uid() e precisa ser principal avaliador vivo; delega aos comandos de operador.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924022447_governed_evaluation_session_access.sql",
+          "line": 27,
+          "anchor": "create function public.read_governed_evaluation_session_v1(p_execution_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.read_institutional_configuration_reviews_v1(p_project_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -58828,6 +59020,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_governed_evaluation_session_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_governed_evaluation_session_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: porta de entrada do avaliador por sessão; o ator vem de auth.uid() e precisa ser principal avaliador vivo; delega aos comandos de operador.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924022447_governed_evaluation_session_access.sql",
+          "line": 25,
+          "anchor": "create function public.request_governed_evaluation_session_v1(p_contract_text text,p_snapshot_text text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.request_origination_thesis_revision_v1(p_artifact_id uuid, p_artifact_fingerprint text, p_note text)",
@@ -168145,6 +168401,13 @@
       "decision": "preservar",
       "stage": "17 / 4D",
       "reason": "Etapa 17, incremento 4D: recibos de leitura, leitor v1 com o recibo e visão de tempo até valor."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260924022447_governed_evaluation_session_access.sql",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: pedido e leitura de avaliações governadas pela sessão do avaliador."
     }
   ],
   "staging_archive": [

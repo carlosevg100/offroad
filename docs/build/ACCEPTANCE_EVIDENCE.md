@@ -1,3 +1,9 @@
+## Etapa 17 / 5: consumidor de avaliações
+
+Porta do avaliador por sessão, consumidor de avaliações no worker com uma reserva por tentativa e commit pelo motivo que o banco exige, família baseline compartilhada entre script e worker e prova ponta a ponta com cassete na CI. [Detalhes](arcabouco/etapa-17-5-avaliacoes-governadas.md).
+
+5 consumidor: migração `governed_evaluation_session_access` em staging `20260924015406` e produção `20260924022447`; prova da sessão (26 verificações) em staging; worker 779 testes, agent-contracts 344, model-gateway 83; inventário com 4 funções; catálogo de produção 2323; tipos regenerados de produção. A chave de transporte segue fechada e não existe avaliador em produção.
+
 ## Etapa 17 / 4D: tempo até valor, sem conteúdo
 
 Recibo imutável da leitura do resultado pelo leitor e visão de operador com os intervalos até a primeira resposta útil e até o resultado verificado, só com ids, carimbos, intervalos, booleanos e códigos. [Escopo, definições e provas](arcabouco/etapa-17-4d-telemetria.md).
