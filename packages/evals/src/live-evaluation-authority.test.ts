@@ -124,7 +124,6 @@ const contained = [
   "run-advisor-response-live.ts",
   "run-document-work-product-live.ts",
   "run-executive-synthesis-live.ts",
-  "run-intent-router-gold.ts",
 ];
 
 describe("historical live evaluation containment", () => {
@@ -217,6 +216,48 @@ describe("the baseline through the governed transport", () => {
     expect(dry).toBeGreaterThan(-1);
     expect(request).toBeGreaterThan(dry);
     expect(environment).toBeGreaterThan(dry);
+    const branch = statements[dry] as ts.IfStatement;
+    const log = vi.fn();
+    runInNewContext(`(function() { ${branch.getText(source)}; throw new Error("reached live path"); })()`, {dryRun: true, console: {log}});
+    expect(log).toHaveBeenCalledWith("dry run: no model called");
+  });
+});
+
+describe("the intent router gate through the governed transport", () => {
+  const gate = entries.find(entry => entry.name === "run-intent-router-gold.ts")!;
+  const transport = readFileSync(fileURLToPath(new URL("./intent-router-gold-transport.ts", import.meta.url)), "utf8");
+
+  it("imports the governed transport client and no gateway factory, guard or provider key", () => {
+    expect(importsFrom(gate.text, "../src/governed-transport")).toEqual(expect.arrayContaining(["requestGovernedEvaluation", "readGovernedTransportEnvironment", "governedEvaluationEvidence"]));
+    expect(gatewayImports(gate.text)).toEqual([]);
+    expect(importsFrom(gate.text, "../src/live-evaluation-authority")).toEqual([]);
+    const names = identifiers(gate.text);
+    for (const name of ["createModelGateway", "createAnthropicAdapter", "createOpenAIAdapter", guard]) expect(names.has(name), name).toBe(false);
+    expect(providerKeyReads(gate.text)).toEqual([]);
+    expect(inspect(gate.text)).toMatchObject({failures: [], bindings: new Set()});
+  });
+
+  it("keeps the gate's own transport module free of any adapter, gateway, SDK or provider key", () => {
+    // The task policies and the gateway's own types, nothing that sends.
+    expect(gatewayImports(transport).sort()).toEqual(["GatewayCallLog", "TaskKind", "TaskPolicy", "defaultTaskPolicies"]);
+    expect(inspect(transport).failures).toEqual([]);
+    const names = identifiers(transport);
+    for (const name of ["createModelGateway", "createAnthropicAdapter", "createOpenAIAdapter"]) expect(names.has(name), name).toBe(false);
+    expect(providerKeyReads(transport)).toEqual([]);
+  });
+
+  it("returns offline before the trusted-workflow check, and checks it before the evaluator's environment and the request", () => {
+    const source = parse(gate.text);
+    const main = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "main") as ts.FunctionDeclaration;
+    const statements = main.body!.statements;
+    const dry = statements.findIndex(node => ts.isIfStatement(node) && node.expression.getText(source) === "dryRun");
+    const trust = statements.findIndex(node => node.getText(source).startsWith("assertTrustedPaidGateEnvironment("));
+    const request = statements.findIndex(node => node.getText(source).includes("requestGovernedEvaluation("));
+    const environment = statements.findIndex(node => node.getText(source).includes("readGovernedTransportEnvironment("));
+    expect(dry).toBeGreaterThan(-1);
+    expect(trust).toBeGreaterThan(dry);
+    expect(request).toBeGreaterThan(trust);
+    expect(environment).toBeGreaterThan(trust);
     const branch = statements[dry] as ts.IfStatement;
     const log = vi.fn();
     runInNewContext(`(function() { ${branch.getText(source)}; throw new Error("reached live path"); })()`, {dryRun: true, console: {log}});
