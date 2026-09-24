@@ -6,6 +6,18 @@ CREATE OR REPLACE FUNCTION private.bind_job_authority_v1()
 AS $function$
 declare subject_id uuid := auth.uid(); root_id uuid; parent_subject uuid;
 begin
+ if new.kind='governed_evaluation' then
+  if new.evaluation_id is null or new.work_id is not null or new.intake_session_id is not null or not exists(
+   select 1 from private.governed_evaluations e
+   join private.platform_evaluation_organizations o on o.organization_id=e.organization_id
+   join public.processing_runs r on r.organization_id=e.organization_id and r.id=e.processing_run_id
+   where e.organization_id=new.organization_id and e.id=new.evaluation_id and e.processing_run_id=new.processing_run_id
+   and r.pipeline_version='governed-evaluation-v1' and r.created_by=e.requested_by_user_id
+   and private.platform_evaluator_live_v1(e.requested_by_user_id))
+  then raise exception 'job_authorization_denied' using errcode='42501';end if;
+  new.authorization_subject_id:=null;new.authorization_resource_id:=null;new.authorization_revision:=null;new.review_execution_authorization_id:=null;
+  return new;
+ end if;
  root_id := private.resource_root_v1(new.organization_id,case when new.kind in ('work_conversation','work_execution') then new.work_id else new.intake_session_id end);
 
  if new.kind='work_execution' then

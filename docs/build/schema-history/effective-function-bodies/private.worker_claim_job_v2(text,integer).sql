@@ -14,7 +14,7 @@ begin
   -- reclaim expired leases as well as fresh jobs, oldest first
   select * into job_row
   from public.processing_jobs
-  where kind<>'work_execution' and ((status = 'queued' and available_at <= now())
+  where kind not in ('work_execution','governed_evaluation') and ((status = 'queued' and available_at <= now())
      or (status = 'leased' and lease_expires_at < now()))
     and kind<>'work_conversation' and (not private.requires_execution_brief_approval(id) or private.execution_dispatch_is_current(id,true))
   order by available_at
