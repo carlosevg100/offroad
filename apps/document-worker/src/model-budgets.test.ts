@@ -31,19 +31,19 @@ describe("worker model budget of one attempt", () => {
     expect(productionCeilingUsd(documentJob({max_cost_usd: 1.6, max_calls: 8}))).toBe(productionModelCeilingsUsd.documentPipeline);
     expect(productionCeilingUsd(caseJob())).toBe(productionModelCeilingsUsd.caseAnalysis);
     expect(productionCeilingUsd(briefJob)).toBe(productionModelCeilingsUsd.agentOperationBrief);
-    expect(productionCeilingUsd(capital("origination_thesis", {max_cost_usd: 1.5, max_calls: 2}))).toBe(productionModelCeilingsUsd.originationThesis);
+    expect(productionCeilingUsd(capital("origination_thesis", {max_cost_usd: 1.55, max_calls: 2}))).toBe(productionModelCeilingsUsd.originationThesis);
     expect(productionCeilingUsd(capital("company_debt_view", {max_cost_usd: 0.85, max_calls: 1}, true))).toBe(productionModelCeilingsUsd.companyDebtViewRevision);
     expect(productionCeilingUsd(capital("capital_planning", {max_cost_usd: 0.8, max_calls: 1}, true))).toBe(productionModelCeilingsUsd.capitalPlanningRevision);
-    expect(productionCeilingUsd(capital("integration_preview", {max_cost_usd: 0.5, max_calls: 4}))).toBe(productionModelCeilingsUsd.integrationPreview);
+    expect(productionCeilingUsd(capital("integration_preview", {max_cost_usd: 0.6, max_calls: 4}))).toBe(productionModelCeilingsUsd.integrationPreview);
     expect(productionCeilingUsd(capital("provider_research", {max_cost_usd: 0, max_calls: 0}))).toBe(0);
   });
 
   it("reserves research only for the jobs that search, and none for the integration preview", () => {
-    expect(researchQueryReserve(capital("origination_thesis", {max_cost_usd: 1.5, max_calls: 2}))).toBe(12);
+    expect(researchQueryReserve(capital("origination_thesis", {max_cost_usd: 1.55, max_calls: 2}))).toBe(12);
     expect(researchQueryReserve(capital("company_debt_view", {max_cost_usd: 0.95, max_calls: 2}))).toBe(8);
     expect(researchQueryReserve(capital("capital_planning", {max_cost_usd: 0.95, max_calls: 2}))).toBe(8);
-    expect(researchQueryReserve(capital("origination_thesis", {max_cost_usd: 1.5, max_calls: 1}, true))).toBe(0);
-    expect(researchQueryReserve(capital("integration_preview", {max_cost_usd: 0.5, max_calls: 4}))).toBe(0);
+    expect(researchQueryReserve(capital("origination_thesis", {max_cost_usd: 1.55, max_calls: 1}, true))).toBe(0);
+    expect(researchQueryReserve(capital("integration_preview", {max_cost_usd: 0.6, max_calls: 4}))).toBe(0);
     expect(researchQueryReserve(capital("provider_case_fit", {max_cost_usd: 0, max_calls: 0}))).toBe(0);
     expect(researchQueryReserve(caseJob())).toBe(5);
     expect(researchQueryReserve(briefJob)).toBe(0);
@@ -54,14 +54,16 @@ describe("worker model budget of one attempt", () => {
     // A case analysis of a web-started run: the run budget's case share, less five queries.
     expect(jobModelBudget({job: caseJob({max_cost_usd: productionRunBudget.case_max_cost_usd, max_calls: 4}), ...webSearch}))
       .toEqual({maxCostUsd: 3, maxCalls: 4, researchReserveUsd: 0.1});
-    // One started by a database path that still writes the old case budget keeps the old 0.90.
+    // A job written before the migration, with the old case budget of 1.00, keeps the old 0.90.
     expect(jobModelBudget({job: caseJob({max_cost_usd: 1, max_calls: 4}), ...webSearch}).maxCostUsd).toBeCloseTo(0.9, 10);
-    // Origination: the trigger's 1.50 binds below the derived 1.55, less twelve queries.
+    // Origination: the trigger's 1.55 less twelve queries; a job written before the migration keeps
+    // the former 1.50, which binds below the derived ceiling.
+    expect(jobModelBudget({job: capital("origination_thesis", {max_cost_usd: 1.55, max_calls: 2}), ...webSearch}).maxCostUsd).toBeCloseTo(1.31, 10);
     expect(jobModelBudget({job: capital("origination_thesis", {max_cost_usd: 1.5, max_calls: 2}), ...webSearch}).maxCostUsd).toBeCloseTo(1.26, 10);
     // The agent operation brief has no database budget: its derived ceiling is the budget.
     expect(jobModelBudget({job: briefJob, ...webSearch})).toEqual({maxCostUsd: 1.85, maxCalls: 8, researchReserveUsd: 0});
     // The preview never researches, so its whole database budget reaches the model.
-    expect(jobModelBudget({job: capital("integration_preview", {max_cost_usd: 0.5, max_calls: 4}), ...webSearch})).toEqual({maxCostUsd: 0.5, maxCalls: 4, researchReserveUsd: 0});
+    expect(jobModelBudget({job: capital("integration_preview", {max_cost_usd: 0.6, max_calls: 4}), ...webSearch})).toEqual({maxCostUsd: 0.6, maxCalls: 4, researchReserveUsd: 0});
     // A document gets its database share; an operator's override can only lower it.
     expect(jobModelBudget({job: documentJob({max_cost_usd: 1.6, max_calls: 8}), ...webSearch}).maxCostUsd).toBe(1.6);
     expect(jobModelBudget({job: documentJob({max_cost_usd: 1.6, max_calls: 8}), ...webSearch, overrideMaxCostUsd: 0.4}).maxCostUsd).toBe(0.4);

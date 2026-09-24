@@ -312,7 +312,7 @@ describe("production budgets hold the largest request of every job", () => {
     origination_thesis: (text) => ({meetingContext: text.slice(0, 5_000), thesisToTest: text.slice(5_000, 8_000), audience: text.slice(8_000, 8_240), meetingDate: "2026-09-20"}),
     capital_planning: (text) => ({capitalIntent: text.slice(0, 5_000)}),
   };
-  const budgets = {company_debt_view: 0.95, origination_thesis: 1.5, capital_planning: 0.95} as const;
+  const budgets = {company_debt_view: 0.95, origination_thesis: 1.55, capital_planning: 0.95} as const;
 
   for (const scope of ["company_debt_view", "origination_thesis", "capital_planning"] as const) {
     it(`${scope.replaceAll("_", " ")}: the synthesis over every public source and its fallback fit the job's budget`, async () => {
@@ -345,13 +345,16 @@ describe("production budgets hold the largest request of every job", () => {
       expect(JSON.parse((request.input[0] as {text: string}).text).publicSources.length).toBe(scope === "origination_thesis" ? 60 : 40);
       const {primary, fallback} = routes(request);
       const path = [await reserve(request, primary), await reserve(request, fallback!)];
-      // The database's budget, less the research reserve, admits the worst attempt now; for the
-      // origination thesis that is the trigger's 1.50 below the derived 1.55.
+      // The budget the database writes, less the research reserve, admits the worst attempt; so does
+      // the former 1.50 of an origination thesis written before the migration.
       expect(worstAttempt(path)).toBeLessThanOrEqual(gatewayBudget(job));
+      if (scope === "origination_thesis") {
+        expect(worstAttempt(path)).toBeLessThanOrEqual(gatewayBudget({...job, payload: {...job.payload, model_budget: {max_cost_usd: 1.5, max_calls: 2}}} as ClaimedJob));
+      }
     }, 120_000);
   }
 
-  it("integration preview: the questions and the synthesis fit the database's 0.50, and a failed synthesis with its fallback fits the derived 0.60", async () => {
+  it("integration preview: the questions and a failed synthesis with its fallback fit the database's 0.60, the primary path the former 0.50", async () => {
     const composition = "prepare_decision";
     const steps = preview.previewStepsForComposition(composition).map((step) => step.taskId);
     let sequence = 0;
@@ -377,16 +380,17 @@ describe("production budgets hold the largest request of every job", () => {
       organization_id: ids.organization, intake_session_id: ids.session, processing_run_id: ids.run, integration_preview: true, integration_preview_mode: "live",
       kind: "capital_project_analysis", payload: {analysis_scope: "integration_preview", locale: "pt-BR", capital_project_id: ids.project, capital_project_plan_id: ids.plan,
         capital_project_brief_id: ids.brief, capital_task_ids: steps, capital_artifact_required: true, trigger_event: {type: "advisor_semantic_route", mode: "integration_preview"},
-        model_budget: {max_cost_usd: 0.5, max_calls: 4}, preview: {mode: "integration_preview", composition, caseId: "gc01-analista-ib-camil", workflow: preview.previewWorkflowIdentity(composition), premises: {}}}} as unknown as CapitalProjectAnalysisJob;
+        model_budget: {max_cost_usd: 0.6, max_calls: 4}, preview: {mode: "integration_preview", composition, caseId: "gc01-analista-ib-camil", workflow: preview.previewWorkflowIdentity(composition), premises: {}}}} as unknown as CapitalProjectAnalysisJob;
     const recorded = recorder();
     await processIntegrationPreviewRunJob(job, {queue, log: () => {}, gateway: recorded.gateway, presentationTemplate: undefined as never}).catch(() => undefined);
     const questions = recorded.requests.find((request) => request.task === "preview_questions")!;
     const synthesis = recorded.requests.find((request) => request.task === "preview_synthesis")!;
     const {primary, fallback} = routes(synthesis);
     const [asked, written, writtenByFallback] = [await reserve(questions, routes(questions).primary), await reserve(synthesis, primary), await reserve(synthesis, fallback!)];
-    expect(gatewayBudget(job)).toBe(0.5);
-    expect(worstAttempt([asked, written])).toBeLessThanOrEqual(gatewayBudget(job));
-    expect(worstAttempt([asked, written, writtenByFallback])).toBeLessThanOrEqual(productionModelCeilingsUsd.integrationPreview);
+    expect(gatewayBudget(job)).toBe(productionModelCeilingsUsd.integrationPreview);
+    expect(worstAttempt([asked, written, writtenByFallback])).toBeLessThanOrEqual(gatewayBudget(job));
+    // A preview written before the migration keeps 0.50: its primary path still fits.
+    expect(worstAttempt([asked, written])).toBeLessThanOrEqual(0.5);
   }, 120_000);
 });
 
