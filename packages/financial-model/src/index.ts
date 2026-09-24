@@ -52,3 +52,5 @@ export * from "./capital-procedure-packet";
 
 export * from "./capital-contract-preparation-v2";
 export * from "./capital-procedure-packet-v2";
+
+export * from "./capital-procedure-packet-composer";

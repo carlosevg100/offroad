@@ -2117,6 +2117,7 @@
       "runCalculation": "Calcular",
       "differences": "O que mudou desde a revisão anterior",
       "comparisonUnavailable": "A revisão anterior não está disponível com seus acessos atuais. Nenhum dado dela foi exposto.",
+      "executions": "Execuções desta análise",
       "fields": {
         "fieldPath": "Métrica",
         "type": "Tipo do valor",
@@ -2160,6 +2161,136 @@
         "denied": "Você não tem acesso suficiente ao trabalho ou a uma de suas fontes.",
         "conflict": "A base mudou desde que você a abriu. Recarregue e compare antes de registrar outra revisão.",
         "unavailable": "Não foi possível carregar ou registrar esta base com segurança. Tente novamente."
+      }
+    },
+    "workExecutions": {
+      "title": "Execuções da análise de capital",
+      "back": "Voltar à base da análise",
+      "intro": "Cada execução calcula o método publicado sobre uma revisão da base, com identidade, autoridade e fontes fixadas pelo servidor. O resultado fica disponível enquanto as entradas continuarem válidas para quem lê.",
+      "request": {
+        "title": "Pedir uma execução",
+        "help": "Escolha a revisão da base, escreva a pergunta e os objetivos. O cálculo usa só o que está adotado nessa revisão; o que faltar aparece como lacuna nomeada, nunca como número inventado.",
+        "version": "Revisão da base",
+        "revision": "Revisão {number}",
+        "noVersions": "Registre uma base da análise antes de pedir uma execução.",
+        "question": "Pergunta",
+        "objectives": "Objetivos",
+        "objectivesHelp": "Um objetivo por linha.",
+        "asOf": "Data de referência",
+        "submit": "Pedir execução"
+      },
+      "states": {
+        "queued": "Na fila",
+        "leased": "Em cálculo",
+        "succeeded": "Concluída",
+        "partial": "Parcial",
+        "failed": "Falhou",
+        "withheld": "Resultado retido",
+        "unknown": "Estado não informado"
+      },
+      "reasons": {
+        "calculated": "Calculada pelo método publicado",
+        "invalid_input": "A entrada não passou no contrato do método",
+        "calculation_failed": "O cálculo não terminou",
+        "budget_exhausted": "O orçamento de tempo acabou antes do fim",
+        "operation_uncertain": "A operação foi interrompida e o resultado é incerto"
+      },
+      "list": {
+        "title": "Execuções registradas",
+        "empty": "Nenhuma execução registrada neste trabalho.",
+        "open": "Abrir execução",
+        "next": "Execuções anteriores"
+      },
+      "detail": {
+        "heading": "Execução",
+        "title": "Estado da execução",
+        "list": "Todas as execuções",
+        "refresh": "Atualizar",
+        "state": "Estado",
+        "outcome": "Desfecho",
+        "reason": "Motivo",
+        "inputsCurrent": "Entradas",
+        "inputsCurrentYes": "Válidas para quem lê agora",
+        "inputsCurrentNo": "Mudaram desde o pedido ou saíram do seu acesso",
+        "requestedAt": "Pedida em",
+        "job": "Fila",
+        "attempts": "{count} tentativas",
+        "lastError": "Último erro",
+        "method": "Método",
+        "contractFingerprint": "Impressão do contrato",
+        "inputFingerprint": "Impressão da entrada",
+        "execution": "Identificador",
+        "notInformed": "Não informado",
+        "withheldTitle": "Resultado retido",
+        "withheldBody": "O resultado existe, mas as entradas mudaram ou uma fonte saiu do seu acesso desde o pedido. Peça uma nova execução sobre a base atual.",
+        "resultTitle": "Resultado",
+        "resultFingerprint": "Impressão do resultado",
+        "committedAt": "Registrado em",
+        "markerTitle": "Sem pacote calculado",
+        "unreadable": "Os bytes registrados não correspondem ao pacote do método publicado; só a impressão é mostrada.",
+        "decisionStatus": "Situação da decisão",
+        "question": "Pergunta",
+        "asOf": "Data de referência",
+        "contributions": "Contribuições usadas",
+        "alternatives": "Alternativas",
+        "calculated": "projeção calculada",
+        "notCalculated": "projeção não calculada",
+        "gaps": "Lacunas de informação",
+        "noGaps": "Nenhuma lacuna registrada.",
+        "contractualGaps": "Pendências contratuais",
+        "requirements": "Próximos requisitos",
+        "noRequirements": "Nenhum requisito pendente.",
+        "originalReason": "Motivo registrado pelo método",
+        "decision": "a decisão",
+        "packetFingerprint": "Impressão do pacote"
+      },
+      "decisionStatus": {
+        "framed": "Enquadrada, sem comparação numérica",
+        "partial": "Parcial, com lacunas nomeadas",
+        "prepared_for_human_review": "Preparada para revisão humana"
+      },
+      "gapCodes": {
+        "alternatives_required": "Faltam alternativas para comparar",
+        "current_structure_required": "Falta a estrutura atual ou a razão de excluí-la",
+        "projection_input_missing": "Entrada da projeção não adotada",
+        "projection_incomplete": "Projeção incompleta",
+        "sensitivity_has_no_changed_operands": "Sensibilidade sem operando alterado"
+      },
+      "requirements": {
+        "source": "Revisão das fontes",
+        "assumption": "Revisão das premissas",
+        "contract": "Revisão contratual",
+        "market": "Revisão de mercado",
+        "implementation": "Revisão de implementação",
+        "recommendation": "Recomendação profissional",
+        "adopted_context": "Contexto adotado",
+        "common_opening": "Abertura comum",
+        "operating_budget": "Orçamento operacional",
+        "debt_and_capital_inventory": "Inventário de dívida e capital",
+        "explicit_alternatives": "Alternativas explícitas"
+      },
+      "kinds": {
+        "maintain": "manter",
+        "change": "mudar",
+        "defer": "adiar",
+        "no_financing": "sem financiamento"
+      },
+      "errors": {
+        "invalid": "O pedido não pôde ser montado a partir desta base. Revise a revisão escolhida e a data de referência.",
+        "denied": "Você não tem acesso suficiente a este trabalho.",
+        "producer_denied": "Esta organização ainda não pode pedir execuções. A liberação é feita pela Offroad.",
+        "method_unavailable": "O método publicado não está disponível para execução neste momento.",
+        "basis_denied": "A revisão escolhida não é uma base de trabalho legível para esta análise.",
+        "provenance_denied": "Uma fonte adotada nesta base não está verificada ou saiu do seu acesso. A execução não foi pedida.",
+        "conflict": "Este pedido já foi registrado com outro conteúdo. Abra a lista para encontrá-lo.",
+        "stale": "A base mudou enquanto o pedido era montado. Tente de novo.",
+        "unavailable": "Não foi possível pedir ou ler a execução com segurança. Tente novamente."
+      },
+      "unverified": {
+        "title": "Fontes sem verificação:",
+        "rights_missing": "sem direitos de uso registrados",
+        "bytes_unverified": "bytes ainda não verificados",
+        "binding_missing": "sem vínculo com este trabalho"
       }
     },
     "overview": "Visão geral",

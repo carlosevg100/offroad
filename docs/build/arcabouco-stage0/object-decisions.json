@@ -163244,6 +163244,27 @@
       "reason": "Base contextual sob autoridade atual: seleção explícita, comparação e cálculo determinístico."
     },
     {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/page.tsx",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: lista, pedido e detalhe das execuções do trabalho; a ação monta o contrato a partir da base do servidor e o banco revalida principal, política e concessão de produtor."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/actions.ts",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: lista, pedido e detalhe das execuções do trabalho; a ação monta o contrato a partir da base do servidor e o banco revalida principal, política e concessão de produtor."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/[executionId]/page.tsx",
+      "decision": "preservar",
+      "stage": "17 / 4A",
+      "reason": "Etapa 17, incremento 4A: lista, pedido e detalhe das execuções do trabalho; a ação monta o contrato a partir da base do servidor e o banco revalida principal, política e concessão de produtor."
+    },
+    {
       "kind": "migration",
       "path": "supabase/migrations/20260917161803_contextual_adoption_version_fk_index.sql",
       "decision": "preservar",

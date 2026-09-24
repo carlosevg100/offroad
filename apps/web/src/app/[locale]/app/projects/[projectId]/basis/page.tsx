@@ -19,5 +19,6 @@ export default async function BasisPage({params,searchParams}:{params:Promise<{l
  let context;
  try { context=await loadAdoptionWorkContext(supabase,organization.id,projectId,parsed.data.context,parsed.data.version??null,parsed.data.before??null); }
  catch { return <main className="adoption-basis"><Link href={`/${locale}/app/projects/${projectId}`}>{t("back")}</Link><h1>{t("title")}</h1><p role="alert">{t("errors.unavailable")}</p></main>; }
- return <main className="adoption-basis"><Link href={`/${locale}/app/projects/${projectId}`}>{t("back")}</Link><h1>{t("title")}</h1><p>{project.project_name}</p><p>{t("intro")}</p><AdoptionBasisWork locale={locale} projectId={projectId} contextKey={parsed.data.context} data={context}/></main>;
+ const executions=`/${locale}/app/projects/${projectId}/executions?context=${encodeURIComponent(parsed.data.context)}${context.basis?`&version=${context.basis.versionId}`:""}`;
+ return <main className="adoption-basis"><Link href={`/${locale}/app/projects/${projectId}`}>{t("back")}</Link><h1>{t("title")}</h1><p>{project.project_name}</p><p>{t("intro")}</p><p><Link href={executions}>{t("executions")}</Link></p><AdoptionBasisWork locale={locale} projectId={projectId} contextKey={parsed.data.context} data={context}/></main>;
 }
