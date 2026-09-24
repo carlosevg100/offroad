@@ -556,6 +556,121 @@ const cureWaiver = proposal(
   },
 );
 
+const minimumSellable = proposal(
+  "policy.structure.minimum-sellable",
+  "reais (BRL); orçamento de complexidade em fração ao ano do valor da operação; prazos em semanas",
+  {
+    title: "Resolução CVM nº 160/2022 (rito de registro automático para investidores profissionais) e Lei nº 7.940/1989, Anexo IV, na redação da Lei nº 14.317/2022 (taxa de fiscalização de 0,03% da oferta)",
+    url: "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol160.html",
+  },
+  {
+    rule: "escolher a rota mais simples que cumpre, ao mesmo tempo, elegibilidade, orçamento de complexidade, prazo até a necessidade e cobertura de compradores confirmados; comparar o all-in dessa rota com o da alternativa sofisticada (ES-41)",
+    complexityBudget: {
+      maxFixedCostShareOfTicketPerYear: "0.0040",
+      formula: "custo fixo anualizado = custo fixo inicial ÷ vida média em anos + custo fixo anual; ticket mínimo da rota = custo fixo anualizado ÷ 0,0040",
+      inputs: "cotações datadas dos prestadores do caso (assessores jurídicos, agente fiduciário, escriturador, registradora, rating, auditoria da estrutura); cotação com mais de 90 dias é refeita",
+      publicFeeObservations: [
+        {date: "2026-09-24", source: "Lei nº 7.940/1989, Anexo IV", reading: "taxa de fiscalização da CVM de 0,03% do valor da oferta pública, mínimo de R$ 809,16"},
+      ],
+    },
+    routes: [
+      {route: "bilateral_bank", instruments: ["CCB", "NCE", "CCE"], issuerForm: "qualquer; a CCB é emitida em favor de instituição financeira (Lei nº 10.931/2004, art. 26)", houseReferenceMinTicketBRL: null, referenceExecutionWeeks: [2, 6], buyerCoverageRule: "um credor nomeado com mandato confirmado para o ticket inteiro"},
+      {route: "commercial_note", instruments: ["nota comercial"], issuerForm: "sociedade anônima, limitada ou cooperativa (Lei nº 14.195/2021, art. 46)", houseReferenceMinTicketBRL: "30000000", referenceExecutionWeeks: [4, 8], buyerCoverageRule: "capacidade confirmada de 1,5x o ticket em esforços de colocação, 1,0x com garantia firme"},
+      {route: "debenture_professional_investors", instruments: ["debênture simples em rito automático"], issuerForm: "sociedade anônima (Lei nº 6.404/1976, art. 52)", houseReferenceMinTicketBRL: "50000000", referenceExecutionWeeks: [6, 10], buyerCoverageRule: "capacidade confirmada de 1,5x o ticket em esforços de colocação, 1,0x com garantia firme"},
+      {route: "securitization", instruments: ["CRI", "CRA"], issuerForm: "lastro elegível segundo policy.structure.route-catalogue e market.instrument.eligibility", houseReferenceMinTicketBRL: "50000000", referenceExecutionWeeks: [8, 12], buyerCoverageRule: "capacidade confirmada de 1,5x o ticket em esforços de colocação"},
+      {route: "fidc_dedicated", instruments: ["FIDC exclusivo"], issuerForm: "carteira de direitos creditórios elegível", houseReferenceMinTicketBRL: "50000000", referenceExecutionWeeks: [9, 17], buyerCoverageRule: "cotas sênior com demanda confirmada e subordinação retida dimensionada"},
+      {route: "fidc_multi_originator", instruments: ["cessão a FIDC existente"], issuerForm: "carteira elegível ao regulamento do fundo", houseReferenceMinTicketBRL: null, referenceExecutionWeeks: [2, 6], buyerCoverageRule: "limite de cedente aprovado e capacidade do fundo por sacado e cedente"},
+    ],
+    buyerTypes: "compradores do mapa MK-01 a MK-10; rota sem comprador nomeado no mapa (MK-13) não é vendável",
+    marketRegime: [
+      {date: "2026-09-16", source: "ANBIMA, Boletim de Mercado de Capitais de agosto de 2026", reading: "R$ 48,8 bilhões em ofertas encerradas no mês; debêntures R$ 21,5 bilhões (44,1%); FIDC R$ 14,5 bilhões; CRI R$ 2,4 bilhões; CRA R$ 2,2 bilhões; acumulado do ano R$ 485 bilhões"},
+    ],
+    calibration: {status: "tickets de referência são premissa da casa até a calibração por cotações e ofertas encerradas", refreshCadence: "trimestral", validityDays: 90},
+  },
+);
+
+const mandateTicket = proposal(
+  "policy.structure.mandate-ticket",
+  "reais (BRL); limites regulatórios em fração do patrimônio líquido do veículo",
+  {
+    title: "Resolução CVM nº 175/2022, Anexo Normativo I, arts. 44, 75 e 76, e Anexo Normativo II, arts. 45 e 52: limites de concentração por emissor e por devedor",
+    url: "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol175.html",
+  },
+  {
+    perVehicle: {
+      ticketMax: "menor entre o ticket máximo declarado e confirmado, o limite regulatório × patrimônio líquido do último informe diário e o limite do regulamento, menos a exposição atual ao mesmo emissor ou grupo econômico",
+      ticketMin: "ticket mínimo declarado e confirmado; abaixo dele o veículo não participa",
+      netAssetValueSource: "informe diário de fundos na CVM, com até 5 dias úteis",
+    },
+    regulatoryIssuerLimits: {
+      fif: [
+        {issuer: "instituição financeira autorizada pelo Banco Central", shareOfNetAssets: "0.20"},
+        {issuer: "companhia aberta", shareOfNetAssets: "0.10"},
+        {issuer: "SPE subsidiária integral de securitizadora S2", shareOfNetAssets: "0.10"},
+        {issuer: "pessoa natural ou jurídica que não seja companhia aberta nem instituição financeira", shareOfNetAssets: "0.05"},
+      ],
+      fidcPerDebtor: "0.20",
+      groupRule: "emissões do mesmo grupo econômico somam num único emissor",
+      professionalInvestorClasses: "classe exclusiva de investidores profissionais pode dispensar os limites no regulamento; o limite passa a ser o do regulamento",
+    },
+    transactionRange: {
+      bilateral: "ticket viável quando um credor confirmado aceita o valor entre o seu mínimo e o seu máximo",
+      distributed: "matchedTicketMax = soma dos tickets máximos confirmados dos veículos aderentes ÷ cobertura exigida (1,5 em esforços de colocação; 1,0 com garantia firme)",
+      matchedTicketMin: "maior entre o ticket mínimo vendável da rota (policy.structure.minimum-sellable) e o menor valor com que a âncora participa",
+    },
+    indivisibility: [
+      "CCB e contrato bilateral: um credor leva o ticket inteiro, salvo clube formal",
+      "emissão distribuída: lote mínimo por investidor fixado no instrumento",
+      "cota sênior de FIDC: subscrição mínima do regulamento",
+    ],
+    sourceClassesAndValidity: [
+      {sourceClass: "confirmação direta do gestor, com data e autor", usableInHardFilters: true, validityDays: 90},
+      {sourceClass: "regulamento ou material público do veículo", usableInHardFilters: true, validityDays: 180, invalidation: "alteração do regulamento"},
+      {sourceClass: "observação de mercado governada (PR-13)", usableInHardFilters: true, validityDays: 60},
+      {sourceClass: "informação não confirmada", usableInHardFilters: false, validityDays: 0},
+    ],
+    dealStructureMapping: {matchedTicketMin: "matchedTicketMin do caso", matchedTicketMax: "matchedTicketMax do caso"},
+    currentConfirmedMandates: [],
+  },
+);
+
+const conditionsPrecedent = proposal(
+  "policy.conditions-precedent.catalogue",
+  "catálogo de condições por arquétipo; validade de documentos em dias",
+  {
+    title: "Lei nº 6.404/1976, art. 62, na redação da Lei nº 14.711/2023: requisitos de emissão (arquivamento e publicação do ato societário e constituição das garantias reais)",
+    url: "https://www.planalto.gov.br/ccivil_03/leis/l6404consol.htm",
+  },
+  {
+    satisfactionRule: "cada condição tem responsável, evidência, prazo e estado (pendente, entregue, verificada, dispensada com registro); protocolo não é licença, intenção não é condição cumprida, e condição sem responsável não entra no term sheet (MA-20)",
+    common: [
+      {id: "corporate_approvals", evidence: "ata do órgão competente pelo estatuto ou contrato social, arquivada e publicada quando a lei exige, e poderes dos signatários", owner: "companhia"},
+      {id: "federal_tax_certificate", evidence: "certidão conjunta RFB/PGFN negativa ou positiva com efeito de negativa", validityDays: 180, maxAgeAtDisbursementDays: 30, owner: "companhia"},
+      {id: "labor_certificate", evidence: "Certidão Negativa de Débitos Trabalhistas", validityDays: 180, maxAgeAtDisbursementDays: 30, owner: "companhia"},
+      {id: "security_perfected", evidence: "garantias constituídas e registradas: imóvel no registro de imóveis, móveis no registro de títulos e documentos, veículos no órgão de trânsito, ativos financeiros e recebíveis na registradora ou no depositário central, ações no livro ou no escriturador", owner: "companhia e assessor jurídico"},
+      {id: "insurance_endorsed", evidence: "apólices dos ativos essenciais e das garantias com o credor como beneficiário", owner: "companhia"},
+      {id: "appraisals_current", evidence: "laudos dentro dos prazos de policy.structure.appraisal-validity", owner: "companhia"},
+      {id: "legal_opinion", evidence: "opinião legal sobre constituição, validade e exequibilidade, nas rotas de mercado de capitais", owner: "assessor jurídico"},
+      {id: "no_default_bring_down", evidence: "declarações repetidas na data do desembolso e ausência de evento de inadimplemento", owner: "companhia"},
+      {id: "fees_and_expenses", evidence: "comprovante de pagamento das despesas devidas no fechamento", owner: "companhia"},
+    ],
+    byArchetype: {
+      growth_expansion: ["licença de instalação vigente para a obra e caminho da licença de operação (Lei nº 15.190/2025, art. 5º)", "orçamento aprovado e contrato de obra ou EPC com preço e prazo", "seguro garantia de execução com vigência igual à da obra", "matrícula do sítio sem ônus não quitado", "aporte de capital próprio comprovado antes ou pro rata dos desembolsos", "relatório de engenheiro independente por marco quando houver tranches (OP-08)"],
+      acquisition: ["contrato de compra e venda assinado com preço e condições", "aprovação do CADE quando as partes atingem R$ 750 milhões e R$ 75 milhões de faturamento no país (Lei nº 12.529/2011, art. 88; Portaria Interministerial nº 994/2012)", "relatórios de diligência financeira, jurídica e tributária entregues", "dívida da adquirida quitada ou com consentimento dos credores", "renúncias de mudança de controle nos contratos da adquirida"],
+      refinance: ["cartas de quitação com valor exato e data", "termos de liberação de garantias assinados para registro simultâneo", "renúncias de cross-default e de negative pledge onde a operação as exige", "valor da multa de pré-pagamento confirmado"],
+      equipment_finance: ["pró-forma final e contrato de fornecimento", "termo de entrega e aceite", "alienação fiduciária registrada no registro de títulos e documentos ou no órgão de trânsito", "seguro endossado", "licença de importação quando aplicável"],
+      working_capital: ["cessão fiduciária registrada na registradora", "conta vinculada aberta com trava operacional testada", "primeiro relatório da base elegível"],
+      venture_debt: ["fechamento da rodada de capital comprovado (contrato assinado e recursos recebidos)", "tabela de capitalização atualizada", "instrumento dos bônus de subscrição assinado"],
+      other: ["condições do uso declarado, definidas caso a caso a partir das condições comuns"],
+    },
+    conditionsSubsequent: {
+      rule: "registro que depende de prazo do cartório ou do órgão pode ser condição subsequente com prazo e consequência",
+      maxDaysAfterDisbursement: 60,
+      consequence: "depósito do valor em conta travada ou vencimento antecipado, conforme o term sheet",
+    },
+  },
+);
+
 export const structureProposals: ReferenceDataProposalFamily = {
   "policy.structure.collateral_haircuts": collateralHaircuts,
   "policy.structure.maturity_wall": maturityWall,
@@ -571,4 +686,7 @@ export const structureProposals: ReferenceDataProposalFamily = {
   "policy.structure.cross-default-threshold": crossDefaultThreshold,
   "policy.structure.reporting-cadence": reportingCadence,
   "policy.structure.cure-waiver": cureWaiver,
+  "policy.structure.minimum-sellable": minimumSellable,
+  "policy.structure.mandate-ticket": mandateTicket,
+  "policy.conditions-precedent.catalogue": conditionsPrecedent,
 };
