@@ -17,6 +17,7 @@ const OBSERVED_BY = "Offroad (Claude, executor), 24/09/2026, aguardando revisão
 const doc = (key: string) => `knowledge/reference-data/pricing-market.md#${key}`;
 
 const PLAYBOOK_URL = "https://github.com/carlosevg100/offroad/blob/main/packages/credit-playbook/knowledge/HOUSE-PLAYBOOK-COMPLETO-v2.md";
+const CVM_160_URL = "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol160.html";
 
 /** Internal rating bands of `packages/credit-analysis`, with the ten-grade scale each band covers. */
 const RISK_BANDS = {strong: [1, 2], adequate: [3, 4], watch: [5, 6], weak: [7, 8], distressed: [9, 10]};
@@ -566,5 +567,132 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
     },
     asOf: AS_OF,
     documentation: doc("market.pricing.observation-registry"),
+  },
+
+  "market.mandates": {
+    version: VERSION,
+    value: {
+      buyerTypes: [
+        {id: "fundo_credito_high_grade", rule: "MK-01"},
+        {id: "high_yield_e_special_situations", rule: "MK-02"},
+        {id: "fundo_com_mandato_dedicado", rule: "MK-03"},
+        {id: "gestora_e_veiculo_fidc", rule: "MK-04"},
+        {id: "family_office", rule: "MK-05"},
+        {id: "banco_medio", rule: "MK-06"},
+        {id: "securitizadora", rule: "MK-07", note: "veículo e prestador, nunca investidor final"},
+        {id: "factor_e_forfait", rule: "MK-08"},
+        {id: "fundo_de_infraestrutura_e_imobiliario", rule: "MK-09"},
+        {id: "fundo_de_venture_debt", rule: "MK-10"},
+      ],
+      criteriaFields: ["active", "instruments", "ticket", "termMonths", "sectors", "excludedSectors", "geographies", "collateral", "leverageCeiling", "minimumDscr", "indexers", "minimumRiskBand", "returnTargetBps", "declaredRestrictions"],
+      metadataPerField: ["provenance", "observedAt", "confirmedBy", "sourceLocator", "confidence"],
+      sourceClasses: {
+        direct_confirmation: ["declared", "conversation"],
+        public_rule: ["published"],
+        governed_observation: ["observed"],
+        unconfirmed: ["inferred"],
+      },
+      precedenceByField: {
+        legalConstraints: {fields: ["instruments", "excludedSectors", "geographies"], order: ["published", "declared", "conversation", "observed", "inferred"]},
+        appetite: {fields: ["active", "ticket", "termMonths", "sectors", "collateral", "leverageCeiling", "minimumDscr", "indexers", "minimumRiskBand", "returnTargetBps"], order: ["declared", "conversation", "observed", "published", "inferred"]},
+      },
+      hardFilterSourceClasses: ["direct_confirmation", "public_rule", "governed_observation"],
+      hardFilterOrder: ["ticket", "setor_vedado", "instrumento", "prazo", "exigencia_de_garantia", "jurisdicao"],
+      publicSources: [
+        {id: "regulamento_cvm", note: "regulamento publicado no sistema da CVM (Resolução CVM 175, art. 10, parágrafo único)", url: "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol175.html"},
+        {id: "cadastro_de_fundos", dataset: "fi-cad", url: "https://dados.cvm.gov.br/dataset/fi-cad"},
+        {id: "composicao_da_carteira", dataset: "fi-doc-cda", url: "https://dados.cvm.gov.br/dataset/fi-doc-cda"},
+        {id: "informe_mensal_fidc", dataset: "fidc-doc-inf_mensal", url: "https://dados.cvm.gov.br/dataset/fidc-doc-inf_mensal"},
+        {id: "ofertas_encerradas", dataset: "oferta-distrib", url: "https://dados.cvm.gov.br/dataset/oferta-distrib"},
+      ],
+      confirmationProtocol: {
+        updatesOnlyCoveredFields: true,
+        record: ["data", "autor", "meio", "campos cobertos"],
+        disclosesNoCase: "a confirmação de mandato não revela a companhia nem o caso",
+      },
+      entries: [],
+      syntheticInvestorsExcluded: "os investidores fictícios de packages/investor-base nunca entram neste registro",
+      publicObservation: {
+        source: "CVM, dados abertos de ofertas encerradas registradas de 24/09/2025 a 23/09/2026, participação na quantidade subscrita",
+        debenturesUpTo150: {offers: 134, distributionConsortium: "0.54", investmentFunds: "0.43"},
+        debenturesAbove150: {offers: 388, distributionConsortium: "0.57", investmentFunds: "0.20", otherFinancialInstitutions: "0.17", individuals: "0.04", otherCompanies: "0.03"},
+        notasComerciais: {offersUpTo150: 197, offersAbove150: 79, distributionConsortiumUpTo150: "0.99", distributionConsortiumAbove150: "1.00"},
+        criCraUpTo150: {offers: 400, investmentFunds: "0.85", otherFinancialInstitutions: "0.06", individuals: "0.04", otherCompanies: "0.03", distributionConsortium: "0.03"},
+        criCraAbove150: {offers: 123, investmentFunds: "0.60", distributionConsortium: "0.34", individuals: "0.05"},
+      },
+    },
+    unit: "registro governado de mandatos: campos, classes de fonte e estado",
+    source: {
+      title: "Resolução CVM 175/2022 (regulamento público do fundo) e Dados Abertos da CVM; House Playbook Offroad v2.1, MK-01 a MK-14",
+      url: "https://dados.cvm.gov.br/",
+      observedBy: OBSERVED_BY,
+    },
+    asOf: AS_OF,
+    documentation: doc("market.mandates"),
+  },
+
+  "policy.market.mandate_max_age": {
+    version: VERSION,
+    value: {
+      mandateMaxAgeMonths: 3,
+      executorScope: "buildMarketTruthSet e market_distribution_policies.mandate_max_age_months aplicam um prazo único aos campos de filtro duro: active, instrument, ticket, term, sector, geography, leverage e dscr",
+      byFieldMonths: {active: 3, ticket: 6, termMonths: 6, collateral: 6, leverageCeiling: 6, minimumDscr: 6, indexers: 12, instruments: 12, sectors: 12, excludedSectors: 12, geographies: 12},
+      byProvenanceMaxMonths: {declared: 12, conversation: 6, published: 12, observed: 6, inferred: 0},
+      publishedAlsoExpiresOn: "arquivamento de nova versão do regulamento na CVM",
+      familyOfficeMaxMonths: 3,
+      effectiveRule: "prazo efetivo = menor entre o prazo do campo, o da proveniência e o do perfil",
+      preWaveReconfirmation: {fields: ["active", "ticket"], maxAgeDays: 30},
+      statementRankDecayMonths: 3,
+      onStale: "o campo vencido sai dos filtros duros, rebaixa a confiança e entra na lista de reconfirmação; o registro não é apagado",
+      refreshCadence: {
+        published: "releitura mensal do cadastro e dos documentos do fundo na CVM",
+        observed: "mensal, depois do prazo de 10 dias úteis do Anexo Normativo I da Resolução CVM 175, art. 24, II",
+      },
+    },
+    unit: "meses (dias quando indicado)",
+    source: {
+      title: "House Playbook Offroad v2.1, MK-05 e MK-11 a MK-14; Resolução CVM 175/2022, Anexo Normativo I, arts. 22 e 24 (prazos de divulgação da carteira)",
+      url: "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol175.html",
+      observedBy: OBSERVED_BY,
+    },
+    asOf: AS_OF,
+    documentation: doc("policy.market.mandate_max_age"),
+  },
+
+  "policy.market.distribution-waves": {
+    version: VERSION,
+    value: {
+      waveLimit: 3,
+      learningGateAnchorCount: 2,
+      learningGateMaxBusinessDays: 10,
+      onGateTimeout: "revisão registrada de material e estrutura; sem expansão automática",
+      structuralObjectionThreshold: 2,
+      onStructuralObjection: "revisão ES-40 antes da onda seguinte",
+      subsequentWaveLimit: 3,
+      maxRecipientsWithoutExceptionalExpansion: 9,
+      exceptionalExpansionRequires: ["racional escrito", "consentimento da companhia vinculado à versão do material", "destinatários aderentes com mandato atual"],
+      communication: {
+        form: "individual, com tese por destinatário (MK-13)",
+        prohibited: "comunicação padronizada e massificada (Resolução CVM 160, art. 3º, § 1º, V)",
+      },
+      securitiesOfferRoute: {
+        regime: "consulta sigilosa a potenciais investidores (Resolução CVM 160, art. 6º)",
+        audience: "investidores profissionais (Resolução CVM 30, art. 11)",
+        conditions: ["compromisso de sigilo obtido do interlocutor", "sem vinculação, oferta ou aceitação", "sem pagamento de parte a parte", "lista de consultados com data e hora e materiais arquivados"],
+        consultationWindow: "até o protocolo do pedido de registro quando feita por assessor contratado pelo ofertante (art. 6º, § 1º, III)",
+        coordinator: "a oferta pública é coordenada por instituição habilitada (art. 5º); a Offroad não distribui",
+      },
+      singleLotRoute: "Resolução CVM 160, art. 8º, IV: lote único e indivisível a um único investidor, sem material publicitário e com as restrições de 180 dias dos §§ 3º e 4º",
+      packageByStage: {default: ["teaser"], onExpressAuthorizationPerRecipient: ["memorando", "term_sheet_indicativo", "perguntas_e_respostas", "indice_de_documentos"]},
+      record: ["destinatário", "racional", "materiais", "versões", "autorização", "data e hora"],
+    },
+    unit: "destinatários por onda; dias úteis",
+    source: {
+      title: "Resolução CVM 160/2022, arts. 3º, 5º, 6º e 8º; Resolução CVM 30/2021, art. 11; House Playbook Offroad v2.1, MK-15 a MK-18",
+      url: CVM_160_URL,
+      observedBy: OBSERVED_BY,
+    },
+    asOf: AS_OF,
+    documentation: doc("policy.market.distribution-waves"),
   },
 };
