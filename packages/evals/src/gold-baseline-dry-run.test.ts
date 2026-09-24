@@ -15,6 +15,7 @@ import {sha256Hex} from "./gold-baseline";
  */
 const evalsDir = resolve(import.meta.dirname, "..");
 const script = resolve(evalsDir, "scripts", "run-gold-baseline.ts");
+const camil = resolve(evalsDir, "..", "testing-fixtures", "assets", "camil");
 const tsxPackage = JSON.parse(readFileSync(resolve(evalsDir, "node_modules", "tsx", "package.json"), "utf8")) as {bin: string};
 const tsxCli = resolve(evalsDir, "node_modules", "tsx", tsxPackage.bin);
 /** The child never sees a provider key, whatever the parent environment holds. */
@@ -69,6 +70,11 @@ describe("gold baseline dry run", () => {
         const next = rendered.indexOf("\n### ", start + 1);
         const section = rendered.slice(start, next === -1 ? undefined : next);
         expect(section.length).toBeGreaterThan(document.chars);
+      }
+      // Each attached document carries the hash of its own bytes, taken before the parser consumed them.
+      for (const [file, hash] of [["01_ITR_1T26_31mai2026.pdf", sha256Hex(readFileSync(resolve(camil, "01_ITR_1T26_31mai2026.pdf")))],
+        ["02_Proposta_Administracao_AGOE_2026.pdf", sha256Hex(readFileSync(resolve(camil, "02_Proposta_Administracao_AGOE_2026.pdf")))]]) {
+        expect(rendered).toContain(`Arquivo: ${file}. SHA-256: ${hash}.`);
       }
     } finally {
       rmSync(dir, {recursive: true, force: true});
