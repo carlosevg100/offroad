@@ -20,12 +20,14 @@
  *
  * The worker enforces the smallest of this ceiling, the job's database budget and the optional
  * MODEL_MAX_COST_USD_PER_JOB override. Values the database also holds are named in each entry; the
- * database is changed by migration only.
+ * migration `production_budget_ceilings` writes the ones this derivation raised, and
+ * `production-budgets.test.ts` holds its numbers to these constants.
  */
 export const productionModelCeilingsUsd = {
   /**
-   * Per document. Old ceiling 0.75 (web run budget), 8 calls. Largest classification 0.0732 (GPT-5.6
-   * Terra, 0.0602 under the old estimate); largest extraction window 0.2094 (Sonnet 5, 0.1402 old).
+   * Per document. Old ceiling 0.75 (web run budget and database default), 8 calls. Largest
+   * classification 0.0732 (GPT-5.6 Terra, 0.0602 under the old estimate); largest extraction
+   * window 0.2094 (Sonnet 5, 0.1402 old).
    * Worst attempt: classification plus seven windows at their bound, 1.4184; x1.10 = 1.5602.
    * The largest ratio of new to old reservation over these requests is 1.49, so 1.60 also admits
    * every call the old 0.75 admitted. The single 8.32 USD document on record is out of reach of the
@@ -66,14 +68,14 @@ export const productionModelCeilingsUsd = {
    */
   workConversation: 0.25,
   /**
-   * Database: 1.50 (trigger `private.normalize_origination_runtime_budget_v1`, 2 calls), but the
-   * worker held it at the 1.00 environment default less 0.24 of research. Largest request 0.7993
-   * on GPT-5.6 Sol (0.6313 old); worst attempt, Sol truncated and answered by Terra: 1.1792;
-   * x1.10 = 1.2971; plus 12 research queries at 0.02 = 1.5371. Until the trigger grants 1.55 the
-   * database binds at 1.50, which still admits that attempt with 6.9% to spare.
+   * Database: 1.55 and 2 calls (trigger `private.normalize_origination_runtime_budget_v1`, 1.50
+   * before the migration), but the worker held it at the 1.00 environment default less 0.24 of
+   * research. Largest request 0.7993 on GPT-5.6 Sol (0.6313 old); worst attempt, Sol truncated and
+   * answered by Terra: 1.1792; x1.10 = 1.2971; plus 12 research queries at 0.02 = 1.5371. A job
+   * written before the migration keeps 1.50, which still admits that attempt with 6.9% to spare.
    */
   originationThesis: 1.55,
-  /** A revision is one call on the prior research, no new search; the trigger gives it 1.50 as well. */
+  /** A revision is one call on the prior research, no new search; the trigger gives it 1.55 as well. */
   originationThesisRevision: 1.55,
   /**
    * Database: 0.95 and 2 calls (`private.start_public_company_debt_view_v1`). Largest request
@@ -92,12 +94,13 @@ export const productionModelCeilingsUsd = {
   /** Database: 0.80 and 1 call (`private.request_capital_planning_revision_v1`); one Sonnet 5 call on the prior research. */
   capitalPlanningRevision: 0.8,
   /**
-   * Database: 0.50 and 4 calls (`private.worker_activate_integration_preview_run_v1`). The live
-   * preview asks at most the questions (0.0527, 0.0330 old) and the synthesis (0.2464 on Sonnet 5,
-   * 0.2487 on the Terra fallback; 0.1378 old). Worst attempt, synthesis failing and answered by
-   * Terra: 0.5206; x1.10 = 0.5726. It runs on the frozen case and never researches, so no research
-   * is reserved. Until the database grants 0.60 it binds at 0.50, which admits the primary path
-   * (0.2943) and degrades a failed synthesis to its deterministic skeleton, as the code intends.
+   * Database: 0.60 and 4 calls (`private.worker_activate_integration_preview_run_v1`, 0.50 before
+   * the migration). The live preview asks at most the questions (0.0527, 0.0330 old) and the
+   * synthesis (0.2464 on Sonnet 5, 0.2487 on the Terra fallback; 0.1378 old). Worst attempt,
+   * synthesis failing and answered by Terra: 0.5206; x1.10 = 0.5726. It runs on the frozen case
+   * and never researches, so no research is reserved. A job written before the migration keeps
+   * 0.50, which admits the primary path (0.2943) and degrades a failed synthesis to its
+   * deterministic skeleton, as the code intends.
    */
   integrationPreview: 0.6,
 } as const;
@@ -108,7 +111,8 @@ export const productionModelCeilingsUsd = {
  * after the case analysis, divided by the documents: 16.00 = 3.10 + 8 x 1.60 lets a data room of
  * eight documents (the Rede Horizonte acceptance room) keep the whole per-document ceiling, where
  * the old 5.00 = 1.00 + 4.00 did that for five documents at 0.75. Calls are unchanged. Every value
- * sits inside the bounds the database validates (at most 25 USD, the case below the run).
+ * sits inside the bounds the database validates (at most 25 USD, the case below the run), and the
+ * same numbers are the database's defaults for a run its own callers start without a budget.
  */
 export const productionRunBudget = {
   max_cost_usd: 16,
