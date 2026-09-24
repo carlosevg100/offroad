@@ -2713,3 +2713,7 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)` (apagar)
 - `function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)` (apagar)
 - `function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)` (apagar)
+
+## Etapa 17, incremento 4A, telas (24/09/2026)
+
+0 objetos de banco novos. Três pontos de entrada da web: lista e pedido de execuções do trabalho (`executions/page.tsx`, `executions/actions.ts`) e detalhe da execução (`executions/[executionId]/page.tsx`).
