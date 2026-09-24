@@ -4,6 +4,7 @@ import {describe, expect, it, vi} from "vitest";
 import {z} from "zod";
 import {
  BASELINE_SYSTEM_PROMPT,
+ baselineGeneralistResultSchema,
  baselineGeneralistSnapshotSchema,
  baselineSnapshotContentHashes,
  executionCanonicalText,
@@ -110,6 +111,8 @@ describe("governed evaluation consumer", () => {
   const published = JSON.parse(text) as {schemaVersion: string; outputs: Array<{deliverable: string}>; record: {turns: unknown[]; caseId: string}};
   expect(executionCanonicalText(published)).toBe(text);
   expect(published.schemaVersion).toBe("gold-baseline-result.v1");
+  // The script reads the committed bytes back with the family schema; the worker publishes exactly that shape.
+  expect(baselineGeneralistResultSchema.parse(published)).toEqual(published);
   expect(published.outputs.map((output) => output.deliverable)).toEqual(["Entrega sintética 1", "Entrega sintética 2"]);
   expect(published.record.turns).toHaveLength(2);
  });
