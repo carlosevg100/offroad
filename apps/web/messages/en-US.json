@@ -2216,7 +2216,7 @@
         "inputsCurrentNo": "Changed since the request or left your access",
         "requestedAt": "Requested at",
         "job": "Queue",
-        "attempts": "{count} attempts",
+        "attempts": "{count, plural, one {# attempt} other {# attempts}}",
         "lastError": "Last error",
         "method": "Method",
         "contractFingerprint": "Contract fingerprint",

@@ -2216,7 +2216,7 @@
         "inputsCurrentNo": "Mudaram desde o pedido ou saíram do seu acesso",
         "requestedAt": "Pedida em",
         "job": "Fila",
-        "attempts": "{count} tentativas",
+        "attempts": "{count, plural, one {# tentativa} other {# tentativas}}",
         "lastError": "Último erro",
         "method": "Método",
         "contractFingerprint": "Impressão do contrato",
