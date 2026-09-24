@@ -7,8 +7,9 @@ import "./work-execution.css";
 
 type Unverified = Array<{sourceVersionId: string; reason: "rights_missing" | "bytes_unverified" | "binding_missing"}>;
 /** One request per form content: the request id is minted once for the typed values and kept
- * across retries, so a second click reaches the execution the first one created. */
-export function WorkExecutionRequest({locale, projectId, versions, selectedVersionId}: {locale: string; projectId: string; versions: Array<{id: string; revision: number}>; selectedVersionId: string | null}) {
+ * across retries, so a second click reaches the execution the first one created. The situations
+ * are the R3 catalogue, in its order, labelled with the catalogue text; at least one is required. */
+export function WorkExecutionRequest({locale, projectId, versions, selectedVersionId, situations}: {locale: string; projectId: string; versions: Array<{id: string; revision: number}>; selectedVersionId: string | null; situations: readonly string[]}) {
   const t = useTranslations("App.workExecutions"), router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null), [unverified, setUnverified] = useState<Unverified>([]);
@@ -20,8 +21,11 @@ export function WorkExecutionRequest({locale, projectId, versions, selectedVersi
   return <section><h2>{t("request.title")}</h2><p>{t("request.help")}</p>
     {error ? <p role="alert">{t(`errors.${error}`)}{unverified.length ? <span> {t("unverified.title")} <ul>{unverified.map(s => <li key={s.sourceVersionId}><code>{s.sourceVersionId}</code>: {t(`unverified.${s.reason}`)}</li>)}</ul></span> : null}</p> : null}
     <form action={f => {
-      const payload = {locale, projectId, versionId: text(f, "versionId"), question: text(f, "question"), objectives: text(f, "objectives").split("\n").map(o => o.trim()).filter(Boolean), asOf: text(f, "asOf")};
-      const id = requestId(payload); setError(null); setUnverified([]);
+      const payload = {locale, projectId, versionId: text(f, "versionId"), question: text(f, "question"), objectives: text(f, "objectives").split("\n").map(o => o.trim()).filter(Boolean), asOf: text(f, "asOf"),
+        situationIds: f.getAll("situationIds").map(String)};
+      setError(null); setUnverified([]);
+      if (!payload.situationIds.length) {setError("situation_required"); return;}
+      const id = requestId(payload);
       startTransition(async () => {
         try {
           const result = await requestCapitalExecution({...payload, requestId: id});
@@ -35,6 +39,9 @@ export function WorkExecutionRequest({locale, projectId, versions, selectedVersi
       <label>{t("request.question")}<input name="question" required maxLength={2000} /></label>
       <label>{t("request.objectives")}<textarea name="objectives" required maxLength={20000} /></label>
       <p>{t("request.objectivesHelp")}</p>
+      <fieldset className="execution-situations"><legend>{t("request.situations")}</legend><p>{t("request.situationsHelp")}</p>
+        {situations.map(id => <label key={id}><input type="checkbox" name="situationIds" value={id} />{t.has(`situations.${id}`) ? t(`situations.${id}`) : id}</label>)}
+      </fieldset>
       <button disabled={pending}>{t("request.submit")}</button>
     </form></section>;
 }

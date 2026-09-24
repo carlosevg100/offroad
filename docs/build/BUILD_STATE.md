@@ -10,6 +10,10 @@ Os gates de cadastro e pesquisa, seleção de método, convenções, voz, gráfi
 
 4C-3 recibo: migração `execution_gate_receipts` em staging `20260924003703` e produção `20260924005237`, antes do merge; base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados, com texto livre ou divergentes e grava o recibo imutável na mesma transação da execução, leitor v2 com o recibo; funções v1 inalteradas. Prova `execution_gates.sql` (39 verificações) em staging; contrato TypeScript dos gates. Advisors de segurança zero; inventário com 13 objetos; catálogo de produção 2257; tipos públicos regenerados de produção.
 
+4C código (#756): filtro de voz, gate de convenções, seleção de método com as doze situações de R3, rubrica e avaliador determinístico do teste do MD e séries de gráfico sem campo de estilo; manifesto de runtime regenerado, lock publicado sem mudança.
+
+4C-4 tela: pedido com situações e gates montados na ação (cadastro e pesquisa do servidor, seleção de método, convenções do procedimento v4, voz só sobre o texto do sistema) e enviados pelo produtor v2; detalhe com o recibo, as dez perguntas do teste do MD sem veredito e os números decisivos em texto. Web 804 testes; catálogos com a mesma estrutura nos dois idiomas; filtro de voz sem bloqueio.
+
 ## Etapa 17 / 6: fechamento
 
 Retirada da liquidação só por hash: `worker_settle_execution_v1` (público e privado) e `settle_execution_operation_v1` saem do banco; o worker publicado só usa `worker_settle_execution_v2`, que grava os bytes. [Escopo, evidência e o que segue aberto](arcabouco/etapa-17-6-fechamento.md).

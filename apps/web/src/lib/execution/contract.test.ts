@@ -4,14 +4,14 @@ import {executionCanonicalText, executionContractFingerprint, executionContractS
 import {composeBoundCapitalPacketV2, deriveBoundCapitalScope} from "@offroad/financial-model";
 import {readContextualBasis} from "@offroad/reconciliation";
 import {adoptedCapitalPeriodFixture} from "@offroad/testing-fixtures/capital-structure-decision";
-import {composeExecutionContract, executionBudgetWindowMs, executionContractBasisSchema, executionContractText, snapshotFingerprint, type ExecutionContractBasis} from "./contract";
+import {composeExecutionContract, contractBasisVersions, executionBudgetWindowMs, executionContractBasisSchema, executionContractText, snapshotFingerprint, type ExecutionContractBasis} from "./contract";
 
 const id = (n: number) => `a4170000-0000-4000-9000-${String(n).padStart(12, "0")}`;
 const hex = (c: string) => c.repeat(64);
 function basis(): ExecutionContractBasis {
   const canonical = JSON.stringify({schemaVersion: "contextual-adoption.v1", versionId: id(3), workId: id(2), purpose: "prepare-capital-structure-decision", entries: []});
   return executionContractBasisSchema.parse({
-    schemaVersion: "execution-contract-basis.v1", organizationId: id(1), workId: id(2), principalId: id(9),
+    schemaVersion: "execution-contract-basis.v2", organizationId: id(1), workId: id(2), principalId: id(9),
     authorityRevision: "7", policyFingerprint: hex("b"), purpose: "prepare-capital-structure-decision", contextKey: "base", versionId: id(3),
     envelope: {canonical, fingerprint: createHash("sha256").update(canonical).digest("hex")},
     adoptions: [{id: id(10), assumptionVersionId: id(3), fingerprint: hex("c")}], hypotheses: [{id: id(11), assumptionVersionId: id(3), fingerprint: hex("c")}],
@@ -21,6 +21,7 @@ function basis(): ExecutionContractBasis {
         manifestHash: hex("e"), baseManifestHash: hex("e"), compilerVersion: "2026.09.21-v9", compilerHash: hex("f"),
         executor: {key: "@offroad/financial-model#prepareCapitalProcedurePacketV2", version: "2026.09.21-v2", sourceClosureHash: hex("1"), inputContractHash: hex("2"), outputContractHash: hex("3")}, formulas: []},
       tools: [], allowedEffects: ["read_only"], limits: {maxCostMicrousd: 0, maxModelCalls: 0, maxDurationMs: 31000}, fingerprint: hex("4")},
+    company: {entityId: id(5), registration: "registered", research: "missing", researchAsOf: null},
   });
 }
 const ids = {executionId: id(40), requestId: id(41), processingRunId: id(42), snapshotId: id(43)};
@@ -58,6 +59,24 @@ describe("execution contract composition", () => {
     expect(executionContractBasisSchema.safeParse({...b, profile: {...b.profile, allowedEffects: []}}).success).toBe(false);
     expect(() => composeExecutionContract({...b, profile: {...b.profile, allowedEffects: [] as never}}, executionCanonicalText({}), ids, now)).toThrow("execution_basis_profile_incomplete");
     expect(() => composeExecutionContract({...b, authorityRevision: "0"}, executionCanonicalText({}), ids, now)).toThrow();
+  });
+  it("reads the v2 basis with its company block and refuses a basis without it or with free text in it", () => {
+    const b = basis();
+    expect(b.company).toEqual({entityId: id(5), registration: "registered", research: "missing", researchAsOf: null});
+    const withoutCompany: Record<string, unknown> = {...b}; delete withoutCompany.company;
+    expect(executionContractBasisSchema.safeParse(withoutCompany).success).toBe(false);
+    expect(executionContractBasisSchema.safeParse({...b, schemaVersion: "execution-contract-basis.v1"}).success).toBe(false);
+    expect(executionContractBasisSchema.safeParse({...b, company: {...b.company, registration: "pending"}}).success).toBe(false);
+    expect(executionContractBasisSchema.safeParse({...b, company: {...b.company, name: "Synthetic company"}}).success).toBe(false);
+    // The company block informs the gates only; the contract carries none of it.
+    expect(composeExecutionContract(b, executionCanonicalText({}), ids, now)).not.toHaveProperty("company");
+  });
+  it("lists the basis versions a contract pins the way the v2 producer reads them", () => {
+    const b = basis();
+    expect(contractBasisVersions(composeExecutionContract(b, executionCanonicalText({}), ids, now))).toEqual([id(3)]);
+    const mixed = {...b, hypotheses: [{id: id(11), assumptionVersionId: id(4), fingerprint: hex("c")}]};
+    expect(contractBasisVersions(composeExecutionContract(mixed, executionCanonicalText({}), ids, now)).sort()).toEqual([id(3), id(4)]);
+    expect(contractBasisVersions(composeExecutionContract({...b, adoptions: [], hypotheses: []}, executionCanonicalText({}), ids, now))).toEqual([]);
   });
   it("serializes a composed capital packet to the same bytes on every composition", () => {
     const f = adoptedCapitalPeriodFixture(); const canonical = JSON.stringify(f.snapshot);

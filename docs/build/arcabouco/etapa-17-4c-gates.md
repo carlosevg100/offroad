@@ -22,7 +22,23 @@ Provas: `supabase/tests/execution_gates.sql` (39 verificações) executada em st
 
 Estampas: staging `20260924003703`, produção `20260924005237`, aplicadas pelo executor via MCP antes do merge; corpos das funções idênticos nos dois projetos (md5 conferido). Advisors de segurança zero. Inventário com 13 objetos; catálogo de produção 2257 objetos. O catálogo de staging capturado junto (2375) já carrega os 57 objetos da migração do incremento 5, aplicada em staging por outro trabalho em curso; eles são revisados na PR desse incremento. Tipos públicos regenerados de produção.
 
+## 4C-1, 4C-2 e 4C-5: gates como código (#756)
+
+Sem migração e sem conteúdo profissional novo; tudo versionado `2026.09.24-v1`.
+
+- Filtro de voz (`packages/credit-playbook/src/voice-filter.ts`): regras como dados, cada uma com a origem no procedimento (N4, T1) ou no filtro de banker do fundador. Bloqueiam: travessão, meia-risca, emoji, autorreferência de IA, frases de enchimento, certeza sobre terceiro e enquadramento de má-fé. Alertam: "não é X, é Y", "não fecha" sem número, veredito sem número, superlativo, exclamação e rótulo carimbado. Os dois catálogos inteiros (`App.*`) passam sem nenhum bloqueio; os quatro alertas existentes ficam registrados na PR, sem texto alterado.
+- Gate de convenções (`conventions-gate.ts`): uma chave só vale como aprovada com entrada aprovada e data de referência dentro da validade; todo o resto é lacuna com motivo. IOF, convenções ANBIMA/B3 e regime tributário seguem `required_missing` até o fundador ou o responsável nomeado aprovar valores.
+- Seleção de método (`method-selection.ts`): as doze situações de R3 como dados, com rótulos, métodos estruturantes e "o método que isoladamente engana" copiados literalmente; recusas `situation_required`, `situation_unknown` e `method_not_applicable_for_situation`.
+- Teste do MD (`md-test-rubric.ts` e `packages/financial-model/src/capital-md-test.ts`): as dez perguntas de Q1 como dados, conferidas palavra por palavra contra o procedimento, e um avaliador determinístico que devolve por pergunta passa, não passa, não aplicável com código de escopo, ou julgamento humano, sempre com os caminhos lidos e sem veredito geral. Seguindo Q2, "passa" quer dizer que o contrato verificável por trás da pergunta vale; enquadramento, suficiência, método, alternativas, força da evidência, proporcionalidade e voz continuam com o julgamento sênior. A pergunta 8 fica com julgamento humano salvo bloqueio de voz ou resumo ausente; a 10 é sempre humana.
+- Séries de gráfico (`capital-chart-series.ts`): uma pergunta por peça (menor caixa disponível por período e maior saída líquida de financiamento por período), papéis foco e candidato, referência zero, número decisivo com o caminho, conclusão em código e o estado de evidência de T2; não existe campo de cor, traço, tamanho ou miniatura, então as regras de gráfico da casa não podem ser violadas pelos dados. Pacote parcial sem projeção gera zero peças. O desenho dos gráficos fica para um trabalho de design próprio.
+
+## 4C-4: os gates na tela
+
+- Pedido: o usuário escolhe uma ou mais situações de R3. A ação monta os gates a partir da base v2 (cadastro e pesquisa calculados no servidor), da seleção de método, do gate de convenções com as chaves que o procedimento v4 declara e do filtro de voz aplicado só ao texto que o sistema escreve (o que a pessoa digita nunca é auditado), valida o texto canônico contra o contrato fechado e pede pelo produtor v2. Companhia sem cadastro, seleção recusada ou bloqueio de voz recusam antes de enviar, com mensagem própria; pesquisa ausente não recusa e fica registrada como lacuna no recibo.
+- Detalhe: mostra o recibo (cadastro, pesquisa, situações, cada convenção em lacuna pelo nome, contagem de voz) e, quando os bytes do resultado conferem com a impressão guardada, as dez perguntas do teste do MD com o estado de cada uma e a nota de Q2, sem veredito, e o número decisivo de cada peça de gráfico em texto. Execuções pedidas pela v1 aparecem sem gates.
+- Com o compositor de 4A, que monta uma única alternativa de manutenção, toda execução calculada mostra a pergunta 6 como "não passa" (falta a sensibilidade adversa) e a 7 como não aplicável (uma alternativa só). É o retrato correto do que esse pacote entrega hoje.
+
 ## Em aberto neste incremento
 
-- 4C-1, 4C-2 e 4C-5 (código): filtro de voz, gate de convenções, catálogo de situações e seleção de método, rubrica e teste do MD, séries de gráfico. Entram por uma PR de união.
-- 4C-4 (web): formulário com as situações, montagem do texto dos gates na ação e detalhe com gates, achados de voz e teste do MD.
+- Desenho dos gráficos, seguindo as regras de gráfico da casa.
+- Alternativas e sensibilidade adversa no pacote composto, que é o que falta para as perguntas 6 e 7 passarem.

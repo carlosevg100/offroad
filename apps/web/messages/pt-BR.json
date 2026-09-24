@@ -2177,7 +2177,9 @@
         "objectives": "Objetivos",
         "objectivesHelp": "Um objetivo por linha.",
         "asOf": "Data de referência",
-        "submit": "Pedir execução"
+        "submit": "Pedir execução",
+        "situations": "Situações da decisão",
+        "situationsHelp": "Marque ao menos uma situação do catálogo. A seleção fica registrada no pedido."
       },
       "states": {
         "queued": "Na fila",
@@ -2214,7 +2216,7 @@
         "inputsCurrentNo": "Mudaram desde o pedido ou saíram do seu acesso",
         "requestedAt": "Pedida em",
         "job": "Fila",
-        "attempts": "{count} tentativas",
+        "attempts": "{count, plural, one {# tentativa} other {# tentativas}}",
         "lastError": "Último erro",
         "method": "Método",
         "contractFingerprint": "Impressão do contrato",
@@ -2284,13 +2286,110 @@
         "provenance_denied": "Uma fonte adotada nesta base não está verificada ou saiu do seu acesso. A execução não foi pedida.",
         "conflict": "Este pedido já foi registrado com outro conteúdo. Abra a lista para encontrá-lo.",
         "stale": "A base mudou enquanto o pedido era montado. Tente de novo.",
-        "unavailable": "Não foi possível pedir ou ler a execução com segurança. Tente novamente."
+        "unavailable": "Não foi possível pedir ou ler a execução com segurança. Tente novamente.",
+        "company_unregistered": "A companhia desta base ainda não está cadastrada neste trabalho. Cadastre a companhia antes de pedir uma execução.",
+        "situation_required": "Escolha ao menos uma situação.",
+        "situation_unknown": "Uma das situações escolhidas não está no catálogo. Recarregue a página e escolha de novo.",
+        "method_not_applicable": "O método publicado não atende a nenhuma das situações escolhidas.",
+        "selection_invalid": "A seleção de situações não pôde ser registrada para o método publicado.",
+        "voice_blocked": "Um texto que o sistema escreveu para este pedido não passou no filtro de voz. O pedido não foi enviado.",
+        "gates_invalid": "As verificações do pedido não estão no formato que o servidor exige. A execução não foi pedida.",
+        "gates_blocked": "O servidor recusou o pedido porque uma verificação estava bloqueada.",
+        "gates_mismatch": "As verificações do pedido não conferem com o que o servidor calculou para esta base. Tente de novo."
       },
       "unverified": {
         "title": "Fontes sem verificação:",
         "rights_missing": "sem direitos de uso registrados",
         "bytes_unverified": "bytes ainda não verificados",
         "binding_missing": "sem vínculo com este trabalho"
+      },
+      "situations": {
+        "seasonal-working-capital": "Giro sazonal",
+        "structural-working-capital": "Giro estrutural",
+        "capex-infrastructure": "Capex/infraestrutura",
+        "stable-business-high-conversion": "Negócio estável com alta conversão",
+        "near-covenant": "Próxima de covenant",
+        "growth-without-ebitda": "Crescimento sem EBITDA",
+        "holding-group": "Holding/grupo",
+        "receivables": "Recebíveis",
+        "restructuring": "Reestruturação",
+        "acquisition-bridge": "Aquisição/ponte",
+        "refinancing": "Refinanciamento",
+        "unaudited-divergent-numbers": "Números não auditados/divergentes"
+      },
+      "gates": {
+        "title": "Verificações do pedido",
+        "none": "Esta execução foi pedida sem verificações; nenhuma foi registrada.",
+        "unverified": "O registro das verificações não confere com a impressão guardada; só a impressão é mostrada.",
+        "registration": "Cadastro da companhia",
+        "research": "Pesquisa sobre a companhia",
+        "recordedOn": "estado registrado em {date}",
+        "situations": "Situações escolhidas",
+        "conventions": "Convenções do método",
+        "noConventions": "O método não declara convenções.",
+        "conventionGap": "lacuna",
+        "conventionApproved": "aprovada e vigente na data de referência",
+        "voice": "Filtro de voz",
+        "voiceCounts": "{block, plural, =0 {nenhum bloqueio} one {# bloqueio} other {# bloqueios}} e {warn, plural, =0 {nenhum alerta} one {# alerta} other {# alertas}} nos textos do sistema",
+        "fingerprint": "Impressão das verificações",
+        "registrationStates": {
+          "registered": "Cadastrada",
+          "missing": "Sem cadastro"
+        },
+        "researchStates": {
+          "recorded": "Registrada",
+          "abstained": "Tentada, sem fonte utilizável",
+          "missing": "Não registrada; fica como lacuna"
+        },
+        "conventionStatuses": {
+          "required_missing": "exigida, sem valor aprovado",
+          "draft": "em rascunho",
+          "approved": "aprovada",
+          "expired": "vencida"
+        }
+      },
+      "mdTest": {
+        "title": "Teste do MD",
+        "note": "Passa quer dizer só que o contrato verificável por trás da pergunta se sustenta; o julgamento sênior ainda revisa cada resposta (Q2).",
+        "notEvaluated": {
+          "gates_not_recorded": "Sem verificações registradas, o teste do MD não foi avaliado.",
+          "gates_unverified": "As verificações não conferem com a impressão guardada; o teste do MD não foi avaliado.",
+          "evaluation_failed": "O teste do MD não pôde ser avaliado sobre este pacote."
+        },
+        "questions": {
+          "q1": "Entendemos o problema real ou apenas respondemos ao pedido literal?",
+          "q2": "Pesquisamos e verificamos o que precisava ser verificado?",
+          "q3": "Questionamos as premissas relevantes e mostramos o que permanece de pé?",
+          "q4": "Existe conclusão clara, compatível com o estado de conhecimento?",
+          "q5": "Os números e as evidências sustentam essa conclusão?",
+          "q6": "Os riscos principais e as lacunas materiais estão evidentes?",
+          "q7": "Existe alternativa melhor que deveríamos apresentar, inclusive manter ou adiar?",
+          "q8": "Um decisor que não viu a conversa entende o essencial em menos de um minuto?",
+          "q9": "O leitor consegue aprofundar e auditar cada afirmação material?",
+          "q10": "Um MD altamente qualificado assinaria essa entrega no escopo e para a audiência indicados?"
+        },
+        "statuses": {
+          "pass": "Passa",
+          "fail": "Não passa",
+          "not_applicable": "Não se aplica",
+          "human_required": "Requer revisão humana"
+        },
+        "scopeCodes": {
+          "packet_status_framed": "pacote enquadrado, sem números calculados",
+          "packet_status_partial": "pacote parcial",
+          "no_alternatives": "pacote sem alternativas",
+          "single_alternative_without_maintenance_exclusion": "uma só alternativa, sem a razão de excluir a estrutura atual"
+        }
+      },
+      "decisive": {
+        "title": "Números decisivos",
+        "period": "período {period}",
+        "none": "Nenhuma alternativa tem projeção calculada; não há número decisivo a mostrar.",
+        "unavailable": "As séries não puderam ser derivadas deste pacote.",
+        "questions": {
+          "lowest_available_cash_by_period": "Caixa disponível no fim de cada período",
+          "largest_net_financing_outflow_by_period": "Fluxo líquido de financiamento em cada período"
+        }
       }
     },
     "overview": "Visão geral",
