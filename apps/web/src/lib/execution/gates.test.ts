@@ -122,9 +122,9 @@ describe("the gates receipt", () => {
     expect(gates).toEqual({schemaVersion: "execution-gates.v1", gatesVersion: executionGatesVersion, blocked: true, companyRegistration: "registered", research: "recorded",
       methodSelection: {selectionVersion: methodSelectionVersion, situationIds: ["refinancing"], ...method},
       conventions: [
-        {key: "policy.capital.iof", version: "2026.09.21-v1", status: "approved", effective: "approved"},
-        {key: "policy.capital.anbima-b3-conventions", version: "2026.09.21-v1", status: "required_missing", effective: "gap"},
-        {key: "policy.capital.tax-regime", version: "2026.09.21-v1", status: "required_missing", effective: "gap"},
+        {key: "policy.capital.iof", version: "2026.09.24-v1", status: "approved", effective: "approved"},
+        {key: "policy.capital.anbima-b3-conventions", version: "2026.09.24-v1", status: "draft", effective: "gap"},
+        {key: "policy.capital.tax-regime", version: "2026.09.24-v1", status: "draft", effective: "gap"},
       ],
       voice: {version: VOICE_FILTER_VERSION, blockCount: 1, warnCount: 2}});
     for (const entry of gates.conventions) expect(Object.keys(entry).sort()).toEqual(["effective", "key", "status", "version"]);
