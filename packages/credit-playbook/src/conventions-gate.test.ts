@@ -19,16 +19,16 @@ const syntheticApproved = {
 };
 
 describe("conventions gate", () => {
-  it("reports the three capital families as gaps today, never as approved", () => {
+  it("reports the three capital families as gaps today, drafts awaiting review and never approved", () => {
     const result = evaluateConventionsGate(capitalKeys, "2026-09-24");
     expect(result.version).toBe(conventionsGateVersion);
     expect(result.referenceDate).toBe("2026-09-24");
     expect(result.gaps).toEqual(capitalKeys);
     for (const entry of result.entries) {
       expect(entry.effective).toBe("gap");
-      expect(entry.reason).toBe("status_required_missing");
-      expect(entry.status).toBe("required_missing");
-      expect(entry.version).toBe("2026.09.21-v1");
+      expect(entry.reason).toBe("status_draft");
+      expect(entry.status).toBe("draft");
+      expect(entry.version).toBe("2026.09.24-v1");
       expect(entry.owner?.length).toBeGreaterThan(5);
     }
     expect(unresolvedReferenceData(capitalKeys).map((entry) => entry.key)).toEqual(result.gaps);
@@ -59,9 +59,12 @@ describe("conventions gate", () => {
   it("never returns approved for a missing status", () => {
     const {status: _status, ...withoutStatus} = registryEntry("policy.capital.iof");
     const [malformed] = evaluateConventionsGate(["policy.capital.iof"], "2026-10-01", {registry: [withoutStatus]}).entries;
-    expect(malformed).toMatchObject({effective: "gap", reason: "malformed_entry", status: null, version: "2026.09.21-v1"});
-    const [required] = evaluateConventionsGate(["policy.capital.iof"], "2026-10-01").entries;
+    expect(malformed).toMatchObject({effective: "gap", reason: "malformed_entry", status: null, version: "2026.09.24-v1"});
+    const missing = {...registryEntry("policy.capital.iof"), status: "required_missing", value: null, source: null, asOf: null};
+    const [required] = evaluateConventionsGate(["policy.capital.iof"], "2026-10-01", {registry: [missing]}).entries;
     expect(required).toMatchObject({effective: "gap", reason: "status_required_missing"});
+    const [draft] = evaluateConventionsGate(["policy.capital.iof"], "2026-10-01").entries;
+    expect(draft).toMatchObject({effective: "gap", reason: "status_draft", status: "draft"});
   });
 
   it("treats an unknown key as a gap with reason unknown_key", () => {
@@ -73,7 +76,7 @@ describe("conventions gate", () => {
   it("approves only inside the closed window of an approved entry", () => {
     const evaluate = (date: string) => evaluateConventionsGate(["policy.capital.iof"], date, {registry: [syntheticApproved]}).entries[0]!;
     for (const date of ["2026-09-21", "2026-10-15", "2026-12-31"]) {
-      expect(evaluate(date)).toEqual({key: "policy.capital.iof", version: "2026.09.21-v1", status: "approved", owner: syntheticApproved.owner, effective: "approved"});
+      expect(evaluate(date)).toEqual({key: "policy.capital.iof", version: "2026.09.24-v1", status: "approved", owner: syntheticApproved.owner, effective: "approved"});
     }
     expect(evaluate("2026-09-20")).toMatchObject({effective: "gap", reason: "not_yet_effective"});
     expect(evaluate("2027-01-01")).toMatchObject({effective: "gap", reason: "expired"});

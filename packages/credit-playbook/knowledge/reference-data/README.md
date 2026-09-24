@@ -15,6 +15,8 @@ Tudo o que está aqui foi preparado pela Offroad e aguarda a revisão do fundado
 | `pricing-market.md` | Observações e curvas de preço, qualidade de amostra, largura de faixa, regime, prêmios, prazo, tamanho e liquidez, indexadores, custos, mandatos e ondas de distribuição |
 | `intake-materials-qc.md` | Lote de pedidos, exigências por arquétipo, perguntas antecipadas, arredondamento, tolerâncias de controle de qualidade e alertas vermelhos |
 
+As escolhas explícitas que os cartões deixam para o fundador estão em `REVISAO-DO-FUNDADOR.md`.
+
 ## Formato do cartão
 
 ```

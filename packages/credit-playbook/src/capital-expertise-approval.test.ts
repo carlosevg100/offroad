@@ -24,13 +24,14 @@ describe("capital professional approval conditions", () => {
       expect(text).not.toMatch(/Sem base específica, apresentar critérios e alternativas conceituais|respondível sem companhia identificada|[—–]/);
     }
   });
-  it("records all-in prerequisites without inventing reviewed tax or convention values", () => {
+  it("records all-in prerequisites as drafts that await the founder's review, never as approved values", () => {
     const keys = ["policy.capital.iof", "policy.capital.anbima-b3-conventions", "policy.capital.tax-regime"];
     for (const key of keys) {
       expect(source).toContain(key);
       const entry = referenceDataRegistry.find(e => e.key === key)!;
-      expect(entry).toMatchObject({status: "required_missing", value: null, asOf: "2026-09-21", version: "2026.09.21-v1"});
-      expect(entry.source?.title).toContain("registro da exigência, não validação");
+      expect(entry).toMatchObject({status: "draft", asOf: "2026-09-24", version: "2026.09.24-v1", validUntil: null});
+      expect(entry.value).not.toBeNull();
+      expect(entry.source?.observedBy).toMatch(/aguardando revisão do fundador/);
       expect(entry.owner.length).toBeGreaterThan(5);
       expect(entry.scope).toContain("all-in");
     }
