@@ -1,3 +1,7 @@
+## Etapa 17 / 5: roteador de intenção pelo transporte governado
+
+O script do portão do roteador de intenção pede pelo transporte governado a família `intent_router_gold`: snapshot com as 52 observações byte a byte iguais às de antes e sem gabarito, pontuação fora do worker, linha de guarda e chaves removidas. A prova da CI roda o script contra a pilha descartável (184 tentativas reservadas e liquidadas, commit avaliado) e, com a garantia revogada, `partial/transport_denied` sem chamadas. Com o teto padrão de US$ 3, a execução só termina se o gasto medido ficar abaixo de cerca de US$ 2,80; gasto é decisão do fundador. [Detalhes](docs/build/arcabouco/etapa-17-5-avaliacoes-governadas.md).
+
 ## Etapa 17 / 5: baseline pelo transporte governado
 
 O script do baseline deixa de montar provedores e de ler chaves: no modo real pede a avaliação pela sessão do avaliador e grava só o que o worker registrou para o snapshot enviado. A barreira fixa por nome os oito scripts que ainda montam provedores e proíbe chave de provedor em qualquer outro. A prova da CI roda o próprio script contra a pilha descartável: sucesso com o `run.json` igual ao registro do worker e, com a garantia revogada, `partial/transport_denied` sem nenhuma chamada. O workflow lê a credencial do avaliador e falha fechado enquanto ela não existir. Cada turno do gc01 reserva cerca de US$ 37,54, acima do teto padrão de US$ 25; gasto é decisão do fundador. [Detalhes](docs/build/arcabouco/etapa-17-5-avaliacoes-governadas.md).
