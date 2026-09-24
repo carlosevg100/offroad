@@ -1,12 +1,22 @@
-import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /**
- * `pnpm --filter @offroad/evals baseline:gold --case gc01 [--dry-run] [--out <dir>]`
+ * `pnpm --filter @offroad/evals baseline:gold --case gc01 [--dry-run] [--out <dir>] [--max-cost <usd>]
+ *  [--request-id <uuid>] [--poll-seconds <n>]`
  *
  * Runs the fair baseline of a gold case (gold-cases/README.md §5): the strongest generalist
  * receives the same turns, the same documents, the equivalent content of the frozen source
  * pack and the same time window, with no tools and no hint of the rubric. Outputs and a run
  * record with every input hash land beside the case so the review panel reads both sides.
  * `--dry-run` assembles and hashes the information base without calling any model.
+ *
+ * The live run never reaches a provider from this process. It requests a governed evaluation
+ * through the evaluator's own session (`../src/governed-transport`), the worker runs the baseline
+ * family under the database's reservations, and this script writes the run record and the
+ * deliverables the database committed, beside `evaluation.json` with the evaluation's identity,
+ * fingerprints, reservations and cost. The environment carries the evaluator's credential and the
+ * evaluation organization (SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, OFFROAD_EVALUATOR_EMAIL,
+ * OFFROAD_EVALUATOR_PASSWORD, OFFROAD_EVALUATION_ORGANIZATION_ID), never a provider key.
+ * `--request-id` resumes an earlier request instead of creating another evaluation. A partial
+ * evaluation writes only `evaluation.json` and exits with status 3.
  */
 import {createHash} from "node:crypto";
 import {mkdirSync, readFileSync, writeFileSync} from "node:fs";
@@ -15,19 +25,21 @@ import {fileURLToPath} from "node:url";
 
 import {executionCanonicalText} from "@offroad/agent-contracts";
 import {parsePdf} from "@offroad/document-parsers";
-import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, defaultTaskPolicies} from "@offroad/model-gateway";
+import {defaultTaskPolicies} from "@offroad/model-gateway";
 import {sourcePackSchema, type SourcePackEntry} from "@offroad/public-research";
 
 import {
   baselineGeneralistSnapshotSchema,
   baselineInformationBaseSchema,
+  baselineSnapshotContentHashes,
   filterCsvRows,
   informationBaseHash,
+  readBaselineGovernedResult,
   renderInformationBase,
-  runBaselineGeneralist,
   type BaselineDocument,
   type BaselineSource,
 } from "../src/gold-baseline";
+import {governedEvaluationEvidence, readGovernedTransportEnvironment, requestGovernedEvaluation} from "../src/governed-transport";
 import {intentGoldTurns} from "../src/intent-gold";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -40,6 +52,8 @@ const option = (name: string, fallback: string): string => {
 const dryRun = args.includes("--dry-run");
 const caseKey = option("case", "gc01");
 const sha256 = (value: string | Uint8Array): string => createHash("sha256").update(value).digest("hex");
+/** How long a request may wait for the worker to claim it, beyond the work the budget allows. */
+const queueAllowanceMs = 30 * 60_000;
 
 /** The frozen inputs of each case, exactly as the case file lists them. */
 const cases: Record<string, {
@@ -171,24 +185,50 @@ async function main(): Promise<void> {
     return;
   }
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
-  if (!anthropicKey && !openaiKey) {
-    console.error("no model key in the environment. Run with `--env-file=.env.local`");
+  // Live: the worker runs the baseline family under the governed transport. This process holds no
+  // provider key and builds no adapter or gateway; it asks through the evaluator's session and
+  // writes what the database committed.
+  const maxCostUsd = Number(option("max-cost", "25"));
+  const pollSeconds = Number(option("poll-seconds", "5"));
+  const requestId = option("request-id", "");
+  if (!Number.isFinite(maxCostUsd) || maxCostUsd <= 0 || !Number.isSafeInteger(Math.round(maxCostUsd * 1_000_000))
+    || !Number.isFinite(pollSeconds) || pollSeconds < 1) {
+    console.error("--max-cost must be a positive number of dollars and --poll-seconds at least 1");
     process.exit(2);
   }
-  requireGovernedEvaluationTransport();
-  const gateway = createModelGateway({
-    adapters: {
-      ...(anthropicKey ? {anthropic: createAnthropicAdapter({apiKey: anthropicKey})} : {}),
-      ...(openaiKey ? {openai: createOpenAIAdapter({apiKey: openaiKey})} : {}),
+  // Each turn sends once and may fall back once, and every call may take the task's whole timeout.
+  // The worker reserves each attempt at its list-price upper bound before sending it.
+  const routes = snapshot.model.fallback ? [snapshot.model.primary, snapshot.model.fallback] : [snapshot.model.primary];
+  const maxModelCalls = snapshot.informationBase.turns.length * routes.length;
+  const maxDurationMs = maxModelCalls * policy.timeoutMs;
+  const budget = {maxCostMicrousd: Math.round(maxCostUsd * 1_000_000), maxModelCalls, maxDurationMs, expiresInMs: maxDurationMs + queueAllowanceMs};
+  console.log(`evaluation budget: ${budget.maxCostMicrousd} microusd, ${maxModelCalls} calls, ${maxDurationMs} ms of work`);
+  const evaluation = await requestGovernedEvaluation({
+    audience: {caseId: spec.caseId, caseVersion: spec.caseVersion, scriptId: "run-gold-baseline"},
+    routes,
+    budget,
+    snapshot,
+    sourceContentHashes: baselineSnapshotContentHashes(snapshot),
+    ...(requestId ? {requestId} : {}),
+  }, {
+    environment: readGovernedTransportEnvironment(),
+    pollIntervalMs: pollSeconds * 1000,
+    onProgress: (progress) => {
+      if (progress.phase === "requested") console.log(`evaluation requested: ${progress.executionId} (${progress.request}), request ${progress.requestId}`);
+      if (progress.phase === "waiting") console.log(`evaluation waiting: job ${progress.job ?? "unknown"}, run ${progress.run ?? "unknown"}, attempts ${progress.attempts ?? 0}`);
     },
-    budget: {maxCostUsd: Number(option("max-cost", "25"))},
-    onCall: (call) => console.log(`    ${call.provider}/${call.model} ${call.usage.inputTokens}→${call.usage.outputTokens} tok  $${call.costUsd.toFixed(4)}  ${call.latencyMs}ms`),
   });
 
   mkdirSync(runDir, {recursive: true});
-  const {record, outputs} = await runBaselineGeneralist(snapshot, gateway);
+  writeFileSync(join(runDir, "evaluation.json"), `${JSON.stringify(governedEvaluationEvidence(evaluation), null, 2)}\n`, "utf8");
+  console.log(`evaluation committed: ${evaluation.outcome}/${evaluation.reason}, ${evaluation.cost.spentMicrousd} microusd over ${evaluation.cost.spentCalls} calls`);
+  if (evaluation.outcome !== "succeeded") {
+    // A partial evaluation publishes only its reason: there is no record and no deliverable to write.
+    console.error(`evaluation ${evaluation.executionId} is partial: ${evaluation.reason}`);
+    process.exitCode = 3;
+    return;
+  }
+  const {record, outputs} = readBaselineGovernedResult(evaluation.result, snapshot);
   for (const output of outputs) {
     writeFileSync(join(runDir, output.file), `${output.deliverable.trimEnd()}\n`, "utf8");
     console.log(`turn ${output.turnId}: ${output.deliverable.length} chars written to ${output.file}`);
