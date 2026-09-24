@@ -2102,10 +2102,12 @@
       "choose": "Select",
       "valueHelp": "Use exact decimals with a dot and no thousands separator. Normalized numeric values are not multiplied by presentation scale. Lists use a JSON array of strings; booleans use true or false.",
       "saveHypothesis": "Record revision",
-      "defineEntity": "Identify an entity for this analysis",
+      "defineEntity": "Register the company or another entity of this analysis",
       "dossier": "Dossier",
       "dossierNumber": "Dossier {number}",
       "saveEntity": "Record reviewed identity",
+      "analyzedCompany": "Company under analysis: {names}.",
+      "noAnalyzedCompany": "No company is registered as the company under analysis. To request an execution, register the company with the role Company under analysis and record the contributions of this basis under it.",
       "defineMetric": "Define metric",
       "contractSource": "Contract source version",
       "contractHelp": "Contractual definitions require a contract version and clause or locator. A managerial definition cannot replace a covenant.",
@@ -2136,7 +2138,9 @@
         "namespace": "Identifier namespace (e.g. BR:CNPJ)",
         "kind": "Definition kind",
         "definition": "Definition and formula",
-        "anchor": "Clause or locator"
+        "anchor": "Clause or locator",
+        "relationship": "Role in the analysis",
+        "linkPerimeter": "Accounting perimeter"
       },
       "types": {
         "number": "Number",
@@ -2150,6 +2154,17 @@
         "managerial": "Managerial",
         "contractual": "Contractual"
       },
+      "roles": {
+        "subject": "Company under analysis",
+        "parent": "Parent company",
+        "subsidiary": "Subsidiary",
+        "guarantor": "Guarantor",
+        "asset": "Asset"
+      },
+      "perimeters": {
+        "consolidated": "Consolidated",
+        "standalone": "Standalone"
+      },
       "states": {
         "added": "Added",
         "removed": "Removed",
@@ -2160,7 +2175,8 @@
         "invalid": "Review the values and interpretation. Calculation requires compatible inputs and periods.",
         "denied": "You lack sufficient access to this work or one of its sources.",
         "conflict": "The basis changed after you opened it. Reload and compare before recording another revision.",
-        "unavailable": "This basis could not be safely loaded or recorded. Try again."
+        "unavailable": "This basis could not be safely loaded or recorded. Try again.",
+        "roleExists": "This entity already has this role in the analysis with another accounting perimeter. The recorded role was kept."
       }
     },
     "workExecutions": {
@@ -2287,7 +2303,7 @@
         "conflict": "This request was already recorded with other content. Open the list to find it.",
         "stale": "The basis changed while the request was being assembled. Try again.",
         "unavailable": "The execution could not be safely requested or read. Try again.",
-        "company_unregistered": "The company of this basis is not registered in this work yet. Register the company before requesting an execution.",
+        "company_unregistered": "The company of this basis is not registered yet. In the analysis basis, register the company with the role Company under analysis and record the contributions of this revision under it.",
         "situation_required": "Choose at least one situation.",
         "situation_unknown": "One of the chosen situations is not in the catalogue. Reload the page and choose again.",
         "method_not_applicable": "The published method serves none of the chosen situations.",

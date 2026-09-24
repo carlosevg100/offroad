@@ -38,6 +38,10 @@ Sem migração e sem conteúdo profissional novo; tudo versionado `2026.09.24-v1
 - Detalhe: mostra o recibo (cadastro, pesquisa, situações, cada convenção em lacuna pelo nome, contagem de voz) e, quando os bytes do resultado conferem com a impressão guardada, as dez perguntas do teste do MD com o estado de cada uma e a nota de Q2, sem veredito, e o número decisivo de cada peça de gráfico em texto. Execuções pedidas pela v1 aparecem sem gates.
 - Com o compositor de 4A, que monta uma única alternativa de manutenção, toda execução calculada mostra a pergunta 6 como "não passa" (falta a sensibilidade adversa) e a 7 como não aplicável (uma alternativa só). É o retrato correto do que esse pacote entrega hoje.
 
+## Cadastro pela base da análise
+
+A base v2 considera a companhia cadastrada quando a entidade dominante das decisões da base é sujeito ativo de um dossiê do trabalho, com identificador revisado. A identificação de entidade da base já gravava o identificador revisado (`ensure_basis_entity_v1`), mas nada no produto criava o vínculo de sujeito, e nada verifica a companhia legada: todo pedido real seria recusado com "companhia sem cadastro". O formulário de identificação agora pede o papel na análise, com companhia analisada por padrão, e o perímetro contábil, e a ação cria o vínculo com `link_dossier_entity_v1` depois da identidade revisada. O papel nunca é inferido do nome. A base mostra a companhia analisada, e a mensagem de recusa diz onde cadastrar e que as contribuições da revisão precisam estar em nome dela.
+
 ## Em aberto neste incremento
 
 - Desenho dos gráficos, seguindo as regras de gráfico da casa.

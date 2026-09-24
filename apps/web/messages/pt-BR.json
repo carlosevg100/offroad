@@ -2102,10 +2102,12 @@
       "choose": "Selecione",
       "valueHelp": "Use decimal exato com ponto, sem separador de milhar. Valores numéricos já normalizados não são multiplicados pela escala de apresentação. Para listas, use uma lista JSON de textos; para booleanos, true ou false.",
       "saveHypothesis": "Registrar revisão",
-      "defineEntity": "Identificar entidade para esta análise",
+      "defineEntity": "Cadastrar a companhia ou outra entidade desta análise",
       "dossier": "Dossiê",
       "dossierNumber": "Dossiê {number}",
       "saveEntity": "Registrar identidade revisada",
+      "analyzedCompany": "Companhia analisada: {names}.",
+      "noAnalyzedCompany": "Nenhuma companhia cadastrada como analisada. Para pedir uma execução, cadastre a companhia com o papel Companhia analisada e registre as contribuições desta base em nome dela.",
       "defineMetric": "Definir métrica",
       "contractSource": "Versão da fonte contratual",
       "contractHelp": "Definições contratuais exigem a versão do contrato e sua cláusula ou localização. Uma definição gerencial não substitui um covenant.",
@@ -2136,7 +2138,9 @@
         "namespace": "Tipo de identificador (ex.: BR:CNPJ)",
         "kind": "Natureza da definição",
         "definition": "Definição e fórmula",
-        "anchor": "Cláusula ou localização"
+        "anchor": "Cláusula ou localização",
+        "relationship": "Papel na análise",
+        "linkPerimeter": "Perímetro contábil"
       },
       "types": {
         "number": "Número",
@@ -2150,6 +2154,17 @@
         "managerial": "Gerencial",
         "contractual": "Contratual"
       },
+      "roles": {
+        "subject": "Companhia analisada",
+        "parent": "Controladora",
+        "subsidiary": "Controlada",
+        "guarantor": "Garantidora",
+        "asset": "Ativo"
+      },
+      "perimeters": {
+        "consolidated": "Consolidado",
+        "standalone": "Individual"
+      },
       "states": {
         "added": "Incluída",
         "removed": "Retirada",
@@ -2160,7 +2175,8 @@
         "invalid": "Revise os valores e a interpretação. O cálculo exige entradas e períodos compatíveis.",
         "denied": "Você não tem acesso suficiente ao trabalho ou a uma de suas fontes.",
         "conflict": "A base mudou desde que você a abriu. Recarregue e compare antes de registrar outra revisão.",
-        "unavailable": "Não foi possível carregar ou registrar esta base com segurança. Tente novamente."
+        "unavailable": "Não foi possível carregar ou registrar esta base com segurança. Tente novamente.",
+        "roleExists": "Esta entidade já tem esse papel nesta análise, com outro perímetro contábil. O papel registrado foi mantido."
       }
     },
     "workExecutions": {
@@ -2287,7 +2303,7 @@
         "conflict": "Este pedido já foi registrado com outro conteúdo. Abra a lista para encontrá-lo.",
         "stale": "A base mudou enquanto o pedido era montado. Tente de novo.",
         "unavailable": "Não foi possível pedir ou ler a execução com segurança. Tente novamente.",
-        "company_unregistered": "A companhia desta base ainda não está cadastrada neste trabalho. Cadastre a companhia antes de pedir uma execução.",
+        "company_unregistered": "A companhia desta base ainda não está cadastrada. Na base da análise, cadastre a companhia com o papel Companhia analisada e registre as contribuições desta revisão em nome dela.",
         "situation_required": "Escolha ao menos uma situação.",
         "situation_unknown": "Uma das situações escolhidas não está no catálogo. Recarregue a página e escolha de novo.",
         "method_not_applicable": "O método publicado não atende a nenhuma das situações escolhidas.",

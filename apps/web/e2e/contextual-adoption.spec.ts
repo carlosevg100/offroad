@@ -47,9 +47,16 @@ test("contextual adoption preserves revisions and reproduces a calculation after
  await entity.locator('[name="name"]').fill("Synthetic adoption entity");
  await entity.locator('[name="namespace"]').fill("BR:CNPJ");
  await entity.locator('[name="value"]').fill("00000000000191");
+ await expect(entity.locator('[name="relationship"]')).toHaveValue("subject");
+ await entity.locator('[name="perimeter"]').selectOption("consolidated");
  await entity.locator('[name="reason"]').fill("Explicit synthetic identity review");
+ await expect(page.getByText(copy.noAnalyzedCompany,{exact:true})).toBeVisible();
  await entity.getByRole("button").click();
  await expect(page.locator('select[name="entityId"] option')).toHaveCount(2);
+ await expect(page.getByText(copy.analyzedCompany.replace("{names}","Synthetic adoption entity"),{exact:true})).toBeVisible();
+ // The execution gate reads the company as registered only through this active reviewed subject link.
+ const link=execFileSync("psql",[databaseUrl,"-qAt","-v","ON_ERROR_STOP=1"],{input:`select string_agg(l.relationship||':'||(l.perimeter->>'basis'),',') from public.dossier_entity_links l join public.entities e on e.id=l.entity_id join public.capital_projects p on p.organization_id=l.organization_id where p.id='${projectId}' and e.legal_name='Synthetic adoption entity' and l.withdrawn_at is null;`,encoding:"utf8"}).trim();
+ expect(link).toBe("subject:consolidated");
  await page.getByText(copy.defineMetric,{exact:true}).click();
  const definition=page.getByRole("button",{name:copy.saveDefinition,exact:true}).locator("..");
  for(const metric of ["financials.net_debt","financials.ebitda"]){
