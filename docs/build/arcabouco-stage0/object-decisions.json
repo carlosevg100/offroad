@@ -23089,6 +23089,12 @@
           "line": 141,
           "anchor": "create function private.read_work_execution_v1(p_execution_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924013350_execution_time_to_value.sql",
+          "line": 75,
+          "anchor": "create or replace function private.read_work_execution_v1(p_execution_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -77833,6 +77839,52 @@
       ]
     },
     {
+      "id": "policy:private.execution_read_receipts.execution_read_receipts_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_read_receipts.execution_read_receipts_deny",
+          "kind": "policy",
+          "name": "execution_read_receipts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_read_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_read_receipts.execution_read_receipts_deny",
+          "kind": "policy",
+          "name": "execution_read_receipts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "execution_read_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4D",
+      "reason": "Etapa 17, incremento 4D: recibo imutável da leitura do resultado e visão de operador com os tempos até a primeira resposta útil e até o resultado verificado, sem conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924013350_execution_time_to_value.sql",
+          "line": 65,
+          "anchor": "create policy execution_read_receipts_deny on private.execution_read_receipts as restrictive for all to public using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:private.execution_result_receipts.execution_result_receipts_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -103307,6 +103359,124 @@
           "path": "supabase/migrations/20260923200029_platform_operator_identity.sql",
           "line": 57,
           "anchor": "create table private.execution_profile_registrations (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.execution_read_receipts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_read_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_read_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_read_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_read_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4D",
+      "reason": "Etapa 17, incremento 4D: recibo imutável da leitura do resultado e visão de operador com os tempos até a primeira resposta útil e até o resultado verificado, sem conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924013350_execution_time_to_value.sql",
+          "line": 52,
+          "anchor": "create table private.execution_read_receipts (",
           "mechanism": "direct_ddl"
         }
       ]
@@ -143532,6 +143702,82 @@
       ]
     },
     {
+      "id": "trigger:private.execution_read_receipts.execution_read_receipts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_read_receipts.execution_read_receipts_immutable",
+          "kind": "trigger",
+          "name": "execution_read_receipts_immutable",
+          "table": "execution_read_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_read_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_read_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_read_receipts.execution_read_receipts_immutable",
+          "kind": "trigger",
+          "name": "execution_read_receipts_immutable",
+          "table": "execution_read_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER execution_read_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_read_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4D",
+      "reason": "Etapa 17, incremento 4D: recibo imutável da leitura do resultado e visão de operador com os tempos até a primeira resposta útil e até o resultado verificado, sem conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924013350_execution_time_to_value.sql",
+          "line": 67,
+          "anchor": "create trigger execution_read_receipts_immutable before update or delete on private.execution_read_receipts for each row execute function private.guard_contribution_immutable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_read_receipts.execution_read_receipts_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_read_receipts.execution_read_receipts_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_read_receipts_truncate_guard",
+          "table": "execution_read_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_read_receipts_truncate_guard BEFORE TRUNCATE ON private.execution_read_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_read_receipts.execution_read_receipts_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_read_receipts_truncate_guard",
+          "table": "execution_read_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER execution_read_receipts_truncate_guard BEFORE TRUNCATE ON private.execution_read_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4D",
+      "reason": "Etapa 17, incremento 4D: recibo imutável da leitura do resultado e visão de operador com os tempos até a primeira resposta útil e até o resultado verificado, sem conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924013350_execution_time_to_value.sql",
+          "line": 68,
+          "anchor": "create trigger execution_read_receipts_truncate_guard before truncate on private.execution_read_receipts for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_result_receipts.execution_result_receipts_audit",
       "kind": "trigger",
       "catalogues": {
@@ -160101,6 +160347,124 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "v:private.execution_time_to_value",
+      "kind": "view",
+      "catalogues": {
+        "production": {
+          "id": "v:private.execution_time_to_value",
+          "rls": false,
+          "kind": "view",
+          "name": "execution_time_to_value",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": false
+        },
+        "staging": {
+          "id": "v:private.execution_time_to_value",
+          "rls": false,
+          "kind": "view",
+          "name": "execution_time_to_value",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 4D",
+      "reason": "Etapa 17, incremento 4D: recibo imutável da leitura do resultado e visão de operador com os tempos até a primeira resposta útil e até o resultado verificado, sem conteúdo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924013350_execution_time_to_value.sql",
+          "line": 107,
+          "anchor": "create view private.execution_time_to_value with (security_invoker = true) as",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "v:private.failures_without_cause",
       "kind": "view",
       "catalogues": {
@@ -167774,6 +168138,13 @@
       "decision": "preservar",
       "stage": "17 / 5",
       "reason": "Etapa 17, incremento 5: transporte governado de avaliações (banco), instalado fechado."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260924013350_execution_time_to_value.sql",
+      "decision": "preservar",
+      "stage": "17 / 4D",
+      "reason": "Etapa 17, incremento 4D: recibos de leitura, leitor v1 com o recibo e visão de tempo até valor."
     }
   ],
   "staging_archive": [
