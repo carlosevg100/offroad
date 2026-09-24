@@ -47,7 +47,8 @@ export const processingAssuranceSchema = z.object({
   }).strict()).min(3),
   reviewedBy: identifier,
   reviewedAt: z.iso.datetime({offset: true}),
-  validThrough: z.iso.datetime({offset: true}),
+  /** Always stated. A date expires at that instant; null holds until revoked or superseded. */
+  validThrough: z.iso.datetime({offset: true}).nullable(),
   revokedAt: z.iso.datetime({offset: true}).nullable(),
 }).strict();
 export type ProcessingAssurance = z.infer<typeof processingAssuranceSchema>;
