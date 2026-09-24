@@ -2,6 +2,7 @@ import {describe, expect, it, vi} from "vitest";
 
 import {
   BASELINE_SYSTEM_PROMPT,
+  baselineGeneralistResultSchema,
   baselineGeneralistSnapshotSchema,
   baselineSnapshotContentHashes,
   informationBaseHash,
@@ -92,6 +93,23 @@ describe("gold baseline loop", () => {
     g.complete.mockRejectedValueOnce(new Error("synthetic provider failure"));
     await expect(runBaselineGeneralist(s, g.port)).rejects.toThrow("synthetic provider failure");
     expect(g.complete).toHaveBeenCalledOnce();
+  });
+
+  it("publishes a result the family schema reads, and refuses one a reader could write outside its run", async () => {
+    const run = await runBaselineGeneralist(snapshot(), gateway().port);
+    const result = {schemaVersion: "gold-baseline-result.v1", ...run};
+    expect(baselineGeneralistResultSchema.parse(result)).toEqual(result);
+    for (const change of [
+      (value: Record<string, unknown>) => { value.schemaVersion = "gold-baseline-result.v2"; },
+      (value: Record<string, unknown>) => { value.extra = true; },
+      (value: Record<string, unknown>) => { (value.outputs as Array<Record<string, unknown>>)[0]!.file = "../gc01-t01.output.md"; },
+      (value: Record<string, unknown>) => { (value.outputs as Array<Record<string, unknown>>)[0]!.deliverable = ""; },
+      (value: Record<string, unknown>) => { value.outputs = []; },
+    ]) {
+      const altered = structuredClone(result) as unknown as Record<string, unknown>;
+      change(altered);
+      expect(baselineGeneralistResultSchema.safeParse(altered).success).toBe(false);
+    }
   });
 
   it("reads a strict snapshot and names every content hash it carries once", () => {

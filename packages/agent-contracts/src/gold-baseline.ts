@@ -228,6 +228,23 @@ export type BaselineGeneralistRun = {
 };
 
 /**
+ * What the baseline family publishes when a governed evaluation succeeds: the run record and each
+ * turn's deliverable, under a named version. The worker commits these bytes and the script reads
+ * them back; a partial evaluation publishes only its reason, never this.
+ */
+export const baselineGeneralistResultSchema = z.object({
+  schemaVersion: z.literal("gold-baseline-result.v1"),
+  record: baselineRunRecordSchema,
+  outputs: z.array(z.object({
+    turnId: baselineTurnSchema.shape.id,
+    /** Always the turn id and a fixed suffix, so a reader can write it beside the record and nowhere else. */
+    file: z.string().regex(/^gc0[1-5]-t[0-9]{2}\.output\.md$/),
+    deliverable: z.string().min(1),
+  }).strict()).min(1).max(6),
+}).strict();
+export type BaselineGeneralistResult = z.infer<typeof baselineGeneralistResultSchema>;
+
+/**
  * The per-turn loop of the fair baseline. The whole information base goes first, then each turn
  * with the deliverables already given, one structured call per turn. Pure over its arguments: the
  * gateway decides where each call goes and what it may cost, and the clock stamps the record.

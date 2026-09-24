@@ -1,4 +1,4 @@
-import {baselineGeneralistSnapshotSchema, baselineSnapshotContentHashes, runBaselineGeneralist} from "@offroad/agent-contracts";
+import {baselineGeneralistSnapshotSchema, baselineSnapshotContentHashes, runBaselineGeneralist, type BaselineGeneralistResult} from "@offroad/agent-contracts";
 import {defaultTaskPolicies, type ModelGateway, type ModelRef, type TaskKind, type TaskPolicy} from "@offroad/model-gateway";
 
 /**
@@ -35,7 +35,8 @@ export const baselineGeneralistFamily: EvaluationFamily = {
    policies: {baseline_generalist: policy},
    async run(gateway, clock) {
     const {record, outputs} = await runBaselineGeneralist(snapshot, gateway, clock);
-    return {schemaVersion: "gold-baseline-result.v1", record, outputs};
+    // The shape the script reads back with baselineGeneralistResultSchema.
+    return {schemaVersion: "gold-baseline-result.v1", record, outputs} satisfies BaselineGeneralistResult;
    },
   };
  },
