@@ -57,7 +57,9 @@ export async function requestCapitalExecution(input: unknown): Promise<Success |
   // The gates are evaluated over one basis version, and the producer accepts only a contract that
   // pins exactly that one.
   if (pinned.length !== 1 || pinned[0] !== versionId) return failure({code: "22023"});
-  const closed = closeExecutionGates(opened, packet);
+  // A receipt that cannot be built as the closed schema is never sent in any other shape.
+  let closed: ReturnType<typeof closeExecutionGates>;
+  try { closed = closeExecutionGates(opened, packet); } catch { return refused("gates_invalid"); }
   if (!closed.ok) return refused(closed.error);
   const requested = await supabase.rpc("request_work_execution_v2", {p_contract_text: contractText, p_snapshot_text: snapshotText, p_gates_text: closed.text});
   if (requested.error) {
