@@ -31413,53 +31413,22 @@
     {
       "id": "function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)",
-          "kind": "function",
-          "name": "settle_execution_operation_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint",
-          "security_definer": true
-        },
-        "staging": {
-          "id": "function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)",
-          "kind": "function",
-          "name": "settle_execution_operation_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint",
-          "security_definer": true
-        }
-      },
+      "catalogues": {},
       "owner": "Engenharia de execução, etapa 17",
-      "decision": "preservar",
-      "stage": "17 / autoridade 2B",
-      "reason": "Comando ou armazenamento interno da execução fixada; autoridade corrente, lease, direitos, orçamento e resultado único.",
+      "decision": "apagar",
+      "stage": "17 / 6",
+      "reason": "Etapa 17, incremento 6: comando de liquidação que aceitava só o hash do resultado, sem os bytes; substituído por worker_settle_execution_v2 (correção 3N), único chamado pelo worker publicado, e retirado quando a produção não tinha nenhuma execução nem recibo de operação.",
       "sources": [
         {
           "path": "supabase/migrations/20260922153436_execution_authority_commands.sql",
           "line": 443,
           "anchor": "create function private.settle_execution_operation_v1(p_job uuid,p_capability text,p_lease uuid,p_operation uuid,p_fingerprint text,p_result_hash text,p_spent bigint,p_calls bigint)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924002148_retire_hash_only_settlement.sql",
+          "line": 13,
+          "anchor": "drop function private.settle_execution_operation_v1(uuid,text,uuid,uuid,text,text,bigint,bigint);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -45899,63 +45868,22 @@
     {
       "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
-          "kind": "function",
-          "name": "worker_settle_execution_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
-          "security_definer": true
-        },
-        "staging": {
-          "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
-          "kind": "function",
-          "name": "worker_settle_execution_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
-          "security_definer": true
-        }
-      },
+      "catalogues": {},
       "owner": "Engenharia de execução, etapa 17",
-      "decision": "preservar",
-      "stage": "17 / consumidor 3B",
-      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "decision": "apagar",
+      "stage": "17 / 6",
+      "reason": "Etapa 17, incremento 6: comando de liquidação que aceitava só o hash do resultado, sem os bytes; substituído por worker_settle_execution_v2 (correção 3N), único chamado pelo worker publicado, e retirado quando a produção não tinha nenhuma execução nem recibo de operação.",
       "sources": [
         {
           "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
           "line": 214,
           "anchor": "create function private.worker_settle_execution_v1(p_job uuid,p_capability text,p_lease uuid,p_result_hash text) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924002148_retire_hash_only_settlement.sql",
+          "line": 12,
+          "anchor": "drop function private.worker_settle_execution_v1(uuid,text,uuid,text);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -71896,63 +71824,22 @@
     {
       "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
-          "kind": "function",
-          "name": "worker_settle_execution_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "public",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
-          "security_definer": false
-        },
-        "staging": {
-          "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
-          "kind": "function",
-          "name": "worker_settle_execution_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "public",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
-          "security_definer": false
-        }
-      },
+      "catalogues": {},
       "owner": "Engenharia de execução, etapa 17",
-      "decision": "preservar",
-      "stage": "17 / consumidor 3B",
-      "reason": "Consumidor restrito à conta operacional vinculada, manifesto instalado, proveniência completa e autoridade corrente.",
+      "decision": "apagar",
+      "stage": "17 / 6",
+      "reason": "Etapa 17, incremento 6: comando de liquidação que aceitava só o hash do resultado, sem os bytes; substituído por worker_settle_execution_v2 (correção 3N), único chamado pelo worker publicado, e retirado quando a produção não tinha nenhuma execução nem recibo de operação.",
       "sources": [
         {
           "path": "supabase/migrations/20260922194243_execution_consumer_authority.sql",
           "line": 236,
           "anchor": "create function public.worker_settle_execution_v1(p_job uuid,p_capability text,p_lease uuid,p_result_hash text) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924002148_retire_hash_only_settlement.sql",
+          "line": 11,
+          "anchor": "drop function public.worker_settle_execution_v1(uuid,text,uuid,text);",
           "mechanism": "direct_ddl"
         }
       ],
@@ -163726,6 +163613,13 @@
       "decision": "preservar",
       "stage": "17 / 4A",
       "reason": "Etapa 17, incremento 4A: autoridade do produtor (grants e ledgers de concessão e de liberação) e comandos do produtor (base do contrato, pedido público e leitores)."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260924002148_retire_hash_only_settlement.sql",
+      "decision": "preservar",
+      "stage": "17 / 6",
+      "reason": "Etapa 17, incremento 6: retira worker_settle_execution_v1 (público e privado) e settle_execution_operation_v1, a liquidação só por hash."
     }
   ],
   "staging_archive": [

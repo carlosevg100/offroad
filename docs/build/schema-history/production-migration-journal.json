@@ -1527,8 +1527,12 @@
   {
    "version": "20260923233409",
    "name": "execution_producer_commands"
+  },
+  {
+   "version": "20260924002148",
+   "name": "retire_hash_only_settlement"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-23T23:35:20.387055+00:00"
+ "captured_at": "2026-09-24T00:23:13.748482+00:00"
 }

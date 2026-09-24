@@ -10258,24 +10258,6 @@
       "security_definer": true
     },
     {
-      "id": "function:private.settle_execution_operation_v1(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint)",
-      "kind": "function",
-      "name": "settle_execution_operation_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_hash text, p_spent bigint, p_calls bigint",
-      "security_definer": true
-    },
-    {
       "id": "function:private.settle_execution_operation_v2(p_job uuid, p_capability text, p_lease uuid, p_operation uuid, p_fingerprint text, p_result_text text, p_outcome text, p_reason text, p_spent bigint, p_calls bigint)",
       "kind": "function",
       "name": "settle_execution_operation_v2",
@@ -14913,29 +14895,6 @@
       ],
       "signature": "",
       "security_definer": false
-    },
-    {
-      "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
-      "kind": "function",
-      "name": "worker_settle_execution_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "private",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
-      "security_definer": true
     },
     {
       "id": "function:private.worker_settle_execution_v2(p_job uuid, p_capability text, p_lease uuid, p_result_text text, p_outcome text, p_reason text)",
@@ -23938,29 +23897,6 @@
         "search_path=\"\""
       ],
       "signature": "",
-      "security_definer": false
-    },
-    {
-      "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
-      "kind": "function",
-      "name": "worker_settle_execution_v1",
-      "grants": [
-        [
-          "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ]
-      ],
-      "schema": "public",
-      "settings": [
-        "search_path=\"\""
-      ],
-      "signature": "p_job uuid, p_capability text, p_lease uuid, p_result_hash text",
       "security_definer": false
     },
     {
@@ -54763,5 +54699,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-23T23:02:38.064029+00:00"
+  "captured_at": "2026-09-24T00:22:42.557998+00:00"
 }

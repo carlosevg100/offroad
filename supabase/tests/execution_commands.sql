@@ -37,17 +37,25 @@ do $$ declare r jsonb;begin
  raise notice 'PASS: replay does not authorize repeated execution';
 end $$;
 select pg_temp.expect_execution_command_error($q$select private.reserve_execution_operation_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000002',repeat('b',64),'synthetic#calculate','test-v1','read_only',0,0) from execution_fixture$q$,'execution_operation_conflict','operation content conflict');
-select private.settle_execution_operation_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000002',repeat('a',64),encode(extensions.digest('{"calculation":"synthetic"}','sha256'),'hex'),0,0) from execution_fixture;
-select private.settle_execution_operation_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000002',repeat('a',64),encode(extensions.digest('{"calculation":"synthetic"}','sha256'),'hex'),0,0) from execution_fixture;
-select pg_temp.expect_execution_command_error($q$select private.settle_execution_operation_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000002',repeat('a',64),repeat('c',64),0,0) from execution_fixture$q$,'execution_settlement_conflict','settlement result immutable');
+select private.settle_execution_operation_v2((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000002',repeat('a',64),'{"calculation":"synthetic"}','succeeded','calculated',0,0) from execution_fixture;
+select private.settle_execution_operation_v2((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000002',repeat('a',64),'{"calculation":"synthetic"}','succeeded','calculated',0,0) from execution_fixture;
+select pg_temp.expect_execution_command_error($q$select private.settle_execution_operation_v2((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000002',repeat('a',64),'{"calculation":"changed"}','succeeded','calculated',0,0) from execution_fixture$q$,'execution_settlement_conflict','settlement result immutable');
 select private.commit_work_execution_result_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,claim->>'contractFingerprint',contract#>>'{inputs,fingerprint}','{"calculation":"synthetic"}','succeeded','calculated') from execution_fixture;
 select private.commit_work_execution_result_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,claim->>'contractFingerprint',contract#>>'{inputs,fingerprint}','{"calculation":"synthetic"}','succeeded','calculated') from execution_fixture;
 select pg_temp.expect_execution_command_error($q$select private.commit_work_execution_result_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,claim->>'contractFingerprint',contract#>>'{inputs,fingerprint}','{"changed":true}','succeeded','calculated') from execution_fixture$q$,'execution_result_conflict','result identity immutable');
 select private.revoke_resource_access_v1('a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-8000-000000000001');
 select pg_temp.expect_execution_command_error($q$select private.commit_work_execution_result_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,claim->>'contractFingerprint',contract#>>'{inputs,fingerprint}','{"calculation":"synthetic"}','succeeded','calculated') from execution_fixture$q$,'execution_authority_denied','revocation denies receipt replay');
+-- The hash-only settle commands are retired (stage 17, increment 6): only settlement with bytes remains.
+do $$begin
+ if to_regprocedure('private.settle_execution_operation_v1(uuid,text,uuid,uuid,text,text,bigint,bigint)') is not null
+ or to_regprocedure('private.worker_settle_execution_v1(uuid,text,uuid,text)') is not null
+ or to_regprocedure('public.worker_settle_execution_v1(uuid,text,uuid,text)') is not null
+ then raise exception 'hash-only settlement command still installed';end if;
+ raise notice 'PASS: hash-only settlement commands are retired';
+end $$;
 -- No direct role, RPC, API or storage opening accompanies these commands.
 do $$ declare f record;r text;t text;begin
- for f in select p.oid::regprocedure signature from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname in ('request_work_execution_v1','claim_work_execution_v1','reserve_execution_operation_v1','settle_execution_operation_v1','commit_work_execution_result_v1') loop
+ for f in select p.oid::regprocedure signature from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname in ('request_work_execution_v1','claim_work_execution_v1','reserve_execution_operation_v1','settle_execution_operation_v2','commit_work_execution_result_v1') loop
   foreach r in array array['anon','authenticated','service_role'] loop
    if has_function_privilege(r,f.signature,'EXECUTE') then raise exception 'command exposed: % %',r,f.signature;end if;
   end loop;

@@ -120,7 +120,7 @@ def fresh_scope(number, lease_seconds=60):
     last_job, last_claim = job, claim
     contract = json.loads(claim['contractText'])
     run('begin;' + authorized("select private.worker_reserve_execution_v1('"+job+"','"+claim['capability']+"','"+claim['leaseId']+"');"
-        "select private.worker_settle_execution_v1('"+job+"','"+claim['capability']+"','"+claim['leaseId']+"',encode(extensions.digest('{}','sha256'),'hex'));")+'commit;')
+        "select private.worker_settle_execution_v2('"+job+"','"+claim['capability']+"','"+claim['leaseId']+"','{}','succeeded','calculated');")+'commit;')
     commit = ("select private.commit_work_execution_result_v1('" + job + "','" + claim['capability'] + "','" + claim['leaseId']
               + "','" + claim['contractFingerprint'] + "','" + contract['inputs']['fingerprint'] + "','{}','succeeded','calculated');")
     revoke = "select private.revoke_resource_access_v1('" + work + "','" + actor + "');"
