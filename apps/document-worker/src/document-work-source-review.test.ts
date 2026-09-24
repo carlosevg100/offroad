@@ -18,7 +18,7 @@ describe("documentary source review boundaries",()=>{
     await verifyDocumentWorkSourceFidelity(input,narrative,d);
     expect(d.gateway.complete).toHaveBeenCalledTimes(1);
     const request=vi.mocked(d.gateway.complete).mock.calls[0]![0];
-    expect(request).toMatchObject({schemaName:"document_work_source_review_v5",task:"preliminary_understanding",maxOutputTokens:4000,dataHandling:{classification:"restricted",purpose:"case_analysis"}});
+    expect(request).toMatchObject({schemaName:"document_work_source_review_v5",task:"preliminary_understanding",maxOutputTokens:8000,dataHandling:{classification:"restricted",purpose:"case_analysis"}});
     expect(JSON.parse((request.input[0] as {text:string}).text)).toMatchObject({passages:input.passages.map((p,index)=>({id:`p${index+1}`,documentId:p.documentId,documentName:p.documentName,text:p.text})),authoredFields:documentWorkAuthoredFields(narrative)});
   });
   it.each(["inverse_comparison","unsupported_premise","unknown_as_absent","other_unsupported"])("fails closed for reviewer finding %s without repair",async code=>{
