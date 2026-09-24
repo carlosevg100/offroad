@@ -4,9 +4,18 @@ import {executionCanonicalText, executionContractSchema, executionEffectSchema, 
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const reference = z.object({id: z.uuid(), assumptionVersionId: z.uuid(), fingerprint: hash}).strict();
+/** The company block of the v2 basis, computed by the server from persisted rows only: the entity
+ * most pins are about, whether it is registered for this work and whether research was recorded. */
+export const executionBasisCompanySchema = z.object({
+  entityId: z.uuid().nullable(),
+  registration: z.enum(["registered", "missing"]),
+  research: z.enum(["recorded", "abstained", "missing"]),
+  researchAsOf: z.string().nullable(),
+}).strict();
+export type ExecutionBasisCompany = z.infer<typeof executionBasisCompanySchema>;
 /** What the server assembles from persisted rows for one work, one basis version and one method. */
 export const executionContractBasisSchema = z.object({
-  schemaVersion: z.literal("execution-contract-basis.v1"),
+  schemaVersion: z.literal("execution-contract-basis.v2"),
   organizationId: z.uuid(), workId: z.uuid(), principalId: z.uuid(),
   authorityRevision: z.string().regex(/^[1-9][0-9]*$/), policyFingerprint: hash,
   purpose: z.string().trim().min(1).max(8000), contextKey: z.string().min(1).max(160), versionId: z.uuid(),
@@ -21,6 +30,7 @@ export const executionContractBasisSchema = z.object({
     limits: z.object({maxCostMicrousd: z.number().int().nonnegative(), maxModelCalls: z.number().int().nonnegative(), maxDurationMs: z.number().int().positive()}).strict(),
     fingerprint: hash,
   }).strict(),
+  company: executionBasisCompanySchema,
 }).strict();
 export type ExecutionContractBasis = z.infer<typeof executionContractBasisSchema>;
 export type ExecutionRequestIds = {executionId: string; requestId: string; processingRunId: string; snapshotId: string};
@@ -52,3 +62,10 @@ export function composeExecutionContract(basis: ExecutionContractBasis, snapshot
 
 /** The exact bytes the database stores and fingerprints; the same helper serializes the snapshot. */
 export const executionContractText = (contract: ExecutionContract) => executionCanonicalText(contract);
+
+/** The basis versions a contract pins, read the way the v2 producer reads them: the distinct
+ * `assumptionVersionId` over adoptions and hypotheses. Gates are evaluated over one basis
+ * version, so the producer accepts a contract only when this is exactly one version. */
+export function contractBasisVersions(contract: ExecutionContract): string[] {
+  return [...new Set([...contract.inputs.adoptions, ...contract.inputs.hypotheses].map(pin => pin.assumptionVersionId))];
+}

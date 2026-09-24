@@ -4,7 +4,8 @@ type Messages = typeof import("../../messages/pt-BR.json");
 export function selectClientMessages(messages: Messages) {
   return {
     App: {adoptionBasis: messages.App.adoptionBasis, privateCase: messages.App.privateCase, advisorProject: {recovery: messages.App.advisorProject.recovery},
-      workExecutions: {request: messages.App.workExecutions.request, errors: messages.App.workExecutions.errors, unverified: messages.App.workExecutions.unverified}},
+      workExecutions: {request: messages.App.workExecutions.request, errors: messages.App.workExecutions.errors, unverified: messages.App.workExecutions.unverified,
+        situations: messages.App.workExecutions.situations}},
     IntegrationPreviewWork: messages.IntegrationPreviewWork,
     decisionReadout: messages.decisionReadout,
     ExecutionBriefCard: messages.ExecutionBriefCard,

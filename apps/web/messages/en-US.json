@@ -2177,7 +2177,9 @@
         "objectives": "Objectives",
         "objectivesHelp": "One objective per line.",
         "asOf": "Reference date",
-        "submit": "Request execution"
+        "submit": "Request execution",
+        "situations": "Decision situations",
+        "situationsHelp": "Select at least one situation from the catalogue. The selection is recorded with the request."
       },
       "states": {
         "queued": "Queued",
@@ -2284,13 +2286,110 @@
         "provenance_denied": "A source adopted in this basis is unverified or left your access. The execution was not requested.",
         "conflict": "This request was already recorded with other content. Open the list to find it.",
         "stale": "The basis changed while the request was being assembled. Try again.",
-        "unavailable": "The execution could not be safely requested or read. Try again."
+        "unavailable": "The execution could not be safely requested or read. Try again.",
+        "company_unregistered": "The company of this basis is not registered in this work yet. Register the company before requesting an execution.",
+        "situation_required": "Choose at least one situation.",
+        "situation_unknown": "One of the chosen situations is not in the catalogue. Reload the page and choose again.",
+        "method_not_applicable": "The published method serves none of the chosen situations.",
+        "selection_invalid": "The situation selection could not be recorded for the published method.",
+        "voice_blocked": "A text the system wrote for this request did not pass the voice filter. The request was not sent.",
+        "gates_invalid": "The request checks are not in the format the server requires. The execution was not requested.",
+        "gates_blocked": "The server refused the request because a check was blocked.",
+        "gates_mismatch": "The request checks do not match what the server computed for this basis. Try again."
       },
       "unverified": {
         "title": "Unverified sources:",
         "rights_missing": "no usage rights recorded",
         "bytes_unverified": "bytes not yet verified",
         "binding_missing": "not bound to this work"
+      },
+      "situations": {
+        "seasonal-working-capital": "Seasonal working capital",
+        "structural-working-capital": "Structural working capital",
+        "capex-infrastructure": "Capex/infrastructure",
+        "stable-business-high-conversion": "Stable business with high conversion",
+        "near-covenant": "Near a covenant",
+        "growth-without-ebitda": "Growth without EBITDA",
+        "holding-group": "Holding/group",
+        "receivables": "Receivables",
+        "restructuring": "Restructuring",
+        "acquisition-bridge": "Acquisition/bridge",
+        "refinancing": "Refinancing",
+        "unaudited-divergent-numbers": "Unaudited/divergent numbers"
+      },
+      "gates": {
+        "title": "Request checks",
+        "none": "This execution was requested without checks; none was recorded.",
+        "unverified": "The recorded checks do not match the stored fingerprint; only the fingerprint is shown.",
+        "registration": "Company registration",
+        "research": "Company research",
+        "recordedOn": "state recorded on {date}",
+        "situations": "Chosen situations",
+        "conventions": "Method conventions",
+        "noConventions": "The method declares no convention.",
+        "conventionGap": "gap",
+        "conventionApproved": "approved and in force on the reference date",
+        "voice": "Voice filter",
+        "voiceCounts": "{block, plural, =0 {no block} one {# block} other {# blocks}} and {warn, plural, =0 {no warning} one {# warning} other {# warnings}} in the system texts",
+        "fingerprint": "Checks fingerprint",
+        "registrationStates": {
+          "registered": "Registered",
+          "missing": "Not registered"
+        },
+        "researchStates": {
+          "recorded": "Recorded",
+          "abstained": "Attempted, no usable source",
+          "missing": "Not recorded; kept as a gap"
+        },
+        "conventionStatuses": {
+          "required_missing": "required, no approved value",
+          "draft": "draft",
+          "approved": "approved",
+          "expired": "expired"
+        }
+      },
+      "mdTest": {
+        "title": "MD test",
+        "note": "Pass means only that the verifiable contract behind the question holds; senior judgment still reviews every answer (Q2).",
+        "notEvaluated": {
+          "gates_not_recorded": "With no recorded checks, the MD test was not evaluated.",
+          "gates_unverified": "The checks do not match the stored fingerprint; the MD test was not evaluated.",
+          "evaluation_failed": "The MD test could not be evaluated on this packet."
+        },
+        "questions": {
+          "q1": "Did we understand the real problem, or did we only answer the literal request?",
+          "q2": "Did we research and verify what needed to be verified?",
+          "q3": "Did we question the relevant premises and show what still stands?",
+          "q4": "Is there a clear conclusion, compatible with the state of knowledge?",
+          "q5": "Do the numbers and the evidence support that conclusion?",
+          "q6": "Are the main risks and the material gaps evident?",
+          "q7": "Is there a better alternative we should present, including maintaining or deferring?",
+          "q8": "Does a decision maker who did not see the conversation understand the essentials in under a minute?",
+          "q9": "Can the reader dig deeper and audit every material claim?",
+          "q10": "Would a highly qualified MD sign this delivery for the stated scope and audience?"
+        },
+        "statuses": {
+          "pass": "Pass",
+          "fail": "Fail",
+          "not_applicable": "Not applicable",
+          "human_required": "Needs human review"
+        },
+        "scopeCodes": {
+          "packet_status_framed": "framed packet, no calculated numbers",
+          "packet_status_partial": "partial packet",
+          "no_alternatives": "packet without alternatives",
+          "single_alternative_without_maintenance_exclusion": "a single alternative, without the reason to exclude the current structure"
+        }
+      },
+      "decisive": {
+        "title": "Decisive numbers",
+        "period": "period {period}",
+        "none": "No alternative has a calculated projection; there is no decisive number to show.",
+        "unavailable": "The series could not be derived from this packet.",
+        "questions": {
+          "lowest_available_cash_by_period": "Available cash at the end of each period",
+          "largest_net_financing_outflow_by_period": "Net financing flow in each period"
+        }
       }
     },
     "overview": "Overview",

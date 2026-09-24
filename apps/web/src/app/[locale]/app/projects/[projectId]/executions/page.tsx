@@ -2,6 +2,7 @@ import Link from "next/link";
 import {notFound} from "next/navigation";
 import {getTranslations} from "next-intl/server";
 import {z} from "zod";
+import {structuringSituations} from "@offroad/credit-playbook";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadAdoptionWorkContext, type AdoptionWorkContext} from "@/lib/advisor/adoption-basis-reader";
 import {projectWorkExecutionList, type WorkExecutionListItem} from "@/lib/execution/read";
@@ -30,7 +31,7 @@ export default async function ExecutionsPage({params, searchParams}: {params: Pr
   } catch { loaded = null; }
   return <main className="work-executions"><Link href={`${path}/basis?${query}`}>{t("back")}</Link><h1>{t("title")}</h1><p>{project.project_name}</p><p>{t("intro")}</p>
     {!loaded ? <p role="alert">{t("errors.unavailable")}</p> : <>
-      <WorkExecutionRequest locale={locale} projectId={projectId} versions={loaded.context.versions} selectedVersionId={loaded.context.basis?.versionId ?? null} />
+      <WorkExecutionRequest locale={locale} projectId={projectId} versions={loaded.context.versions} selectedVersionId={loaded.context.basis?.versionId ?? null} situations={structuringSituations.map(situation => situation.situationId)} />
       <WorkExecutionList locale={locale} projectId={projectId} items={loaded.items} nextCursor={loaded.nextCursor} query={query} />
     </>}
   </main>;
