@@ -61,3 +61,14 @@ Leitura do executor:
 - Alarmes: instalação pela sessão do fundador na AWS, sem alteração de permissões de segurança pelo executor.
 - Custo: o teste de referência cola o data room inteiro em cada pergunta; corrigir o tamanho do teste, a reserva por chamada e a tabela de preços.
 - Etapa 18: não iniciada; aguarda o OK expresso do fundador.
+
+## OK da etapa 18, 24/09/2026
+
+Registro verbatim da mensagem do fundador ao executor, com a captura de tela da inscrição do alarme ainda pendente: "finish this .. and 17 and start 18 .."
+
+Leitura do executor:
+
+- É o OK expresso da onda da etapa 18, pelo roteiro aprovado. As decisões técnicas da etapa seguem a autoridade permanente de execução de 21/09/2026; aprovar conteúdo profissional e liberar execução para cliente real continuam atos do fundador e não decorrem deste OK.
+- "finish this": a inscrição de e-mail do fundador no tópico dos alarmes estava pendente. O executor confirmou a inscrição pela sessão do fundador (link de confirmação da AWS lido na caixa do fundador, verificado contra o tópico da Offroad e usado pela API da conta) e disparou um alarme de teste; a AWS registrou a notificação enviada e o e-mail chegou à caixa do fundador. Nenhuma permissão de segurança foi alterada.
+- "and 17": concluir os trabalhos abertos depois do fechamento da etapa 17 (correção do motor de preço, consistência dos parâmetros e guia de revisão, reserva de custo de produção, limpeza de ambientes de trabalho).
+

@@ -21,7 +21,7 @@ O responsável técnico pelo incremento trata os riscos abaixo antes de pedir se
 | Job continuar com acesso revogado ou inputs alterados | 17 e 18 | Manifesto fixado, delegação revalidada, dependência invalidada e retomada idempotente |
 | Derivado ou reimportação perder restrição | 19 e 21 | Linhagem e restrições herdadas; contribuição não sobrescreve base nem conserva citação falsa |
 | Revogação negar leitura mas deixar cópia utilizável | 22 | Recibo por destino: busca, cache, job, artefato e Storage; restore não reativa acesso |
-| Alarmes sem ação de notificação | 18, antes de ativar continuidade | Destino operacional autorizado configurado e entrega de alerta testada; estado `OK` sozinho não comprova notificação |
+| Alarmes sem ação de notificação | 18, antes de ativar continuidade | Destino operacional autorizado configurado e entrega de alerta testada; estado `OK` sozinho não comprova notificação. Atendido em 24/09/2026: destino configurado e entrega testada (ver `docs/build/RISK_REGISTER.md`). |
 
 ## Lacunas gerais do inventário (18)
 
