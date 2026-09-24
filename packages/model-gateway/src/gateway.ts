@@ -44,6 +44,8 @@ export type ModelGatewayConfig = {
   processingEligibility?: (input: {
     provider: Provider; model: string; resources: ProcessingResource[];
     context: GatewayRequest<z.ZodType>["dataHandling"];
+    /** The attempt being decided; a live authority may reserve exactly what it may cost. */
+    attempt: GatewayAttempt;
   }) => Promise<ProcessingEligibilityDecision>;
   /** Off by default until current vendor contracts are entered; when on, every route fails closed. */
   providerDataPolicy?: {
@@ -53,6 +55,19 @@ export type ModelGatewayConfig = {
   /** Structured, content-free log of every call. */
   onCall?: (log: GatewayCallLog) => void;
   now?: () => number;
+};
+
+/**
+ * One send, same-model repair or provider fallback, before it is decided. The invocation id is the
+ * one its call log carries; the reservation is the budget exposure this gateway holds for it,
+ * computed from the complete adapter request (conservatively under `conservative_text_v1`).
+ */
+export type GatewayAttempt = {
+  invocationId: string;
+  retryOrdinal: number;
+  isSameModelRepair: boolean;
+  usedProviderFallback: boolean;
+  reservationUsd: number;
 };
 
 export type ModelGateway = {
@@ -123,12 +138,39 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         repairGuidanceFingerprint: fingerprint(repairGuidance),
         ...(pendingRepairIssueCodeFingerprint ? {repairValidationIssueCodeFingerprint: pendingRepairIssueCodeFingerprint} : {}),
       } : {};
+      const adapterRequest: AdapterRequest = {
+        model: ref.model,
+        effort: ref.effort,
+        system: attemptSystem,
+        input,
+        schema: request.schema,
+        schemaName: request.schemaName,
+        maxOutputTokens: request.maxOutputTokens ?? policy.maxOutputTokens,
+        timeoutMs: request.timeoutMs ?? policy.timeoutMs,
+      };
+      if (request.cacheKey) adapterRequest.cacheKey = request.cacheKey;
+      if (request.thinking) adapterRequest.thinking = request.thinking;
+      if (request.outputMode) adapterRequest.outputMode = request.outputMode;
+      if (request.metadata) adapterRequest.metadata = request.metadata;
+      // The reservation is computed once per attempt: before the live decision when there is one,
+      // so the authority reserves the same exposure this gateway charges, otherwise where it was.
+      let attemptReservationUsd: number | undefined;
+      const reserveAttempt = (): number => {
+        if (attemptReservationUsd === undefined) {
+          const inputTokens = adapterRequest.input.reduce((total, part) => total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
+          attemptReservationUsd = config.budgetReservation === "conservative_text_v1"
+            ? conservativeTextReservationUsd(ref.provider, adapterRequest, prices)
+            : estimateCostReservationUsd(ref.model, inputTokens, adapterRequest.maxOutputTokens, prices);
+        }
+        return attemptReservationUsd;
+      };
       let providerPolicyVersion: string | undefined;
       if (config.processingEligibility) {
         const resources: ProcessingResource[] = ["inference", "prompt_cache"];
         if (request.outputMode !== "prompted_json") resources.push("schema_cache");
         if (input.some(part => part.type !== "text")) resources.push("inline_document");
-        const decision = await config.processingEligibility({provider: ref.provider, model: ref.model, resources, context: request.dataHandling});
+        const decision = await config.processingEligibility({provider: ref.provider, model: ref.model, resources, context: request.dataHandling,
+          attempt: {invocationId, ...attemptTelemetry, reservationUsd: reserveAttempt()}});
         providerPolicyVersion = decision.policyVersion;
         if (!decision.allowed) {
           attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: decision.reasons.join(","), ...attemptTelemetry});
@@ -184,27 +226,10 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         if (attempts.length > 0) break;
         throw new ModelGatewayError(`call budget exhausted (${spent.calls}/${config.budget.maxCalls})`, "budget_exceeded", {...spent, exposureUsd: budgetExposureUsd});
       }
-      const adapterRequest: AdapterRequest = {
-        model: ref.model,
-        effort: ref.effort,
-        system: attemptSystem,
-        input,
-        schema: request.schema,
-        schemaName: request.schemaName,
-        maxOutputTokens: request.maxOutputTokens ?? policy.maxOutputTokens,
-        timeoutMs: request.timeoutMs ?? policy.timeoutMs,
-      };
-      if (request.cacheKey) adapterRequest.cacheKey = request.cacheKey;
-      if (request.thinking) adapterRequest.thinking = request.thinking;
-      if (request.outputMode) adapterRequest.outputMode = request.outputMode;
-      if (request.metadata) adapterRequest.metadata = request.metadata;
 
       // Refuse before the provider call, not after it. The old check only looked at already
       // spent dollars, so a single large request could cross the ceiling and be billed in full.
-      const inputTokens = adapterRequest.input.reduce((total, part) => total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
-      const reservationUsd = config.budgetReservation === "conservative_text_v1"
-        ? conservativeTextReservationUsd(ref.provider, adapterRequest, prices)
-        : estimateCostReservationUsd(ref.model, inputTokens, adapterRequest.maxOutputTokens, prices);
+      const reservationUsd = reserveAttempt();
       if (config.budget?.maxCostUsd !== undefined && budgetExposureUsd + reservationUsd > config.budget.maxCostUsd) {
         throw new ModelGatewayError(
           `cost budget would be exceeded (${budgetExposureUsd.toFixed(4)} + ${reservationUsd.toFixed(4)} > ${config.budget.maxCostUsd})`,

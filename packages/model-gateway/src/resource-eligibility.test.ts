@@ -1,8 +1,10 @@
 import {describe, expect, it, vi} from "vitest";
 import {z} from "zod";
-import {createModelGateway} from "./gateway";
+import {conservativeTextReservationUsd} from "./conservative-reservation";
+import {createModelGateway, type GatewayAttempt} from "./gateway";
+import {listPrices} from "./pricing";
 import {retentionMatrixVersion, type ProcessingEligibilityDecision} from "./retention-matrix";
-import type {AdapterResponse} from "./types";
+import type {AdapterRequest, AdapterResponse, GatewayCallLog} from "./types";
 
 const request = {task: "preliminary_understanding" as const, system: "Synthetic instructions",
   input: [{type: "text" as const, text: "Synthetic input"}], schema: z.object({ok: z.boolean()}), schemaName: "eligibility"};
@@ -37,6 +39,24 @@ describe("gateway eligibility transport boundary", () => {
     const gateway = createModelGateway({adapters: {anthropic: {provider: "anthropic", complete: transport}}, processingEligibility: async () => result(allowed)});
     await gateway.complete({...request, allowFallback: false}); allowed = false;
     await expect(gateway.complete({...request, allowFallback: false})).rejects.toThrow(); expect(transport).toHaveBeenCalledOnce();
+  });
+  it("gives every send, repair and fallback its own identity and the reservation it is charged", async () => {
+    const seen: AdapterRequest[] = [];
+    const reply = (output: unknown): AdapterResponse => ({...response, output});
+    const primary = vi.fn(async (sent: AdapterRequest) => { seen.push(sent); return reply({wrong: true}); });
+    const secondary = vi.fn(async (sent: AdapterRequest) => { seen.push(sent); return reply({ok: true}); });
+    const authorize = vi.fn(async (_input: {attempt: GatewayAttempt}) => result(true));
+    const logs: GatewayCallLog[] = [];
+    const gateway = createModelGateway({adapters: {anthropic: {provider: "anthropic", complete: primary}, openai: {provider: "openai", complete: secondary}},
+      processingEligibility: authorize, budgetReservation: "conservative_text_v1", onCall: (log) => logs.push(log)});
+    expect((await gateway.complete({...request, outputMode: "prompted_json"})).provider).toBe("openai");
+    const attempts = authorize.mock.calls.map(([input]) => input.attempt);
+    expect(attempts.map(({retryOrdinal, isSameModelRepair, usedProviderFallback}) => [retryOrdinal, isSameModelRepair, usedProviderFallback]))
+      .toEqual([[0, false, false], [1, true, false], [0, false, true]]);
+    expect(new Set(attempts.map(({invocationId}) => invocationId)).size).toBe(3);
+    expect(logs.map(({invocationId}) => invocationId)).toEqual(attempts.map(({invocationId}) => invocationId));
+    attempts.forEach((attempt, index) => expect(attempt.reservationUsd)
+      .toBe(conservativeTextReservationUsd(index === 2 ? "openai" : "anthropic", seen[index]!, listPrices)));
   });
   it("fails closed when the live authority cannot be reached", async () => {
     const transport = vi.fn(async () => response);
