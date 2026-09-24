@@ -2780,3 +2780,12 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_ledger`
 
 Mais 17 objetos criados em laço pela mesma migração (políticas de negação, gatilhos de imutabilidade e de truncamento das sete tabelas de avaliação), registrados com a linha do `execute format` como fonte (`dynamic_ddl`).
+
+## Etapa 17, incremento 4D: tempo até valor sem conteúdo (24/09/2026)
+
+5 objetos novos e 0 atualizados. Etapa 17, incremento 4D: recibo imutável da leitura do resultado e visão de operador com os tempos até a primeira resposta útil e até o resultado verificado, sem conteúdo.
+- `policy:private.execution_read_receipts.execution_read_receipts_deny`
+- `r:private.execution_read_receipts`
+- `trigger:private.execution_read_receipts.execution_read_receipts_immutable`
+- `trigger:private.execution_read_receipts.execution_read_receipts_truncate_guard`
+- `v:private.execution_time_to_value`

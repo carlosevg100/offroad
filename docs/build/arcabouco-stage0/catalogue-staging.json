@@ -7207,6 +7207,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.read_governed_evaluation_session_v1(p_execution_id uuid)",
+      "kind": "function",
+      "name": "read_governed_evaluation_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_execution_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.read_governed_evaluation_v1(p_execution_id uuid, p_actor_user_id uuid)",
       "kind": "function",
       "name": "read_governed_evaluation_v1",
@@ -8983,6 +9006,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_message_id uuid, p_locale text, p_content text, p_plan jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "name": "request_governed_evaluation_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract_text text, p_snapshot_text text",
       "security_definer": true
     },
     {
@@ -18096,6 +18142,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.read_governed_evaluation_session_v1(p_execution_id uuid)",
+      "kind": "function",
+      "name": "read_governed_evaluation_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_execution_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.read_institutional_configuration_reviews_v1(p_project_id uuid)",
       "kind": "function",
       "name": "read_institutional_configuration_reviews_v1",
@@ -19405,6 +19474,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_message_id uuid, p_locale text, p_content text, p_plan jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "name": "request_governed_evaluation_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract_text text, p_snapshot_text text",
       "security_definer": false
     },
     {
@@ -25800,6 +25892,20 @@
         "public"
       ],
       "table": "execution_profile_registrations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_read_receipts.execution_read_receipts_deny",
+      "kind": "policy",
+      "name": "execution_read_receipts_deny",
+      "qual": "false",
+      "roles": [
+        "public"
+      ],
+      "table": "execution_read_receipts",
       "schema": "private",
       "command": "ALL",
       "permissive": "RESTRICTIVE",
@@ -33635,6 +33741,56 @@
       "rls": true,
       "kind": "table",
       "name": "execution_profile_registrations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_read_receipts",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_read_receipts",
       "grants": [
         [
           "postgres",
@@ -51426,6 +51582,26 @@
       "definition": "CREATE TRIGGER execution_profile_registrations_truncate_guard BEFORE TRUNCATE ON private.execution_profile_registrations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
     },
     {
+      "id": "trigger:private.execution_read_receipts.execution_read_receipts_immutable",
+      "kind": "trigger",
+      "name": "execution_read_receipts_immutable",
+      "table": "execution_read_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_contribution_immutable_v1()",
+      "definition": "CREATE TRIGGER execution_read_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_read_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_read_receipts.execution_read_receipts_truncate_guard",
+      "kind": "trigger",
+      "name": "execution_read_receipts_truncate_guard",
+      "table": "execution_read_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_platform_ledger_truncate_v1()",
+      "definition": "CREATE TRIGGER execution_read_receipts_truncate_guard BEFORE TRUNCATE ON private.execution_read_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
       "id": "trigger:private.execution_result_receipts.execution_result_receipts_audit",
       "kind": "trigger",
       "name": "execution_result_receipts_audit",
@@ -55706,6 +55882,56 @@
       "definition": "CREATE TRIGGER workspace_project_groups_set_updated_at BEFORE UPDATE ON public.workspace_project_groups FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "v:private.execution_time_to_value",
+      "rls": false,
+      "kind": "view",
+      "name": "execution_time_to_value",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": false
+    },
+    {
       "id": "v:private.failures_without_cause",
       "rls": false,
       "kind": "view",
@@ -56111,5 +56337,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-24T01:19:27.421314+00:00"
+  "captured_at": "2026-09-24T02:01:37.251452+00:00"
 }

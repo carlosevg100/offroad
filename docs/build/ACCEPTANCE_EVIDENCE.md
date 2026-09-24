@@ -1,3 +1,9 @@
+## Etapa 17 / 4D: tempo até valor, sem conteúdo
+
+Recibo imutável da leitura do resultado pelo leitor e visão de operador com os intervalos até a primeira resposta útil e até o resultado verificado, só com ids, carimbos, intervalos, booleanos e códigos. [Escopo, definições e provas](arcabouco/etapa-17-4d-telemetria.md).
+
+4D telemetria: migração `execution_time_to_value` em staging `20260924011941` e produção `20260924013350`; guarda dos dois leitores conferida em produção antes da aplicação e instrução gravada idêntica ao arquivo depois; prova `execution_time_to_value.sql` em staging; advisors de segurança zero; inventário com os objetos novos; catálogos recapturados.
+
 ## Etapa 17 / 5: avaliações governadas
 
 Transporte governado de avaliações no banco, instalado fechado: principal avaliador, organizações de avaliação, identidade imutável, orçamento, recibos por operação ligados à decisão de processamento, commit que reautoriza as rotas e chave de transporte fechada. [Escopo, compatibilidade, provas e o que falta](arcabouco/etapa-17-5-avaliacoes-governadas.md).
