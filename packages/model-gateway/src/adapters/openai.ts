@@ -151,8 +151,11 @@ export function isOpenAIUsageKnown(usage: OpenAI.Responses.ResponseUsage | undef
   const count = (value: unknown) => Number.isSafeInteger(value) && (value as number) >= 0;
   if (!usage || !count(usage.input_tokens) || !count(usage.output_tokens)) return false;
   const cached = usage.input_tokens_details?.cached_tokens ?? 0;
+  // From GPT-5.6 on, tokens written to the prompt cache are reported apart, inside input_tokens,
+  // and billed at 1.25x the input rate (https://developers.openai.com/api/docs/guides/prompt-caching).
+  const written = usage.input_tokens_details?.cache_write_tokens ?? 0;
   const reasoning = usage.output_tokens_details?.reasoning_tokens;
-  return count(cached) && cached <= usage.input_tokens && (reasoning === undefined || count(reasoning));
+  return count(cached) && count(written) && cached + written <= usage.input_tokens && (reasoning === undefined || count(reasoning));
 }
 
 export function mapOpenAIUsage(usage: OpenAI.Responses.ResponseUsage | undefined): Usage {
@@ -162,6 +165,8 @@ export function mapOpenAIUsage(usage: OpenAI.Responses.ResponseUsage | undefined
     outputTokens: usage.output_tokens,
     cachedInputTokens: usage.input_tokens_details?.cached_tokens ?? 0,
   };
+  const written = usage.input_tokens_details?.cache_write_tokens ?? 0;
+  if (written > 0) result.cacheCreationInputTokens = written;
   const reasoning = usage.output_tokens_details?.reasoning_tokens;
   if (typeof reasoning === "number") result.reasoningTokens = reasoning;
   return result;

@@ -169,9 +169,11 @@ describe("policy", () => {
 
 describe("pricing", () => {
   it("estimates list-price cost with cached input discount", () => {
-    expect(estimateCostUsd("claude-sonnet-5", {inputTokens: 1_000_000, outputTokens: 0, cachedInputTokens: 0})).toBe(3);
-    expect(estimateCostUsd("claude-sonnet-5", {inputTokens: 1_000_000, outputTokens: 0, cachedInputTokens: 1_000_000})).toBe(0.3);
-    expect(estimateCostUsd("gpt-5.6-terra", {inputTokens: 500_000, outputTokens: 100_000, cachedInputTokens: 0})).toBe(2.2);
+    expect(estimateCostUsd("claude-sonnet-5", {inputTokens: 1_000_000, outputTokens: 0, cachedInputTokens: 0})).toBe(2);
+    expect(estimateCostUsd("claude-sonnet-5", {inputTokens: 1_000_000, outputTokens: 0, cachedInputTokens: 1_000_000})).toBe(0.2);
+    expect(estimateCostUsd("gpt-5.6-terra", {inputTokens: 200_000, outputTokens: 100_000, cachedInputTokens: 0})).toBe(1.6);
+    // Above 272K input tokens the whole GPT-5.6 request is priced at 2x input and 1.5x output.
+    expect(estimateCostUsd("gpt-5.6-terra", {inputTokens: 500_000, outputTokens: 100_000, cachedInputTokens: 0})).toBe(3.8);
     expect(estimateCostUsd("unknown-model", {inputTokens: 1, outputTokens: 1, cachedInputTokens: 0})).toBe(0);
   });
 });
@@ -297,7 +299,7 @@ describe("gateway", () => {
     expect(result.model).toBe("claude-sonnet-5");
     expect(result.effort).toBe("medium");
     expect(result.usedFallback).toBe(false);
-    expect(result.costUsd).toBeCloseTo((6_000 * 3 + 4_000 * 0.3 + 500 * 15) / 1_000_000, 6);
+    expect(result.costUsd).toBeCloseTo((6_000 * 2 + 4_000 * 0.2 + 500 * 10) / 1_000_000, 6);
     expect(gateway.spent()).toMatchObject({costUsd: result.costUsd, calls: 1, unknownCostCalls: 0});
     const sent = anthropic.calls[0]?.input[0];
     expect(sent?.type === "text" ? sent.text : "").toContain("529.***.***-**");

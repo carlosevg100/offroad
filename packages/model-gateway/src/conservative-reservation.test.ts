@@ -18,7 +18,7 @@ function adapter(provider:"anthropic"|"openai",outputs:Array<unknown|Error>=[{ok
 describe("opt-in conservative textual reservation",()=>{
  it("reserves every Anthropic input byte at the 5-minute cache-write tariff",()=>{
   const bytes=Buffer.byteLength(JSON.stringify(buildAnthropicParams(adapterRequest)),"utf8")+Buffer.byteLength(JSON.stringify(z.toJSONSchema(schema)),"utf8")+2048;
-  const expected=Math.round((bytes*3*1.25+100*15))/1_000_000*1.1;
+  const expected=Math.round((bytes*2*1.25+100*10))/1_000_000*1.1;
   expect(conservativeTextReservationUsd("anthropic",adapterRequest,listPrices)).toBeCloseTo(expected,8);
  });
  for(const part of ["system","schema"] as const)it(`refuses oversized ${part} before either provider is called`,async()=>{

@@ -92,7 +92,10 @@ export type Usage = {
   inputTokens: number;
   outputTokens: number;
   cachedInputTokens: number;
-  /** Tokens written to the current five-minute ephemeral Anthropic cache. */
+  /**
+   * Input tokens written to the provider's prompt cache, billed at the model's cache-write rate:
+   * Anthropic's five-minute ephemeral cache and OpenAI's cache from GPT-5.6 on.
+   */
   cacheCreationInputTokens?: number;
   reasoningTokens?: number;
 };
