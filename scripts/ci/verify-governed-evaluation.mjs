@@ -3,11 +3,16 @@
 // evaluator requests under its JWT, the worker claims, reserves, "sends", settles and commits, and
 // the evaluator reads the bytes, receipts and cost. A second evaluation, whose assurance is revoked
 // before the claim, must reach the cassette zero times and end partial with transport_denied.
+// Then the baseline script itself runs live, twice, as a child process with no provider key in its
+// environment: it signs in as the synthetic evaluator, requests through the session wrapper and
+// waits; the consumer claims its evaluation and answers from the cassette; the script reads the
+// committed result and writes its run record. With the assurance revoked, the script receives
+// partial/transport_denied, writes no record and the cassette is called zero times.
 // Everything is synthetic; no network beyond the local stack and no provider key is ever read.
 import assert from 'node:assert/strict';
-import {execFileSync} from 'node:child_process';
+import {execFileSync, spawn} from 'node:child_process';
 import {createHash, randomUUID} from 'node:crypto';
-import {mkdtempSync, readFileSync, rmSync} from 'node:fs';
+import {mkdtempSync, readFileSync, readdirSync, rmSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
@@ -121,23 +126,28 @@ commit;`);
 
   // 3. The cassette: the recorded answer of each turn, keyed by the exact request the baseline sends
   // (system prompt, whole information base, earlier deliverables, schema). A request with any other
-  // byte misses, and a miss is a failed provider call.
+  // byte misses, and a miss is a failed provider call. Every call is counted, answered or not.
   const base = m.renderInformationBase(snapshot.informationBase);
   const deliverables = ['Entrega sintética da prova, turno 1.', 'Entrega sintética da prova, turno 2.'];
   const usages = [{inputTokens: 1800, outputTokens: 420, cachedInputTokens: 0}, {inputTokens: 2100, outputTokens: 380, cachedInputTokens: 0}];
   const schemaJson = m.z.toJSONSchema(m.baselineOutputSchema);
   const recorded = new Map();
-  const conversation = [base];
-  snapshot.informationBase.turns.forEach((turn, index) => {
-    conversation.push(m.renderTurnMessage(turn, index));
-    const input = conversation.map(text => ({type: 'text', text: m.redactPersonalIdentifiers(text, {}).text}));
-    const key = m.cassetteKey('anthropic', {model: 'claude-opus-5', effort: 'high', system: m.BASELINE_SYSTEM_PROMPT, input, schema: m.baselineOutputSchema,
-      schemaName: 'baseline_deliverable', maxOutputTokens: 2000, timeoutMs: 1}, schemaJson);
-    recorded.set(key, {output: {deliverable: deliverables[index]}, rawText: JSON.stringify({deliverable: deliverables[index]}), usage: usages[index], model: 'claude-opus-5', stopReason: 'end'});
-    conversation.push(`## Resposta ao turno ${index + 1} (sua entrega anterior)\n\n${deliverables[index]}`);
-  });
-  let hits = 0;
+  const record = (baseline, answers) => {
+    const {primary, maxOutputTokens} = baseline.model;
+    const conversation = [m.renderInformationBase(baseline.informationBase)];
+    baseline.informationBase.turns.forEach((turn, index) => {
+      conversation.push(m.renderTurnMessage(turn, index));
+      const input = conversation.map(text => ({type: 'text', text: m.redactPersonalIdentifiers(text, {}).text}));
+      const key = m.cassetteKey(primary.provider, {model: primary.model, effort: primary.effort, system: m.BASELINE_SYSTEM_PROMPT, input, schema: m.baselineOutputSchema,
+        schemaName: 'baseline_deliverable', maxOutputTokens, timeoutMs: 1}, schemaJson);
+      recorded.set(key, {output: {deliverable: answers[index]}, rawText: JSON.stringify({deliverable: answers[index]}), usage: usages[index], model: primary.model, stopReason: 'end'});
+      conversation.push(`## Resposta ao turno ${index + 1} (sua entrega anterior)\n\n${answers[index]}`);
+    });
+  };
+  record(snapshot, deliverables);
+  let hits = 0, calls = 0;
   const cassette = {provider: 'anthropic', async complete(request) {
+    calls += 1;
     const response = recorded.get(m.cassetteKey('anthropic', request, m.z.toJSONSchema(request.schema)));
     if (!response) throw new Error('cassette_missing');
     hits += 1;
@@ -150,6 +160,47 @@ commit;`);
     assert.equal(claim.executionId, executionId, 'another_evaluation_claimed');
     return m.processGovernedEvaluation(claim, consumer, new AbortController().signal, {adapters: {anthropic: cassette}, connections: {anthropic: connection}, heartbeatMs: 2_000});
   };
+
+  // The baseline script as the gold-baseline workflow runs it, live: a child process whose
+  // environment holds the synthetic evaluator's credential, the evaluation organization and this
+  // stack, and no provider key. It builds the gc01 information base from the committed fixtures,
+  // requests through the session wrapper and waits for the committed result.
+  const evalsDir = join(root, 'packages/evals');
+  const tsxManifest = join(evalsDir, 'node_modules/tsx/package.json');
+  const tsxCli = join(dirname(tsxManifest), JSON.parse(readFileSync(tsxManifest, 'utf8')).bin);
+  const providerCredential = /_API_KEY$|(^|_)(ANTHROPIC|OPENAI|PERPLEXITY|FIRECRAWL)(_|$)/;
+  const scriptEnvironment = {...Object.fromEntries(Object.entries(env).filter(([name]) => !providerCredential.test(name))),
+    SUPABASE_URL: api.origin, SUPABASE_PUBLISHABLE_KEY: publishableKey, OFFROAD_EVALUATOR_EMAIL: `${prefix}-3@example.invalid`,
+    OFFROAD_EVALUATOR_PASSWORD: password, OFFROAD_EVALUATION_ORGANIZATION_ID: organization};
+  assert.deepEqual(Object.keys(scriptEnvironment).filter(name => providerCredential.test(name)), [], 'the baseline script runs with no provider key in its environment');
+  const outputTail = run => `${run.stdout}\n${run.stderr}`.split('\n')
+    .filter(line => line.trim() && !/Warning: (TT|Required "glyf"|UnknownErrorException)/.test(line)).slice(-20).join('\n');
+  const runBaselineScript = out => {
+    const child = spawn(process.execPath, [tsxCli, 'scripts/run-gold-baseline.ts', '--case', 'gc01', '--out', out, '--max-cost', '100', '--poll-seconds', '1'],
+      {cwd: evalsDir, env: scriptEnvironment, stdio: ['ignore', 'pipe', 'pipe']});
+    const run = {child, stdout: '', stderr: '', ended: null};
+    child.stdout.on('data', chunk => { run.stdout += chunk; });
+    child.stderr.on('data', chunk => { run.stderr += chunk; });
+    const timer = setTimeout(() => child.kill('SIGKILL'), 300_000);
+    run.exited = new Promise((done, fail) => {
+      child.on('error', fail);
+      child.on('close', code => { clearTimeout(timer); run.ended = code ?? -1; done(run); });
+    });
+    return run;
+  };
+  // The consumer polls like the worker until the script's own request is claimable.
+  const claimScriptEvaluation = async run => {
+    for (const deadline = Date.now() + 240_000; Date.now() < deadline;) {
+      const claim = await consumer.claim();
+      if (claim) return claim;
+      if (run.ended !== null) throw new Error(`baseline_script_ended_before_its_request_was_claimed: ${run.ended}\n${outputTail(run)}`);
+      await new Promise(done => setTimeout(done, 500));
+    }
+    run.child.kill('SIGKILL');
+    throw new Error(`baseline_script_request_not_claimed\n${outputTail(run)}`);
+  };
+  const processScriptEvaluation = claim => m.processGovernedEvaluation(claim, consumer, new AbortController().signal,
+    {adapters: {anthropic: cassette}, connections: {anthropic: connection}, heartbeatMs: 2_000});
 
   // 4. First evaluation: requested under the evaluator's JWT, run once, read back.
   const first = randomUUID();
@@ -189,6 +240,52 @@ commit;`);
   assert.equal(sql(`select count(*) from private.governed_evaluation_request_events where evaluation_id='${first}' and actor_user_id='${users.evaluator}';`), '1');
   console.log('governed_evaluation_consumer: PASS (evaluator session request, worker claim, two reservations, cassette sends, two settlements, commit succeeded/evaluated, evaluator read of bytes, receipts and cost)');
 
+  // 4b. The baseline script itself, live, through the same path: its request under the evaluator's
+  // session, the worker's claim, reservations, cassette sends, settlements and commit, and the
+  // script's own read of the committed result and write of its run record.
+  const succeededDir = join(temporary, 'baseline-succeeded');
+  const scriptStarted = performance.now();
+  const scriptRun = runBaselineScript(succeededDir);
+  const scriptClaim = await claimScriptEvaluation(scriptRun);
+  const scriptContract = JSON.parse(scriptClaim.contractText);
+  assert.deepEqual([scriptContract.organizationId, scriptContract.purpose, scriptContract.audience],
+    [organization, 'evaluation', {kind: 'evaluation_panel', caseId: 'gc01-analista-ib-camil', caseVersion: '1.0', scriptId: 'run-gold-baseline'}]);
+  assert.deepEqual(scriptContract.tools, ['provider:anthropic:claude-opus-5', 'provider:openai:gpt-5.6-sol']
+    .map(tool => ({id: tool, version: m.governedEvaluationToolVersion, effect: 'read_only'})), 'every route the family may take, at the gateway version');
+  assert.deepEqual([scriptContract.budget.maxCostMicrousd, scriptContract.budget.maxModelCalls], [100_000_000, 4]);
+  assert.equal(scriptContract.inputs.fingerprint, sha(scriptClaim.snapshotText));
+  const scriptSnapshot = m.baselineGeneralistSnapshotSchema.parse(JSON.parse(scriptClaim.snapshotText));
+  assert.deepEqual(scriptContract.inputs.sources.map(source => source.contentHash), m.baselineSnapshotContentHashes(scriptSnapshot));
+  assert.deepEqual(scriptSnapshot.informationBase.documents.map(document => document.id).sort(), ['itr_1t26', 'proposta_agoe_2026']);
+  const scriptDeliverables = ['Entrega sintética do script, turno 1.', 'Entrega sintética do script, turno 2.'];
+  record(scriptSnapshot, scriptDeliverables);
+  const callsBeforeScript = calls;
+  assert.deepEqual(await processScriptEvaluation(scriptClaim), {status: 'succeeded', reason: 'evaluated', replayed: false});
+  assert.equal(calls - callsBeforeScript, 2, 'each turn of the script evaluation reaches the cassette once');
+  await scriptRun.exited;
+  const scriptMs = Math.ceil(performance.now() - scriptStarted);
+  assert.equal(scriptRun.ended, 0, `the baseline script failed\n${outputTail(scriptRun)}`);
+  assert.match(scriptRun.stdout, /^evaluation committed: succeeded\/evaluated, \d+ microusd over 2 calls$/m);
+  assert.deepEqual(readdirSync(succeededDir).sort(), ['evaluation.json', 'gc01-t01.output.md', 'gc01-t02.output.md', 'run.json']);
+  const scriptRead = await call(evaluator, 'read_governed_evaluation_session_v1', {p_execution_id: scriptClaim.executionId});
+  assert.deepEqual([scriptRead.requestedBy, scriptRead.outcome, scriptRead.reason, scriptRead.contractFingerprint],
+    [users.evaluator, 'succeeded', 'evaluated', scriptClaim.contractFingerprint]);
+  const committedRun = JSON.parse(scriptRead.result.canonicalResult);
+  const runRecord = JSON.parse(readFileSync(join(succeededDir, 'run.json'), 'utf8'));
+  assert.deepEqual(runRecord, committedRun.record, 'the run record is the one the worker committed');
+  assert.equal(runRecord.informationBaseSha256, sha(m.renderInformationBase(scriptSnapshot.informationBase)));
+  assert.deepEqual(runRecord.turns.map(turn => turn.outputSha256), scriptDeliverables.map(sha));
+  scriptDeliverables.forEach((deliverable, index) => assert.equal(readFileSync(join(succeededDir, `gc01-t0${index + 1}.output.md`), 'utf8'), `${deliverable}\n`));
+  const scriptEvidence = JSON.parse(readFileSync(join(succeededDir, 'evaluation.json'), 'utf8'));
+  assert.deepEqual([scriptEvidence.executionId, scriptEvidence.request, scriptEvidence.outcome, scriptEvidence.reason,
+    scriptEvidence.contractFingerprint, scriptEvidence.inputFingerprint, scriptEvidence.resultFingerprint],
+  [scriptClaim.executionId, 'created', 'succeeded', 'evaluated', scriptClaim.contractFingerprint, sha(scriptClaim.snapshotText), scriptRead.result.resultFingerprint]);
+  assert.deepEqual(scriptEvidence.receipts.map(receipt => [receipt.state, receipt.toolId, 'route' in receipt]),
+    [['settled', 'provider:anthropic:claude-opus-5', false], ['settled', 'provider:anthropic:claude-opus-5', false]]);
+  assert.deepEqual(scriptEvidence.cost, scriptRead.cost);
+  assert.equal(sql(`select count(*) from private.governed_evaluation_request_events where evaluation_id='${scriptClaim.executionId}' and actor_user_id='${users.evaluator}';`), '1');
+  console.log('governed_baseline_script: PASS (script with no provider key, evaluator session request of gc01, worker claim, two reservations, cassette sends, commit succeeded/evaluated, run record equal to the committed result)');
+
   // 5. Second evaluation: the inference assurance is revoked before the claim. The worker reserves,
   // the database denies and journals it, nothing reaches the cassette, and the commit is partial.
   const second = randomUUID();
@@ -207,8 +304,32 @@ commit;`);
   assert.deepEqual([denied.cost.spentMicrousd, denied.cost.reservedMicrousd, denied.totalCostMicrousd], [0, 0, 0]);
   console.log('governed_evaluation_revoked_assurance: PASS (reservation denied and journaled, zero cassette hits, commit partial/transport_denied)');
 
+  // 5b. The baseline script again, with the inference assurance still revoked: the same inputs, which
+  // the cassette could answer, yet the reservation is denied and journaled, the cassette is called
+  // zero times, and the script receives partial/transport_denied, writes only its evaluation
+  // evidence and exits with status 3.
+  const deniedDir = join(temporary, 'baseline-denied');
+  const deniedRun = runBaselineScript(deniedDir);
+  const deniedClaim = await claimScriptEvaluation(deniedRun);
+  assert.notEqual(deniedClaim.executionId, scriptClaim.executionId);
+  assert.equal(deniedClaim.snapshotText, scriptClaim.snapshotText, 'the script assembles the same bytes on every run');
+  const callsBeforeDenial = calls;
+  assert.deepEqual(await processScriptEvaluation(deniedClaim), {status: 'partial', reason: 'transport_denied', replayed: false});
+  assert.equal(calls, callsBeforeDenial, 'a revoked assurance lets nothing of the script reach the cassette');
+  await deniedRun.exited;
+  assert.equal(deniedRun.ended, 3, `the baseline script must end partial\n${outputTail(deniedRun)}`);
+  assert.match(deniedRun.stdout, /^evaluation committed: partial\/transport_denied, 0 microusd over 0 calls$/m);
+  assert.match(deniedRun.stderr, new RegExp(`^evaluation ${deniedClaim.executionId} is partial: transport_denied$`, 'm'));
+  assert.deepEqual(readdirSync(deniedDir), ['evaluation.json'], 'a partial evaluation writes no record and no deliverable');
+  const deniedEvidence = JSON.parse(readFileSync(join(deniedDir, 'evaluation.json'), 'utf8'));
+  assert.deepEqual([deniedEvidence.executionId, deniedEvidence.outcome, deniedEvidence.reason, deniedEvidence.receipts.length, deniedEvidence.cost.spentMicrousd, deniedEvidence.totalCostMicrousd],
+    [deniedClaim.executionId, 'partial', 'transport_denied', 0, 0, 0]);
+  assert.deepEqual(deniedEvidence.decisions.map(decision => [decision.allowed, decision.purpose, decision.reasons.includes('processing_resource_ineligible:inference')]),
+    [[false, 'evaluation', true]]);
+  console.log('governed_baseline_script_revoked_assurance: PASS (script with no provider key, reservation denied and journaled, zero cassette calls, script received partial/transport_denied and wrote no record)');
+
   // The disposable database ends with the transport closed again.
   sql(`select private.release_governed_evaluation_transport_v1('${id('a000', 32)}',false,'${users.operator}','Synthetic governed evaluation proof finished');`);
   assert.equal(sql(`select released from private.platform_capability_releases where capability_key='governed-evaluation-transport';`), 'f');
-  console.log(JSON.stringify({event: 'governed_evaluation_proof', runMs, cassetteHits: hits, spentMicrousd: costs[0] + costs[1]}));
+  console.log(JSON.stringify({event: 'governed_evaluation_proof', runMs, scriptMs, cassetteHits: hits, cassetteCalls: calls, spentMicrousd: costs[0] + costs[1]}));
 } finally { rmSync(temporary, {recursive: true, force: true}); }
