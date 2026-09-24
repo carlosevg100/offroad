@@ -1,110 +1,76 @@
-import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
-/** Protected live executor and source-review controls; never application E2E or promotion. */
+/**
+ * Protected live executor and source-review controls; never application E2E or promotion.
+ *
+ * `pnpm --filter @offroad/evals exec tsx scripts/run-document-work-product-live.ts [--request-id <uuid>] [--poll-seconds <n>]`
+ *
+ * The documentary executor and its authored source-review controls never reach a provider from
+ * this process. The script assembles the snapshot offline (the authored gold cases, the controls
+ * and the executor's task policy), requests a governed evaluation through the evaluator's own
+ * session (`../src/governed-transport`) under the ceilings the evaluation always kept (USD 3 and
+ * 26 attempts, gold USD 2.50 and 18 attempts, the controls the rest), and the worker runs the
+ * documentary family with every send, repair and fallback reserved in the database first. The
+ * script writes the record the database committed, stamped with this run's provenance, its
+ * summary, and `evaluation.json` with the evaluation's identity, fingerprints, reservations and
+ * cost. The environment carries the evaluator's credential and the evaluation organization
+ * (SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, OFFROAD_EVALUATOR_EMAIL, OFFROAD_EVALUATOR_PASSWORD,
+ * OFFROAD_EVALUATION_ORGANIZATION_ID), never a provider key. `--request-id` resumes an earlier
+ * request. A partial evaluation writes only `evaluation.json` and exits with status 3; a committed
+ * record that fails its gates exits with status 1, as it always did.
+ */
 import {mkdirSync, writeFileSync} from "node:fs";
-import {resolve, dirname} from "node:path";
-import {fileURLToPath, pathToFileURL} from "node:url";
-import {fingerprintJson} from "@offroad/case-understanding";
-import {createModelGateway, createAnthropicAdapter, createOpenAIAdapter, defaultTaskPolicies, type GatewayCallLog} from "@offroad/model-gateway";
-import {documentWorkProductLiveCases} from "@offroad/testing-fixtures/document-work-product-live";
-import {documentWorkSourceReviewCases} from "@offroad/testing-fixtures/document-work-source-review";
-import {assertDocumentWorkLiveEnvironment, scoreDocumentWorkLive, compareDocumentWorkRepeats, scoreDocumentWorkSourceReviewControl, type LiveProduct} from "../src/document-work-product-live";
-import {documentWorkFailureDiagnostics} from "../src/document-work-product-diagnostics";
-import {documentWorkControlCallBudget, summarizeDocumentWorkControls, documentWorkControlFailure} from "../src/document-work-control-budget";
-import {summarizeDocumentWorkAttempts} from "../src/document-work-product-attempts";
-type Review={reviewedFieldIds:string[];fieldAssessments:Array<{fieldId:string;verdict:string;exactExcerpt:string;sourceIds:string[]}>;issues:Array<{fieldId:string;code:string;sourceIds:string[]}>};
-type Diagnostic=ReturnType<typeof documentWorkFailureDiagnostics>;
+import {resolve} from "node:path";
+
+import {documentWorkProductLiveAudience, documentWorkProductLiveContentHashes, evaluationPolicyRoutes} from "@offroad/agent-contracts";
+
+import {
+  buildDocumentWorkProductLiveSnapshot,
+  documentWorkGovernedBudget,
+  documentWorkLiveCeilings,
+  documentWorkLiveOptions,
+  documentWorkProductLiveEvidence,
+  documentWorkProductLiveSummary,
+  logGovernedProgress,
+  readDocumentWorkProductLiveResult,
+  requesterProvenance,
+} from "../src/document-work-governed";
+import {assertDocumentWorkLiveEnvironment} from "../src/document-work-product-live";
+import {GovernedTransportError, governedEvaluationEvidence, readGovernedTransportEnvironment, requestGovernedEvaluation} from "../src/governed-transport";
+
 async function main() {
   assertDocumentWorkLiveEnvironment(process.env);
-  if (!process.env.ANTHROPIC_API_KEY || !process.env.OPENAI_API_KEY) throw new Error("protected_provider_credentials_required");
-  const directory=resolve(process.env.RUNNER_TEMP ?? ".","document-work-product-live");
-  mkdirSync(directory,{recursive:true});
-  requireGovernedEvaluationTransport();
-  const adapters={anthropic:createAnthropicAdapter({apiKey:process.env.ANTHROPIC_API_KEY,disableSdkRetries:true}),openai:createOpenAIAdapter({apiKey:process.env.OPENAI_API_KEY,disableSdkRetries:true})};
-  // Fixed dollar partitions retain USD3; controls receive only calls unused by completed gold runs.
-  const calls:GatewayCallLog[]=[], controlCalls:GatewayCallLog[]=[];
-  const gateway=createModelGateway({adapters,budget:{maxCostUsd:2.5,maxCalls:18},budgetReservation:"conservative_text_v1",onCall:call=>calls.push(call)});
-  let controlGateway:ReturnType<typeof createModelGateway>|null=null;
-  let controlMaxCalls:number|null=null;
-  const workerPath=(name:string)=>pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),`../../../apps/document-worker/src/${name}.ts`)).href;
-  const {hydrateDocumentWorkSelection}=await import(workerPath("document-work-selection")) as {hydrateDocumentWorkSelection:(input:unknown,raw:unknown)=>unknown};
-  const {expandDocumentWorkSourceReview}=await import(workerPath("document-work-source-review")) as {expandDocumentWorkSourceReview:(input:unknown,raw:Review)=>Review};
-  const {runDocumentWorkProduct,validateDocumentWorkProductNarrative}=await import(workerPath("document-work-product")) as {
-    runDocumentWorkProduct:(input:unknown,dependencies:{gateway:typeof gateway})=>Promise<LiveProduct>;
-    validateDocumentWorkProductNarrative:(input:unknown,raw:unknown)=>unknown;
-  };
-  const {reviewDocumentWorkSourceFidelity,validateDocumentWorkSourceReview,sourceReviewSchema}=await import(workerPath("document-work-source-review")) as {
-    reviewDocumentWorkSourceFidelity:(input:unknown,narrative:unknown,dependencies:{gateway:typeof gateway})=>Promise<Review>;
-    validateDocumentWorkSourceReview:(input:unknown,narrative:unknown,raw:unknown)=>Review;
-    sourceReviewSchema:{safeParse:(raw:unknown)=>{success:boolean;data?:Review}};
-  };
-  const runs:Array<{caseId:string;repeat:number;product:LiveProduct|null;score:ReturnType<typeof scoreDocumentWorkLive>|null;failure:string|null;diagnostics:Diagnostic|null;providerCallRange:{start:number;end:number};completeCalls:number;narrativeCalls:number;reviewCalls:number;responses:Array<{kind:"narrative"|"source_review";providerCallIndex:number;contentFingerprint:string;validationPassed:boolean;diagnostics:Diagnostic|null;syntheticNarrative:Diagnostic["rejectedOutput"];syntheticReview:Review|null}>}>=[];
-  const repeats:Array<{caseId:string;comparison:ReturnType<typeof compareDocumentWorkRepeats>|null}>=[];
-  const controls:Array<{caseId:string;expectedIssueFieldId:string|null;expectedIssueFieldIds:string[];expectedCleanFieldIds:string[];scope:"mixed_locale_review_controls";passed:boolean;review:Review|null;failure:string|null;providerCallRange:{start:number;end:number}}> = [];
-  const persist=()=>{
-    const accounting=summarizeDocumentWorkAttempts(runs.map(run=>({passed:run.score?.passed===true,completeCalls:run.completeCalls,narrativeCalls:run.narrativeCalls,reviewCalls:run.reviewCalls,firstResponseValid:run.responses.find(response=>response.kind==="narrative")?.validationPassed===true,providerCalls:run.providerCallRange.end-run.providerCallRange.start})),repeats.map(repeat=>repeat.comparison?.passed===true),gateway.spent());
-    const controlSpend=controlGateway?.spent() ?? {calls:0,costUsd:0,unknownCostCalls:0,budgetExposureUsd:0};
-    const controlAccounting=summarizeDocumentWorkControls(controls,gateway.spent(),controlSpend);
-    const controlsPassed=controlGateway!==null && controlAccounting.passed;
-    const passed=accounting.passed && controlsPassed;
-    const evidence={schemaVersion:"document-work-product-executor-eval.v6",synthetic:true,scope:"actual_executor_and_authored_source_review_controls_not_application_e2e",promotion:false,gitSha:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,runAttempt:process.env.GITHUB_RUN_ATTEMPT,workflowRef:process.env.GITHUB_WORKFLOW_REF,fixtureFingerprint:fingerprintJson(documentWorkProductLiveCases),sourceReviewFixtureFingerprint:fingerprintJson(documentWorkSourceReviewCases),policy:defaultTaskPolicies.preliminary_understanding,budgetReservation:"conservative_text_v1",budget:{maxCostUsd:3,maxCalls:26,gold:{maxCostUsd:2.5,maxCalls:18},sourceReviewControls:{maxCostUsd:0.5,maxCalls:controlMaxCalls,allocation:"26-minus-completed-gold-calls"}},spent:gateway.spent(),sourceReviewControlSpend:controlSpend,accounting,controlAccounting,passed,runs,repeats,sourceReviewControls:controls,calls,sourceReviewControlCalls:controlCalls};
-    writeFileSync(resolve(directory,"evidence.json"),JSON.stringify(evidence,null,2));
-    writeFileSync(resolve(directory,"summary.md"),`# Document work product evaluation\n\n${passed?"PASS":"FAIL"} · ${runs.length}/6 independent requests recorded.\n\nSynthetic inputs, actual executor and source reviewer. This is not application E2E, human domain certification or release approval.\n\n${runs.map(run=>`- ${run.caseId} repeat ${run.repeat}: ${run.score?.passed?"PASS":"FAIL"}${run.failure?` (${run.failure})`:""}`).join("\n")}\n\nSource-review controls: ${controls.filter(control=>control.passed).length}/${controls.length}; eight required, including both supported and unsupported claims.\n\nRepeat comparisons require identical input and full expected fact coverage; prose identity is reported separately. First-pass narrative success after review: ${accounting.firstPassSuccessCount}/${runs.length}. All rejected attempts remain in evidence.\n\nGold provider attempts: ${gateway.spent().calls}; source-review control attempts: ${controlSpend.calls}. Measured total USD: ${gateway.spent().costUsd+controlSpend.costUsd}. Fixed ceilings: gold18/USD2.50, controls${controlMaxCalls ?? "not allocated"}/USD0.50, aggregate26/USD3.00; controls receive only attempts left after gold. Retries and fallback consume those same budgets.\n`);
-    return passed;
-  };
-  for(const sample of documentWorkProductLiveCases) {
-    const input={job:sample.job,locale:"en-US",approvedRequest:{text:sample.objective,fingerprint:fingerprintJson({objective:sample.objective})},passages:sample.passages.map(p=>({...p,documentId:p.id,version:"1",hash:fingerprintJson(p.text),anchor:"paragraph 1"})),coverage:{documentsConsidered:sample.passages.length,omittedPassages:0,limitations:["Synthetic document-only case; no financial calculations or independent diligence."]}};
-    const outputs:LiveProduct[]=[];
-    for(const repeat of [1,2]) {
-      const start=calls.length;
-      let capturedNarrative:unknown, narrativeProviderIndex:number|null=null, completeCalls=0, narrativeCalls=0, reviewCalls=0;
-      const responses:(typeof runs)[number]["responses"]=[];
-      const observedGateway:typeof gateway={spent:gateway.spent,async complete(request){
-        completeCalls++;
-        const isNarrative=request.schemaName==="document_work_selection_v1";
-        if(isNarrative)narrativeCalls++; else reviewCalls++;
-        const response=await gateway.complete(request);
-        if(isNarrative){
-          capturedNarrative=response.output;narrativeProviderIndex=calls.length-1;
-          let validationFailure:unknown;
-          try{capturedNarrative=hydrateDocumentWorkSelection(input,response.output);validateDocumentWorkProductNarrative(input,capturedNarrative);}catch(error){validationFailure=error;}
-          const diagnostic=documentWorkFailureDiagnostics(validationFailure,capturedNarrative,calls.length-1);
-          responses.push({kind:"narrative",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:validationFailure===undefined,diagnostics:validationFailure===undefined?null:diagnostic,syntheticNarrative:diagnostic.rejectedOutput,syntheticReview:null});
-        }else{
-          const wire=response.output as Record<string,unknown>;
-          const {revisedSelection,...reviewWire}=wire;
-          const parsed=sourceReviewSchema.safeParse(request.schemaName==="document_work_source_review_revision_v3"?reviewWire:response.output);
-          let reviewAccepted=false; let expanded:Review|null=null;
-          try{if(parsed.success){expanded=expandDocumentWorkSourceReview(input,parsed.data!);reviewAccepted=validateDocumentWorkSourceReview(input,capturedNarrative,expanded).issues.length===0;}}catch{}
-          responses.push({kind:"source_review",providerCallIndex:calls.length-1,contentFingerprint:fingerprintJson(response.output),validationPassed:reviewAccepted,diagnostics:null,syntheticNarrative:null,syntheticReview:expanded ?? (parsed.success?parsed.data!:null)});
-          if(request.schemaName==="document_work_source_review_revision_v3" && revisedSelection!==null && revisedSelection!==undefined){
-            try{capturedNarrative=hydrateDocumentWorkSelection(input,revisedSelection);validateDocumentWorkProductNarrative(input,capturedNarrative);}catch{}
-          }
-        }
-        return response;
-      }};
-      try{
-        const product=await runDocumentWorkProduct(input,{gateway:observedGateway});outputs.push(product);
-        runs.push({caseId:sample.id,repeat,product,score:scoreDocumentWorkLive(product,sample),failure:null,diagnostics:null,providerCallRange:{start,end:calls.length},completeCalls,narrativeCalls,reviewCalls,responses});
-      }catch(error){
-        const diagnostics=documentWorkFailureDiagnostics(error,capturedNarrative,narrativeProviderIndex);
-        runs.push({caseId:sample.id,repeat,product:null,score:null,failure:diagnostics.code,diagnostics,providerCallRange:{start,end:calls.length},completeCalls,narrativeCalls,reviewCalls,responses});
-      }
-      persist();
-    }
-    repeats.push({caseId:sample.id,comparison:outputs.length===2?compareDocumentWorkRepeats(outputs[0]!,outputs[1]!,sample):null});persist();
+  const directory = resolve(process.env.RUNNER_TEMP ?? ".", "document-work-product-live");
+  mkdirSync(directory, {recursive: true});
+  const snapshot = buildDocumentWorkProductLiveSnapshot();
+  const options = documentWorkLiveOptions(process.argv.slice(2));
+  // The evaluator's credential, read before anything is requested: absent, the run fails closed here.
+  const environment = readGovernedTransportEnvironment();
+  const budget = documentWorkGovernedBudget(documentWorkLiveCeilings.documentary, snapshot.policy.timeoutMs);
+  console.log(`evaluation budget: ${budget.maxCostMicrousd} microusd, ${budget.maxModelCalls} calls, ${budget.maxDurationMs} ms of work`);
+
+  // Live: the worker runs the documentary family under the governed transport. This process holds
+  // no provider key and builds no adapter or gateway; it asks through the evaluator's session and
+  // writes what the database committed.
+  const evaluation = await requestGovernedEvaluation({
+    audience: {...documentWorkProductLiveAudience(snapshot), scriptId: "run-document-work-product-live"},
+    routes: evaluationPolicyRoutes(snapshot.policy),
+    budget,
+    snapshot,
+    sourceContentHashes: documentWorkProductLiveContentHashes(snapshot),
+    ...(options.requestId ? {requestId: options.requestId} : {}),
+  }, {environment, pollIntervalMs: options.pollIntervalMs, onProgress: logGovernedProgress});
+
+  writeFileSync(resolve(directory, "evaluation.json"), `${JSON.stringify(governedEvaluationEvidence(evaluation), null, 2)}\n`, "utf8");
+  console.log(`evaluation committed: ${evaluation.outcome}/${evaluation.reason}, ${evaluation.cost.spentMicrousd} microusd over ${evaluation.cost.spentCalls} calls`);
+  if (evaluation.outcome !== "succeeded") {
+    // A partial evaluation publishes only its reason: there is no record to write.
+    console.error(`evaluation ${evaluation.executionId} is partial: ${evaluation.reason}`);
+    process.exitCode = 3;
+    return;
   }
-  controlMaxCalls=documentWorkControlCallBudget(gateway.spent().calls);
-  controlGateway=createModelGateway({adapters,budget:{maxCostUsd:0.5,maxCalls:controlMaxCalls},budgetReservation:"conservative_text_v1",onCall:call=>controlCalls.push(call)});
-  for(const sample of documentWorkSourceReviewCases){
-    const start=controlCalls.length;
-    try{
-      validateDocumentWorkProductNarrative(sample.input,sample.narrative);
-      const review=await reviewDocumentWorkSourceFidelity(sample.input,sample.narrative,{gateway:controlGateway});
-      const passed=scoreDocumentWorkSourceReviewControl(sample,review);
-      controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,expectedIssueFieldIds:sample.expectedIssueFieldIds,expectedCleanFieldIds:sample.expectedCleanFieldIds,scope:sample.scope,passed,review,failure:null,providerCallRange:{start,end:controlCalls.length}});
-    }catch(error){controls.push({caseId:sample.id,expectedIssueFieldId:sample.expectedIssueFieldId,expectedIssueFieldIds:sample.expectedIssueFieldIds,expectedCleanFieldIds:sample.expectedCleanFieldIds,scope:sample.scope,passed:false,review:null,failure:documentWorkControlFailure(error,start,controlCalls.length),providerCallRange:{start,end:controlCalls.length}});}
-    persist();
-  }
-  if(!persist())process.exitCode=1;
+  const record = readDocumentWorkProductLiveResult(evaluation.result, snapshot);
+  writeFileSync(resolve(directory, "evidence.json"), JSON.stringify(documentWorkProductLiveEvidence(record, requesterProvenance(process.env)), null, 2));
+  writeFileSync(resolve(directory, "summary.md"), documentWorkProductLiveSummary(record));
+  if (!record.passed) process.exitCode = 1;
 }
-main().catch(()=>{console.error("document_work_product_live_setup_failed");process.exitCode=1;});
+// Only a transport refusal names itself, by code; anything else stays the fixed setup failure.
+main().catch((error: unknown) => {console.error(error instanceof GovernedTransportError ? error.message : "document_work_product_live_setup_failed"); process.exitCode = 1;});

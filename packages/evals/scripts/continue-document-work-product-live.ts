@@ -1,14 +1,35 @@
-import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
-/** One missing control from the second authorized evaluation; never a fresh round. */
+/**
+ * One missing control from the second authorized evaluation; never a fresh round.
+ *
+ * The plan (which control, one call, the dollars left) is derived offline from the pinned receipt
+ * of the source run, exactly as before. The one review then runs in the worker under the governed
+ * evaluation transport: the script requests it through the evaluator's own session
+ * (`../src/governed-transport`) with that single call and those dollars as the contract's budget,
+ * and writes the record the database committed, stamped with this run's provenance, beside
+ * `evaluation.json`. The claim is persisted in `started.json` before the request crosses to the
+ * transport; an interrupted run is never retried. No provider key is read. A partial evaluation
+ * writes only `started.json` and `evaluation.json` and exits with status 3.
+ */
 import {mkdirSync, readFileSync, writeFileSync} from "node:fs";
-import {resolve, dirname} from "node:path";
-import {fileURLToPath, pathToFileURL} from "node:url";
+import {resolve} from "node:path";
+
+import {documentWorkContinuationAudience, documentWorkContinuationContentHashes, evaluationPolicyRoutes} from "@offroad/agent-contracts";
 import {fingerprintJson} from "@offroad/case-understanding";
-import {createModelGateway, createAnthropicAdapter, type GatewayCallLog} from "@offroad/model-gateway";
 import {documentWorkProductLiveCases} from "@offroad/testing-fixtures/document-work-product-live";
 import {documentWorkSourceReviewCases} from "@offroad/testing-fixtures/document-work-source-review";
-import {scoreDocumentWorkSourceReviewControl} from "../src/document-work-product-live";
+
+import {
+  buildDocumentWorkContinuationSnapshot,
+  documentWorkContinuationEvidence,
+  documentWorkContinuationSummary,
+  documentWorkGovernedBudget,
+  documentWorkLiveOptions,
+  logGovernedProgress,
+  readDocumentWorkContinuationResult,
+  requesterProvenance,
+} from "../src/document-work-governed";
 import {validateDocumentWorkProductContinuation} from "../src/document-work-product-continuation";
+import {GovernedTransportError, governedEvaluationEvidence, readGovernedTransportEnvironment, requestGovernedEvaluation} from "../src/governed-transport";
 
 async function main() {
   const env=process.env;
@@ -21,32 +42,33 @@ async function main() {
     receiptSha256:"01c86a6de3c52f704a9ecf1917d03163d29d2a84d9b51c542e8b3ac0a480ed47",
     fixtureFingerprint:fingerprintJson(documentWorkProductLiveCases),sourceReviewFixtureFingerprint:fingerprintJson(documentWorkSourceReviewCases),
   }});
-  const sample=documentWorkSourceReviewCases.find(sample=>sample.id===plan.caseId);
-  if(!sample || !env.ANTHROPIC_API_KEY) throw new Error("continuation_source_unavailable");
+  const snapshot=buildDocumentWorkContinuationSnapshot(plan);
+  const options=documentWorkLiveOptions(process.argv.slice(2));
+  // The evaluator's credential, read before the claim is written: absent, nothing is claimed or requested.
+  const environment=readGovernedTransportEnvironment();
   const directory=resolve(env.RUNNER_TEMP!,"documentary-continuation");mkdirSync(directory,{recursive:true});
-  const calls:GatewayCallLog[]=[];
-  requireGovernedEvaluationTransport();
-  const gateway=createModelGateway({adapters:{anthropic:createAnthropicAdapter({apiKey:env.ANTHROPIC_API_KEY,disableSdkRetries:true})},
-    budget:{maxCalls:1,maxCostUsd:plan.maxCostUsd},budgetReservation:"conservative_text_v1",onCall:call=>calls.push(call)});
-  const path=pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),"../../../apps/document-worker/src/document-work-source-review.ts")).href;
-  const {reviewDocumentWorkSourceFidelity}=await import(path) as {reviewDocumentWorkSourceFidelity:(input:unknown,narrative:unknown,deps:{gateway:typeof gateway})=>Promise<{issues:Array<{fieldId:string}>}>};
-  // Persist the claim before crossing the provider boundary. An interrupted run is never retried.
+  // Persist the claim before crossing to the transport. An interrupted run is never retried.
   writeFileSync(resolve(directory,"started.json"),JSON.stringify({sourceRunId:plan.sourceRunId,runId:env.GITHUB_RUN_ID,caseId:plan.caseId,remainingCalls:1})+"\n");
-  let review:Awaited<ReturnType<typeof reviewDocumentWorkSourceFidelity>>|null=null;
-  let failure:string|null=null;
-  try {review=await reviewDocumentWorkSourceFidelity(sample.input,sample.narrative,{gateway});}
-  catch {failure="continuation_rejected_or_unknown";}
-  const spent=gateway.spent();
-  const combinedCalls=plan.priorCalls+spent.calls,combinedCostUsd=plan.priorCostUsd+spent.costUsd;
-  const passed=review!==null && scoreDocumentWorkSourceReviewControl(sample,review) && spent.calls===1
-    && spent.unknownCostCalls===0 && spent.costUsd<=plan.maxCostUsd && combinedCalls===26 && combinedCostUsd<=3;
-  const evidence={schemaVersion:"document-work-product-continuation.v1",synthetic:true,scope:"one_previously_unexecuted_control",
-    sourceRunId:plan.sourceRunId,sourceReceiptSha256:plan.sourceReceiptSha256,sourceEvaluationPassed:false,
-    runId:env.GITHUB_RUN_ID,gitSha:env.GITHUB_SHA,runAttempt:env.GITHUB_RUN_ATTEMPT,caseId:plan.caseId,
-    passed,combinedAcceptancePassed:passed,combinedCalls,combinedCostUsd,priorCalls:plan.priorCalls,priorCostUsd:plan.priorCostUsd,
-    spent,calls,review,failure};
-  writeFileSync(resolve(directory,"evidence.json"),JSON.stringify(evidence,null,2)+"\n");
-  writeFileSync(resolve(directory,"summary.md"),`# Documentary evaluation continuation\n\n${passed?"PASS":"FAIL"}: one previously unexecuted control.\n\nSource run ${plan.sourceRunId} remains immutable and failed for incomplete coverage. This linked receipt completes that coverage only if passed.\n\nCombined attempts: ${combinedCalls}/26. Combined measured USD: ${combinedCostUsd}/3. No gold request or prior control repeated. This is not application E2E or automatic promotion.\n`);
-  if(!passed)process.exitCode=1;
+  // Live: the worker runs the one review under the governed transport, with this one call and
+  // these dollars as its whole budget. This process holds no provider key and builds no gateway.
+  const evaluation=await requestGovernedEvaluation({
+    audience:{...documentWorkContinuationAudience(snapshot),scriptId:"continue-document-work-product-live"},
+    routes:evaluationPolicyRoutes(snapshot.policy),
+    budget:documentWorkGovernedBudget({maxCostUsd:plan.maxCostUsd,maxCalls:plan.remainingCalls},snapshot.policy.timeoutMs),
+    snapshot,
+    sourceContentHashes:documentWorkContinuationContentHashes(snapshot),
+    ...(options.requestId?{requestId:options.requestId}:{}),
+  },{environment,pollIntervalMs:options.pollIntervalMs,onProgress:logGovernedProgress});
+  writeFileSync(resolve(directory,"evaluation.json"),`${JSON.stringify(governedEvaluationEvidence(evaluation),null,2)}\n`,"utf8");
+  console.log(`evaluation committed: ${evaluation.outcome}/${evaluation.reason}, ${evaluation.cost.spentMicrousd} microusd over ${evaluation.cost.spentCalls} calls`);
+  if(evaluation.outcome!=="succeeded"){
+    console.error(`evaluation ${evaluation.executionId} is partial: ${evaluation.reason}`);
+    process.exitCode=3;
+    return;
+  }
+  const record=readDocumentWorkContinuationResult(evaluation.result,snapshot);
+  writeFileSync(resolve(directory,"evidence.json"),JSON.stringify(documentWorkContinuationEvidence(record,requesterProvenance(env)),null,2)+"\n");
+  writeFileSync(resolve(directory,"summary.md"),documentWorkContinuationSummary(record));
+  if(!record.passed)process.exitCode=1;
 }
-main().catch(()=>{console.error("documentary_continuation_setup_rejected");process.exitCode=1;});
+main().catch((error:unknown)=>{console.error(error instanceof GovernedTransportError?error.message:"documentary_continuation_setup_rejected");process.exitCode=1;});
