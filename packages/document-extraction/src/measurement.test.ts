@@ -148,6 +148,20 @@ describe("extraction measurement run", () => {
     expect(reading.documents[0]!.extraction.candidates).toEqual([]);
   });
 
+  it("reads back a failed evidence window of a document that also has table passes", async () => {
+    const s = snapshot();
+    const failure = new ModelGatewayError("all model attempts failed for task \"extract_fields\"", "all_attempts_failed");
+    // The statement's one window answers; the schedule's evidence window fails and its table pass answers.
+    const result = await runExtractionMeasurement(s, scripted([{candidates: [], absent_fields: [], document_alerts: []}, failure]).gateway, ticking());
+    const schedule = result.documents[1]!;
+    expect(schedule.extraction.chunks.total).toBeGreaterThan(1);
+    expect(schedule.extraction.chunks.failed).toBe(1);
+    // The extractor numbers a failed window among the windows, not among all passes.
+    expect(schedule.failures[0]!.of).toBeLessThan(schedule.extraction.chunks.total);
+    const reading = readExtractionMeasurementResult(JSON.parse(JSON.stringify(result)), s, await extractionMeasurementPasses(s));
+    expect(reading.documents[1]!.failures).toEqual(schedule.failures);
+  });
+
   it("ends the run with a refusal of the transport, and no later pass reaches the gateway", async () => {
     const s = snapshot();
     const refusal = new Error("evaluation_stopped:transport_denied");
