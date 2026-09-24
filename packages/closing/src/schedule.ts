@@ -9,6 +9,7 @@
  */
 
 import Decimal from "decimal.js";
+import {annualRateForPercentOfDi, composeIndexAndSpread} from "@offroad/financial-core";
 
 export type AmortizationSystem = "sac" | "price" | "bullet";
 export type PaymentFrequency = "monthly" | "quarterly" | "semiannual" | "annual";
@@ -60,18 +61,25 @@ export type PaymentSchedule = {
 
 const monthsPer: Record<PaymentFrequency, number> = {monthly: 1, quarterly: 3, semiannual: 6, annual: 12};
 
+/**
+ * The annual rate of the paper at the stated basis, in % p.a. CDI plus spread and IPCA plus coupon
+ * compound, (1 + index) × (1 + spread) - 1, and a percentage of the CDI applies to each day's DI
+ * rate, as the B3 formula book and the indentures accrue them; the composition comes from
+ * `@offroad/financial-core`.
+ */
 export function annualRate(pricing: SchedulePricing, basis: ScheduleTerms["basis"]): Decimal {
-  const cdi = new Decimal(basis.cdiPct);
+  const cdi = new Decimal(basis.cdiPct).div(100);
+  const pct = (value: string) => new Decimal(value).times(100);
   switch (pricing.type) {
     case "cdi_plus":
-      return cdi.plus(pricing.spreadPct);
+      return pct(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: new Decimal(pricing.spreadPct).div(100).toString()}).value);
     case "cdi_pct":
-      return cdi.times(pricing.pct).div(100);
+      return pct(annualRateForPercentOfDi({annualDi: cdi.toString(), percentOfDi: new Decimal(pricing.pct).div(100).toString()}).value);
     case "fixed":
       return new Decimal(pricing.ratePct);
     case "ipca_plus": {
       if (!basis.ipcaPct) throw new Error("An IPCA+ schedule needs the stated IPCA");
-      return new Decimal(1).plus(new Decimal(basis.ipcaPct).div(100)).times(new Decimal(1).plus(new Decimal(pricing.spreadPct).div(100))).minus(1).times(100);
+      return pct(composeIndexAndSpread({index: "IPCA", annualIndex: new Decimal(basis.ipcaPct).div(100).toString(), annualSpread: new Decimal(pricing.spreadPct).div(100).toString()}).value);
     }
   }
 }

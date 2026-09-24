@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import {annualRateForPercentOfDi, composeIndexAndSpread, type IndexedRateIndex} from "@offroad/financial-core";
 
 /**
  * Reading the language a Brazilian debt schedule is actually written in.
@@ -61,7 +62,10 @@ export function parseRate(text: string | null | undefined): ParsedRate | null {
  * Effective annual cost at stated index levels.
  *
  * Monthly rates compound: 1,42% a.m. is 18,45% a.a., not 17,04%, and the difference is exactly
- * the kind of thing a schedule maintained by hand gets wrong in the company's favour.
+ * the kind of thing a schedule maintained by hand gets wrong in the company's favour. An index plus
+ * a spread compounds too: "CDI + 4,10%" accrues (1 + CDI) × (1 + 4,10%) - 1, as the B3 formula
+ * book and the indentures state, and "112% do CDI" applies 112% to each day's DI rate. The
+ * composition itself comes from `@offroad/financial-core`.
  */
 export function effectiveAnnualCost(rate: ParsedRate, indexLevels: {cdi: string; tlp?: string; ipca?: string; selic?: string; tr?: string}): string | null {
   const level = (name: string): Decimal | null => {
@@ -73,10 +77,11 @@ export function effectiveAnnualCost(rate: ParsedRate, indexLevels: {cdi: string;
   if (rate.kind === "fixed_monthly") return new Decimal(rate.monthly).plus(1).pow(12).minus(1).toFixed(6);
   if (rate.kind === "percent_of_index") {
     const cdi = level("cdi");
-    return cdi === null ? null : cdi.times(rate.factor).toFixed(6);
+    return cdi === null ? null : new Decimal(annualRateForPercentOfDi({annualDi: cdi.toString(), percentOfDi: rate.factor}).value).toFixed(6);
   }
   const base = level(rate.index);
-  return base === null ? null : base.plus(rate.spreadAnnual).toFixed(6);
+  const index: IndexedRateIndex = rate.index === "CDI" ? "DI" : rate.index;
+  return base === null ? null : new Decimal(composeIndexAndSpread({index, annualIndex: base.toString(), annualSpread: rate.spreadAnnual}).value).toFixed(6);
 }
 
 /**

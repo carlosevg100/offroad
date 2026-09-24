@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@offroad/credit-playbook": "workspace:*",
+    "@offroad/financial-core": "workspace:*",
     "decimal.js": "10.6.0",
     "@offroad/sounding": "workspace:*"
   },

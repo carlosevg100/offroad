@@ -13,6 +13,7 @@
  */
 
 import Decimal from "decimal.js";
+import {annualRateForPercentOfDi, composeIndexAndSpread, spreadOverIndex} from "@offroad/financial-core";
 
 import type {Investor} from "@offroad/investor-base";
 
@@ -109,13 +110,16 @@ export function normalizeIndication(indication: Indication, basis: MarketBasis):
   const {pricing} = indication;
   let allIn: Decimal;
   let basisNote: {pt: string; en: string};
+  const fraction = (value: Decimal.Value) => new Decimal(value).div(100).toString();
   switch (pricing.type) {
     case "cdi_plus":
-      allIn = cdi.plus(pricing.spreadPct);
+      // (1 + CDI)(1 + spread) - 1, the way the paper accrues (B3 formula book), not CDI + spread.
+      allIn = new Decimal(composeIndexAndSpread({index: "DI", annualIndex: fraction(cdi), annualSpread: fraction(pricing.spreadPct)}).value).times(100);
       basisNote = {pt: `CDI + ${pricing.spreadPct}% sobre CDI de ${basis.cdiPct}%`, en: `CDI + ${pricing.spreadPct}% on CDI of ${basis.cdiPct}%`};
       break;
     case "cdi_pct":
-      allIn = cdi.times(pricing.pct).div(100);
+      // The percentage applies to each day's DI rate and the days compound.
+      allIn = new Decimal(annualRateForPercentOfDi({annualDi: fraction(cdi), percentOfDi: fraction(pricing.pct)}).value).times(100);
       basisNote = {pt: `${pricing.pct}% do CDI sobre CDI de ${basis.cdiPct}%`, en: `${pricing.pct}% of CDI on CDI of ${basis.cdiPct}%`};
       break;
     case "fixed":
@@ -130,7 +134,9 @@ export function normalizeIndication(indication: Indication, basis: MarketBasis):
       break;
     }
   }
-  return {indication, allInPct: pct(allIn), spreadOverCdiPct: pct(allIn.minus(cdi)), basisNote};
+  // The spread a composed all-in carries over the CDI is (1 + all-in) / (1 + CDI) - 1.
+  const spreadOverCdi = new Decimal(spreadOverIndex({annualRate: allIn.div(100).toString(), annualIndex: cdi.div(100).toString()}).value).times(100);
+  return {indication, allInPct: pct(allIn), spreadOverCdiPct: pct(spreadOverCdi), basisNote};
 }
 
 /**

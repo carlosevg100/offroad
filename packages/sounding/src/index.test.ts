@@ -9,9 +9,14 @@ const basis = {cdiPct: "10.50", ipcaPct: "4.00"};
 describe("one ruler for every indication", () => {
   it("reads CDI+, % of CDI, fixed and IPCA+ as all-in and spread over the CDI", () => {
     const base = {investorId: "x", amount: "1", tenorMonths: 36, firm: true};
-    expect(normalizeIndication({...base, pricing: {type: "cdi_plus", spreadPct: "4.10"}}, basis).allInPct).toBe("14.6");
-    expect(normalizeIndication({...base, pricing: {type: "cdi_pct", pct: "140"}}, basis).spreadOverCdiPct).toBe("4.2");
-    expect(normalizeIndication({...base, pricing: {type: "fixed", ratePct: "15.00"}}, basis).spreadOverCdiPct).toBe("4.5");
+    // Everything compounds on the 252-day year: (1 + 10,50%) × (1 + 4,10%) - 1 = 15,03%, not 14,60%.
+    expect(normalizeIndication({...base, pricing: {type: "cdi_plus", spreadPct: "4.10"}}, basis).allInPct).toBe("15.03");
+    expect(normalizeIndication({...base, pricing: {type: "cdi_plus", spreadPct: "4.10"}}, basis).spreadOverCdiPct).toBe("4.1");
+    // 140% of the daily DI compounds to 15,00% a.a.; its spread over the CDI is 1,15 / 1,105 - 1 = 4,07%, not 4,20%.
+    expect(normalizeIndication({...base, pricing: {type: "cdi_pct", pct: "140"}}, basis).allInPct).toBe("15");
+    expect(normalizeIndication({...base, pricing: {type: "cdi_pct", pct: "140"}}, basis).spreadOverCdiPct).toBe("4.07");
+    // A fixed 15% over a 10,50% CDI is a 4,07% spread, not 4,50%.
+    expect(normalizeIndication({...base, pricing: {type: "fixed", ratePct: "15.00"}}, basis).spreadOverCdiPct).toBe("4.07");
     expect(normalizeIndication({...base, pricing: {type: "ipca_plus", spreadPct: "9.00"}}, basis).allInPct).toBe("13.36");
   });
 });
@@ -58,7 +63,8 @@ describe("the gate: five investors through the whole flow", () => {
     expect(book.lines.map((line) => line.rank + ":" + line.allocated)).toEqual(["1:20000000", "2:22300000", "3:0"]);
     expect(book.lines[1]!.indication.firm).toBe(false);
     expect(book.shortfall).toBe("0");
-    expect(book.weightedAllInPct).toBe("14.51");
+    // 14,81% on R$ 20 mi and 15,03% on R$ 22,3 mi, both compounded over a 10,50% CDI.
+    expect(book.weightedAllInPct).toBe("14.93");
     expect(book.notes[0]!.en).toContain("Marginal line");
   });
 

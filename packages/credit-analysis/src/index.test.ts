@@ -17,6 +17,15 @@ describe("the language a Brazilian schedule is written in", () => {
     expect(effectiveAnnualCost(rate, {cdi: "0.105"})).toBe("0.126825");
   });
 
+  it("compounds an index and its spread as the indentures accrue them, not their sum", () => {
+    // (1 + 13,65%) × (1 + 3%) - 1 = 17,0595%; the sum, 16,65%, is 40,95 bps short.
+    expect(effectiveAnnualCost(parseRate("CDI + 3,00% a.a.")!, {cdi: "0.1365"})).toBe("0.170595");
+    // IPCA of 4,22% with a 7,5108% real coupon is 12,0478%, not 11,7308%.
+    expect(effectiveAnnualCost(parseRate("IPCA + 7,5108% a.a.")!, {cdi: "0.1365", ipca: "0.0422"})).toBe("0.120478");
+    // 110% of a 13,65% DI applies 110% to each day's rate: 15,1131%, not 15,015%.
+    expect(effectiveAnnualCost(parseRate("110% do CDI")!, {cdi: "0.1365"})).toBe("0.151131");
+  });
+
   it("refuses to guess a rate it cannot read", () => {
     expect(parseRate("taxa amiga combinada com o gerente")).toBeNull();
   });
@@ -90,6 +99,9 @@ describe("what a desk head sees in Aurora in five minutes", () => {
     // Hand check: stack averages ~14,6% a.a. with CDI at 10,5% and TLP at 7,9%.
     expect(weighted.toNumber()).toBeGreaterThan(0.14);
     expect(weighted.toNumber()).toBeLessThan(0.152);
+    // The spread over the CDI is the inverse composition, (1 + cost) / (1 + CDI) - 1.
+    const spread = new Decimal(analysis.stack.weightedSpreadOverCdi!);
+    expect(spread.plus(1).times("1.105").minus(1).minus(weighted).abs().toNumber()).toBeLessThan(0.0000015);
   });
 
   it("sees the refinancing wall: R$ 31,5M inside 24 months", () => {

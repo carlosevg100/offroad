@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import {composeIndexAndSpread, type IndexedRateIndex} from "@offroad/financial-core";
 
 export type CurveKind = "IPCA" | "CDI" | "PRE" | "SELIC" | "SOFR" | "UST" | "FX" | "other";
 
@@ -24,9 +25,31 @@ export type ContractualRatePeriod = {
   curveRate: string;
   spreadRate: string;
   allInRate: string;
+  /** How curve and spread combine: compounded on a 252-day year (Brazilian curves) or added (USD money-market curves). */
+  composition: RateComposition;
   curveId: string;
   curveAsOfDate: string;
 };
+
+export type RateComposition = "compounded_252" | "additive";
+
+/**
+ * Brazilian indexed paper compounds the index with the spread or real coupon, (1 + index) × (1 +
+ * spread) - 1, as the B3 formula book states; USD floating paper adds the margin to SOFR or a
+ * Treasury rate. FX and unnamed curves have no rate convention to apply and are refused.
+ */
+const compositionByKind: Readonly<Record<CurveKind, RateComposition | null>> = {
+  CDI: "compounded_252",
+  SELIC: "compounded_252",
+  IPCA: "compounded_252",
+  PRE: "compounded_252",
+  SOFR: "additive",
+  UST: "additive",
+  FX: null,
+  other: null,
+};
+
+const compositionIndex: Partial<Record<CurveKind, IndexedRateIndex>> = {CDI: "DI", SELIC: "SELIC", IPCA: "IPCA", PRE: "DI"};
 
 const d = (value: Decimal.Value) => new Decimal(value);
 const out = (value: Decimal) => value.toDecimalPlaces(10).toFixed();
@@ -110,6 +133,8 @@ export function resolveContractualRatePeriods(input: {
   floorRate?: string;
   capRate?: string;
 }): ContractualRatePeriod[] {
+  const composition = compositionByKind[input.curve.kind];
+  if (!composition) throw new RangeError(`no rate composition convention for a ${input.curve.kind} curve`);
   return input.periods.map((period) => {
     const observationDate = monthsBefore(period.accrualEndDate, input.observationLagMonths);
     let curveRate = d(interpolateMarketCurve(input.curve, observationDate));
@@ -121,7 +146,10 @@ export function resolveContractualRatePeriods(input: {
       observationDate,
       curveRate: out(curveRate),
       spreadRate: out(spread),
-      allInRate: out(curveRate.plus(spread)),
+      allInRate: composition === "additive"
+        ? out(curveRate.plus(spread))
+        : out(d(composeIndexAndSpread({index: compositionIndex[input.curve.kind]!, annualIndex: curveRate.toString(), annualSpread: spread.toString()}).value)),
+      composition,
       curveId: input.curve.id,
       curveAsOfDate: input.curve.asOfDate,
     };

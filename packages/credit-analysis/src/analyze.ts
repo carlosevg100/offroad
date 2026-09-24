@@ -1,4 +1,5 @@
 import Decimal from "decimal.js";
+import {composeIndexAndSpread, spreadOverIndex} from "@offroad/financial-core";
 
 import {
   effectiveAnnualCost, isReceivablesCession, parseCovenant, parseRate,
@@ -257,7 +258,8 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
   const weightedCost = priceableTotal.gt(0)
     ? priceable.reduce((sum, line) => sum.plus(d(line.balance).times(line.effectiveAnnual!)), ZERO).div(priceableTotal)
     : null;
-  const weightedSpread = weightedCost ? weightedCost.minus(cdi) : null;
+  // The spread a composed cost carries over the CDI is (1 + cost) / (1 + CDI) - 1, not cost - CDI.
+  const weightedSpread = weightedCost ? d(spreadOverIndex({annualRate: weightedCost.toString(), annualIndex: cdi.toString()}).value) : null;
 
   const maturingFromLines = lines
     .filter((line) => line.maturity !== undefined && monthsBetween(input.referenceDate, line.maturity) <= 24)
@@ -411,8 +413,8 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
     const ask = scenarios.length > 0 ? scenarios.reduce((max, s) => (d(s.amount).gt(max) ? d(s.amount) : max), ZERO) : ZERO;
     const askRate = parseRate(input.request.rateAsk);
     const askCost = askRate ? effectiveAnnualCost(askRate, input.indexLevels) : null;
-    // Venture practice when the ask names no rate: CDI plus six, before the warrant.
-    const assumedRate = askCost ? d(askCost) : cdi.plus("0.06");
+    // Venture practice when the ask names no rate: CDI plus six, before the warrant, compounded.
+    const assumedRate = askCost ? d(askCost) : d(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: "0.06"}).value);
     const monthsPre = cashNow.div(burn);
     const monthsPost = cashNow.plus(ask).div(burn);
     const monthlyInterest = ask.times(assumedRate).div(12);

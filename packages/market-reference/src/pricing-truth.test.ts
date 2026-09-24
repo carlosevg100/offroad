@@ -70,9 +70,23 @@ describe("governed pricing truth", () => {
     expect(truth.indicativePrice?.bps).toEqual({min: 310, max: 410});
     expect(truth.indicativePrice?.provenance).toMatchObject({kind: "observed", sample: 3});
     expect(truth.allIn.annualizedCostBps).toBe(40);
-    expect(truth.allIn.totalRate).toEqual({min: "0.140000", max: "0.150000"});
+    // (1 + 10,5%) × (1 + 3,10%) - 1 and (1 + 10,5%) × (1 + 4,10%) - 1; costs join the spread before composing.
+    expect(truth.indicativePrice?.allIn).toEqual({min: "0.139255", max: "0.150305", cdi: "0.105000"});
+    expect(truth.allIn.totalRate).toEqual({min: "0.143675", max: "0.154725"});
     expect(truth.procedureCoverage).toHaveLength(13);
     expect(truth.procedureCoverage.map((entry) => entry.procedureId)).toEqual(Array.from({length: 13}, (_, index) => `PR-${String(index + 1).padStart(2, "0")}`));
+  });
+
+  it("composes CDI and spread as the B3 formula book does: CDI 13,65% plus 3% is 17,0595%, not 16,65%", () => {
+    const truth = buildPricingTruthSet({
+      target: {...target, cdi: "0.1365"},
+      policy,
+      observations: [observation("a", 300), observation("b", 340), observation("c", 380)],
+    });
+    expect(truth.indicativePrice?.bps).toEqual({min: 300, max: 380});
+    expect(truth.indicativePrice?.allIn.min).toBe("0.170595");
+    // The linear sum would have been 0,166500: 40,95 basis points below the rate the indenture accrues.
+    expect(Number(truth.indicativePrice?.allIn.min) - (0.1365 + 0.03)).toBeCloseTo(0.004095, 9);
   });
 
   it("abstains when the sample is small or not independent", () => {

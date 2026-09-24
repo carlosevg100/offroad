@@ -7,7 +7,8 @@ describe("paymentSchedule", () => {
 
   it("SAC: equal principal after grace, interest on the falling balance, closes at zero", () => {
     const schedule = paymentSchedule({...base, amortization: "sac", pricing: {type: "cdi_plus", spreadPct: "4.50"}});
-    expect(schedule.annualRatePct).toBe("15");
+    // (1 + 10,50%) × (1 + 4,50%) - 1 = 15,4725%, not the 15% of the linear sum.
+    expect(schedule.annualRatePct).toBe("15.4725");
     expect(schedule.lines).toHaveLength(48);
     expect(schedule.lines[0]!.inGrace).toBe(true);
     expect(schedule.lines[0]!.principal).toBe("0.00");
@@ -17,6 +18,12 @@ describe("paymentSchedule", () => {
     expect(Number(schedule.totals.principal)).toBe(42300000);
     expect(Number(schedule.firstYearService)).toBeGreaterThan(0);
     expect(schedule.notes[0]!.pt).toContain("CDI de 10.50%");
+  });
+
+  it("reads a percentage of the CDI through the daily DI rate", () => {
+    // 110% of a 10,50% CDI: [1 + ((1,105)^(1/252) - 1) × 1,10]^252 - 1 = 11,6086%, not 11,55%.
+    const schedule = paymentSchedule({...base, amortization: "sac", pricing: {type: "cdi_pct", pct: "110"}});
+    expect(schedule.annualRatePct).toBe("11.6086");
   });
 
   it("Price: level payment over the amortising periods", () => {

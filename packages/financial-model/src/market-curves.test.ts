@@ -27,7 +27,22 @@ describe("governed market curves", () => {
       observationLagMonths: 3,
       floorRate: "0.0425",
     });
-    expect(period).toMatchObject({observationDate: "2028-01-01", curveRate: "0.05", spreadRate: "0.06", allInRate: "0.11", curveId: curve.id});
+    // IPCA and real coupon compound: (1 + 5%) × (1 + 6%) - 1 = 11,3%, not the 11% of the sum.
+    expect(period).toMatchObject({observationDate: "2028-01-01", curveRate: "0.05", spreadRate: "0.06", allInRate: "0.113", composition: "compounded_252", curveId: curve.id});
+  });
+
+  it("compounds a CDI curve with the spread and keeps a SOFR margin additive", () => {
+    const flat = (kind: GovernedMarketCurve["kind"], value: string): GovernedMarketCurve => ({...curve, id: `flat-${kind}`, kind, nodes: [{date: "2027-01-01", value}, {date: "2028-01-01", value}]});
+    const [cdi] = resolveContractualRatePeriods({curve: flat("CDI", "0.1365"), periods: [{period: "2027", accrualEndDate: "2027-06-30", spreadRate: "0.03"}], observationLagMonths: 0});
+    // (1 + 13,65%) × (1 + 3%) - 1 = 17,0595%: 40,95 bps above the linear 16,65%.
+    expect(cdi).toMatchObject({allInRate: "0.170595", composition: "compounded_252"});
+    const [sofr] = resolveContractualRatePeriods({curve: {...flat("SOFR", "0.043"), jurisdiction: "US", currency: "USD"}, periods: [{period: "2027", accrualEndDate: "2027-06-30", spreadRate: "0.025"}], observationLagMonths: 0});
+    expect(sofr).toMatchObject({allInRate: "0.068", composition: "additive"});
+  });
+
+  it("refuses to invent a rate convention for an FX curve", () => {
+    expect(() => resolveContractualRatePeriods({curve: {...curve, kind: "FX"}, periods: [{period: "2028", accrualEndDate: "2028-04-01", spreadRate: "0.01"}], observationLagMonths: 0}))
+      .toThrow("no rate composition convention");
   });
 
   it("applies month-end observation lag without rolling into the next month", () => {

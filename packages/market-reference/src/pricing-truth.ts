@@ -1,8 +1,9 @@
 import Decimal from "decimal.js";
+import {composeIndexAndSpread} from "@offroad/financial-core";
 
 import type {IndicativePrice, PriceAdjustment, PricedInstrument, RatingBand, SpreadBand} from "./index";
 
-export const pricingTruthVersion = "2026.08.25-v1";
+export const pricingTruthVersion = "2026.09.24-v1";
 
 type Status = "completed" | "partial" | "blocked" | "not_computable" | "not_applicable";
 
@@ -121,6 +122,12 @@ const median = (values: number[]) => {
   return ordered.length % 2 ? ordered[middle]! : (ordered[middle - 1]! + ordered[middle]!) / 2;
 };
 const moneyRatio = (observation: string, target: string) => new Decimal(observation).div(target);
+/**
+ * CDI plus a spread in basis points as one annual rate, composed the way the B3 formula book and
+ * the indentures accrue it: (1 + CDI) × (1 + spread) - 1, never CDI + spread.
+ */
+const cdiPlus = (cdi: Decimal, spreadBps: Decimal.Value) =>
+  new Decimal(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: new Decimal(spreadBps).div(10_000).toString()}).value);
 const fmt = (value: number, locale: "pt" | "en") => `${value >= 0 ? "+" : "-"} ${Math.abs(value / 100).toLocaleString(locale === "pt" ? "pt-BR" : "en-US", {maximumFractionDigits: 2})}%`;
 
 export function buildPricingTruthSet(input: {
@@ -208,7 +215,7 @@ export function buildPricingTruthSet(input: {
       const cdi = new Decimal(target.cdi);
       const base: SpreadBand = {instrument: target.instrument, rating: target.rating, bps: {min: baseMin, max: baseMax}};
       const latest = [...eligible].sort((a, b) => b.observedOn.localeCompare(a.observedOn))[0]!.observedOn;
-      const allIn = {min: cdi.plus(new Decimal(bps.min).div(10_000)).toFixed(6), max: cdi.plus(new Decimal(bps.max).div(10_000)).toFixed(6), cdi: cdi.toFixed(6)};
+      const allIn = {min: cdiPlus(cdi, bps.min).toFixed(6), max: cdiPlus(cdi, bps.max).toFixed(6), cdi: cdi.toFixed(6)};
       indicativePrice = {
         instrument: target.instrument,
         rating: target.rating,
@@ -234,10 +241,12 @@ export function buildPricingTruthSet(input: {
     ? Number(costComponents.reduce((sum, component) => sum.plus(component.annualizedBps!), new Decimal(0)).toFixed(2))
     : null;
   if ((input.costs?.length ?? 0) > 0 && annualizedCostBps === null) missing.add("pricing.weighted_average_life_and_valid_cost_sources");
+  // Annualized costs join the spread before the composition with the CDI, as the cost catalogue
+  // states: all-in = (1 + CDI) × (1 + spread + annualized costs) - 1.
   const totalRate = indicativePrice && annualizedCostBps !== null
     ? {
-        min: new Decimal(indicativePrice.allIn.min).plus(new Decimal(annualizedCostBps).div(10_000)).toFixed(6),
-        max: new Decimal(indicativePrice.allIn.max).plus(new Decimal(annualizedCostBps).div(10_000)).toFixed(6),
+        min: cdiPlus(new Decimal(indicativePrice.allIn.cdi), new Decimal(indicativePrice.bps.min).plus(annualizedCostBps)).toFixed(6),
+        max: cdiPlus(new Decimal(indicativePrice.allIn.cdi), new Decimal(indicativePrice.bps.max).plus(annualizedCostBps)).toFixed(6),
       }
     : null;
 
