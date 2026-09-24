@@ -3,6 +3,7 @@ import {defaultTaskPolicies, type ModelGateway, type ModelRef, type TaskKind, ty
 import type {GatewayCallLog} from "@offroad/model-gateway";
 import {intentRouterGoldFamily} from "./intent-router-gold-family";
 import {measurementEvaluationFamilies} from "./measurement-evaluation-families";
+import {documentWorkEvaluationFamilies} from "./evaluation-family-document-work";
 
 /**
  * An evaluation family turns one snapshot into model calls through the governed gateway it
@@ -48,4 +49,4 @@ export const baselineGeneralistFamily: EvaluationFamily = {
 };
 
 /** The contract's audience.scriptId selects the family; a script without one sends nothing. */
-export const evaluationFamilies: Readonly<Record<string, EvaluationFamily>> = Object.freeze({"run-gold-baseline": baselineGeneralistFamily, "run-intent-router-gold": intentRouterGoldFamily, ...measurementEvaluationFamilies});
+export const evaluationFamilies: Readonly<Record<string, EvaluationFamily>> = Object.freeze({"run-gold-baseline": baselineGeneralistFamily, "run-intent-router-gold": intentRouterGoldFamily, ...measurementEvaluationFamilies, ...documentWorkEvaluationFamilies});
