@@ -17,6 +17,8 @@ export * from "./resource-eligibility";
 export * from "./types";
 export * from "./policy";
 export * from "./pricing";
+export * from "./token-estimate";
+export {conservativeTextReservationUsd} from "./conservative-reservation";
 export * from "./repair";
 export * from "./redaction";
 export * from "./cassette";
