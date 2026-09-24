@@ -29,6 +29,12 @@ import {z} from "zod";
  * - `inferred` — our own reading, from the bucket we put them in. Always the last resort, and
  *   always visible as ours so nobody mistakes our guess for the fund's position.
  *
+ * That is the order for appetite. `declared` and `conversation` are one class, direct
+ * confirmation, and between them the newer statement is the fund's position. For a legal or
+ * regulatory constraint (instruments, geographies) the fund's published regulation comes first:
+ * an instrument outside the regulation is a prohibition, not a taste. Both orders are those of
+ * `market.mandates` (`precedenceByField`).
+ *
  * Every observation carries `observedAt`, which is the date the fact was *true*, not the date we
  * wrote it down. A deal announced in March is evidence about March however long we take to read
  * it, and a mandate declared eighteen months ago is old however recently we synced the row.
@@ -44,12 +50,36 @@ export const mandateProvenanceSchema = z.enum([
 
 export type MandateProvenance = z.infer<typeof mandateProvenanceSchema>;
 
+/** The natural order of the sources for appetite, from most to least trusted. */
 export const provenanceRank: Readonly<Record<MandateProvenance, number>> = {
   declared: 1,
   conversation: 2,
   observed: 3,
   published: 4,
   inferred: 5,
+};
+
+/**
+ * Which precedence a mandate field follows. A legal constraint is a rule the fund's regulation
+ * sets (instruments, geographies); appetite is everything the fund chooses (active, ticket, term,
+ * sectors, collateral, leverage, coverage).
+ */
+export type MandateFieldKind = "legal_constraint" | "appetite";
+
+/** Natural order per field kind, as `market.mandates` defines it. */
+export const precedenceByFieldKind: Readonly<Record<MandateFieldKind, readonly MandateProvenance[]>> = {
+  legal_constraint: ["published", "declared", "conversation", "observed", "inferred"],
+  appetite: ["declared", "conversation", "observed", "published", "inferred"],
+};
+
+/**
+ * The rank each source starts from. `declared` and `conversation` share one rank, direct
+ * confirmation, so recency alone decides between them. That class sits two ranks above observed
+ * behaviour, so the one rank a stale statement loses never lets behaviour pass it.
+ */
+const classRankByFieldKind: Readonly<Record<MandateFieldKind, Readonly<Record<MandateProvenance, number>>>> = {
+  legal_constraint: {published: 1, declared: 2, conversation: 2, observed: 4, inferred: 5},
+  appetite: {declared: 1, conversation: 1, observed: 3, published: 4, inferred: 5},
 };
 
 export const provenanceLabels: Readonly<Record<MandateProvenance, {pt: string; en: string}>> = {
@@ -122,45 +152,55 @@ const isStatement = (provenance: MandateProvenance) => provenance !== "observed"
 /**
  * Picks the observation the desk acts on, and keeps the rest.
  *
- * Provenance sets the order; age can demote a stale statement by one rank, never more.
+ * The field's precedence sets the order; age can demote a stale statement by one rank, never
+ * more.
  *
  * One rank is a deliberate bound with a consequence worth stating, because it is the sort of
- * rule someone will later assume is a bug: **behaviour never silently overrides a declaration.**
- * A fund that declared its box eighteen months ago and has since written smaller cheques keeps
- * its declared box as the accepted value, and the contradiction surfaces through `divergent`
- * instead. The alternative — letting our reading of their deals replace their own stated
- * position — is a platform telling a manager what their mandate really is, which is both
- * presumptuous and the kind of thing that ends a relationship on the first call.
+ * rule someone will later assume is a bug: **behaviour never silently overrides a statement from
+ * the fund.** A fund that declared its box eighteen months ago and has since written smaller
+ * cheques keeps its declared box as the accepted value, and the contradiction surfaces through
+ * `divergent` instead. Letting our reading of their deals replace their own stated position would
+ * be a platform telling a manager what their mandate really is, which is both presumptuous and
+ * the kind of thing that ends a relationship on the first call. The direct class sits two ranks
+ * above behaviour for exactly this reason.
  *
- * What one rank does buy: a conversation from last month overtakes a declaration from two years
- * ago, and observed behaviour overtakes stale public material or our own inference. Both are
- * cases where nobody is being overruled — only where the fresher source is also the better one.
+ * Between two direct statements on the same field the newer one wins, stale or not: a
+ * conversation from last month overtakes a declaration from eight months ago or from two years
+ * ago, and decay can never hand the field back to the older declaration, because the older
+ * statement is always at least as stale as the newer one. Observed behaviour overtakes stale
+ * public material or our own inference in appetite. For a legal constraint the regulation comes
+ * first, and a stale regulation ties with a fresh direct statement, where the newer one wins.
  *
- * Ties break on recency, then on the provenance's natural order, so the result is deterministic
- * — two runs over the same fund must place a deal identically or nothing downstream can be
- * trusted.
+ * Ties break on recency, then on the field's natural order, then on the value itself, so the
+ * result is deterministic and independent of input order: two runs over the same fund must
+ * place a deal identically or nothing downstream can be trusted.
  */
 export function resolveCriterion<T>(
   observations: readonly Sourced<T>[],
   options: ResolveOptions,
   /** Compares two values for divergence. Absent means any difference is a divergence. */
   differsMaterially?: (accepted: T, other: T, tolerance: number) => boolean,
+  /** The field's precedence. Appetite unless the field is a legal or regulatory constraint. */
+  fieldKind: MandateFieldKind = "appetite",
 ): Resolved<T> | null {
   if (observations.length === 0) return null;
   const decayMonths = options.statementDecayMonths ?? 12;
   const tolerance = options.divergenceTolerance ?? 0.25;
+  const classRank = classRankByFieldKind[fieldKind];
+  const naturalOrder = precedenceByFieldKind[fieldKind];
 
   const scored = observations.map((observation) => {
     const ageMonths = monthsBetween(observation.observedAt, options.asOf);
     const stale = isStatement(observation.provenance) && ageMonths > decayMonths;
-    return {observation, ageMonths, effectiveRank: provenanceRank[observation.provenance] + (stale ? 1 : 0)};
+    return {observation, ageMonths, effectiveRank: classRank[observation.provenance] + (stale ? 1 : 0), valueKey: JSON.stringify(observation.value) ?? ""};
   });
 
   scored.sort(
     (a, b) =>
       a.effectiveRank - b.effectiveRank ||
       a.ageMonths - b.ageMonths ||
-      provenanceRank[a.observation.provenance] - provenanceRank[b.observation.provenance],
+      naturalOrder.indexOf(a.observation.provenance) - naturalOrder.indexOf(b.observation.provenance) ||
+      (a.valueKey < b.valueKey ? -1 : a.valueKey > b.valueKey ? 1 : 0),
   );
 
   const [winner, ...rest] = scored;
