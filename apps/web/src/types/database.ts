@@ -10890,6 +10890,10 @@ export type Database = {
         Args: { p_work_id: string }
         Returns: string
       }
+      execution_contract_basis_v1: {
+        Args: { p_method_id?: string; p_version_id: string; p_work_id: string }
+        Returns: Json
+      }
       explain_my_access_v1: {
         Args: { p_action?: string; p_purpose?: string; p_resource_id: string }
         Returns: Json
@@ -10979,6 +10983,10 @@ export type Database = {
       }
       list_vault_publication_receipts_v1: {
         Args: { p_offset?: number }
+        Returns: Json
+      }
+      list_work_executions_v1: {
+        Args: { p_before?: string; p_work_id: string }
         Returns: Json
       }
       list_work_observations_v1: {
@@ -11136,6 +11144,10 @@ export type Database = {
         Returns: Json
       }
       read_source_version_v1: { Args: { p_version_id: string }; Returns: Json }
+      read_work_execution_v1: {
+        Args: { p_execution_id: string }
+        Returns: Json
+      }
       read_workspace_access_v1: { Args: never; Returns: Json }
       record_agent_change_proposal: {
         Args: {
@@ -11442,6 +11454,10 @@ export type Database = {
           p_artifact_id: string
           p_note: string
         }
+        Returns: Json
+      }
+      request_work_execution_v1: {
+        Args: { p_contract_text: string; p_snapshot_text: string }
         Returns: Json
       }
       resolve_analysis_scope_suggestion_command: {

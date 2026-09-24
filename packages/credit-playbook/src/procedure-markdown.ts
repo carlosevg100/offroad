@@ -7,7 +7,7 @@ import {readProcedureComposition} from "./procedure-compiler";
 import type {ProcedureComposition} from "./method-component";
 
 import {canonicalProcedureSchema, type CanonicalProcedure} from "./procedure-contract";
-import {aiIndependentReviewSchema, reviewCountsForPromotion, type AiIndependentReview} from "./review-record";
+import {adapterReviewSchema, aiIndependentReviewSchema, reviewCountsForPromotion, type AiIndependentReview} from "./review-record";
 
 /**
  * A method is written by a person, in Markdown, one file per method, and compiled into the
@@ -379,7 +379,14 @@ export function loadReviewRecords(reviewsRoot: string): Map<string, AiIndependen
     return records;
   }
   for (const name of entries) {
-    const record = aiIndependentReviewSchema.parse(JSON.parse(readFileSync(join(reviewsRoot, name), "utf8")));
+    const raw: unknown = JSON.parse(readFileSync(join(reviewsRoot, name), "utf8"));
+    // An adapter review is validated in place and left out of the method review index: it reviews
+    // an execution profile adapter, and the database pins it by path and sha256.
+    if (typeof raw === "object" && raw !== null && (raw as {schemaVersion?: unknown}).schemaVersion === "adapter-review.v1") {
+      adapterReviewSchema.parse(raw);
+      continue;
+    }
+    const record = aiIndependentReviewSchema.parse(raw);
     if (`${record.reviewId}.json` !== name) throw new Error(`review record ${name} does not match its reviewId ${record.reviewId}`);
     records.set(record.reviewId, record);
   }

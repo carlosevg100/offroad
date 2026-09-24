@@ -2439,19 +2439,37 @@ $$;
 -- So the invariant is parity, not absence: a wrapper that is executable must have an executable
 -- implementation, or it is a trap. The capability token is what protects these, and it is checked
 -- inside the implementation.
+--
+-- The implementation is the `private` function the wrapper's body delegates to (the first
+-- `private.<name>(` its definition names); a wrapper whose body names none is paired by name, as
+-- before. `public.request_work_execution_v1(text,text)` delegates to
+-- `private.request_work_execution_producer_v1`, while `private.request_work_execution_v1(uuid,...)`
+-- takes a profile id and stays unreachable by tenants on purpose: pairing by name alone would read
+-- that deliberate gap as a trap.
 do $$
 declare
   offending text;
 begin
-  select string_agg(wrapper.proname, ', ' order by wrapper.proname) into offending
-  from pg_proc wrapper
-  join pg_namespace wrapper_ns on wrapper_ns.oid = wrapper.pronamespace
-  join pg_proc impl on impl.proname = wrapper.proname
-  join pg_namespace impl_ns on impl_ns.oid = impl.pronamespace
-  where wrapper_ns.nspname = 'public'
-    and impl_ns.nspname = 'private'
-    and has_function_privilege('authenticated', wrapper.oid, 'execute')
-    and not has_function_privilege('authenticated', impl.oid, 'execute');
+  select string_agg(w.proname, ', ' order by w.proname) into offending
+  from (
+    select wrapper.proname,
+      coalesce(
+        (select m[1] from regexp_matches(pg_get_functiondef(wrapper.oid), 'private\.([a-z0-9_]+)\s*\(', 'g') m limit 1),
+        wrapper.proname
+      ) as impl_name
+    from pg_proc wrapper
+    join pg_namespace wrapper_ns on wrapper_ns.oid = wrapper.pronamespace
+    where wrapper_ns.nspname = 'public'
+      and has_function_privilege('authenticated', wrapper.oid, 'execute')
+  ) w
+  where exists (
+    select 1
+    from pg_proc impl
+    join pg_namespace impl_ns on impl_ns.oid = impl.pronamespace
+    where impl_ns.nspname = 'private'
+      and impl.proname = w.impl_name
+      and not has_function_privilege('authenticated', impl.oid, 'execute')
+  );
 
   if offending is not null then
     raise exception 'a public wrapper is granted while its private implementation is not: %', offending;

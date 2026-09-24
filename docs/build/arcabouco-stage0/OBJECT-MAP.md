@@ -2670,3 +2670,39 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 ## Etapa 17, incremento 4B: lote residual (23/09/2026)
 
 0 objetos novos e 0 atualizados. Lote residual de pedidos de informação: os dois RPCs restabelecidos sem o corte de três pedidos, com motivo e decisão obrigatórios por pedido.
+
+## Etapa 17, incremento 4A: produtor de execução (23/09/2026)
+
+32 objetos novos e 0 atualizados. Etapa 17, incremento 4A: concessão de produtor por organização com ledger e comando ligado a identidade, ledger e comando de liberação de capability, base do contrato montada no servidor, produtor público que resolve o perfil no servidor e leitores que devolvem bytes só enquanto os insumos do leitor estão correntes.
+- `function:private.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)`
+- `function:private.execution_producer_enabled_v1(p_organization uuid)`
+- `function:private.execution_read_access_v1(p_org uuid, p_work uuid)`
+- `function:private.execution_released_profile_v1(p_method_id text)`
+- `function:private.grant_execution_producer_v1(p_command uuid, p_organization uuid, p_enabled boolean, p_note text, p_actor_user_id uuid)`
+- `function:private.guard_execution_producer_grant_v1()`
+- `function:private.ledger_execution_producer_grant_v1()`
+- `function:private.ledger_platform_capability_release_v1()`
+- `function:private.list_work_executions_v1(p_work_id uuid, p_before uuid)`
+- `function:private.read_work_execution_v1(p_execution_id uuid)`
+- `function:private.release_platform_capability_v1(p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text)`
+- `function:private.request_work_execution_producer_v1(p_contract_text text, p_snapshot_text text)`
+- `function:public.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)`
+- `function:public.list_work_executions_v1(p_work_id uuid, p_before uuid)`
+- `function:public.read_work_execution_v1(p_execution_id uuid)`
+- `function:public.request_work_execution_v1(p_contract_text text, p_snapshot_text text)`
+- `policy:private.execution_producer_grant_events.execution_producer_grant_events_deny`
+- `policy:private.execution_producer_grants.execution_producer_grants_deny`
+- `policy:private.platform_capability_release_events.platform_capability_release_events_deny`
+- `r:private.execution_producer_grant_events`
+- `r:private.execution_producer_grants`
+- `r:private.platform_capability_release_events`
+- `trigger:private.execution_producer_grant_events.execution_producer_grant_events_immutable`
+- `trigger:private.execution_producer_grant_events.execution_producer_grant_events_truncate_guard`
+- `trigger:private.execution_producer_grants.execution_producer_grants_delete_guard`
+- `trigger:private.execution_producer_grants.execution_producer_grants_ledger`
+- `trigger:private.execution_producer_grants.execution_producer_grants_truncate_guard`
+- `trigger:private.execution_producer_grants.execution_producer_grants_updated_at`
+- `trigger:private.platform_capability_release_events.platform_capability_release_events_immutable`
+- `trigger:private.platform_capability_release_events.platform_capability_release_events_truncate_guard`
+- `trigger:private.platform_capability_releases.platform_capability_releases_ledger`
+- `trigger:private.platform_capability_releases.platform_capability_releases_truncate_guard`

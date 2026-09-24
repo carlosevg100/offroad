@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "adapter-review.v1",
+  "subject": {
+    "adapter": "packages/agent-contracts/src/execution-profile.ts",
+    "platformReleaseId": "prepare-capital-structure-decision-2026.09.21-v4",
+    "artifactHash": "e2ac1fd058314efb5b8f56e56e7987a9cb185e711a87f927306eb95baf9c8638",
+    "profileFingerprint": "3a6d352bc10a2d853a0575cc27bca9330104b27f8fd48636b45dfb5353279a8f"
+  },
+  "subjectCommit": "65c4e441b419aedcd7a9285c405aebe53daba998",
+  "reviewer": "Claude Fable 5.1 (independent second agent)",
+  "occurredAt": "2026-09-23T21:44:58Z",
+  "result": "approved",
+  "evidence": {
+    "adapterBlob": "21dec68262fd34ee3be64ceb81177cd6182ae2d1",
+    "adapterFileSha256": "1e113e6d355d4a76e48b9ec3443f3afa3101d2027b3f18806d60a5ddf6287035",
+    "serializationHelperCommit": "e511c1b771a08d6c028bb896b979d668996038ba",
+    "serializationHelperBlob": "f1dcadf0633897afd7455e81b4a8ac21da11058f",
+    "manifestHash": "2c023cf7b7ec7e35b7f59d363a9b287cb245d3196cd431fc0c2bf1fc937f8478",
+    "manifestFileHash": "2686a48e3c5914fdd17606dc049e738134c6a5d2622428901cd381336ad59c67",
+    "canonicalProfileTextSha256": "61989190117a2e47a00c942f6de3d8268a6ca8807a33e461b8f4a96ad8d89687",
+    "canonicalProfileTextBytes": 1464,
+    "reviewedWorktreeHead": "639d1adfadd2cd1ed484bfbace2d6a01371aadae",
+    "originMainHead": "e2e71b0f8a0571ceb556a05e133f9b5906573e39",
+    "checksPerformed": [
+      "readCompiledExecutorLock validated the lock and the profileFingerprint against the derivation",
+      "profile.fingerprint recomputed equals executionInputFingerprint(profile without fingerprint); identical with reversed key order and across two derivations",
+      "executionCanonicalText sorts keys by UTF-16 code unit (astral U+1F600 sorts before U+E000 and U+FF01)",
+      "vitest: execution-profile, execution-serialization, receivables-execution-profile, execution-contract: 81 tests passed",
+      "installed worker artifact e2ac1fd0...cjs and .manifest.json hashes match the lock",
+      "no edits, commits or database access"
+    ]
+  },
+  "findings": [
+    {
+      "severity": "importante",
+      "file": "supabase/migrations/20260923014322_execution_r01_profile_boundary.sql",
+      "line": 19,
+      "text": "O validador de inserção do ramo compilado não confere method.executor (key, version, sourceClosureHash, inputContractHash, outputContractHash), method.formulas nem selectedComponentId contra o único executor de r.manifest.components, e não exige a política do manifesto (budget zero, allowedTools vazio, maximumEffect none, schemaVersion compiled-procedure-manifest.v1). O adaptador recusa tudo isso. O risco fica contido porque request_work_execution_v1 força igualdade do método do contrato com o perfil guardado e o worker rederiva o perfil do manifesto embalado. Condição para o próximo incremento: conferir method.executor e a política do manifesto no validador."
+    },
+    {
+      "severity": "importante",
+      "file": "supabase/tests/execution_r01_profile.sql",
+      "line": 19,
+      "text": "Nenhum teste SQL exercita execution_profile_release_mismatch no ramo compilado. Condição para o próximo incremento: teste que insere o perfil real da v4 com compilerHash, maxDurationMs e originalBudget alterados e espera a recusa."
+    },
+    {
+      "severity": "importante",
+      "file": "supabase/migrations/20260922153436_execution_authority_commands.sql",
+      "line": 13,
+      "text": "O registro precisa gravar exatamente os bytes canônicos do perfil (1464 bytes ASCII); payload_fingerprint é o sha256 desses bytes (61989190...), distinto do profileFingerprint interno (3a6d352b...). O SQL não verifica forma canônica; um registro não canônico permitiria um segundo registro e tornaria execution_released_profile_v1 ambíguo. Conferir o sha256 antes de chamar register_execution_method_profile_v1."
+    },
+    {
+      "severity": "menor",
+      "file": "packages/agent-contracts/src/execution-profile.test.ts",
+      "line": 39,
+      "text": "Recusas verificadas com toThrow() sem código de erro; fixar os códigos execution_profile_compiler_mismatch, execution_profile_component_mismatch, execution_profile_executor_mismatch e execution_profile_executor_missing."
+    },
+    {
+      "severity": "menor",
+      "file": "packages/agent-contracts/src/execution-serialization.test.ts",
+      "line": 6,
+      "text": "O vetor de ordenação não distingue code unit UTF-16 de code point; acrescentar uma chave BMP acima de U+D800 ao lado de uma chave astral."
+    },
+    {
+      "severity": "menor",
+      "file": "packages/agent-contracts/src/execution-profile.test.ts",
+      "line": 21,
+      "text": "Nenhum teste unitário fixa o profileFingerprint 3a6d352b... da v4 nem afirma profile.fingerprint igual a executionInputFingerprint(perfil sem fingerprint)."
+    },
+    {
+      "severity": "menor",
+      "file": "packages/agent-contracts/src/execution-profile.ts",
+      "line": 95,
+      "text": "maxDurationMs é repassado do manifesto sem teto; um teto no adaptador seria barato (AbortSignal.timeout satura acima de 2^31-1 ms)."
+    },
+    {
+      "severity": "menor",
+      "file": "supabase/migrations/20260924000300_execution_producer_commands.sql",
+      "line": 105,
+      "text": "O produtor aceita texto de contrato e snapshot não canônicos; o worker recusa depois com execution_bytes_not_canonical e a falha aparece como job falho, não como recusa no pedido."
+    },
+    {
+      "severity": "menor",
+      "file": "apps/document-worker/src/pinned-execution.ts",
+      "line": 29,
+      "text": "A comparação availableMethod x contract.method usa fingerprintJson, uma segunda canonização na mesma fronteira onde assertContractMatchesExecutionProfile usa executionInputFingerprint."
+    }
+  ],
+  "verdictText": "Aprovado. O adaptador recusa cada caso prometido pela etapa 17 3A, com código de erro próprio, e o fingerprint 3a6d352b... foi reproduzido de forma independente a partir do manifesto publicado: determinístico, sem depender da ordem das chaves e calculado sobre o perfil sem a própria chave. A ordem de chaves é UTF-16 por code unit. Nenhuma via de substituição de campo do perfil foi encontrada no pedido, no produtor ou no worker. Três condições ficam para o próximo incremento: o validador SQL não confere o executor nem a política do manifesto na inserção, falta teste SQL de mismatch no ramo compilado, e o registro deve gravar exatamente os bytes canônicos, cujo sha256 é 61989190..., distinto do fingerprint interno."
+}
