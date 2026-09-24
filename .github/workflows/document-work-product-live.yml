@@ -1,6 +1,29 @@
 name: Document work product executor live gate
 
 # Synthetic actual-executor evaluation only; does not promote or mutate production.
+#
+# This job holds no provider key. The selected script requests a governed evaluation through the
+# evaluator's own Supabase session; the worker runs the evaluation with the provider credentials
+# it already holds, reserving every send, repair and fallback in the database first, and the script
+# writes the record the database committed, its summary and evaluation.json with the evaluation's
+# identity, fingerprints, reservations and cost. `offroadGitHubEvalsRole` reads only the evaluator
+# secret and the publishable key the worker also reads.
+#
+# NOT USABLE YET, by design. The secret `offroad/evaluator` (JSON with `email`, `password` and
+# `organizationId`), the evaluator account it names and the evaluation organization do not exist
+# yet: they are created by the founder's decision, together with the role's read grant on that
+# secret and on `offroad/supabase-publishable-key`, the provider assurances for purpose
+# `evaluation` and the opening of the transport switch. The worker must also be deployed with the
+# document work product families. Until then this job fails closed with a named message and
+# requests nothing.
+#
+# Ceilings, unchanged: documentary USD 3 and 26 attempts (gold USD 2.50 and 18, the controls the
+# rest), executive synthesis USD 3 and eight attempts, advisor response USD 1 and eight attempts.
+# Each attempt reserves the list-price upper bound of its whole request before it is sent (about
+# USD 0.22 for a documentary narrative, 0.15 for its review, 0.13 for a control, 1.15 for an
+# executive synthesis brief, 0.24 for an advisor response), which fits under each ceiling; the
+# reservation is replaced by the measured cost once the attempt settles. Manual only: once opened,
+# it spends real money with the providers through the worker.
 on:
   workflow_dispatch:
     inputs:
@@ -12,6 +35,10 @@ on:
           - executive-synthesis
           - advisor-response
         default: documentary-work-products
+      request_id:
+        description: "Resume an earlier request by its id instead of creating another evaluation"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -27,7 +54,8 @@ jobs:
     if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main'
     environment: intent-router-gold-main
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # The script waits for the committed result until the evaluation budget expires, plus a grace.
+    timeout-minutes: 150
 
     steps:
       - name: Checkout
@@ -56,59 +84,55 @@ jobs:
           role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
           aws-region: sa-east-1
 
-      - name: Run the real document work executor
-        if: inputs.suite != 'executive-synthesis' && inputs.suite != 'advisor-response'
+      - name: Run the selected evaluation through the governed evaluation transport
+        env:
+          SUITE: ${{ inputs.suite }}
+          REQUEST_ID: ${{ inputs.request_id }}
+          # The production project, as the worker's task definition names it; not a secret.
+          SUPABASE_URL: https://ifnogpksgdadruooqydi.supabase.co
         run: |
           set -euo pipefail
-          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
-          echo "::add-mask::$ANTHROPIC_API_KEY"
-          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
-          echo "::add-mask::$OPENAI_API_KEY"
-          export ANTHROPIC_API_KEY OPENAI_API_KEY
-          set +e
-          pnpm --filter @offroad/evals exec tsx scripts/run-document-work-product-live.ts
-          gate_status=$?
-          set -e
-          if [[ -f "$RUNNER_TEMP/document-work-product-live/summary.md" ]]; then
-            cat "$RUNNER_TEMP/document-work-product-live/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          case "$SUITE" in
+            executive-synthesis) script=run-executive-synthesis-live.ts; output=executive-synthesis-live ;;
+            advisor-response) script=run-advisor-response-live.ts; output=advisor-response-live ;;
+            *) script=run-document-work-product-live.ts; output=document-work-product-live ;;
+          esac
+          # The evaluator's credential and the evaluation organization. Absent until the founder
+          # creates them: fail closed, by name, before anything is requested. Nothing read here is
+          # ever printed, and each value is masked the moment it exists.
+          if ! evaluator="$(aws secretsmanager get-secret-value --secret-id offroad/evaluator --query SecretString --output text 2>/dev/null)" || [ -z "$evaluator" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator is absent or not readable by offroadGitHubEvalsRole. The evaluator account, the evaluation organization and this secret are created by the founder's decision; nothing was requested."
+            exit 1
           fi
-          exit "$gate_status"
+          while IFS= read -r line; do if [ -n "$line" ]; then echo "::add-mask::$line"; fi; done <<<"$evaluator"
+          field() { jq -er --arg key "$1" '.[$key] | select(type == "string" and length > 0)' <<<"$evaluator" 2>/dev/null; }
+          if ! OFFROAD_EVALUATOR_EMAIL="$(field email)" || ! OFFROAD_EVALUATOR_PASSWORD="$(field password)" || ! OFFROAD_EVALUATION_ORGANIZATION_ID="$(field organizationId)"; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator must hold email, password and organizationId; nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$OFFROAD_EVALUATOR_EMAIL"
+          echo "::add-mask::$OFFROAD_EVALUATOR_PASSWORD"
+          echo "::add-mask::$OFFROAD_EVALUATION_ORGANIZATION_ID"
+          unset evaluator
+          if ! SUPABASE_PUBLISHABLE_KEY="$(aws secretsmanager get-secret-value --secret-id offroad/supabase-publishable-key --query SecretString --output text 2>/dev/null)" || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/supabase-publishable-key is not readable by offroadGitHubEvalsRole; the founder's setup grants it with the evaluator secret. Nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$SUPABASE_PUBLISHABLE_KEY"
+          export SUPABASE_URL SUPABASE_PUBLISHABLE_KEY OFFROAD_EVALUATOR_EMAIL OFFROAD_EVALUATOR_PASSWORD OFFROAD_EVALUATION_ORGANIZATION_ID
 
-      - name: Evaluate executive synthesis author and reviewer
-        if: inputs.suite == 'executive-synthesis'
-        run: |
-          set -euo pipefail
-          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
-          echo "::add-mask::$ANTHROPIC_API_KEY"
-          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
-          echo "::add-mask::$OPENAI_API_KEY"
-          export ANTHROPIC_API_KEY OPENAI_API_KEY
-          set +e
-          pnpm --filter @offroad/evals exec tsx scripts/run-executive-synthesis-live.ts
-          gate_status=$?
-          set -e
-          if [[ -f "$RUNNER_TEMP/executive-synthesis-live/summary.md" ]]; then
-            cat "$RUNNER_TEMP/executive-synthesis-live/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          exit "$gate_status"
+          resume=()
+          if [ -n "$REQUEST_ID" ]; then resume=(--request-id "$REQUEST_ID"); fi
+          status=0
+          pnpm --filter @offroad/evals exec tsx "scripts/$script" ${resume[@]+"${resume[@]}"} 2>&1 | tee "$RUNNER_TEMP/governed-evaluation.log" || status=$?
 
-      - name: Evaluate advisor response provider contract
-        if: inputs.suite == 'advisor-response'
-        run: |
-          set -euo pipefail
-          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
-          echo "::add-mask::$ANTHROPIC_API_KEY"
-          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
-          echo "::add-mask::$OPENAI_API_KEY"
-          export ANTHROPIC_API_KEY OPENAI_API_KEY
-          set +e
-          pnpm --filter @offroad/evals exec tsx scripts/run-advisor-response-live.ts
-          gate_status=$?
-          set -e
-          if [[ -f "$RUNNER_TEMP/advisor-response-live/summary.md" ]]; then
-            cat "$RUNNER_TEMP/advisor-response-live/summary.md" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          exit "$gate_status"
+          {
+            if [[ -f "$RUNNER_TEMP/$output/summary.md" ]]; then cat "$RUNNER_TEMP/$output/summary.md"; echo; fi
+            grep -E '^evaluation ' "$RUNNER_TEMP/governed-evaluation.log" | sed 's/^/- /' || true
+          } >> "$GITHUB_STEP_SUMMARY"
+          # Status 3 is a partial evaluation and status 1 a record that failed its gates: the
+          # evidence is uploaded below either way, and the run fails.
+          exit "$status"
 
       - name: Upload compact evidence
         if: always()
