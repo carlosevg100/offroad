@@ -84,7 +84,7 @@ Medido em produção às 04:45 UTC de 24/09, só leitura: zero organizações, u
 - Marco 3: a primeira execução real, no espaço Cedro, pelas telas já em produção. O cadastro da companhia analisada pela base da análise (#763) é pré-requisito; a jornada da #765 percorre o mesmo caminho na pilha da CI.
 - Alarmes do outbox: os quatro alarmes precisam de destinatários, e o papel de deploy precisa de leitura no CloudWatch; sem ela, o verificador de boot do worker responde `unavailable_aws_read` e a prova de boot usa os logs da API do banco.
 - Avaliações governadas: conta do avaliador (o executor não cria contas), organização de avaliação, segredo `offroad/evaluator` com leitura para o papel de deploy, abertura da chave do transporte e gasto com provedores; os tetos e as reservas por script estão em `etapa-17-5-avaliacoes-governadas.md`.
-- Atestações da etapa 16: revisão antes do vencimento registrado de 21/10/2026.
+- Atestações da etapa 16: resolvido em 24/09/2026 por decisão do fundador; as oito atestações foram registradas de novo sem vencimento por prazo (migração de produção `20260924111709` e ato em `docs/security/provider-processing/2026-09-24/`).
 - Valores de convenção (IOF, convenções ANBIMA/B3, regime tributário): sem eles o método registra lacuna e não calcula all-in, sem inventar valor.
 - Desenho dos gráficos, alternativas e sensibilidade adversa no pacote composto (perguntas 6 e 7 do teste do MD).
 

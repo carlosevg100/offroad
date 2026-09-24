@@ -38,8 +38,12 @@ export function evaluateResourceEligibility(input: {
   if (!a.classifications.includes(r.classification)) reasons.push("processing_classification_not_approved");
   if (r.rights.some(right => !a.rights.includes(right))) reasons.push("processing_rights_not_approved");
   if (["provider_terms", "account_configuration", "credential_binding"].some(kind => !a.evidence.some(e => e.kind === kind))) reasons.push("processing_evidence_incomplete");
-  const reviewed = Date.parse(a.reviewedAt), expires = Date.parse(a.validThrough), now = input.now.getTime();
-  if (reviewed > now || expires <= reviewed || expires <= now) reasons.push("processing_assurance_outside_validity");
+  // A stated date expires exactly as before. A null validThrough has no date to pass: it holds until
+  // revoked, and superseding it is a revocation plus a new record, as above. Written so that a date
+  // that does not parse fails closed instead of comparing false.
+  const reviewed = Date.parse(a.reviewedAt), now = input.now.getTime();
+  const expires = a.validThrough === null ? Number.POSITIVE_INFINITY : Date.parse(a.validThrough);
+  if (!(reviewed <= now && expires > reviewed && expires > now)) reasons.push("processing_assurance_outside_validity");
   for (const category of categories) if (a.retention[category] > r.maxRetention[category]) reasons.push(`retention_exceeds_${category}`);
   if (a.retention.exceptions.some(exception => !r.maxRetention.exceptions.includes(exception))) reasons.push("retention_exception_not_accepted");
   return {allowed: reasons.length === 0, policyVersion: retentionMatrixVersion, assuranceId: a.id, reasons};

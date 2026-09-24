@@ -1,3 +1,7 @@
+## Atestações de provedor sem vencimento por prazo, 24/09/2026
+
+Por decisão do fundador de 24/09/2026, a conferência de provedor de 21/09/2026 deixou de vencer por prazo. A atestação passa a aceitar `validThrough` nulo, que vale até revogação ou substituição; uma data, quando existe, continua vencendo como antes, e conta, projeto, credencial, modelo, recurso, finalidade, classificação, direitos, uso para treino e retenção continuam conferidos. Migração staging `20260924111433`, produção `20260924111709`; o ato de 24/09/2026 revogou as oito atestações de 21/09/2026 e registrou oito identidades novas com o mesmo documento e a mesma evidência, sem data, primeiro em staging e depois em produção, com as pós-condições de elegibilidade conferidas em cada modelo, finalidade e classe. O corte de 21/10/2026, 00h UTC, que pararia todo envio de dados de clientes às IAs, deixou de existir. [Decisão](docs/security/provider-processing/2026-09-24/DECISION.md).
+
 ## Parâmetros de referência: estrutura para as propostas
 
 Os parâmetros de referência passam a receber propostas por família (`src/reference-data-proposals/`), cada uma com cartão profissional em `knowledge/reference-data/`. Uma proposta transforma a entrada do cadastro em rascunho, com valor, fonte e data; o método continua tratando o parâmetro como lacuna até o fundador aprovar. Nesta PR as seis famílias estão vazias e o cadastro publicado não muda; as instruções do fundador de 24/09/2026 entram verbatim em `FOUNDER-ACTS.md`.

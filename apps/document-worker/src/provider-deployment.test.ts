@@ -44,9 +44,32 @@ describe("provider deployment binding", () => {
     expect(run.stderr).toContain("Provider credential version differs from reviewed binding");
   });
 
-  it("accepts the reviewed assurance bundle under the same strict runtime contract", () => {
-    const rows = JSON.parse(readFileSync(new URL("docs/security/provider-processing/2026-09-21/assurances.json", root), "utf8"));
-    expect(rows).toHaveLength(8);
-    for (const row of rows) expect(processingAssuranceSchema.safeParse(row).success).toBe(true);
+  it("accepts the reviewed assurance bundles under the same strict runtime contract", () => {
+    for (const review of ["2026-09-21", "2026-09-24"]) {
+      const rows = JSON.parse(readFileSync(new URL(`docs/security/provider-processing/${review}/assurances.json`, root), "utf8"));
+      expect(rows).toHaveLength(8);
+      for (const row of rows) expect(processingAssuranceSchema.safeParse(row).success).toBe(true);
+    }
+  });
+
+  it("re-registers the reviewed assurances without a date, through the operator commands only", () => {
+    const read = (path: string) => readFileSync(new URL(`docs/security/provider-processing/${path}`, root), "utf8");
+    type Row = Record<string, unknown> & {id: string};
+    const previous = JSON.parse(read("2026-09-21/assurances.json")) as Row[];
+    const current = JSON.parse(read("2026-09-24/assurances.json")) as Row[];
+    // The founder decision of 24/09/2026: the same verification and evidence, a new identity, no date.
+    const verification = ({id: _id, validThrough: _validThrough, ...rest}: Row) => rest;
+    expect(current.map(verification)).toEqual(previous.map(verification));
+    expect(current.map(row => row.validThrough)).toEqual(previous.map(() => null));
+    expect(new Set([...previous, ...current].map(row => row.id)).size).toBe(previous.length + current.length);
+    // The act pairs, revokes and records exactly these identities and documents, in the same order.
+    const act = read("2026-09-24/reregister-without-expiry.sql");
+    const pairs = [...act.matchAll(/\('([0-9a-f-]{36})','[0-9a-f]{64}','([0-9a-f-]{36})','[0-9a-f]{64}'\)/g)].map(m => [m[1], m[2]]);
+    const revoked = [...act.matchAll(/revoke_provider_processing_assurance_v1\('([0-9a-f-]{36})'/g)].map(m => m[1]);
+    const recorded = [...act.matchAll(/record_provider_processing_assurance_v1\(\$assurance\$(.*?)\$assurance\$::jsonb/g)].map(m => JSON.parse(m[1]!));
+    expect(pairs).toEqual(previous.map((row, index) => [row.id, current[index]!.id]));
+    expect(revoked).toEqual(previous.map(row => row.id));
+    expect(recorded).toEqual(current);
+    expect(act).not.toMatch(/\b(insert\s+into|update|delete\s+from|truncate)\s+private\.provider_processing/i);
   });
 });
