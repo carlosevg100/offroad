@@ -189,7 +189,9 @@ jobs:
 
       # The governed evaluation consumer runs against this same disposable stack: the worker's own
       # RPC client and consumer, the evaluator's JWT session, and a cassette in place of the
-      # provider. No provider key, no network beyond the local stack, synthetic data only.
+      # provider. The gold baseline script then runs live against it as a child process with no
+      # provider key in its environment, once through to its run record and once with the
+      # assurance revoked. No provider key, no network beyond the local stack, synthetic data only.
       - name: Install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         with:
@@ -205,7 +207,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Governed evaluation through the worker consumer with a cassette provider
+      - name: Governed evaluation through the worker consumer and the baseline script, with a cassette provider
         env:
           OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
         run: |

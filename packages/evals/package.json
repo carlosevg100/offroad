@@ -63,6 +63,7 @@
     "@offroad/receivables-analysis": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
+    "@supabase/supabase-js": "2.112.3",
     "decimal.js": "10.6.0",
     "zod": "4.4.3"
   },
