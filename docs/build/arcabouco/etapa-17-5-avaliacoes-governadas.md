@@ -29,7 +29,19 @@ Estampas: staging `20260924005113`, produção `20260924011837`, aplicadas pelo 
 - Primeira família, `baseline_generalist`: o laço por turno do baseline foi para `packages/agent-contracts/src/gold-baseline.ts`, usado pelo script e pelo worker, com esquema estrito do snapshot; o script continua com a sua linha de guarda até ganhar o caminho por transporte.
 - Prova ponta a ponta `scripts/ci/verify-governed-evaluation.mjs` no job de banco da CI: avaliador, organização de avaliação, token do worker e uma garantia local com finalidade `evaluation`, tudo sintético; chave aberta pelo comando de operador; pedido pela sessão do avaliador; consumidor com gateway de cassete, sem rede e sem chave; claim, reserva, liquidação, commit e leitura com bytes, recibos e custo; depois a garantia revogada, zero chamadas ao cassete e `partial/transport_denied`.
 
+## Baseline pelo transporte
+
+O script `packages/evals/scripts/run-gold-baseline.ts` perdeu a linha de guarda, as fábricas de provedor e toda leitura de chave. No modo real ele pede a avaliação pelo cliente `packages/evals/src/governed-transport.ts`: lê o ambiente do avaliador (URL, chave publicável, e-mail, senha e organização de avaliação, sem nunca imprimir valores), monta o contrato com cada rota como ferramenta só de leitura na versão do gateway e o orçamento em microdólares inteiros, chamadas, duração e expiração, entra pela sessão do avaliador e acompanha a leitura até o resultado. Um pedido perdido no caminho é reenviado com os mesmos bytes e o banco o reconhece; recusas não são repetidas. Resultado parcial sai com código 3 e só o `evaluation.json`; sucesso só é gravado quando o resultado confere com o snapshot que o script enviou. O dry-run não mudou.
+
+Barreira (`live-evaluation-authority.test.ts`): os oito scripts que ainda montam provedores ficam fixados por nome, e nenhum outro script pode nomear chave de provedor, seja por leitura direta, por elemento, por desestruturação, por alias, por nome computado ou por `Reflect.get`, com oito testes de mutação negativos.
+
+Prova na CI (job de banco, `verify-governed-evaluation.mjs`): o próprio script roda em modo real como processo filho, sem chave no ambiente. O consumidor do worker atende o pedido, cada turno chama o cassete uma vez e o `run.json` do script é igual ao registro que o worker gravou. Com a garantia revogada, o mesmo snapshot termina `partial/transport_denied`, com zero chamadas ao cassete, uma decisão negada e saída 3.
+
+Workflow `gold-baseline.yml`: sem passos de chave de provedor; lê `offroad/evaluator` pelo mesmo papel OIDC e mascara os valores; sem o segredo, falha com mensagem nomeada e não pede nada. Nova dependência `@supabase/supabase-js` 2.112.3 em `packages/evals`, a mesma versão da web e do worker. O manifesto de autoria do credit-playbook foi regenerado porque o lockfile entra na proveniência; os métodos publicados (R01 e v4) não mudam e os verificadores de lock passam.
+
+Achado de orçamento: cada turno do gc01 reserva cerca de US$ 37,54 a preço de tabela na rota principal (US$ 24,17 no fallback). Com o teto padrão de US$ 25, uma execução termina `budget_exhausted` sem gastar nada. O teto não foi alterado, porque gasto é decisão do fundador.
+
 ## O que falta para religar os scripts
 
-- Scripts por família, cada um removendo a sua linha de guarda na mesma PR da prova do caminho (gateway com cassete na pilha descartável: pedido, claim, reserva, liquidação, commit e leitura; depois a garantia revogada e zero chamadas).
+- Os outros oito scripts, em três famílias e pelo padrão do baseline, cada um removendo a sua linha de guarda na mesma PR da prova do caminho (gateway com cassete na pilha descartável: pedido, claim, reserva, liquidação, commit e leitura; depois a garantia revogada e zero chamadas).
 - Uso real, que depende do fundador: a conta do avaliador (o executor não cria contas), o registro da organização de avaliação, a abertura da chave e o gasto com provedores nas avaliações.
