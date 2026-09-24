@@ -112,8 +112,10 @@ export async function processGovernedEvaluation(c: EvaluationQueueClaim, queue: 
    return {status: "aborted"};
   } else if (!prepared) reason = "evaluation_failed";
   else {
+   // A family whose result keeps its call ledger observes each call log too, after the worker's own observer.
+   const observe = prepared.onCall;
    const run = createGovernedEvaluationGateway({claim: c, queue, contract, adapters: deps.adapters, connections: deps.connections,
-    policies: prepared.policies, ...(deps.onCall ? {onCall: deps.onCall} : {})});
+    policies: prepared.policies, ...(deps.onCall || observe ? {onCall: (log: GatewayCallLog) => { deps.onCall?.(log); observe?.(log); }} : {})});
    governed = run;
    // The moment the run is stopped, no further attempt may reserve or send.
    abort.signal.addEventListener("abort", () => run.halt(), {once: true});
