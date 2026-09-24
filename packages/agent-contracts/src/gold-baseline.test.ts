@@ -112,6 +112,22 @@ describe("gold baseline loop", () => {
     }
   });
 
+  it("renders a source left out by the request budget as a reference the model is told it did not read", () => {
+    const s = snapshot();
+    expect(renderInformationBase(s.informationBase)).not.toContain("Por limite de tamanho");
+    const omitted = baselineGeneralistSnapshotSchema.parse({...s, informationBase: {...s.informationBase, sources: [
+      {...s.informationBase.sources[0]!, text: null, rendering: "omitted_for_budget", note: "Cerca de 5 tokens estimados; não coube no limite de 10 tokens estimados por pedido."},
+      s.informationBase.sources[1]!,
+    ]}});
+    const rendered = renderInformationBase(omitted.informationBase);
+    expect(rendered).toContain("## Fontes públicas coletadas antes do trabalho (2)\nPor limite de tamanho do pedido ao modelo, 1 destas fontes aparecem só com a referência, sem o conteúdo.");
+    expect(rendered).toContain("### Fonte src-1: Fonte sintética\nURL: https://example.invalid/1. Data-base: 2026-09-01. Versão: v1. Licença: public_reusable. Tipo: text/plain. SHA-256: "
+      + `${"c".repeat(64)}.\nNota: Cerca de 5 tokens estimados; não coube no limite de 10 tokens estimados por pedido.\nConteúdo não incluído neste pedido por limite de tamanho; só a referência está disponível.`);
+    expect(rendered).not.toContain("\nfonte\n");
+    // The reference keeps its hash among the content hashes the contract declares.
+    expect(baselineSnapshotContentHashes(omitted)).toEqual(baselineSnapshotContentHashes(s));
+  });
+
   it("reads a strict snapshot and names every content hash it carries once", () => {
     const s = snapshot();
     expect(baselineSnapshotContentHashes(s)).toEqual(["a".repeat(64), "c".repeat(64)]);

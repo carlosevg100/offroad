@@ -7,7 +7,9 @@ import {z} from "zod";
  * the Offroad run receives: the same turns, the same documents, the equivalent content of the
  * frozen source pack and the same time window. Nothing here reveals the review rubric; the
  * instruction is the one a VP would give any analyst. Everything the model saw is hashed so a
- * reviewer can prove which bytes produced which output.
+ * reviewer can prove which bytes produced which output. When the pack does not fit one request,
+ * the sources left out by the declared selection keep their reference (`omitted_for_budget`),
+ * so the model knows they exist and that it did not read them (gold-cases/README.md §5.1).
  *
  * This is the contract of the baseline family between the script that assembles its inputs and
  * the worker that runs it under the governed evaluation transport: the information base, the
@@ -38,10 +40,13 @@ export const baselineSourceSchema = z.object({
   licencePolicy: z.string().min(1).max(80),
   contentType: z.string().min(1).max(200),
   sha256: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
-  /** Null when the licence forbids retention or the format has no readable text (an archive). */
+  /**
+   * Null when the licence forbids retention, the format has no readable text (an archive), or
+   * the source did not fit the declared token budget of each request (its reference stays).
+   */
   text: z.string().nullable(),
   /** How the text was derived, so a reviewer knows what the model could and could not read. */
-  rendering: z.enum(["full_text", "filtered_rows", "metadata_only", "not_retained"]),
+  rendering: z.enum(["full_text", "filtered_rows", "metadata_only", "not_retained", "omitted_for_budget"]),
   note: z.string().max(500).optional(),
 });
 export type BaselineSource = z.infer<typeof baselineSourceSchema>;
@@ -88,6 +93,8 @@ export function renderInformationBase(base: BaselineInformationBase): string {
   }
   parts.push("");
   parts.push(`## Fontes públicas coletadas antes do trabalho (${base.sources.length})`);
+  const omitted = base.sources.filter((source) => source.rendering === "omitted_for_budget").length;
+  if (omitted > 0) parts.push(`Por limite de tamanho do pedido ao modelo, ${omitted} destas fontes aparecem só com a referência, sem o conteúdo.`);
   for (const source of byId(base.sources)) {
     parts.push("");
     parts.push(`### Fonte ${source.id}: ${source.title}`);
@@ -96,7 +103,9 @@ export function renderInformationBase(base: BaselineInformationBase): string {
     if (source.text === null) {
       parts.push(source.rendering === "not_retained"
         ? "Conteúdo não retido por licença; só a referência está disponível."
-        : "Conteúdo não legível como texto neste formato; só os metadados estão disponíveis.");
+        : source.rendering === "omitted_for_budget"
+          ? "Conteúdo não incluído neste pedido por limite de tamanho; só a referência está disponível."
+          : "Conteúdo não legível como texto neste formato; só os metadados estão disponíveis.");
     } else {
       if (source.rendering === "filtered_rows") parts.push("Conteúdo filtrado para as linhas relevantes à companhia do caso; o arquivo completo é maior.");
       parts.push("");

@@ -19,10 +19,13 @@ name: Gold case baseline
 # `evaluation` and the opening of the transport switch. Until then this job fails closed with a
 # named message and requests nothing.
 #
-# Budget: each attempt reserves the list-price upper bound of its whole request before it is sent
-# (about 38 USD for one gc01 turn on the primary route), so a budget below that ends the run
-# partial with budget_exhausted before anything is sent. Manual only: once opened, it spends real
-# money with the providers through the worker.
+# Budget: each attempt reserves the list-price upper bound of its whole request before it is sent.
+# The script selects what fits each request (README section 5.1.1) and prints every attempt's
+# reservation; for gc01 about 5.84 USD per turn on Claude Opus 5 and 7.72 on the GPT-5.6 Sol
+# fallback. Left empty, max_cost is the sum of every attempt the run may make (27.92 USD for gc01),
+# so no attempt is refused for money; a smaller value may end the run partial. A full gc01 run
+# costs about 8 to 9 USD at list price on the primary route. Manual only: once opened, it spends
+# real money with the providers through the worker.
 
 on:
   workflow_dispatch:
@@ -32,9 +35,9 @@ on:
         required: false
         default: "gc01"
       max_cost:
-        description: "Budget in USD for the whole run, reservations included"
+        description: "Budget in USD for the whole run, reservations included (empty: every attempt's reservation)"
         required: false
-        default: "25"
+        default: ""
       request_id:
         description: "Resume an earlier request by its id instead of creating another evaluation"
         required: false
@@ -87,7 +90,7 @@ jobs:
       - name: Run the baseline through the governed evaluation transport
         env:
           CASE: ${{ inputs.case || 'gc01' }}
-          MAX_COST: ${{ inputs.max_cost || '25' }}
+          MAX_COST: ${{ inputs.max_cost }}
           REQUEST_ID: ${{ inputs.request_id }}
           # The production project, as the worker's task definition names it; not a secret.
           SUPABASE_URL: https://ifnogpksgdadruooqydi.supabase.co
@@ -119,14 +122,16 @@ jobs:
 
           resume=()
           if [ -n "$REQUEST_ID" ]; then resume=(--request-id "$REQUEST_ID"); fi
+          budget=()
+          if [ -n "$MAX_COST" ]; then budget=(--max-cost "$MAX_COST"); fi
           status=0
-          pnpm --filter @offroad/evals baseline:gold -- --case "$CASE" --max-cost "$MAX_COST" --out "$RUNNER_TEMP/baseline-run" ${resume[@]+"${resume[@]}"} 2>&1 \
+          pnpm --filter @offroad/evals baseline:gold -- --case "$CASE" ${budget[@]+"${budget[@]}"} --out "$RUNNER_TEMP/baseline-run" ${resume[@]+"${resume[@]}"} 2>&1 \
             | grep -vE 'Warning: (TT|Required "glyf"|UnknownErrorException)' | tee /tmp/baseline.log || status=$?
 
           {
             echo "## Gold baseline: $CASE"
             echo
-            grep -E '^(document|source|information base|evaluation|turn|run record)' /tmp/baseline.log | sed 's/^/- /' || true
+            grep -E '^(document|source|selection|request|reservations|information base|evaluation|turn|run record)' /tmp/baseline.log | sed 's/^/- /' || true
           } >> "$GITHUB_STEP_SUMMARY"
           # Status 3 is a partial evaluation: its evidence is uploaded below, and the run fails.
           exit "$status"
