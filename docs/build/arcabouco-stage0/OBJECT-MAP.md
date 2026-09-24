@@ -2789,3 +2789,11 @@ Mais 17 objetos criados em laço pela mesma migração (políticas de negação,
 - `trigger:private.execution_read_receipts.execution_read_receipts_immutable`
 - `trigger:private.execution_read_receipts.execution_read_receipts_truncate_guard`
 - `v:private.execution_time_to_value`
+
+## Etapa 17, incremento 5: sessão do avaliador (24/09/2026)
+
+4 objetos novos e 0 atualizados. Etapa 17, incremento 5: porta de entrada do avaliador por sessão; o ator vem de auth.uid() e precisa ser principal avaliador vivo; delega aos comandos de operador.
+- `function:private.read_governed_evaluation_session_v1(p_execution_id uuid)`
+- `function:private.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)`
+- `function:public.read_governed_evaluation_session_v1(p_execution_id uuid)`
+- `function:public.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)`

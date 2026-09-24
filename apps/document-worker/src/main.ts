@@ -1,6 +1,8 @@
 import {createFairExecutionPoller} from "./execution-poll";
 import {createExecutionQueue} from "./execution-queue";
 import {processPinnedExecution} from "./process-pinned-execution";
+import {createEvaluationQueue} from "./evaluation-queue";
+import {processGovernedEvaluation} from "./process-governed-evaluation";
 import {verifyInstalledPreparers} from "./released-preparer";
 import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
@@ -277,8 +279,12 @@ async function main(): Promise<void> {
   });
 
   const executionQueue = createExecutionQueue(supabase, config.OFFROAD_WORKER_TOKEN);
+  // Governed evaluations: claimed only while the transport switch is open, and every provider
+  // call reserved, settled and committed through the database. Same loop, same cadence.
+  const evaluationQueue = createEvaluationQueue(supabase, config.OFFROAD_WORKER_TOKEN);
   const claimNext = createFairExecutionPoller(() => queue.claim(), () => executionQueue.claim(),
-    () => log("execution.poll_failed", {reason: "execution_transport_failed"}));
+    () => log("execution.poll_failed", {reason: "execution_transport_failed"}),
+    {claim: () => evaluationQueue.claim(), onFailure: () => log("evaluation.poll_failed", {reason: "evaluation_transport_failed"})});
   let stopping = false;
   let current: Promise<unknown> | null = null;
   const shuttingDown = new AbortController();
@@ -316,6 +322,18 @@ async function main(): Promise<void> {
         current = processPinnedExecution(execution, executionQueue, shuttingDown.signal)
           .then(result => log("execution.finished", {job: execution.jobId, status: result.status}))
           .catch(() => log("execution.interrupted", {job: execution.jobId, reason: "current_execution_failed"}));
+        await current; current = null;
+        continue;
+      }
+      if (choice?.kind === "evaluation") {
+        const evaluation = choice.claim;
+        current = processGovernedEvaluation(evaluation, evaluationQueue, shuttingDown.signal, {
+          adapters,
+          connections: config.PROVIDER_CONNECTIONS_JSON,
+          onCall: (call) => log("model.call", modelCallLogDetail(evaluation.jobId, call)),
+        })
+          .then(result => log("evaluation.finished", {job: evaluation.jobId, status: result.status, ...(result.status === "aborted" ? {} : {reason: result.reason})}))
+          .catch(() => log("evaluation.interrupted", {job: evaluation.jobId, reason: "current_evaluation_failed"}));
         await current; current = null;
         continue;
       }

@@ -11106,6 +11106,10 @@ export type Database = {
         Returns: string
       }
       read_dossier_v1: { Args: { p_dossier_id: string }; Returns: Json }
+      read_governed_evaluation_session_v1: {
+        Args: { p_execution_id: string }
+        Returns: Json
+      }
       read_institutional_configuration_reviews_v1: {
         Args: { p_project_id: string }
         Returns: Json
@@ -11457,6 +11461,10 @@ export type Database = {
           p_plan: Json
           p_project_id: string
         }
+        Returns: Json
+      }
+      request_governed_evaluation_session_v1: {
+        Args: { p_contract_text: string; p_snapshot_text: string }
         Returns: Json
       }
       request_origination_thesis_revision_v1: {

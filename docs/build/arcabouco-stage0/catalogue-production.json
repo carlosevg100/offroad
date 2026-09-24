@@ -7038,6 +7038,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.read_governed_evaluation_session_v1(p_execution_id uuid)",
+      "kind": "function",
+      "name": "read_governed_evaluation_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_execution_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.read_governed_evaluation_v1(p_execution_id uuid, p_actor_user_id uuid)",
       "kind": "function",
       "name": "read_governed_evaluation_v1",
@@ -8676,6 +8699,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_message_id uuid, p_locale text, p_content text, p_plan jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "name": "request_governed_evaluation_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract_text text, p_snapshot_text text",
       "security_definer": true
     },
     {
@@ -17659,6 +17705,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.read_governed_evaluation_session_v1(p_execution_id uuid)",
+      "kind": "function",
+      "name": "read_governed_evaluation_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_execution_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.read_institutional_configuration_reviews_v1(p_project_id uuid)",
       "kind": "function",
       "name": "read_institutional_configuration_reviews_v1",
@@ -18800,6 +18869,29 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_message_id uuid, p_locale text, p_content text, p_plan jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.request_governed_evaluation_session_v1(p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "name": "request_governed_evaluation_session_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_contract_text text, p_snapshot_text text",
       "security_definer": false
     },
     {
@@ -54520,5 +54612,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-24T02:01:29.286083+00:00"
+  "captured_at": "2026-09-24T02:25:09.113054+00:00"
 }

@@ -13,22 +13,19 @@ import {mkdirSync, readFileSync, writeFileSync} from "node:fs";
 import {dirname, join, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 
+import {executionCanonicalText} from "@offroad/agent-contracts";
 import {parsePdf} from "@offroad/document-parsers";
-import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, type ContentPart} from "@offroad/model-gateway";
+import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, defaultTaskPolicies} from "@offroad/model-gateway";
 import {sourcePackSchema, type SourcePackEntry} from "@offroad/public-research";
 
 import {
-  BASELINE_SYSTEM_PROMPT,
+  baselineGeneralistSnapshotSchema,
   baselineInformationBaseSchema,
-  baselineOutputSchema,
-  baselineRunRecordSchema,
   filterCsvRows,
   informationBaseHash,
   renderInformationBase,
-  renderTurnMessage,
+  runBaselineGeneralist,
   type BaselineDocument,
-  type BaselineInformationBase,
-  type BaselineRunRecord,
   type BaselineSource,
 } from "../src/gold-baseline";
 import {intentGoldTurns} from "../src/intent-gold";
@@ -153,6 +150,22 @@ async function main(): Promise<void> {
     writeFileSync(resolve(dump), rendered, "utf8");
     console.log(`information base written to ${resolve(dump)}`);
   }
+  // The snapshot a governed evaluation of this case carries: the base, the model settings of the
+  // baseline task and the caveats the run record repeats. Its canonical bytes are what the worker
+  // receives and what the evaluation contract fingerprints.
+  const policy = defaultTaskPolicies.baseline_generalist;
+  const snapshot = baselineGeneralistSnapshotSchema.parse({
+    schemaVersion: "gold-baseline-snapshot.v1",
+    informationBase: base,
+    model: {primary: policy.primary, fallback: policy.fallback ?? null, maxOutputTokens: policy.maxOutputTokens},
+    caveats: [
+      "PDFs entraram como texto extraído por página (camada de texto do pdfjs); tabelas aparecem como linhas de texto, sem grade.",
+      "Arquivos compactados do pack (índices da CVM) entraram só como metadados; os documentos que eles indexam entraram por inteiro.",
+      "O cadastro de companhias abertas entrou filtrado às linhas que citam a companhia.",
+    ],
+  });
+  const snapshotText = executionCanonicalText(snapshot);
+  console.log(`evaluation snapshot: ${Buffer.byteLength(snapshotText, "utf8")} bytes, sha256 ${sha256(snapshotText).slice(0, 16)}`);
   if (dryRun) {
     console.log("dry run: no model called");
     return;
@@ -175,57 +188,11 @@ async function main(): Promise<void> {
   });
 
   mkdirSync(runDir, {recursive: true});
-  const conversation: ContentPart[] = [{type: "text", text: rendered}];
-  const recordTurns: BaselineRunRecord["turns"] = [];
-  let provider = "";
-  let model = "";
-  let effort = "";
-  for (const [index, turn] of turns.entries()) {
-    const message = renderTurnMessage(turn, index);
-    conversation.push({type: "text", text: message});
-    const started = Date.now();
-    const result = await gateway.complete({
-      task: "baseline_generalist",
-      system: BASELINE_SYSTEM_PROMPT,
-      input: conversation,
-      schema: baselineOutputSchema,
-      schemaName: "baseline_deliverable",
-      metadata: {surface: "gold_baseline", caseId: spec.caseId, turn: turn.id},
-    });
-    const deliverable = result.output.deliverable;
-    const outputFile = `${turn.id}.output.md`;
-    writeFileSync(join(runDir, outputFile), `${deliverable.trimEnd()}\n`, "utf8");
-    conversation.push({type: "text", text: `## Resposta ao turno ${index + 1} (sua entrega anterior)\n\n${deliverable}`});
-    provider = result.provider;
-    model = result.model;
-    effort = result.effort;
-    recordTurns.push({
-      id: turn.id, messageSha256: sha256(message), outputSha256: sha256(deliverable), outputFile,
-      inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, cachedInputTokens: result.usage.cachedInputTokens,
-      costUsd: result.costUsd, latencyMs: Date.now() - started, stopReason: "end",
-    });
-    console.log(`turn ${turn.id}: ${deliverable.length} chars written to ${outputFile}`);
+  const {record, outputs} = await runBaselineGeneralist(snapshot, gateway);
+  for (const output of outputs) {
+    writeFileSync(join(runDir, output.file), `${output.deliverable.trimEnd()}\n`, "utf8");
+    console.log(`turn ${output.turnId}: ${output.deliverable.length} chars written to ${output.file}`);
   }
-
-  const record = baselineRunRecordSchema.parse({
-    schemaVersion: "gold-baseline-run.v1",
-    caseId: spec.caseId, caseVersion: spec.caseVersion, asOfDate: spec.asOfDate,
-    startedAt: startedAt.toISOString(), finishedAt: new Date().toISOString(),
-    provider, model, effort,
-    systemPromptSha256: sha256(BASELINE_SYSTEM_PROMPT),
-    informationBaseSha256: baseHash, informationBaseChars: rendered.length,
-    inputs: {
-      documents: documents.map((document) => ({id: document.id, sha256: document.sha256, pages: document.pages, chars: document.text.length})),
-      sources: sources.map((source) => ({id: source.id, sha256: source.sha256, rendering: source.rendering, chars: source.text?.length ?? 0})),
-    },
-    turns: recordTurns,
-    totalCostUsd: gateway.spent().costUsd,
-    caveats: [
-      "PDFs entraram como texto extraído por página (camada de texto do pdfjs); tabelas aparecem como linhas de texto, sem grade.",
-      "Arquivos compactados do pack (índices da CVM) entraram só como metadados; os documentos que eles indexam entraram por inteiro.",
-      "O cadastro de companhias abertas entrou filtrado às linhas que citam a companhia.",
-    ],
-  });
   writeFileSync(join(runDir, "run.json"), `${JSON.stringify(record, null, 2)}\n`, "utf8");
   console.log(`run record: ${join(runDir, "run.json")}; total $${record.totalCostUsd.toFixed(4)}`);
 }
