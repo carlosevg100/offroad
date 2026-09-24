@@ -36,7 +36,7 @@ export const productionModelCeilingsUsd = {
   documentPipeline: 1.6,
   /**
    * Old ceiling 1.00 (web and database `case_max_cost_usd`) less 0.10 of research. Largest request
-   * the case brief of the Camil gold case (170 facts), 1.1793 on Claude Opus 5 (0.9812 old, already
+   * the case brief of the Camil gold case (170 facts), 1.1793 on Claude Opus 5 (0.9808 old, already
    * above the old 0.90). Worst attempt on the primary routes, structure design (0.3205), brief,
    * audit with revision on GPT-5.6 Sol (0.8017) and fresh audit on Opus (0.6114), each earlier one
    * at its bound: 2.7038; x1.10 = 2.9741. The model calls get 3.00, the case engine's own run
