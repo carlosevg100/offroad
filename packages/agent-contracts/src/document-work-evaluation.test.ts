@@ -5,6 +5,7 @@ import {describe, expect, it} from "vitest";
 
 import {
   advisorResponseLiveAudience,
+  asksForPossiblyNone,
   advisorResponseLiveContentHashes,
   advisorResponseLiveSnapshotSchema,
   distinctEvaluationRoutes,
@@ -133,5 +134,21 @@ describe("the content-free record of one gateway request", () => {
       {...request, outcome: "evaluation_stopped"}, {...request, partition: "Gold Partition"}]) {
       expect(evaluationGatewayRequestSchema.safeParse(altered).success).toBe(false);
     }
+  });
+});
+
+describe("the possibly-none question of the absence rule", () => {
+  it("accepts what the replaced expression accepted and refuses what it refused", () => {
+    for (const text of ["What other financial protections, if any, apply?", "  what additional covenants, IF ANY, are documented?  ", "What other x, if any, , if any, y?"]) expect(asksForPossiblyNone(text), text).toBe(true);
+    for (const text of ["What other protections, if any, apply", "What other protections apply?", "What other, if any, apply?", "What other protections, if any, ?",
+      "What other protections. If any, apply?", "Which other protections, if any, apply?", "What protections, if any, apply?"]) expect(asksForPossiblyNone(text), text).toBe(false);
+  });
+
+  it("answers in linear time on a long run of the marker", () => {
+    const adversarial = "what other " + ", if any, ".repeat(50_000);
+    const started = performance.now();
+    expect(asksForPossiblyNone(adversarial)).toBe(false);
+    expect(asksForPossiblyNone(adversarial + "x?")).toBe(true);
+    expect(performance.now() - started).toBeLessThan(1_000);
   });
 });

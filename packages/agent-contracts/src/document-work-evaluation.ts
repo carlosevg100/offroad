@@ -28,6 +28,22 @@ export type LiveProduct = {
 type SemanticAssertion = {id:string;rationale:string;sourceId:string;sourceQuote:string;forbiddenClaims:readonly {id:string;pattern:string}[]};
 type LiveSample = {job:string;expected:readonly string[];passages:readonly {id:string;text:string}[];semanticAssertions?:readonly SemanticAssertion[] | undefined};
 /** Authored reference-case checks, not a general claim of semantic verification. */
+/**
+ * "What other|additional ..., if any, ...?" as one sentence. Checked with string operations, which
+ * run in linear time: the regular expression this replaces backtracked quadratically on a long run
+ * of ", if any, ".
+ */
+export function asksForPossiblyNone(text: string): boolean {
+  const question = text.trim();
+  const opening = /^what (?:other|additional) /i.exec(question);
+  if (!opening || !question.endsWith("?")) return false;
+  const body = question.slice(opening[0].length, -1);
+  if (/[.!?]/.test(body)) return false;
+  const marker = ", if any, ";
+  const at = body.toLowerCase().indexOf(marker, 1);
+  return at !== -1 && at + marker.length < body.length;
+}
+
 export function scoreDocumentWorkSemantics(product: LiveProduct, sample: LiveSample) {
   const failures: Array<{assertionId:string;ruleId:string;field:string;matchedText:string}> = [];
   for (const assertion of sample.semanticAssertions ?? []) {
@@ -56,7 +72,7 @@ export function scoreDocumentWorkSemantics(product: LiveProduct, sample: LiveSam
         const term = /\b(leverage covenant|amortization schedule)\b/i.exec(match[0])?.[1];
         if (rule.id === "asserted-absence" && pairedText && term
           && new RegExp(`^if (?:the (?:agreement|loan) (?:has no|lacks)|no) (?:an? )?${term}\\b[^,]*,`, "i").test(pairedText.trim())
-          && /^what (?:other|additional) [^.!?]+, if any, [^.!?]+\?$/i.test(text.trim())
+          && asksForPossiblyNone(text)
           && /^in the $/i.test(text.slice(Math.max(0,match.index-7),match.index))) continue;
         failures.push({assertionId:assertion.id,ruleId:rule.id,field,matchedText:match[0]});
       }
