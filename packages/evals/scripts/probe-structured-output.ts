@@ -1,115 +1,148 @@
-import {requireGovernedEvaluationTransport} from "../src/live-evaluation-authority";
 /**
- * Structured-output probe: calls the Anthropic adapter with synthetic input across the request
- * shapes the routing tasks use (effort low or medium, thinking off or adaptive, a flat schema or
- * the nested envelope-like schema with a $ref) and prints the provider's verdict per variant.
- * The input is a fixed sentence about a fictional company; nothing here is customer content, so
- * the provider's error message can be printed in full. Runs in the probe workflow with the key
- * read by OIDC; never locally.
+ * Structured-output probe: asks the provider, with synthetic input, to answer each request shape
+ * the routing tasks use (effort low or medium, thinking off or adaptive, a flat schema or the
+ * nested envelope-like schema with a $ref, the routing schema at its real size, and that size as
+ * prompted JSON) and prints the verdict per variant. The input is a fixed sentence about a
+ * fictional company; nothing here is customer content.
+ *
+ * No model is called from this process. The probe runs in the worker as a governed evaluation (the
+ * `probe-structured-output` family): this script requests it through the evaluator's own session
+ * (`../src/governed-transport`), the worker reserves every request in the database before sending
+ * it through the model gateway, on this one route with no fallback, and the script prints the
+ * verdicts the database committed. A shape the provider answers outside its schema is reported
+ * with the gateway's code and each attempt's outcome. A request the provider rejects has no usage
+ * to settle: its reservation stays charged as uncertain and the evaluation ends partial, so a
+ * rejection shows as `operation_uncertain` and its text is not published. The environment carries
+ * the evaluator's credential and the evaluation organization (SUPABASE_URL,
+ * SUPABASE_PUBLISHABLE_KEY, OFFROAD_EVALUATOR_EMAIL, OFFROAD_EVALUATOR_PASSWORD,
+ * OFFROAD_EVALUATION_ORGANIZATION_ID), never a provider key.
+ *
+ * A live run needs `--max-cost`, in dollars at list price with every reservation included; there
+ * is no default. `--dry-run` assembles the snapshot and its budget without requesting anything.
+ * `--request-id` resumes an earlier request. A partial evaluation writes only its evaluation
+ * evidence and exits with status 3.
+ *
+ *   pnpm --filter @offroad/evals exec tsx scripts/probe-structured-output.ts --max-cost <usd>
+ *     [--dry-run] [--out <dir>] [--request-id <uuid>] [--poll-seconds <n>]
  */
-import {createAnthropicAdapter, type AdapterRequest} from "@offroad/model-gateway";
-import {z} from "zod";
+import {createHash} from "node:crypto";
+import {mkdirSync, writeFileSync} from "node:fs";
+import {dirname, join, resolve} from "node:path";
+import {fileURLToPath} from "node:url";
 
-const flat = z.object({
-  intent: z.string(),
-  confidence: z.number(),
-  company: z.string().nullable(),
-});
+import {
+  executionCanonicalText,
+  readStructuredOutputProbeResult,
+  structuredOutputProbeCalls,
+  structuredOutputProbeRoutes,
+  structuredOutputProbeSnapshotSchema,
+} from "@offroad/agent-contracts";
 
-const inferred = <T extends z.ZodTypeAny>(value: T) => z.object({
-  value,
-  state: z.enum(["explicit", "inferred", "ambiguous", "unknown", "not_applicable"]),
-  confidence: z.number().min(0).max(1),
-  basis: z.string().max(200).optional(),
-});
+import {governedEvaluationEvidence, readGovernedTransportEnvironment, requestGovernedEvaluation} from "../src/governed-transport";
 
-const nested = z.object({
-  routingCore: z.object({
-    action: inferred(z.array(z.string().min(1).max(60)).min(1).max(8)),
-    desiredOutcome: inferred(z.string().min(1).max(300)),
-    decision: inferred(z.string().max(300).nullable()),
-    depth: inferred(z.enum(["point", "preliminary", "institutional"])),
-  }),
-  inferableContext: z.object({
-    asOfDate: inferred(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()),
-    currency: inferred(z.string().length(3).nullable()),
-    constraints: inferred(z.array(z.string().max(200)).max(20)),
-  }),
-  primaryWorks: z.array(z.object({work: z.enum(["understand", "analyze", "capital_strategy"]), confidence: z.number().min(0).max(1)})).min(1).max(3),
-  composition: z.string().max(60).nullable(),
-  firstQuestion: z.string().max(300).nullable(),
-  abstain: z.boolean(),
-  abstainReason: z.string().max(300).nullable(),
-});
-
-
-// The routing schema at its real size: the envelope's eight core fields and eight inferable
-// context fields, each an object of four keys, plus the works and the abstention. Sixty-odd
-// properties: the probe tells whether size, not shape, is what the provider rejects.
-const objectKinds = ["organization", "user", "company", "project", "operation", "instrument", "document", "claim", "model", "asset_or_pool", "scenario", "alternative", "material", "market", "provider", "mandate", "process", "decision"] as const;
-const works = ["find_and_organize", "extract_and_reconcile", "understand", "analyze", "model", "capital_strategy", "read_documents", "market", "capital_match"] as const;
-const responsibilities = ["producer", "coordinator", "reviewer", "decision_maker", "sponsor", "recipient", "external_authorizer"] as const;
-const fullSize = z.object({
-  routingCore: z.object({
-    action: inferred(z.array(z.string().min(1).max(60)).min(1).max(8)),
-    object: inferred(z.array(z.object({kind: z.enum(objectKinds), reference: z.string().max(200).optional()})).min(1).max(12)),
-    desiredOutcome: inferred(z.string().min(1).max(300)),
-    decision: inferred(z.string().max(300).nullable()),
-    audience: inferred(z.array(z.string().min(1).max(80)).min(1).max(6)),
-    depth: inferred(z.enum(["point", "preliminary", "institutional"])),
-    continuity: inferred(z.enum(["new", "refresh", "monitor", "comparison", "resume"])),
-    workResponsibility: inferred(z.array(z.enum(responsibilities)).min(1).max(4)),
-  }),
-  inferableContext: z.object({
-    jurisdiction: inferred(z.array(z.string().min(2).max(8)).max(4)),
-    asOfDate: inferred(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable()),
-    currency: inferred(z.string().length(3).nullable()),
-    deadline: inferred(z.string().max(80).nullable()),
-    sponsorInstruction: inferred(z.string().max(500).nullable()),
-    constraints: inferred(z.array(z.string().max(200)).max(20)),
-    urgency: inferred(z.enum(["now", "today", "this_week", "ongoing"]).nullable()),
-    availableInputs: inferred(z.array(z.string().max(120)).max(40)),
-  }),
-  primaryWorks: z.array(z.object({work: z.enum(works), confidence: z.number().min(0).max(1)})).min(1).max(3),
-  composition: z.string().max(60).nullable(),
-  firstQuestion: z.string().max(300).nullable(),
-  abstain: z.boolean(),
-  abstainReason: z.string().max(300).nullable(),
-});
+const here = dirname(fileURLToPath(import.meta.url));
+const argv = process.argv.slice(2);
+const valued = new Set(["--max-cost", "--out", "--request-id", "--poll-seconds"]);
+const options = new Map<string, string>();
+for (let index = 0; index < argv.length; index++) {
+  const arg = argv[index]!;
+  if (arg === "--") continue;
+  if (valued.has(arg)) {
+    options.set(arg.slice(2), argv[index + 1] ?? "");
+    index += 1;
+  } else if (arg === "--dry-run") options.set("dry-run", "true");
+  else {
+    console.error(`unknown argument ${arg}`);
+    process.exit(2);
+  }
+}
+const option = (name: string, fallback = ""): string => options.get(name) || fallback;
+const dryRun = options.has("dry-run");
+const sha256 = (value: string): string => createHash("sha256").update(value).digest("hex");
+/** How long a request may wait for the worker to claim it, beyond the work the budget allows. */
+const queueAllowanceMs = 30 * 60_000;
 
 const system = "You classify one sentence into the requested JSON. Return the requested JSON only.";
-const input: AdapterRequest["input"] = [{type: "text", text: JSON.stringify({latestUserMessage: "Preciso preparar uma reunião com a Companhia Fictícia sobre refinanciamento das debêntures."})}];
+const input = [{type: "text" as const, text: JSON.stringify({latestUserMessage: "Preciso preparar uma reunião com a Companhia Fictícia sobre refinanciamento das debêntures."})}];
 
-async function main() {
-  requireGovernedEvaluationTransport();
-  const adapter = createAnthropicAdapter();
-  const variants: Array<{label: string; request: AdapterRequest}> = [];
+async function main(): Promise<void> {
+  const variants: Array<{effort: "low" | "medium"; thinking: "off" | "adaptive"; shape: "flat" | "nested" | "full" | "full-prompted"}> = [];
   for (const effort of ["low", "medium"] as const) {
     for (const thinking of ["off", "adaptive"] as const) {
-      for (const [schemaName, schema, outputMode] of [["flat", flat, "structured"], ["nested", nested, "structured"], ["full", fullSize, "structured"], ["full-prompted", fullSize, "prompted_json"]] as const) {
-        variants.push({
-          label: `effort=${effort} thinking=${thinking} schema=${schemaName}`,
-          request: {
-            model: "claude-sonnet-5", effort, system, input, schema, schemaName: `probe_${schemaName}`, maxOutputTokens: 1_500, timeoutMs: 60_000,
-            ...(thinking === "off" ? {thinking: "off" as const} : {}),
-            outputMode,
-          },
-        });
-      }
+      for (const shape of ["flat", "nested", "full", "full-prompted"] as const) variants.push({effort, thinking, shape});
     }
   }
-  for (const variant of variants) {
-    const startedAt = Date.now();
-    try {
-      const response = await adapter.complete(variant.request);
-      console.log(`OK    ${variant.label} model=${response.model} ms=${Date.now() - startedAt} keys=${Object.keys((response.output as Record<string, unknown>) ?? {}).join(",")}`);
-    } catch (error) {
-      const value = error && typeof error === "object" ? error as Record<string, unknown> : {};
-      const nestedError = value.error && typeof value.error === "object" ? value.error as Record<string, unknown> : {};
-      const innermost = nestedError.error && typeof nestedError.error === "object" ? nestedError.error as Record<string, unknown> : nestedError;
-      console.log(`ERROR ${variant.label} status=${String(value.status ?? "")} type=${String(innermost.type ?? value.type ?? "")} message=${String(innermost.message ?? value.message ?? "").slice(0, 400)}`);
-    }
+  const snapshot = structuredOutputProbeSnapshotSchema.parse({
+    schemaVersion: "structured-output-probe-snapshot.v1",
+    caseId: "structured-output-probe",
+    caseVersion: "2026.09.24-v1",
+    route: {provider: "anthropic", model: "claude-sonnet-5"},
+    system,
+    input,
+    maxOutputTokens: 1_500,
+    timeoutMs: 60_000,
+    variants,
+  });
+  const snapshotText = executionCanonicalText(snapshot);
+  // Each variant sends once, and a prompted one may take one same-model repair; every call may
+  // take the whole timeout. The worker reserves each attempt at its list-price upper bound.
+  const routes = structuredOutputProbeRoutes(snapshot);
+  const maxModelCalls = structuredOutputProbeCalls(snapshot);
+  const maxDurationMs = maxModelCalls * snapshot.timeoutMs;
+  console.log(`evaluation snapshot: ${snapshot.variants.length} variants, ${Buffer.byteLength(snapshotText, "utf8")} bytes, sha256 ${sha256(snapshotText).slice(0, 16)}`);
+  console.log(`evaluation routes: ${routes.map((route) => `${route.provider}/${route.model}@${route.effort}`).join(", ")}; at most ${maxModelCalls} calls, ${maxDurationMs} ms of work`);
+  if (dryRun) {
+    console.log("dry run: no model called");
+    return;
+  }
+
+  // Live: the worker runs the probe family under the governed transport. This process holds no
+  // provider key and builds no adapter or gateway; it asks through the evaluator's session and
+  // prints what the database committed.
+  const maxCostUsd = Number(option("max-cost"));
+  const pollSeconds = Number(option("poll-seconds", "5"));
+  const requestId = option("request-id");
+  if (!option("max-cost") || !Number.isFinite(maxCostUsd) || maxCostUsd <= 0 || !Number.isSafeInteger(Math.round(maxCostUsd * 1_000_000))
+    || !Number.isFinite(pollSeconds) || pollSeconds < 1) {
+    console.error("a live run needs --max-cost, a positive number of dollars at list price with every reservation included (there is no default), and --poll-seconds of at least 1");
+    process.exit(2);
+  }
+  const budget = {maxCostMicrousd: Math.round(maxCostUsd * 1_000_000), maxModelCalls, maxDurationMs, expiresInMs: maxDurationMs + queueAllowanceMs};
+  console.log(`evaluation budget: ${budget.maxCostMicrousd} microusd, ${maxModelCalls} calls, ${maxDurationMs} ms of work`);
+  const evaluation = await requestGovernedEvaluation({
+    audience: {caseId: snapshot.caseId, caseVersion: snapshot.caseVersion, scriptId: "probe-structured-output"},
+    routes,
+    budget,
+    snapshot,
+    // A fixed synthetic sentence and nothing else: the probe carries no source.
+    sourceContentHashes: [],
+    ...(requestId ? {requestId} : {}),
+  }, {
+    environment: readGovernedTransportEnvironment(),
+    pollIntervalMs: pollSeconds * 1000,
+    onProgress: (progress) => {
+      if (progress.phase === "requested") console.log(`evaluation requested: ${progress.executionId} (${progress.request}), request ${progress.requestId}`);
+      if (progress.phase === "waiting") console.log(`evaluation waiting: job ${progress.job ?? "unknown"}, run ${progress.run ?? "unknown"}, attempts ${progress.attempts ?? 0}`);
+    },
+  });
+
+  const outDir = resolve(option("out", join(here, "..", "out")));
+  mkdirSync(outDir, {recursive: true});
+  writeFileSync(join(outDir, "structured-output-probe.evaluation.json"), `${JSON.stringify(governedEvaluationEvidence(evaluation), null, 2)}\n`, "utf8");
+  console.log(`evaluation committed: ${evaluation.outcome}/${evaluation.reason}, ${evaluation.cost.spentMicrousd} microusd over ${evaluation.cost.spentCalls} calls`);
+  if (evaluation.outcome !== "succeeded") {
+    // A partial evaluation publishes only its reason: there are no verdicts to print.
+    console.error(`evaluation ${evaluation.executionId} is partial: ${evaluation.reason}`);
+    process.exitCode = 3;
+    return;
+  }
+  for (const variant of readStructuredOutputProbeResult(evaluation.result, snapshot).variants) {
+    if (variant.verdict === "accepted") console.log(`OK    ${variant.label} model=${variant.model} ms=${variant.ms} keys=${variant.keys.join(",")}`);
+    else console.log(`ERROR ${variant.label} code=${variant.code} attempts=${variant.attempts.map((attempt) => attempt.message ? `${attempt.outcome}: ${attempt.message}` : attempt.outcome).join(" | ")}`);
   }
 }
 
-main().catch((error) => { console.error(error); process.exit(1); });
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
