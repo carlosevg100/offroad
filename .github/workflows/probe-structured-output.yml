@@ -1,10 +1,37 @@
 name: Probe structured output
 
-# Diagnoses a provider rejection of a routing request: synthetic input, the real key read by OIDC
-# and masked, one call per request shape, the provider's verdict printed. Manual only.
+# Asks the provider to answer each request shape the routing tasks use, with synthetic input, one
+# request per shape, and prints the verdict of each. Manual only.
+#
+# This job holds no provider key. The script requests a governed evaluation through the
+# evaluator's own Supabase session; the worker sends each shape through the model gateway with the
+# provider credentials it already holds, reserving every request in the database first, and the
+# script prints the verdicts the database committed. A shape the provider rejects has no usage to
+# settle, so its reservation stays charged as uncertain and the evaluation ends partial with
+# operation_uncertain, without publishing the rejection's text. `offroadGitHubEvalsRole` reads
+# only the evaluator secret and the publishable key the worker also reads.
+#
+# NOT USABLE YET, by design. The secret `offroad/evaluator` (JSON with `email`, `password` and
+# `organizationId`), the evaluator account it names and the evaluation organization do not exist
+# yet: they are created by the founder's decision, together with the role's read grant on that
+# secret and on `offroad/supabase-publishable-key`, the provider assurances for purpose
+# `evaluation` and the opening of the transport switch. Until then this job fails closed with a
+# named message and requests nothing. The worker must also run a release that carries the
+# `probe-structured-output` family.
+#
+# Budget: `max_cost` has no default. The sixteen shapes reserve at most about 1.73 USD at list
+# price in total, prompted repairs included, and about 0.11 USD for the largest single request.
 
 on:
   workflow_dispatch:
+    inputs:
+      max_cost:
+        description: "Budget in USD for the whole probe, reservations included (no default)"
+        required: true
+      request_id:
+        description: "Resume an earlier request by its id instead of creating another evaluation"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -12,7 +39,7 @@ permissions:
 
 jobs:
   probe:
-    name: Call the provider once per request shape
+    name: Send each request shape once through the governed evaluation transport
     if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main'
     environment: intent-router-gold-main
     runs-on: ubuntu-latest
@@ -45,10 +72,48 @@ jobs:
           role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
           aws-region: sa-east-1
 
-      - name: Run the probe
+      - name: Run the probe through the governed evaluation transport
+        env:
+          MAX_COST: ${{ inputs.max_cost }}
+          REQUEST_ID: ${{ inputs.request_id }}
+          # The production project, as the worker's task definition names it; not a secret.
+          SUPABASE_URL: https://ifnogpksgdadruooqydi.supabase.co
         run: |
           set -euo pipefail
-          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
-          echo "::add-mask::$ANTHROPIC_API_KEY"
-          export ANTHROPIC_API_KEY
-          pnpm --filter @offroad/evals exec tsx scripts/probe-structured-output.ts
+          # The evaluator's credential and the evaluation organization. Absent until the founder
+          # creates them: fail closed, by name, before anything is requested. Nothing read here is
+          # ever printed, and each value is masked the moment it exists.
+          if ! evaluator="$(aws secretsmanager get-secret-value --secret-id offroad/evaluator --query SecretString --output text 2>/dev/null)" || [ -z "$evaluator" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator is absent or not readable by offroadGitHubEvalsRole. The evaluator account, the evaluation organization and this secret are created by the founder's decision; nothing was requested."
+            exit 1
+          fi
+          while IFS= read -r line; do if [ -n "$line" ]; then echo "::add-mask::$line"; fi; done <<<"$evaluator"
+          field() { jq -er --arg key "$1" '.[$key] | select(type == "string" and length > 0)' <<<"$evaluator" 2>/dev/null; }
+          if ! OFFROAD_EVALUATOR_EMAIL="$(field email)" || ! OFFROAD_EVALUATOR_PASSWORD="$(field password)" || ! OFFROAD_EVALUATION_ORGANIZATION_ID="$(field organizationId)"; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator must hold email, password and organizationId; nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$OFFROAD_EVALUATOR_EMAIL"
+          echo "::add-mask::$OFFROAD_EVALUATOR_PASSWORD"
+          echo "::add-mask::$OFFROAD_EVALUATION_ORGANIZATION_ID"
+          unset evaluator
+          if ! SUPABASE_PUBLISHABLE_KEY="$(aws secretsmanager get-secret-value --secret-id offroad/supabase-publishable-key --query SecretString --output text 2>/dev/null)" || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/supabase-publishable-key is not readable by offroadGitHubEvalsRole; the founder's setup grants it with the evaluator secret. Nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$SUPABASE_PUBLISHABLE_KEY"
+          export SUPABASE_URL SUPABASE_PUBLISHABLE_KEY OFFROAD_EVALUATOR_EMAIL OFFROAD_EVALUATOR_PASSWORD OFFROAD_EVALUATION_ORGANIZATION_ID
+
+          resume=()
+          if [ -n "$REQUEST_ID" ]; then resume=(--request-id "$REQUEST_ID"); fi
+          # Status 3 is a partial evaluation: its evidence is uploaded below, and the run fails.
+          pnpm --filter @offroad/evals exec tsx scripts/probe-structured-output.ts --max-cost "$MAX_COST" ${resume[@]+"${resume[@]}"}
+
+      - name: Keep the evaluation evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: structured-output-probe
+          path: packages/evals/out/structured-output-probe.evaluation.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,14 +1,30 @@
 name: Measure extraction
 
 # Runs the real extractor over a gold case and reports what it actually got: material recall,
-# precision, hallucination and cost per run — the numbers the F1 gate is written in.
+# precision, hallucination and cost per run, the numbers the F1 gate is written in.
 #
-# It exists because the model keys live in Secrets Manager and nowhere else. Rather than
-# copying them to a laptop, the measurement runs where a short-lived OIDC session can read
-# them: `offroadGitHubEvalsRole` may read those two secrets and nothing else — it cannot push
-# an image, touch ECS, or reach the database.
+# This job holds no provider key. The documents are parsed here, OCR included, and the script
+# requests a governed evaluation through the evaluator's own Supabase session; the worker runs the
+# extraction with the provider credentials it already holds, reserving every pass in the database
+# first, and the script scores what the database committed. The gold expectations never leave the
+# job. `offroadGitHubEvalsRole` reads only the evaluator secret and the publishable key the worker
+# also reads.
 #
-# Manual only. This spends real money with the providers, so it runs when someone asks.
+# NOT USABLE YET, by design. The secret `offroad/evaluator` (JSON with `email`, `password` and
+# `organizationId`), the evaluator account it names and the evaluation organization do not exist
+# yet: they are created by the founder's decision, together with the role's read grant on that
+# secret and on `offroad/supabase-publishable-key`, the provider assurances for purpose
+# `evaluation` and the opening of the transport switch. Until then this job fails closed with a
+# named message and requests nothing. The worker must also run a release that carries the
+# `measure-extraction` family.
+#
+# Budget: `max_cost` has no default, because what a measurement spends is decided by whoever
+# dispatches it. Each pass reserves the list-price upper bound of its whole request before it is
+# sent (up to about 0.46 USD per pass on the primary route for rede-horizonte, 145 passes), so a
+# budget that cannot cover the next reservation ends the run partial with budget_exhausted. Passes
+# now run one at a time, which is why the job may wait up to six hours; an evaluation still running
+# when the job stops can be read later with `request_id`. Manual only: once opened, it spends real
+# money with the providers through the worker.
 
 on:
   workflow_dispatch:
@@ -18,7 +34,14 @@ on:
         required: false
         default: "rede-horizonte"
       model:
-        description: "Model sweep: provider/model@effort (empty = the task policy, which is what production uses)"
+        description: "Model sweep: provider/model@effort among the production-allowlisted models (empty = the task policy, which is what production uses)"
+        required: false
+        default: ""
+      max_cost:
+        description: "Budget in USD for the whole run, reservations included (no default)"
+        required: true
+      request_id:
+        description: "Resume an earlier request by its id instead of creating another evaluation"
         required: false
         default: ""
 
@@ -38,7 +61,8 @@ jobs:
     if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main'
     environment: intent-router-gold-main
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    # The script waits for the committed result while the worker runs the passes one at a time.
+    timeout-minutes: 360
 
     steps:
       - name: Checkout
@@ -70,31 +94,60 @@ jobs:
           role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
           aws-region: sa-east-1
 
-      - name: Run the extractor and score it
+      - name: Run the extractor through the governed evaluation transport and score it
         env:
           CASE: ${{ inputs.case || 'rede-horizonte' }}
           MODEL: ${{ inputs.model || '' }}
+          MAX_COST: ${{ inputs.max_cost }}
+          REQUEST_ID: ${{ inputs.request_id }}
+          # The production project, as the worker's task definition names it; not a secret.
+          SUPABASE_URL: https://ifnogpksgdadruooqydi.supabase.co
         run: |
           set -euo pipefail
-          # Masked the moment they exist, so a stray echo or a crash dump cannot print one.
-          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
-          echo "::add-mask::$ANTHROPIC_API_KEY"
-          OPENAI_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/openai-api-key --query SecretString --output text)
-          echo "::add-mask::$OPENAI_API_KEY"
-          export ANTHROPIC_API_KEY OPENAI_API_KEY
+          # The evaluator's credential and the evaluation organization. Absent until the founder
+          # creates them: fail closed, by name, before anything is requested. Nothing read here is
+          # ever printed, and each value is masked the moment it exists.
+          if ! evaluator="$(aws secretsmanager get-secret-value --secret-id offroad/evaluator --query SecretString --output text 2>/dev/null)" || [ -z "$evaluator" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator is absent or not readable by offroadGitHubEvalsRole. The evaluator account, the evaluation organization and this secret are created by the founder's decision; nothing was requested."
+            exit 1
+          fi
+          while IFS= read -r line; do if [ -n "$line" ]; then echo "::add-mask::$line"; fi; done <<<"$evaluator"
+          field() { jq -er --arg key "$1" '.[$key] | select(type == "string" and length > 0)' <<<"$evaluator" 2>/dev/null; }
+          if ! OFFROAD_EVALUATOR_EMAIL="$(field email)" || ! OFFROAD_EVALUATOR_PASSWORD="$(field password)" || ! OFFROAD_EVALUATION_ORGANIZATION_ID="$(field organizationId)"; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator must hold email, password and organizationId; nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$OFFROAD_EVALUATOR_EMAIL"
+          echo "::add-mask::$OFFROAD_EVALUATOR_PASSWORD"
+          echo "::add-mask::$OFFROAD_EVALUATION_ORGANIZATION_ID"
+          unset evaluator
+          if ! SUPABASE_PUBLISHABLE_KEY="$(aws secretsmanager get-secret-value --secret-id offroad/supabase-publishable-key --query SecretString --output text 2>/dev/null)" || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/supabase-publishable-key is not readable by offroadGitHubEvalsRole; the founder's setup grants it with the evaluator secret. Nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$SUPABASE_PUBLISHABLE_KEY"
+          export SUPABASE_URL SUPABASE_PUBLISHABLE_KEY OFFROAD_EVALUATOR_EMAIL OFFROAD_EVALUATOR_PASSWORD OFFROAD_EVALUATION_ORGANIZATION_ID
 
-          pnpm --filter @offroad/evals measure "$CASE" | tee /tmp/measure.log
+          resume=()
+          if [ -n "$REQUEST_ID" ]; then resume=(--request-id "$REQUEST_ID"); fi
+          status=0
+          pnpm --filter @offroad/evals measure -- "$CASE" --max-cost "$MAX_COST" ${resume[@]+"${resume[@]}"} 2>&1 \
+            | grep -vE 'Warning: (TT|Required "glyf"|UnknownErrorException)' | tee /tmp/measure.log || status=$?
 
           # The report is the point of the run: put it where it can be read without digging
           # through the log.
           {
-            echo "## Extraction measurement — $CASE"
+            echo "## Extraction measurement: $CASE"
+            echo
+            grep -E '^evaluation (snapshot|routes|budget|requested|committed)' /tmp/measure.log | sed 's/^/- /' || true
             echo
             sed -n '/^# /,$p' /tmp/measure.log
           } >> "$GITHUB_STEP_SUMMARY"
+          # Status 3 is a partial evaluation: its evidence is uploaded below, and the run fails.
+          exit "$status"
 
-      - name: Keep the full report
-        if: always()
+      - name: Keep the full report and the evaluation evidence
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: extraction-measurement${{ inputs.model && '-sweep' || '' }}
