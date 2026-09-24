@@ -118,9 +118,6 @@ const live = entries.filter(entry => inspect(entry.text).bindings.size > 0);
  */
 const contained = [
   "continue-document-work-product-live.ts",
-  "measure-classification.ts",
-  "measure-extraction.ts",
-  "probe-structured-output.ts",
   "run-advisor-response-live.ts",
   "run-document-work-product-live.ts",
   "run-executive-synthesis-live.ts",
@@ -166,7 +163,7 @@ describe("historical live evaluation containment", () => {
 });
 
 describe("provider keys in evaluation scripts", () => {
-  it("are read by no script outside the contained eight", () => {
+  it("are read by no script outside the contained four", () => {
     for (const entry of entries) if (!contained.includes(entry.name)) expect(providerKeyReads(entry.text), entry.name).toEqual([]);
   });
   it.each([
@@ -258,6 +255,34 @@ describe("the intent router gate through the governed transport", () => {
     expect(trust).toBeGreaterThan(dry);
     expect(request).toBeGreaterThan(trust);
     expect(environment).toBeGreaterThan(trust);
+
+describe("the extraction, classification and probe measurements through the governed transport", () => {
+  const converted = ["measure-extraction.ts", "measure-classification.ts", "probe-structured-output.ts"]
+    .map(name => [name, entries.find(entry => entry.name === name)!] as const);
+
+  it.each(converted)("%s imports the governed transport client and no gateway factory, product model caller, guard or provider key", (_name, script) => {
+    expect(importsFrom(script.text, "../src/governed-transport")).toEqual(expect.arrayContaining(["governedEvaluationEvidence", "requestGovernedEvaluation", "readGovernedTransportEnvironment"]));
+    expect(gatewayImports(script.text).filter(name => !/^[a-z][A-Za-z]*$/.test(name) || name.startsWith("create"))).toEqual([]);
+    expect(importsFrom(script.text, "../src/live-evaluation-authority")).toEqual([]);
+    const names = identifiers(script.text);
+    // The worker runs the extractor and the classifier over the snapshot; the script only parses, reads back and scores.
+    for (const name of ["createModelGateway", "createAnthropicAdapter", "createOpenAIAdapter", "createClassifier", "extractDocument", guard]) expect(names.has(name), name).toBe(false);
+    expect(providerKeyReads(script.text)).toEqual([]);
+    expect(inspect(script.text)).toMatchObject({failures: [], bindings: new Set()});
+  });
+
+  it.each(converted)("%s returns from its dry run before the environment is read or anything is requested", (_name, script) => {
+    const source = parse(script.text);
+    const main = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "main") as ts.FunctionDeclaration;
+    const statements = main.body!.statements;
+    const dry = statements.findIndex(node => ts.isIfStatement(node) && node.expression.getText(source) === "dryRun");
+    const request = statements.findIndex(node => node.getText(source).includes("requestGovernedEvaluation("));
+    const environment = statements.findIndex(node => node.getText(source).includes("readGovernedTransportEnvironment("));
+    expect(dry).toBeGreaterThan(-1);
+    expect(request).toBeGreaterThan(dry);
+    expect(environment).toBeGreaterThan(dry);
+    // Nothing before the dry return names the transport, and the dry branch itself returns before anything live.
+    for (const node of statements.slice(0, dry + 1)) expect(node.getText(source)).not.toMatch(/requestGovernedEvaluation|readGovernedTransportEnvironment|governedEvaluationEvidence/);
     const branch = statements[dry] as ts.IfStatement;
     const log = vi.fn();
     runInNewContext(`(function() { ${branch.getText(source)}; throw new Error("reached live path"); })()`, {dryRun: true, console: {log}});
