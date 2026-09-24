@@ -26,7 +26,7 @@ export const productionModelCeilingsUsd = {
   /**
    * Per document. Old ceiling 0.75 (web run budget), 8 calls. Largest classification 0.0732 (GPT-5.6
    * Terra, 0.0602 under the old estimate); largest extraction window 0.2094 (Sonnet 5, 0.1402 old).
-   * Worst attempt: classification plus seven windows at their bound, 1.4181; x1.10 = 1.5599.
+   * Worst attempt: classification plus seven windows at their bound, 1.4184; x1.10 = 1.5602.
    * The largest ratio of new to old reservation over these requests is 1.49, so 1.60 also admits
    * every call the old 0.75 admitted. The single 8.32 USD document on record is out of reach of the
    * call ceiling of #310 (28 Aug 2026): three attempts of eight calls, each at its calibrated bound
@@ -36,27 +36,30 @@ export const productionModelCeilingsUsd = {
   documentPipeline: 1.6,
   /**
    * Old ceiling 1.00 (web and database `case_max_cost_usd`) less 0.10 of research. Largest request
-   * the case brief, 1.1801 on Claude Opus 5 (0.9812 old, already above the old 0.90). Worst attempt
-   * on the primary routes, structure design, brief, audit with revision and fresh audit at their
-   * bounds: 2.7099; x1.10 = 2.9809. The model calls get 3.00, the case engine's own run policy
-   * (`executeCaseEngine`, 3 USD and 4 calls), since the engine fails a stage whose spend passes it;
-   * plus 5 research queries at 0.02.
+   * the case brief of the Camil gold case (170 facts), 1.1793 on Claude Opus 5 (0.9812 old, already
+   * above the old 0.90). Worst attempt on the primary routes, structure design (0.3205), brief,
+   * audit with revision on GPT-5.6 Sol (0.8017) and fresh audit on Opus (0.6114), each earlier one
+   * at its bound: 2.7038; x1.10 = 2.9741. The model calls get 3.00, the case engine's own run
+   * policy (`executeCaseEngine`, 3 USD and 4 calls), since the engine fails a stage whose spend
+   * passes it; plus 5 research queries at 0.02.
    */
   caseAnalysis: 3.1,
   /**
-   * Database: 0.90 (`private.enqueue_primary_case_analysis`), 2 calls. Largest request 0.2429
-   * (Sonnet 5, 0.1505 old); worst attempt with the GPT-5.6 Terra fallback 0.4617; x1.10 plus 0.10
-   * of research = 0.6079. The database value covers it and stays.
+   * Database: 0.90 (`private.enqueue_primary_case_analysis`), 2 calls. Largest request 0.2530
+   * (Sonnet 5, 0.1505 old); worst attempt with the GPT-5.6 Terra fallback (0.2588) 0.4889; x1.10
+   * plus 0.10 of research = 0.6378. The database value covers it and stays.
    */
   preliminaryAnalysis: 0.9,
   /**
    * No database budget: this value is the job's only ceiling (was the 1.00 environment default).
-   * Largest requests at the conversation caps: route_intent 0.1553, semantic objects 0.1328, the
-   * brief 0.3386 on Sonnet 5 and 0.6073 on the GPT-5.6 Sol fallback (0.1768 and 0.3537 old).
-   * Worst attempt, both shadow requests then the brief failing, repaired and answered by Sol:
-   * 1.4849; x1.10 = 1.6333. Historical maximum 0.2245 plus the largest request fits with room.
+   * Largest requests with every context field at its cap: route_intent 0.1680, semantic objects
+   * 0.1454, the brief 0.3703 on Sonnet 5 and 0.7178 on the GPT-5.6 Sol fallback (0.0838, 0.0728,
+   * 0.1768 and 0.3537 old). Worst attempt, both shadow requests then the brief failing, repaired
+   * (0.3710) and answered by Sol: 1.6767; x1.10 = 1.8443. The historical maximum, 0.2245 per job,
+   * plus the largest request fits with room. Only a turn in which the shadow requests fail too at
+   * that size (every request through its whole chain, about 2.1) would reach the ceiling.
    */
-  agentOperationBrief: 1.65,
+  agentOperationBrief: 1.85,
   /**
    * Database: 0.25 and 1 call (`private.enqueue_work_turn_v1`, and a literal of the worker's job
    * schema). Largest request 0.1867 (Sonnet 5, 0.0886 old); x1.10 = 0.2054. The value stays.
@@ -65,24 +68,24 @@ export const productionModelCeilingsUsd = {
   /**
    * Database: 1.50 (trigger `private.normalize_origination_runtime_budget_v1`, 2 calls), but the
    * worker held it at the 1.00 environment default less 0.24 of research. Largest request 0.7993
-   * on GPT-5.6 Sol (0.6313 old); worst attempt, Sol truncated and answered by Terra: 1.1791;
-   * x1.10 = 1.2970; plus 12 research queries at 0.02 = 1.5370. Until the trigger grants 1.55 the
-   * database binds at 1.50, which still admits that attempt with 6.8% to spare.
+   * on GPT-5.6 Sol (0.6313 old); worst attempt, Sol truncated and answered by Terra: 1.1792;
+   * x1.10 = 1.2971; plus 12 research queries at 0.02 = 1.5371. Until the trigger grants 1.55 the
+   * database binds at 1.50, which still admits that attempt with 6.9% to spare.
    */
   originationThesis: 1.55,
   /** A revision is one call on the prior research, no new search; the trigger gives it 1.50 as well. */
   originationThesisRevision: 1.55,
   /**
    * Database: 0.95 and 2 calls (`private.start_public_company_debt_view_v1`). Largest request
-   * 0.2096 (Sonnet 5, 0.1301 old); worst attempt with the Terra fallback 0.4041; x1.10 plus 8
-   * research queries at 0.02 = 0.6045. The database value stays.
+   * 0.2096 (Sonnet 5, 0.1301 old); worst attempt with the Terra fallback 0.4040; x1.10 plus 8
+   * research queries at 0.02 = 0.6044. The database value stays.
    */
   companyDebtView: 0.95,
   /** Database: 0.85 and 1 call (`private.request_company_debt_view_revision_v1`); one Sonnet 5 call on the prior research. */
   companyDebtViewRevision: 0.85,
   /**
    * Database: 0.95 and 2 calls (`private.worker_activate_advisor_specialized_job_v2`). Largest
-   * request 0.2038 (Sonnet 5, 0.1281 old); worst attempt with the Terra fallback 0.3915; x1.10 plus
+   * request 0.2038 (Sonnet 5, 0.1281 old); worst attempt with the Terra fallback 0.3914; x1.10 plus
    * 8 research queries at 0.02 = 0.5906. The database value stays.
    */
   capitalPlanning: 0.95,
@@ -92,7 +95,7 @@ export const productionModelCeilingsUsd = {
    * Database: 0.50 and 4 calls (`private.worker_activate_integration_preview_run_v1`). The live
    * preview asks at most the questions (0.0527, 0.0330 old) and the synthesis (0.2464 on Sonnet 5,
    * 0.2487 on the Terra fallback; 0.1378 old). Worst attempt, synthesis failing and answered by
-   * Terra: 0.5206; x1.10 = 0.5727. It runs on the frozen case and never researches, so no research
+   * Terra: 0.5206; x1.10 = 0.5726. It runs on the frozen case and never researches, so no research
    * is reserved. Until the database grants 0.60 it binds at 0.50, which admits the primary path
    * (0.2943) and degrades a failed synthesis to its deterministic skeleton, as the code intends.
    */

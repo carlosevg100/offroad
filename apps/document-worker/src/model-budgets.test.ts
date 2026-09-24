@@ -59,7 +59,7 @@ describe("worker model budget of one attempt", () => {
     // Origination: the trigger's 1.50 binds below the derived 1.55, less twelve queries.
     expect(jobModelBudget({job: capital("origination_thesis", {max_cost_usd: 1.5, max_calls: 2}), ...webSearch}).maxCostUsd).toBeCloseTo(1.26, 10);
     // The agent operation brief has no database budget: its derived ceiling is the budget.
-    expect(jobModelBudget({job: briefJob, ...webSearch})).toEqual({maxCostUsd: 1.65, maxCalls: 8, researchReserveUsd: 0});
+    expect(jobModelBudget({job: briefJob, ...webSearch})).toEqual({maxCostUsd: 1.85, maxCalls: 8, researchReserveUsd: 0});
     // The preview never researches, so its whole database budget reaches the model.
     expect(jobModelBudget({job: capital("integration_preview", {max_cost_usd: 0.5, max_calls: 4}), ...webSearch})).toEqual({maxCostUsd: 0.5, maxCalls: 4, researchReserveUsd: 0});
     // A document gets its database share; an operator's override can only lower it.
