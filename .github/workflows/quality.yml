@@ -5,13 +5,16 @@ on:
     branches: [main]
   push:
     branches: [main]
+  # Repeated runs of one commit measure flakiness without a new merge or a rerun.
+  workflow_dispatch:
 
 permissions:
   contents: read
   packages: read
 
 concurrency:
-  group: quality-${{ github.ref }}
+  # A dispatched run gets its own group so repeated runs of the same commit never cancel each other.
+  group: quality-${{ github.ref }}${{ github.event_name == 'workflow_dispatch' && format('-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 jobs:
