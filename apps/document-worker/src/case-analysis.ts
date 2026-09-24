@@ -168,7 +168,9 @@ const pricingContextSchema = z.object({
     observedOn: z.iso.date(),
     validUntil: z.iso.date(),
     status: z.enum(["closed", "term", "indication", "sounding"]),
-    instrument: z.enum(["ccb", "nce", "debenture_476", "debenture_160", "cra", "cri", "fidc", "venture_debt", "finame", "leasing"]),
+    // Same keys as PricedInstrument. The pricing_observations check constraint does not admit
+    // nota_comercial yet, so none arrives until a migration allows it.
+    instrument: z.enum(["ccb", "nce", "debenture_476", "debenture_160", "nota_comercial", "cra", "cri", "fidc", "venture_debt", "finame", "leasing"]),
     rating: z.enum(["strong", "adequate", "watch", "weak", "distressed"]),
     normalizedSpreadBps: z.coerce.number(),
     normalizationMethod: z.string().min(1),

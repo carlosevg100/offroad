@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
+import {composeIndexAndSpread} from "@offroad/financial-core";
 
-export const marketReferenceVersion = "2026.08.25-v2";
+export const marketReferenceVersion = "2026.09.24-v1";
 
 /**
  * What this kind of paper costs for this kind of credit, as the desk's reference and nothing
@@ -17,7 +18,13 @@ export const marketReferenceVersion = "2026.08.25-v2";
  */
 
 export type RatingBand = "strong" | "adequate" | "watch" | "weak" | "distressed";
-export type PricedInstrument = "ccb" | "nce" | "debenture_476" | "debenture_160" | "cra" | "cri" | "fidc" | "venture_debt" | "finame" | "leasing";
+/**
+ * The legacy instrument keys of `@offroad/credit-playbook`. `debenture_476` names the debenture for
+ * professional investors under the CVM 160 automatic rite; the key stays because stored observations
+ * carry it. The desk grid has no nota comercial row: no band is stated for it, so the grid returns
+ * none, and the governed registry holds no nota comercial observation yet.
+ */
+export type PricedInstrument = "ccb" | "nce" | "debenture_476" | "debenture_160" | "nota_comercial" | "cra" | "cri" | "fidc" | "venture_debt" | "finame" | "leasing";
 
 export type SpreadBand = {
   instrument: PricedInstrument;
@@ -114,7 +121,9 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
   const shift = adjustments.reduce((sum, adjustment) => sum + adjustment.bps, 0);
   const bps = {min: base.bps.min + shift, max: base.bps.max + shift};
   const cdi = new Decimal(input.cdi);
-  const allIn = {min: cdi.plus(new Decimal(bps.min).div(10_000)).toFixed(4), max: cdi.plus(new Decimal(bps.max).div(10_000)).toFixed(4), cdi: cdi.toFixed(4)};
+  // DI plus spread compounds: (1 + CDI) × (1 + spread) - 1, the B3 convention, never the sum.
+  const composed = (spreadBps: number) => new Decimal(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: new Decimal(spreadBps).div(10_000).toString()}).value);
+  const allIn = {min: composed(bps.min).toFixed(4), max: composed(bps.max).toFixed(4), cdi: cdi.toFixed(4)};
   const fmtBps = (value: number) => `${value >= 0 ? "+" : "-"} ${Math.abs(value) / 100}`.replace(".", ",");
   const fmtBpsEn = (value: number) => `${value >= 0 ? "+" : "-"} ${Math.abs(value) / 100}`;
   const prov = provenance.kind === "desk_practice"

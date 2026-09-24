@@ -502,6 +502,9 @@ importers:
       '@offroad/credit-playbook':
         specifier: workspace:*
         version: link:../credit-playbook
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       '@offroad/sounding':
         specifier: workspace:*
         version: link:../sounding
@@ -518,6 +521,9 @@ importers:
 
   packages/credit-analysis:
     dependencies:
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0
@@ -963,6 +969,9 @@ importers:
 
   packages/market-reference:
     dependencies:
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       decimal.js:
         specifier: 10.6.0
         version: 10.6.0
@@ -1090,6 +1099,9 @@ importers:
 
   packages/sounding:
     dependencies:
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       '@offroad/investor-base':
         specifier: workspace:*
         version: link:../investor-base

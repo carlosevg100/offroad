@@ -15,7 +15,9 @@ describe("the desk's price reference", () => {
   it("prices Aurora's CCB: adequate, 48 months, 1,3x of collateral, R$ 42M", () => {
     const price = indicativePrice({instrument: "ccb", rating: "adequate", cdi: "0.105", tenorMonths: 48, collateralCoverage: "1.3", amount: "42300000"})!;
     expect(price.bps).toEqual({min: 250, max: 370});
-    expect(price.allIn.min).toBe("0.1300");
+    // (1 + 10,5%) × (1 + 2,5%) - 1 = 13,2625%, not the 13,00% a linear sum would show.
+    expect(price.allIn.min).toBe("0.1326");
+    expect(price.allIn.max).toBe("0.1459");
     expect(price.adjustments.map((a) => a.id)).toEqual(["security"]);
     expect(price.sentence.pt).toContain("CDI + 2,5%");
   });

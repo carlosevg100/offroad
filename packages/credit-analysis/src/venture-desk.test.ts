@@ -53,7 +53,9 @@ describe("the desk on a cash-burning company", () => {
     expect(desk.runway?.monthsPre).toBe("13.0");
     expect(desk.runway?.monthsPost).toBe("21.1");
     expect(Number(desk.runway?.monthsPostAfterService)).toBeLessThan(21.1);
-    expect(desk.runway?.assumedRate).toBe("0.165000");
+    // Venture practice of CDI plus six, compounded as the paper accrues: (1 + 10,5%) × (1 + 6%) - 1
+    // = 17,13% a.a., not the 16,50% of the linear sum.
+    expect(desk.runway?.assumedRate).toBe("0.171300");
   });
 
   it("catches the founder's runway, the debt-to-ARR, the retention and the concentration", () => {

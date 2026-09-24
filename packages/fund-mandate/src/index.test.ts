@@ -136,6 +136,71 @@ describe("provenance", () => {
     expect(resolveCriterion([], {asOf: ASOF})).toBeNull();
     expect(monthsBetween("not a date", ASOF)).toBe(0);
   });
+
+  it("never lets an older declaration override a newer conversation on the same field, stale or not", () => {
+    // Eight months against one month: both current under the 12-month decay. The older
+    // declaration used to win on rank alone.
+    const current = resolveCriterion(
+      [say("declared in December", "declared", "2025-12-20"), say("said last month", "conversation", "2026-07-20")],
+      {asOf: ASOF, statementDecayMonths: 12},
+    )!;
+    expect(current.value).toBe("said last month");
+    expect(current.others.map((entry) => entry.value)).toEqual(["declared in December"]);
+
+    // Both stale: the decay used to push the conversation below the declaration.
+    const bothStale = resolveCriterion(
+      [say("declared in 2024", "declared", "2024-06-01"), say("said in 2025", "conversation", "2025-05-01")],
+      {asOf: ASOF, statementDecayMonths: 12},
+    )!;
+    expect(bothStale.value).toBe("said in 2025");
+
+    // The same under the 3-month decay the market.mandates draft proposes.
+    const shortDecay = resolveCriterion(
+      [say("declared in March", "declared", "2026-03-01"), say("said in April", "conversation", "2026-04-01")],
+      {asOf: ASOF, statementDecayMonths: 3},
+    )!;
+    expect(shortDecay.value).toBe("said in April");
+
+    // On the same day the declaration, signed, goes first.
+    const sameDay = resolveCriterion(
+      [say("said on the call", "conversation", "2026-07-01"), say("typed in the form", "declared", "2026-07-01")],
+      {asOf: ASOF},
+    )!;
+    expect(sameDay.value).toBe("typed in the form");
+  });
+
+  it("keeps behaviour below a stale conversation, as below a stale declaration", () => {
+    // Direct confirmation is one class, two ranks above behaviour: one rank of decay never lets
+    // our reading of the deals replace what the fund told us. The contradiction is flagged.
+    const resolved = resolveCriterion(
+      [say("told us in 2025", "conversation", "2025-01-01"), say("did recently", "observed", "2026-06-01")],
+      {asOf: ASOF, statementDecayMonths: 12},
+    )!;
+    expect(resolved.value).toBe("told us in 2025");
+    expect(resolved.divergent).toBe(true);
+  });
+
+  it("puts the published regulation first for a legal constraint, and after behaviour for appetite", () => {
+    const regulation = say(["debenture", "ccb"], "published", "2026-06-01", "regulamento arquivado na CVM");
+    const declaration = say(["debenture", "ccb", "nota_comercial"], "declared", "2026-07-01");
+    expect(resolveCriterion([declaration, regulation], {asOf: ASOF}, undefined, "legal_constraint")!.value).toEqual(["debenture", "ccb"]);
+    expect(resolveCriterion([declaration, regulation], {asOf: ASOF})!.value).toEqual(["debenture", "ccb", "nota_comercial"]);
+
+    // A regulation nobody has re-read for two years ties with a fresh statement, and the fresher wins.
+    const staleRegulation = say(["debenture"], "published", "2024-06-01");
+    expect(resolveCriterion([staleRegulation, declaration], {asOf: ASOF, statementDecayMonths: 12}, undefined, "legal_constraint")!.value).toEqual(["debenture", "ccb", "nota_comercial"]);
+    // Behaviour never passes the regulation on a legal constraint, stale or not; it is flagged.
+    const bought = say(["debenture", "cri"], "observed", "2026-08-01");
+    const overBehaviour = resolveCriterion([staleRegulation, bought], {asOf: ASOF, statementDecayMonths: 12}, undefined, "legal_constraint")!;
+    expect(overBehaviour.value).toEqual(["debenture"]);
+    expect(overBehaviour.divergent).toBe(true);
+  });
+
+  it("breaks a tie on the value, so input order never changes the answer", () => {
+    const observations = [say("b", "published", "2026-01-01"), say("a", "published", "2026-01-01")];
+    expect(resolveCriterion(observations, {asOf: ASOF})!.value).toBe("a");
+    expect(resolveCriterion([...observations].reverse(), {asOf: ASOF})!.value).toBe("a");
+  });
 });
 
 describe("resolveMandate", () => {
@@ -168,6 +233,26 @@ describe("resolveMandate", () => {
       {asOf: ASOF},
     );
     expect(cold.freshestMonths).toBeGreaterThan(18);
+  });
+
+  it("reads instruments and geographies from the regulation and appetite from the fund", () => {
+    const mandate = completeMandate({
+      instruments: [
+        say(["debenture", "ccb", "nota_comercial"] as const, "declared", "2026-07-01"),
+        say(["debenture", "ccb"] as const, "published", "2026-06-01", "regulamento arquivado na CVM"),
+      ],
+      ticket: [
+        say({min: "10000000", max: "60000000"}, "declared", "2026-07-01"),
+        say({min: "5000000", max: "30000000"}, "published", "2026-06-01", "lâmina"),
+      ],
+    });
+    const resolved = resolveMandate(mandate, {asOf: ASOF});
+    expect(resolved.instruments?.accepted.provenance).toBe("published");
+    expect(resolved.ticket?.accepted.provenance).toBe("declared");
+    // The regulation does not admit the nota comercial, so the fund is excluded on instrument
+    // however keen the declaration sounds.
+    const fit = assessMandateFit(resolved, {...fullRequest, instruments: ["nota_comercial"]});
+    expect(fit.exclusions.map((entry) => entry.id)).toEqual(["instrument"]);
   });
 
   it("distinguishes an empty criterion from an unrestricted one", () => {

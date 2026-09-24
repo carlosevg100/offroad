@@ -132,9 +132,10 @@ export function resolveMandate(mandate: Mandate, options: ResolveOptions): Resol
   const ticket = resolveCriterion(mandate.ticket, options, rangesDiffer);
   const termMonths = resolveCriterion(mandate.termMonths, options, monthRangesDiffer);
   const sectors = resolveCriterion(mandate.sectors, options, (a, b) => listsDiffer(a, b));
-  const instruments = resolveCriterion(mandate.instruments, options, (a, b) => listsDiffer(a, b));
+  // Instruments and geographies are what the fund's regulation permits: the published rule leads.
+  const instruments = resolveCriterion(mandate.instruments, options, (a, b) => listsDiffer(a, b), "legal_constraint");
   const collateral = resolveCriterion(mandate.collateral, options, (a, b) => listsDiffer(a, b));
-  const geographies = resolveCriterion(mandate.geographies, options, (a, b) => listsDiffer(a, b));
+  const geographies = resolveCriterion(mandate.geographies, options, (a, b) => listsDiffer(a, b), "legal_constraint");
   const leverageCeiling = resolveCriterion(mandate.leverageCeiling, options, numbersDiffer);
   const minimumDscr = resolveCriterion(mandate.minimumDscr, options, numbersDiffer);
   const active = resolveCriterion(mandate.active, options);
