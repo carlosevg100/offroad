@@ -138,17 +138,73 @@ que um revisor consegue apontar com referência. Texto mais bonito ou mais longo
 ### 5.1 Como o baseline roda
 
 `pnpm --filter @offroad/evals baseline:gold -- --case gc01` monta a base de informação do caso
-(turnos do gold, documentos da fixture, conteúdo do source pack, data-base e perfil profissional),
-grava o hash de cada entrada e envia tudo ao generalista mais forte da política
-(`baseline_generalist`: Opus 5, fallback GPT-5.6), um turno de cada vez, com a resposta anterior
-no histórico. Documentos e PDFs do pack entram como o texto e as tabelas que o parser do produto
-produz, página a página; índices compactados entram só como metadados; o cadastro de companhias
-entra filtrado à companhia. `--dry-run` monta e mede sem chamar modelo. Como as chaves de modelo
-vivem só no Secrets Manager, a execução oficial é o workflow `Gold case baseline` (manual), que lê
-as chaves por OIDC, roda o mesmo comando e publica o diretório da run como artefato; quem
-disparou commita o resultado em `docs/product/gold-cases/runs/<caso>/baseline/<data>/`, com
-`run.json` (modelo, versão, custo, tokens, hash da base e de cada entrada) e um arquivo Markdown
-por turno.
+(turnos do gold, documentos da fixture, conteúdo do source pack e data-base), grava o hash de
+cada entrada e envia ao generalista mais forte da política (`baseline_generalist`: Opus 5,
+fallback GPT-5.6 Sol) o que cabe em cada pedido (§5.1.1), um turno de cada vez, com a resposta
+anterior no histórico. Documentos e PDFs do pack entram como o texto e as tabelas que o parser do
+produto produz, página a página; índices compactados entram só como metadados; o cadastro de
+companhias entra filtrado à companhia. `--dry-run` monta e mede sem chamar modelo e mostra, por
+fonte, se entrou inteira ou só pela referência, a estimativa de cada pedido em cada rota e a
+reserva de cada tentativa. A execução oficial é o workflow `Gold case baseline` (manual): ele pede
+uma avaliação governada com a credencial do avaliador, sem chave de modelo, o worker roda o
+baseline sob as reservas do banco, e o diretório da run sai como artefato; quem disparou commita o
+resultado em `docs/product/gold-cases/runs/<caso>/baseline/<data>/`, com `run.json` (modelo,
+versão, custo, tokens, hash da base e de cada entrada) e um arquivo Markdown por turno.
+
+#### 5.1.1 O que entra em cada pedido
+
+O pack do Caso 01 cresceu depois do congelamento do caso (as escrituras das emissões e os termos
+de securitização dos CRA entraram para sustentar o gabarito) e chegou a 43 fontes e 5,09 milhões
+de caracteres, mais de 2 milhões de tokens no Claude. Nenhum modelo aceita isso num pedido: o
+Claude Opus 5 aceita até 1 milhão de tokens de entrada e o GPT-5.6 Sol até 922 mil. O baseline
+recebe o que cabe, escolhido por uma regra declarada antes de qualquer execução e igual para todos
+os casos:
+
+1. Os documentos anexados do caso entram sempre inteiros. São o que a pessoa enviou; se eles
+   sozinhos não coubessem, a execução pararia com erro, sem cortar nada.
+2. As fontes do pack entram nesta ordem de categorias e, dentro de cada categoria, da data-base
+   mais recente para a mais antiga (empate pelo id). Cada fonte entra inteira se o maior pedido do
+   caso ainda couber; a que não cabe fica só com a referência (título, URL, data-base, versão,
+   licença, hash e o tamanho estimado) e a seguinte é tentada.
+   1. Relatórios periódicos da companhia: release, apresentação e demonstrações financeiras.
+   2. Dados de mercado da data-base: curvas, CDI, Selic.
+   3. Eventos corporativos: atas do conselho, comunicados, calendário, anúncios de oferta.
+   4. Cadastro e índices de documentos.
+   5. Relatórios sobre as dívidas em aberto: agente fiduciário, relatórios mensais dos CRA.
+   6. Escrituras das emissões da companhia e seus aditamentos.
+   7. Termos de securitização lastreados na dívida da companhia e seus aditamentos.
+3. O limite de cada pedido é declarado por caso, em tokens estimados pelo próprio gateway, cuja
+   estimativa é calibrada para ficar acima do que o provedor cobra, com a margem medida em
+   `packages/model-gateway/src/token-estimate.ts`. O maior pedido é o do último turno, com cada
+   entrega anterior contada pelo teto de saída vezes 1,5. Para o Caso 01 o limite é 960 mil: o
+   maior pedido que as duas rotas aceitam com espaço para a resposta inteira (Opus 5: 1 milhão
+   menos os 32 mil de saída; Sol: 922 mil pela sua própria estimativa, que é menor), arredondado
+   para baixo.
+
+Por que essa ordem: é a ordem em que um analista de DCM lê uma sala de dados para preparar a
+primeira reunião, dos números que a companhia reportou por último aos contratos completos, que se
+consultam por cláusula. As categorias pequenas vêm antes e custam pouco; os contratos, que são o
+grosso do volume, vêm por último. A regra não olha para o gabarito: nenhuma fonte é escolhida por
+conter um achado esperado, e a mesma ordem vale para todos os casos. A base diz ao modelo quantas
+fontes ficaram só com a referência, e cada uma aparece como tal, para que ele diga que falta em vez
+de supor.
+
+Por que inteira ou só a referência, nunca pela metade: um documento cortado pode esconder a
+cláusula que muda a leitura sem que o modelo saiba. Inteiro ou só a referência deixa claro o que
+foi lido. Por que a mesma base nos dois turnos: o baseline é uma conversa; a base é a primeira
+mensagem de todos os pedidos, e o segundo turno cita o que o primeiro leu.
+
+Resultado no Caso 01, versão 1.0, com o pack congelado em 5 de setembro: entram por inteiro os
+dois documentos anexados, os relatórios periódicos, os dados de mercado, os eventos, o cadastro,
+os relatórios das dívidas, as escrituras da 15ª e da 14ª emissões, o aditamento da 11ª e o segundo
+aditamento do CRA 292; ficam só com a referência as escrituras da 11ª, 12ª e 13ª emissões e os
+demais termos e aditamentos dos CRA (11 de 40 fontes com conteúdo). A base passa de 5,09 milhões
+para 1,65 milhão de caracteres; o pedido do primeiro turno fica em cerca de 901 mil tokens pela
+estimativa do gateway no Opus 5 (cerca de 770 mil tokens efetivos) e o do segundo, com a entrega anterior
+pelo teto, em 949 mil. A execução completa custa cerca de US$ 8 a 9 a preço de lista pela rota
+principal. As reservas de todas as tentativas que a avaliação pode fazer somam US$ 27,92, e esse é
+o teto padrão do script; antes, uma única tentativa do primeiro turno reservava US$ 37,54, a do
+fallback mais US$ 24,17, e o pedido não cabia em modelo nenhum.
 
 ### 5.2 Como a Offroad roda congelada, no produto real
 

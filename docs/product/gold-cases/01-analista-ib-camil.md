@@ -160,6 +160,12 @@ Generalista recebe o ITR, a proposta da AGOE, o conteúdo do source pack e os do
 instrumento conciliada com as notas; maturity wall por ano; distinção IPCA capitalizado versus
 pago; alternativas com custo de saída; pontos que derrubam a tese.
 
+O pack deste caso não cabe num pedido a modelo nenhum (5,09 milhões de caracteres contra o limite
+de 1 milhão de tokens do Opus 5), então o conteúdo entra pela regra declarada em `README.md`
+§5.1.1: os dois documentos inteiros e as fontes do pack por categoria e data, cada uma inteira ou
+só pela referência, até 960 mil tokens estimados por pedido. A execução de 4 de setembro, abaixo,
+leu o pack da época, com 20 fontes, que ainda cabia inteiro.
+
 ### Execuções do baseline
 
 | Data | Modelo | Registro | Leitura rápida (não é a revisão) |

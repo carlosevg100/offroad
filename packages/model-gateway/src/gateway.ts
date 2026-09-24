@@ -7,6 +7,8 @@ import {buildRepairGuidance, type RepairValidationSource} from "./repair";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
 import {conservativeTextReservationUsd} from "./conservative-reservation";
+import {assertWithinModelLimits, modelLimits, type ModelLimits} from "./model-limits";
+import {estimateRequestInputTokens} from "./token-estimate";
 import type {ProcessingEligibilityDecision, ProcessingResource} from "./retention-matrix";
 import {
   ModelGatewayError,
@@ -28,6 +30,8 @@ export type ModelGatewayConfig = {
   adapters: Partial<Record<Provider, ProviderAdapter>>;
   policies?: Record<TaskKind, TaskPolicy>;
   prices?: Record<string, ModelPrice>;
+  /** Token limits per model (`model-limits.ts`); a request over them is refused before anything is reserved or sent. */
+  limits?: Record<string, ModelLimits>;
   cassette?: {mode: CassetteMode; store: CassetteStore};
   /** `false` disables minimization (only for tasks whose object is the identifier itself). */
   redaction?: RedactionOptions | false;
@@ -78,6 +82,7 @@ export type ModelGateway = {
 export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   const policies = config.policies ?? defaultTaskPolicies;
   const prices = config.prices ?? listPrices;
+  const limits = config.limits ?? modelLimits;
   const now = config.now ?? (() => Date.now());
   const spent = {costUsd: 0, calls: 0, unknownCostCalls: 0};
   // Budget exposure is deliberately more conservative than the billing estimate. A provider
@@ -123,6 +128,33 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     let previousAttemptInvocationId: string | undefined;
     let pendingRepairIssueCodeFingerprint: string | undefined;
 
+    const adapterRequestFor = (ref: ModelRef, system: string): AdapterRequest => {
+      const built: AdapterRequest = {
+        model: ref.model,
+        effort: ref.effort,
+        system,
+        input,
+        schema: request.schema,
+        schemaName: request.schemaName,
+        maxOutputTokens: request.maxOutputTokens ?? policy.maxOutputTokens,
+        timeoutMs: request.timeoutMs ?? policy.timeoutMs,
+      };
+      if (request.cacheKey) built.cacheKey = request.cacheKey;
+      if (request.thinking) built.thinking = request.thinking;
+      if (request.outputMode) built.outputMode = request.outputMode;
+      if (request.metadata) built.metadata = request.metadata;
+      return built;
+    };
+    // A request must fit every route it may take: checked for all of them before anything is
+    // reserved or sent, and again for each attempt (a repair carries its guidance as well).
+    const assertFits = (ref: ModelRef, built: AdapterRequest) => assertWithinModelLimits({
+      provider: ref.provider, model: ref.model, maxOutputTokens: built.maxOutputTokens, limits,
+      estimatedInputTokens: estimateRequestInputTokens(ref.provider, built).inputTokens,
+    });
+    for (const candidate of candidates) {
+      if (!candidate.isSameModelRepair) assertFits(candidate.ref, adapterRequestFor(candidate.ref, request.system));
+    }
+
     for (const candidate of candidates) {
       if (candidate.isSameModelRepair && !repairGuidance) continue;
       const {ref, retryOrdinal, isSameModelRepair, usedProviderFallback} = candidate;
@@ -138,20 +170,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         repairGuidanceFingerprint: fingerprint(repairGuidance),
         ...(pendingRepairIssueCodeFingerprint ? {repairValidationIssueCodeFingerprint: pendingRepairIssueCodeFingerprint} : {}),
       } : {};
-      const adapterRequest: AdapterRequest = {
-        model: ref.model,
-        effort: ref.effort,
-        system: attemptSystem,
-        input,
-        schema: request.schema,
-        schemaName: request.schemaName,
-        maxOutputTokens: request.maxOutputTokens ?? policy.maxOutputTokens,
-        timeoutMs: request.timeoutMs ?? policy.timeoutMs,
-      };
-      if (request.cacheKey) adapterRequest.cacheKey = request.cacheKey;
-      if (request.thinking) adapterRequest.thinking = request.thinking;
-      if (request.outputMode) adapterRequest.outputMode = request.outputMode;
-      if (request.metadata) adapterRequest.metadata = request.metadata;
+      const adapterRequest = adapterRequestFor(ref, attemptSystem);
+      assertFits(ref, adapterRequest);
       // The reservation is computed once per attempt: before the live decision when there is one,
       // so the authority reserves the same exposure this gateway charges, otherwise where it was.
       let attemptReservationUsd: number | undefined;

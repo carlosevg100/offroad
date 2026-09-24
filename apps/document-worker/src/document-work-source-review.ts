@@ -47,6 +47,15 @@ export function documentWorkReviewFields(input: DocumentWorkProductInput, narrat
 }
 
 const failed = () => new Error("document_work_product_source_review_failed");
+/**
+ * Output ceiling of both reviews, thinking included. Run 34467680287 of the documentary evaluation
+ * (packages/evals/fixtures/document-work-product-live-34467680287-evidence.json) measured Claude
+ * Sonnet 5 at medium effort using up to 3,608 of the former 4,000 on the revision review, one
+ * revision stopping at 4,000 with 3,039 reasoning tokens (truncated, answered by the fallback), and
+ * up to 3,356 on the plain review. 8,000 is the ceiling of the task's policy, over twice the largest
+ * completed review.
+ */
+export const documentWorkSourceReviewMaxOutputTokens = 8_000;
 type Dependencies = {gateway: Pick<ModelGateway,"complete">};
 /** Independent model review; structural coverage is deterministic, semantic judgment is not certification. */
 export async function reviewDocumentWorkSourceFidelity(input: DocumentWorkProductInput, narrative: DocumentWorkProductNarrative, {gateway}: Dependencies): Promise<DocumentWorkSourceReview> {
@@ -56,7 +65,7 @@ export async function reviewDocumentWorkSourceFidelity(input: DocumentWorkProduc
     input:[{type:"text",text:JSON.stringify({passages:input.passages.map((passage,index)=>({id:`p${index+1}`,documentId:passage.documentId,documentName:passage.documentName,text:passage.text})),coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:fields})}],
     schema:sourceReviewSchema, schemaName:"document_work_source_review_v5",
     dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},
-    maxOutputTokens:4000,
+    maxOutputTokens:documentWorkSourceReviewMaxOutputTokens,
   });
   const parsed = sourceReviewSchema.safeParse(response.output);
   if (!parsed.success) throw failed();
@@ -72,7 +81,7 @@ export async function reviewAndProposeDocumentWorkRevision(input: DocumentWorkPr
     task:"preliminary_understanding",system:`${documentWorkSourceReviewInstructions}\n${documentWorkProductRevisionInstructions}`,
     input:[{type:"text",text:JSON.stringify({passages:context.sources,coverage:input.coverage,approvedRequest:input.approvedRequest.text,locale:input.locale,authoredFields:documentWorkReviewFields(input,narrative),selection:documentWorkSelectionSchema.parse(selection)})}],
     schema,schemaName:"document_work_source_review_revision_v3",
-    dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},maxOutputTokens:4000,
+    dataHandling:{classification:"restricted",purpose:"case_analysis",requiredPolicyVersion:providerDataPolicyVersion},maxOutputTokens:documentWorkSourceReviewMaxOutputTokens,
   });
   const parsed=schema.safeParse(response.output);if(!parsed.success)throw failed();
   const {revisedSelection,...wire}=parsed.data;

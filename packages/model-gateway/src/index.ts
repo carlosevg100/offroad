@@ -7,7 +7,7 @@
  * refusal handling, minimization of personal identifiers, cassettes for
  * deterministic tests, and content-free call logs.
  */
-export const modelGatewayVersion = "2026.09.01-data-policy-v3";
+export const modelGatewayVersion = "2026.09.24-calibrated-reservation-v4";
 
 export * from "./lineage";
 export * from "./data-policy";
@@ -17,6 +17,9 @@ export * from "./resource-eligibility";
 export * from "./types";
 export * from "./policy";
 export * from "./pricing";
+export * from "./model-limits";
+export * from "./token-estimate";
+export {conservativeTextReservationUsd} from "./conservative-reservation";
 export * from "./repair";
 export * from "./redaction";
 export * from "./cassette";

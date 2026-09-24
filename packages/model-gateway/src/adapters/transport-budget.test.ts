@@ -14,6 +14,17 @@ describe("SDK transport budget boundary",()=>{
   expect(response.usageKnown).toBe(true);
   expect(response.usage).toEqual({inputTokens:160,outputTokens:10,cachedInputTokens:20,cacheCreationInputTokens:40});
  });
+ it("preserves OpenAI cache-write tokens, reported inside input_tokens from GPT-5.6 on",async()=>{
+  const body=(details:Record<string,number>)=>({id:"synthetic",object:"response",status:"completed",model:"gpt-5.6-terra",output:[{type:"message",role:"assistant",content:[{type:"output_text",text:'{"ok":true}',annotations:[]}]}],
+   usage:{input_tokens:15_000,output_tokens:10,input_tokens_details:details,output_tokens_details:{reasoning_tokens:0}}});
+  const adapterWith=(details:Record<string,number>)=>createOpenAIAdapter({client:new OpenAI({apiKey:"synthetic-only",fetch:async()=>new Response(JSON.stringify(body(details)),{headers:{"content-type":"application/json"}})})});
+  const written=await adapterWith({cached_tokens:12_000,cache_write_tokens:3_000}).complete({...request,model:"gpt-5.6-terra"});
+  expect(written.usageKnown).toBe(true);
+  expect(written.usage).toEqual({inputTokens:15_000,outputTokens:10,cachedInputTokens:12_000,cacheCreationInputTokens:3_000,reasoningTokens:0});
+  // Reads and writes cannot together exceed the input they are part of.
+  const impossible=await adapterWith({cached_tokens:12_000,cache_write_tokens:3_001}).complete({...request,model:"gpt-5.6-terra"});
+  expect(impossible.usageKnown).toBe(false);
+ });
  for(const provider of ["anthropic","openai"] as const){
   it(`${provider} opt-in sends exactly one HTTP attempt on a retryable response`,async()=>{
    let attempts=0;

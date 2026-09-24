@@ -92,7 +92,10 @@ export type Usage = {
   inputTokens: number;
   outputTokens: number;
   cachedInputTokens: number;
-  /** Tokens written to the current five-minute ephemeral Anthropic cache. */
+  /**
+   * Input tokens written to the provider's prompt cache, billed at the model's cache-write rate:
+   * Anthropic's five-minute ephemeral cache and OpenAI's cache from GPT-5.6 on.
+   */
   cacheCreationInputTokens?: number;
   reasoningTokens?: number;
 };
@@ -230,7 +233,7 @@ export type GatewayCallLog = {
 export class ModelGatewayError extends Error {
   constructor(
     message: string,
-    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "output_truncated" | "cassette_missing" | "timeout" | "data_policy_violation",
+    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "output_truncated" | "cassette_missing" | "timeout" | "data_policy_violation" | "input_limit_exceeded" | "output_limit_exceeded",
     readonly details?: unknown,
   ) {
     super(message);

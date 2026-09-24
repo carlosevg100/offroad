@@ -1,0 +1,153 @@
+{
+ "schemaVersion": "reservation-calibration.v1",
+ "measuredOn": "2026-09-24",
+ "rule": "ASCII digits and punctuation count one token each; every other UTF-8 byte counts the provider's rate; each request adds a fixed framing allowance. Compositions count the texts the estimator reads from the adapter payload: system blocks or instructions, every text part, and the JSON Schema the provider compiles.",
+ "samples": [
+  {
+   "id": "gc01-baseline-2026-09-04-gc01-t01",
+   "provider": "anthropic",
+   "model": "claude-opus-5",
+   "evidence": "docs/product/gold-cases/runs/gc01/baseline/2026-09-04-23-18-46/run.json turns[0].inputTokens",
+   "request": "d7fc09445868c1e7d4558ea1ad2ee0f4f3dca3ea8573ff53632ab0f60092d9c9",
+   "realInputTokens": 508910,
+   "denseCharacters": 186803,
+   "otherBytes": 891200
+  },
+  {
+   "id": "gc01-baseline-2026-09-04-gc01-t02",
+   "provider": "anthropic",
+   "model": "claude-opus-5",
+   "evidence": "docs/product/gold-cases/runs/gc01/baseline/2026-09-04-23-18-46/run.json turns[1].inputTokens",
+   "request": "071d4b137548c6703472eed396a9c4e17e1d8d4dd56a3a1a2b8639a5e119d9c6",
+   "realInputTokens": 515321,
+   "denseCharacters": 189145,
+   "otherBytes": 902714
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-33a4e5d2",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation 4b980cbd-a5f3-4425-a246-e3b9bedd9515",
+   "request": "prompt c326df9cf15c1263ebc0b36c25b0744863ea2ea9812844b7213a99827991bff7 input 33a4e5d2aeb94e927710539ca37765d61c91b2adc57434b8467d016e806b02c7",
+   "realInputTokens": 3444,
+   "denseCharacters": 1087,
+   "otherBytes": 7671
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-51f158a4",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation 2257ced5-2754-4928-9b95-28ba09674eef",
+   "request": "prompt c326df9cf15c1263ebc0b36c25b0744863ea2ea9812844b7213a99827991bff7 input 51f158a4c0486f2db9ad7e058f7d1998ea5f9a521bf714a212dcc912590611bf",
+   "realInputTokens": 3419,
+   "denseCharacters": 1080,
+   "otherBytes": 7725
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-3e1ddb25",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation 389754b4-660e-4101-ab76-f62f684ed17a",
+   "request": "prompt c326df9cf15c1263ebc0b36c25b0744863ea2ea9812844b7213a99827991bff7 input 3e1ddb25a944a123f827e5837f9791a38e412e423978facfcb24497d2fddbc6e",
+   "realInputTokens": 3431,
+   "denseCharacters": 1083,
+   "otherBytes": 7730
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-48853d05",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation b89c16ff-1c66-4dec-a46f-fdd4d9573703",
+   "request": "prompt 0518f677f93dbb4045c945d014e82f4170c73efc9a1e85ef40a8b1fb36a63b59 input 48853d05fee3c97f678c47fbedc0e5df2fe4883f4123b6167b5c0baff3c7fb98",
+   "realInputTokens": 4615,
+   "denseCharacters": 1469,
+   "otherBytes": 10428
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-a77da8e4",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation 470702c4-b31f-4fcd-b531-fefac7de547d",
+   "request": "prompt 0518f677f93dbb4045c945d014e82f4170c73efc9a1e85ef40a8b1fb36a63b59 input a77da8e4b2b9b1289e19fc7aa19c73356b529427c65d3cc22f4448be85670fcd",
+   "realInputTokens": 4519,
+   "denseCharacters": 1457,
+   "otherBytes": 10341
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-89349135",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation 07c5178d-1796-40b8-8a78-39a81288ecb7",
+   "request": "prompt 0518f677f93dbb4045c945d014e82f4170c73efc9a1e85ef40a8b1fb36a63b59 input 89349135506812e73f2e5edca04906390a238519737614a5f705bd79f16c117f",
+   "realInputTokens": 4558,
+   "denseCharacters": 1460,
+   "otherBytes": 10323
+  },
+  {
+   "id": "documentary-34467680287-gpt-5.6-terra-89349135",
+   "provider": "openai",
+   "model": "gpt-5.6-terra",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation 06ff1696-f471-40d1-ae85-4522b393f47d",
+   "request": "prompt 0518f677f93dbb4045c945d014e82f4170c73efc9a1e85ef40a8b1fb36a63b59 input 89349135506812e73f2e5edca04906390a238519737614a5f705bd79f16c117f",
+   "realInputTokens": 2020,
+   "denseCharacters": 1088,
+   "otherBytes": 9765
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-31b05baa",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation a6eb90d5-eb29-4364-976e-beb620509ac1",
+   "request": "prompt 0518f677f93dbb4045c945d014e82f4170c73efc9a1e85ef40a8b1fb36a63b59 input 31b05baaf14bec7da749262d8feca9a81eb08ded5dec3e6710d893b415038c43",
+   "realInputTokens": 4780,
+   "denseCharacters": 1481,
+   "otherBytes": 11112
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-722faf14",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation ff71d1b1-d47a-4ba4-8dc6-eab84eb393c5",
+   "request": "prompt 0518f677f93dbb4045c945d014e82f4170c73efc9a1e85ef40a8b1fb36a63b59 input 722faf147381128b46350b5016e3bb5c559d40469b8a57fff9c228cda2cf4784",
+   "realInputTokens": 4684,
+   "denseCharacters": 1460,
+   "otherBytes": 10839
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-4ee0d646",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation 07dfb795-b7f7-4468-ac6e-3cffd3799f7b",
+   "request": "prompt 0518f677f93dbb4045c945d014e82f4170c73efc9a1e85ef40a8b1fb36a63b59 input 4ee0d646e902ce1679de0d00983c863ddffdd3f259a458789a041587f81fba5f",
+   "realInputTokens": 3869,
+   "denseCharacters": 1163,
+   "otherBytes": 9002
+  },
+  {
+   "id": "documentary-34467680287-claude-sonnet-5-09155272",
+   "provider": "anthropic",
+   "model": "claude-sonnet-5",
+   "evidence": "packages/evals/fixtures/document-work-product-live-34467680287-evidence.json invocation dad91cce-e5f7-40fd-8eeb-b1ad01d4536e",
+   "request": "prompt 0518f677f93dbb4045c945d014e82f4170c73efc9a1e85ef40a8b1fb36a63b59 input 0915527226629fb807dd3c611e15640081e02475f36fff9baf97ac72e8a71bbe",
+   "realInputTokens": 3952,
+   "denseCharacters": 1176,
+   "otherBytes": 9130
+  }
+ ],
+ "o200kCorpus": {
+  "tool": "js-tiktoken 1.0.21, o200k_base ranks, counted offline",
+  "files": 365,
+  "roots": [
+   "docs/product/gold-cases",
+   "packages/evals/fixtures",
+   "packages/testing-fixtures/assets",
+   "packages/credit-playbook/knowledge"
+  ],
+  "largestRateNeeded": 0.2118,
+  "largestRateFile": "docs/product/gold-cases/reviews/gc01/gc01-answer-key-2026-09-05-00-57-01/prompt.md",
+  "gc01Baseline20260904": {
+   "o200kTokens": 336264,
+   "claudeOpus5InputTokens": 508910
+  }
+ }
+}

@@ -8,13 +8,15 @@ import {describe, expect, it} from "vitest";
 import {sha256Hex} from "./gold-baseline";
 
 /**
- * `run-gold-baseline.ts --dry-run` must assemble the complete information base (turns, documents
- * and sources) and reach its offline return without touching a model. The script runs here as a
+ * `run-gold-baseline.ts --dry-run` must assemble the information base (turns, documents and
+ * sources, each source whole or as a reference so that every request fits the models that may
+ * answer it) and reach its offline return without touching a model. The script runs here as a
  * child process, the way the workflow runs it, in an environment stripped of every provider key.
  * Case gc01 uses public CVM filings and synthetic turns, so no client data is involved.
  */
 const evalsDir = resolve(import.meta.dirname, "..");
 const script = resolve(evalsDir, "scripts", "run-gold-baseline.ts");
+const camil = resolve(evalsDir, "..", "testing-fixtures", "assets", "camil");
 const tsxPackage = JSON.parse(readFileSync(resolve(evalsDir, "node_modules", "tsx", "package.json"), "utf8")) as {bin: string};
 const tsxCli = resolve(evalsDir, "node_modules", "tsx", tsxPackage.bin);
 /** The child never sees a provider key, whatever the parent environment holds. */
@@ -70,6 +72,26 @@ describe("gold baseline dry run", () => {
         const section = rendered.slice(start, next === -1 ? undefined : next);
         expect(section.length).toBeGreaterThan(document.chars);
       }
+      // Each attached document carries the hash of its own bytes, taken before the parser consumed them.
+      for (const [file, hash] of [["01_ITR_1T26_31mai2026.pdf", sha256Hex(readFileSync(resolve(camil, "01_ITR_1T26_31mai2026.pdf")))],
+        ["02_Proposta_Administracao_AGOE_2026.pdf", sha256Hex(readFileSync(resolve(camil, "02_Proposta_Administracao_AGOE_2026.pdf")))]]) {
+        expect(rendered).toContain(`Arquivo: ${file}. SHA-256: ${hash}.`);
+      }
+
+      // Every request fits: each turn on each route is estimated within its ceiling, the sources
+      // left out keep their reference, and the budget covers every attempt's reservation.
+      const requests = lines.filter((line) => line.startsWith("request gc01-"));
+      expect(requests).toHaveLength(2);
+      for (const line of requests) {
+        const routes = [...line.matchAll(/(anthropic|openai)\/[\w.-]+ ~(\d+) of (\d+) tokens, reservation \$(\d+\.\d{4})/g)];
+        expect(routes.map((route) => route[1])).toEqual(["anthropic", "openai"]);
+        for (const route of routes) expect(Number(route[2])).toBeLessThanOrEqual(Number(route[3]));
+      }
+      const omitted = lines.filter((line) => line.startsWith("selection ") && line.endsWith("reference only")).length;
+      expect(lines.filter((line) => line.startsWith("selection ")).length).toBeGreaterThan(omitted);
+      expect(rendered).toContain(`Por limite de tamanho do pedido ao modelo, ${omitted} destas fontes aparecem só com a referência, sem o conteúdo.`);
+      expect(rendered.match(/Conteúdo não incluído neste pedido por limite de tamanho/g) ?? []).toHaveLength(omitted);
+      expect(result.stdout).toMatch(/^reservations of every attempt: \$\d+\.\d{2}$/m);
     } finally {
       rmSync(dir, {recursive: true, force: true});
     }

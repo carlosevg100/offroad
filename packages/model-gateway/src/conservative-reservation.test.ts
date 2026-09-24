@@ -2,8 +2,8 @@ import {describe, expect, it} from "vitest";
 import {z} from "zod";
 import {conservativeTextReservationUsd} from "./conservative-reservation";
 import {createModelGateway} from "./gateway";
-import {listPrices} from "./pricing";
-import {buildAnthropicParams} from "./adapters/anthropic";
+import {COST_RESERVATION_SAFETY_FACTOR, listPrices} from "./pricing";
+import {estimateRequestInputTokens} from "./token-estimate";
 import type {AdapterRequest, AdapterResponse, GatewayRequest, ProviderAdapter} from "./types";
 
 const schema=z.object({ok:z.boolean()});
@@ -16,10 +16,27 @@ function adapter(provider:"anthropic"|"openai",outputs:Array<unknown|Error>=[{ok
  return {calls,implementation};
 }
 describe("opt-in conservative textual reservation",()=>{
- it("reserves every Anthropic input byte at the 5-minute cache-write tariff",()=>{
-  const bytes=Buffer.byteLength(JSON.stringify(buildAnthropicParams(adapterRequest)),"utf8")+Buffer.byteLength(JSON.stringify(z.toJSONSchema(schema)),"utf8")+2048;
-  const expected=Math.round((bytes*3*1.25+100*15))/1_000_000*1.1;
-  expect(conservativeTextReservationUsd("anthropic",adapterRequest,listPrices)).toBeCloseTo(expected,8);
+ it("reserves the calibrated input: the cache-writable prefix at the write rate, the rest at the input rate, and the whole output",()=>{
+  const estimate=estimateRequestInputTokens("anthropic",adapterRequest);
+  expect(estimate.cacheWritableInputTokens).toBeGreaterThan(0);expect(estimate.cacheWritableInputTokens).toBeLessThan(estimate.inputTokens);
+  const price=listPrices["claude-sonnet-5"]!;
+  const expected=Math.round(estimate.cacheWritableInputTokens*price.cacheWrite+(estimate.inputTokens-estimate.cacheWritableInputTokens)*price.input+100*price.output)/1_000_000*COST_RESERVATION_SAFETY_FACTOR;
+  expect(conservativeTextReservationUsd("anthropic",adapterRequest,listPrices)).toBeCloseTo(expected,9);
+  // OpenAI's implicit caching may write the whole prompt at 1.25x from GPT-5.6 on.
+  const openai={...adapterRequest,model:"gpt-5.6-terra"};const openaiEstimate=estimateRequestInputTokens("openai",openai);
+  expect(openaiEstimate.cacheWritableInputTokens).toBe(openaiEstimate.inputTokens);
+  expect(conservativeTextReservationUsd("openai",openai,listPrices)).toBeCloseTo(Math.round(openaiEstimate.inputTokens*2.5+100*12)/1_000_000*COST_RESERVATION_SAFETY_FACTOR,9);
+ });
+ it("prices a request estimated above 272K input tokens at the GPT-5.6 long-context tariff, in full",()=>{
+  const long={...adapterRequest,model:"gpt-5.6-sol",input:[{type:"text" as const,text:"a".repeat(1_200_000)}],maxOutputTokens:1000};
+  const estimate=estimateRequestInputTokens("openai",long);
+  expect(estimate.inputTokens).toBeGreaterThan(272_000);
+  // 2x input (cache writes included) and 1.5x output for the whole request.
+  expect(conservativeTextReservationUsd("openai",long,listPrices)).toBeCloseTo(Math.round(estimate.inputTokens*10+1000*30)/1_000_000*COST_RESERVATION_SAFETY_FACTOR,9);
+  const short={...long,input:[{type:"text" as const,text:"a".repeat(1_000_000)}]};
+  const shortEstimate=estimateRequestInputTokens("openai",short);
+  expect(shortEstimate.inputTokens).toBeLessThanOrEqual(272_000);
+  expect(conservativeTextReservationUsd("openai",short,listPrices)).toBeCloseTo(Math.round(shortEstimate.inputTokens*5+1000*20)/1_000_000*COST_RESERVATION_SAFETY_FACTOR,9);
  });
  for(const part of ["system","schema"] as const)it(`refuses oversized ${part} before either provider is called`,async()=>{
   const primary=adapter("anthropic"),fallback=adapter("openai");
@@ -34,7 +51,9 @@ describe("opt-in conservative textual reservation",()=>{
   expect(conservativeTextReservationUsd("anthropic",{...adapterRequest,outputMode:"prompted_json"},listPrices)).toBeGreaterThan(0);
  });
  it("fails closed for non-text, missing prices and invalid prices",async()=>{
-  for(const [input,prices] of [[[{type:"pdf",base64:"AA=="}],listPrices],[request.input,{}],[request.input,{...listPrices,"claude-sonnet-5":{...listPrices["claude-sonnet-5"]!,input:NaN}}]] as const){
+  const sonnet=listPrices["claude-sonnet-5"]!;
+  for(const [input,prices] of [[[{type:"pdf",base64:"AA=="}],listPrices],[request.input,{}],[request.input,{...listPrices,"claude-sonnet-5":{...sonnet,input:NaN}}],
+   [request.input,{...listPrices,"claude-sonnet-5":{...sonnet,cacheWrite:sonnet.input/2}}],[request.input,{...listPrices,"claude-sonnet-5":{...sonnet,longContext:{aboveInputTokens:272_000,inputMultiplier:0.5,outputMultiplier:1}}}]] as const){
    const primary=adapter("anthropic");const gateway=createModelGateway({adapters:{anthropic:primary.implementation},prices,budgetReservation:"conservative_text_v1",budget:{maxCostUsd:3,maxCalls:26}});
    await expect(gateway.complete({...request,input:[...input]})).rejects.toMatchObject({code:"budget_exceeded"});expect(primary.calls).toHaveLength(0);
   }
