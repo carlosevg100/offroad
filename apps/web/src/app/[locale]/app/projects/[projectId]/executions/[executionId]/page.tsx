@@ -13,7 +13,8 @@ export default async function ExecutionPage({params}: {params: Promise<{locale: 
   const {supabase, organization} = await requireWorkspace(locale);
   const {data: project} = await supabase.from("capital_projects").select("id,project_name").eq("organization_id", organization.id).eq("id", projectId).maybeSingle();
   if (!project) notFound();
-  const read = await supabase.rpc("read_work_execution_v1", {p_execution_id: executionId});
+  // The v2 reader is the v1 read plus the gate receipt the request carried, if any.
+  const read = await supabase.rpc("read_work_execution_v2", {p_execution_id: executionId});
   // An execution the reader cannot see is indistinguishable from one that does not exist.
   if (read.error?.code === "42501") notFound();
   let view: WorkExecutionView | null = null;
