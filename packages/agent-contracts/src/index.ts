@@ -14,6 +14,8 @@ export * from "./semantic-object-extractor";
 export * from "./reading-manifest";
 export * from "./execution-contract";
 export * from "./execution-gates";
+export * from "./governed-evaluation-contract";
+export * from "./gold-baseline";
 export * from "./autonomy";
 export * from "./findings";
 
