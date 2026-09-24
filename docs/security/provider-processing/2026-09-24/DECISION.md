@@ -19,7 +19,7 @@ A cada tentativa, inclusive reparo e fallback, a autoridade no banco confere:
 - provedor, conta, projeto, vínculo de credencial, endpoint, região, modelo e recurso, por correspondência exata, sem herança entre modelos, recursos, contas ou chaves;
 - finalidade, classe do dado e direitos;
 - uso para treinamento proibido e elegibilidade declarada;
-- cada categoria de retenção contra o limite do job, reduzido pelo prazo mais curto das fontes e dependências, e as exceções de retenção aceitas;
+- cada categoria de retenção contra o limite do job, reduzido pelo prazo mais curto das fontes e dependências;
 - os direitos atuais das fontes do job.
 
 Combinação sem atestação continua recusada: modelo, recurso, conta, chave ou região nova exige conferência e registro próprios. A revogação encerra a atestação na hora e a identidade revogada não volta. Cliente e worker continuam sem poder registrar ou revogar atestações. Se os termos do provedor ou a configuração da conta mudarem, o caminho continua sendo revogar e registrar nova conferência.
