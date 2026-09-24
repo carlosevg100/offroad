@@ -442,3 +442,116 @@ Os fatos de mercado citados foram lidos em fontes públicas em 24/09/2026: Banco
 - **Revisão.** Mudança da política de privacidade ou do termo de consentimento; mudança do esquema da tabela; relatório mensal com observação agregada sem consentimento registrado, que bloqueia o registro até a correção.
 - **Estado.** Preparado pela Offroad em 24/09/2026; aguardando revisão do fundador.
 
+### market.mandates
+
+- **Decisão que governa.** A quem a companhia pode ser apresentada: quais instituições e veículos compram este instrumento, neste tíquete, prazo, setor e garantia, com que fonte e com que data. Sem registro governado, MK-12 não roda filtro duro e nenhum destinatário entra em onda (MK-17).
+- **Valor proposto.** Registro governado de mandatos, sem instituição incluída nesta proposta, com estas regras:
+  - Tipos de comprador: fundo de crédito high grade (MK-01); high yield e special situations (MK-02); fundo com mandato dedicado (MK-03); gestora e veículo FIDC (MK-04); family office (MK-05); banco médio (MK-06); securitizadora (MK-07), sempre veículo e prestador, nunca investidor final; factor e forfait (MK-08); fundo de infraestrutura e imobiliário (MK-09); fundo de venture debt (MK-10).
+  - Campos de critério: ativo, instrumentos, tíquete mínimo e máximo, prazo mínimo e máximo, setores, setores vedados, geografias, garantia mínima exigida, alavancagem máxima, cobertura mínima, indexadores aceitos, faixa de risco mínima, retorno alvo em pontos-base e restrições declaradas.
+  - Metadados de cada campo: proveniência, data em que o fato era verdadeiro, quem confirmou, localizador da fonte e confiança.
+  - Classes de fonte (MK-14): confirmação direta (`declared`, `conversation`), regra pública (`published`), observação governada (`observed`) e não confirmada (`inferred`). Filtro duro só roda sobre as três primeiras; `inferred` nunca elimina nem inclui.
+  - Precedência por campo: para restrição legal ou regulamentar (instrumentos, setores vedados, geografias), regulamento publicado, depois declaração, conversa, observação e inferência; para apetite (ativo, tíquete, prazo, setores, garantia, alavancagem, cobertura, indexadores, faixa de risco, retorno), declaração, conversa, observação, regulamento e inferência.
+  - Ordem dos filtros duros (MK-12): tíquete, setor vedado, instrumento, prazo, exigência de garantia e jurisdição.
+  - Fontes públicas: regulamento no sistema da CVM (Resolução CVM 175, art. 10, parágrafo único); dados abertos da CVM de cadastro de fundos (`fi-cad`), composição da carteira (`fi-doc-cda`), informe mensal de FIDC (`fidc-doc-inf_mensal`) e ofertas encerradas com investidores por tipo (`oferta-distrib`).
+  - Protocolo de confirmação: a reconfirmação atualiza só os campos que cobriu; registra data, autor, meio e campos; não revela a companhia nem o caso.
+  - Os investidores fictícios de `packages/investor-base` nunca entram neste registro.
+  - Observação pública de quem comprou, ofertas encerradas registradas pela CVM de 24/09/2025 a 23/09/2026, participação na quantidade subscrita:
+    - Debêntures de até R$ 150 milhões (134 ofertas): consórcio de distribuição 54%, fundos de investimento 43%.
+    - Debêntures acima de R$ 150 milhões (388): consórcio 57%, fundos 20%, demais instituições financeiras 17%, pessoas naturais 4%, demais pessoas jurídicas 3%.
+    - Notas comerciais: consórcio 99% até R$ 150 milhões (197 ofertas) e 100% acima (79).
+    - CRI e CRA de até R$ 150 milhões (400): fundos 85%, demais instituições financeiras 6%, pessoas naturais 4%, demais pessoas jurídicas 3%, consórcio 3%.
+    - CRI e CRA acima de R$ 150 milhões (123): fundos 60%, consórcio 34%, pessoas naturais 5%.
+- **Regra de aplicação.**
+  1. Cada critério é uma lista de observações com fonte e data; a observação aceita segue a precedência do campo, e as demais ficam registradas.
+  2. Divergência entre o que o fundo diz e o que o fundo faz é mostrada, nunca resolvida em silêncio.
+  3. Campo sem data é campo vazio para o filtro duro; campo vencido segue `policy.market.mandate_max_age`.
+  4. Instrumento fora do regulamento é vedação: elimina, e a mesa não apresenta "para testar" (MK-12).
+  5. O racional de cada passante cita os valores que cabem, os pontos a confirmar e a frase de tese (MK-13), sem percentual de compatibilidade.
+  6. Executor atual: `buildMarketTruthSet` mapeia `declared` e `conversation` para confirmação direta, `published` para regra pública, `observed` para observação governada e o resto para não confirmado, e bloqueia o destinatário com campo duro ausente, vencido, não confirmado ou divergente. O resolvedor de `packages/fund-mandate` usa uma ordem única de proveniência (`declared`, `conversation`, `observed`, `published`, `inferred`) para todos os campos; a precedência por campo acima coloca o regulamento à frente nas restrições legais, e esse ajuste é pendência de engenharia.
+- **Fundamento.** MK-03 lembra que o item fora do regulamento é vedação, e não preferência; por isso, em restrição legal, o regulamento publicado vem antes do comportamento observado. Em apetite, o comportamento recente diz mais que um material público antigo, e a ordem se inverte. Os dados da CVM do último ano mostram onde está o comprador externo: fundos de investimento compraram 85% da quantidade de CRI e CRA de até R$ 150 milhões e 43% das debêntures nessa faixa, enquanto as notas comerciais ficaram quase inteiras com o consórcio de distribuição. O registro deve priorizar gestoras de fundos de crédito e de recebíveis, e a leitura de rota precisa registrar que nota comercial de tíquete médio tem efeito econômico de crédito bancário.
+- **Fontes.**
+  - Resolução CVM 175/2022, parte geral, arts. 10 e 61, e Anexo Normativo I, arts. 22 e 24, texto consolidado consultado em 24/09/2026: https://conteudo.cvm.gov.br/legislacao/resolucoes/resol175.html
+  - CVM, Dados Abertos (`fi-cad`, `fi-doc-cda`, `fidc-doc-inf_mensal`, `oferta-distrib`), consultados em 24/09/2026: https://dados.cvm.gov.br/
+  - Resolução CVM 30/2021, art. 11 (investidores profissionais), consultada em 24/09/2026: https://conteudo.cvm.gov.br/legislacao/resolucoes/resol030.html
+  - House Playbook Offroad v2.1, MK-01 a MK-14, consultado em 24/09/2026: https://github.com/carlosevg100/offroad/blob/main/packages/credit-playbook/knowledge/HOUSE-PLAYBOOK-COMPLETO-v2.md
+  - Modelo de mandato e proveniência em `packages/fund-mandate/src/mandate.ts` e `provenance.ts`, consultados em 24/09/2026: https://github.com/carlosevg100/offroad/blob/main/packages/fund-mandate/src/provenance.ts
+- **Uso no método.**
+  - MK-01 a MK-10: tipo de comprador de cada registro.
+  - MK-11: registro governado com dono e cadência.
+  - MK-12: filtros duros na ordem fixada.
+  - MK-13: aderência explicável sobre os passantes.
+  - MK-14: classe de fonte e data de cada campo.
+  - `screen-investor-mandates` e `execute-qualified-introduction` (`src/procedures/growth-capex.ts`) declaram a chave.
+- **Revisão.** Primeira carga de mandatos reais (cada registro passa pela confirmação antes de entrar em filtro); mudança da Resolução CVM 175 ou dos conjuntos de dados abertos; recálculo trimestral da observação de compradores.
+- **Estado.** Preparado pela Offroad em 24/09/2026; aguardando revisão do fundador.
+
+### policy.market.mandate_max_age
+
+- **Decisão que governa.** Por quanto tempo um campo de mandato sustenta um filtro duro antes de exigir reconfirmação. Campo vencido rebaixa a confiança e tira o fundo dos filtros duros até ser reconfirmado (MK-11).
+- **Valor proposto.**
+  - Para o executor (`market_distribution_policies.mandate_max_age_months` e `buildMarketTruthSet`): `mandateMaxAgeMonths` 3, prazo único aplicado aos campos de filtro duro ativo, instrumento, tíquete, prazo, setor, geografia, alavancagem e cobertura.
+  - Prazo por campo, em meses: ativo 3; tíquete 6; prazo 6; garantia exigida 6; alavancagem máxima 6; cobertura mínima 6; indexadores 12; instrumentos 12; setores 12; setores vedados 12; geografias 12.
+  - Prazo máximo por proveniência, em meses: declaração 12; conversa 6; regulamento publicado 12, ou até o arquivamento de nova versão na CVM, o que vier antes; observação 6; inferência 0, nunca em filtro duro.
+  - Family office: todos os campos com no máximo 3 meses.
+  - Prazo efetivo: o menor entre o prazo do campo, o da proveniência e o do perfil.
+  - Reconfirmação antes da onda: ativo e tíquete confirmados diretamente nos últimos 30 dias para qualquer destinatário de uma onda (MK-17).
+  - Rebaixamento de proveniência (`statementDecayMonths` do resolvedor): 3 meses.
+  - Campo vencido: sai dos filtros duros, rebaixa a confiança e entra na lista de reconfirmação; o registro não é apagado.
+  - Cadência de atualização: regulamentos e cadastro relidos mensalmente na CVM; carteira observada mensalmente, depois do prazo de 10 dias úteis do Anexo Normativo I da Resolução CVM 175, art. 24, II.
+- **Regra de aplicação.**
+  1. O executor atual aplica 3 meses a todos os campos de filtro duro, o prazo do campo mais volátil. Quando ler o prazo por campo, a matriz substitui o prazo único.
+  2. A idade é contada da data em que o fato era verdadeiro (`observedAt`), não da data de gravação.
+  3. Regulamento relido e vigente na CVM renova a data do campo publicado.
+  4. Carteira observada entra com a data da posição; posições omitidas pela gestora só entram quando divulgadas.
+  5. Antes de uma onda, ativo e tíquete de cada destinatário precisam de confirmação direta de até 30 dias, mesmo que o campo ainda esteja dentro dos 3 meses.
+  6. Precedência: o prazo efetivo mais curto prevalece; nenhuma urgência da companhia estende prazo de mandato.
+- **Fundamento.** Mandato tem partes estáveis e partes voláteis. Instrumento permitido, setor vedado e geografia vêm do regulamento e mudam por assembleia; 12 meses, ou a próxima versão arquivada, basta. Tíquete, prazo, garantia exigida e critérios de crédito mudam com captação, resgate e concentração da carteira; 6 meses é o limite. Estar comprando é o campo que mais muda, e family office muda sem aviso (MK-05); 3 meses é o teto e 30 dias a exigência antes de expor a companhia. O executor lê um único prazo para todos os campos duros; entre errar deixando passar um fundo que parou de comprar e errar pedindo uma reconfirmação a mais, a casa escolhe o segundo, porque introdução a fundo fora de mandato queima o caso (RF-17) e a relação. O rebaixamento em 3 meses corrige um efeito do resolvedor: com o padrão de 12 meses, uma declaração de 8 meses (vencida para filtro) venceria uma conversa de 1 mês (válida), e o fundo sairia do filtro com informação fresca disponível. A Resolução CVM 175 dá o ritmo da fonte observada: composição da carteira em até 10 dias úteis do mês seguinte (Anexo Normativo I, art. 24, II), com posições omitidas divulgadas em até 90 dias, prorrogáveis uma vez até 180 (art. 22, §§ 3º e 4º). Observação de 6 meses já absorve essa defasagem.
+- **Fontes.**
+  - Resolução CVM 175/2022, Anexo Normativo I, arts. 22 e 24, texto consolidado consultado em 24/09/2026: https://conteudo.cvm.gov.br/legislacao/resolucoes/resol175.html
+  - House Playbook Offroad v2.1, MK-05, MK-11 a MK-14 e RF-17, consultado em 24/09/2026: https://github.com/carlosevg100/offroad/blob/main/packages/credit-playbook/knowledge/HOUSE-PLAYBOOK-COMPLETO-v2.md
+  - Tabela `market_distribution_policies` (restrição de 1 a 24 meses) e resolvedor de proveniência, consultados em 24/09/2026: https://github.com/carlosevg100/offroad/blob/main/supabase/migrations/20260826032043_m8_qualified_introductions.sql
+- **Uso no método.**
+  - MK-11: validade de cada campo e rebaixamento de confiança.
+  - MK-12: filtro duro só com campo dentro do prazo.
+  - MK-13: pontos a confirmar listados no racional.
+  - MK-17: reconfirmação de 30 dias antes da onda.
+  - `screen-investor-mandates` e `execute-qualified-introduction` (`src/procedures/growth-capex.ts`) declaram a chave. `buildProviderCaseFit` recebe hoje o prazo digitado na tela; este valor é o padrão da casa para esse campo.
+- **Revisão.** Quando o executor ler prazo por campo; mudança dos prazos de divulgação da CVM; taxa de reconfirmação que altere campo duro acima de 25% num trimestre, sinal de prazo longo; revisão semestral.
+- **Estado.** Preparado pela Offroad em 24/09/2026; aguardando revisão do fundador.
+
+### policy.market.distribution-waves
+
+- **Decisão que governa.** Quantos destinatários recebem a companhia de cada vez, o que precisa acontecer antes de ampliar e em que forma a apresentação é feita. Envio amplo e indiferenciado é proibido (MK-16); a introdução qualificada autorizada é o limite da execução atual (MK-18).
+- **Valor proposto.**
+  - Para o executor (`market_distribution_policies` e `buildMarketTruthSet`): `waveLimit` 3 e `learningGateAnchorCount` 2.
+  - Portão de aprendizado: a onda seguinte só abre depois de retorno útil de 2 âncoras (apetite, referência indicativa e objeções registrados) ou, passados 10 dias úteis, depois de revisão registrada de material e estrutura; nunca por expansão automática.
+  - Objeção estrutural repetida por 2 âncoras: revisão ES-40 antes da onda seguinte.
+  - Ondas seguintes: até 3 destinatários cada.
+  - Máximo sem expansão excepcional: 9 destinatários por caso. Acima disso, racional escrito, consentimento da companhia vinculado à versão do material e destinatários aderentes com mandato atual.
+  - Forma: comunicação individual, com tese por destinatário (MK-13). Proibida a comunicação padronizada e massificada, que caracteriza oferta pública mesmo com destinatários identificados (Resolução CVM 160, art. 3º, § 1º, V).
+  - Rota de oferta de valores mobiliários: consulta sigilosa a potenciais investidores (Resolução CVM 160, art. 6º), somente a investidores profissionais (Resolução CVM 30, art. 11), com compromisso de sigilo obtido do interlocutor, sem vinculação, oferta, aceitação ou pagamento, e com lista de consultados com data e hora e materiais arquivados. O assessor contratado pelo ofertante consulta até o protocolo do pedido de registro (art. 6º, § 1º, III); a oferta pública é coordenada por instituição habilitada (art. 5º), e a Offroad não distribui.
+  - Rota de lote único: oferta de lote único e indivisível a um único investidor (Resolução CVM 160, art. 8º, IV), sem material publicitário e com as restrições de 180 dias dos §§ 3º e 4º.
+  - Pacote por destinatário: teaser por padrão; memorando, term sheet indicativo, perguntas e respostas e índice de documentos só com autorização expressa para aquele destinatário.
+  - Registro de cada introdução: destinatário, racional, materiais, versões, autorização, data e hora.
+- **Regra de aplicação.**
+  1. A primeira onda tem até 3 âncoras, escolhidos por aderência, qualidade do contato e capacidade de retorno útil, todos com mandato atual e reconfirmação de 30 dias (`policy.market.mandate_max_age`).
+  2. A companhia autoriza cada onda com os destinatários nomeados e a versão do material; mudança de material exige nova autorização.
+  3. A onda seguinte depende do portão de aprendizado e, havendo objeção estrutural repetida, da revisão ES-40.
+  4. Urgência real (IN-22) comprime o calendário sem eliminar portão (MK-17).
+  5. Precedência: a regra da CVM prevalece sobre a política da casa quando for mais restritiva; a autorização da companhia prevalece sobre qualquer recomendação da mesa.
+  6. Executor atual: `buildMarketTruthSet` bloqueia plano com mais destinatários que `waveLimit`, destinatário fora da lista autorizada, fora da shortlist elegível, com material ou mandato diferente da versão autorizada, ou com autorização revogada. O mesmo `waveLimit` vale para todas as ondas, o que coincide com esta política.
+- **Fundamento.** Os dados da CVM do último ano mostram o tamanho real do comprador: a mediana de investidores no encerramento é de 2 a 4 até R$ 50 milhões e de 7 em debêntures de R$ 50 a 150 milhões. Uma primeira onda de 3 cobre o comprador típico da faixa menor, e três ondas de 3 cobrem a mediana da faixa seguinte; acima de R$ 150 milhões, a rota é oferta coordenada, conduzida por instituição habilitada. Ondas pequenas preservam o caso: cada destinatário a mais aumenta o risco de o caso circular sem controle (RF-17), e duas objeções iguais já dizem mais que uma terceira apresentação. Os 10 dias úteis cobrem o ciclo de comitê de um fundo de crédito com calendário fixo (MK-01). A Resolução CVM 160 dá os limites legais: comunicação padronizada e massificada é oferta pública (art. 3º, § 1º, V); a consulta antes do registro só é permitida a profissionais, sob sigilo e sem vinculação, com lista de consultados (art. 6º); oferta pública exige coordenador habilitado (art. 5º).
+- **Fontes.**
+  - Resolução CVM 160/2022, arts. 3º, 5º, 6º e 8º, texto consolidado com alterações até a Resolução CVM 226/2025, consultado em 24/09/2026: https://conteudo.cvm.gov.br/legislacao/resolucoes/resol160.html
+  - Resolução CVM 30/2021, art. 11, consultada em 24/09/2026: https://conteudo.cvm.gov.br/legislacao/resolucoes/resol030.html
+  - CVM, Dados Abertos, Ofertas Públicas de Distribuição, arquivo de 23/09/2026: https://dados.cvm.gov.br/dataset/oferta-distrib
+  - House Playbook Offroad v2.1, MK-15 a MK-18, IN-22 e RF-17, consultado em 24/09/2026: https://github.com/carlosevg100/offroad/blob/main/packages/credit-playbook/knowledge/HOUSE-PLAYBOOK-COMPLETO-v2.md
+  - Tabela `market_distribution_policies` (restrições de `wave_limit` e `learning_gate_anchor_count`), consultada em 24/09/2026: https://github.com/carlosevg100/offroad/blob/main/supabase/migrations/20260826032043_m8_qualified_introductions.sql
+- **Uso no método.**
+  - MK-15: grupo de âncoras dentro do limite e portão de aprendizado.
+  - MK-16: limite de envios simultâneos e bloqueio de comunicação genérica.
+  - MK-17: plano ordenado, autorizado e com calendário.
+  - MK-18: pacote mínimo autorizado e registro da introdução.
+  - `execute-qualified-introduction` (`src/procedures/growth-capex.ts`) declara a chave.
+- **Revisão.** Mudança da Resolução CVM 160 ou da classificação de investidor profissional; recálculo trimestral da mediana de compradores por faixa; primeiros 10 casos com ondas executadas, para confirmar o portão de 10 dias úteis.
+- **Estado.** Preparado pela Offroad em 24/09/2026; aguardando revisão do fundador.
