@@ -27,14 +27,8 @@ function inspect(text: string) {
   function visit(node: ts.Node) {
     if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword
       || ts.isIdentifier(node.expression) && node.expression.text === "require")) {
-      const argument = node.arguments[0]?.getText(root);
-      const approvedLocal = node.expression.kind === ts.SyntaxKind.ImportKeyword && (
-        argument === 'new URL("../../../apps/document-worker/src/agent-operation-brief.ts",import.meta.url).href'
-        || argument === "path" && text.includes('const path=pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),"../../../apps/document-worker/src/document-work-source-review.ts")).href;')
-        || /^workerPath\("(document-work-selection|document-work-source-review|document-work-product)"\)$/.test(argument ?? "")
-          && text.includes('const workerPath=(name:string)=>pathToFileURL(resolve(dirname(fileURLToPath(import.meta.url)),`../../../apps/document-worker/src/${name}.ts`)).href;')
-      );
-      if (!approvedLocal) failures.push("unreviewed dynamic import/require");
+      // Every family runs in the worker now, so no script loads worker code at run time.
+      failures.push("unreviewed dynamic import/require");
     }
     if (ts.isIdentifier(node) && bindings.has(node.text) && !ts.isImportSpecifier(node.parent)) {
       if (!ts.isCallExpression(node.parent) || node.parent.expression !== node) failures.push("factory alias/escape");
@@ -113,18 +107,11 @@ const files = readdirSync(directory);
 const entries = files.filter(name => name.endsWith(".ts")).map(name => ({name, text: readFileSync(new URL(name, directory), "utf8")}));
 const live = entries.filter(entry => inspect(entry.text).bindings.size > 0);
 /**
- * The scripts that still construct a provider and stay contained until their family moves to the
- * governed transport. A converted script leaves this list in the same change that proves its path.
+ * The scripts allowed to construct a provider. Every evaluation family now requests through the
+ * governed transport (stage 17, increment 5), so the list is empty and any script that constructs
+ * a provider fails this suite.
  */
-const contained = [
-  "continue-document-work-product-live.ts",
-  "measure-classification.ts",
-  "measure-extraction.ts",
-  "probe-structured-output.ts",
-  "run-advisor-response-live.ts",
-  "run-document-work-product-live.ts",
-  "run-executive-synthesis-live.ts",
-];
+const contained: string[] = [];
 
 describe("historical live evaluation containment", () => {
   it("denies execution without an environment opt-out", () => {
@@ -166,7 +153,7 @@ describe("historical live evaluation containment", () => {
 });
 
 describe("provider keys in evaluation scripts", () => {
-  it("are read by no script outside the contained eight", () => {
+  it("are read by no script", () => {
     for (const entry of entries) if (!contained.includes(entry.name)) expect(providerKeyReads(entry.text), entry.name).toEqual([]);
   });
   it.each([
@@ -262,5 +249,110 @@ describe("the intent router gate through the governed transport", () => {
     const log = vi.fn();
     runInNewContext(`(function() { ${branch.getText(source)}; throw new Error("reached live path"); })()`, {dryRun: true, console: {log}});
     expect(log).toHaveBeenCalledWith("dry run: no model called");
+  });
+});
+
+describe("the extraction, classification and probe measurements through the governed transport", () => {
+  const converted = ["measure-extraction.ts", "measure-classification.ts", "probe-structured-output.ts"]
+    .map(name => [name, entries.find(entry => entry.name === name)!] as const);
+
+  it.each(converted)("%s imports the governed transport client and no gateway factory, product model caller, guard or provider key", (_name, script) => {
+    expect(importsFrom(script.text, "../src/governed-transport")).toEqual(expect.arrayContaining(["governedEvaluationEvidence", "requestGovernedEvaluation", "readGovernedTransportEnvironment"]));
+    expect(gatewayImports(script.text).filter(name => !/^[a-z][A-Za-z]*$/.test(name) || name.startsWith("create"))).toEqual([]);
+    expect(importsFrom(script.text, "../src/live-evaluation-authority")).toEqual([]);
+    const names = identifiers(script.text);
+    // The worker runs the extractor and the classifier over the snapshot; the script only parses, reads back and scores.
+    for (const name of ["createModelGateway", "createAnthropicAdapter", "createOpenAIAdapter", "createClassifier", "extractDocument", guard]) expect(names.has(name), name).toBe(false);
+    expect(providerKeyReads(script.text)).toEqual([]);
+    expect(inspect(script.text)).toMatchObject({failures: [], bindings: new Set()});
+  });
+
+  it.each(converted)("%s returns from its dry run before the environment is read or anything is requested", (_name, script) => {
+    const source = parse(script.text);
+    const main = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "main") as ts.FunctionDeclaration;
+    const statements = main.body!.statements;
+    const dry = statements.findIndex(node => ts.isIfStatement(node) && node.expression.getText(source) === "dryRun");
+    const request = statements.findIndex(node => node.getText(source).includes("requestGovernedEvaluation("));
+    const environment = statements.findIndex(node => node.getText(source).includes("readGovernedTransportEnvironment("));
+    expect(dry).toBeGreaterThan(-1);
+    expect(request).toBeGreaterThan(dry);
+    expect(environment).toBeGreaterThan(dry);
+    // Nothing before the dry return names the transport, and the dry branch itself returns before anything live.
+    for (const node of statements.slice(0, dry + 1)) expect(node.getText(source)).not.toMatch(/requestGovernedEvaluation|readGovernedTransportEnvironment|governedEvaluationEvidence/);
+    const branch = statements[dry] as ts.IfStatement;
+    const log = vi.fn();
+    runInNewContext(`(function() { ${branch.getText(source)}; throw new Error("reached live path"); })()`, {dryRun: true, console: {log}});
+    expect(log).toHaveBeenCalledWith("dry run: no model called");
+  });
+});
+
+// Stage 17, increment 5: the document work product family (four scripts) through the governed transport.
+describe("the document work product family through the governed transport", () => {
+  const family = ["continue-document-work-product-live.ts", "run-advisor-response-live.ts", "run-document-work-product-live.ts", "run-executive-synthesis-live.ts"];
+  /** Every import() and require() a script makes: a converted script loads no module at run time. */
+  const dynamicLoads = (text: string): string[] => {
+    const root = parse(text), loads: string[] = [];
+    const visit = (node: ts.Node) => {
+      if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword || ts.isIdentifier(node.expression) && node.expression.text === "require")) loads.push(node.getText(root));
+      ts.forEachChild(node, visit);
+    };
+    visit(root);
+    return loads;
+  };
+  /** The statements of main(), and the index of the first one whose text matches. */
+  const mainOf = (text: string) => {
+    const source = parse(text);
+    const main = source.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "main") as ts.FunctionDeclaration;
+    const statements = main.body!.statements.map(node => node.getText(source));
+    return {statements, at: (pattern: RegExp) => statements.findIndex(statement => pattern.test(statement))};
+  };
+
+  it("converts all four scripts, so none of them is left among the contained", () => {
+    expect(entries.filter(entry => family.includes(entry.name)).map(entry => entry.name).sort()).toEqual(family);
+    for (const name of family) expect(contained).not.toContain(name);
+  });
+
+  it("detects a runtime module load and a request made before the snapshot", () => {
+    expect(dynamicLoads('const {x} = await import("../../../apps/document-worker/src/document-work-product.ts");')).toHaveLength(1);
+    expect(dynamicLoads('const sdk = require("openai");')).toHaveLength(1);
+    const early = mainOf("async function main() { assertDocumentWorkLiveEnvironment(process.env); const evaluation = await requestGovernedEvaluation({}, {environment: readGovernedTransportEnvironment()}); const snapshot = buildAdvisorResponseLiveSnapshot(); }");
+    expect(early.at(/requestGovernedEvaluation\(/)).toBeLessThan(early.at(/=\s*build[A-Za-z]+Snapshot\(/));
+  });
+
+  for (const name of family) describe(name, () => {
+    const text = () => entries.find(entry => entry.name === name)!.text;
+
+    it("imports the governed transport client and no gateway, factory, guard, SDK, runtime module or provider key", () => {
+      expect(importsFrom(text(), "../src/governed-transport")).toEqual(expect.arrayContaining(["requestGovernedEvaluation", "readGovernedTransportEnvironment", "governedEvaluationEvidence"]));
+      expect(gatewayImports(text())).toEqual([]);
+      expect(importsFrom(text(), "../src/live-evaluation-authority")).toEqual([]);
+      const names = identifiers(text());
+      for (const forbidden of ["createModelGateway", "createAnthropicAdapter", "createOpenAIAdapter", guard]) expect(names.has(forbidden), forbidden).toBe(false);
+      expect(providerKeyReads(text())).toEqual([]);
+      expect(inspect(text())).toMatchObject({failures: [], bindings: new Set()});
+      expect(dynamicLoads(text())).toEqual([]);
+    });
+
+    it("checks its protected run and builds its snapshot offline before the governed request, and records every outcome before reading success", () => {
+      const {at, statements} = mainOf(text());
+      const protectedRun = at(/assertDocumentWorkLiveEnvironment\(process\.env\)|protected_continuation_required/);
+      const snapshot = at(/=\s*build[A-Za-z]+Snapshot\(/);
+      const environment = at(/=\s*readGovernedTransportEnvironment\(\)/);
+      const request = at(/requestGovernedEvaluation\(/);
+      const evidence = at(/governedEvaluationEvidence\(/);
+      const partial = at(/^if\s*\(\s*evaluation\.outcome\s*!==\s*"succeeded"\s*\)/);
+      const read = at(/read[A-Za-z]+Result\(evaluation\.result,\s*snapshot\)/);
+      expect(protectedRun).toBeGreaterThan(-1);
+      expect(snapshot).toBeGreaterThan(protectedRun);
+      expect(environment).toBeGreaterThan(snapshot);
+      expect(request).toBeGreaterThan(environment);
+      expect(statements[request]).toMatch(/\{\s*environment\s*,/);
+      expect(evidence).toBeGreaterThan(request);
+      expect(partial).toBeGreaterThan(evidence);
+      expect(statements[partial]).toMatch(/process\.exitCode\s*=\s*3;?\s*return;?/);
+      expect(read).toBeGreaterThan(partial);
+      if (name === "continue-document-work-product-live.ts") expect(at(/"started\.json"/)).toBeGreaterThan(environment);
+      if (name === "continue-document-work-product-live.ts") expect(at(/"started\.json"/)).toBeLessThan(request);
+    });
   });
 });

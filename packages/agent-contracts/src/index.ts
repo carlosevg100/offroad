@@ -16,6 +16,8 @@ export * from "./execution-contract";
 export * from "./execution-gates";
 export * from "./governed-evaluation-contract";
 export * from "./gold-baseline";
+export * from "./structured-output-probe";
+export * from "./document-work-evaluation";
 export * from "./autonomy";
 export * from "./findings";
 

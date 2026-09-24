@@ -1,5 +1,14 @@
 name: Complete the second documentary evaluation once
 
+# The one control the second authorized documentary round left unexecuted, run once. This workflow
+# already used its single slot (run 34472249638, 10 September 2026), and its guard below refuses
+# any other run by design; it is kept governed so that nothing in the repository reads a provider
+# key. The job holds no provider key: the script requests the one review as a governed evaluation
+# through the evaluator's own Supabase session, with the call and the dollars its source receipt
+# left as the contract's budget, and the worker runs it under the database's reservations. It reads
+# the evaluator's credential exactly as the other evaluation workflows do and fails closed, by name,
+# while that secret does not exist.
+
 on:
   workflow_dispatch:
 
@@ -17,7 +26,8 @@ jobs:
     if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main' && github.run_attempt == 1
     environment: intent-router-gold-main
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # The script waits for the committed result until the evaluation budget expires, plus a grace.
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -60,19 +70,43 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::389642461544:role/offroadGitHubEvalsRole
           aws-region: sa-east-1
-      - name: Execute only the previously uncalled control
+      - name: Execute only the previously uncalled control through the governed evaluation transport
+        env:
+          # The production project, as the worker's task definition names it; not a secret.
+          SUPABASE_URL: https://ifnogpksgdadruooqydi.supabase.co
         run: |
           set -euo pipefail
-          ANTHROPIC_API_KEY=$(aws secretsmanager get-secret-value --secret-id offroad/anthropic-api-key --query SecretString --output text)
-          echo "::add-mask::$ANTHROPIC_API_KEY"
-          export ANTHROPIC_API_KEY
-          set +e
-          pnpm --filter @offroad/evals exec tsx scripts/continue-document-work-product-live.ts
-          result=$?
-          set -e
-          if [[ -f "$RUNNER_TEMP/documentary-continuation/summary.md" ]]; then
-            cat "$RUNNER_TEMP/documentary-continuation/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          # The evaluator's credential and the evaluation organization. Absent until the founder
+          # creates them: fail closed, by name, before anything is requested. Nothing read here is
+          # ever printed, and each value is masked the moment it exists.
+          if ! evaluator="$(aws secretsmanager get-secret-value --secret-id offroad/evaluator --query SecretString --output text 2>/dev/null)" || [ -z "$evaluator" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator is absent or not readable by offroadGitHubEvalsRole. The evaluator account, the evaluation organization and this secret are created by the founder's decision; nothing was requested."
+            exit 1
           fi
+          while IFS= read -r line; do if [ -n "$line" ]; then echo "::add-mask::$line"; fi; done <<<"$evaluator"
+          field() { jq -er --arg key "$1" '.[$key] | select(type == "string" and length > 0)' <<<"$evaluator" 2>/dev/null; }
+          if ! OFFROAD_EVALUATOR_EMAIL="$(field email)" || ! OFFROAD_EVALUATOR_PASSWORD="$(field password)" || ! OFFROAD_EVALUATION_ORGANIZATION_ID="$(field organizationId)"; then
+            echo "::error title=Governed evaluation not configured::offroad/evaluator must hold email, password and organizationId; nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$OFFROAD_EVALUATOR_EMAIL"
+          echo "::add-mask::$OFFROAD_EVALUATOR_PASSWORD"
+          echo "::add-mask::$OFFROAD_EVALUATION_ORGANIZATION_ID"
+          unset evaluator
+          if ! SUPABASE_PUBLISHABLE_KEY="$(aws secretsmanager get-secret-value --secret-id offroad/supabase-publishable-key --query SecretString --output text 2>/dev/null)" || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error title=Governed evaluation not configured::offroad/supabase-publishable-key is not readable by offroadGitHubEvalsRole; the founder's setup grants it with the evaluator secret. Nothing was requested."
+            exit 1
+          fi
+          echo "::add-mask::$SUPABASE_PUBLISHABLE_KEY"
+          export SUPABASE_URL SUPABASE_PUBLISHABLE_KEY OFFROAD_EVALUATOR_EMAIL OFFROAD_EVALUATOR_PASSWORD OFFROAD_EVALUATION_ORGANIZATION_ID
+
+          result=0
+          pnpm --filter @offroad/evals exec tsx scripts/continue-document-work-product-live.ts 2>&1 | tee "$RUNNER_TEMP/governed-evaluation.log" || result=$?
+          {
+            if [[ -f "$RUNNER_TEMP/documentary-continuation/summary.md" ]]; then cat "$RUNNER_TEMP/documentary-continuation/summary.md"; echo; fi
+            grep -E '^evaluation ' "$RUNNER_TEMP/governed-evaluation.log" | sed 's/^/- /' || true
+          } >> "$GITHUB_STEP_SUMMARY"
+          # Status 3 is a partial evaluation: its evidence is preserved below, and the run fails.
           exit "$result"
       - name: Preserve the linked receipt, including interrupted claims
         if: always()
