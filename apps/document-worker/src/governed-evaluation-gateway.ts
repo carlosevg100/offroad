@@ -128,6 +128,8 @@ export function createGovernedEvaluationGateway(input: {
 
  const decide = async ({provider, model, resources, attempt}: {provider: Provider; model: string; resources: readonly string[]; attempt: GatewayAttempt}): Promise<ProcessingEligibilityDecision> => {
   if (stopped) stop(stopped);
+  // One attempt at a time: settlement pairs each reservation with the one call log that follows it.
+  if (atProvider) stop("reservation_mismatch");
   // The attempt before this one is over: whatever it reserved is settled before anything new is reserved.
   if (armed) armed = null;
   if (!await flush(false)) stop("transport_failed");
