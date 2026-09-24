@@ -62,7 +62,7 @@ jobs:
   database:
     name: Database (migrations, RLS, lint)
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -183,6 +183,33 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-evaluation-concurrency.py
+
+      # The governed evaluation consumer runs against this same disposable stack: the worker's own
+      # RPC client and consumer, the evaluator's JWT session, and a cassette in place of the
+      # provider. No provider key, no network beyond the local stack, synthetic data only.
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Governed evaluation through the worker consumer with a cassette provider
+        env:
+          OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
+            node scripts/ci/verify-governed-evaluation.mjs
 
       - name: Concurrent R01 pause, release and policy revocation
         env:
