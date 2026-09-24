@@ -269,7 +269,8 @@ export const evaluationGatewayRequestSchema = z.object({
   }).strict()).max(4),
   answer: z.object({
     provider: z.enum(["anthropic", "openai"]),
-    model: z.string().min(1).max(120),
+    /** The model name the provider answered with, which may carry a dated suffix. */
+    model: z.string().min(1).max(300),
     effort: z.enum(["low", "medium", "high", "xhigh", "max"]),
     usage: z.object({inputTokens: whole, outputTokens: whole, cachedInputTokens: whole, cacheCreationInputTokens: whole.optional(), reasoningTokens: whole.optional()}).strict(),
     costUsd: dollars,
@@ -650,15 +651,17 @@ export const executiveSynthesisLiveResultSchema = z.object({
     locale: z.enum(["pt", "en"]),
     passed: z.boolean(),
     brief: z.json().nullable(),
-    failure: z.string().min(1).max(2_000).nullable(),
-    summaryClaimIds: z.array(z.string().min(1).max(200)),
+    /** The first blocking finding names a claim id of the author's, so its length is the author's too. */
+    failure: z.string().min(1).nullable(),
+    /** Claim ids are the author's own, unbounded by the brief schema; the result keeps them as written. */
+    summaryClaimIds: z.array(z.string().min(1)),
     start: whole,
     end: whole,
     numericIssues: z.array(z.string().max(2_000)),
     semanticIssues: z.array(z.string().max(2_000)),
     semanticAudit: z.json().optional(),
     reviewHistory: z.json().optional(),
-    pendingJudgmentIds: z.array(z.string().min(1).max(200)),
+    pendingJudgmentIds: z.array(z.string().min(1)),
   }).strict()).max(2),
   gatewayRequests: z.array(evaluationGatewayRequestSchema).max(8),
 }).strict();
