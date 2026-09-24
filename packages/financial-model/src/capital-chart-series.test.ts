@@ -190,6 +190,14 @@ describe("capital chart series", () => {
     expect(capitalChartSeriesSchema.safeParse({...series, pieces: [{...first!, conclusion: {code: "free_text", values: first!.conclusion.values}}, ...rest]}).success).toBe(false);
   });
 
+  it("is exported from the package index with the MD test evaluator", async () => {
+    const index = await import("./index");
+    expect(index.deriveCapitalChartSeries).toBe(deriveCapitalChartSeries);
+    expect(index.capitalChartSeriesSchema).toBe(capitalChartSeriesSchema);
+    expect(typeof index.evaluateMdTest).toBe("function");
+    expect(index.capitalMdTestVersion).toBe("2026.09.24-v1");
+  });
+
   it("refuses anything but a procedure packet", () => {
     const [, build] = capitalPacketFixtures[2];
     const delivery = prepareCapitalDecisionDelivery({review: capitalDecisionReviewFixture().input, material: {requested: false, audience: "authorized_work_participants"}});
