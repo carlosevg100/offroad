@@ -28,3 +28,4 @@ export * from "./financing-costs";
 export * from "./numeric-representation";
 export * from "./operating-cash-projection";
 export * from "./capital-period-cash";
+export * from "./rate-composition";
