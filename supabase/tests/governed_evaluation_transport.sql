@@ -106,7 +106,9 @@ do $$declare base jsonb:=pg_temp.evaluation_contract('e5a10000-0000-4000-c000-00
 end $$;
 select pg_temp.expect_evaluation_error($q$select private.request_governed_evaluation_v1(pg_temp.evaluation_contract('e5a10000-0000-4000-c000-000000000001')::text,'{"cases":[]}','e5a10000-0000-4000-8000-000000000003')$q$,'evaluation_contract_denied','snapshot bytes are bound to the contract fingerprint');
 do $$begin
- if exists(select 1 from private.governed_evaluations) or exists(select 1 from public.processing_jobs where kind='governed_evaluation') then raise exception 'a refused request left rows behind';end if;
+ if exists(select 1 from private.governed_evaluations where organization_id in ('e5a10000-0000-4000-9000-000000000001','e5a10000-0000-4000-9000-000000000002'))
+ or exists(select 1 from public.processing_jobs where kind='governed_evaluation' and organization_id in ('e5a10000-0000-4000-9000-000000000001','e5a10000-0000-4000-9000-000000000002'))
+ then raise exception 'a refused request left rows behind';end if;
  perform pg_temp.evaluation_pass('refused requests store nothing');
 end $$;
 
@@ -153,6 +155,18 @@ do $$declare r jsonb;job uuid:=(select (request->>'jobId')::uuid from evaluation
 end $$;
 
 -- 6. The transport is closed until an operator opens it; the method release path never opens it.
+-- Installed closed: until an operator acts on it, the switch has only its installation ledger row.
+do $$begin
+ if exists(select 1 from private.platform_capability_release_events where capability_key='governed-evaluation-transport' and operation<>'INSERT') then
+  perform pg_temp.evaluation_pass('the transport switch changed after installation only through ledgered writes');
+ elsif not exists(select 1 from private.platform_capability_releases where capability_key='governed-evaluation-transport' and not released and exposure='internal') then
+  raise exception 'the transport switch was not installed closed';
+ else
+  perform pg_temp.evaluation_pass('the transport switch is installed closed');
+ end if;
+end $$;
+-- A database where an operator already opened it is paused here, inside this rolled-back proof.
+select private.release_platform_capability_v1('e5a10000-0000-4000-a000-000000000020','governed-evaluation-transport',false,'internal','e5a10000-0000-4000-8000-000000000002','Synthetic pause before the closed-switch proof');
 do $$declare r jsonb:=pg_temp.poll_evaluation();begin
  if (r->>'claimed')::boolean then raise exception 'a closed transport handed out an evaluation';end if;
  perform pg_temp.evaluation_pass('the evaluation claim returns nothing while the switch is off');
