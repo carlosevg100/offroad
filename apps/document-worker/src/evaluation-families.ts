@@ -1,5 +1,6 @@
 import {baselineGeneralistSnapshotSchema, baselineSnapshotContentHashes, runBaselineGeneralist, type BaselineGeneralistResult} from "@offroad/agent-contracts";
 import {defaultTaskPolicies, type ModelGateway, type ModelRef, type TaskKind, type TaskPolicy} from "@offroad/model-gateway";
+import {measurementEvaluationFamilies} from "./measurement-evaluation-families";
 
 /**
  * An evaluation family turns one snapshot into model calls through the governed gateway it
@@ -43,4 +44,4 @@ export const baselineGeneralistFamily: EvaluationFamily = {
 };
 
 /** The contract's audience.scriptId selects the family; a script without one sends nothing. */
-export const evaluationFamilies: Readonly<Record<string, EvaluationFamily>> = Object.freeze({"run-gold-baseline": baselineGeneralistFamily});
+export const evaluationFamilies: Readonly<Record<string, EvaluationFamily>> = Object.freeze({"run-gold-baseline": baselineGeneralistFamily, ...measurementEvaluationFamilies});
