@@ -20,6 +20,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: [
           "domain-event-outbox.v1",
           "pinned-execution-consumer.v1",
+          "governed-evaluation-consumer.v1",
           "explicit-resource-access.v1",
           "explicit-workspace-context.v1",
           "authenticated-document-storage.v1",
@@ -78,6 +79,26 @@ describe("worker runtime schema preflight", () => {
     }))).rejects.toThrow("missing capabilities: domain-event-outbox.v1");
   });
 
+  it("refuses to start before the governed evaluation migration", async () => {
+    await expect(assertWorkerRuntimeSchema(clientWith({
+      data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
+        capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "governed-evaluation-consumer.v1")},
+      error: null,
+    }))).rejects.toThrow("missing capabilities: governed-evaluation-consumer.v1");
+  });
+
+  // The check is image-requires-subset-of-database: a database that lists a capability an image
+  // does not know keeps that image booting. This is what lets a migration add a key before the
+  // image that requires it is deployed, without stopping the image already running.
+  it("boots against a database that lists capabilities this image does not require", async () => {
+    const contract = await assertWorkerRuntimeSchema(clientWith({
+      data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
+        capabilities: [...REQUIRED_WORKER_RUNTIME_CAPABILITIES, "future-consumer.v9"]},
+      error: null,
+    }));
+    expect(contract.capabilities).toContain("future-consumer.v9");
+  });
+
   it("keeps the image constant aligned with the latest contract migration", () => {
     const migrationsDirectory = fileURLToPath(new URL("../../../supabase/migrations/", import.meta.url));
     const contractMigration = readdirSync(migrationsDirectory)
@@ -101,7 +122,12 @@ describe("worker runtime schema preflight", () => {
     const consumerSql = readFileSync(`${migrationsDirectory}/${consumerExtension}`, "utf8");
     expect(consumerSql).toContain("pinned-execution-consumer.v1");
     expect(consumerSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
+    const evaluationExtension = readdirSync(migrationsDirectory).find((name) => name.endsWith("_governed_evaluation_transport.sql"));
+    expect(evaluationExtension).toBeDefined();
+    const evaluationSql = readFileSync(`${migrationsDirectory}/${evaluationExtension}`, "utf8");
+    expect(evaluationSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
+    expect(evaluationSql).toContain(`replace(body,'pinned-execution-consumer.v1','pinned-execution-consumer.v1","governed-evaluation-consumer.v1')`);
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "governed-evaluation-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && !accessCapabilities.includes(capability))) {
       expect(sql).toContain(`'${capability}'`);
     }
     const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);

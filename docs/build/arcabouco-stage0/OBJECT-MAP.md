@@ -2734,3 +2734,49 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 - `r:private.execution_gate_receipts`
 - `trigger:private.execution_gate_receipts.execution_gate_receipts_immutable`
 - `trigger:private.execution_gate_receipts.execution_gate_receipts_truncate_guard`
+
+## Etapa 17, incremento 5: transporte governado de avaliações (24/09/2026)
+
+40 objetos novos e 0 atualizados. Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.
+- `function:private.account_evaluation_duration_v1(p_job processing_jobs)`
+- `function:private.claim_governed_evaluation_v1(p_worker_token text, p_job_id uuid, p_lease_seconds integer)`
+- `function:private.close_exhausted_evaluations_v1()`
+- `function:private.evaluation_for_lease_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_require_transport boolean, p_allow_completed boolean)`
+- `function:private.governed_evaluation_transport_released_v1()`
+- `function:private.guard_evaluation_operation_receipt_v1()`
+- `function:private.guard_platform_evaluation_organization_v1()`
+- `function:private.ledger_platform_evaluation_organization_v1()`
+- `function:private.lock_governed_evaluation_v1(p_job_id uuid, p_require_transport boolean)`
+- `function:private.platform_evaluator_live_v1(p_user_id uuid)`
+- `function:private.provider_processing_decision_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text)`
+- `function:private.read_governed_evaluation_v1(p_execution_id uuid, p_actor_user_id uuid)`
+- `function:private.register_platform_evaluation_organization_v1(p_command uuid, p_organization uuid, p_note text, p_actor_user_id uuid)`
+- `function:private.release_governed_evaluation_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)`
+- `function:private.request_governed_evaluation_v1(p_contract_text text, p_snapshot_text text, p_actor_user_id uuid)`
+- `function:private.require_platform_evaluator_v1(p_user_id uuid)`
+- `function:private.worker_claim_evaluation_v1(p_worker_token text)`
+- `function:private.worker_commit_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)`
+- `function:private.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)`
+- `function:private.worker_reserve_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer)`
+- `function:private.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)`
+- `function:public.worker_claim_evaluation_v1(p_worker_token text)`
+- `function:public.worker_commit_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)`
+- `function:public.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)`
+- `function:public.worker_reserve_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer)`
+- `function:public.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)`
+- `r:private.evaluation_budget_accounts`
+- `r:private.evaluation_operation_receipts`
+- `r:private.evaluation_result_receipts`
+- `r:private.governed_evaluation_request_events`
+- `r:private.governed_evaluations`
+- `r:private.platform_evaluation_organization_events`
+- `r:private.platform_evaluation_organizations`
+- `trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_undeletable`
+- `trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_updated`
+- `trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_guard`
+- `trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_updated`
+- `trigger:private.platform_evaluation_organization_events.platform_evaluation_organization_events_immutable`
+- `trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_guard`
+- `trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_ledger`
+
+Mais 17 objetos criados em laço pela mesma migração (políticas de negação, gatilhos de imutabilidade e de truncamento das sete tabelas de avaliação), registrados com a linha do `execute format` como fonte (`dynamic_ddl`).

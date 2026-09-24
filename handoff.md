@@ -1,3 +1,9 @@
+## Etapa 17 / 5: avaliações governadas
+
+Transporte governado de avaliações no banco, instalado fechado: principal avaliador, organizações de avaliação, identidade imutável, orçamento, recibos por operação ligados à decisão de processamento, commit que reautoriza as rotas e chave de transporte fechada. [Escopo, compatibilidade, provas e o que falta](arcabouco/etapa-17-5-avaliacoes-governadas.md).
+
+5 transporte: migração `governed_evaluation_transport` em staging `20260924005113` e produção `20260924011837`; CI da suíte inteira de banco rodada com a migração antes da aplicação; instrução gravada em produção idêntica ao arquivo; corpos reescritos idênticos aos de staging; advisors de segurança zero; inventário com 57 objetos; catálogo de produção 2314; tipos regenerados de produção. Dry-run do baseline corrigido em #746.
+
 ## Etapa 17 / 4C: gates profissionais da execução
 
 Os gates de cadastro e pesquisa, seleção de método, convenções, voz, gráficos e teste do MD envolvem a execução na base do servidor, na ação da web e na leitura; nada entra no executor v4. [Escopo, decisões e provas](arcabouco/etapa-17-4c-gates.md).

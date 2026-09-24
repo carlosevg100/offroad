@@ -347,6 +347,60 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.account_evaluation_duration_v1(p_job processing_jobs)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.account_evaluation_duration_v1(p_job processing_jobs)",
+          "kind": "function",
+          "name": "account_evaluation_duration_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.account_evaluation_duration_v1(p_job processing_jobs)",
+          "kind": "function",
+          "name": "account_evaluation_duration_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 451,
+          "anchor": "create function private.account_evaluation_duration_v1(p_job public.processing_jobs) returns private.evaluation_budget_accounts",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.account_execution_duration_v1(p_job processing_jobs)",
       "kind": "function",
       "catalogues": {
@@ -6480,6 +6534,60 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "function:private.claim_governed_evaluation_v1(p_worker_token text, p_job_id uuid, p_lease_seconds integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.claim_governed_evaluation_v1(p_worker_token text, p_job_id uuid, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "claim_governed_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_job_id uuid, p_lease_seconds integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.claim_governed_evaluation_v1(p_worker_token text, p_job_id uuid, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "claim_governed_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_job_id uuid, p_lease_seconds integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 582,
+          "anchor": "create function private.claim_governed_evaluation_v1(p_worker_token text,p_job_id uuid,p_lease_seconds integer default 60) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.claim_storage_rotation_v1(p_worker_token text)",
       "kind": "function",
       "catalogues": {
@@ -6605,6 +6713,60 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.close_exhausted_evaluations_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.close_exhausted_evaluations_v1()",
+          "kind": "function",
+          "name": "close_exhausted_evaluations_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.close_exhausted_evaluations_v1()",
+          "kind": "function",
+          "name": "close_exhausted_evaluations_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 466,
+          "anchor": "create function private.close_exhausted_evaluations_v1() returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.close_exhausted_executions_v1()",
@@ -9635,6 +9797,60 @@
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
+      "id": "function:private.evaluation_for_lease_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_require_transport boolean, p_allow_completed boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.evaluation_for_lease_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_require_transport boolean, p_allow_completed boolean)",
+          "kind": "function",
+          "name": "evaluation_for_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_require_transport boolean, p_allow_completed boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.evaluation_for_lease_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_require_transport boolean, p_allow_completed boolean)",
+          "kind": "function",
+          "name": "evaluation_for_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_require_transport boolean, p_allow_completed boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 433,
+          "anchor": "create function private.evaluation_for_lease_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_require_transport boolean,p_allow_completed boolean default false)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.execution_approval_input_fingerprint(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -11613,6 +11829,60 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.governed_evaluation_transport_released_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.governed_evaluation_transport_released_v1()",
+          "kind": "function",
+          "name": "governed_evaluation_transport_released_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.governed_evaluation_transport_released_v1()",
+          "kind": "function",
+          "name": "governed_evaluation_transport_released_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 384,
+          "anchor": "create function private.governed_evaluation_transport_released_v1() returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.governed_sector_context_inputs(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -11902,6 +12172,60 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.guard_evaluation_operation_receipt_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_evaluation_operation_receipt_v1()",
+          "kind": "function",
+          "name": "guard_evaluation_operation_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_evaluation_operation_receipt_v1()",
+          "kind": "function",
+          "name": "guard_evaluation_operation_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 232,
+          "anchor": "create function private.guard_evaluation_operation_receipt_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.guard_execution_approval_queue()",
@@ -12476,6 +12800,60 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.guard_platform_evaluation_organization_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_platform_evaluation_organization_v1()",
+          "kind": "function",
+          "name": "guard_platform_evaluation_organization_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_platform_evaluation_organization_v1()",
+          "kind": "function",
+          "name": "guard_platform_evaluation_organization_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 85,
+          "anchor": "create function private.guard_platform_evaluation_organization_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.guard_platform_ledger_truncate_v1()",
@@ -15751,6 +16129,60 @@
       ]
     },
     {
+      "id": "function:private.ledger_platform_evaluation_organization_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.ledger_platform_evaluation_organization_v1()",
+          "kind": "function",
+          "name": "ledger_platform_evaluation_organization_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.ledger_platform_evaluation_organization_v1()",
+          "kind": "function",
+          "name": "ledger_platform_evaluation_organization_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 96,
+          "anchor": "create function private.ledger_platform_evaluation_organization_v1() returns trigger language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.ledger_receivables_release_pause_v1()",
       "kind": "function",
       "catalogues": {
@@ -16807,6 +17239,60 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "function:private.lock_governed_evaluation_v1(p_job_id uuid, p_require_transport boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_governed_evaluation_v1(p_job_id uuid, p_require_transport boolean)",
+          "kind": "function",
+          "name": "lock_governed_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_require_transport boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_governed_evaluation_v1(p_job_id uuid, p_require_transport boolean)",
+          "kind": "function",
+          "name": "lock_governed_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_require_transport boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 415,
+          "anchor": "create function private.lock_governed_evaluation_v1(p_job_id uuid,p_require_transport boolean) returns public.processing_jobs",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.lock_governed_sector_lineage()",
@@ -18301,6 +18787,60 @@
       ]
     },
     {
+      "id": "function:private.platform_evaluator_live_v1(p_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.platform_evaluator_live_v1(p_user_id uuid)",
+          "kind": "function",
+          "name": "platform_evaluator_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_user_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.platform_evaluator_live_v1(p_user_id uuid)",
+          "kind": "function",
+          "name": "platform_evaluator_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_user_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 43,
+          "anchor": "create function private.platform_evaluator_live_v1(p_user_id uuid) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.platform_founder_registered_v1()",
       "kind": "function",
       "catalogues": {
@@ -18459,6 +18999,12 @@
           "path": "supabase/migrations/20260923223307_platform_operator_identity_ledger_guard.sql",
           "line": 8,
           "anchor": "create function private.platform_principal_live_v1(p_user_id uuid) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 38,
+          "anchor": "create or replace function private.platform_principal_live_v1(p_user_id uuid) returns boolean language sql stable security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
         }
       ]
@@ -19792,6 +20338,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.provider_processing_decision_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.provider_processing_decision_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text)",
+          "kind": "function",
+          "name": "provider_processing_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.provider_processing_decision_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text)",
+          "kind": "function",
+          "name": "provider_processing_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 320,
+          "anchor": "create function private.provider_processing_decision_v1(p_job public.processing_jobs,p_route jsonb,p_resources text[],p_purpose text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.provider_research_owned_sources_v1(p_organization_id uuid, p_as_of timestamp with time zone)",
@@ -21459,6 +22059,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.read_governed_evaluation_v1(p_execution_id uuid, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_governed_evaluation_v1(p_execution_id uuid, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "read_governed_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.read_governed_evaluation_v1(p_execution_id uuid, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "read_governed_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 799,
+          "anchor": "create function private.read_governed_evaluation_v1(p_execution_id uuid,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.read_institutional_configuration_reviews_v1(p_project_id uuid)",
@@ -25452,6 +26106,60 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.register_platform_evaluation_organization_v1(p_command uuid, p_organization uuid, p_note text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.register_platform_evaluation_organization_v1(p_command uuid, p_organization uuid, p_note text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "register_platform_evaluation_organization_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_organization uuid, p_note text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.register_platform_evaluation_organization_v1(p_command uuid, p_organization uuid, p_note text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "register_platform_evaluation_organization_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_organization uuid, p_note text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 107,
+          "anchor": "create function private.register_platform_evaluation_organization_v1(p_command uuid,p_organization uuid,p_note text,p_actor_user_id uuid) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.register_provider_mandate_v1(p_organization_id uuid, p_fund_id uuid, p_fund_name text, p_fund_strategy text, p_mandate jsonb)",
       "kind": "function",
       "catalogues": {
@@ -26096,6 +26804,60 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "function:private.release_governed_evaluation_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.release_governed_evaluation_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "release_governed_evaluation_transport_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.release_governed_evaluation_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "release_governed_evaluation_transport_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 391,
+          "anchor": "create function private.release_governed_evaluation_transport_v1(p_command uuid,p_released boolean,p_actor_user_id uuid,p_reason text) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.release_platform_capability_v1(p_command uuid, p_capability_key text, p_released boolean, p_exposure text, p_actor_user_id uuid, p_reason text)",
       "kind": "function",
       "catalogues": {
@@ -26689,6 +27451,60 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.request_governed_evaluation_v1(p_contract_text text, p_snapshot_text text, p_actor_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_governed_evaluation_v1(p_contract_text text, p_snapshot_text text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "request_governed_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_actor_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.request_governed_evaluation_v1(p_contract_text text, p_snapshot_text text, p_actor_user_id uuid)",
+          "kind": "function",
+          "name": "request_governed_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_contract_text text, p_snapshot_text text, p_actor_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 489,
+          "anchor": "create function private.request_governed_evaluation_v1(p_contract_text text,p_snapshot_text text,p_actor_user_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.request_origination_thesis_revision_v1(p_artifact_id uuid, p_artifact_fingerprint text, p_note text)",
@@ -27466,6 +28282,60 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.require_platform_evaluator_v1(p_user_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_platform_evaluator_v1(p_user_id uuid)",
+          "kind": "function",
+          "name": "require_platform_evaluator_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_user_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.require_platform_evaluator_v1(p_user_id uuid)",
+          "kind": "function",
+          "name": "require_platform_evaluator_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_user_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 50,
+          "anchor": "create function private.require_platform_evaluator_v1(p_user_id uuid) returns private.platform_principals",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.require_platform_method_operator_v1()",
       "kind": "function",
       "catalogues": {
@@ -27570,6 +28440,12 @@
           "path": "supabase/migrations/20260923200029_platform_operator_identity.sql",
           "line": 37,
           "anchor": "create function private.require_platform_principal_v1(p_user_id uuid,p_founder boolean default false) returns private.platform_principals",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 24,
+          "anchor": "create or replace function private.require_platform_principal_v1(p_user_id uuid,p_founder boolean default false) returns private.platform_principals",
           "mechanism": "direct_ddl"
         }
       ]
@@ -37208,6 +38084,12 @@
           "line": 150,
           "anchor": "create function private.worker_authorize_provider_processing_v1(p_job_id uuid,p_capability_token text,p_route jsonb,p_resources text[],p_purpose text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 367,
+          "anchor": "create or replace function private.worker_authorize_provider_processing_v1(p_job_id uuid,p_capability_token text,p_route jsonb,p_resources text[],p_purpose text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
@@ -37492,6 +38374,70 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.worker_claim_evaluation_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_claim_evaluation_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_claim_evaluation_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 609,
+          "anchor": "create function private.worker_claim_evaluation_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
@@ -37877,6 +38823,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_commit_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_commit_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "worker_commit_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_commit_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "worker_commit_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 738,
+          "anchor": "create function private.worker_commit_evaluation_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_contract_hash text,p_input_hash text,p_result_text text,p_outcome text,p_reason text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
@@ -45904,6 +46914,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "worker_renew_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "worker_renew_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 644,
+          "anchor": "create function private.worker_renew_evaluation_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
       "kind": "function",
       "catalogues": {
@@ -45967,6 +47041,70 @@
         }
       ],
       "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.worker_reserve_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_reserve_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer)",
+          "kind": "function",
+          "name": "worker_reserve_evaluation_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_reserve_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer)",
+          "kind": "function",
+          "name": "worker_reserve_evaluation_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 662,
+          "anchor": "create function private.worker_reserve_evaluation_operation_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_operation_id uuid,p_route jsonb,p_resources jsonb,p_reserved_microusd bigint,p_reserved_calls integer)",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
@@ -46218,6 +47356,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)",
+          "kind": "function",
+          "name": "worker_settle_evaluation_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)",
+          "kind": "function",
+          "name": "worker_settle_evaluation_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 708,
+          "anchor": "create function private.worker_settle_evaluation_operation_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_operation_id uuid,p_outcome text,p_spent_microusd bigint,p_spent_calls integer)",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
@@ -64435,6 +65637,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.worker_claim_evaluation_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_claim_evaluation_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_claim_evaluation_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 786,
+          "anchor": "create function public.worker_claim_evaluation_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.worker_claim_execution_v1(p_worker_token text, p_manifest_hashes text[])",
       "kind": "function",
       "catalogues": {
@@ -64904,6 +66170,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.worker_commit_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_commit_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "worker_commit_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_commit_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
+          "kind": "function",
+          "name": "worker_commit_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 794,
+          "anchor": "create function public.worker_commit_evaluation_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_contract_hash text,p_input_hash text,p_result_text text,p_outcome text,p_reason text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.worker_commit_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text)",
@@ -72144,6 +73474,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "worker_renew_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
+          "kind": "function",
+          "name": "worker_renew_evaluation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 788,
+          "anchor": "create function public.worker_renew_evaluation_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.worker_renew_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
       "kind": "function",
       "catalogues": {
@@ -72207,6 +73601,70 @@
         }
       ],
       "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:public.worker_reserve_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_reserve_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer)",
+          "kind": "function",
+          "name": "worker_reserve_evaluation_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_reserve_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer)",
+          "kind": "function",
+          "name": "worker_reserve_evaluation_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_route jsonb, p_resources jsonb, p_reserved_microusd bigint, p_reserved_calls integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 790,
+          "anchor": "create function public.worker_reserve_evaluation_operation_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_operation_id uuid,p_route jsonb,p_resources jsonb,p_reserved_microusd bigint,p_reserved_calls integer) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.worker_reserve_execution_v1(p_job uuid, p_capability text, p_lease uuid)",
@@ -72366,6 +73824,70 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:public.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)",
+          "kind": "function",
+          "name": "worker_settle_evaluation_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)",
+          "kind": "function",
+          "name": "worker_settle_evaluation_operation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 792,
+          "anchor": "create function public.worker_settle_evaluation_operation_v1(p_job_id uuid,p_capability_token text,p_lease_id uuid,p_operation_id uuid,p_outcome text,p_spent_microusd bigint,p_spent_calls integer) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.worker_settle_execution_v1(p_job uuid, p_capability text, p_lease uuid, p_result_hash text)",
@@ -74482,6 +76004,147 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "policy:private.evaluation_budget_accounts.evaluation_budget_accounts_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.evaluation_budget_accounts.evaluation_budget_accounts_deny",
+          "kind": "policy",
+          "name": "evaluation_budget_accounts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "evaluation_budget_accounts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.evaluation_budget_accounts.evaluation_budget_accounts_deny",
+          "kind": "policy",
+          "name": "evaluation_budget_accounts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "evaluation_budget_accounts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 255,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.evaluation_operation_receipts.evaluation_operation_receipts_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.evaluation_operation_receipts.evaluation_operation_receipts_deny",
+          "kind": "policy",
+          "name": "evaluation_operation_receipts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "evaluation_operation_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.evaluation_operation_receipts.evaluation_operation_receipts_deny",
+          "kind": "policy",
+          "name": "evaluation_operation_receipts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "evaluation_operation_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 255,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.evaluation_result_receipts.evaluation_result_receipts_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.evaluation_result_receipts.evaluation_result_receipts_deny",
+          "kind": "policy",
+          "name": "evaluation_result_receipts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "evaluation_result_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.evaluation_result_receipts.evaluation_result_receipts_deny",
+          "kind": "policy",
+          "name": "evaluation_result_receipts_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "evaluation_result_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 255,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "policy:private.event_outbox.deny_client_delete",
       "kind": "policy",
       "catalogues": {
@@ -76546,6 +78209,100 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "policy:private.governed_evaluation_request_events.governed_evaluation_request_events_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.governed_evaluation_request_events.governed_evaluation_request_events_deny",
+          "kind": "policy",
+          "name": "governed_evaluation_request_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "governed_evaluation_request_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.governed_evaluation_request_events.governed_evaluation_request_events_deny",
+          "kind": "policy",
+          "name": "governed_evaluation_request_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "governed_evaluation_request_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 255,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.governed_evaluations.governed_evaluations_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.governed_evaluations.governed_evaluations_deny",
+          "kind": "policy",
+          "name": "governed_evaluations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "governed_evaluations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.governed_evaluations.governed_evaluations_deny",
+          "kind": "policy",
+          "name": "governed_evaluations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "governed_evaluations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 255,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "policy:private.human_intervention_ledger.human_intervention_ledger_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -78095,6 +79852,100 @@
           "line": 32,
           "anchor": "create policy platform_capability_releases_deny on private.platform_capability_releases",
           "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.platform_evaluation_organization_events.platform_evaluation_organization_events_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.platform_evaluation_organization_events.platform_evaluation_organization_events_deny",
+          "kind": "policy",
+          "name": "platform_evaluation_organization_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_evaluation_organization_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.platform_evaluation_organization_events.platform_evaluation_organization_events_deny",
+          "kind": "policy",
+          "name": "platform_evaluation_organization_events_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_evaluation_organization_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 255,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:private.platform_evaluation_organizations.platform_evaluation_organizations_deny",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.platform_evaluation_organizations.platform_evaluation_organizations_deny",
+          "kind": "policy",
+          "name": "platform_evaluation_organizations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_evaluation_organizations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.platform_evaluation_organizations.platform_evaluation_organizations_deny",
+          "kind": "policy",
+          "name": "platform_evaluation_organizations_deny",
+          "qual": "false",
+          "roles": [
+            "public"
+          ],
+          "table": "platform_evaluation_organizations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 255,
+          "anchor": "execute format('create policy %I on private.%I as restrictive for all to public using(false) with check(false)',t||'_deny',t);",
+          "mechanism": "dynamic_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -99677,6 +101528,360 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "r:private.evaluation_budget_accounts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.evaluation_budget_accounts",
+          "rls": true,
+          "kind": "table",
+          "name": "evaluation_budget_accounts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.evaluation_budget_accounts",
+          "rls": true,
+          "kind": "table",
+          "name": "evaluation_budget_accounts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 174,
+          "anchor": "create table private.evaluation_budget_accounts (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.evaluation_operation_receipts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.evaluation_operation_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "evaluation_operation_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.evaluation_operation_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "evaluation_operation_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 190,
+          "anchor": "create table private.evaluation_operation_receipts (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.evaluation_result_receipts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.evaluation_result_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "evaluation_result_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.evaluation_result_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "evaluation_result_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 214,
+          "anchor": "create table private.evaluation_result_receipts (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "r:private.event_outbox",
       "kind": "table",
       "catalogues": {
@@ -101464,6 +103669,242 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:private.governed_evaluation_request_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.governed_evaluation_request_events",
+          "rls": true,
+          "kind": "table",
+          "name": "governed_evaluation_request_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.governed_evaluation_request_events",
+          "rls": true,
+          "kind": "table",
+          "name": "governed_evaluation_request_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 158,
+          "anchor": "create table private.governed_evaluation_request_events (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.governed_evaluations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.governed_evaluations",
+          "rls": true,
+          "kind": "table",
+          "name": "governed_evaluations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.governed_evaluations",
+          "rls": true,
+          "kind": "table",
+          "name": "governed_evaluations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 137,
+          "anchor": "create table private.governed_evaluations (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "r:private.human_intervention_ledger",
       "kind": "table",
       "catalogues": {
@@ -103127,6 +105568,242 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:private.platform_evaluation_organization_events",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.platform_evaluation_organization_events",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_evaluation_organization_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.platform_evaluation_organization_events",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_evaluation_organization_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 71,
+          "anchor": "create table private.platform_evaluation_organization_events (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.platform_evaluation_organizations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.platform_evaluation_organizations",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_evaluation_organizations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.platform_evaluation_organizations",
+          "rls": true,
+          "kind": "table",
+          "name": "platform_evaluation_organizations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 64,
+          "anchor": "create table private.platform_evaluation_organizations (",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "r:private.platform_method_attestations",
@@ -139311,6 +141988,314 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_truncate_guard",
+          "kind": "trigger",
+          "name": "evaluation_budget_accounts_truncate_guard",
+          "table": "evaluation_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER evaluation_budget_accounts_truncate_guard BEFORE TRUNCATE ON private.evaluation_budget_accounts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_truncate_guard",
+          "kind": "trigger",
+          "name": "evaluation_budget_accounts_truncate_guard",
+          "table": "evaluation_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER evaluation_budget_accounts_truncate_guard BEFORE TRUNCATE ON private.evaluation_budget_accounts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 257,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_undeletable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_undeletable",
+          "kind": "trigger",
+          "name": "evaluation_budget_accounts_undeletable",
+          "table": "evaluation_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER evaluation_budget_accounts_undeletable BEFORE DELETE ON private.evaluation_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_undeletable",
+          "kind": "trigger",
+          "name": "evaluation_budget_accounts_undeletable",
+          "table": "evaluation_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER evaluation_budget_accounts_undeletable BEFORE DELETE ON private.evaluation_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 243,
+          "anchor": "create trigger evaluation_budget_accounts_undeletable before delete on private.evaluation_budget_accounts",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_updated",
+          "kind": "trigger",
+          "name": "evaluation_budget_accounts_updated",
+          "table": "evaluation_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER evaluation_budget_accounts_updated BEFORE UPDATE ON private.evaluation_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.evaluation_budget_accounts.evaluation_budget_accounts_updated",
+          "kind": "trigger",
+          "name": "evaluation_budget_accounts_updated",
+          "table": "evaluation_budget_accounts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER evaluation_budget_accounts_updated BEFORE UPDATE ON private.evaluation_budget_accounts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 245,
+          "anchor": "create trigger evaluation_budget_accounts_updated before update on private.evaluation_budget_accounts",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_guard",
+          "kind": "trigger",
+          "name": "evaluation_operation_receipts_guard",
+          "table": "evaluation_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_evaluation_operation_receipt_v1()",
+          "definition": "CREATE TRIGGER evaluation_operation_receipts_guard BEFORE DELETE OR UPDATE ON private.evaluation_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_evaluation_operation_receipt_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_guard",
+          "kind": "trigger",
+          "name": "evaluation_operation_receipts_guard",
+          "table": "evaluation_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_evaluation_operation_receipt_v1()",
+          "definition": "CREATE TRIGGER evaluation_operation_receipts_guard BEFORE DELETE OR UPDATE ON private.evaluation_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_evaluation_operation_receipt_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 239,
+          "anchor": "create trigger evaluation_operation_receipts_guard before update or delete on private.evaluation_operation_receipts",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_truncate_guard",
+          "kind": "trigger",
+          "name": "evaluation_operation_receipts_truncate_guard",
+          "table": "evaluation_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER evaluation_operation_receipts_truncate_guard BEFORE TRUNCATE ON private.evaluation_operation_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_truncate_guard",
+          "kind": "trigger",
+          "name": "evaluation_operation_receipts_truncate_guard",
+          "table": "evaluation_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER evaluation_operation_receipts_truncate_guard BEFORE TRUNCATE ON private.evaluation_operation_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 257,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_updated",
+          "kind": "trigger",
+          "name": "evaluation_operation_receipts_updated",
+          "table": "evaluation_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER evaluation_operation_receipts_updated BEFORE UPDATE ON private.evaluation_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.evaluation_operation_receipts.evaluation_operation_receipts_updated",
+          "kind": "trigger",
+          "name": "evaluation_operation_receipts_updated",
+          "table": "evaluation_operation_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER evaluation_operation_receipts_updated BEFORE UPDATE ON private.evaluation_operation_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 241,
+          "anchor": "create trigger evaluation_operation_receipts_updated before update on private.evaluation_operation_receipts",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.evaluation_result_receipts.evaluation_result_receipts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.evaluation_result_receipts.evaluation_result_receipts_immutable",
+          "kind": "trigger",
+          "name": "evaluation_result_receipts_immutable",
+          "table": "evaluation_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER evaluation_result_receipts_immutable BEFORE DELETE OR UPDATE ON private.evaluation_result_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.evaluation_result_receipts.evaluation_result_receipts_immutable",
+          "kind": "trigger",
+          "name": "evaluation_result_receipts_immutable",
+          "table": "evaluation_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER evaluation_result_receipts_immutable BEFORE DELETE OR UPDATE ON private.evaluation_result_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 249,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.evaluation_result_receipts.evaluation_result_receipts_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.evaluation_result_receipts.evaluation_result_receipts_truncate_guard",
+          "kind": "trigger",
+          "name": "evaluation_result_receipts_truncate_guard",
+          "table": "evaluation_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER evaluation_result_receipts_truncate_guard BEFORE TRUNCATE ON private.evaluation_result_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.evaluation_result_receipts.evaluation_result_receipts_truncate_guard",
+          "kind": "trigger",
+          "name": "evaluation_result_receipts_truncate_guard",
+          "table": "evaluation_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER evaluation_result_receipts_truncate_guard BEFORE TRUNCATE ON private.evaluation_result_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 257,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "trigger:private.event_outbox.event_outbox_updated_at",
       "kind": "trigger",
       "catalogues": {
@@ -140781,6 +143766,162 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "trigger:private.governed_evaluation_request_events.governed_evaluation_request_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.governed_evaluation_request_events.governed_evaluation_request_events_immutable",
+          "kind": "trigger",
+          "name": "governed_evaluation_request_events_immutable",
+          "table": "governed_evaluation_request_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER governed_evaluation_request_events_immutable BEFORE DELETE OR UPDATE ON private.governed_evaluation_request_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.governed_evaluation_request_events.governed_evaluation_request_events_immutable",
+          "kind": "trigger",
+          "name": "governed_evaluation_request_events_immutable",
+          "table": "governed_evaluation_request_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER governed_evaluation_request_events_immutable BEFORE DELETE OR UPDATE ON private.governed_evaluation_request_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 249,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.governed_evaluation_request_events.governed_evaluation_request_events_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.governed_evaluation_request_events.governed_evaluation_request_events_truncate_guard",
+          "kind": "trigger",
+          "name": "governed_evaluation_request_events_truncate_guard",
+          "table": "governed_evaluation_request_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER governed_evaluation_request_events_truncate_guard BEFORE TRUNCATE ON private.governed_evaluation_request_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.governed_evaluation_request_events.governed_evaluation_request_events_truncate_guard",
+          "kind": "trigger",
+          "name": "governed_evaluation_request_events_truncate_guard",
+          "table": "governed_evaluation_request_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER governed_evaluation_request_events_truncate_guard BEFORE TRUNCATE ON private.governed_evaluation_request_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 257,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.governed_evaluations.governed_evaluations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.governed_evaluations.governed_evaluations_immutable",
+          "kind": "trigger",
+          "name": "governed_evaluations_immutable",
+          "table": "governed_evaluations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER governed_evaluations_immutable BEFORE DELETE OR UPDATE ON private.governed_evaluations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.governed_evaluations.governed_evaluations_immutable",
+          "kind": "trigger",
+          "name": "governed_evaluations_immutable",
+          "table": "governed_evaluations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER governed_evaluations_immutable BEFORE DELETE OR UPDATE ON private.governed_evaluations FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 249,
+          "anchor": "execute format('create trigger %I before update or delete on private.%I for each row execute function private.guard_contribution_immutable_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.governed_evaluations.governed_evaluations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.governed_evaluations.governed_evaluations_truncate_guard",
+          "kind": "trigger",
+          "name": "governed_evaluations_truncate_guard",
+          "table": "governed_evaluations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER governed_evaluations_truncate_guard BEFORE TRUNCATE ON private.governed_evaluations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.governed_evaluations.governed_evaluations_truncate_guard",
+          "kind": "trigger",
+          "name": "governed_evaluations_truncate_guard",
+          "table": "governed_evaluations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER governed_evaluations_truncate_guard BEFORE TRUNCATE ON private.governed_evaluations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 257,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "trigger:private.human_intervention_ledger.human_intervention_ledger_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -141945,6 +145086,198 @@
         }
       ],
       "consumer_status": "Guarda interna dos callers existentes; sem grants novos ou ativação R01."
+    },
+    {
+      "id": "trigger:private.platform_evaluation_organization_events.platform_evaluation_organization_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_evaluation_organization_events.platform_evaluation_organization_events_immutable",
+          "kind": "trigger",
+          "name": "platform_evaluation_organization_events_immutable",
+          "table": "platform_evaluation_organization_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organization_events_immutable BEFORE DELETE OR UPDATE ON private.platform_evaluation_organization_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_evaluation_organization_events.platform_evaluation_organization_events_immutable",
+          "kind": "trigger",
+          "name": "platform_evaluation_organization_events_immutable",
+          "table": "platform_evaluation_organization_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_contribution_immutable_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organization_events_immutable BEFORE DELETE OR UPDATE ON private.platform_evaluation_organization_events FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 104,
+          "anchor": "create trigger platform_evaluation_organization_events_immutable before update or delete on private.platform_evaluation_organization_events",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.platform_evaluation_organization_events.platform_evaluation_organization_events_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_evaluation_organization_events.platform_evaluation_organization_events_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_evaluation_organization_events_truncate_guard",
+          "table": "platform_evaluation_organization_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organization_events_truncate_guard BEFORE TRUNCATE ON private.platform_evaluation_organization_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_evaluation_organization_events.platform_evaluation_organization_events_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_evaluation_organization_events_truncate_guard",
+          "table": "platform_evaluation_organization_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organization_events_truncate_guard BEFORE TRUNCATE ON private.platform_evaluation_organization_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 257,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_guard",
+          "kind": "trigger",
+          "name": "platform_evaluation_organizations_guard",
+          "table": "platform_evaluation_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_evaluation_organization_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organizations_guard BEFORE INSERT OR DELETE OR UPDATE ON private.platform_evaluation_organizations FOR EACH ROW EXECUTE FUNCTION private.guard_platform_evaluation_organization_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_guard",
+          "kind": "trigger",
+          "name": "platform_evaluation_organizations_guard",
+          "table": "platform_evaluation_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_evaluation_organization_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organizations_guard BEFORE INSERT OR DELETE OR UPDATE ON private.platform_evaluation_organizations FOR EACH ROW EXECUTE FUNCTION private.guard_platform_evaluation_organization_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 94,
+          "anchor": "create trigger platform_evaluation_organizations_guard before insert or update or delete on private.platform_evaluation_organizations",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_ledger",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_ledger",
+          "kind": "trigger",
+          "name": "platform_evaluation_organizations_ledger",
+          "table": "platform_evaluation_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.ledger_platform_evaluation_organization_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organizations_ledger AFTER INSERT ON private.platform_evaluation_organizations FOR EACH ROW EXECUTE FUNCTION private.ledger_platform_evaluation_organization_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_ledger",
+          "kind": "trigger",
+          "name": "platform_evaluation_organizations_ledger",
+          "table": "platform_evaluation_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.ledger_platform_evaluation_organization_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organizations_ledger AFTER INSERT ON private.platform_evaluation_organizations FOR EACH ROW EXECUTE FUNCTION private.ledger_platform_evaluation_organization_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 102,
+          "anchor": "create trigger platform_evaluation_organizations_ledger after insert on private.platform_evaluation_organizations",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_evaluation_organizations_truncate_guard",
+          "table": "platform_evaluation_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organizations_truncate_guard BEFORE TRUNCATE ON private.platform_evaluation_organizations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_evaluation_organizations.platform_evaluation_organizations_truncate_guard",
+          "kind": "trigger",
+          "name": "platform_evaluation_organizations_truncate_guard",
+          "table": "platform_evaluation_organizations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_platform_ledger_truncate_v1()",
+          "definition": "CREATE TRIGGER platform_evaluation_organizations_truncate_guard BEFORE TRUNCATE ON private.platform_evaluation_organizations FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+        }
+      },
+      "owner": "Engenharia de avaliação, etapa 17",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações pelo worker, instalado fechado: organizações de avaliação, principal avaliador, identidade imutável da avaliação, orçamento, recibos por operação ligados à decisão de processamento, resultado e comandos do worker; nenhum objeto da execução de tenant muda.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+          "line": 257,
+          "anchor": "execute format('create trigger %I before truncate on private.%I for each statement execute function private.guard_platform_ledger_truncate_v1()',t||'_truncate_guard',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
       "id": "trigger:private.platform_method_attestations.platform_method_attestations_actor",
@@ -164434,6 +167767,13 @@
       "decision": "preservar",
       "stage": "17 / 4C-3",
       "reason": "Etapa 17, incremento 4C-3: recibos de gates, base v2, produtor v2 e leitor v2; funções v1 inalteradas."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260924011837_governed_evaluation_transport.sql",
+      "decision": "preservar",
+      "stage": "17 / 5",
+      "reason": "Etapa 17, incremento 5: transporte governado de avaliações (banco), instalado fechado."
     }
   ],
   "staging_archive": [
