@@ -3,7 +3,7 @@ import {resolve} from "node:path";
 
 import {describe, expect, it} from "vitest";
 
-import {estimateRequestInputTokens, redactPersonalIdentifiers, textComposition} from "@offroad/model-gateway";
+import {COST_RESERVATION_SAFETY_FACTOR, conservativeTextReservationUsd, estimateCostUsd, estimateRequestInputTokens, listPrices, redactPersonalIdentifiers, textComposition} from "@offroad/model-gateway";
 import {sourcePackSchema} from "@offroad/public-research";
 
 import {
@@ -75,6 +75,10 @@ describe("gold baseline calibration sample of 4 Sep 2026", () => {
       const estimate = estimateRequestInputTokens("anthropic", request).inputTokens;
       expect(estimate).toBeGreaterThanOrEqual(real);
       expect(estimate / real).toBeLessThan(1.2);
+      // What the gateway reserves for this exact request, production and evaluations alike, is
+      // above what Claude Opus 5 billed for it at list price even without the 10% price margin.
+      const billed = estimateCostUsd(record.model, {inputTokens: real, outputTokens: record.turns[index]!.outputTokens, cachedInputTokens: record.turns[index]!.cachedInputTokens});
+      expect(conservativeTextReservationUsd("anthropic", request, listPrices) / COST_RESERVATION_SAFETY_FACTOR).toBeGreaterThanOrEqual(billed);
       // The composition the gateway's calibration fixture records for this sample.
       const {bytes, dense} = parts.reduce((sum, text) => {
         const part = textComposition(redactPersonalIdentifiers(text, {}).text);
