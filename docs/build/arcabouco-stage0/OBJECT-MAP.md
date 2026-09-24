@@ -2717,3 +2717,20 @@ Contexto editável: `apps/web/src/app/[locale]/app/work-context-actions.ts`, pre
 ## Etapa 17, incremento 4A, telas (24/09/2026)
 
 0 objetos de banco novos. Três pontos de entrada da web: lista e pedido de execuções do trabalho (`executions/page.tsx`, `executions/actions.ts`) e detalhe da execução (`executions/[executionId]/page.tsx`).
+
+## Etapa 17, incremento 4C-3: recibo dos gates profissionais (24/09/2026)
+
+13 objetos novos e 0 atualizados. Etapa 17, incremento 4C-3: recibo imutável dos gates profissionais do pedido (cadastro, pesquisa, seleção de método, convenções e voz, só códigos e versões), base v2 com o bloco da companhia calculado no servidor, produtor v2 que recusa gates bloqueados ou divergentes e leitor v2 com o recibo.
+- `function:private.execution_company_basis_v1(p_org uuid, p_work uuid, p_entries jsonb)`
+- `function:private.execution_contract_basis_v2(p_work_id uuid, p_version_id uuid, p_method_id text)`
+- `function:private.execution_gates_canonical_text_v1(p_value jsonb)`
+- `function:private.execution_gates_projection_v1(p_gates_text text)`
+- `function:private.read_work_execution_v2(p_execution_id uuid)`
+- `function:private.request_work_execution_producer_v2(p_contract_text text, p_snapshot_text text, p_gates_text text)`
+- `function:public.execution_contract_basis_v2(p_work_id uuid, p_version_id uuid, p_method_id text)`
+- `function:public.read_work_execution_v2(p_execution_id uuid)`
+- `function:public.request_work_execution_v2(p_contract_text text, p_snapshot_text text, p_gates_text text)`
+- `policy:private.execution_gate_receipts.execution_gate_receipts_deny`
+- `r:private.execution_gate_receipts`
+- `trigger:private.execution_gate_receipts.execution_gate_receipts_immutable`
+- `trigger:private.execution_gate_receipts.execution_gate_receipts_truncate_guard`
