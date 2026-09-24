@@ -105,7 +105,7 @@ describe("capital execution request action", () => {
     expect(executionGatesSchema.safeParse(JSON.parse(args.p_gates_text)).success).toBe(true);
     expect(gates).toEqual({schemaVersion: "execution-gates.v1", gatesVersion: executionGatesVersion, blocked: false, companyRegistration: "registered", research: "recorded",
       methodSelection: {selectionVersion: methodSelectionVersion, situationIds: ["refinancing", "near-covenant"], methodId: "prepare-capital-structure-decision", methodVersion: "2026.09.21-v4"},
-      conventions: ["policy.capital.iof", "policy.capital.anbima-b3-conventions", "policy.capital.tax-regime"].map(key => ({key, version: "2026.09.21-v1", status: "required_missing", effective: "gap"})),
+      conventions: ["policy.capital.iof", "policy.capital.anbima-b3-conventions", "policy.capital.tax-regime"].map(key => ({key, version: "2026.09.24-v1", status: "draft", effective: "gap"})),
       voice: {version: VOICE_FILTER_VERSION, blockCount: 0, warnCount: 0}});
     expect(args.p_gates_text).not.toMatch(/owner|reason|label|message|Respons/);
   });
