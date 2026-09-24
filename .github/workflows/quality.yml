@@ -46,6 +46,11 @@ jobs:
       - name: Verify monitoring write boundaries
         run: python3 -B scripts/ci/test-event-outbox-alarms.py
 
+      - name: Verify the deployment verifiers
+        run: |
+          python3 -B scripts/ci/test_verify_worker_boot_flag.py
+          python3 -B scripts/ci/test_verify_web_deployment.py
+
       - name: Verify immutable published methods
         run: |
           python3 -B scripts/ci/test-published-method-lock.py
