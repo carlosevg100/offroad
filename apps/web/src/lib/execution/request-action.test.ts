@@ -4,7 +4,12 @@ import {executionCanonicalText, executionContractSchema, executionGatesSchema, e
 import {methodSelectionVersion, VOICE_FILTER_VERSION} from "@offroad/credit-playbook";
 import {capitalProcedurePacketV2InputSchema} from "@offroad/financial-model";
 import {adoptedCapitalPeriodFixture} from "@offroad/testing-fixtures/capital-structure-decision";
-const mocks = vi.hoisted(() => ({rpc: vi.fn(), project: vi.fn(), workspace: vi.fn(), revalidate: vi.fn()}));
+const mocks = vi.hoisted(() => ({rpc: vi.fn(), project: vi.fn(), workspace: vi.fn(), revalidate: vi.fn(), conventions: {override: null as null | (() => unknown)}}));
+// The real playbook, with a seam to hand the gates a conventions result the receipt schema refuses.
+vi.mock("@offroad/credit-playbook", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@offroad/credit-playbook")>();
+  return {...actual, evaluateConventionsGate: (...args: Parameters<typeof actual.evaluateConventionsGate>) => mocks.conventions.override?.() ?? actual.evaluateConventionsGate(...args)};
+});
 vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({revalidatePath: mocks.revalidate}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
@@ -53,6 +58,7 @@ function submitted() {
 }
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.conventions.override = null;
   const query = {select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: mocks.project};
   mocks.workspace.mockResolvedValue({organization: {id: id(1)}, supabase: {from: () => query, rpc: mocks.rpc}});
   mocks.project.mockResolvedValue({data: {id: id(2)}});
@@ -157,6 +163,13 @@ describe("capital execution request action", () => {
       .map(e => e.dimensions.scenario === "house" ? {...e, dimensions: {...e.dimensions, scenario: `house ${EM_DASH} plan`}} : e));
     serve(basis(seal));
     expect(await requestCapitalExecution(input)).toEqual({ok: false, error: "voice_blocked"});
+    expect(rpcNames()).toEqual(["execution_contract_basis_v2"]);
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
+  it("refuses with gates_invalid when the receipt cannot be built as the closed schema, and sends nothing", async () => {
+    mocks.conventions.override = () => ({version: "2026.09.24-v1", referenceDate: input.asOf, gaps: ["policy.capital.iof"],
+      entries: [{key: "policy.capital.iof", version: "a version written as prose", status: "draft", owner: "Synthetic owner", effective: "gap", reason: "status_draft"}]});
+    expect(await requestCapitalExecution(input)).toEqual({ok: false, error: "gates_invalid"});
     expect(rpcNames()).toEqual(["execution_contract_basis_v2"]);
     expect(mocks.revalidate).not.toHaveBeenCalled();
   });
