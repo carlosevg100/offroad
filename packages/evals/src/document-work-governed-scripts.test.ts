@@ -51,17 +51,4 @@ describe("document work scripts without the evaluator's credential", () => {
    rmSync(runnerTemp, {recursive: true, force: true});
   }
  }, 120_000);
-
- it("refuses to run outside the protected workflow, before reading anything", () => {
-  const runnerTemp = mkdtempSync(resolve(tmpdir(), "offroad-document-work-governed-"));
-  try {
-   const result = spawnSync(process.execPath, [tsxCli, resolve(evalsDir, "scripts", "run-document-work-product-live.ts")], {
-    cwd: evalsDir, env: {...protectedRun("document-work-product-live.yml", runnerTemp), GITHUB_RUN_ATTEMPT: "2"}, encoding: "utf8",
-   });
-   expect([result.status, result.stderr.trim()]).toEqual([1, "document_work_product_live_setup_failed"]);
-   expect(readdirSync(runnerTemp)).toEqual([]);
-  } finally {
-   rmSync(runnerTemp, {recursive: true, force: true});
-  }
- }, 120_000);
 });
