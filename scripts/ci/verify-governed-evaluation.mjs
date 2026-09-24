@@ -17,6 +17,7 @@ import {createRequire} from 'node:module';
 import {tmpdir} from 'node:os';
 import {dirname, join, resolve} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
+import {proveMeasurementFamilies} from './governed-evaluation-measurement-proof.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const local = ['localhost', '127.0.0.1', '[::1]'];
@@ -328,6 +329,7 @@ commit;`);
     [[false, 'evaluation', true]]);
   console.log('governed_baseline_script_revoked_assurance: PASS (script with no provider key, reservation denied and journaled, zero cassette calls, script received partial/transport_denied and wrote no record)');
 
+  await proveMeasurementFamilies({root, temporary, sql, call, evaluator, worker, workerToken, organization, evaluatorId: users.evaluator, scriptEnvironment, tsxCli, evalsDir, outputTail});
   // The disposable database ends with the transport closed again.
   sql(`select private.release_governed_evaluation_transport_v1('${id('a000', 32)}',false,'${users.operator}','Synthetic governed evaluation proof finished');`);
   assert.equal(sql(`select released from private.platform_capability_releases where capability_key='governed-evaluation-transport';`), 'f');
