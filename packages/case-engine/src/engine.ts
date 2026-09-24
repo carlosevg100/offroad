@@ -2151,6 +2151,7 @@ const legacyInstrumentMap: Partial<Record<string, Instrument>> = {
   ccb: "ccb",
   debenture_476: "debenture",
   debenture_160: "debenture",
+  nota_comercial: "nota_comercial",
   cra: "cra",
   cri: "cri",
   fidc: "fidc",

@@ -18,7 +18,13 @@ export const marketReferenceVersion = "2026.09.24-v1";
  */
 
 export type RatingBand = "strong" | "adequate" | "watch" | "weak" | "distressed";
-export type PricedInstrument = "ccb" | "nce" | "debenture_476" | "debenture_160" | "cra" | "cri" | "fidc" | "venture_debt" | "finame" | "leasing";
+/**
+ * The legacy instrument keys of `@offroad/credit-playbook`. `debenture_476` names the debenture for
+ * professional investors under the CVM 160 automatic rite; the key stays because stored observations
+ * carry it. The desk grid has no nota comercial row: no band is stated for it, so the grid returns
+ * none, and the governed registry holds no nota comercial observation yet.
+ */
+export type PricedInstrument = "ccb" | "nce" | "debenture_476" | "debenture_160" | "nota_comercial" | "cra" | "cri" | "fidc" | "venture_debt" | "finame" | "leasing";
 
 export type SpreadBand = {
   instrument: PricedInstrument;
