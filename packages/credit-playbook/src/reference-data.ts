@@ -1,6 +1,8 @@
 import {createHash} from "node:crypto";
 import {z} from "zod";
 
+import {referenceDataProposals} from "./reference-data-proposals";
+
 /**
  * Market-sensitive numbers and house policy parameters live here, not inside procedure prose.
  * Missing values are explicit blockers. They are never replaced by a model estimate.
@@ -90,7 +92,7 @@ const draft = (
  * This first registry is intentionally honest: it records every value family required by the
  * candidate vertical and keeps it blocked until a dated source and accountable owner exist.
  */
-export const referenceDataRegistry = [
+const baseReferenceDataRegistry = [
   referenceDataEntrySchema.parse({"key": "policy.capital.iof", "version": "2026.09.21-v1", "category": "legal_reference", "status": "required_missing", "description": "Tratamento do IOF por operação, sujeito à revisão especializada do Decreto 12.499/2025 e da decisão do STF de julho de 2025. Sem valor aprovado, vigente e aplicável, não calcular all-in.", "value": null, "unit": null, "source": {"title": "Instrução do fundador de 21/09/2026: correção R2 da revisão profissional 2; registro da exigência, não validação de valores ou interpretação normativa", "observedBy": "Autoria profissional da Offroad"}, "asOf": "2026-09-21", "validUntil": null, "owner": "Responsável Jurídico e Tributário", "scope": "prepare-capital-structure-decision: custo all-in; preencher valores, fontes normativas e vigência por operação antes de aprovar", "houseProcedureIds": ["OP-03", "PR-01"]}),
   referenceDataEntrySchema.parse({"key": "policy.capital.anbima-b3-conventions", "version": "2026.09.21-v1", "category": "methodology_parameter", "status": "required_missing", "description": "Convenções ANBIMA/B3 por instrumento, calendário, indexador, capitalização e arredondamento. Sem convenção aprovada, vigente e aplicável, não calcular all-in.", "value": null, "unit": null, "source": {"title": "Instrução do fundador de 21/09/2026: correção R2 da revisão profissional 2; registro da exigência, não validação de valores ou interpretação normativa", "observedBy": "Autoria profissional da Offroad"}, "asOf": "2026-09-21", "validUntil": null, "owner": "Head de Análise Financeira", "scope": "prepare-capital-structure-decision: custo all-in; preencher valores, fontes normativas e vigência por operação antes de aprovar", "houseProcedureIds": ["D-02", "PR-01"]}),
   referenceDataEntrySchema.parse({"key": "policy.capital.tax-regime", "version": "2026.09.21-v1", "category": "legal_reference", "status": "required_missing", "description": "Regime tributário aplicável à entidade e à operação, incidências e dedutibilidade sob revisão especializada. Sem regime aprovado, vigente e aplicável, não calcular all-in.", "value": null, "unit": null, "source": {"title": "Instrução do fundador de 21/09/2026: correção R2 da revisão profissional 2; registro da exigência, não validação de valores ou interpretação normativa", "observedBy": "Autoria profissional da Offroad"}, "asOf": "2026-09-21", "validUntil": null, "owner": "Responsável Jurídico e Tributário", "scope": "prepare-capital-structure-decision: custo all-in; preencher valores, fontes normativas e vigência por operação antes de aprovar", "houseProcedureIds": ["OP-03", "PR-01"]}),
@@ -167,6 +169,20 @@ export const referenceDataRegistry = [
   missing("policy.red-flags.response-sla", "house_policy", "Operational response windows, acceptable substitutes and decline-communication timing.", "Head de DCM e Quality Control", ["RF-15", "RF-20"]),
   missing("market.peer-benchmarks", "market_observation", "Dated peer and sector operating ranges used only when comparability and source are governed.", "Head de Análise Financeira", ["RF-03"]),
 ] as const satisfies readonly ReferenceDataEntry[];
+
+/**
+ * A prepared proposal turns its entry into a draft with the proposal's value, source and date. The
+ * key, category, description, owner, scope and procedure links stay as registered, and nothing
+ * becomes approved here: approval is the owner's act, recorded with its own expiry.
+ */
+function withProposal(entry: ReferenceDataEntry): ReferenceDataEntry {
+  const proposal = Object.hasOwn(referenceDataProposals, entry.key) ? referenceDataProposals[entry.key] : undefined;
+  if (!proposal) return entry;
+  return referenceDataEntrySchema.parse({...entry, version: proposal.version, status: "draft", value: proposal.value, unit: proposal.unit,
+    source: proposal.source, asOf: proposal.asOf, validUntil: null});
+}
+
+export const referenceDataRegistry: readonly ReferenceDataEntry[] = baseReferenceDataRegistry.map(withProposal);
 
 export const referenceDataKeys = referenceDataRegistry.map((entry) => entry.key);
 export const referenceDataRegistryHash = createHash("sha256")
