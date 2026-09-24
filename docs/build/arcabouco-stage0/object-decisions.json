@@ -20664,6 +20664,12 @@
           "line": 127,
           "anchor": "create function private.provider_resource_allowed_v1(p_route jsonb,p_resource text,p_purpose text,p_classification text,p_retention_limit integer)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924111709_provider_assurance_without_expiry.sql",
+          "line": 90,
+          "anchor": "create or replace function private.provider_resource_allowed_v1(p_route jsonb,p_resource text,p_purpose text,p_classification text,p_retention_limit integer)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Operador registra atestados; worker consulta somente sob capability atual; tabelas sem acesso de cliente."
@@ -25726,6 +25732,12 @@
           "path": "supabase/migrations/20260921155420_provider_resource_retention_eligibility.sql",
           "line": 58,
           "anchor": "create function private.record_provider_processing_assurance_v1(p_document jsonb,p_change_reference text) returns uuid",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260924111709_provider_assurance_without_expiry.sql",
+          "line": 26,
+          "anchor": "create or replace function private.record_provider_processing_assurance_v1(p_document jsonb,p_change_reference text) returns uuid",
           "mechanism": "direct_ddl"
         }
       ],
@@ -168408,6 +168420,13 @@
       "decision": "preservar",
       "stage": "17 / 5",
       "reason": "Etapa 17, incremento 5: pedido e leitura de avaliações governadas pela sessão do avaliador."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260924111709_provider_assurance_without_expiry.sql",
+      "decision": "preservar",
+      "stage": "16 / decisão de 24/09/2026",
+      "reason": "Atestação de provedor sem data de validade, por decisão do fundador de 24/09/2026."
     }
   ],
   "staging_archive": [

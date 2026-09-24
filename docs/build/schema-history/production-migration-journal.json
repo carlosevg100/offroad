@@ -1547,8 +1547,12 @@
   {
    "version": "20260924022447",
    "name": "governed_evaluation_session_access"
+  },
+  {
+   "version": "20260924111709",
+   "name": "provider_assurance_without_expiry"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-24T02:25:41.380444+00:00"
+ "captured_at": "2026-09-24T11:19:26.011163+00:00"
 }
