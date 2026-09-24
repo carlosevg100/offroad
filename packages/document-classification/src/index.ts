@@ -13,3 +13,4 @@
 export const documentClassificationVersion = "2026.08.20-e1-v1";
 
 export * from "./classify";
+export * from "./measurement";
