@@ -233,7 +233,7 @@ export type GatewayCallLog = {
 export class ModelGatewayError extends Error {
   constructor(
     message: string,
-    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "output_truncated" | "cassette_missing" | "timeout" | "data_policy_violation",
+    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "output_truncated" | "cassette_missing" | "timeout" | "data_policy_violation" | "input_limit_exceeded" | "output_limit_exceeded",
     readonly details?: unknown,
   ) {
     super(message);

@@ -26,8 +26,26 @@ The only door to LLM providers (P1 plan §13.3, §15). Nothing in the monorepo c
   retaining the legacy `usedFallback` bit (any non-initial attempt) for existing consumers.
 - **Refusals** — `stop_reason: refusal` (either provider) is never turned into a
   result; the fallback runs and the attempt is recorded.
-- **Budgets** — per gateway instance (one instance per processing run): max cost and
-  max calls; list-price cost accounting per call (`pricing.ts`, prices dated).
+- **Budgets**: per gateway instance (one instance per processing run): max cost and
+  max calls; list-price cost accounting per call (`pricing.ts`: every model with its official
+  source and the date it was read, cache reads and writes, and OpenAI's GPT-5.6 long-context
+  tariff of 2x input and 1.5x output for the whole request above 272K input tokens; OpenAI's
+  `cache_write_tokens` are billed at 1.25x from GPT-5.6 on and are accounted).
+- **Model limits**: `model-limits.ts` records the context window, the input limit and the output
+  limit of every model a route may name, with sources. Before anything is reserved or sent, a
+  request whose estimated input exceeds the input limit of any route it may take is refused with
+  `input_limit_exceeded`, and an output ceiling above the model's maximum with
+  `output_limit_exceeded`.
+- **Reservations**: each attempt reserves its upper bound before it is sent. The opt-in
+  `conservative_text_v1` reservation (governed evaluations) reads the complete adapter payload
+  with the calibrated estimator of `token-estimate.ts`: ASCII digits and punctuation at one token
+  each, every other UTF-8 byte at 0.45 tokens (Anthropic) or 0.25 (OpenAI o200k), plus 1,024
+  tokens of hidden framing. The rates are 1.25x the largest rate real Claude usage needed and
+  above every o200k count of the repository's corpora (`reservation-calibration.json`, checked by
+  `reservation-calibration.test.ts` and by the evals test that rebuilds the gc01 run of 4 Sep
+  2026 byte for byte). Cache-writable tokens are charged at the write rate, the whole output
+  ceiling at the output rate, and 10% is added for regional pricing. The default reservation stays
+  the rough four-characters-per-token preflight of production runs.
 - **Minimization** — CPFs and e-mails in text parts are masked before leaving the
   perimeter (CNPJs and amounts are kept). Disable only for tasks whose object is the
   identifier itself.

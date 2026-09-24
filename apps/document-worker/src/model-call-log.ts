@@ -38,6 +38,7 @@ function fingerprint(value: unknown): string | null {
 const gatewayFailureCodes = new Set([
   "model_not_allowed", "budget_exceeded", "all_attempts_failed", "invalid_output",
   "output_truncated", "cassette_missing", "timeout", "data_policy_violation",
+  "input_limit_exceeded", "output_limit_exceeded",
 ]);
 
 export function safeGatewayFailureCode(value: unknown): string {
