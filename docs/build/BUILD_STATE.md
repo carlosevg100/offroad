@@ -1,3 +1,9 @@
+## Etapa 17 / 6: fechamento
+
+Retirada da liquidação só por hash: `worker_settle_execution_v1` (público e privado) e `settle_execution_operation_v1` saem do banco; o worker publicado só usa `worker_settle_execution_v2`, que grava os bytes. [Escopo, evidência e o que segue aberto](arcabouco/etapa-17-6-fechamento.md).
+
+6 liquidação: migração `retire_hash_only_settlement` em staging `20260924001737` e produção `20260924002148`, antes do merge; produção sem execuções, sem recibos e sem chamada a comando de liquidação nas últimas 24 horas. Provas `execution_commands.sql`, `execution_consumer.sql`, `execution_lifecycle.sql` e `execution_settled_bytes.sql` convertidas e executadas em staging; o recibo antigo só com hash segue provado por escrita direta. Advisors de segurança zero; inventário com três objetos `apagar`; catálogos recapturados (produção 2244, staging 2305); tipos públicos regenerados de produção.
+
 ## Etapa 17 / 4A: produtor com autoridade, base montada no servidor e leitores
 
 Grant de produtor por organização, escrito só por comando ligado a identidade e ledgerado; habilitar um cliente real (organização da qual o fundador não é membro) é ato do fundador; liberar a capability é ato de operador, contido pelos grants, com ledger de toda escrita em `platform_capability_releases`. A base do contrato é montada no servidor a partir de linhas persistidas (identidade, revisão de autoridade, política, único perfil liberado, envelope da base de trabalho, pins de decisão e de fonte verificada); o produtor público resolve o perfil no servidor e recusa método divergente; leitores devolvem identidade e estado, e os bytes do resultado só enquanto os insumos do leitor estiverem correntes. [Escopo e provas](arcabouco/etapa-17-4a-produtor.md).

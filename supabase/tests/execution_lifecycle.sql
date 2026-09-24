@@ -6,7 +6,7 @@ update execution_fixture set claim=private.claim_work_execution_v1('synthetic-po
 create temporary table old_execution_claim as select claim from execution_fixture;
 select private.reserve_execution_operation_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000003',repeat('a',64),'synthetic#calculate','test-v1','read_only',0,0) from execution_fixture;
 select pg_sleep(1.1);
-select pg_temp.expect_execution_command_error($q$select private.settle_execution_operation_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000003',repeat('a',64),repeat('b',64),0,0) from execution_fixture$q$,'execution_lease_denied','expired lease cannot settle');
+select pg_temp.expect_execution_command_error($q$select private.settle_execution_operation_v2((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'a4171000-0000-4000-9000-000000000003',repeat('a',64),'{}','succeeded','calculated',0,0) from execution_fixture$q$,'execution_lease_denied','expired lease cannot settle');
 update execution_fixture set claim=private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1',(request->>'jobId')::uuid,60);
 do $$ declare r jsonb;begin
  if (select claim->>'leaseId' from execution_fixture)=(select claim->>'leaseId' from old_execution_claim) then raise exception 'lease identity reused';end if;

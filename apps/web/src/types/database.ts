@@ -12970,15 +12970,6 @@ export type Database = {
         Returns: Json
       }
       worker_runtime_schema_contract_v1: { Args: never; Returns: Json }
-      worker_settle_execution_v1: {
-        Args: {
-          p_capability: string
-          p_job: string
-          p_lease: string
-          p_result_hash: string
-        }
-        Returns: Json
-      }
       worker_settle_execution_v2: {
         Args: {
           p_capability: string

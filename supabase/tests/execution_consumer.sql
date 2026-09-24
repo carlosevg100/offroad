@@ -28,13 +28,13 @@ do $$begin
  if (select (r->>'elapsedDurationMs')::bigint from consumer_renewal)<20 or (select (r->>'remainingDurationMs')::bigint from consumer_renewal)>=31000 then raise exception 'renewal reset duration';end if;
  if (select r->>'principalId' from consumer_renewal) is distinct from (select contract->>'principalId' from execution_fixture) then raise exception 'renewal principal mismatched';end if;
 end $$;
-select public.worker_settle_execution_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,repeat('b',64)) from execution_fixture;
+select public.worker_settle_execution_v2((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,'{"calculation":"other"}','succeeded','calculated') from execution_fixture;
 select pg_temp.expect_execution_command_error($q$select public.worker_commit_execution_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,claim->>'contractFingerprint',contract#>>'{inputs,fingerprint}','{}','succeeded','calculated') from execution_fixture$q$,'execution_calculation_receipt_required','terminal bytes must match the settled kernel');
 select private.revoke_resource_access_v1('a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-8000-000000000001');
 select pg_temp.expect_execution_command_error($q$select public.worker_renew_execution_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid) from execution_fixture$q$,'execution_authority_denied','heartbeat cannot renew revoked authority');
 -- API grants are narrow; core methods, tables, and producer remain closed.
 do $$declare n text;schema_name text;begin
- foreach n in array array['worker_claim_execution_v1','worker_renew_execution_v1','worker_reserve_execution_v1','worker_settle_execution_v1','worker_commit_execution_v1'] loop
+ foreach n in array array['worker_claim_execution_v1','worker_renew_execution_v1','worker_reserve_execution_v1','worker_settle_execution_v2','worker_commit_execution_v1'] loop
   foreach schema_name in array array['public','private'] loop
    if exists(select 1 from pg_proc p join pg_namespace ns on ns.oid=p.pronamespace where ns.nspname=schema_name and p.proname=n and (has_function_privilege('anon',p.oid,'EXECUTE') or has_function_privilege('service_role',p.oid,'EXECUTE') or not has_function_privilege('authenticated',p.oid,'EXECUTE'))) then raise exception 'consumer grant mismatch';end if;
   end loop;

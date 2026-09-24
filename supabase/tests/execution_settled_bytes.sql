@@ -79,14 +79,20 @@ do $$declare r jsonb;begin
  select public.worker_commit_execution_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,claim->>'contractFingerprint',contract#>>'{inputs,fingerprint}','{"reason":"calculation_failed","status":"partial"}','partial','calculation_failed') into r from execution_b;
  if r->>'outcome' is distinct from 'partial' then raise exception 'partial marker not republished as partial: %',r;end if;
 end $$;
--- A hash-only settlement (v1) of a lost lease never publishes as success under the next lease.
+-- A legacy hash-only settlement of a lost lease never publishes as success under the next lease. The
+-- command that wrote such receipts is retired (stage 17, increment 6), so the receipt is written here
+-- exactly as that command left it: settled, fingerprint only, no bytes, no outcome.
 create temporary table execution_c(contract jsonb,request jsonb,claim jsonb);
 insert into execution_c(contract) select pg_temp.execution_contract_fixture('a4171000-0000-4000-9000-000000000006');
 update execution_c set request=private.request_work_execution_v1('a4171000-0000-4000-9000-000000000001',contract::text,'{}');
 update execution_c set claim=public.worker_claim_execution_v1('synthetic-policy-worker-fixture-token-v1',array[repeat('a',64)]);
 do $$begin if (select claim->>'executionId' from execution_c) is distinct from (select request->>'executionId' from execution_c) then raise exception 'third execution not claimed';end if;end $$;
 select public.worker_reserve_execution_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid) from execution_c;
-select public.worker_settle_execution_v1((request->>'jobId')::uuid,claim->>'capability',(claim->>'leaseId')::uuid,encode(extensions.digest(convert_to('{"calculation":"synthetic"}','UTF8'),'sha256'),'hex')) from execution_c;
+update private.execution_budget_accounts b set reserved_microusd=b.reserved_microusd-r.reserved_microusd,reserved_calls=b.reserved_calls-r.reserved_calls
+ from private.execution_operation_receipts r,execution_c c
+ where r.organization_id=b.organization_id and r.execution_id=b.execution_id and r.execution_id=(c.request->>'executionId')::uuid and r.operation_id=r.execution_id and r.state='reserved';
+update private.execution_operation_receipts r set state='settled',spent_microusd=0,spent_calls=0,result_fingerprint=encode(extensions.digest(convert_to('{"calculation":"synthetic"}','UTF8'),'sha256'),'hex')
+ from execution_c c where r.execution_id=(c.request->>'executionId')::uuid and r.operation_id=r.execution_id and r.state='reserved';
 update public.processing_jobs set lease_expires_at=clock_timestamp()-interval '1 second' where id=(select (request->>'jobId')::uuid from execution_c);
 update execution_c set claim=public.worker_claim_execution_v1('synthetic-policy-worker-fixture-token-v1',array[repeat('a',64)]);
 do $$declare r jsonb;begin
