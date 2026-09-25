@@ -39,6 +39,11 @@ const model: WorkUpdatesModel = {
   closed: [{
     updateId: id(6), status: "declined", revision: 4, updatedAt: "2026-09-25T12:14:00+00:00", open: false, changes: [], recomputed: [], stayedValid: [],
     awaitingAuthorization: [], holds: [], canAdopt: false, canDecline: false, declineReason: "cost_not_justified", decidedAt: "2026-09-25T12:14:00+00:00",
+  }, {
+    // A later change the recomputation of an earlier update already covers: 3B supersedes it
+    // pointing at that earlier update, so the wording names no direction in time.
+    updateId: id(7), status: "superseded", revision: 2, updatedAt: "2026-09-25T12:15:00+00:00", open: false, changes: [], recomputed: [], stayedValid: [],
+    awaitingAuthorization: [], holds: [], canAdopt: false, canDecline: false, declineReason: null, decidedAt: null,
   }],
 };
 
@@ -59,6 +64,7 @@ describe("the update section of a work", () => {
       "Método prepare-capital-structure-decision: a release pcsd-v3 foi substituída pela release pcsd-v4",
       "Estrutura de capital: recálculo com teto de US$", "3 chamadas de modelo", "Autorizar este recálculo", "Recusar este recálculo",
       "Adotar atualização", "Recusar atualização", "Motivo: O custo não se justifica.",
+      "Incorporada a outra atualização", "As mudanças de insumo desta atualização estão cobertas por outra atualização deste trabalho.",
     ]) expect(html).toContain(text);
     // Nothing is decided on the first click: the confirmation buttons are not rendered yet.
     expect(html).not.toContain("Confirmar adoção");

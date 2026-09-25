@@ -2196,7 +2196,7 @@
         "ready": "Pronta para adoção",
         "adopted": "Adotada",
         "declined": "Recusada",
-        "superseded": "Substituída por uma atualização mais nova"
+        "superseded": "Incorporada a outra atualização"
       },
       "sections": {
         "changed": "O que mudou",
@@ -2263,7 +2263,8 @@
       "decided": {
         "adopted": "Adotada em {date}.",
         "declined": "Recusada em {date}. Motivo: {reason}.",
-        "closed": "Encerrada sem resultado a adotar."
+        "closed": "Encerrada sem resultado a adotar.",
+        "superseded": "As mudanças de insumo desta atualização estão cobertas por outra atualização deste trabalho."
       },
       "done": {
         "adopted": "Atualização adotada.",

@@ -201,6 +201,6 @@ function decidedText(item: WorkUpdateItem, t: Translate, date: (value: string) =
   if (item.status === "declined" && item.declineReason && item.decidedAt) {
     return t("decided.declined", {date: date(item.decidedAt), reason: t(`decline.reasons.${item.declineReason}`)});
   }
-  if (item.status === "superseded") return t("status.superseded");
+  if (item.status === "superseded") return t("decided.superseded");
   return t("decided.closed");
 }

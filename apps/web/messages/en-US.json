@@ -2196,7 +2196,7 @@
         "ready": "Ready to adopt",
         "adopted": "Adopted",
         "declined": "Declined",
-        "superseded": "Replaced by a newer update"
+        "superseded": "Merged into another update"
       },
       "sections": {
         "changed": "What changed",
@@ -2263,7 +2263,8 @@
       "decided": {
         "adopted": "Adopted on {date}.",
         "declined": "Declined on {date}. Reason: {reason}.",
-        "closed": "Closed with no result to adopt."
+        "closed": "Closed with no result to adopt.",
+        "superseded": "The input changes of this update are covered by another update of this work."
       },
       "done": {
         "adopted": "Update adopted.",

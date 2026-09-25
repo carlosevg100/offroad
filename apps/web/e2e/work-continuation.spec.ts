@@ -162,9 +162,17 @@ test("a new version of a source is recomputed by the local worker, and the perso
   // 4. The person reads available cash from version 2 and adopts it: the worker recomputes the root
   // execution over the new inputs, and the update becomes ready.
   readoptFromVersion(sql, {email, projectId, seeded, documentId: version2});
-  await expect.poll(() => sql(`select r.status ${latest};`),
+  // The new revision of the basis arrives as several events. The first one planned schedules the
+  // recomputation in the open update; a later one opens an update with nothing of its own to plan,
+  // which 3B supersedes pointing at the update that already covers it. The update to adopt is the
+  // one whose candidate recomputes the root execution.
+  const recomputing = `from public.work_continuation_requests r join public.work_recompute_candidates c on c.organization_id=r.organization_id and c.request_id=r.id
+    where r.work_id='${projectId}' and c.base_execution_id='${rootId}' order by c.created_at desc limit 1`;
+  await expect.poll(() => sql(`select r.status ${recomputing};`),
     {message: "the local worker recomputes the affected execution and the update becomes ready", timeout: 300_000, intervals: [3_000]}).toBe("ready");
-  const updateId = sql(`select r.id ${latest};`);
+  const updateId = sql(`select r.id ${recomputing};`);
+  expect(sql(`select count(*) from public.work_continuation_requests where work_id='${projectId}' and kind='dependency_update' and id<>'${updateId}'
+    and (status<>'superseded' or superseded_by_request_id is distinct from '${updateId}');`)).toBe("0");
   const recomputed = sql(`select c.execution_id from public.work_recompute_candidates c where c.request_id='${updateId}' and c.state='settled';`);
   expect(sql(`select root_execution_id from private.execution_lineage where execution_id='${recomputed}';`)).toBe(rootId);
   await page.reload();
