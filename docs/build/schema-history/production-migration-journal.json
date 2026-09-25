@@ -1551,8 +1551,12 @@
   {
    "version": "20260924111709",
    "name": "provider_assurance_without_expiry"
+  },
+  {
+   "version": "20260925153504",
+   "name": "evaluation_job_authority_in_outbox_sweep"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-24T11:19:26.011163+00:00"
+ "captured_at": "2026-09-25T15:35:24Z"
 }
