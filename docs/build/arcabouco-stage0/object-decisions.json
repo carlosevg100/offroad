@@ -168427,6 +168427,13 @@
       "decision": "preservar",
       "stage": "16 / decisão de 24/09/2026",
       "reason": "Atestação de provedor sem data de validade, por decisão do fundador de 24/09/2026."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925153755_production_budget_ceilings.sql",
+      "decision": "preservar",
+      "stage": "17 / correção pós-fechamento",
+      "reason": "A reserva de cada chamada passou a ser o limite superior calibrado; os tetos do banco foram dimensionados para a estimativa antiga e recusariam pedidos legítimos"
     }
   ],
   "staging_archive": [

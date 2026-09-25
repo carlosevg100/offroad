@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-09-23T20:49:01Z",
-  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them; receivables_scope_sources_current(uuid,uuid,jsonb) and record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text), rewritten by the 3M migration merged after the capture, captured from production on 2026-09-23; worker_record_agent_assessment_v1(uuid,text,jsonb) and worker_sync_project_information_requests_v1(uuid,text,jsonb), restated in full by the 4B migration 20260923224304, re-captured from production on 2026-09-23 after that apply; bind_job_authority_v1(), job_for_capability(uuid,text), worker_claim_job(text,integer), worker_claim_job_v2(text,integer) and worker_runtime_schema_contract_v1(), text-patched by the increment 5 migration governed_evaluation_transport, captured from staging after its apply; production bodies after the production apply are identical (md5 compared)",
+  "capturedAt": "2026-09-25T15:42:22Z",
+  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them; receivables_scope_sources_current(uuid,uuid,jsonb) and record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text), rewritten by the 3M migration merged after the capture, captured from production on 2026-09-23; worker_record_agent_assessment_v1(uuid,text,jsonb) and worker_sync_project_information_requests_v1(uuid,text,jsonb), restated in full by the 4B migration 20260923224304, re-captured from production on 2026-09-23 after that apply; bind_job_authority_v1(), job_for_capability(uuid,text), worker_claim_job(text,integer), worker_claim_job_v2(text,integer) and worker_runtime_schema_contract_v1(), text-patched by the increment 5 migration governed_evaluation_transport, captured from staging after its apply; production bodies after the production apply are identical (md5 compared); on 2026-09-25 the six functions rewritten by 20260925153755_production_budget_ceilings were added or refreshed from the migration replay: five equal production byte for byte; private.worker_activate_integration_preview_run_v1 keeps two comment lines that the committed 20260905175807 file carries and that production and staging lack (pre-existing, comments only), and private.worker_enqueue_receivables_method_refresh_v1 equals production while staging carries a staging-only variant",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -20,7 +20,7 @@
     {
       "signature": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)",
       "file": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb).sql",
-      "sha256": "5aaa386e83c9ad5810d04a96cf3b6e2c51cdb4356d5914db6f9a44f5817000b0"
+      "sha256": "3904fb897ccfc833aea2b5ac21ddc0971b1f5c026549c87fc9c49d68d9bc3fa2"
     },
     {
       "signature": "private.bind_job_authority_v1()",
@@ -48,9 +48,14 @@
       "sha256": "0912339b6a4cf98c15c819d792885adcf1d8828d2bf40c127959ec10b41e9fef"
     },
     {
+      "signature": "private.enqueue_incremental_deal_state_analysis(uuid,uuid,text)",
+      "file": "private.enqueue_incremental_deal_state_analysis(uuid,uuid,text).sql",
+      "sha256": "25600d04c2498116a0edeba1576fe1862bdf9247b0f9bab6affdc12406fca479"
+    },
+    {
       "signature": "private.enqueue_primary_case_analysis(uuid,uuid,uuid)",
       "file": "private.enqueue_primary_case_analysis(uuid,uuid,uuid).sql",
-      "sha256": "c6648ea92c0dff02a8a5fff444384aa4132483c6369905f5769338f6b262b633"
+      "sha256": "5dfb0c83669771ce35ec1f7c770aa7a24ad4f6b31394dcd830af80695685c7ee"
     },
     {
       "signature": "private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text)",
@@ -116,6 +121,11 @@
       "signature": "private.lock_job_authority_v1(uuid)",
       "file": "private.lock_job_authority_v1(uuid).sql",
       "sha256": "4e40ca5a31c68bccfac716002a77e2298c3898576df529a385cc9e1cc7680827"
+    },
+    {
+      "signature": "private.normalize_origination_runtime_budget_v1()",
+      "file": "private.normalize_origination_runtime_budget_v1().sql",
+      "sha256": "6de825144f70c330da6739e3d74d6b5fd388cf78fc43370465fa9b6eaa989f18"
     },
     {
       "signature": "private.pin_contribution_sources_v1(uuid,uuid,uuid[],uuid,uuid)",
@@ -223,6 +233,11 @@
       "sha256": "eaf6ca549432e7da405fabb40ae44762d292166198ddad000e331d37318caf4b"
     },
     {
+      "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
+      "file": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb).sql",
+      "sha256": "b1fa646225d6d2aed3bdec639967bfab06c2a4b33e9bc15b9555bd13ee7cd0d6"
+    },
+    {
       "signature": "private.worker_bind_receivables_information_request_fields_v1(uuid,text,jsonb)",
       "file": "private.worker_bind_receivables_information_request_fields_v1(uuid,text,jsonb).sql",
       "sha256": "5b019207559021f8ab74b37df4ba5d1e0ad130b22fa85b038c59bfcf1bfba1f4"
@@ -236,6 +251,11 @@
       "signature": "private.worker_claim_job_v2(text,integer)",
       "file": "private.worker_claim_job_v2(text,integer).sql",
       "sha256": "22bbeb60b03a2f0152435b7876334fa42d1f2e7c57d3fd34bb36bf147811f39b"
+    },
+    {
+      "signature": "private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text)",
+      "file": "private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text).sql",
+      "sha256": "c6b4a5b3040c6f6871bb976e9f6636b9c3ddfdf105b1de958dd714c86fa20cf7"
     },
     {
       "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
