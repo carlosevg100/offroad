@@ -2881,3 +2881,78 @@ Mais 17 objetos criados em laço pela mesma migração (políticas de negação,
 - `trigger:public.work_continuation_requests.work_continuation_requests_guard`
 - `trigger:public.work_continuation_requests.work_continuation_requests_truncate_guard`
 - `trigger:public.work_continuation_requests.work_continuation_requests_updated`
+
+## Recomputação delimitada das execuções afetadas
+
+71 objetos novos e 0 atualizados. Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original
+- `function:private.advance_dependency_update_request_v1(p_org uuid, p_request uuid, p_newer uuid)`
+- `function:private.assumption_version_readable_as_subject_v1(p_org uuid, p_version uuid, p_subject uuid)`
+- `function:private.assumption_version_source_refs_v1(p_org uuid, p_version uuid)`
+- `function:private.capture_method_executable_event_v1()`
+- `function:private.close_recompute_candidate_v1(p_candidate work_recompute_candidates, p_state text, p_reason text)`
+- `function:private.continuation_input_identity_v1(p_entries jsonb)`
+- `function:private.continuation_logical_key_v1(p_kind text, p_first text, p_second text)`
+- `function:private.dependency_lineage_representative_v1(p_org uuid, p_root uuid)`
+- `function:private.dependency_recompute_candidate_current_v1(p_org uuid, p_candidate uuid)`
+- `function:private.dependency_recompute_key_v1(p_work uuid, p_base uuid, p_fingerprint text)`
+- `function:private.dependency_recompute_origin_v1(p_org uuid, p_root uuid)`
+- `function:private.dependency_recompute_requester_v1(p_org uuid, p_root uuid)`
+- `function:private.execution_contract_basis_as_subject_v2(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)`
+- `function:private.execution_is_live_v1(p_org uuid, p_execution uuid)`
+- `function:private.execution_realizes_inputs_v1(p_org uuid, p_execution uuid, p_heads jsonb)`
+- `function:private.execution_recompute_assessment_v1(p_org uuid, p_execution uuid)`
+- `function:private.guard_dependency_recompute_hold_v1()`
+- `function:private.guard_work_recompute_candidate_v1()`
+- `function:private.guard_work_recompute_lease_v1()`
+- `function:private.lock_recompute_lease_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)`
+- `function:private.plan_dependency_recompute_v1(p_org uuid, p_work uuid)`
+- `function:private.plan_open_dependency_requests_v1(p_org uuid)`
+- `function:private.require_recompute_worker_v1(p_worker_token text)`
+- `function:private.settle_recompute_candidate_v1()`
+- `function:private.signal_source_bindable_v1()`
+- `function:private.source_version_bindable_v1(p_org uuid, p_version uuid)`
+- `function:private.source_version_descends_from_v1(p_org uuid, p_version uuid, p_ancestor uuid)`
+- `function:private.validate_execution_lineage_v1()`
+- `function:private.work_recompute_transition_allowed_v1(p_from text, p_to text)`
+- `function:private.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)`
+- `function:private.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)`
+- `function:private.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)`
+- `function:private.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)`
+- `function:public.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)`
+- `function:public.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)`
+- `function:public.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)`
+- `function:public.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)`
+- `policy:private.dependency_recompute_holds.dependency_recompute_holds_deny_clients`
+- `policy:private.execution_lineage.execution_lineage_deny_clients`
+- `policy:private.work_recompute_leases.work_recompute_leases_deny_clients`
+- `policy:public.work_recompute_candidates.work_recompute_candidates_deny_delete`
+- `policy:public.work_recompute_candidates.work_recompute_candidates_deny_insert`
+- `policy:public.work_recompute_candidates.work_recompute_candidates_deny_update`
+- `policy:public.work_recompute_candidates.work_recompute_candidates_select_authorized`
+- `r:private.dependency_recompute_holds`
+- `r:private.execution_lineage`
+- `r:private.work_recompute_leases`
+- `r:public.work_recompute_candidates`
+- `trigger:private.dependency_recompute_holds.dependency_recompute_holds_guard`
+- `trigger:private.dependency_recompute_holds.dependency_recompute_holds_truncate_guard`
+- `trigger:private.dependency_recompute_holds.dependency_recompute_holds_updated`
+- `trigger:private.execution_lineage.execution_lineage_immutable`
+- `trigger:private.execution_lineage.execution_lineage_truncate_guard`
+- `trigger:private.execution_lineage.execution_lineage_updated`
+- `trigger:private.execution_lineage.execution_lineage_validate`
+- `trigger:private.execution_method_profiles.execution_method_profiles_dependency_event`
+- `trigger:private.execution_result_receipts.execution_result_receipts_recompute_settlement`
+- `trigger:private.platform_capability_releases.platform_capability_releases_dependency_event`
+- `trigger:private.source_rights_versions.source_rights_versions_recompute_signal`
+- `trigger:private.source_version_verifications.source_version_verifications_recompute_signal`
+- `trigger:private.work_recompute_leases.work_recompute_leases_guard`
+- `trigger:private.work_recompute_leases.work_recompute_leases_truncate_guard`
+- `trigger:private.work_recompute_leases.work_recompute_leases_updated`
+- `trigger:public.processing_jobs.processing_jobs_recompute_settlement`
+- `trigger:public.work_recompute_candidates.work_recompute_candidates_audit`
+- `trigger:public.work_recompute_candidates.work_recompute_candidates_guard`
+- `trigger:public.work_recompute_candidates.work_recompute_candidates_truncate_guard`
+- `trigger:public.work_recompute_candidates.work_recompute_candidates_updated`
+- `function:private.execution_contract_basis_as_subject_v1(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)` (criada por DDL dinâmica)
+- `function:private.request_work_execution_producer_as_subject_v1(p_subject uuid, p_contract_text text, p_snapshot_text text)` (criada por DDL dinâmica)
+- `function:private.request_work_execution_producer_as_subject_v2(p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text)` (criada por DDL dinâmica)

@@ -1567,8 +1567,12 @@
   {
    "version": "20260925180927",
    "name": "work_dependency_events"
+  },
+  {
+   "version": "20260925204502",
+   "name": "work_dependency_recompute"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-25T18:30:00Z"
+ "captured_at": "2026-09-25T20:50:00Z"
 }

@@ -283,6 +283,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.advance_dependency_update_request_v1(p_org uuid, p_request uuid, p_newer uuid)",
+      "kind": "function",
+      "name": "advance_dependency_update_request_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_request uuid, p_newer uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.agent_operation_brief_snapshot(p_session document_intake_sessions)",
       "kind": "function",
       "name": "agent_operation_brief_snapshot",
@@ -616,6 +634,42 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_set uuid, p_slot text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.assumption_version_readable_as_subject_v1(p_org uuid, p_version uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "assumption_version_readable_as_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.assumption_version_source_refs_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "name": "assumption_version_source_refs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid",
       "security_definer": true
     },
     {
@@ -2102,6 +2156,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capture_method_executable_event_v1()",
+      "kind": "function",
+      "name": "capture_method_executable_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.capture_method_release_event_v1()",
       "kind": "function",
       "name": "capture_method_release_event_v1",
@@ -2353,6 +2425,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.close_recompute_candidate_v1(p_candidate work_recompute_candidates, p_state text, p_reason text)",
+      "kind": "function",
+      "name": "close_recompute_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_candidate work_recompute_candidates, p_state text, p_reason text",
       "security_definer": true
     },
     {
@@ -2609,6 +2699,42 @@
         "search_path=\"\""
       ],
       "signature": "p_value jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.continuation_input_identity_v1(p_entries jsonb)",
+      "kind": "function",
+      "name": "continuation_input_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_entries jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.continuation_logical_key_v1(p_kind text, p_first text, p_second text)",
+      "kind": "function",
+      "name": "continuation_logical_key_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_kind text, p_first text, p_second text",
       "security_definer": false
     },
     {
@@ -2942,6 +3068,96 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.dependency_lineage_representative_v1(p_org uuid, p_root uuid)",
+      "kind": "function",
+      "name": "dependency_lineage_representative_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_root uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.dependency_recompute_candidate_current_v1(p_org uuid, p_candidate uuid)",
+      "kind": "function",
+      "name": "dependency_recompute_candidate_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_candidate uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.dependency_recompute_key_v1(p_work uuid, p_base uuid, p_fingerprint text)",
+      "kind": "function",
+      "name": "dependency_recompute_key_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work uuid, p_base uuid, p_fingerprint text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.dependency_recompute_origin_v1(p_org uuid, p_root uuid)",
+      "kind": "function",
+      "name": "dependency_recompute_origin_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_root uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.dependency_recompute_requester_v1(p_org uuid, p_root uuid)",
+      "kind": "function",
+      "name": "dependency_recompute_requester_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_root uuid",
       "security_definer": true
     },
     {
@@ -3572,6 +3788,42 @@
       "security_definer": false
     },
     {
+      "id": "function:private.execution_contract_basis_as_subject_v1(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)",
+      "kind": "function",
+      "name": "execution_contract_basis_as_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_contract_basis_as_subject_v2(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)",
+      "kind": "function",
+      "name": "execution_contract_basis_as_subject_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
       "kind": "function",
       "name": "execution_contract_basis_v1",
@@ -3708,6 +3960,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.execution_is_live_v1(p_org uuid, p_execution uuid)",
+      "kind": "function",
+      "name": "execution_is_live_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.execution_json_projection_v1(p_text text)",
       "kind": "function",
       "name": "execution_json_projection_v1",
@@ -3777,6 +4047,42 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_work uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_realizes_inputs_v1(p_org uuid, p_execution uuid, p_heads jsonb)",
+      "kind": "function",
+      "name": "execution_realizes_inputs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid, p_heads jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_recompute_assessment_v1(p_org uuid, p_execution uuid)",
+      "kind": "function",
+      "name": "execution_recompute_assessment_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid",
       "security_definer": true
     },
     {
@@ -4160,6 +4466,24 @@
       ],
       "signature": "",
       "security_definer": true
+    },
+    {
+      "id": "function:private.guard_dependency_recompute_hold_v1()",
+      "kind": "function",
+      "name": "guard_dependency_recompute_hold_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
     },
     {
       "id": "function:private.guard_evaluation_operation_receipt_v1()",
@@ -4597,6 +4921,42 @@
       "id": "function:private.guard_work_continuation_request_v1()",
       "kind": "function",
       "name": "guard_work_continuation_request_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.guard_work_recompute_candidate_v1()",
+      "kind": "function",
+      "name": "guard_work_recompute_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.guard_work_recompute_lease_v1()",
+      "kind": "function",
+      "name": "guard_work_recompute_lease_v1",
       "grants": [
         [
           "postgres",
@@ -5900,6 +6260,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.lock_recompute_lease_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+      "kind": "function",
+      "name": "lock_recompute_lease_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
       "kind": "function",
       "name": "manage_work_v1",
@@ -6361,6 +6739,42 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_method_id text, p_work_type text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.plan_dependency_recompute_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "plan_dependency_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.plan_open_dependency_requests_v1(p_org uuid)",
+      "kind": "function",
+      "name": "plan_open_dependency_requests_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid",
       "security_definer": true
     },
     {
@@ -9469,6 +9883,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.request_work_execution_producer_as_subject_v1(p_subject uuid, p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "name": "request_work_execution_producer_as_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_subject uuid, p_contract_text text, p_snapshot_text text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.request_work_execution_producer_as_subject_v2(p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+      "kind": "function",
+      "name": "request_work_execution_producer_as_subject_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.request_work_execution_producer_v1(p_contract_text text, p_snapshot_text text)",
       "kind": "function",
       "name": "request_work_execution_producer_v1",
@@ -9764,6 +10214,24 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_recompute_worker_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "require_recompute_worker_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
       "security_definer": true
     },
     {
@@ -11129,9 +11597,45 @@
       "security_definer": true
     },
     {
+      "id": "function:private.settle_recompute_candidate_v1()",
+      "kind": "function",
+      "name": "settle_recompute_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.settle_stale_execution_jobs_v1()",
       "kind": "function",
       "name": "settle_stale_execution_jobs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.signal_source_bindable_v1()",
+      "kind": "function",
+      "name": "signal_source_bindable_v1",
       "grants": [
         [
           "postgres",
@@ -11226,6 +11730,42 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_version uuid, p_subject uuid, p_operation text, p_purpose text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.source_version_bindable_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "name": "source_version_bindable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.source_version_descends_from_v1(p_org uuid, p_version uuid, p_ancestor uuid)",
+      "kind": "function",
+      "name": "source_version_descends_from_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid, p_ancestor uuid",
       "security_definer": true
     },
     {
@@ -12368,6 +12908,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.validate_execution_lineage_v1()",
+      "kind": "function",
+      "name": "validate_execution_lineage_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.validate_execution_profile_storage_v1()",
       "kind": "function",
       "name": "validate_execution_profile_storage_v1",
@@ -12686,6 +13244,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.work_recompute_transition_allowed_v1(p_from text, p_to text)",
+      "kind": "function",
+      "name": "work_recompute_transition_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_from text, p_to text",
+      "security_definer": false
+    },
+    {
       "id": "function:private.work_turn_context_v1(p_job_id uuid)",
       "kind": "function",
       "name": "work_turn_context_v1",
@@ -12962,6 +13538,29 @@
         "search_path=\"\""
       ],
       "signature": "p_bucket text, p_path text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "name": "worker_claim_dependency_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_lease_seconds integer",
       "security_definer": true
     },
     {
@@ -13297,6 +13896,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+      "kind": "function",
+      "name": "worker_dependency_recompute_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_document_advisor_authorization(p_job_id uuid, p_capability_token text, p_event_id uuid)",
       "kind": "function",
       "name": "worker_document_advisor_authorization",
@@ -13340,6 +13962,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_draft_fingerprint text, p_compiled_supplement_fingerprint text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)",
+      "kind": "function",
+      "name": "worker_fail_dependency_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text",
       "security_definer": true
     },
     {
@@ -16013,6 +16658,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_entries jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+      "kind": "function",
+      "name": "worker_submit_dependency_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text",
       "security_definer": true
     },
     {
@@ -22310,6 +22978,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "name": "worker_claim_dependency_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_lease_seconds integer",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_claim_evaluation_v1(p_worker_token text)",
       "kind": "function",
       "name": "worker_claim_evaluation_v1",
@@ -22695,6 +23386,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+      "kind": "function",
+      "name": "worker_dependency_recompute_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_document_advisor_authorization(p_job_id uuid, p_capability_token text, p_event_id uuid)",
       "kind": "function",
       "name": "worker_document_advisor_authorization",
@@ -22748,6 +23462,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_draft_fingerprint text, p_compiled_supplement_fingerprint text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)",
+      "kind": "function",
+      "name": "worker_fail_dependency_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text",
       "security_definer": false
     },
     {
@@ -25282,6 +26019,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+      "kind": "function",
+      "name": "worker_submit_dependency_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_sync_institutional_information_requests_v1(p_job_id uuid, p_capability_token text, p_requests jsonb)",
       "kind": "function",
       "name": "worker_sync_institutional_information_requests_v1",
@@ -25746,6 +26506,21 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.dependency_recompute_holds.dependency_recompute_holds_deny_clients",
+      "kind": "policy",
+      "name": "dependency_recompute_holds_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "dependency_recompute_holds",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.domain_events.deny_client_delete",
       "kind": "policy",
       "name": "deny_client_delete",
@@ -26162,6 +26937,21 @@
         "authenticated"
       ],
       "table": "execution_invalidations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.execution_lineage.execution_lineage_deny_clients",
+      "kind": "policy",
+      "name": "execution_lineage_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "execution_lineage",
       "schema": "private",
       "command": "ALL",
       "permissive": "RESTRICTIVE",
@@ -27516,6 +28306,21 @@
       "schema": "private",
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.work_recompute_leases.work_recompute_leases_deny_clients",
+      "kind": "policy",
+      "name": "work_recompute_leases_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "work_recompute_leases",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
       "with_check": "false"
     },
     {
@@ -32537,6 +33342,62 @@
       "with_check": null
     },
     {
+      "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_delete",
+      "kind": "policy",
+      "name": "work_recompute_candidates_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_recompute_candidates",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_insert",
+      "kind": "policy",
+      "name": "work_recompute_candidates_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_recompute_candidates",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_update",
+      "kind": "policy",
+      "name": "work_recompute_candidates_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_recompute_candidates",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_recompute_candidates.work_recompute_candidates_select_authorized",
+      "kind": "policy",
+      "name": "work_recompute_candidates_select_authorized",
+      "qual": "( SELECT private.can_access_capital_project(work_recompute_candidates.organization_id, work_recompute_candidates.work_id) AS can_access_capital_project)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_recompute_candidates",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.workflow_runs.workflow_runs_delete_scoped",
       "kind": "policy",
       "name": "workflow_runs_delete_scoped",
@@ -33579,6 +34440,56 @@
       "force_rls": true
     },
     {
+      "id": "r:private.dependency_recompute_holds",
+      "rls": true,
+      "kind": "table",
+      "name": "dependency_recompute_holds",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.domain_events",
       "rls": true,
       "kind": "table",
@@ -34133,6 +35044,56 @@
       "rls": true,
       "kind": "table",
       "name": "execution_invalidations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_lineage",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_lineage",
       "grants": [
         [
           "postgres",
@@ -37383,6 +38344,56 @@
       "rls": true,
       "kind": "table",
       "name": "vault_source_dependencies",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.work_recompute_leases",
+      "rls": true,
+      "kind": "table",
+      "name": "work_recompute_leases",
       "grants": [
         [
           "postgres",
@@ -51534,6 +52545,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.work_recompute_candidates",
+      "rls": true,
+      "kind": "table",
+      "name": "work_recompute_candidates",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.workflow_runs",
       "rls": true,
       "kind": "table",
@@ -51974,6 +53040,36 @@
       "definition": "CREATE TRIGGER contribution_source_dependencies_updated BEFORE UPDATE ON private.contribution_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_guard",
+      "kind": "trigger",
+      "name": "dependency_recompute_holds_guard",
+      "table": "dependency_recompute_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_dependency_recompute_hold_v1()",
+      "definition": "CREATE TRIGGER dependency_recompute_holds_guard BEFORE DELETE OR UPDATE ON private.dependency_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.guard_dependency_recompute_hold_v1()"
+    },
+    {
+      "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_truncate_guard",
+      "kind": "trigger",
+      "name": "dependency_recompute_holds_truncate_guard",
+      "table": "dependency_recompute_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER dependency_recompute_holds_truncate_guard BEFORE TRUNCATE ON private.dependency_recompute_holds FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_updated",
+      "kind": "trigger",
+      "name": "dependency_recompute_holds_updated",
+      "table": "dependency_recompute_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER dependency_recompute_holds_updated BEFORE UPDATE ON private.dependency_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.domain_events.domain_events_immutable",
       "kind": "trigger",
       "name": "domain_events_immutable",
@@ -52274,6 +53370,46 @@
       "definition": "CREATE TRIGGER execution_invalidations_updated BEFORE UPDATE ON private.execution_invalidations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.execution_lineage.execution_lineage_immutable",
+      "kind": "trigger",
+      "name": "execution_lineage_immutable",
+      "table": "execution_lineage",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER execution_lineage_immutable BEFORE DELETE OR UPDATE ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.execution_lineage.execution_lineage_truncate_guard",
+      "kind": "trigger",
+      "name": "execution_lineage_truncate_guard",
+      "table": "execution_lineage",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER execution_lineage_truncate_guard BEFORE TRUNCATE ON private.execution_lineage FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.execution_lineage.execution_lineage_updated",
+      "kind": "trigger",
+      "name": "execution_lineage_updated",
+      "table": "execution_lineage",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_lineage_updated BEFORE UPDATE ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.execution_lineage.execution_lineage_validate",
+      "kind": "trigger",
+      "name": "execution_lineage_validate",
+      "table": "execution_lineage",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.validate_execution_lineage_v1()",
+      "definition": "CREATE TRIGGER execution_lineage_validate BEFORE INSERT ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.validate_execution_lineage_v1()"
+    },
+    {
       "id": "trigger:private.execution_manifests.execution_manifests_audit",
       "kind": "trigger",
       "name": "execution_manifests_audit",
@@ -52322,6 +53458,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER execution_manifests_updated BEFORE UPDATE ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_dependency_event",
+      "kind": "trigger",
+      "name": "execution_method_profiles_dependency_event",
+      "table": "execution_method_profiles",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_method_executable_event_v1()",
+      "definition": "CREATE TRIGGER execution_method_profiles_dependency_event AFTER INSERT ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.capture_method_executable_event_v1()"
     },
     {
       "id": "trigger:private.execution_method_profiles.execution_method_profiles_immutable",
@@ -52502,6 +53648,16 @@
       "enabled": "O",
       "function": "private.guard_contribution_immutable_v1()",
       "definition": "CREATE TRIGGER execution_result_receipts_immutable BEFORE DELETE OR UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_recompute_settlement",
+      "kind": "trigger",
+      "name": "execution_result_receipts_recompute_settlement",
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.settle_recompute_candidate_v1()",
+      "definition": "CREATE TRIGGER execution_result_receipts_recompute_settlement AFTER INSERT ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.settle_recompute_candidate_v1()"
     },
     {
       "id": "trigger:private.execution_result_receipts.execution_result_receipts_updated",
@@ -52862,6 +54018,16 @@
       "enabled": "O",
       "function": "private.guard_platform_ledger_truncate_v1()",
       "definition": "CREATE TRIGGER platform_capability_release_events_truncate_guard BEFORE TRUNCATE ON private.platform_capability_release_events FOR EACH STATEMENT EXECUTE FUNCTION private.guard_platform_ledger_truncate_v1()"
+    },
+    {
+      "id": "trigger:private.platform_capability_releases.platform_capability_releases_dependency_event",
+      "kind": "trigger",
+      "name": "platform_capability_releases_dependency_event",
+      "table": "platform_capability_releases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_method_executable_event_v1()",
+      "definition": "CREATE TRIGGER platform_capability_releases_dependency_event AFTER INSERT OR UPDATE OF released, exposure, method_id, method_version ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_executable_event_v1()"
     },
     {
       "id": "trigger:private.platform_capability_releases.platform_capability_releases_ledger",
@@ -53364,6 +54530,16 @@
       "definition": "CREATE TRIGGER source_rights_versions_immutable BEFORE DELETE OR UPDATE ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
     },
     {
+      "id": "trigger:private.source_rights_versions.source_rights_versions_recompute_signal",
+      "kind": "trigger",
+      "name": "source_rights_versions_recompute_signal",
+      "table": "source_rights_versions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.signal_source_bindable_v1()",
+      "definition": "CREATE TRIGGER source_rights_versions_recompute_signal AFTER INSERT ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.signal_source_bindable_v1()"
+    },
+    {
       "id": "trigger:private.source_version_verifications.source_verifications_audit",
       "kind": "trigger",
       "name": "source_verifications_audit",
@@ -53382,6 +54558,16 @@
       "enabled": "O",
       "function": "private.reject_source_version_mutation_v1()",
       "definition": "CREATE TRIGGER source_verifications_immutable BEFORE DELETE OR UPDATE ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.source_version_verifications.source_version_verifications_recompute_signal",
+      "kind": "trigger",
+      "name": "source_version_verifications_recompute_signal",
+      "table": "source_version_verifications",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.signal_source_bindable_v1()",
+      "definition": "CREATE TRIGGER source_version_verifications_recompute_signal AFTER INSERT ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.signal_source_bindable_v1()"
     },
     {
       "id": "trigger:private.storage_path_rotations.storage_path_rotations_audit",
@@ -53432,6 +54618,36 @@
       "enabled": "O",
       "function": "private.guard_contribution_immutable_v1()",
       "definition": "CREATE TRIGGER vault_dependency_immutable BEFORE DELETE OR UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.work_recompute_leases.work_recompute_leases_guard",
+      "kind": "trigger",
+      "name": "work_recompute_leases_guard",
+      "table": "work_recompute_leases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_work_recompute_lease_v1()",
+      "definition": "CREATE TRIGGER work_recompute_leases_guard BEFORE DELETE OR UPDATE ON private.work_recompute_leases FOR EACH ROW EXECUTE FUNCTION private.guard_work_recompute_lease_v1()"
+    },
+    {
+      "id": "trigger:private.work_recompute_leases.work_recompute_leases_truncate_guard",
+      "kind": "trigger",
+      "name": "work_recompute_leases_truncate_guard",
+      "table": "work_recompute_leases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER work_recompute_leases_truncate_guard BEFORE TRUNCATE ON private.work_recompute_leases FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.work_recompute_leases.work_recompute_leases_updated",
+      "kind": "trigger",
+      "name": "work_recompute_leases_updated",
+      "table": "work_recompute_leases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_recompute_leases_updated BEFORE UPDATE ON private.work_recompute_leases FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.workspace_capability_grants.workspace_capability_domain_event",
@@ -55824,6 +57040,16 @@
       "definition": "CREATE TRIGGER processing_jobs_policy_principal AFTER INSERT OR UPDATE OF status, leased_by, leased_account_user_id, lease_expires_at ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.sync_worker_principal_v1()"
     },
     {
+      "id": "trigger:public.processing_jobs.processing_jobs_recompute_settlement",
+      "kind": "trigger",
+      "name": "processing_jobs_recompute_settlement",
+      "table": "processing_jobs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.settle_recompute_candidate_v1()",
+      "definition": "CREATE TRIGGER processing_jobs_recompute_settlement AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW WHEN (((new.kind = 'work_execution'::text) AND (new.execution_id IS NOT NULL) AND (new.status = ANY (ARRAY['failed'::text, 'poison'::text, 'cancelled'::text])) AND (old.status IS DISTINCT FROM new.status))) EXECUTE FUNCTION private.settle_recompute_candidate_v1()"
+    },
+    {
       "id": "trigger:public.processing_jobs.processing_jobs_set_updated_at",
       "kind": "trigger",
       "name": "processing_jobs_set_updated_at",
@@ -56882,6 +58108,46 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER work_participants_updated BEFORE UPDATE ON public.work_participants FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_audit",
+      "kind": "trigger",
+      "name": "work_recompute_candidates_audit",
+      "table": "work_recompute_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER work_recompute_candidates_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_guard",
+      "kind": "trigger",
+      "name": "work_recompute_candidates_guard",
+      "table": "work_recompute_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_work_recompute_candidate_v1()",
+      "definition": "CREATE TRIGGER work_recompute_candidates_guard BEFORE DELETE OR UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_work_recompute_candidate_v1()"
+    },
+    {
+      "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_truncate_guard",
+      "kind": "trigger",
+      "name": "work_recompute_candidates_truncate_guard",
+      "table": "work_recompute_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER work_recompute_candidates_truncate_guard BEFORE TRUNCATE ON public.work_recompute_candidates FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_updated",
+      "kind": "trigger",
+      "name": "work_recompute_candidates_updated",
+      "table": "work_recompute_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_recompute_candidates_updated BEFORE UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:public.workspace_project_groups.workspace_groups_access_resource",
