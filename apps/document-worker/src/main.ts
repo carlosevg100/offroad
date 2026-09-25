@@ -8,6 +8,7 @@ import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
 import {createProviderProcessingAuthorizer} from "./provider-processing";
 import {createEventOutboxConsumer} from "./event-outbox";
+import {createDependencyRecomputeQueue, runDependencyRecomputeOnce} from "./dependency-recompute";
 import {processProviderResearchJob} from "./provider-research";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {readFile} from "node:fs/promises";
@@ -110,6 +111,7 @@ async function main(): Promise<void> {
   });
 
   const eventOutbox = createEventOutboxConsumer(supabase, config.OFFROAD_WORKER_TOKEN, log);
+  const dependencyRecompute = createDependencyRecomputeQueue(supabase, config.OFFROAD_WORKER_TOKEN);
 
   // External tools: report their versions once, so a run records exactly what read the file.
   const [sofficeVersion, tesseractVersion, pdfinfoVersion, pdftoppmVersion] = await Promise.all([
@@ -305,6 +307,25 @@ async function main(): Promise<void> {
     }
   })();
 
+  // The dependency recompute (stage 18, 3B) runs beside the job loop: a zero-budget candidate is
+  // composed and submitted here and never calls a model, and each candidate is held by its own
+  // lease, so a long document job cannot delay it. The executions it creates are ordinary pinned
+  // execution jobs, claimed by the job loop below.
+  const recomputeLoop = (async () => {
+    while (!stopping) {
+      try {
+        for (let batch = 0; batch < 10 && !stopping; batch++) {
+          const outcome = await runDependencyRecomputeOnce(dependencyRecompute);
+          if (outcome.status === "idle") break;
+          log("recompute.finished", outcome.status === "produced"
+            ? {candidate: outcome.candidateId, execution: outcome.executionId, status: outcome.status}
+            : {candidate: outcome.candidateId, status: outcome.status, reason: outcome.reason});
+        }
+      } catch { log("recompute.poll.failed", {reason: "recompute_transport_failed"}); }
+      await sleep(5000, shuttingDown.signal);
+    }
+  })();
+
   try {
   while (!stopping) {
     let job: ClaimedJob | null = null;
@@ -473,7 +494,7 @@ async function main(): Promise<void> {
   } finally {
     stopping = true;
     shuttingDown.abort();
-    await outboxLoop;
+    await Promise.all([outboxLoop, recomputeLoop]);
   }
   log("worker.stopped");
 }

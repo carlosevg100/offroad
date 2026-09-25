@@ -218,6 +218,20 @@ jobs:
           OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
             node scripts/ci/verify-governed-evaluation.mjs
 
+      # The dependency recompute of stage 18 (3B) runs the same way: the worker's own recompute module
+      # and RPC client, signed in as a synthetic worker account bound to its token. A root capital
+      # execution is requested through the web path's composition, a new revision of its working
+      # basis plans one zero-budget candidate, and the loop produces it once for the original
+      # requester. No model, no provider key, no network beyond the local stack, synthetic data only.
+      - name: Dependency recompute through the worker loop, once, against the local stack
+        env:
+          OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
+            node scripts/ci/verify-dependency-recompute.mjs
+
       - name: Concurrent R01 pause, release and policy revocation
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}

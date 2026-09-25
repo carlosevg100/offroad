@@ -14,8 +14,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("next/cache", () => ({revalidatePath: mocks.revalidate}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
 import {requestCapitalExecution} from "@/app/[locale]/app/projects/[projectId]/executions/actions";
-import {contractBasisVersions} from "./contract";
-import {executionGatesVersion} from "./gates";
+import {contractBasisVersions, executionGatesVersion} from "@offroad/execution-request";
 import {executionRequestFailure} from "./failure";
 
 const id = (n: number) => `a4190000-0000-4000-9000-${String(n).padStart(12, "0")}`;

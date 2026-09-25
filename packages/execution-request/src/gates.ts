@@ -4,7 +4,7 @@ import {
   type ConventionsGateResult, type MethodSelectionRecord, type MethodSelectionRefusalCode, type VoiceFinding, type VoiceString,
 } from "@offroad/credit-playbook";
 import type {ExecutionBasisCompany} from "./contract";
-import type {ExecutionGateRefusal} from "./failure";
+import type {ExecutionGateRefusal} from "./refusal";
 
 /**
  * The professional gates of one capital execution request, assembled by the web action around

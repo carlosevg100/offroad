@@ -12,7 +12,7 @@ import {
   referenceDataKeysOf, releasedMethodReferenceDataKeys, selectionRefusal, type ExecutionGateStates, type OpenedExecutionGates,
 } from "./gates";
 
-const root = join(import.meta.dirname, "../../../../..");
+const root = join(import.meta.dirname, "../../..");
 const sha256 = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
 const EM_DASH = String.fromCodePoint(0x2014);
 const method = {methodId: "prepare-capital-structure-decision", methodVersion: "2026.09.21-v4"};

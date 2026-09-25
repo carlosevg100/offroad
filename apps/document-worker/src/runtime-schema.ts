@@ -28,6 +28,8 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "documentary-execution-scope.v1",
   "atomic-documentary-commit.v1",
   "provider-resource-retention.v2",
+  // Stage 18, increment 3B: claim, basis, submit and fail of the dependency recompute.
+  "dependency-recompute.v1",
 ] as const;
 
 const runtimeSchemaContract = z.object({

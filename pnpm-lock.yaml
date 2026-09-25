@@ -71,6 +71,9 @@ importers:
       '@offroad/domain-contracts':
         specifier: workspace:*
         version: link:../../packages/domain-contracts
+      '@offroad/execution-request':
+        specifier: workspace:*
+        version: link:../../packages/execution-request
       '@offroad/financial-model':
         specifier: workspace:*
         version: link:../../packages/financial-model
@@ -159,6 +162,9 @@ importers:
       '@offroad/domain-contracts':
         specifier: workspace:*
         version: link:../../packages/domain-contracts
+      '@offroad/execution-request':
+        specifier: workspace:*
+        version: link:../../packages/execution-request
       '@offroad/extraction-learning':
         specifier: workspace:*
         version: link:../../packages/extraction-learning
@@ -826,6 +832,31 @@ importers:
       '@offroad/domain-contracts':
         specifier: workspace:*
         version: link:../domain-contracts
+
+  packages/execution-request:
+    dependencies:
+      '@offroad/agent-contracts':
+        specifier: workspace:*
+        version: link:../agent-contracts
+      '@offroad/credit-playbook':
+        specifier: workspace:*
+        version: link:../credit-playbook
+      '@offroad/financial-model':
+        specifier: workspace:*
+        version: link:../financial-model
+      '@offroad/reconciliation':
+        specifier: workspace:*
+        version: link:../reconciliation
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@offroad/testing-fixtures':
+        specifier: workspace:*
+        version: link:../testing-fixtures
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
 
   packages/extraction-learning:
     dependencies:
