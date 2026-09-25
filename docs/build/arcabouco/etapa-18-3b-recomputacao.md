@@ -57,13 +57,15 @@ Estados do pedido, dentro da máquina do 3A:
 |---|---|---|
 | `open` | `awaiting_authorization` | sem bloqueio, alguma candidata própria espera autorização |
 | `open` | `scheduled` | sem bloqueio, nenhuma espera, alguma candidata própria agendada |
-| `open`, `scheduled` | `ready` | todas as candidatas próprias terminadas e alguma liquidada ou recusada; nenhuma decisão é escrita |
+| `open`, `scheduled` | `ready` | todas as candidatas próprias terminadas e ao menos uma liquidada; nenhuma decisão é escrita |
 | `awaiting_authorization` | `scheduled`, depois `ready` | a espera some (autorização do incremento 4 ou substituição) e o resto terminou |
-| `open`, `awaiting_authorization`, `scheduled` | `declined` | todas terminadas e só falhas |
+| `open`, `awaiting_authorization`, `scheduled` | `declined` | todas terminadas e nenhuma liquidada: recusadas por falta de autoridade do solicitante, falhas, ou uma mistura delas com substituídas que não seja só de substituídas |
 | `awaiting_authorization`, `scheduled` | `superseded` | todas as candidatas próprias substituídas, apontando para o pedido aberto que as substituiu |
 | `open` | `superseded` | o pedido não planejou nada próprio nem bloqueia nada: só repete mudanças que um pedido anterior já cobre; aponta para esse pedido |
 
-Pedido aberto com bloqueio continua aberto e recebe as mudanças seguintes. Uma mudança nova com o pedido anterior fora de `open` abre pedido novo (um aberto por trabalho). O último caso da tabela evita pedidos abertos sem conteúdo: publicar uma release com perfil e capacidade são três eventos de uma mudança só.
+Pedido aberto com bloqueio continua aberto e recebe as mudanças seguintes. Uma mudança nova com o pedido anterior fora de `open` abre pedido novo (um aberto por trabalho). O último caso da tabela evita pedidos abertos sem conteúdo: publicar uma release com perfil e capacidade são três eventos de uma mudança só. Nesse caso o pedido substituído aponta para o pedido anterior que já cobre a mudança, e não para um pedido mais novo, porque é nele que está o trabalho a fazer; a direção foi aceita na revisão de 25/09/2026.
+
+Um pedido só fica `ready` quando alguma candidata foi liquidada, isto é, quando existe resultado novo para adotar. Sem nenhuma liquidada ele termina `declined`, e o motivo de cada candidata continua gravado nela.
 
 ## Evento de resultado de execução
 
@@ -75,11 +77,12 @@ Todo perfil de execução armazenado tem teto zero de custo e de chamadas, por v
 
 ## Limites e riscos
 
-- A composição de capital no worker exige que a raiz tenha sido pedida pelo caminho v2 (snapshot de capital e recibo de gates) e fixe uma única base de trabalho; execuções sem isso falham com código nomeado quando reivindicadas.
+- A composição de capital no worker exige que a raiz tenha sido pedida pelo caminho v2 (snapshot de capital e recibo de gates) e fixe uma única base de trabalho; execuções sem isso falham com código nomeado quando reivindicadas (`origin_unavailable`, ou `basis_unavailable` para a base não fixada). Essas linhagens não são recomputadas: só voltam a ter execução nas cabeças atuais quando uma pessoa pede a execução de novo.
 - Candidatas de uma linhagem cujo grafo segue incompleto ficam bloqueadas sem prazo; os casos são os mesmos que o 3A registrou como inalcançáveis hoje.
 - Um pedido cujas execuções afetadas deixaram de ser vivas sem candidata própria continua aberto até a próxima mudança.
-- Com o solicitante suspenso, o pedido cujas candidatas foram todas recusadas vai para `ready` sem nada a adotar, como o pedido determina; o incremento 4 mostra o motivo de cada candidata.
+- Com o solicitante suspenso, as candidatas do pedido são recusadas e o pedido termina `declined`, sem nada a adotar; o motivo fica em cada candidata para o incremento 4 mostrar.
 - O sinal de fonte verificada serializa, por organização, a verificação de bytes e o registro de direitos de fontes usadas por execuções com o planejamento da organização.
+- Não há justiça entre organizações na produção: a reivindicação toma a candidata agendada mais antiga de qualquer organização. Uma tarefa do worker da segunda PR produz cerca de uma candidata por segundo (na prova de CI dessa PR, meio segundo da reivindicação à submissão, com 63 hipóteses fixadas, e o loop faz até dez por volta com pausa de cinco segundos). Uma rajada de N candidatas de uma organização atrasa as das outras em cerca de N segundos por tarefa do worker; isso passa a importar a partir de algumas centenas de candidatas numa rajada, por exemplo uma release de procedimento que afete todas as linhagens de uma organização grande, o que deixa as outras esperando minutos. O volume de produção de hoje fica muito abaixo disso. A reivindicação examina as 16 candidatas mais antigas sem lease: se todas tiverem cabeças que já mudaram e ainda não foram substituídas (o evento da mudança ainda não foi aplicado, por exemplo com a linha da outbox bloqueada), as mais novas esperam o próximo planejamento.
 
 ## Aplicação
 

@@ -1362,6 +1362,22 @@ do $$ declare c jsonb;b jsonb;begin
  end if;
  raise notice 'PASS: requester without current authority: assembling the basis declines the candidate with the reason';
 end $$;
+-- A request is ready only when a candidate settled. The request S3 opened, whose only candidate was
+-- declined for the requester's authority, ends declined, and so does the first one, whose candidates
+-- were declined (authority) and failed (cancelled execution).
+do $$ declare first uuid:=(select request_id from public.work_recompute_candidates where id=pg_temp.id('C2'));c public.work_recompute_candidates;begin
+ select * into strict c from public.work_recompute_candidates where request_id<>first;
+ if c.state<>'declined' or c.reason<>'requester_not_authorized:execution_access_denied'
+ or (select status from public.work_continuation_requests where id=c.request_id)<>'declined'
+ or (select status from public.work_continuation_requests where id=first)<>'declined'
+ or (select string_agg(state||':'||reason,',' order by state) from public.work_recompute_candidates where request_id=first)
+  <>'declined:requester_not_authorized:execution_access_denied,failed:execution_cancelled' then
+  raise exception 'a request without a settled candidate did not end declined: %',
+   (select jsonb_agg(jsonb_build_object('status',r.status,'candidates',(select jsonb_agg(x.state||':'||coalesce(x.reason,'')) from public.work_recompute_candidates x where x.request_id=r.id)))
+    from public.work_continuation_requests r);
+ end if;
+ raise notice 'PASS: a request whose only candidate was declined for the requester''s authority ends declined, not ready; so does one whose candidates were declined and failed';
+end $$;
 
 -- 30. Gate refusal: blocked gates fail the candidate with the gate code at submission, and a refusal
 -- the worker found before submitting fails it through the named code; free text is refused.

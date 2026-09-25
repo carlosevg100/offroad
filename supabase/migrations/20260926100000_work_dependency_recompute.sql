@@ -669,10 +669,11 @@ end $$;
 -- an open request with a hold stays open; any candidate awaiting authorization makes it
 -- awaiting_authorization; otherwise any scheduled candidate makes it scheduled; when all are
 -- terminal it is superseded (every candidate superseded by newer heads, pointing at p_newer, the
--- open request whose planning superseded them), ready (some settled or declined, no decision
--- written) or declined (only failures). A request without candidates of its own (everything reused
--- or covered by an earlier candidate) keeps its status. awaiting_authorization reaches ready
--- through scheduled, the only path the machine allows.
+-- open request whose planning superseded them), ready (at least one candidate settled; no decision
+-- is written) or declined (none settled: every candidate declined for the requester's authority,
+-- failed, or a mix of those with superseded candidates that is not all superseded). A request
+-- without candidates of its own (everything reused or covered by an earlier candidate) keeps its
+-- status. awaiting_authorization reaches ready through scheduled, the only path the machine allows.
 create function private.advance_dependency_update_request_v1(p_org uuid,p_request uuid,p_newer uuid default null) returns text
 language plpgsql security definer set search_path='' as $$
 declare r public.work_continuation_requests;n record;target text;begin
@@ -685,7 +686,7 @@ declare r public.work_continuation_requests;n record;target text;begin
  if n.total=0 then return r.status; end if;
  if r.status='open' and exists(select 1 from private.dependency_recompute_holds h where h.organization_id=p_org and h.request_id=r.id and h.released_at is null) then return r.status; end if;
  target:=case when n.awaiting>0 then 'awaiting_authorization' when n.scheduled>0 then 'scheduled' when n.superseded=n.total then 'superseded'
-  when n.settled+n.declined>0 then 'ready' else 'declined' end;
+  when n.settled>0 then 'ready' else 'declined' end;
  if target='superseded' then
   if p_newer is null or p_newer=r.id or not exists(select 1 from public.work_continuation_requests x where x.organization_id=p_org and x.work_id=r.work_id and x.id=p_newer) then
    return r.status;
@@ -990,7 +991,7 @@ language plpgsql security definer set search_path='' as $$
 declare c public.work_recompute_candidates;begin
  c:=private.lock_recompute_lease_v1(p_worker_token,p_candidate,p_lease,p_capability);
  if p_code is null or p_code not in ('company_unregistered','situation_required','situation_unknown','method_not_applicable','selection_invalid','voice_blocked',
-  'gates_invalid','method_unavailable','origin_unavailable','basis_unavailable','basis_version_mismatch','provenance_denied','composition_failed') then
+  'gates_invalid','method_unavailable','origin_unavailable','basis_unavailable','provenance_denied','composition_failed') then
   raise exception 'recompute_failure_code_invalid' using errcode='22023';
  end if;
  if c.state<>'scheduled' or c.execution_id is not null then return jsonb_build_object('failed',false,'candidateId',c.id,'state',c.state,'reason',c.reason); end if;
