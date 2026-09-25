@@ -872,6 +872,60 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.advance_dependency_update_request_v1(p_org uuid, p_request uuid, p_newer uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.advance_dependency_update_request_v1(p_org uuid, p_request uuid, p_newer uuid)",
+          "kind": "function",
+          "name": "advance_dependency_update_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_request uuid, p_newer uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.advance_dependency_update_request_v1(p_org uuid, p_request uuid, p_newer uuid)",
+          "kind": "function",
+          "name": "advance_dependency_update_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_request uuid, p_newer uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 677,
+          "anchor": "create function private.advance_dependency_update_request_v1(p_org uuid,p_request uuid,p_newer uuid default null) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.agent_operation_brief_snapshot(p_session document_intake_sessions)",
       "kind": "function",
       "catalogues": {
@@ -1920,6 +1974,114 @@
           "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
           "line": 128,
           "anchor": "create function private.assumption_slot_head_v1(p_org uuid,p_set uuid,p_slot text) returns table(version_id uuid,revision integer,decision_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.assumption_version_readable_as_subject_v1(p_org uuid, p_version uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.assumption_version_readable_as_subject_v1(p_org uuid, p_version uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "assumption_version_readable_as_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.assumption_version_readable_as_subject_v1(p_org uuid, p_version uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "assumption_version_readable_as_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 32,
+          "anchor": "create function private.assumption_version_readable_as_subject_v1(p_org uuid,p_version uuid,p_subject uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.assumption_version_source_refs_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.assumption_version_source_refs_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "assumption_version_source_refs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.assumption_version_source_refs_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "assumption_version_source_refs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 330,
+          "anchor": "create function private.assumption_version_source_refs_v1(p_org uuid,p_version uuid) returns uuid[]",
           "mechanism": "direct_ddl"
         }
       ]
@@ -6424,6 +6586,60 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.capture_method_executable_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_method_executable_event_v1()",
+          "kind": "function",
+          "name": "capture_method_executable_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_method_executable_event_v1()",
+          "kind": "function",
+          "name": "capture_method_executable_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 772,
+          "anchor": "create function private.capture_method_executable_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.capture_method_release_event_v1()",
       "kind": "function",
       "catalogues": {
@@ -7200,6 +7416,60 @@
         }
       ],
       "consumer_status": "Fila atual; produtor privado, sem perfil ou ativação de cliente."
+    },
+    {
+      "id": "function:private.close_recompute_candidate_v1(p_candidate work_recompute_candidates, p_state text, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.close_recompute_candidate_v1(p_candidate work_recompute_candidates, p_state text, p_reason text)",
+          "kind": "function",
+          "name": "close_recompute_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate work_recompute_candidates, p_state text, p_reason text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.close_recompute_candidate_v1(p_candidate work_recompute_candidates, p_state text, p_reason text)",
+          "kind": "function",
+          "name": "close_recompute_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate work_recompute_candidates, p_state text, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 877,
+          "anchor": "create function private.close_recompute_candidate_v1(p_candidate public.work_recompute_candidates,p_state text,p_reason text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.collect_vault_dependencies_v1(p_org uuid, p_previous uuid, p_source uuid, p_assumption uuid, p_sources uuid[])",
@@ -8010,6 +8280,114 @@
           "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
           "line": 334,
           "anchor": "create function private.continuation_fingerprint_v1(p_value jsonb) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.continuation_input_identity_v1(p_entries jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.continuation_input_identity_v1(p_entries jsonb)",
+          "kind": "function",
+          "name": "continuation_input_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_entries jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.continuation_input_identity_v1(p_entries jsonb)",
+          "kind": "function",
+          "name": "continuation_input_identity_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_entries jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 101,
+          "anchor": "create function private.continuation_input_identity_v1(p_entries jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.continuation_logical_key_v1(p_kind text, p_first text, p_second text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.continuation_logical_key_v1(p_kind text, p_first text, p_second text)",
+          "kind": "function",
+          "name": "continuation_logical_key_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text, p_first text, p_second text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.continuation_logical_key_v1(p_kind text, p_first text, p_second text)",
+          "kind": "function",
+          "name": "continuation_logical_key_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text, p_first text, p_second text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 96,
+          "anchor": "create function private.continuation_logical_key_v1(p_kind text,p_first text,p_second text default null) returns text",
           "mechanism": "direct_ddl"
         }
       ]
@@ -9043,6 +9421,276 @@
           "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
           "line": 178,
           "anchor": "create function private.dependency_event_impact_v1(p_org uuid,p_source uuid,p_set uuid,p_slot text,p_method text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.dependency_lineage_representative_v1(p_org uuid, p_root uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.dependency_lineage_representative_v1(p_org uuid, p_root uuid)",
+          "kind": "function",
+          "name": "dependency_lineage_representative_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_root uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.dependency_lineage_representative_v1(p_org uuid, p_root uuid)",
+          "kind": "function",
+          "name": "dependency_lineage_representative_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_root uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 518,
+          "anchor": "create function private.dependency_lineage_representative_v1(p_org uuid,p_root uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.dependency_recompute_candidate_current_v1(p_org uuid, p_candidate uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.dependency_recompute_candidate_current_v1(p_org uuid, p_candidate uuid)",
+          "kind": "function",
+          "name": "dependency_recompute_candidate_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_candidate uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.dependency_recompute_candidate_current_v1(p_org uuid, p_candidate uuid)",
+          "kind": "function",
+          "name": "dependency_recompute_candidate_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_candidate uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 529,
+          "anchor": "create function private.dependency_recompute_candidate_current_v1(p_org uuid,p_candidate uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.dependency_recompute_key_v1(p_work uuid, p_base uuid, p_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.dependency_recompute_key_v1(p_work uuid, p_base uuid, p_fingerprint text)",
+          "kind": "function",
+          "name": "dependency_recompute_key_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work uuid, p_base uuid, p_fingerprint text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.dependency_recompute_key_v1(p_work uuid, p_base uuid, p_fingerprint text)",
+          "kind": "function",
+          "name": "dependency_recompute_key_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work uuid, p_base uuid, p_fingerprint text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 107,
+          "anchor": "create function private.dependency_recompute_key_v1(p_work uuid,p_base uuid,p_fingerprint text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.dependency_recompute_origin_v1(p_org uuid, p_root uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.dependency_recompute_origin_v1(p_org uuid, p_root uuid)",
+          "kind": "function",
+          "name": "dependency_recompute_origin_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_root uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.dependency_recompute_origin_v1(p_org uuid, p_root uuid)",
+          "kind": "function",
+          "name": "dependency_recompute_origin_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_root uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 866,
+          "anchor": "create function private.dependency_recompute_origin_v1(p_org uuid,p_root uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.dependency_recompute_requester_v1(p_org uuid, p_root uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.dependency_recompute_requester_v1(p_org uuid, p_root uuid)",
+          "kind": "function",
+          "name": "dependency_recompute_requester_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_root uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.dependency_recompute_requester_v1(p_org uuid, p_root uuid)",
+          "kind": "function",
+          "name": "dependency_recompute_requester_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_root uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 857,
+          "anchor": "create function private.dependency_recompute_requester_v1(p_org uuid,p_root uuid) returns uuid",
           "mechanism": "direct_ddl"
         }
       ]
@@ -10957,6 +11605,114 @@
       ]
     },
     {
+      "id": "function:private.execution_contract_basis_as_subject_v1(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_contract_basis_as_subject_v1(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_as_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_contract_basis_as_subject_v1(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_as_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 52,
+          "anchor": " revised:=replace(replace(replace(original,needle,'private.execution_contract_basis_as_subject_v1(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)'),'auth.uid()','p_subject'),",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_contract_basis_as_subject_v2(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_contract_basis_as_subject_v2(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_as_subject_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_contract_basis_as_subject_v2(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)",
+          "kind": "function",
+          "name": "execution_contract_basis_as_subject_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 86,
+          "anchor": "create function private.execution_contract_basis_as_subject_v2(p_subject uuid,p_work_id uuid,p_version_id uuid,p_method_id text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.execution_contract_basis_v1(p_work_id uuid, p_version_id uuid, p_method_id text)",
       "kind": "function",
       "catalogues": {
@@ -11370,6 +12126,60 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "function:private.execution_is_live_v1(p_org uuid, p_execution uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_is_live_v1(p_org uuid, p_execution uuid)",
+          "kind": "function",
+          "name": "execution_is_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_is_live_v1(p_org uuid, p_execution uuid)",
+          "kind": "function",
+          "name": "execution_is_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 322,
+          "anchor": "create function private.execution_is_live_v1(p_org uuid,p_execution uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.execution_json_projection_v1(p_text text)",
       "kind": "function",
       "catalogues": {
@@ -11583,6 +12393,114 @@
           "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
           "line": 132,
           "anchor": "create function private.execution_read_access_v1(p_org uuid,p_work uuid) returns void language plpgsql volatile security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_realizes_inputs_v1(p_org uuid, p_execution uuid, p_heads jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_realizes_inputs_v1(p_org uuid, p_execution uuid, p_heads jsonb)",
+          "kind": "function",
+          "name": "execution_realizes_inputs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_heads jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_realizes_inputs_v1(p_org uuid, p_execution uuid, p_heads jsonb)",
+          "kind": "function",
+          "name": "execution_realizes_inputs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_heads jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 543,
+          "anchor": "create function private.execution_realizes_inputs_v1(p_org uuid,p_execution uuid,p_heads jsonb) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_recompute_assessment_v1(p_org uuid, p_execution uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_recompute_assessment_v1(p_org uuid, p_execution uuid)",
+          "kind": "function",
+          "name": "execution_recompute_assessment_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_recompute_assessment_v1(p_org uuid, p_execution uuid)",
+          "kind": "function",
+          "name": "execution_recompute_assessment_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 383,
+          "anchor": "create function private.execution_recompute_assessment_v1(p_org uuid,p_execution uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -12766,6 +13684,60 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.guard_dependency_recompute_hold_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_dependency_recompute_hold_v1()",
+          "kind": "function",
+          "name": "guard_dependency_recompute_hold_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_dependency_recompute_hold_v1()",
+          "kind": "function",
+          "name": "guard_dependency_recompute_hold_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 304,
+          "anchor": "create function private.guard_dependency_recompute_hold_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.guard_evaluation_operation_receipt_v1()",
@@ -14169,6 +15141,114 @@
           "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
           "line": 401,
           "anchor": "create function private.guard_work_continuation_request_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_work_recompute_candidate_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_work_recompute_candidate_v1()",
+          "kind": "function",
+          "name": "guard_work_recompute_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_work_recompute_candidate_v1()",
+          "kind": "function",
+          "name": "guard_work_recompute_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 174,
+          "anchor": "create function private.guard_work_recompute_candidate_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_work_recompute_lease_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_work_recompute_lease_v1()",
+          "kind": "function",
+          "name": "guard_work_recompute_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_work_recompute_lease_v1()",
+          "kind": "function",
+          "name": "guard_work_recompute_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 219,
+          "anchor": "create function private.guard_work_recompute_lease_v1() returns trigger",
           "mechanism": "direct_ddl"
         }
       ]
@@ -18127,6 +19207,60 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.lock_recompute_lease_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_recompute_lease_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+          "kind": "function",
+          "name": "lock_recompute_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_recompute_lease_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+          "kind": "function",
+          "name": "lock_recompute_lease_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 839,
+          "anchor": "create function private.lock_recompute_lease_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text) returns public.work_recompute_candidates",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.manage_work_v1(p_work_id uuid, p_action text, p_title text)",
       "kind": "function",
       "catalogues": {
@@ -19493,6 +20627,114 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.plan_dependency_recompute_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.plan_dependency_recompute_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "plan_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.plan_dependency_recompute_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "plan_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 554,
+          "anchor": "create function private.plan_dependency_recompute_v1(p_org uuid,p_work uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.plan_open_dependency_requests_v1(p_org uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.plan_open_dependency_requests_v1(p_org uuid)",
+          "kind": "function",
+          "name": "plan_open_dependency_requests_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.plan_open_dependency_requests_v1(p_org uuid)",
+          "kind": "function",
+          "name": "plan_open_dependency_requests_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 706,
+          "anchor": "create function private.plan_open_dependency_requests_v1(p_org uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.platform_actor_identity_v1()",
@@ -28932,6 +30174,114 @@
       "consumer_status": "Wrapper humano privado existente; futura ponte worker ainda não conectada. Sem grant de API."
     },
     {
+      "id": "function:private.request_work_execution_producer_as_subject_v1(p_subject uuid, p_contract_text text, p_snapshot_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_work_execution_producer_as_subject_v1(p_subject uuid, p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_producer_as_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_work_execution_producer_as_subject_v1(p_subject uuid, p_contract_text text, p_snapshot_text text)",
+          "kind": "function",
+          "name": "request_work_execution_producer_as_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_contract_text text, p_snapshot_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 64,
+          "anchor": " revised:=replace(replace(replace(original,needle,'private.request_work_execution_producer_as_subject_v1(p_subject uuid, p_contract_text text, p_snapshot_text text)'),'auth.uid()','p_subject'),",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.request_work_execution_producer_as_subject_v2(p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_work_execution_producer_as_subject_v2(p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "request_work_execution_producer_as_subject_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_work_execution_producer_as_subject_v2(p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "request_work_execution_producer_as_subject_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 77,
+          "anchor": " revised:=replace(replace(replace(replace(original,needle,'private.request_work_execution_producer_as_subject_v2(p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text)'),'auth.uid()','p_subject'),",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.request_work_execution_producer_v1(p_contract_text text, p_snapshot_text text)",
       "kind": "function",
       "catalogues": {
@@ -29857,6 +31207,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.require_recompute_worker_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_recompute_worker_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "require_recompute_worker_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_recompute_worker_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "require_recompute_worker_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 827,
+          "anchor": "create function private.require_recompute_worker_v1(p_worker_token text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.require_resource_access_v1(p_resource_id uuid, p_action text)",
@@ -34066,6 +35470,60 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.settle_recompute_candidate_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.settle_recompute_candidate_v1()",
+          "kind": "function",
+          "name": "settle_recompute_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.settle_recompute_candidate_v1()",
+          "kind": "function",
+          "name": "settle_recompute_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 745,
+          "anchor": "create function private.settle_recompute_candidate_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.settle_stale_execution_jobs_v1()",
       "kind": "function",
       "catalogues": {
@@ -34119,6 +35577,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.signal_source_bindable_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.signal_source_bindable_v1()",
+          "kind": "function",
+          "name": "signal_source_bindable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.signal_source_bindable_v1()",
+          "kind": "function",
+          "name": "signal_source_bindable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 804,
+          "anchor": "create function private.signal_source_bindable_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.source_head_v1(p_org uuid, p_source uuid)",
@@ -34358,6 +35870,114 @@
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:private.source_version_bindable_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.source_version_bindable_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "source_version_bindable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.source_version_bindable_v1(p_org uuid, p_version uuid)",
+          "kind": "function",
+          "name": "source_version_bindable_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 347,
+          "anchor": "create function private.source_version_bindable_v1(p_org uuid,p_version uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.source_version_descends_from_v1(p_org uuid, p_version uuid, p_ancestor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.source_version_descends_from_v1(p_org uuid, p_version uuid, p_ancestor uuid)",
+          "kind": "function",
+          "name": "source_version_descends_from_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_ancestor uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.source_version_descends_from_v1(p_org uuid, p_version uuid, p_ancestor uuid)",
+          "kind": "function",
+          "name": "source_version_descends_from_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_ancestor uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 357,
+          "anchor": "create function private.source_version_descends_from_v1(p_org uuid,p_version uuid,p_ancestor uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.start_advisor_project_in_group_v1(p_request_id uuid, p_locale text, p_project_name text, p_entry_job text, p_prompt text, p_access_basis text, p_plan jsonb, p_group_id uuid)",
@@ -38010,6 +39630,60 @@
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
     },
     {
+      "id": "function:private.validate_execution_lineage_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.validate_execution_lineage_v1()",
+          "kind": "function",
+          "name": "validate_execution_lineage_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.validate_execution_lineage_v1()",
+          "kind": "function",
+          "name": "validate_execution_lineage_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 261,
+          "anchor": "create function private.validate_execution_lineage_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.validate_execution_profile_storage_v1()",
       "kind": "function",
       "catalogues": {
@@ -38973,6 +40647,60 @@
       ]
     },
     {
+      "id": "function:private.work_recompute_transition_allowed_v1(p_from text, p_to text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_recompute_transition_allowed_v1(p_from text, p_to text)",
+          "kind": "function",
+          "name": "work_recompute_transition_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_from text, p_to text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.work_recompute_transition_allowed_v1(p_from text, p_to text)",
+          "kind": "function",
+          "name": "work_recompute_transition_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_from text, p_to text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 165,
+          "anchor": "create function private.work_recompute_transition_allowed_v1(p_from text,p_to text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.work_turn_context_v1(p_job_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -39828,6 +41556,70 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "worker_claim_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_lease_seconds integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "worker_claim_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_lease_seconds integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 884,
+          "anchor": "create function private.worker_claim_dependency_recompute_v1(p_worker_token text,p_lease_seconds integer default 120) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_claim_evaluation_v1(p_worker_token text)",
@@ -40844,6 +42636,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+          "kind": "function",
+          "name": "worker_dependency_recompute_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+          "kind": "function",
+          "name": "worker_dependency_recompute_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 922,
+          "anchor": "create function private.worker_dependency_recompute_basis_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.worker_document_advisor_authorization(p_job_id uuid, p_capability_token text, p_event_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -40984,6 +42840,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)",
+          "kind": "function",
+          "name": "worker_fail_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)",
+          "kind": "function",
+          "name": "worker_fail_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 989,
+          "anchor": "create function private.worker_fail_dependency_recompute_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text,p_code text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_fail_job(p_job_id uuid, p_capability_token text, p_error jsonb, p_retryable boolean, p_retry_in_seconds integer)",
@@ -49251,6 +51171,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "worker_submit_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "worker_submit_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 950,
+          "anchor": "create function private.worker_submit_dependency_recompute_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text,p_contract_text text,p_snapshot_text text,p_gates_text text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_sync_institutional_information_requests_v1(p_job_id uuid, p_capability_token text, p_requests jsonb)",
@@ -67273,6 +69257,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "worker_claim_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_lease_seconds integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_claim_dependency_recompute_v1(p_worker_token text, p_lease_seconds integer)",
+          "kind": "function",
+          "name": "worker_claim_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_lease_seconds integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 1001,
+          "anchor": "create function public.worker_claim_dependency_recompute_v1(p_worker_token text,p_lease_seconds integer default 120) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.worker_claim_evaluation_v1(p_worker_token text)",
       "kind": "function",
       "catalogues": {
@@ -68413,6 +70461,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+          "kind": "function",
+          "name": "worker_dependency_recompute_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
+          "kind": "function",
+          "name": "worker_dependency_recompute_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 1003,
+          "anchor": "create function public.worker_dependency_recompute_basis_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.worker_document_advisor_authorization(p_job_id uuid, p_capability_token text, p_event_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -68573,6 +70685,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:public.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)",
+          "kind": "function",
+          "name": "worker_fail_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_fail_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text)",
+          "kind": "function",
+          "name": "worker_fail_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_code text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 1007,
+          "anchor": "create function public.worker_fail_dependency_recompute_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text,p_code text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.worker_fail_job(p_job_id uuid, p_capability_token text, p_error jsonb, p_retryable boolean, p_retry_in_seconds integer)",
@@ -75921,6 +78097,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "worker_submit_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_submit_dependency_recompute_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text)",
+          "kind": "function",
+          "name": "worker_submit_dependency_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text, p_contract_text text, p_snapshot_text text, p_gates_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 1005,
+          "anchor": "create function public.worker_submit_dependency_recompute_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text,p_contract_text text,p_snapshot_text text,p_gates_text text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.worker_sync_institutional_information_requests_v1(p_job_id uuid, p_capability_token text, p_requests jsonb)",
       "kind": "function",
       "catalogues": {
@@ -77452,6 +79692,54 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "policy:private.dependency_recompute_holds.dependency_recompute_holds_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.dependency_recompute_holds.dependency_recompute_holds_deny_clients",
+          "kind": "policy",
+          "name": "dependency_recompute_holds_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "dependency_recompute_holds",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.dependency_recompute_holds.dependency_recompute_holds_deny_clients",
+          "kind": "policy",
+          "name": "dependency_recompute_holds_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "dependency_recompute_holds",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 303,
+          "anchor": "create policy dependency_recompute_holds_deny_clients on private.dependency_recompute_holds as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:private.domain_events.deny_client_delete",
       "kind": "policy",
       "catalogues": {
@@ -78858,6 +81146,54 @@
           "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
           "line": 313,
           "anchor": "create policy execution_invalidations_deny_clients on private.execution_invalidations as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.execution_lineage.execution_lineage_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_lineage.execution_lineage_deny_clients",
+          "kind": "policy",
+          "name": "execution_lineage_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "execution_lineage",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_lineage.execution_lineage_deny_clients",
+          "kind": "policy",
+          "name": "execution_lineage_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "execution_lineage",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 260,
+          "anchor": "create policy execution_lineage_deny_clients on private.execution_lineage as restrictive for all to anon,authenticated using(false) with check(false);",
           "mechanism": "direct_ddl"
         }
       ]
@@ -83383,6 +85719,54 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "policy:private.work_recompute_leases.work_recompute_leases_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.work_recompute_leases.work_recompute_leases_deny_clients",
+          "kind": "policy",
+          "name": "work_recompute_leases_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "work_recompute_leases",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.work_recompute_leases.work_recompute_leases_deny_clients",
+          "kind": "policy",
+          "name": "work_recompute_leases_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "work_recompute_leases",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 218,
+          "anchor": "create policy work_recompute_leases_deny_clients on private.work_recompute_leases as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "policy:private.workspace_capability_grants.workspace_capability_grants_deny_clients",
@@ -100586,6 +102970,190 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_delete",
+          "kind": "policy",
+          "name": "work_recompute_candidates_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_delete",
+          "kind": "policy",
+          "name": "work_recompute_candidates_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 160,
+          "anchor": "create policy work_recompute_candidates_deny_delete on public.work_recompute_candidates for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_insert",
+          "kind": "policy",
+          "name": "work_recompute_candidates_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_insert",
+          "kind": "policy",
+          "name": "work_recompute_candidates_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 158,
+          "anchor": "create policy work_recompute_candidates_deny_insert on public.work_recompute_candidates for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_update",
+          "kind": "policy",
+          "name": "work_recompute_candidates_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_recompute_candidates.work_recompute_candidates_deny_update",
+          "kind": "policy",
+          "name": "work_recompute_candidates_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 159,
+          "anchor": "create policy work_recompute_candidates_deny_update on public.work_recompute_candidates for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_recompute_candidates.work_recompute_candidates_select_authorized",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_recompute_candidates.work_recompute_candidates_select_authorized",
+          "kind": "policy",
+          "name": "work_recompute_candidates_select_authorized",
+          "qual": "( SELECT private.can_access_capital_project(work_recompute_candidates.organization_id, work_recompute_candidates.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_recompute_candidates.work_recompute_candidates_select_authorized",
+          "kind": "policy",
+          "name": "work_recompute_candidates_select_authorized",
+          "qual": "( SELECT private.can_access_capital_project(work_recompute_candidates.organization_id, work_recompute_candidates.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 157,
+          "anchor": "create policy work_recompute_candidates_select_authorized on public.work_recompute_candidates for select to authenticated using((select private.can_access_capital_project(organization_id,work_id)));",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:public.workflow_runs.workflow_runs_all",
       "kind": "policy",
       "catalogues": {},
@@ -103543,6 +106111,124 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "r:private.dependency_recompute_holds",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.dependency_recompute_holds",
+          "rls": true,
+          "kind": "table",
+          "name": "dependency_recompute_holds",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.dependency_recompute_holds",
+          "rls": true,
+          "kind": "table",
+          "name": "dependency_recompute_holds",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 280,
+          "anchor": "create table private.dependency_recompute_holds (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "r:private.domain_events",
       "kind": "table",
       "catalogues": {
@@ -104972,6 +107658,124 @@
           "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
           "line": 269,
           "anchor": "create table private.execution_invalidations (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.execution_lineage",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_lineage",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_lineage",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_lineage",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_lineage",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 233,
+          "anchor": "create table private.execution_lineage (",
           "mechanism": "direct_ddl"
         }
       ]
@@ -112714,6 +115518,124 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:private.work_recompute_leases",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.work_recompute_leases",
+          "rls": true,
+          "kind": "table",
+          "name": "work_recompute_leases",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.work_recompute_leases",
+          "rls": true,
+          "kind": "table",
+          "name": "work_recompute_leases",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 196,
+          "anchor": "create table private.work_recompute_leases (",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "r:private.worker_tokens",
@@ -143323,6 +146245,134 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "r:public.work_recompute_candidates",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_recompute_candidates",
+          "rls": true,
+          "kind": "table",
+          "name": "work_recompute_candidates",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_recompute_candidates",
+          "rls": true,
+          "kind": "table",
+          "name": "work_recompute_candidates",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 113,
+          "anchor": "create table public.work_recompute_candidates (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "r:public.workflow_runs",
       "kind": "table",
       "catalogues": {
@@ -144705,6 +147755,120 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_guard",
+          "kind": "trigger",
+          "name": "dependency_recompute_holds_guard",
+          "table": "dependency_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_dependency_recompute_hold_v1()",
+          "definition": "CREATE TRIGGER dependency_recompute_holds_guard BEFORE DELETE OR UPDATE ON private.dependency_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.guard_dependency_recompute_hold_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_guard",
+          "kind": "trigger",
+          "name": "dependency_recompute_holds_guard",
+          "table": "dependency_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_dependency_recompute_hold_v1()",
+          "definition": "CREATE TRIGGER dependency_recompute_holds_guard BEFORE DELETE OR UPDATE ON private.dependency_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.guard_dependency_recompute_hold_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 315,
+          "anchor": "create trigger dependency_recompute_holds_guard before update or delete on private.dependency_recompute_holds for each row execute function private.guard_dependency_recompute_hold_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_truncate_guard",
+          "kind": "trigger",
+          "name": "dependency_recompute_holds_truncate_guard",
+          "table": "dependency_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER dependency_recompute_holds_truncate_guard BEFORE TRUNCATE ON private.dependency_recompute_holds FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_truncate_guard",
+          "kind": "trigger",
+          "name": "dependency_recompute_holds_truncate_guard",
+          "table": "dependency_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER dependency_recompute_holds_truncate_guard BEFORE TRUNCATE ON private.dependency_recompute_holds FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 316,
+          "anchor": "create trigger dependency_recompute_holds_truncate_guard before truncate on private.dependency_recompute_holds for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_updated",
+          "kind": "trigger",
+          "name": "dependency_recompute_holds_updated",
+          "table": "dependency_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER dependency_recompute_holds_updated BEFORE UPDATE ON private.dependency_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.dependency_recompute_holds.dependency_recompute_holds_updated",
+          "kind": "trigger",
+          "name": "dependency_recompute_holds_updated",
+          "table": "dependency_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER dependency_recompute_holds_updated BEFORE UPDATE ON private.dependency_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 317,
+          "anchor": "create trigger dependency_recompute_holds_updated before update on private.dependency_recompute_holds for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.domain_events.domain_events_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -145862,6 +149026,158 @@
       ]
     },
     {
+      "id": "trigger:private.execution_lineage.execution_lineage_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_lineage.execution_lineage_immutable",
+          "kind": "trigger",
+          "name": "execution_lineage_immutable",
+          "table": "execution_lineage",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_lineage_immutable BEFORE DELETE OR UPDATE ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_lineage.execution_lineage_immutable",
+          "kind": "trigger",
+          "name": "execution_lineage_immutable",
+          "table": "execution_lineage",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_lineage_immutable BEFORE DELETE OR UPDATE ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 274,
+          "anchor": "create trigger execution_lineage_immutable before update or delete on private.execution_lineage for each row execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_lineage.execution_lineage_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_lineage.execution_lineage_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_lineage_truncate_guard",
+          "table": "execution_lineage",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_lineage_truncate_guard BEFORE TRUNCATE ON private.execution_lineage FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_lineage.execution_lineage_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_lineage_truncate_guard",
+          "table": "execution_lineage",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_lineage_truncate_guard BEFORE TRUNCATE ON private.execution_lineage FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 275,
+          "anchor": "create trigger execution_lineage_truncate_guard before truncate on private.execution_lineage for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_lineage.execution_lineage_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_lineage.execution_lineage_updated",
+          "kind": "trigger",
+          "name": "execution_lineage_updated",
+          "table": "execution_lineage",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_lineage_updated BEFORE UPDATE ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_lineage.execution_lineage_updated",
+          "kind": "trigger",
+          "name": "execution_lineage_updated",
+          "table": "execution_lineage",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_lineage_updated BEFORE UPDATE ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 276,
+          "anchor": "create trigger execution_lineage_updated before update on private.execution_lineage for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_lineage.execution_lineage_validate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_lineage.execution_lineage_validate",
+          "kind": "trigger",
+          "name": "execution_lineage_validate",
+          "table": "execution_lineage",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_execution_lineage_v1()",
+          "definition": "CREATE TRIGGER execution_lineage_validate BEFORE INSERT ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.validate_execution_lineage_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_lineage.execution_lineage_validate",
+          "kind": "trigger",
+          "name": "execution_lineage_validate",
+          "table": "execution_lineage",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.validate_execution_lineage_v1()",
+          "definition": "CREATE TRIGGER execution_lineage_validate BEFORE INSERT ON private.execution_lineage FOR EACH ROW EXECUTE FUNCTION private.validate_execution_lineage_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 273,
+          "anchor": "create trigger execution_lineage_validate before insert on private.execution_lineage for each row execute function private.validate_execution_lineage_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_manifests.execution_manifests_audit",
       "kind": "trigger",
       "catalogues": {
@@ -146054,6 +149370,44 @@
         }
       ],
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_method_profiles.execution_method_profiles_dependency_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_method_profiles.execution_method_profiles_dependency_event",
+          "kind": "trigger",
+          "name": "execution_method_profiles_dependency_event",
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_method_executable_event_v1()",
+          "definition": "CREATE TRIGGER execution_method_profiles_dependency_event AFTER INSERT ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.capture_method_executable_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_method_profiles.execution_method_profiles_dependency_event",
+          "kind": "trigger",
+          "name": "execution_method_profiles_dependency_event",
+          "table": "execution_method_profiles",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_method_executable_event_v1()",
+          "definition": "CREATE TRIGGER execution_method_profiles_dependency_event AFTER INSERT ON private.execution_method_profiles FOR EACH ROW EXECUTE FUNCTION private.capture_method_executable_event_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 796,
+          "anchor": "create trigger execution_method_profiles_dependency_event after insert on private.execution_method_profiles",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.execution_method_profiles.execution_method_profiles_immutable",
@@ -146744,6 +150098,44 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_recompute_settlement",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_recompute_settlement",
+          "kind": "trigger",
+          "name": "execution_result_receipts_recompute_settlement",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.settle_recompute_candidate_v1()",
+          "definition": "CREATE TRIGGER execution_result_receipts_recompute_settlement AFTER INSERT ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.settle_recompute_candidate_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_recompute_settlement",
+          "kind": "trigger",
+          "name": "execution_result_receipts_recompute_settlement",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.settle_recompute_candidate_v1()",
+          "definition": "CREATE TRIGGER execution_result_receipts_recompute_settlement AFTER INSERT ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.settle_recompute_candidate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 763,
+          "anchor": "create trigger execution_result_receipts_recompute_settlement after insert on private.execution_result_receipts for each row execute function private.settle_recompute_candidate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.execution_result_receipts.execution_result_receipts_updated",
@@ -148141,6 +151533,44 @@
           "path": "supabase/migrations/20260923233258_execution_producer_authority.sql",
           "line": 118,
           "anchor": "create trigger platform_capability_release_events_truncate_guard before truncate on private.platform_capability_release_events for each statement execute function private.guard_platform_ledger_truncate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.platform_capability_releases.platform_capability_releases_dependency_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_capability_releases.platform_capability_releases_dependency_event",
+          "kind": "trigger",
+          "name": "platform_capability_releases_dependency_event",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_method_executable_event_v1()",
+          "definition": "CREATE TRIGGER platform_capability_releases_dependency_event AFTER INSERT OR UPDATE OF released, exposure, method_id, method_version ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_executable_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_capability_releases.platform_capability_releases_dependency_event",
+          "kind": "trigger",
+          "name": "platform_capability_releases_dependency_event",
+          "table": "platform_capability_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_method_executable_event_v1()",
+          "definition": "CREATE TRIGGER platform_capability_releases_dependency_event AFTER INSERT OR UPDATE OF released, exposure, method_id, method_version ON private.platform_capability_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_executable_event_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 794,
+          "anchor": "create trigger platform_capability_releases_dependency_event after insert or update of released,exposure,method_id,method_version on private.platform_capability_releases",
           "mechanism": "direct_ddl"
         }
       ]
@@ -150085,6 +153515,44 @@
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
+      "id": "trigger:private.source_rights_versions.source_rights_versions_recompute_signal",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.source_rights_versions.source_rights_versions_recompute_signal",
+          "kind": "trigger",
+          "name": "source_rights_versions_recompute_signal",
+          "table": "source_rights_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.signal_source_bindable_v1()",
+          "definition": "CREATE TRIGGER source_rights_versions_recompute_signal AFTER INSERT ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.signal_source_bindable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.source_rights_versions.source_rights_versions_recompute_signal",
+          "kind": "trigger",
+          "name": "source_rights_versions_recompute_signal",
+          "table": "source_rights_versions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.signal_source_bindable_v1()",
+          "definition": "CREATE TRIGGER source_rights_versions_recompute_signal AFTER INSERT ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.signal_source_bindable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 822,
+          "anchor": "create trigger source_rights_versions_recompute_signal after insert on private.source_rights_versions for each row execute function private.signal_source_bindable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.source_version_verifications.source_verifications_audit",
       "kind": "trigger",
       "catalogues": {
@@ -150161,6 +153629,44 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "trigger:private.source_version_verifications.source_version_verifications_recompute_signal",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.source_version_verifications.source_version_verifications_recompute_signal",
+          "kind": "trigger",
+          "name": "source_version_verifications_recompute_signal",
+          "table": "source_version_verifications",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.signal_source_bindable_v1()",
+          "definition": "CREATE TRIGGER source_version_verifications_recompute_signal AFTER INSERT ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.signal_source_bindable_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.source_version_verifications.source_version_verifications_recompute_signal",
+          "kind": "trigger",
+          "name": "source_version_verifications_recompute_signal",
+          "table": "source_version_verifications",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.signal_source_bindable_v1()",
+          "definition": "CREATE TRIGGER source_version_verifications_recompute_signal AFTER INSERT ON private.source_version_verifications FOR EACH ROW EXECUTE FUNCTION private.signal_source_bindable_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 821,
+          "anchor": "create trigger source_version_verifications_recompute_signal after insert on private.source_version_verifications for each row execute function private.signal_source_bindable_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.storage_path_rotations.storage_path_rotations_audit",
@@ -150358,6 +153864,120 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.work_recompute_leases.work_recompute_leases_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.work_recompute_leases.work_recompute_leases_guard",
+          "kind": "trigger",
+          "name": "work_recompute_leases_guard",
+          "table": "work_recompute_leases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_work_recompute_lease_v1()",
+          "definition": "CREATE TRIGGER work_recompute_leases_guard BEFORE DELETE OR UPDATE ON private.work_recompute_leases FOR EACH ROW EXECUTE FUNCTION private.guard_work_recompute_lease_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.work_recompute_leases.work_recompute_leases_guard",
+          "kind": "trigger",
+          "name": "work_recompute_leases_guard",
+          "table": "work_recompute_leases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_work_recompute_lease_v1()",
+          "definition": "CREATE TRIGGER work_recompute_leases_guard BEFORE DELETE OR UPDATE ON private.work_recompute_leases FOR EACH ROW EXECUTE FUNCTION private.guard_work_recompute_lease_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 227,
+          "anchor": "create trigger work_recompute_leases_guard before update or delete on private.work_recompute_leases for each row execute function private.guard_work_recompute_lease_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.work_recompute_leases.work_recompute_leases_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.work_recompute_leases.work_recompute_leases_truncate_guard",
+          "kind": "trigger",
+          "name": "work_recompute_leases_truncate_guard",
+          "table": "work_recompute_leases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_recompute_leases_truncate_guard BEFORE TRUNCATE ON private.work_recompute_leases FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.work_recompute_leases.work_recompute_leases_truncate_guard",
+          "kind": "trigger",
+          "name": "work_recompute_leases_truncate_guard",
+          "table": "work_recompute_leases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_recompute_leases_truncate_guard BEFORE TRUNCATE ON private.work_recompute_leases FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 228,
+          "anchor": "create trigger work_recompute_leases_truncate_guard before truncate on private.work_recompute_leases for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.work_recompute_leases.work_recompute_leases_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.work_recompute_leases.work_recompute_leases_updated",
+          "kind": "trigger",
+          "name": "work_recompute_leases_updated",
+          "table": "work_recompute_leases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_recompute_leases_updated BEFORE UPDATE ON private.work_recompute_leases FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.work_recompute_leases.work_recompute_leases_updated",
+          "kind": "trigger",
+          "name": "work_recompute_leases_updated",
+          "table": "work_recompute_leases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_recompute_leases_updated BEFORE UPDATE ON private.work_recompute_leases FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 229,
+          "anchor": "create trigger work_recompute_leases_updated before update on private.work_recompute_leases for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.workspace_capability_grants.workspace_capability_domain_event",
@@ -159593,6 +163213,44 @@
       "consumer_status": "Consumido pelos comandos de política, avaliador comum, worker ou Storage; superfícies privadas sem grant direto ao cliente."
     },
     {
+      "id": "trigger:public.processing_jobs.processing_jobs_recompute_settlement",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.processing_jobs.processing_jobs_recompute_settlement",
+          "kind": "trigger",
+          "name": "processing_jobs_recompute_settlement",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.settle_recompute_candidate_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_recompute_settlement AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW WHEN (((new.kind = 'work_execution'::text) AND (new.execution_id IS NOT NULL) AND (new.status = ANY (ARRAY['failed'::text, 'poison'::text, 'cancelled'::text])) AND (old.status IS DISTINCT FROM new.status))) EXECUTE FUNCTION private.settle_recompute_candidate_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.processing_jobs.processing_jobs_recompute_settlement",
+          "kind": "trigger",
+          "name": "processing_jobs_recompute_settlement",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.settle_recompute_candidate_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_recompute_settlement AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW WHEN (((new.kind = 'work_execution'::text) AND (new.execution_id IS NOT NULL) AND (new.status = ANY (ARRAY['failed'::text, 'poison'::text, 'cancelled'::text])) AND (old.status IS DISTINCT FROM new.status))) EXECUTE FUNCTION private.settle_recompute_candidate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 764,
+          "anchor": "create trigger processing_jobs_recompute_settlement after update of status on public.processing_jobs for each row",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:public.processing_jobs.processing_jobs_set_updated_at",
       "kind": "trigger",
       "catalogues": {
@@ -163687,6 +167345,158 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_audit",
+          "kind": "trigger",
+          "name": "work_recompute_candidates_audit",
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_recompute_candidates_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_audit",
+          "kind": "trigger",
+          "name": "work_recompute_candidates_audit",
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_recompute_candidates_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 193,
+          "anchor": "create trigger work_recompute_candidates_audit after insert or update or delete on public.work_recompute_candidates for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_guard",
+          "kind": "trigger",
+          "name": "work_recompute_candidates_guard",
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_work_recompute_candidate_v1()",
+          "definition": "CREATE TRIGGER work_recompute_candidates_guard BEFORE DELETE OR UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_work_recompute_candidate_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_guard",
+          "kind": "trigger",
+          "name": "work_recompute_candidates_guard",
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_work_recompute_candidate_v1()",
+          "definition": "CREATE TRIGGER work_recompute_candidates_guard BEFORE DELETE OR UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_work_recompute_candidate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 190,
+          "anchor": "create trigger work_recompute_candidates_guard before update or delete on public.work_recompute_candidates for each row execute function private.guard_work_recompute_candidate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_truncate_guard",
+          "kind": "trigger",
+          "name": "work_recompute_candidates_truncate_guard",
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_recompute_candidates_truncate_guard BEFORE TRUNCATE ON public.work_recompute_candidates FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_truncate_guard",
+          "kind": "trigger",
+          "name": "work_recompute_candidates_truncate_guard",
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_recompute_candidates_truncate_guard BEFORE TRUNCATE ON public.work_recompute_candidates FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 191,
+          "anchor": "create trigger work_recompute_candidates_truncate_guard before truncate on public.work_recompute_candidates for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_updated",
+          "kind": "trigger",
+          "name": "work_recompute_candidates_updated",
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_recompute_candidates_updated BEFORE UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_recompute_candidates.work_recompute_candidates_updated",
+          "kind": "trigger",
+          "name": "work_recompute_candidates_updated",
+          "table": "work_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_recompute_candidates_updated BEFORE UPDATE ON public.work_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Recomputação delimitada das execuções afetadas: candidatas por linhagem, bloqueios com o sinal que os libera, linhagem das recomputações, lease do worker e produção pelo solicitante original",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+          "line": 192,
+          "anchor": "create trigger work_recompute_candidates_updated before update on public.work_recompute_candidates for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:public.workspace_project_groups.workspace_groups_access_resource",
@@ -171883,6 +175693,13 @@
       "decision": "preservar",
       "stage": "18 / 3A",
       "reason": "Migração B de work_dependencies_and_continuity: tipos de evento source_version e method_release, efeito propagate_dependencies no consumidor da outbox, private.execution_invalidations e public.work_continuation_requests"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "Migração do incremento 3B de work_dependencies_and_continuity: public.work_recompute_candidates, private.execution_lineage, private.dependency_recompute_holds e private.work_recompute_leases, o planejamento dentro do efeito de dependência, os sinais que liberam bloqueios e as quatro RPCs fechadas do worker"
     }
   ],
   "staging_archive": [

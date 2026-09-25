@@ -5907,6 +5907,34 @@ do $$ declare role_name text; begin
  then raise exception 'Stage 18 3A policies missing';end if;
 end $$;
 
+-- Stage 18, increment 3B: recompute candidates are read through the work's authority only, with the
+-- same policy expression as public.work_milestones; lineage, holds and leases are closed to every API
+-- role. The behaviour (owner reads, member without access and anon do not, no client write) is
+-- proven with real candidates in work_continuity_dependencies.sql.
+do $$ declare role_name text;relation text; begin
+ foreach relation in array array['public.work_recompute_candidates','private.execution_lineage','private.dependency_recompute_holds','private.work_recompute_leases'] loop
+  if not exists(select 1 from pg_class where oid=relation::regclass and relrowsecurity and relforcerowsecurity) then raise exception 'Stage 18 3B RLS missing: %',relation;end if;
+ end loop;
+ if has_table_privilege('anon','public.work_recompute_candidates','SELECT,INSERT,UPDATE,DELETE')
+ or has_table_privilege('authenticated','public.work_recompute_candidates','INSERT,UPDATE,DELETE,TRUNCATE')
+ or not has_table_privilege('authenticated','public.work_recompute_candidates','SELECT')
+ or has_table_privilege('service_role','public.work_recompute_candidates','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Recompute candidate grants are not select-only for authenticated';end if;
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+  foreach relation in array array['private.execution_lineage','private.dependency_recompute_holds','private.work_recompute_leases'] loop
+   if has_table_privilege(role_name,relation,'SELECT,INSERT,UPDATE,DELETE') then raise exception 'Recompute storage exposed to %: %',role_name,relation;end if;
+  end loop;
+ end loop;
+ if not exists(select 1 from pg_policy r join pg_policy m on m.polrelid='public.work_milestones'::regclass and m.polname='work_milestones_select_authorized'
+   where r.polrelid='public.work_recompute_candidates'::regclass and r.polname='work_recompute_candidates_select_authorized' and r.polcmd='r' and r.polpermissive
+   and replace(pg_get_expr(r.polqual,r.polrelid),'work_recompute_candidates.','')=replace(pg_get_expr(m.polqual,m.polrelid),'work_milestones.','')
+   and r.polroles=m.polroles)
+ or (select count(*) from pg_policy where polrelid='public.work_recompute_candidates'::regclass and polname in ('work_recompute_candidates_deny_insert','work_recompute_candidates_deny_update','work_recompute_candidates_deny_delete'))<>3
+ or exists(select 1 from pg_policy where polrelid='public.work_recompute_candidates'::regclass and polcmd in ('a','w','d') and coalesce(pg_get_expr(polqual,polrelid),'false')<>'false')
+ or exists(select 1 from unnest(array['private.execution_lineage','private.dependency_recompute_holds','private.work_recompute_leases']) t(relation) where not exists(
+   select 1 from pg_policy where polrelid=t.relation::regclass and not polpermissive and polcmd='*' and pg_get_expr(polqual,polrelid)='false' and pg_get_expr(polwithcheck,polrelid)='false'))
+ then raise exception 'Stage 18 3B policies missing';end if;
+end $$;
+
 select 'rls_non_interference_passed' as result;
 
 -- Internal explicit-subject core is never an API impersonation surface.

@@ -137,10 +137,16 @@ do $$declare role_name text;sig text;begin
   end loop;
   if has_table_privilege(role_name,'private.platform_principals','SELECT,INSERT,UPDATE,DELETE') or has_table_privilege(role_name,'private.execution_profile_registrations','SELECT,INSERT,UPDATE,DELETE') or has_table_privilege(role_name,'private.receivables_release_pause_events','SELECT,INSERT,UPDATE,DELETE') then raise exception 'ledger exposed to %',role_name;end if;
  end loop;
- -- The explicit-subject request has exactly one caller: the human wrapper that derives the subject from the session.
+ -- The explicit-subject request has exactly two callers: the human wrapper that derives the subject from the session, and
+ -- the explicit-subject producer of stage 18, which only the explicit-subject v2 producer calls; that v2 producer is
+ -- called only by the closed worker submission of a dependency recompute (stage 18, increment 3B).
  if exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private')
-  and p.proname not in ('request_work_execution_as_subject_v1','request_work_execution_v1') and p.prosrc like '%request_work_execution_as_subject_v1%')
+  and p.proname not in ('request_work_execution_as_subject_v1','request_work_execution_v1','request_work_execution_producer_as_subject_v1') and p.prosrc like '%request_work_execution_as_subject_v1%')
  or not exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname='request_work_execution_v1' and p.prosrc like '%request_work_execution_as_subject_v1%')
+ or exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private')
+  and p.proname not in ('request_work_execution_producer_as_subject_v1','request_work_execution_producer_as_subject_v2') and p.prosrc like '%request_work_execution_producer_as_subject_v1%')
+ or exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private')
+  and p.proname not in ('request_work_execution_producer_as_subject_v2','worker_submit_dependency_recompute_v1') and p.prosrc like '%request_work_execution_producer_as_subject_v2%')
  then raise exception 'unexpected caller of the explicit-subject request';end if;
 end $$;
 select 'platform_operator_identity: PASS' result;

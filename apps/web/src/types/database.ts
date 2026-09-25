@@ -10603,6 +10603,105 @@ export type Database = {
           },
         ]
       }
+      work_recompute_candidates: {
+        Row: {
+          action: string
+          base_execution_id: string
+          created_at: string
+          execution_id: string | null
+          execution_ids: string[]
+          head_inputs: Json
+          id: string
+          idempotency_key: string
+          max_cost_microusd: number
+          max_model_calls: number
+          new_input_fingerprint: string
+          organization_id: string
+          reason: string | null
+          request_id: string
+          revision: number
+          state: string
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          action: string
+          base_execution_id: string
+          created_at?: string
+          execution_id?: string | null
+          execution_ids: string[]
+          head_inputs: Json
+          id?: string
+          idempotency_key: string
+          max_cost_microusd: number
+          max_model_calls: number
+          new_input_fingerprint: string
+          organization_id: string
+          reason?: string | null
+          request_id: string
+          revision?: number
+          state: string
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          action?: string
+          base_execution_id?: string
+          created_at?: string
+          execution_id?: string | null
+          execution_ids?: string[]
+          head_inputs?: Json
+          id?: string
+          idempotency_key?: string
+          max_cost_microusd?: number
+          max_model_calls?: number
+          new_input_fingerprint?: string
+          organization_id?: string
+          reason?: string | null
+          request_id?: string
+          revision?: number
+          state?: string
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_recompute_candidates_organization_id_base_execution_i_fkey"
+            columns: ["organization_id", "base_execution_id"]
+            isOneToOne: false
+            referencedRelation: "work_executions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_recompute_candidates_organization_id_execution_id_fkey"
+            columns: ["organization_id", "execution_id"]
+            isOneToOne: true
+            referencedRelation: "work_executions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_recompute_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_recompute_candidates_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_recompute_candidates_organization_id_work_id_request__fkey"
+            columns: ["organization_id", "work_id", "request_id"]
+            isOneToOne: false
+            referencedRelation: "work_continuation_requests"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+        ]
+      }
       workflow_runs: {
         Row: {
           completed_at: string | null
@@ -12441,6 +12540,10 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_claim_dependency_recompute_v1: {
+        Args: { p_lease_seconds?: number; p_worker_token: string }
+        Returns: Json
+      }
       worker_claim_evaluation_v1: {
         Args: { p_worker_token: string }
         Returns: Json
@@ -12561,6 +12664,15 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string; p_result?: Json }
         Returns: Json
       }
+      worker_dependency_recompute_basis_v1: {
+        Args: {
+          p_candidate: string
+          p_capability: string
+          p_lease: string
+          p_worker_token: string
+        }
+        Returns: Json
+      }
       worker_document_advisor_authorization: {
         Args: {
           p_capability_token: string
@@ -12575,6 +12687,16 @@ export type Database = {
           p_compiled_supplement_fingerprint: string
           p_draft_fingerprint: string
           p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_fail_dependency_recompute_v1: {
+        Args: {
+          p_candidate: string
+          p_capability: string
+          p_code: string
+          p_lease: string
+          p_worker_token: string
         }
         Returns: Json
       }
@@ -13236,6 +13358,18 @@ export type Database = {
       }
       worker_store_public_research_cache: {
         Args: { p_capability_token: string; p_entries: Json; p_job_id: string }
+        Returns: Json
+      }
+      worker_submit_dependency_recompute_v1: {
+        Args: {
+          p_candidate: string
+          p_capability: string
+          p_contract_text: string
+          p_gates_text: string
+          p_lease: string
+          p_snapshot_text: string
+          p_worker_token: string
+        }
         Returns: Json
       }
       worker_sync_institutional_information_requests_v1: {
