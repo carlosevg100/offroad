@@ -10399,6 +10399,92 @@ export type Database = {
           },
         ]
       }
+      work_milestones: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          label: string
+          occurred_at: string
+          organization_id: string
+          outcome: string | null
+          resolves_milestone_id: string | null
+          revision: number | null
+          subject_id: string
+          subject_kind: string
+          supersedes_milestone_id: string | null
+          updated_at: string
+          version_fingerprint: string | null
+          work_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          label: string
+          occurred_at: string
+          organization_id: string
+          outcome?: string | null
+          resolves_milestone_id?: string | null
+          revision?: number | null
+          subject_id: string
+          subject_kind: string
+          supersedes_milestone_id?: string | null
+          updated_at?: string
+          version_fingerprint?: string | null
+          work_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          label?: string
+          occurred_at?: string
+          organization_id?: string
+          outcome?: string | null
+          resolves_milestone_id?: string | null
+          revision?: number | null
+          subject_id?: string
+          subject_kind?: string
+          supersedes_milestone_id?: string | null
+          updated_at?: string
+          version_fingerprint?: string | null
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_milestones_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_milestones_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_milestones_organization_id_work_id_resolves_milestone_fkey"
+            columns: ["organization_id", "work_id", "resolves_milestone_id"]
+            isOneToOne: false
+            referencedRelation: "work_milestones"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+          {
+            foreignKeyName: "work_milestones_organization_id_work_id_supersedes_milesto_fkey"
+            columns: ["organization_id", "work_id", "supersedes_milestone_id"]
+            isOneToOne: false
+            referencedRelation: "work_milestones"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+        ]
+      }
       work_participants: {
         Row: {
           added_by: string | null

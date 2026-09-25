@@ -770,6 +770,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.backfill_execution_dependencies_v1()",
+      "kind": "function",
+      "name": "backfill_execution_dependencies_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.backfill_work_milestones_v1()",
+      "kind": "function",
+      "name": "backfill_work_milestones_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.begin_intake_processing(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "name": "begin_intake_processing",
@@ -6233,9 +6269,45 @@
       "security_definer": true
     },
     {
+      "id": "function:private.project_decision_milestone_v1()",
+      "kind": "function",
+      "name": "project_decision_milestone_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.project_document_source_version_v1()",
       "kind": "function",
       "name": "project_document_source_version_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.project_execution_dependency_v1()",
+      "kind": "function",
+      "name": "project_execution_dependency_v1",
       "grants": [
         [
           "postgres",
@@ -7808,6 +7880,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_execution_result_milestone_v1(p_org uuid, p_execution uuid)",
+      "kind": "function",
+      "name": "record_execution_result_milestone_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.record_fallback_case_snapshot(p_organization_id uuid, p_session_id uuid, p_manifest jsonb, p_case_state jsonb, p_understanding_payload jsonb)",
       "kind": "function",
       "name": "record_fallback_case_snapshot",
@@ -8500,6 +8590,24 @@
       "id": "function:private.reject_source_version_mutation_v1()",
       "kind": "function",
       "name": "reject_source_version_mutation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.reject_work_continuity_mutation_v1()",
+      "kind": "function",
+      "name": "reject_work_continuity_mutation_v1",
       "grants": [
         [
           "postgres",
@@ -11899,6 +12007,24 @@
       ],
       "signature": "p_publication_id uuid, p_reason text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.work_milestone_label_v1(p_text text, p_fallback text)",
+      "kind": "function",
+      "name": "work_milestone_label_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_text text, p_fallback text",
+      "security_definer": false
     },
     {
       "id": "function:private.work_turn_context_v1(p_job_id uuid)",
@@ -15402,6 +15528,24 @@
         "search_path=\"\""
       ],
       "signature": "p_payload jsonb, p_kind text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.write_work_milestone_v1(p_origin_table text, p_origin_row uuid)",
+      "kind": "function",
+      "name": "write_work_milestone_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_origin_table text, p_origin_row uuid",
       "security_definer": true
     },
     {
@@ -24957,6 +25101,21 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.execution_dependencies.execution_dependencies_deny_clients",
+      "kind": "policy",
+      "name": "execution_dependencies_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "execution_dependencies",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.execution_gate_receipts.execution_gate_receipts_deny",
       "kind": "policy",
       "name": "execution_gate_receipts_deny",
@@ -31074,6 +31233,62 @@
       "with_check": "false"
     },
     {
+      "id": "policy:public.work_milestones.work_milestones_deny_delete",
+      "kind": "policy",
+      "name": "work_milestones_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_milestones",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_milestones.work_milestones_deny_insert",
+      "kind": "policy",
+      "name": "work_milestones_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_milestones",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_milestones.work_milestones_deny_update",
+      "kind": "policy",
+      "name": "work_milestones_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_milestones",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_milestones.work_milestones_select_authorized",
+      "kind": "policy",
+      "name": "work_milestones_select_authorized",
+      "qual": "( SELECT private.can_access_capital_project(work_milestones.organization_id, work_milestones.work_id) AS can_access_capital_project)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_milestones",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.work_participants.work_participants_deny_delete",
       "kind": "policy",
       "name": "work_participants_deny_delete",
@@ -32526,6 +32741,56 @@
       "rls": true,
       "kind": "table",
       "name": "execution_control_bindings",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_dependencies",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_dependencies",
       "grants": [
         [
           "postgres",
@@ -49102,6 +49367,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.work_milestones",
+      "rls": true,
+      "kind": "table",
+      "name": "work_milestones",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.work_participants",
       "rls": true,
       "kind": "table",
@@ -49707,6 +50027,16 @@
       "definition": "CREATE TRIGGER execution_basis_bindings_audit AFTER INSERT OR UPDATE ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
     },
     {
+      "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_dependency",
+      "kind": "trigger",
+      "name": "execution_basis_bindings_dependency",
+      "table": "execution_basis_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.project_execution_dependency_v1()",
+      "definition": "CREATE TRIGGER execution_basis_bindings_dependency AFTER INSERT ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
+    },
+    {
       "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_immutable",
       "kind": "trigger",
       "name": "execution_basis_bindings_immutable",
@@ -49777,6 +50107,36 @@
       "definition": "CREATE TRIGGER execution_control_bindings_updated BEFORE UPDATE ON private.execution_control_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.execution_dependencies.execution_dependencies_immutable",
+      "kind": "trigger",
+      "name": "execution_dependencies_immutable",
+      "table": "execution_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER execution_dependencies_immutable BEFORE DELETE OR UPDATE ON private.execution_dependencies FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.execution_dependencies.execution_dependencies_truncate_guard",
+      "kind": "trigger",
+      "name": "execution_dependencies_truncate_guard",
+      "table": "execution_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER execution_dependencies_truncate_guard BEFORE TRUNCATE ON private.execution_dependencies FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.execution_dependencies.execution_dependencies_updated",
+      "kind": "trigger",
+      "name": "execution_dependencies_updated",
+      "table": "execution_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_dependencies_updated BEFORE UPDATE ON private.execution_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.execution_gate_receipts.execution_gate_receipts_immutable",
       "kind": "trigger",
       "name": "execution_gate_receipts_immutable",
@@ -49835,6 +50195,16 @@
       "enabled": "O",
       "function": "private.capture_identity_audit_v1()",
       "definition": "CREATE TRIGGER execution_manifests_audit AFTER INSERT ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.execution_manifests.execution_manifests_dependency",
+      "kind": "trigger",
+      "name": "execution_manifests_dependency",
+      "table": "execution_manifests",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.project_execution_dependency_v1()",
+      "definition": "CREATE TRIGGER execution_manifests_dependency AFTER INSERT ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
     },
     {
       "id": "trigger:private.execution_manifests.execution_manifests_identity",
@@ -50067,6 +50437,16 @@
       "definition": "CREATE TRIGGER execution_source_bindings_audit AFTER INSERT OR UPDATE ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
     },
     {
+      "id": "trigger:private.execution_source_bindings.execution_source_bindings_dependency",
+      "kind": "trigger",
+      "name": "execution_source_bindings_dependency",
+      "table": "execution_source_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.project_execution_dependency_v1()",
+      "definition": "CREATE TRIGGER execution_source_bindings_dependency AFTER INSERT ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
+    },
+    {
       "id": "trigger:private.execution_source_bindings.execution_source_bindings_immutable",
       "kind": "trigger",
       "name": "execution_source_bindings_immutable",
@@ -50215,6 +50595,16 @@
       "enabled": "O",
       "function": "private.protect_institutional_revision_v1()",
       "definition": "CREATE TRIGGER institutional_revision_immutable BEFORE DELETE OR UPDATE ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.protect_institutional_revision_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_model_configurations.work_milestone_decision",
+      "kind": "trigger",
+      "name": "work_milestone_decision",
+      "table": "institutional_model_configurations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.project_decision_milestone_v1()",
+      "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT OR UPDATE OF status ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
     },
     {
       "id": "trigger:private.institutional_model_results.institutional_result_body",
@@ -51267,6 +51657,16 @@
       "definition": "CREATE TRIGGER capital_project_artifact_decisions_audit AFTER INSERT OR DELETE OR UPDATE ON public.capital_project_artifact_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
     },
     {
+      "id": "trigger:public.capital_project_artifact_decisions.work_milestone_decision",
+      "kind": "trigger",
+      "name": "work_milestone_decision",
+      "table": "capital_project_artifact_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.project_decision_milestone_v1()",
+      "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT ON public.capital_project_artifact_decisions FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+    },
+    {
       "id": "trigger:public.capital_project_artifacts.capital_project_artifacts_audit",
       "kind": "trigger",
       "name": "capital_project_artifacts_audit",
@@ -51335,6 +51735,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER execution_brief_dispatch_updated BEFORE UPDATE ON public.capital_project_execution_brief_dispatches FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.capital_project_execution_brief_dispatches.work_milestone_decision",
+      "kind": "trigger",
+      "name": "work_milestone_decision",
+      "table": "capital_project_execution_brief_dispatches",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.project_decision_milestone_v1()",
+      "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT OR UPDATE OF accepted_at ON public.capital_project_execution_brief_dispatches FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
     },
     {
       "id": "trigger:public.capital_project_execution_brief_events.capital_project_execution_brief_events_audit",
@@ -54107,6 +54517,46 @@
       "definition": "CREATE TRIGGER work_executions_updated BEFORE UPDATE ON public.work_executions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.work_milestones.work_milestones_audit",
+      "kind": "trigger",
+      "name": "work_milestones_audit",
+      "table": "work_milestones",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER work_milestones_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.work_milestones.work_milestones_immutable",
+      "kind": "trigger",
+      "name": "work_milestones_immutable",
+      "table": "work_milestones",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER work_milestones_immutable BEFORE DELETE OR UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.work_milestones.work_milestones_truncate_guard",
+      "kind": "trigger",
+      "name": "work_milestones_truncate_guard",
+      "table": "work_milestones",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER work_milestones_truncate_guard BEFORE TRUNCATE ON public.work_milestones FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.work_milestones.work_milestones_updated",
+      "kind": "trigger",
+      "name": "work_milestones_updated",
+      "table": "work_milestones",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_milestones_updated BEFORE UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.work_participants.work_participants_audit",
       "kind": "trigger",
       "name": "work_participants_audit",
@@ -54155,6 +54605,56 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER workspace_project_groups_set_updated_at BEFORE UPDATE ON public.workspace_project_groups FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "v:private.execution_dependency_sources_v1",
+      "rls": false,
+      "kind": "view",
+      "name": "execution_dependency_sources_v1",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": false
     },
     {
       "id": "v:private.execution_time_to_value",
@@ -54566,6 +55066,56 @@
       "rls": false,
       "kind": "view",
       "name": "run_metrics_by_pipeline",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": false
+    },
+    {
+      "id": "v:private.work_milestone_sources_v1",
+      "rls": false,
+      "kind": "view",
+      "name": "work_milestone_sources_v1",
       "grants": [
         [
           "postgres",

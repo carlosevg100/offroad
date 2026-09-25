@@ -43,6 +43,11 @@
       "sha256": "8b298da49b08167a00b1ccec74a1bd70ba567311bb94b678729ce0b1a9affd4c"
     },
     {
+      "signature": "private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text)",
+      "file": "private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text).sql",
+      "sha256": "796417797e1ed70c4978647ab2d9cb8350e4d13a47d232964a7a7fd6f1e6f5f8"
+    },
+    {
       "signature": "private.compose_method_v1(uuid,text,jsonb,uuid,text)",
       "file": "private.compose_method_v1(uuid,text,jsonb,uuid,text).sql",
       "sha256": "0912339b6a4cf98c15c819d792885adcf1d8828d2bf40c127959ec10b41e9fef"
