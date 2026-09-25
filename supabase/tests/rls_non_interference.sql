@@ -5744,6 +5744,55 @@ begin
 end;
 $$;
 
+-- Stage 18, increment 4: the continuation commands and the read of a work's updates act only for a
+-- person with authority on the work. The owner of tenant A reads the updates and the approved bases
+-- of its work; the owner of tenant B is refused the read and every command on tenant A's work, update
+-- and candidate, with the same error whatever the target, and nothing changes.
+set local role postgres;
+do $$
+declare d public.capital_project_execution_brief_dispatches; base public.work_milestones; request uuid; attempt text; refused integer:=0; v jsonb;
+begin
+  select * into strict d from public.capital_project_execution_brief_dispatches
+    where organization_id='20000000-0000-4000-8000-000000000001' and accepted_at is not null
+    order by created_at,id limit 1;
+  -- The approval of the newest brief version: the approvals of earlier versions are superseded.
+  select * into strict base from public.work_milestones m
+    where m.organization_id=d.organization_id and m.work_id=d.capital_project_id and m.kind='decision' and m.subject_kind='execution_brief'
+      and not exists(select 1 from public.work_milestones n where n.organization_id=m.organization_id and n.supersedes_milestone_id=m.id);
+  select id into strict request from public.work_continuation_requests
+    where organization_id=d.organization_id and work_id=d.capital_project_id and kind='dependency_update';
+  set local role authenticated;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
+  v:=public.work_update_view_v1(d.capital_project_id);
+  if not exists(select 1 from jsonb_array_elements(v->'bases') b where b->>'milestoneId'=base.id::text)
+    or not exists(select 1 from jsonb_array_elements(v->'updates') u where u->>'requestId'=request::text) then
+    raise exception 'owner cannot read the updates and bases of its work: %',v;
+  end if;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',true);
+  foreach attempt in array array[
+    format('select public.work_update_view_v1(%L)',d.capital_project_id),
+    format('select public.request_work_continuation_v1(%L,%L,%L,%L,%L,%L,%L)',gen_random_uuid(),d.capital_project_id,'pt-BR','Aprofundar o plano aprovado',
+      base.id,base.subject_id,base.revision),
+    format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),request,1),
+    format('select public.decline_work_update_v1(%L,%L,%L,%L)',gen_random_uuid(),request,1,'not_needed'),
+    format('select public.authorize_work_update_v1(%L,%L,%L)',gen_random_uuid(),gen_random_uuid(),1)] loop
+    begin
+      execute attempt;
+      raise exception 'other tenant reached a continuation command: %',attempt;
+    exception when insufficient_privilege then
+      if sqlerrm<>'work_continuation_access_denied' then raise; end if;
+      refused:=refused+1;
+    end;
+  end loop;
+  if refused<>5 then raise exception 'not every cross-tenant continuation command was refused'; end if;
+  set local role postgres;
+  if exists(select 1 from public.work_continuation_requests where organization_id=d.organization_id and kind='user_followup')
+    or not exists(select 1 from public.work_continuation_requests where id=request and status='open' and revision=1 and decline_reason is null) then
+    raise exception 'a refused cross-tenant continuation command changed the work';
+  end if;
+end;
+$$;
+
 -- Revoking the original creator removes management even while the JWT is unchanged.
 reset role;
 update public.organization_memberships set status='suspended'
@@ -5933,6 +5982,29 @@ do $$ declare role_name text;relation text; begin
  or exists(select 1 from unnest(array['private.execution_lineage','private.dependency_recompute_holds','private.work_recompute_leases']) t(relation) where not exists(
    select 1 from pg_policy where polrelid=t.relation::regclass and not polpermissive and polcmd='*' and pg_get_expr(polqual,polrelid)='false' and pg_get_expr(polwithcheck,polrelid)='false'))
  then raise exception 'Stage 18 3B policies missing';end if;
+end $$;
+
+-- Stage 18, increment 4: five public entries, security invoker and executable by authenticated only,
+-- over security definer cores in private with an empty search path; every helper is closed to every
+-- API role. Their behaviour is proven in work_continuation_commands.sql.
+do $$ declare f text;role_name text; begin
+ foreach f in array array['public.request_work_continuation_v1(uuid,uuid,text,text,uuid,uuid,integer)','public.adopt_work_update_v1(uuid,uuid,integer)',
+  'public.authorize_work_update_v1(uuid,uuid,integer)','public.decline_work_update_v1(uuid,uuid,integer,text,uuid)','public.work_update_view_v1(uuid)'] loop
+  if not has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE')
+  or (select prosecdef from pg_proc where oid=f::regprocedure) then raise exception 'Continuation entry grant or security mismatch: %',f;end if;
+ end loop;
+ foreach f in array array['private.request_work_continuation_v1(uuid,uuid,text,text,uuid,uuid,integer)','private.adopt_work_update_v1(uuid,uuid,integer)',
+  'private.authorize_work_update_v1(uuid,uuid,integer)','private.decline_work_update_v1(uuid,uuid,integer,text,uuid)','private.work_update_view_v1(uuid)'] loop
+  if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE')
+  or not (select prosecdef and proconfig @> array['search_path=""'] from pg_proc where oid=f::regprocedure) then raise exception 'Continuation core grant or security mismatch: %',f;end if;
+ end loop;
+ foreach f in array array['private.work_milestone_log_v1(uuid,uuid)','private.work_continuation_bases_v1(uuid,uuid)','private.require_work_continuation_authority_v1(uuid,uuid)',
+  'private.lock_work_for_continuation_v1(uuid,uuid)','private.work_turn_conversation_v1(uuid,uuid,boolean)','private.work_command_milestone_id_v1(uuid,uuid)',
+  'private.work_milestone_references_v1(uuid[],uuid,uuid)','private.validate_work_milestone_references_v1()','private.guard_work_continuation_decline_reason_v1()'] loop
+  foreach role_name in array array['anon','authenticated','service_role'] loop
+   if has_function_privilege(role_name,f,'EXECUTE') then raise exception 'Continuation helper exposed to %: %',role_name,f;end if;
+  end loop;
+ end loop;
 end $$;
 
 select 'rls_non_interference_passed' as result;

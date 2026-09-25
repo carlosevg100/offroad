@@ -8,7 +8,9 @@ import {
   dependencyLogicalKeyId,
   dependencyRecomputeKey,
   isContinuationContractError,
+  isWorkContinuationRequest,
   mergeDependencyUpdate,
+  namesPendingDraft,
   openWorkWaits,
   planDependencyRecompute,
   resolveWorkContinuation,
@@ -23,6 +25,7 @@ import {
   type RecomputePlan,
   type SourceDerivationEdge,
   type WorkMilestone,
+  workContinuationVerbs,
 } from "./index";
 
 const WORK = "work-capital-structure";
@@ -713,6 +716,35 @@ describe("continuation base resolution", () => {
     expect(afterAdoption.status === "proposed" && afterAdoption.base).toEqual({
       milestoneId: "u1", decisionId: "decision-adocao", revision: 1, label: "Atualização do alongamento adotada",
     });
+  });
+
+  it("reads approvals and proposals whose subject lies outside the log, and resolves from them", () => {
+    const recorded = [
+      decided("a1", 1, [], "Mapa de alternativas de dívida", {decisionId: "artifact-map-v1", revision: 1}),
+      milestone("p1", 2, "continuation_proposed", [], "dependency_update"),
+      decided("a2", 3, ["a1"], "Mapa de alternativas de dívida", {decisionId: "artifact-map-v2", revision: 2}),
+    ];
+    const resolution = resolveWorkContinuation({workId: WORK, conversationId: "conversation-1", text: "Aprofundar o mapa de alternativas", milestones: recorded});
+    expect(resolution.status === "proposed" && resolution.base).toEqual({milestoneId: "a2", decisionId: "artifact-map-v2", revision: 2, label: "Mapa de alternativas de dívida"});
+    const withoutReference = (kind: "update_adopted" | "human_resolved") => refusal(() => resolveWorkContinuation({
+      workId: WORK, conversationId: "conversation-1", text: "aprofundar", milestones: [decided("u", 1, [], "Adotada", {decisionId: "adoption", revision: 1}, kind)],
+    }));
+    expect(withoutReference("update_adopted")).toBeInstanceOf(Error);
+    expect(withoutReference("human_resolved")).toBeInstanceOf(Error);
+  });
+
+  it("recognises a continuation by its verbs and a named draft by its words, with accents and case normalised", () => {
+    for (const text of ["Aprofundar o alongamento aprovado", "REVISE a emissão", "Pode atualizar o cenário?", "Continue from the approved plan", "Refaça a análise"]) {
+      expect(isWorkContinuationRequest(text)).toBe(true);
+    }
+    for (const text of ["De onde saiu essa alavancagem de 4,7x?", "Altere a taxa da nova dívida para 15,50% a.a.", "Qual é o prazo médio?"]) {
+      expect(isWorkContinuationRequest(text)).toBe(false);
+    }
+    expect(workContinuationVerbs).toContain("aprofundar");
+    expect(namesPendingDraft("Revise o rascunho com premissas editáveis")).toBe(true);
+    expect(namesPendingDraft("Aprofundar a versão pendente")).toBe(true);
+    expect(namesPendingDraft("Revise the draft")).toBe(true);
+    expect(namesPendingDraft("Aprofundar o alongamento aprovado")).toBe(false);
   });
 
   it("works for a standalone work that never had an intake session", () => {

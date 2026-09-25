@@ -203,7 +203,9 @@ do $$ declare c jsonb;r jsonb;m public.work_milestones;begin
  or m.version_fingerprint<>encode(extensions.digest('{"calculation":"synthetic continuity"}','sha256'),'hex')
  or m.created_by<>'a11b0000-0000-4000-8000-000000000001' or m.resolves_milestone_id is not null or m.supersedes_milestone_id is not null
  or m.occurred_at<>(select created_at from private.execution_result_receipts where execution_id='a4181000-0000-4000-9000-000000000001')
- or m.xmin::text<>(select xmin::text from private.execution_result_receipts where execution_id='a4181000-0000-4000-9000-000000000001') then
+ -- The row's own xmin, read from the table: a record variable reforms a row whose table has a column
+ -- added with a default (stage 18, increment 4), and its xmin then no longer names the transaction.
+ or (select x.xmin::text from public.work_milestones x where x.id=m.id)<>(select xmin::text from private.execution_result_receipts where execution_id='a4181000-0000-4000-9000-000000000001') then
   raise exception 'execution_result milestone does not describe its committed result: %',to_jsonb(m);
  end if;
  r:=private.commit_work_execution_result_v1((c#>>'{request,jobId}')::uuid,c#>>'{claim,capability}',(c#>>'{claim,leaseId}')::uuid,c#>>'{claim,contractFingerprint}',
