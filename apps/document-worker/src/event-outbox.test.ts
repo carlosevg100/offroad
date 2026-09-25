@@ -15,6 +15,25 @@ describe("durable event outbox consumer",()=>{
   expect(rpc).toHaveBeenNthCalledWith(2,"complete_event_outbox_v1",{p_worker_token:"private-worker-token",p_outbox_id:id,p_capability:"a".repeat(64)});
   expect(JSON.stringify(log.mock.calls)).not.toMatch(/private-worker-token|aaaaaaaa|protected_state/);
  });
+ it.each(["source_version","method_release","assumption_version"])("acknowledges a %s change whose dependency effect the database applies in the same completion",async(aggregateKind)=>{
+  const change={...event,aggregateKind,reason:"created",effect:"propagate_dependencies"};
+  const {consumer,rpc,log}=setup([{data:{...claim,event:change},error:null},{data:{completed:true,replayed:false,appliedCount:0},error:null}]);
+  expect(await consumer.poll()).toBe(true);
+  expect(rpc).toHaveBeenCalledTimes(2);
+  expect(rpc).toHaveBeenNthCalledWith(2,"complete_event_outbox_v1",{p_worker_token:"private-worker-token",p_outbox_id:id,p_capability:"a".repeat(64)});
+  expect(log).toHaveBeenCalledWith("outbox.processed",{eventId:id,completed:true,replayed:false,appliedCount:0});
+ });
+ it("leaves an unacknowledged dependency effect to the lease instead of retrying it in memory",async()=>{
+  const change={...event,aggregateKind:"source_version",reason:"created",effect:"propagate_dependencies"};
+  const {consumer,rpc,log}=setup([{data:{...claim,event:change},error:null},{data:{completed:false,replayed:false,appliedCount:1},error:null}]);
+  expect(await consumer.poll()).toBe(true);
+  expect(rpc).toHaveBeenCalledTimes(2);
+  expect(log).toHaveBeenCalledWith("outbox.processed",{eventId:id,completed:false,replayed:false,appliedCount:1});
+ });
+ it("rejects a change kind that does not carry the dependency effect",async()=>{
+  const {consumer,rpc,log}=setup([{data:{...claim,event:{...event,aggregateKind:"source_version"}},error:null}]);
+  await consumer.poll();expect(rpc).toHaveBeenCalledTimes(1);expect(log).toHaveBeenCalledWith("outbox.poll.failed",{reason:"invalid_contract"});
+ });
  it("retries an ambiguous completion with the identical capability",async()=>{
   const {consumer,rpc,log}=setup([{data:claim,error:null},{data:null,error:{message:"sensitive failure"}},{data:{completed:true,replayed:true,appliedCount:1},error:null}]);
   await consumer.poll(); expect(rpc).toHaveBeenCalledTimes(3);expect(rpc.mock.calls[1]).toEqual(rpc.mock.calls[2]);
