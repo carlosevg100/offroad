@@ -24,6 +24,9 @@
 -- order), in the dependency-update-request.v1 form of mergeDependencyUpdate and with the same
 -- fingerprint. Opening a request writes its continuation_proposed milestone, once.
 set search_path='';
+-- The constraints below lock private.domain_events, which every audited mutation appends to: fail
+-- fast instead of queueing behind a long transaction, as the stage 4 reconciliation did.
+set local lock_timeout = '5s';
 
 -- 1. The event contract: two new aggregate kinds and the dependency effect.
 alter table private.domain_events drop constraint domain_events_aggregate_kind_check;
