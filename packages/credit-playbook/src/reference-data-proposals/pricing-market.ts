@@ -22,10 +22,14 @@ const CVM_160_URL = "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol160.
 /** Internal rating bands of `packages/credit-analysis`, with the ten-grade scale each band covers. */
 const RISK_BANDS = {strong: [1, 2], adequate: [3, 4], watch: [5, 6], weak: [7, 8], distressed: [9, 10]};
 
-/** Instrument families over the executor's `PricedInstrument` vocabulary. */
+/**
+ * Instrument families over the executor's `PricedInstrument` vocabulary. `debenture_476` is the legacy key of the
+ * professional-investor debenture under the CVM 160 automatic rite; `nota_comercial` joined the vocabulary on
+ * 24/09/2026 and `pricing_observations` does not accept it yet.
+ */
 const INSTRUMENT_FAMILIES = {
   bancario: ["ccb", "nce", "leasing"],
-  mercado_de_capitais: ["debenture_476", "debenture_160"],
+  mercado_de_capitais: ["debenture_476", "debenture_160", "nota_comercial"],
   securitizacao: ["cri", "cra"],
   fundo_de_recebiveis: ["fidc"],
   venture_debt: ["venture_debt"],
@@ -82,14 +86,18 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
         securityFamily: SECURITY_FAMILIES,
       },
       comparabilityDimensionsOutsideCellKey: ["sectorGroup", "amountRatio", "amortizationClass"],
+      instrumentKeyNotes: {
+        debenture_476: "chave legada da debênture para investidor profissional pelo rito automático da Resolução CVM 160",
+        nota_comercial: "no vocabulário do motor de preço desde 24/09/2026; a tabela pricing_observations ainda não aceita a chave",
+      },
       neverComparableToMarket: ["finame"],
       cellOutput: ["p25Bps", "medianBps", "p75Bps", "directCount", "adjustableCount", "distinctOrigins", "oldestObservedOn", "latestObservedOn", "confidence", "validUntil", "parameterVersion"],
       sourceHierarchy: [
         {rank: 1, source: "observações governadas de market.pricing.observation-registry com qualidade mínima de policy.pricing.sample-quality", role: "forma_celula"},
         {rank: 2, source: "emissões primárias públicas com remuneração, garantia e prazo documentados (escritura, anúncio de encerramento, dados abertos da CVM)", role: "forma_celula_como_public_closing"},
-        {rank: 3, source: "taxas indicativas de debêntures e curvas de crédito por rating da ANBIMA", role: "referencia_secundaria_ajustada_e_contexto", rights: "uso além de consulta exige licença ANBIMA"},
+        {rank: 3, source: "taxas indicativas de debêntures e curvas de crédito por rating da ANBIMA", role: "referencia_secundaria_ajustada_e_contexto", adjustment: "ajustada por prazo e garantia; cada uso conta como etapa de aproximação e é identificado como secundário no texto", rights: "uso além de consulta exige licença ANBIMA"},
         {rank: 4, source: "estatísticas de crédito do Banco Central por modalidade", role: "contexto"},
-        {rank: 5, source: "grade de prática da mesa em packages/market-reference/src/index.ts, declarada em 21/08/2026", role: "teste_de_plausibilidade"},
+        {rank: 5, source: "grade de prática da mesa em packages/market-reference/src/index.ts, declarada em 21/08/2026", role: "teste_de_plausibilidade", reviewBeforePublishing: {cellMedianDistanceFromPracticeBandBps: 150, comparator: "strictly_greater"}},
       ],
       cells: [],
       publishedCellCount: 0,
@@ -110,12 +118,13 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
   "policy.pricing.sample-quality": {
     version: VERSION,
     value: {
-      executorPolicy: {minObservations: 5, minDistinctSources: 5, minQuality: 0.75, maxTenorDeltaMonths: 12, minAmountRatio: "0.5", maxAmountRatio: "2"},
+      executorPolicy: {minObservations: 5, minDistinctSources: 5, minQuality: 0.75, maxTenorDeltaMonths: 12, tenorWindowFloorMonths: 6, tenorWindowRelative: "0.5", minAmountRatio: "0.5", maxAmountRatio: "2"},
       distinctOrigin: {minimumPerPublishedCell: 5, originIdentity: "operação", sameOperationCountsOnce: true},
       comparability: {
         weights: {security: "0.25", risk: "0.25", instrument: "0.15", tenorDuration: "0.15", sector: "0.10", size: "0.05", amortization: "0.05"},
         directMinScore: "0.80",
         adjustableMinScore: "0.60",
+        adjustableRequiresObservedPremium: {keys: ["market.pricing.security-premiums", "market.pricing.tenor-curve"], withoutPremium: "a ajustável fica fora", on20260924: "tabelas de prêmio vazias: só comparáveis diretos formam célula"},
         directRequiresSame: ["riskBand", "securityFamily", "instrumentFamily"],
         neighborhood: {
           securityFamily: {same: "1", realForteVsCessaoComTrava: "0.6", realForteVsGarantiaLiquida: "0.6", cessaoComTravaVsGarantiaLiquida: "0.6", outrasReaisVsGarantidas: "0.5", combinadaVsComponenteDominante: "0.7", limpaVsGarantida: "0.2"},
@@ -147,7 +156,7 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
       },
       tenorWindow: {capMonths: 12, floorMonths: 6, relativeToTarget: "0.5", formula: "min(12; max(6; 0,5 × prazo alvo em meses))", basis: "duration de Macaulay em meses quando os cronogramas diferem; prazo nominal quando são iguais"},
       merge: {order: ["sectorGroup", "amountBand", "adjacentTenorBucket"], neverAcross: ["riskBand", "securityFamily", "instrumentFamily"], eachMergeIsApproximationStep: true},
-      cellReview: {absoluteBps: 30, relativeToCellMedian: "0.15", rule: "abre revisão quando a mediana dos comparáveis novos se afasta da mediana da célula pelo maior dos dois limites"},
+      cellReview: {absoluteBps: 30, relativeToCellMedian: "0.15", comparator: "strictly_greater", rule: "abre revisão quando a mediana dos comparáveis novos se afasta da mediana da célula pelo maior dos dois limites"},
       referenceValidity: {days: 30, invalidateOnReferenceMoveBps: 30},
       abstainWhen: [
         "menos de 5 origens distintas depois das fusões permitidas",
@@ -172,8 +181,8 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
   "policy.pricing.communication-width": {
     version: VERSION,
     value: {
-      executorPolicy: {minBandWidthBps: 15, maxBandWidthBps: 150},
-      band: {lower: "P25 ponderado", upper: "P75 ponderado", midpoint: "mediana ponderada", basis: "normalizedSpreadBps"},
+      executorPolicy: {minBandWidthBps: 15, maxBandWidthBps: 150, indexer: "cdi"},
+      band: {lower: "P25 ponderado", upper: "P75 ponderado", midpoint: "mediana ponderada", basisByIndexer: {cdi: "normalizedSpreadBps", ipca: "spread sobre a NTN-B de referência da mesma duration", fixed: "spread sobre a taxa DI x pré da mesma duration"}},
       floor: {absoluteBpsByIndexer: {cdi: 15, ipca: 35, fixed: 35}, relativeToMidpoint: "0.10", confidenceMultiplier: {alta: "1.0", moderada: "1.5", baixa: "2.0"}},
       ceiling: {absoluteMaxBps: 150, minimumCeilingBpsByIndexer: {cdi: 35, ipca: 70, fixed: 70}, relativeToMidpoint: "0.35"},
       formula: {
@@ -188,12 +197,14 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
         },
       },
       approximation: {widthMultiplierPerStep: "1.25", maxSteps: 2},
+      sequence: ["quartis ponderados de policy.pricing.sample-quality", "etapas de aproximação", "piso", "teto", "arredondamento para fora"],
       rounding: {edgeIncrementBps: 5, direction: "para fora: limite inferior para baixo, superior para cima"},
       onBelowFloor: "alargar simetricamente em torno da mediana até o piso e registrar o alargamento",
       onAboveCeiling: "não comunicar; voltar a PR-01",
       onFloorAboveCeiling: "não comunicar; voltar a PR-01",
       measuredOn: "spread de crédito sobre o indexador de referência; nunca a taxa total",
       standardText: "Referência indicativa de {indexador} + {minimo}% a {maximo}% ao ano, sujeita à análise e à decisão dos investidores. Base: {observacoes} observações de {origens} origens entre {dataInicial} e {dataFinal}; confiança {confianca}.",
+      indexerInText: {cdi: "DI", ipcaOrFixed: "título de referência, com a taxa total equivalente e a data da taxa indicativa"},
       writtenBandRule: "por escrito, somente banda que a Offroad sustentaria em qualquer ponto dela",
     },
     unit: "pontos-base",
@@ -209,18 +220,19 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
   "policy.pricing.regime": {
     version: VERSION,
     value: {
-      regimeId: "brl-afrouxamento-2026-03-19",
+      regime: "brl-afrouxamento-2026-03-19",
       status: "active",
       validFrom: "2026-03-19",
       declaredOn: AS_OF,
       referenceConditions: {
         selicTargetPct: "13.75",
         selicTargetSince: "2026-09-17",
-        easingCycle: {startedOn: "2026-03-19", fromPct: "15.00", cuts: 5, stepBps: 25, cumulativeBps: -125},
+        easingCycle: {startedOn: "2026-03-19", fromPct: "15.00", fromPctInForceSince: "2025-06-19", cuts: 5, stepBps: 25, cumulativeBps: -125, copomDecisions: ["2026-03-18", "2026-04-29", "2026-06-17", "2026-08-05", "2026-09-16"], effectiveNextDay: true},
         cdiAnnualPct: "13.65",
         cdiObservedOn: "2026-09-22",
         ipca12mPct: "4.22",
         ipcaReferenceMonth: "2026-08",
+        ipcaMonthPct: "-0.32",
         ltnIndicativePct: ANBIMA_LISTED_2026_09_23.ltnIndicativePct,
         ntnbIndicativeRealPct: ANBIMA_LISTED_2026_09_23.ntnbIndicativeRealPct,
         listedDiSpreadMedianBps: ANBIMA_LISTED_2026_09_23.diSpreadBps.median,
@@ -239,6 +251,12 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
         {id: "RG-06", name: "mercado_primario", condition: "emissão de debêntures em dois meses consecutivos abaixo de 50% da média mensal dos doze meses anteriores no boletim de mercado de capitais da ANBIMA", action: "revisao_obrigatoria", scope: "família mercado_de_capitais"},
         {id: "RG-07", name: "norma", condition: "mudança legal, tributária ou regulatória que altere a demanda do investidor ou o custo do emissor de uma classe de instrumento", action: "invalidar_classes_afetadas", scope: "classes afetadas, desde a vigência"},
       ],
+      monitoring: {
+        listedMedians: "diária, pelo arquivo público da ANBIMA, com a definição da referência: todas as DI+ com taxa indicativa e todas as IPCA+ com NTN-B de referência",
+        selicTarget: "depois de cada reunião do Copom; próximas em 3 e 4/11/2026 e em 8 e 9/12/2026",
+        anbimaBulletins: "mensal, boletim de fundos (RG-05) e boletim de mercado de capitais (RG-06)",
+        creditEventsAndNorms: "no dia da publicação (RG-04 e RG-07)",
+      },
       reviewDeadlineBusinessDays: 5,
       duringReview: "referências carregam a marca 'regime em revisão' e não entram em material novo",
       onNewRegime: {
@@ -250,7 +268,7 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
       partialInvalidation: "encerrar validUntil das observações das classes afetadas na data do evento, mantendo o regime",
       decidedBy: "Head de Mercado e Distribuição, com registro datado da decisão e das evidências",
     },
-    unit: "identificador de regime; datas ISO; taxas em % ao ano; spreads em pontos-base",
+    unit: "identificador de regime; datas ISO; taxas em % ao ano; spreads em pontos-base; volumes em R$ bilhões (BRLbn); variação anual em fração",
     source: {
       title: "Banco Central do Brasil, histórico da meta Selic (SGS 432) e CDI (SGS 4389); ANBIMA, taxas indicativas de 23/09/2026; House Playbook Offroad v2.1, PR-12",
       url: "https://www.bcb.gov.br/controleinflacao/historicotaxasjuros",
@@ -321,7 +339,9 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
         rule: "degrau no início da faixa de prazo em que o número de mandatos atuais e aderentes que aceitam o prazo cai para metade ou menos da faixa anterior",
         minimumMandatesObserved: 5,
       },
-      extrapolation: {allowed: false, answer: "fora da curva observável; exige sondagem"},
+      interpolation: {betweenObservedBuckets: "ajustar pela inclinação observada da mesma faixa de risco", countsAsApproximationStep: true},
+      extrapolation: {allowed: false, answer: "fora da curva observável; exige sondagem", beyondLastBucketOrAppetiteStep: "não precificar e levar o prazo a MK-15"},
+      precedence: "degrau de apetite prevalece sobre a inclinação",
       governedCurve: [],
       listedMarketContext: {
         source: "ANBIMA, taxas indicativas de debêntures DI+ de 23/09/2026",
@@ -374,7 +394,7 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
         investorsAtClosingOutsideConsortium: {
           debentures: {"20_a_50": {reporting: 18, median: 3.5}, "50_a_150": {reporting: 51, p25: 3, median: 7, p75: 21}, "150_a_500": {reporting: 100, median: 15}, acima_de_500: {reporting: 122, median: 63.5}},
           criCra: {ate_20: {reporting: 119, median: 2}, "20_a_50": {reporting: 129, median: 2}, "50_a_150": {reporting: 137, median: 3}},
-          fidcQuotas: {"20_a_50": {reporting: 205, median: 4}, "50_a_150": {reporting: 159, median: 8}, "150_a_500": {reporting: 77, median: 16}},
+          fidcQuotas: {ate_20: {reporting: 395, median: 2}, "20_a_50": {reporting: 205, median: 4}, "50_a_150": {reporting: 159, median: 8}, "150_a_500": {reporting: 77, median: 16}, acima_de_500: {reporting: 38, median: 60.5}},
         },
         absorbedOnlyByDistributionConsortium: {
           notasComerciaisUpTo150: {offers: 197, onlyConsortium: 168},
@@ -427,6 +447,7 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
       taxRegimeNormalization: "papel isento para pessoa física (Lei 12.431, CRI e CRA) compara-se com papel isento; comparação cruzada só com o gross-up de policy.capital.tax-regime",
       mandateAcceptance: {source: "market.mandates", rule: "PR-06 exige pelo menos um mandato atual e aderente que aceite o indexador proposto; sem ele a proposta fica bloqueada"},
       executorSupportedIndexers: ["cdi"],
+      executorComposition: {since: "2026-09-24", function: "composeIndexAndSpread (financial-core)", previousLinearSumUnderstatementBpsAtDi1365: {spread100Bps: 14, spread300Bps: 41}},
       listedMarketContext: {
         source: "ANBIMA, taxas indicativas de títulos públicos e de debêntures de 23/09/2026",
         ltnIndicativePct: ANBIMA_LISTED_2026_09_23.ltnIndicativePct,
@@ -434,7 +455,7 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
         ipcaDebenturesSpreadOverReferenceNtnbBps: ANBIMA_LISTED_2026_09_23.ipcaSpreadOverReferenceNtnbBps,
       },
     },
-    unit: "taxas em fração ao ano, base 252, salvo a TR (fração ao mês); spreads em pontos-base",
+    unit: "níveis de índice em fração (DI, Jm e IPCA de 12 meses ao ano, base 252; TR ao mês); taxas indicativas listadas em % ao ano; spreads em pontos-base",
     source: {
       title: "Banco Central do Brasil, SGS 4389 (DI), 13522 (IPCA 12 meses), 27572 (Jm da TLP) e 226 (TR); ANBIMA, Estrutura a Termo das Taxas de Juros Estimada e taxas indicativas de 23/09/2026",
       url: "https://api.bcb.gov.br/dados/serie/bcdata.sgs.4389/dados/ultimos/10?formato=json",
@@ -454,13 +475,15 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
         taxes: "policy.capital.tax-regime",
         calculationConventions: "policy.capital.anbima-b3-conventions",
       },
-      costState: ["conhecido", "zero", "nao_aplicavel", "desconhecido"],
+      costState: ["conhecido", "estimado", "zero", "nao_aplicavel", "desconhecido"],
       unknownCostRule: "custo desconhecido bloqueia o all-in da alternativa; nunca recebe zero nem estimativa do modelo",
+      estimatedCostRule: "custo estimado pela provisão de policy.transaction-costs sustenta só a leitura preliminar e nunca aparece em material externo",
+      appliesAlsoTo: "policy.transaction-costs",
       sourceHierarchy: [
         {rank: 1, source: "contrato ou proposta vinculante assinada", validity: "a do documento"},
         {rank: 2, source: "tabela pública oficial vigente na data da operação (CVM, ANBIMA, B3, emolumentos do estado)", validity: "até a próxima versão da tabela"},
         {rank: 3, source: "cotação escrita e datada do prestador", validityDays: 90},
-        {rank: 4, source: "referência de mercado da casa, datada, em faixa, rotulada estimativa", validityDays: 90, use: "leitura preliminar; nunca material externo"},
+        {rank: 4, source: "provisão da casa de policy.transaction-costs, em faixa por instrumento, rotulada estimativa", validity: "a da versão aprovada de policy.transaction-costs", use: "leitura preliminar; nunca material externo"},
       ],
       componentNature: ["unico_percentual", "unico_fixo", "anual_fixo", "anual_percentual", "por_evento"],
       components: {
@@ -475,9 +498,8 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
         cvmOfferSupervisionFee: {basis: "valor da oferta pública de valores mobiliários", rate: "0.0003", minimumBRL: "809.16", norm: "Lei 7.940/1989, Anexo IV, redação da Lei 14.317/2022"},
         anbimaOfferRegistration: {
           consultedOn: AS_OF,
-          appliesWhen: "coordenador aderente ao código de ofertas públicas da ANBIMA",
-          cvm160ProfessionalInvestors: {rate: "0.00002778", minimumBRL: "9919.00", maximumBRL: "69436.00"},
-          cvm160RetailOrQualified: {rate: "0.00003968", minimumBRL: "14169.00", maximumBRL: "99194.00"},
+          cvm160ProfessionalInvestors: {rate: "0.00002778", minimumBRL: "9919.00", maximumBRL: "69436.00", appliesWhen: "coordenador aderente ao código de ofertas públicas da ANBIMA"},
+          cvm160RetailOrQualified: {rate: "0.00003968", minimumBRL: "14169.00", maximumBRL: "99194.00", appliesWhen: "coordenador aderente ao código de ofertas públicas da ANBIMA"},
           cvmAnbimaAgreement: {debentures: "0.00009920", notasComerciaisENotasPromissorias: "0.00003968", securitizacao: "0.00022248", minimumBRL: "28341.00", maximumBRL: "198388.00"},
           fundQuotasFidcFiiFiagro: {rate: "0.00003479", minimumBRL: "3396.00", maximumBRL: "56683.00"},
         },
@@ -554,9 +576,10 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
       },
       admission: {
         reject: ["sem fonte", "sem data", "sem qualidade", "sem validade", "boato", "identidade econômica que não fecha em 0,01 ponto-base"],
-        learningOnly: "indication e sounding ficam registradas para aprendizado, PR-08 e MK-15; não formam célula porque a qualidade fica abaixo do mínimo",
+        learningOnly: "indication e sounding ficam registradas para aprendizado, PR-08 e MK-15; não formam célula porque a qualidade fica abaixo do mínimo de 0,75 de policy.pricing.sample-quality",
       },
       entriesInThisProposal: 0,
+      loader: {function: "worker_load_pricing_context", scope: "observações do regime ativo", windowMonths: 24, maxRows: 2000},
       auditCadence: "relatório mensal de frescor e de consentimentos, no primeiro dia útil",
     },
     unit: "esquema, vocabulário, qualidade de 0 a 1 e validade em dias por tipo de fonte",
@@ -595,6 +618,8 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
       precedenceByField: {
         legalConstraints: {fields: ["instruments", "excludedSectors", "geographies"], order: ["published", "declared", "conversation", "observed", "inferred"]},
         appetite: {fields: ["active", "ticket", "termMonths", "sectors", "collateral", "leverageCeiling", "minimumDscr", "indexers", "minimumRiskBand", "returnTargetBps"], order: ["declared", "conversation", "observed", "published", "inferred"]},
+        directConfirmationClass: ["declared", "conversation"],
+        withinDirectConfirmation: "declaração e conversa ocupam a mesma posição; prevalece a mais recente",
       },
       hardFilterSourceClasses: ["direct_confirmation", "public_rule", "governed_observation"],
       hardFilterOrder: ["ticket", "setor_vedado", "instrumento", "prazo", "exigencia_de_garantia", "jurisdicao"],
@@ -641,8 +666,9 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
       publishedAlsoExpiresOn: "arquivamento de nova versão do regulamento na CVM",
       familyOfficeMaxMonths: 3,
       effectiveRule: "prazo efetivo = menor entre o prazo do campo, o da proveniência e o do perfil",
-      preWaveReconfirmation: {fields: ["active", "ticket"], maxAgeDays: 30},
-      statementRankDecayMonths: 3,
+      preWaveReconfirmation: {fields: ["active", "ticket"], maxAgeDays: 30, provenance: ["declared", "conversation"], rule: "confirmação direta, mesmo com o campo dentro do prazo"},
+      statementDecayMonths: 3,
+      ageCounting: {from: "observedAt, a data em que o fato era verdadeiro, nunca a data de gravação", publishedRenewal: "regulamento relido e vigente na CVM renova a data do campo publicado", observedPortfolio: "carteira observada entra com a data da posição; posições omitidas só entram quando divulgadas"},
       onStale: "o campo vencido sai dos filtros duros, rebaixa a confiança e entra na lista de reconfirmação; o registro não é apagado",
       refreshCadence: {
         published: "releitura mensal do cadastro e dos documentos do fundo na CVM",
@@ -664,12 +690,14 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
     value: {
       waveLimit: 3,
       learningGateAnchorCount: 2,
+      usefulReturn: "apetite, referência indicativa e objeções registrados",
+      firstWaveRecipients: {mandate: "atual", reconfirmation: {key: "policy.market.mandate_max_age", field: "preWaveReconfirmation"}},
       learningGateMaxBusinessDays: 10,
       onGateTimeout: "revisão registrada de material e estrutura; sem expansão automática",
       structuralObjectionThreshold: 2,
       onStructuralObjection: "revisão ES-40 antes da onda seguinte",
       subsequentWaveLimit: 3,
-      maxRecipientsWithoutExceptionalExpansion: 9,
+      maxRecipientsPerCaseWithoutExceptionalExpansion: 9,
       exceptionalExpansionRequires: ["racional escrito", "consentimento da companhia vinculado à versão do material", "destinatários aderentes com mandato atual"],
       communication: {
         form: "individual, com tese por destinatário (MK-13)",
@@ -686,7 +714,7 @@ export const pricingMarketProposals: ReferenceDataProposalFamily = {
       packageByStage: {default: ["teaser"], onExpressAuthorizationPerRecipient: ["memorando", "term_sheet_indicativo", "perguntas_e_respostas", "indice_de_documentos"]},
       record: ["destinatário", "racional", "materiais", "versões", "autorização", "data e hora"],
     },
-    unit: "destinatários por onda; dias úteis",
+    unit: "destinatários por onda, salvo o máximo por caso; dias úteis",
     source: {
       title: "Resolução CVM 160/2022, arts. 3º, 5º, 6º e 8º; Resolução CVM 30/2021, art. 11; House Playbook Offroad v2.1, MK-15 a MK-18",
       url: CVM_160_URL,

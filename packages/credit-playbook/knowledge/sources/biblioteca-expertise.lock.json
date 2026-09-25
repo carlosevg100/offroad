@@ -2,8 +2,8 @@
   "schemaVersion": "expertise-source-lock.v1",
   "repository": "https://github.com/carlosevg100/offroad-expertise",
   "visibility": "private",
-  "commit": "910097c975ae48cc284f8bc4a6ef09ee160741b8",
-  "capturedAt": "2026-09-23T19:19:37Z",
+  "commit": "ba91da215421da8e61a53271badf768b4b32a0f8",
+  "capturedAt": "2026-09-25T15:43:51Z",
   "roots": [
     "biblioteca-expertise-2026-09",
     "originais-do-fundador"
@@ -56,8 +56,8 @@
     },
     {
       "path": "biblioteca-expertise-2026-09/modulos-variacao.html",
-      "bytes": 69090,
-      "sha256": "b57369fe383d140af1f99fd3ac7dda67f873eae5a01861217a8bf75576ad7df0"
+      "bytes": 69160,
+      "sha256": "d359a21da8c874512fb259d43cfb79b1515a933a303541d5778ebd54fc13a498"
     },
     {
       "path": "biblioteca-expertise-2026-09/objetos-mercado-memoria.html",
@@ -66,8 +66,8 @@
     },
     {
       "path": "biblioteca-expertise-2026-09/registro-definicoes.html",
-      "bytes": 50535,
-      "sha256": "3a04aa49f4684fff93919ebf92ba61e26b81870f35c722444d89b41c7751036c"
+      "bytes": 50955,
+      "sha256": "2dc431baf9c0bb14bd4575d9a2cdc83cb0e5e458df61306f04d5383287c73937"
     },
     {
       "path": "originais-do-fundador/MANIFESTO-SHA256.txt",

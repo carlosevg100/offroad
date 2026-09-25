@@ -40,10 +40,10 @@ const collateralHaircuts = proposal(
     classes: [
       {id: "financial_investments", dealStructureClass: "financial", haircut: "0.05", allowedRange: ["0.00", "0.10"], eligibility: "títulos públicos federais, operações compromissadas lastreadas neles, CDB ou LCA de instituição dos segmentos S1 ou S2 e fundos DI com resgate em D+0 ou D+1, cedidos fiduciariamente e bloqueados em favor do credor"},
       {id: "receivables_card", dealStructureClass: "receivables", haircut: "0.15", allowedRange: ["0.10", "0.25"], eligibility: "recebíveis de arranjo de pagamento registrados em registradora autorizada, com trava do domicílio de liquidação em favor do credor"},
-      {id: "receivables_performed_diversified", dealStructureClass: "receivables", haircut: "0.25", allowedRange: ["0.20", "0.30"], eligibility: "performados, com maior sacado até 10% e cinco maiores até 35% da carteira elegível, atraso acima de 30 dias até 5% da carteira e diluição medida em 12 meses"},
+      {id: "receivables_performed_diversified", dealStructureClass: "receivables", haircut: "0.25", allowedRange: ["0.20", "0.30"], eligibility: "performados, com sacados dentro dos tetos por devedor e por grupo de carteira diversificada de policy.concentration.materiality, cinco maiores até 35% da carteira elegível, atraso acima de 30 dias até 5% da carteira e diluição medida em 12 meses"},
       {id: "receivables_performed_concentrated", dealStructureClass: "receivables", haircut: "0.40", allowedRange: ["0.30", "0.60"], eligibility: "performados fora dos limites de pulverização, ou com atraso acima de 30 dias entre 5% e 10% da carteira"},
       {id: "receivables_unperformed", dealStructureClass: "receivables", haircut: "1.00", exceptionFloor: "0.50", eligibility: "a performar não conta; exceção registrada só com medição ou entrega periódica auditável, histórico de performance do contrato e reserva"},
-      {id: "property_urban_liquid", dealStructureClass: "property", haircut: "0.35", allowedRange: ["0.30", "0.45"], eligibility: "imóvel urbano residencial, comercial ou logístico de padrão de mercado, em capital ou região metropolitana, matrícula sem ônus anterior não quitado, laudo vigente, seguro com o credor beneficiário"},
+      {id: "property_urban_liquid", dealStructureClass: "property", haircut: "0.35", allowedRange: ["0.30", "0.45"], eligibility: "imóvel urbano residencial, comercial ou logístico de padrão de mercado, em capital ou região metropolitana, laudo vigente, seguro com o credor beneficiário; ônus anterior sai do valor-base pelo valor livre"},
       {id: "property_operational", dealStructureClass: "property", haircut: "0.45", allowedRange: ["0.40", "0.55"], eligibility: "imóvel operacional da própria companhia (planta, centro de distribuição) ou imóvel urbano fora de região metropolitana"},
       {id: "property_special_use_or_rural", dealStructureClass: "property", haircut: "0.55", allowedRange: ["0.50", "0.70"], eligibility: "imóvel de uso único, em praça de baixa liquidez, ou rural; a venda tende ao lance do segundo leilão, de no mínimo metade do valor de avaliação"},
       {id: "vehicles", dealStructureClass: "vehicles", haircut: "0.40", allowedRange: ["0.30", "0.50"], eligibility: "gravame anotado no certificado de registro do veículo, seguro com o credor beneficiário, idade compatível com o prazo da dívida"},
@@ -78,6 +78,8 @@ const collateralHaircuts = proposal(
       secondLien: "alienação fiduciária da propriedade superveniente entra só como reforço, pelo valor residual depois da dívida garantida pela primeira",
       caseEvidence: "o haircut do caso só se afasta do padrão dentro da faixa, com evidência datada (diluição medida, laudo com valor de liquidação forçada, histórico de leilão); fora da faixa exige aprovação do dono do parâmetro",
       sharesRole: "quotas e ações somam no máximo 30% do valor pós-haircut do pacote",
+      precedence: "desconto pactuado em contrato vigente governa aquele contrato quando é mais conservador; a análise da Offroad usa esta tabela",
+      scope: "toda garantia considerada em ES-11 a ES-20, em qualquer arquétipo e rota; não se aplica ao pacote de projeto em estrutura segregada (ES-21), medido por policy.structure.collateral-coverage",
     },
   },
 );
@@ -92,26 +94,28 @@ const maturityWall = proposal(
   {
     shareOfGrossDebt: "0.20",
     comparator: "strictly_greater",
-    attentionShareOfGrossDebt: "0.15",
+    comparisonPrecisionDecimals: 8,
+    horizonYears: 5,
+    numerator: "principal que vence no período",
+    riskBandsKey: "policy.debt.maturity-concentration",
     rule: "estritamente acima do limiar; igual ao limiar não é parede; denominador é a dívida bruta da nota",
     denominator: "dívida bruta da nota explicativa de empréstimos, financiamentos e debêntures, conciliada ao ledger (D-24), na mesma data-base, unidade e perímetro dos períodos",
     bucket: "período de 12 meses contado da data-base; quando a companhia reporta o cronograma por exercício ou safra, o período reportado",
     allocation: "obrigação exigível a critério do credor entra no primeiro período em que pode ser exigida; o cronograma contratual e o cronograma em cenário de quebra de covenant ficam separados e nunca se somam",
     adjustmentRows: "custos de transação a amortizar e outras linhas de ajuste sem data não formam período e não entram na participação",
-    attentionRule: "período com participação acima de 0,15 e até 0,20 é nomeado no memo como concentração em observação, sem o rótulo de parede",
   },
 );
 
 const covenantHeadroom = proposal(
   "policy.structure.covenant_headroom",
-  "fração do limite",
+  "fração do limite; múltiplo (x) na folga absoluta de alavancagem",
   {
     title: "Lei nº 6.404/1976, arts. 61, 68 e 71, e Resolução CVM nº 17/2021, arts. 11 e 12: cláusulas da escritura, fiscalização pelo agente fiduciário e quórum de modificação",
     url: "https://www.planalto.gov.br/ccivil_03/leis/l6404consol.htm",
   },
   {
     minimumRelativeHeadroomBase: "0.15",
-    rule: "folga relativa sobre o limite aplicável no cenário base; abaixo disso, alerta no memo; nunca 'rompido' antes da medição; headroom só com definição, perímetro e data iguais",
+    rule: "folga relativa sobre o limite aplicável no cenário base; abaixo de 0,15, ou de 0,30x em alavancagem, alerta no memo; nunca 'rompido' antes da medição; headroom só com definição, perímetro e data iguais",
     measure: "folga relativa do financial-core (calculateCovenantHeadroom): (limite − medido) ÷ limite para limite máximo; (medido − limite) ÷ limite para limite mínimo; comparação sobre operandos exatos, sem arredondar antes de comparar",
     existingCovenants: {
       minimumRelativeHeadroomBase: "0.15",
@@ -143,7 +147,7 @@ const leverageBands = proposal(
     url: "https://www.maalot.co.il/Publications/MT20240214173645.PDF",
   },
   {
-    metric: "dívida líquida ajustada da visão de capacidade do ledger (D-24) ÷ EBITDA mesa dos últimos 12 meses (Q-01), pró-forma da operação (OP-03), com a mesma convenção de arrendamentos nos dois lados (D-08)",
+    metric: "dívida líquida ajustada da visão de capacidade do ledger (D-24), com risco sacado quando financiamento em substância, ÷ EBITDA mesa dos últimos 12 meses (Q-01), pró-forma da operação (OP-03), com a mesma convenção de arrendamentos nos dois lados (D-08)",
     zones: ["confortável", "aceitável", "tensionada", "acima da banda"],
     zoneConsequences: {
       comfortable: "segue",
@@ -163,8 +167,10 @@ const leverageBands = proposal(
       {condition: "dívida sênior com cobertura pós-haircut de 1,00x ou mais (policy.structure.collateral-coverage)", turns: "0.5", appliesTo: ["acceptableMax", "stretchedMax"]},
     ],
     adjustmentBoundsTurns: {minimum: "-1.0", maximum: "0.5"},
+    volatilityClassSource: "lente setorial (EMP-21 a EMP-30), declarada no memo com o motivo",
+    precedence: "ES-03 publica o menor teto entre alavancagem, DSCR de downside, garantia e covenant vigente; a banda não substitui nenhum deles",
     archetypeCap: "o limite superior da zona tensionada, depois dos ajustes, não passa do teto do arquétipo (leverageCeiling de archetypes.ts: expansão 3,5; capital de giro 2,5; refinanciamento 3,0; aquisição 4,0; equipamentos 3,0; outros 2,5); venture debt fica fora desta chave",
-    notApplicable: ["venture_debt com EBITDA negativo", "project finance com receita contratada, dimensionado por DSCR (policy.structure.coverage-floors)"],
+    notApplicable: ["venture_debt, com qualquer EBITDA: leverageCeiling 0 em archetypes.ts; dimensionado por caixa e pista", "project finance com receita contratada, dimensionado por DSCR (policy.structure.coverage-floors)"],
     interestRateContext: {
       cdiAnnual: "0.1365",
       cdiDate: "2026-09-22",
@@ -194,20 +200,20 @@ const coverageFloors = proposal(
   },
   {
     definitions: {
-      dscr: "CFADS do período ÷ (juros pagos + principal) do mesmo período; CFADS pela ponte Q-02 (EBITDA − impostos pagos − capex de manutenção ± variação do capital de giro); EBITDA nunca entra no numerador",
+      dscr: "CFADS do período ÷ (juros pagos + principal) do mesmo período; CFADS da ponte de policy.cash-flow.bridge (Q-02); EBITDA nunca entra no numerador",
       icr: "EBITDA ÷ juros pagos em caixa no período; auxiliar quando o principal é bullet ou está em carência",
       binding: "o menor DSCR do cronograma decide; média não conta",
-      periodicity: "período do cronograma proposto; em negócio sazonal, janelas móveis de 12 meses para o índice e teste mensal de caixa mínimo (ES-08)",
+      periodicity: "período do cronograma proposto; com receita de sazonalidade moderada ou alta pela régua de policy.seasonality.materiality, janelas móveis de 12 meses para o índice; com sazonalidade alta, teste mensal de caixa mínimo (ES-08)",
     },
     scenarios: {
-      base: "caso Offroad adotado",
-      downside: "caso banco declarado em policy.business_plan.scenarios",
-      stress: "cenário combinado de receita e juros declarado",
+      base: "base de policy.business_plan.scenarios (caso Offroad adotado)",
+      downside: "downside de policy.business_plan.scenarios (caso do banco)",
+      stress: "severe de policy.business_plan.scenarios, combinado com o severe de scenario.market.multi-factor",
     },
     byArchetype: [
       {archetype: "growth_expansion", minimumDscrDownside: "1.30", minimumDscrStress: "1.00", appliesFrom: "primeiro período depois da carência (obra, margem de atraso e ramp-up)"},
       {archetype: "working_capital", minimumDscrDownside: "1.20", minimumDscrStress: "1.00", appliesFrom: "empréstimo amortizável; linha rotativa usa teste de zeragem periódica em vez de DSCR"},
-      {archetype: "refinance", minimumDscrDownside: "1.25", minimumDscrStress: "1.00", appliesFrom: "primeiro período do cronograma pró-forma"},
+      {archetype: "refinance", minimumDscrDownside: "1.25", minimumDscrStress: "1.00", appliesFrom: "primeiro período depois da carência do cronograma pró-forma; na carência vale o ICR auxiliar"},
       {archetype: "acquisition", minimumDscrDownside: "1.35", minimumDscrStress: "1.00", appliesFrom: "combinado pró-forma sem sinergias não comprovadas"},
       {archetype: "equipment_finance", minimumDscrDownside: "1.25", minimumDscrStress: "1.00", appliesFrom: "primeiro período de amortização"},
       {archetype: "venture_debt", minimumDscrDownside: null, minimumDscrStress: null, appliesFrom: "não se aplica com EBITDA negativo; capacidade por caixa e pista, fora desta chave"},
@@ -225,26 +231,29 @@ const coverageFloors = proposal(
         {volatilityClass: "low", minimumIcrBase: "2.5", minimumIcrDownside: "1.5"},
       ],
     },
-    baseCaseRequirement: "no caso base, a exigência vem da folga de covenant: DSCR base mínimo ≥ piso de downside × 1,25 (policy.structure.covenant_headroom)",
-    stressRule: "no estresse, DSCR abaixo de 1,00 só é aceito se o déficit do período for coberto por conta reserva constituída e por linha comprometida não sacada; dívida nova não conta",
+    baseCaseRequirement: "no caso base corporativo (fora do project finance, que tem piso de base próprio), a exigência vem da folga de covenant: DSCR base mínimo ≥ piso de downside × 1,25 (policy.structure.covenant_headroom)",
+    stressRule: "no estresse, DSCR abaixo de 1,00 só é aceito se o déficit do período for coberto por conta reserva constituída e por linha comprometida não sacada; dívida nova e rolagem não contam",
     dealStructureMapping: {minimumDscr: "minimumDscrDownside do arquétipo"},
   },
 );
 
 const repaymentDesign = proposal(
   "policy.structure.repayment-design",
-  "regras de desenho; prazos em meses, participações em fração do principal e DSCR em múltiplo",
+  "regras de desenho; prazos em meses, anos ou dias conforme o campo; participações em fração do principal ou da vida útil; DSCR em múltiplo",
   {
     title: "Lei nº 12.431/2011, art. 1º, § 1º, e art. 2º, § 1º: prazo médio ponderado, periodicidade de rendimentos e vedação de resgate de debêntures incentivadas",
     url: "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2011/lei/l12431.htm",
   },
   {
     governingTest: "DSCR de cada período no caso downside acima do piso de policy.structure.coverage-floors em todos os períodos (ES-05); formato que falha volta para ES-40",
+    formatOrder: "a ordem dos formatos abaixo é a ordem de preferência: SAC, Price, esculpido, balão e bullet",
+    newProfileTest: "o cronograma proposto, somado ao existente, passa em policy.structure.maturity-concentration antes do term sheet (ES-10)",
+    precedence: "a restrição legal do instrumento prevalece sobre a preferência de formato; o contrato vigente governa o cronograma já contratado",
     formats: [
       {format: "sac", useWhen: "o CFADS de downside do primeiro período de amortização cobre o serviço com o piso", reason: "menor juro total"},
       {format: "price", useWhen: "o SAC viola o piso nos primeiros períodos e o Price o respeita em todos", reason: "nivela o serviço no início"},
       {format: "sculpted", useWhen: "fluxo de projeto ou sazonal previsível; parcela desenhada para DSCR alvo constante", targetDscrBufferOverFloor: "0.10"},
-      {format: "balloon", useWhen: "amortização regular com parcela final maior", maxBalloonShareWithoutNamedSource: "0.30", maxBalloonShareWithNamedSource: "0.50", aboveMaximum: "acima de 0,50 o balão segue as regras de bullet"},
+      {format: "balloon", useWhen: "amortização regular com parcela final maior", maxBalloonShareWithoutNamedSource: "0.30", maxBalloonShareWithNamedSource: "0.50", aboveWithoutSourceRequires: ["fonte nomeada", "cash sweep"], aboveMaximum: "acima de 0,50 o balão segue as regras de bullet"},
       {format: "bullet", useWhen: "fonte de repagamento nomeada e evidenciada (venda de ativo com liquidez, emissão com mandato, caixa acumulado em conta travada)", requires: ["fonte nomeada e evidenciada no term sheet", "cash sweep ou conta travada ligada à fonte (ES-29)", "alavancagem projetada no vencimento, no downside, dentro da zona aceitável de policy.structure.leverage-bands", "ICR de policy.structure.coverage-floors atendido em todos os períodos"]},
     ],
     grace: {
@@ -261,12 +270,12 @@ const repaymentDesign = proposal(
     seasonality: {
       trigger: "policy.seasonality.materiality excedida",
       designs: ["parcelas concentradas no semestre forte", "parcela constante com conta reserva de policy.structure.reserve-account"],
-      prohibited: "parcela constante sobre fluxo sazonal sem colchão de liquidez",
+      prohibited: "parcela constante sem mecanismo de liquidez, nas condições de policy.seasonality.materiality",
       covenantWindow: "índices de cobertura em janelas móveis de 12 meses",
     },
     tenor: {
-      maxShareOfRemainingUsefulLife: "0.80",
-      projectTailMinMonths: 24,
+      assetLifeLimit: {key: "policy.capex.maintenance", field: "tenorVsEconomicLife", rule: "vencimento final dentro do limite de vida econômica remanescente do ativo principal financiado (EMP-19)"},
+      contractedRevenueTailMinMonths: 24,
       merchantTailMinMonths: 36,
       tailDefinition: "meses entre o vencimento final da dívida e o fim da concessão, autorização ou contrato de venda que gera a receita",
     },
@@ -276,13 +285,10 @@ const repaymentDesign = proposal(
       seasonal: "casada à safra ou ao ciclo",
     },
     instrumentConstraints: {
-      incentivizedDebenture: {
-        remuneration: "prefixada, vinculada a índice de preço ou à TR; vedada taxa pós-fixada",
-        weightedAverageLifeYearsStrictlyAbove: "4",
-        minimumIntervalBetweenInterestPaymentsDays: 180,
-        noBuybackOrEarlyRedemptionYears: 2,
-        earlyRedemptionException: "na forma regulamentada pelo Conselho Monetário Nacional",
-        issuanceDeadline: "2030-12-31",
+      incentivizedAndInfrastructureDebentures: {
+        termsKey: "market.instrument.eligibility",
+        instrumentIds: ["debenture_incentivized", "debenture_infrastructure"],
+        rule: "o cronograma respeita os termos obrigatórios daquela chave: remuneração, prazo médio ponderado, intervalo entre pagamentos de rendimentos, vedação de recompra e de liquidação antecipada e prazo de emissão",
         source: "Lei nº 12.431/2011, art. 1º, § 1º, e art. 2º, § 1º; Lei nº 14.801/2024, art. 2º, § 5º, para debêntures de infraestrutura",
       },
     },
@@ -308,6 +314,9 @@ const constructionDelay = proposal(
       {id: "real_estate_development", description: "incorporação imobiliária com patrimônio de afetação", marginMonthsFloor: 6, marginShareOfSchedule: "0.25", legalAnchor: "Lei nº 4.591/1964, art. 43-A: entrega em até 180 dias após a data contratada sem resolução nem penalidade"},
     ],
     mitigantsWhenMarginDoesNotFit: ["garantia de conclusão dos acionistas até a operação comercial", "seguro garantia de execução com vigência igual à da obra (Circular SUSEP nº 662/2022)", "conta reserva de juros pré-constituída até a operação comercial mais a margem", "aporte antecipado do capital próprio antes do primeiro desembolso"],
+    escalation: "sem contrato de obra a preço e prazo, ou sem licença de instalação, o caso sobe para hydro_thermal_linear_or_unconnected (12 meses e 0,50)",
+    mitigantsRequired: "ao menos um da lista, quando o cronograma da operação não comporta a margem",
+    duringConstructionCovenant: "conclusão física (marco até data, atestado independente), não financeiro",
     evidence: ["cronograma físico-financeiro do contrato de obra ou EPC", "estágio das licenças (Lei nº 15.190/2025, art. 5º)", "contrato de conexão quando houver", "relatório de engenheiro independente quando o desembolso for por marco (OP-08)"],
     dealStructureMapping: {constructionDelayMonths: "margem calculada para o arquétipo do caso, em meses inteiros"},
     observations: [
@@ -334,6 +343,7 @@ const reserveAccount = proposal(
       {profile: "corporate_stable", required: false, months: 0, rule: "não exigida; se negociada, até 3 meses"},
       {profile: "venture_debt", required: false, months: 0, rule: "fora desta chave; caixa mínimo e pista são tratados como covenant próprio"},
     ],
+    treatment: {excludedFrom: ["CFADS", "liquidez disponível"], stressTest: "entra no teste de estresse de policy.structure.coverage-floors, que aceita cobrir déficit com reserva constituída"},
     constructionInterestReserve: "quando os juros são pagos durante a obra, reserva de juros até a operação comercial mais a margem de policy.structure.construction-delay, constituída no primeiro desembolso",
     funding: {
       preferred: "no desembolso, deduzida dos recursos",
@@ -371,14 +381,16 @@ const collateralCoverage = proposal(
     ],
     downsideMinimumCoverage: {profiles: ["secured_corporate_primary", "asset_based"], minimumCoverage: "0.80", rule: "com os acréscimos de haircut de downside da chave de haircuts"},
     excessCoverage: {threshold: "1.30", rule: "acima de 1,30x pós-haircut, a garantia excedente é capacidade futura consumida; propor liberação ou redução"},
-    nominalEquivalent: "cobertura contratual nominal equivalente = cobertura pós-haircut ÷ (1 − haircut da classe); recebíveis pulverizados a 1,00x pós-haircut equivalem a 1,33x nominal (133% do saldo)",
+    nominalEquivalent: "cobertura contratual nominal equivalente = cobertura pós-haircut ÷ (1 − haircut da classe); recebíveis pulverizados a 1,00x pós-haircut equivalem a 1,33x nominal (133% do saldo); imóvel urbano líquido a 0,80x equivale a 1,23x do laudo",
+    belowMinimum: "alternativas de ES-40 (outro ativo, ticket menor, garantia de terceiro)",
+    precedence: "cobertura pactuada em contrato vigente governa aquele contrato; o teste da Offroad é sempre pós-haircut",
     dealStructureMapping: {collateralPolicyVersion: version, minimumCollateralCoverage: "minimumCoverage do perfil do caso"},
   },
 );
 
 const appraisalValidity = proposal(
   "policy.structure.appraisal-validity",
-  "meses de idade do laudo ou do relatório na data indicada; dias para dados de carteira e estoque",
+  "meses de idade do laudo ou do relatório na data indicada; dias para carteira, estoque e aplicações financeiras",
   {
     title: "Lei nº 9.514/1997, art. 24, VI e parágrafo único, e art. 27, § 2º: valor do imóvel para leilão, critérios de revisão e lance mínimo de metade do valor de avaliação",
     url: "https://www.planalto.gov.br/ccivil_03/leis/l9514.htm",
@@ -416,8 +428,9 @@ const maturityConcentration = proposal(
   {
     maxShareOfConsolidatedDebtPerPeriod: "0.20",
     comparator: "less_than_or_equal",
-    attentionShare: "0.15",
-    base: "principal existente (ledger D-24, cronograma de D-03) somado ao principal da operação proposta, por período de 12 meses contado da data-base",
+    newBulletPlacementMaxShare: "0.15",
+    riskBandsKey: "policy.debt.maturity-concentration",
+    base: "principal existente (ledger D-24, cronograma de D-03) somado ao principal da operação proposta, por período de 12 meses contado da data-base, na mesma unidade e perímetro",
     rules: {
       absolute: "nenhum período do perfil consolidado pró-forma acima de 0,20 da dívida consolidada",
       noWorsening: "período que já estava acima de 0,20 antes da operação passa se a operação não somar principal a ele e a sua participação pró-forma cair",
@@ -451,16 +464,14 @@ const crossDefaultThreshold = proposal(
     recalculation: "percentuais sobre patrimônio líquido e EBITDA recalculados a cada demonstração anual; piso em reais fixado na emissão pela faixa de porte daquela data, sem troca de faixa depois",
     aggregation: "valor individual ou agregado",
     scope: {
-      entities: "emissora, garantidoras e controladas relevantes (10% ou mais do EBITDA ou do ativo consolidados)",
-      obligations: "dívida financeira e de mercado de capitais, inclusive como garantidora",
-      excluded: ["obrigação discutida de boa-fé com exigibilidade suspensa ou garantida em juízo", "fornecedores e tributos em parcelamento adimplente", "dívida sem recurso de SPE não garantida pelo grupo"],
+      entities: {key: "policy.structure.acceleration-events", field: "perimeter", rule: "emissora, garantidoras e subsidiárias relevantes pela definição daquela chave"},
+      obligations: "empréstimos, financiamentos e títulos de dívida e de mercado de capitais, derivativos pelo valor de liquidação e dívida de terceiro garantida pela emissora, garantidoras ou subsidiárias relevantes",
+      excluded: ["obrigação discutida de boa-fé com exigibilidade suspensa ou garantida em juízo", "fornecedores no curso normal dos negócios", "tributos em parcelamento adimplente", "dívida sem recurso de SPE não garantida pelo grupo"],
     },
-    mechanics: {
-      crossAcceleration: "vencimento antecipado declarado de dívida financeira acima do limiar",
-      crossDefault: "inadimplemento pecuniário de dívida financeira acima do limiar não sanado no prazo de cura do próprio contrato",
-      protest: "protesto acima do limiar não cancelado, suspenso ou garantido em 15 dias úteis",
-      judgment: "decisão condenatória exequível acima do limiar, sem efeito suspensivo",
-      companyPreference: "inadimplemento não pecuniário de outro contrato só conta quando o outro credor declara o vencimento (cross-acceleration)",
+    events: {
+      key: "policy.structure.acceleration-events",
+      eventIds: ["cross_acceleration", "cross_default", "protests", "judgments"],
+      rule: "o limiar e o escopo desta chave valem para esses quatro eventos; modo, gatilho e janela de cada um são daquela chave",
     },
     reverseTest: "a dívida nova entra na base dos cross-defaults dos contratos vigentes: quando o valor dela supera o limiar desses contratos, a cascata consolidada de D-29 é refeita antes do term sheet",
     observations: [
@@ -471,7 +482,7 @@ const crossDefaultThreshold = proposal(
 
 const reportingCadence = proposal(
   "policy.structure.reporting-cadence",
-  "dias corridos e dias úteis indicados em cada campo",
+  "dias corridos, dias úteis ou meses, indicados em cada campo",
   {
     title: "Resolução CVM nº 80/2022, arts. 30 e 31 (DFP em até 3 meses do fim do exercício e ITR em até 45 dias do fim do trimestre)",
     url: "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol080.html",
@@ -479,13 +490,15 @@ const reportingCadence = proposal(
   {
     deadlineRule: "prazo proposto = maior entre o prazo regulatório aplicável e o tempo de fechamento medido (EMP-16) mais a folga da capacidade, limitado ao teto da capacidade; obrigação que a companhia não cumpre no próprio histórico não entra",
     capabilities: [
-      {id: "A", description: "companhia aberta registrada na CVM", quarterlyStatementsDays: 45, auditedAnnualStatementsMonths: 3, covenantCertificateBusinessDays: 5, closeBufferDays: 0, basis: "Resolução CVM nº 80/2022, arts. 30 e 31; certificado de covenant com memória de cálculo junto das demonstrações"},
+      {id: "A", description: "companhia aberta registrada na CVM", quarterlyStatementsDays: 45, auditedAnnualStatementsMonths: 3, covenantCertificateBusinessDays: 5, closeBufferDays: 0, basis: "Resolução CVM nº 80/2022, arts. 30 e 31; certificado de covenant em 5 dias úteis depois das demonstrações (a escritura de referência pede a memória de cálculo junto das demonstrações)"},
       {id: "B", description: "companhia fechada ou limitada com demonstrações anuais auditadas e fechamento mensal em até 30 dias", quarterlyStatementsDays: 60, auditedAnnualStatementsMonths: 4, auditedAnnualStatementsMonthsWhenTraded: 3, covenantCertificateBusinessDays: 10, closeBufferDays: 20, basis: "Lei nº 6.404/1976, art. 132, e Resolução CVM nº 160/2022, art. 89, IV, quando o título é negociado em mercado regulamentado"},
       {id: "C", description: "sem histórico de auditoria ou com fechamento mensal acima de 30 dias", quarterlyStatementsDays: 75, auditedAnnualStatementsMonths: 5, covenantCertificateBusinessDays: 15, closeBufferDays: 30, firstAuditRequirement: "primeiras demonstrações anuais auditadas do exercício corrente como obrigação datada"},
     ],
     observations: [
       {date: "2025-10-10", source: "Escritura da 15ª emissão de debêntures da Camil Alimentos S.A., obrigações adicionais da emissora", reading: "demonstrações anuais auditadas em até 3 meses do fim do exercício, com memória de cálculo dos índices financeiros; ITR com revisão especial em até 45 dias dos três primeiros trimestres; aviso de evento de vencimento antecipado em até 1 dia útil"},
     ],
+    regulatoryPrecedence: "prazo regulatório mais curto que o proposto continua valendo por força própria; o contrato nunca propõe prazo menor que o regulatório",
+    firstDeliveryException: "a primeira entrega depois do desembolso pode ter prazo maior se o fechamento em curso já estiver atrasado na data da assinatura, com a data escrita",
     monthlyAssetReporting: {appliesTo: "estrutura com base de empréstimo, cessão fiduciária de recebíveis ou estoque monitorado", businessDaysAfterMonthEnd: 10, content: "carteira analítica, aging, diluição, base elegível e cobertura"},
     eventNotices: {
       defaultOrPotentialDefaultBusinessDays: 2,
@@ -500,7 +513,7 @@ const reportingCadence = proposal(
 
 const cureWaiver = proposal(
   "policy.structure.cure-waiver",
-  "dias úteis ou corridos indicados em cada campo; número de usos",
+  "dias úteis ou corridos indicados em cada campo; número de usos; cobertura do livro em múltiplo (x); quóruns em fração dos títulos",
   {
     title: "Lei nº 6.404/1976, arts. 71 e 124, e Resolução CVM nº 17/2021, art. 12, § 2º: convocação de assembleia e maioria absoluta para modificar condições ou deixar de adotar medida",
     url: "https://www.planalto.gov.br/ccivil_03/leis/l6404consol.htm",
@@ -510,11 +523,12 @@ const cureWaiver = proposal(
       {event: "payment_default", curePeriodBusinessDays: 2, acceptableMinimumBusinessDays: 1, rule: "principal ou juros; falha operacional comprovada de sistema de pagamento conta o prazo a partir da correção"},
       {event: "non_monetary_obligation", curePeriodCalendarDays: 30, acceptableMinimumCalendarDays: 10, startsFrom: "notificação do credor ou do agente fiduciário", rule: "não se aplica à obrigação com prazo específico próprio"},
       {event: "information_delivery", curePeriodCalendarDays: 30, startsFrom: "fim do prazo de entrega", rule: "segundo atraso no mesmo exercício reduz a cura a 10 dias"},
-      {event: "misrepresentation", curePeriodCalendarDays: 15, startsFrom: "comunicação da inexatidão", rule: "declaração falsa dolosa ou material não tem cura"},
+      {event: "misrepresentation", curePeriodCalendarDays: 15, startsFrom: "comunicação da inexatidão", rule: "declaração incorreta ou incompleta em aspecto relevante; declaração comprovadamente falsa é evento automático de policy.structure.acceleration-events, sem cura"},
       {event: "security_deterioration", curePeriodBusinessDays: 20, startsFrom: "notificação", rule: "reforço ou substituição de garantia até a cobertura mínima de policy.structure.collateral-coverage"},
-      {event: "reserve_account_shortfall", curePeriodBusinessDays: 40, startsFrom: "uso da reserva", rule: "reposição pela cascata, com trava de distribuição enquanto abaixo do alvo"},
+      {event: "reserve_account_shortfall", cureKey: "policy.structure.reserve-account", cureField: "replenishment.businessDays", startsFrom: "uso da reserva", rule: "a cura é a reposição no prazo de policy.structure.reserve-account, com a trava de distribuição daquela chave enquanto abaixo do alvo"},
       {event: "financial_covenant_breach", cureMechanism: "equity cure", rule: "ver equityCure"},
     ],
+    automaticEventsHaveNoCure: "a cura não se aplica a evento que a lei declara vencimento automático",
     equityCure: {
       maxUsesPerFourConsecutiveTests: 2,
       maxUsesLifetime: 4,
@@ -526,16 +540,29 @@ const cureWaiver = proposal(
       annualTests: "covenant apurado apenas anualmente admite 1 uso em 2 exercícios consecutivos, 2 na vida da operação",
     },
     accelerationMechanics: {
-      automatic: ["inadimplemento pecuniário não sanado", "pedido de recuperação judicial, falência ou liquidação"],
-      nonAutomaticDefault: "declared_only_by_assembly",
-      rule: "evento não automático só vence a dívida por deliberação dos credores; falta de quórum não declara vencimento; a casa recusa a fórmula de vencimento declarado salvo deliberação em contrário",
+      eventsAndDeclarationKey: "policy.structure.acceleration-events",
+      houseDefault: "declared_unless_assembly_waives",
+      rule: "eventos, modo automático ou não automático e mecânica de declaração são os de policy.structure.acceleration-events, padrão da casa no term sheet indicativo; esta chave não os repete",
+      negotiationLever: {
+        mechanic: "declared_only_by_assembly",
+        rule: "declaração do vencimento apenas por deliberação dos credores; falta de quórum não declara vencimento",
+        offeredOnlyWhen: [
+          {id: "book_coverage", rule: "livro coberto em pelo menos 1,5 vez à taxa indicativa", minimumBookCoverageMultiple: "1.5"},
+          {id: "national_scale_investment_grade", rule: "rating de grau de investimento em escala nacional"},
+        ],
+        evidence: "a condição de demanda comprovada no caso, com a evidência anexada; sem ela, vale a mecânica padrão",
+      },
     },
     waiverProcess: {
-      debenturesAndCommercialNotes: {
-        quorum: "maioria absoluta dos títulos em circulação, em qualquer convocação: o mínimo da Lei nº 6.404/1976, art. 71, § 5º, e da Resolução CVM nº 17/2021, art. 12, § 2º",
-        noticeDaysPublicCompany: {firstCall: 21, secondCall: 8},
-        noticeDaysPrivateCompany: {firstCall: 8, secondCall: 5},
+      debentures: {
+        quorum: "maioria absoluta das debêntures em circulação, em qualquer convocação: o mínimo da Lei nº 6.404/1976, art. 71, § 5º, e da Resolução CVM nº 17/2021, art. 12, § 2º",
       },
+      commercialNotes: {
+        quorum: "maioria simples das notas comerciais em circulação presentes na assembleia, salvo quórum maior no termo de emissão (Lei nº 14.195/2021, art. 47, § 2º)",
+        houseDefault: "o piso legal, do lado da companhia",
+        withTrustee: "com agente fiduciário nomeado para oferta pública ou negociação em mercado organizado, maioria absoluta dos títulos em circulação (Resolução CVM nº 17/2021, arts. 1º e 12, § 2º)",
+      },
+      assemblyRules: {key: "policy.structure.acceleration-events", field: "declarationProcedure.nonAutomatic", rule: "convocação e instalação das assembleias de debenturistas e de titulares de notas comerciais (Lei nº 14.195/2021, art. 47, § 3º)"},
       securitization: {
         quorum: "50% mais um dos títulos em circulação em primeira convocação; em segunda, 50% mais um dos presentes, com presença mínima de 30% dos títulos em circulação",
         legalMinimum: "a Resolução CVM nº 60/2021, arts. 28 e 30, admite instalação com qualquer número e maioria dos presentes, salvo quórum distinto no instrumento",
@@ -560,7 +587,7 @@ const minimumSellable = proposal(
   "policy.structure.minimum-sellable",
   "reais (BRL); orçamento de complexidade em fração ao ano do valor da operação; prazos em semanas",
   {
-    title: "Resolução CVM nº 160/2022 (rito de registro automático para investidores profissionais) e Lei nº 7.940/1989, Anexo IV, na redação da Lei nº 14.317/2022 (taxa de fiscalização de 0,03% da oferta)",
+    title: "Resolução CVM nº 160/2022 (rito de registro automático para investidores profissionais) e Lei nº 7.940/1989, Anexo IV, na redação da Lei nº 14.317/2022 (taxa de fiscalização da CVM sobre oferta pública)",
     url: "https://conteudo.cvm.gov.br/legislacao/resolucoes/resol160.html",
   },
   {
@@ -569,23 +596,23 @@ const minimumSellable = proposal(
       maxFixedCostShareOfTicketPerYear: "0.0040",
       formula: "custo fixo anualizado = custo fixo inicial ÷ vida média em anos + custo fixo anual; ticket mínimo da rota = custo fixo anualizado ÷ 0,0040",
       inputs: "cotações datadas dos prestadores do caso (assessores jurídicos, agente fiduciário, escriturador, registradora, rating, auditoria da estrutura); cotação com mais de 90 dias é refeita",
-      publicFeeObservations: [
-        {date: "2026-09-24", source: "Lei nº 7.940/1989, Anexo IV", reading: "taxa de fiscalização da CVM de 0,03% do valor da oferta pública, mínimo de R$ 809,16"},
-      ],
+      publicFees: {key: "policy.pricing.cost-catalogue", field: "publicTables"},
     },
+    executionWeeks: {key: "policy.structure.route-catalogue", field: "routes.referenceWeeks", rule: "o prazo de referência de cada rota é o do catálogo, pelos identificadores de routeCatalogueIds"},
+    distributedCoverage: {key: "policy.structure.mandate-ticket", field: "transactionRange.requiredCoverage"},
     routes: [
-      {route: "bilateral_bank", instruments: ["CCB", "NCE", "CCE"], issuerForm: "qualquer; a CCB é emitida em favor de instituição financeira (Lei nº 10.931/2004, art. 26)", houseReferenceMinTicketBRL: null, referenceExecutionWeeks: [2, 6], buyerCoverageRule: "um credor nomeado com mandato confirmado para o ticket inteiro"},
-      {route: "commercial_note", instruments: ["nota comercial"], issuerForm: "sociedade anônima, limitada ou cooperativa (Lei nº 14.195/2021, art. 46)", houseReferenceMinTicketBRL: "30000000", referenceExecutionWeeks: [4, 8], buyerCoverageRule: "capacidade confirmada de 1,5x o ticket em esforços de colocação, 1,0x com garantia firme"},
-      {route: "debenture_professional_investors", instruments: ["debênture simples em rito automático"], issuerForm: "sociedade anônima (Lei nº 6.404/1976, art. 52)", houseReferenceMinTicketBRL: "50000000", referenceExecutionWeeks: [6, 10], buyerCoverageRule: "capacidade confirmada de 1,5x o ticket em esforços de colocação, 1,0x com garantia firme"},
-      {route: "securitization", instruments: ["CRI", "CRA"], issuerForm: "lastro elegível segundo policy.structure.route-catalogue e market.instrument.eligibility", houseReferenceMinTicketBRL: "50000000", referenceExecutionWeeks: [8, 12], buyerCoverageRule: "capacidade confirmada de 1,5x o ticket em esforços de colocação"},
-      {route: "fidc_dedicated", instruments: ["FIDC exclusivo"], issuerForm: "carteira de direitos creditórios elegível", houseReferenceMinTicketBRL: "50000000", referenceExecutionWeeks: [9, 17], buyerCoverageRule: "cotas sênior com demanda confirmada e subordinação retida dimensionada"},
-      {route: "fidc_multi_originator", instruments: ["cessão a FIDC existente"], issuerForm: "carteira elegível ao regulamento do fundo", houseReferenceMinTicketBRL: null, referenceExecutionWeeks: [2, 6], buyerCoverageRule: "limite de cedente aprovado e capacidade do fundo por sacado e cedente"},
+      {route: "bilateral_bank", routeCatalogueIds: ["ccb_bank", "export_credit_note"], instruments: ["CCB", "NCE", "CCE"], issuerForm: "qualquer; a CCB é emitida em favor de instituição financeira (Lei nº 10.931/2004, art. 26)", houseReferenceMinTicketBRL: null, buyerCoverageRule: "um credor nomeado com mandato confirmado para o ticket inteiro"},
+      {route: "commercial_note", routeCatalogueIds: ["commercial_note"], instruments: ["nota comercial"], issuerForm: "sociedade anônima, limitada ou cooperativa (Lei nº 14.195/2021, art. 46)", houseReferenceMinTicketBRL: "30000000", buyerCoverageRule: "cobertura exigida de distributedCoverage"},
+      {route: "debenture_professional_investors", routeCatalogueIds: ["debenture_professional"], instruments: ["debênture simples em rito automático"], issuerForm: "sociedade anônima (Lei nº 6.404/1976, art. 52)", houseReferenceMinTicketBRL: "50000000", buyerCoverageRule: "cobertura exigida de distributedCoverage"},
+      {route: "securitization", routeCatalogueIds: ["cri", "cra"], instruments: ["CRI", "CRA"], issuerForm: "lastro elegível segundo policy.structure.route-catalogue e market.instrument.eligibility", houseReferenceMinTicketBRL: "50000000", buyerCoverageRule: "cobertura exigida de distributedCoverage"},
+      {route: "fidc_dedicated", routeCatalogueIds: ["fidc"], instruments: ["FIDC exclusivo"], issuerForm: "carteira de direitos creditórios elegível", houseReferenceMinTicketBRL: "50000000", buyerCoverageRule: "cotas sênior com demanda confirmada e subordinação retida dimensionada"},
+      {route: "fidc_multi_originator", routeCatalogueIds: ["fidc_existing_assignment"], instruments: ["cessão a FIDC existente"], issuerForm: "carteira elegível ao regulamento do fundo", houseReferenceMinTicketBRL: null, buyerCoverageRule: "limite de cedente aprovado e capacidade do fundo por sacado e cedente"},
     ],
     buyerTypes: "compradores do mapa MK-01 a MK-10; rota sem comprador nomeado no mapa (MK-13) não é vendável",
     marketRegime: [
       {date: "2026-09-16", source: "ANBIMA, Boletim de Mercado de Capitais de agosto de 2026", reading: "R$ 48,8 bilhões em ofertas encerradas no mês; debêntures R$ 21,5 bilhões (44,1%); FIDC R$ 14,5 bilhões; CRI R$ 2,4 bilhões; CRA R$ 2,2 bilhões; acumulado do ano R$ 485 bilhões"},
     ],
-    calibration: {status: "tickets de referência são premissa da casa até a calibração por cotações e ofertas encerradas", refreshCadence: "trimestral", validityDays: 90},
+    calibration: {status: "tickets de referência são premissa da casa até a calibração por cotações e ofertas encerradas", caseOverride: "quando as cotações do caso existem, o ticket mínimo calculado substitui a referência inicial", refreshCadence: "trimestral", validityDays: 90},
   },
 );
 
@@ -609,26 +636,23 @@ const mandateTicket = proposal(
         {issuer: "SPE subsidiária integral de securitizadora S2", shareOfNetAssets: "0.10"},
         {issuer: "pessoa natural ou jurídica que não seja companhia aberta nem instituição financeira", shareOfNetAssets: "0.05"},
       ],
-      fidcPerDebtor: "0.20",
+      fidcPerDebtorOrCoobligor: "0.20",
       groupRule: "emissões do mesmo grupo econômico somam num único emissor",
       professionalInvestorClasses: "classe exclusiva de investidores profissionais pode dispensar os limites no regulamento; o limite passa a ser o do regulamento",
     },
     transactionRange: {
       bilateral: "ticket viável quando um credor confirmado aceita o valor entre o seu mínimo e o seu máximo",
-      distributed: "matchedTicketMax = soma dos tickets máximos confirmados dos veículos aderentes ÷ cobertura exigida (1,5 em esforços de colocação; 1,0 com garantia firme)",
+      distributed: "matchedTicketMax = soma dos tickets máximos confirmados dos veículos aderentes ÷ cobertura exigida",
+      requiredCoverage: {bestEfforts: "1.5", firmCommitment: "1.0", appliesTo: "todas as rotas distribuídas de policy.structure.minimum-sellable"},
       matchedTicketMin: "maior entre o ticket mínimo vendável da rota (policy.structure.minimum-sellable) e o menor valor com que a âncora participa",
+      outsideRange: {aboveMax: "ES-45 reduz ao máximo ou ES-40 propõe tranche ou rota diferente", belowMin: "a rota não é vendável"},
     },
     indivisibility: [
       "CCB e contrato bilateral: um credor leva o ticket inteiro, salvo clube formal",
       "emissão distribuída: lote mínimo por investidor fixado no instrumento",
       "cota sênior de FIDC: subscrição mínima do regulamento",
     ],
-    sourceClassesAndValidity: [
-      {sourceClass: "confirmação direta do gestor, com data e autor", usableInHardFilters: true, validityDays: 90},
-      {sourceClass: "regulamento ou material público do veículo", usableInHardFilters: true, validityDays: 180, invalidation: "alteração do regulamento"},
-      {sourceClass: "observação de mercado governada (PR-13)", usableInHardFilters: true, validityDays: 60},
-      {sourceClass: "informação não confirmada", usableInHardFilters: false, validityDays: 0},
-    ],
+    mandateDataAge: {key: "policy.market.mandate_max_age", rule: "prazo efetivo = menor entre o prazo do campo, o da proveniência e o do perfil; campo vencido sai dos filtros duros até ser reconfirmado; informação não confirmada não entra em filtro duro"},
     dealStructureMapping: {matchedTicketMin: "matchedTicketMin do caso", matchedTicketMax: "matchedTicketMax do caso"},
     currentConfirmedMandates: [],
   },
@@ -656,13 +680,14 @@ const conditionsPrecedent = proposal(
     ],
     byArchetype: {
       growth_expansion: ["licença de instalação vigente para a obra e caminho da licença de operação (Lei nº 15.190/2025, art. 5º)", "orçamento aprovado e contrato de obra ou EPC com preço e prazo", "seguro garantia de execução com vigência igual à da obra", "matrícula do sítio sem ônus não quitado", "aporte de capital próprio comprovado antes ou pro rata dos desembolsos", "relatório de engenheiro independente por marco quando houver tranches (OP-08)"],
-      acquisition: ["contrato de compra e venda assinado com preço e condições", "aprovação do CADE quando as partes atingem R$ 750 milhões e R$ 75 milhões de faturamento no país (Lei nº 12.529/2011, art. 88; Portaria Interministerial nº 994/2012)", "relatórios de diligência financeira, jurídica e tributária entregues", "dívida da adquirida quitada ou com consentimento dos credores", "renúncias de mudança de controle nos contratos da adquirida"],
+      acquisition: ["contrato de compra e venda assinado com preço e condições", "aprovação do CADE quando pelo menos um grupo envolvido tem faturamento bruto anual no país de R$ 750 milhões ou mais e pelo menos outro grupo tem R$ 75 milhões ou mais (Lei nº 12.529/2011, art. 88; Portaria Interministerial nº 994/2012)", "relatórios de diligência financeira, jurídica e tributária entregues", "dívida da adquirida quitada ou com consentimento dos credores", "renúncias de mudança de controle nos contratos da adquirida"],
       refinance: ["cartas de quitação com valor exato e data", "termos de liberação de garantias assinados para registro simultâneo", "renúncias de cross-default e de negative pledge onde a operação as exige", "valor da multa de pré-pagamento confirmado"],
       equipment_finance: ["pró-forma final e contrato de fornecimento", "termo de entrega e aceite", "alienação fiduciária registrada no registro de títulos e documentos ou no órgão de trânsito", "seguro endossado", "licença de importação quando aplicável"],
       working_capital: ["cessão fiduciária registrada na registradora", "conta vinculada aberta com trava operacional testada", "primeiro relatório da base elegível"],
       venture_debt: ["fechamento da rodada de capital comprovado (contrato assinado e recursos recebidos)", "tabela de capitalização atualizada", "instrumento dos bônus de subscrição assinado"],
       other: ["condições do uso declarado, definidas caso a caso a partir das condições comuns"],
     },
+    structureCreatedConditions: ["liberação de garantia existente (ES-22)", "acordo entre credores (ES-39)", "licença essencial que vence dentro do prazo da dívida (EMP-17)", "seguro de ativo essencial sem cobertura adequada (EMP-18)"],
     conditionsSubsequent: {
       rule: "registro que depende de prazo do cartório ou do órgão pode ser condição subsequente com prazo e consequência",
       maxDaysAfterDisbursement: 60,

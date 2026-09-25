@@ -79,6 +79,7 @@ const drafts: Record<string, Draft> = {
         range_and_condition: "entra como faixa com condição, sem soma",
         net_liability: "entra o valor justo passivo líquido",
         when_leveraged_group_entity: "entra quando o garantido é entidade do grupo alavancada ou em estresse",
+        guaranteed_amount: "entra pelo valor garantido (o teto da fiança ou do aval), com a condição, sem soma",
         contra_line: "linha contra, fora de toda soma de obrigações",
         not_a_line: "não gera linha",
       },
@@ -92,10 +93,10 @@ const drafts: Record<string, Draft> = {
         receivables_transferred_with_recourse: {gross_financial_debt: "when_not_derecognized", net_financial_debt: "when_not_derecognized", covenant_debt: "per_definition", capacity_obligations: "retained_exposure", quasi_debt: "retained_exposure", contingent_and_off_balance: "exclude"},
         tax_installments: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "include", quasi_debt: "include", contingent_and_off_balance: "exclude"},
         acquisition_obligations: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "fixed_amount_only", quasi_debt: "fixed_amount_only", contingent_and_off_balance: "range_and_condition"},
-        declared_dividends_payable: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "include", quasi_debt: "exclude", contingent_and_off_balance: "exclude"},
+        declared_dividends_and_jcp_payable: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "include", quasi_debt: "exclude", contingent_and_off_balance: "exclude"},
         probable_provisions: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "scheduled_outflow_not_in_cfads", quasi_debt: "exclude", contingent_and_off_balance: "exclude"},
         possible_contingencies: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "exclude", quasi_debt: "exclude", contingent_and_off_balance: "range_and_condition"},
-        guarantees_given: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "exclude", quasi_debt: "when_leveraged_group_entity", contingent_and_off_balance: "include"},
+        guarantees_given: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "exclude", quasi_debt: "when_leveraged_group_entity", contingent_and_off_balance: "guaranteed_amount"},
         related_party_loans_payable: {gross_financial_debt: "unless_formally_subordinated", net_financial_debt: "unless_formally_subordinated", covenant_debt: "per_definition", capacity_obligations: "unless_formally_subordinated", quasi_debt: "exclude", contingent_and_off_balance: "exclude"},
         pension_deficit: {gross_financial_debt: "exclude", net_financial_debt: "exclude", covenant_debt: "per_definition", capacity_obligations: "include", quasi_debt: "include", contingent_and_off_balance: "exclude"},
         authorized_not_disbursed: {gross_financial_debt: "not_a_line", net_financial_debt: "not_a_line", covenant_debt: "not_a_line", capacity_obligations: "not_a_line", quasi_debt: "not_a_line", contingent_and_off_balance: "not_a_line"},
@@ -129,7 +130,7 @@ const drafts: Record<string, Draft> = {
   },
 
   "policy.debt.cost-reconciliation": {
-    unit: "fração da despesa bruta de juros do período; dias úteis na base 252",
+    unit: "fração da despesa bruta de juros do período; base de dias do instrumento (252 dias úteis para DI e IPCA, convenção contratual para prefixado e moeda estrangeira)",
     title: "CPC 48 (método da taxa de juros efetiva e custos de transação) e CPC 20 (R1) (custos de empréstimos capitalizados); convenções de policy.capital.anbima-b3-conventions",
     url: CPC_48_URL,
     value: {
@@ -141,14 +142,15 @@ const drafts: Record<string, Draft> = {
         closingBalanceAsAverage: "forbidden",
       },
       residualToleranceByAveraging: {daily_average: "0.02", monthly_average: "0.05", two_point_average: "0.10"},
-      residualBase: "resíduo não explicado depois de todos os componentes, dividido pela despesa bruta de juros do período",
+      residualBase: "valor absoluto do resíduo não explicado depois de todos os componentes, dividido pela despesa bruta de juros do período",
+      cuts: ["contrato", "credor", "indexador", "moeda", "entidade", "consolidado"],
       roundingFloor: "policy.reconciliation.tolerance, família interest",
       costMeasures: {
         cash_cost: "juros pagos em caixa no período / saldo médio, anualizado na convenção do instrumento",
         accounting_cost: "despesa pela taxa efetiva do CPC 48, com amortização de custos de transação e atualização monetária / saldo médio",
         all_in_cost: "taxa que iguala o valor líquido recebido (depois de comissões, IOF e custos de garantia) aos pagamentos de juros, principal e custos recorrentes (PR-10)",
       },
-      comparisonBasis: "spread equivalente sobre o CDI na curva DI da data-base, pelo prazo remanescente de cada contrato; percentual do DI, prefixado, IPCA e TLP convertidos pelas convenções de policy.capital.anbima-b3-conventions",
+      comparisonBasis: "spread equivalente sobre o CDI na curva da data-base, no ponto de curva de market.pricing.indexer-basis (duration do contrato; vida média remanescente quando o fluxo não permite a duration, D-18); conversões de market.pricing.indexer-basis e convenções de cálculo de policy.capital.anbima-b3-conventions",
       annualization: "composição na base do instrumento (252 dias úteis para DI e IPCA; convenção contratual para prefixado e moeda estrangeira); taxa anual nunca dividida linearmente",
       bridgeComponents: [
         "juros contratuais apropriados",
@@ -162,10 +164,10 @@ const drafts: Record<string, Draft> = {
         "juros de arrendamento (CPC 06)",
         "encargos de risco sacado e ajuste a valor presente de fornecedores",
         "juros e multas de parcelamentos tributários",
-        "atualização de provisões e contingências",
+        "atualização de provisões, inclusive as de contingências",
         "juros capitalizados em ativo qualificável (CPC 20), somados ao custo e retirados da despesa",
-        "receitas financeiras, apresentadas à parte e nunca compensadas na ponte",
       ],
+      separateLines: ["receitas financeiras, apresentadas à parte e nunca compensadas na ponte"],
       investigationOrder: [
         "saldo médio e datas de captação e liquidação",
         "atualização monetária e variação cambial",
@@ -180,10 +182,11 @@ const drafts: Record<string, Draft> = {
   },
 
   "policy.debt.maturity-concentration": {
-    unit: "fração da dívida financeira bruta; vezes (x) para fontes sobre usos; anos para vida média",
+    unit: "fração da dívida financeira bruta, salvo a dependência de mercado (fração do principal de 24 meses) e o limite de projeto (fração da vida remanescente); vezes (x) para fontes sobre usos; anos para vida média",
     title: "S&P Global Ratings, Methodology And Assumptions: Liquidity Descriptors For Global Corporate Issuers (16/12/2014); faixas de concentração da casa (D-03, D-18, ES-10)",
     url: SP_LIQUIDITY_URL,
     value: {
+      perimeter: "consolidado e por entidade relevante",
       horizonYears: 5,
       wallWindowMonths: 36,
       bucketBasis: "janelas de 12 meses a partir da data-base; ano safra ou exercício deslocado quando a nota da companhia reporta assim",
@@ -215,7 +218,8 @@ const drafts: Record<string, Draft> = {
         marketDependence24m: {
           formula: "principal de mercado de capitais em bullet ou balão que vence em 24 meses / principal total que vence em 24 meses",
           flagAbove: "0.50",
-          minimumShareOfGrossDebt: "0.10",
+          shareOfGrossDebtAbove: "0.10",
+          shareOfGrossDebtNumerator: "principal de mercado de capitais em bullet ou balão que vence em 24 meses",
           effect: "a faixa geral sobe um nível e o memo nomeia o plano de refinanciamento com a data em que o acesso a mercado é necessário",
         },
       },
@@ -241,9 +245,9 @@ const drafts: Record<string, Draft> = {
         uncommitted_short_term: {base: {rule: "historical_ratio_24m", cap: "1", withoutEvidence: "0.5"}, downside: "0.5", severe: "0", covers: ["capital de giro e CCB até 12 meses", "conta garantida", "limite rotativo sem compromisso", "crédito rural de custeio"]},
         receivables_discounting: {base: "1", downside: "0.8", severe: "0", appliesTo: "recebíveis elegíveis"},
         trade_finance_backed: {base: "1", downside: "0.75", severe: "0.5", appliesTo: "ACC, ACE e pré-pagamento com contrato de exportação confirmado"},
-        supplier_finance: {base: "1", downside: "0.5", severe: "0"},
-        term_amortization: {base: "0", downside: "0", severe: "0"},
-        capital_markets_maturity: {base: "0", downside: "0", severe: "0", baseException: "refinanciamento contratado, ou mandatado com carta de mandato e term sheet na base"},
+        supplier_finance: {base: "1", downside: "0.5", severe: "0", covers: ["risco sacado", "confirming"]},
+        term_amortization: {base: "0", downside: "0", severe: "0", covers: ["dívida a prazo bancária", "BNDES", "fomento"]},
+        capital_markets_maturity: {base: "0", downside: "0", severe: "0", covers: ["debênture", "nota comercial", "CRI", "CRA", "bond"], baseException: "refinanciamento contratado, ou mandatado com carta de mandato e term sheet na base"},
         related_party_loan: {base: "1", downside: "1", severe: "1", condition: "somente com subordinação formal e trava de pagamento; sem ela, zero no vencimento contratual"},
       },
       historicalRatio24m: {
@@ -284,8 +288,9 @@ const drafts: Record<string, Draft> = {
         historyYears: 3,
         historyYearsCyclical: 5,
         revenueCagrExcessOverDelivered: "0.05",
+        requiredDrivers: ["capacidade com data", "contrato assinado ou pedido firme", "preço contratado"],
         ebitdaMarginExcessOverBestYearBps: 100,
-        ventureMonthlyGrowthRule: "crescimento mensal projetado acima da média dos últimos 6 meses exige driver (contrato, pedido firme)",
+        ventureMonthlyGrowthRule: "crescimento mensal projetado acima da média dos últimos 6 meses exige driver de requiredDrivers",
         withoutDriver: "a premissa volta ao histórico no base ou vira faixa de sensibilidade; a projeção da companhia continua visível ao lado",
       },
       cyclicality: {
@@ -298,6 +303,7 @@ const drafts: Record<string, Draft> = {
         severe: {defensive: "0.20", mixed: "0.30", cyclical: "0.40"},
         severeFloor: "a queda medida da própria companhia, quando maior que a faixa",
         upcycleOnlyAddOn: "0.05",
+        upcycleOnlyAddOnAppliesTo: ["downside", "severe"],
         driverModelRule: "o corte da faixa é piso; o modelo por drivers pode produzir corte maior, nunca menor",
       },
       revenueShock: {
@@ -328,7 +334,7 @@ const drafts: Record<string, Draft> = {
         venture_debt: {granularity: "monthly", nextRound: {downside: "atraso de 6 meses", severe: "sem rodada em 12 meses"}, downsideRevenueGrowthShareOfPlan: "0.50", burnCut: "somente com plano aprovado pelo conselho e ações já iniciadas"},
         other: {granularity: "quarterly", rule: "regra geral por ciclicidade"},
       }),
-      seasonality: "amplitude acima de policy.seasonality.materiality ou de 1,5 vez (EMP-08) leva os três cenários para base mensal por pelo menos 24 meses",
+      seasonality: "receita ou capital de giro com sazonalidade moderada ou alta pela régua de policy.seasonality.materiality (EMP-08) leva os três cenários para base mensal por pelo menos 24 meses",
       reverseTest: {ebitdaHaircutStep: "0.05", ebitdaHaircutMaximum: "0.50", cdiShockStepBps: 100, cdiShockMaximumBps: 500, outputs: ["corte de EBITDA que zera a folga", "corte de EBITDA que leva o caixa ao mínimo operacional", "choque de CDI equivalente", "grade de duas variáveis com a célula de ruptura"]},
       coherence: "cada cenário é um conjunto coerente de drivers; percentual aplicado só ao resultado final não é cenário",
     },
@@ -342,6 +348,7 @@ const drafts: Record<string, Draft> = {
       // Case 01 draft of 05/09/2026, kept.
       minimumRelativeHeadroomAdverse: "0.10",
       rule: "capacidade de nova dívida medida contra o limite aplicável no cenário adverso declarado; abaixo do limiar a estrutura muda antes de apresentar",
+      legacyFieldScope: "o campo do Caso 01 vale para os perfis defensivo e misto; o cíclico usa adverseMinimumByProfile, e o bloqueio vale nas datas de teste de hardGateMonths",
       headroomFormula: "máximo: (limite − métrica) / limite; mínimo: (métrica − limite) / limite; o percentual de calculateCovenantHeadroom (financial-core)",
       baseMinimumFrom: "policy.structure.covenant_headroom",
       adverseMinimumByProfile: {defensive: "0.10", mixed: "0.10", cyclical: "0.15"},
@@ -352,8 +359,10 @@ const drafts: Record<string, Draft> = {
       liquidityFloor: {
         minimumOperatingCashDays: 30,
         minimumOperatingCashBasis: "média diária dos desembolsos operacionais de caixa dos últimos 12 meses, sem capex e sem serviço da dívida; o valor da política de tesouraria da companhia prevalece quando maior e documentado",
+        highSeasonalityWorkingCapital: "com capital de giro de sazonalidade alta pela régua de policy.seasonality.materiality, o caixa mínimo é o maior entre o valor acima e o pico de necessidade intra-anual de capital de giro do downside",
         countsTowardFloor: ["caixa dedutível de policy.debt.views", "linha comprometida não sacada disponível sem quebra de covenant"],
         sourcesToUses12m: {base: "1.2", adverse: "1.0"},
+        coverageFormulasKey: "policy.cash-flow.bridge",
         breachEffect: "caixa abaixo do mínimo operacional em qualquer período do adverso redimensiona a operação (ES-40)",
       },
       horizonByArchetype: {
@@ -365,13 +374,14 @@ const drafts: Record<string, Draft> = {
         venture_debt: {monthsAfterDebtMaturity: 6, granularity: "monthly"},
         other: {months: 24, granularity: "quarterly"},
       },
+      highSeasonalityGranularity: {granularity: "monthly", trigger: "sazonalidade alta pela régua de policy.seasonality.materiality, em qualquer arquétipo"},
       distributions: {
-        freeIf: {baseHeadroomAfterDistribution: "0.15", adverseHeadroomAfterDistribution: "0.10"},
+        freeIf: {baseHeadroomAfterDistribution: "0.15", adverseHeadroomAfterDistribution: "adverseMinimumByProfile (0,10; 0,15 no cíclico)"},
         otherwise: "distribuição limitada ao dividendo mínimo obrigatório do art. 202 da Lei 6.404/1976; conta reserva abaixo do saldo exigido trava qualquer valor acima do mínimo (ES-17)",
       },
       additionalDebt: {
         baseHeadroomAfterIncurrence: "0.15",
-        adverseHeadroomAfterIncurrence: "0.10",
+        adverseHeadroomAfterIncurrence: "adverseMinimumByProfile (0,10; 0,15 no cíclico)",
         seasonalBasket: "pico de NCG do downside de policy.business_plan.scenarios",
         relatedPartyLoans: "mútuos com partes relacionadas contam no teto quando RF-09 estiver presente",
       },
@@ -389,7 +399,8 @@ const drafts: Record<string, Draft> = {
       adverseDefault: 200,
       horizonMonths: 12,
       rule: "choque paralelo sobre a parcela pós-fixada; hedge só quando contratado e documentado",
-      roles: {bankCase: 100, adverse: 200, severe: 300, tail: 400},
+      roles: {isolatedSensitivityOnly: 100, adverse: 200, severe: 300, tail: 400},
+      bankCaseRole: "adverse: o caso do banco é o downside de scenario.market.multi-factor",
       ratio: {"100": "0.01", "200": "0.02", "300": "0.03", "400": "0.04"},
       applicationByIndexer: {
         cdi_plus_spread: "choque integral sobre o CDI; spread contratual mantido",
@@ -398,10 +409,12 @@ const drafts: Record<string, Draft> = {
         tjlp: "metade do choque",
         ipca_or_tlp: "sem choque de CDI; recebe o choque de inflação de scenario.market.multi-factor",
         prefixed: "sem choque no contrato vigente; refinanciamento dentro do horizonte toma a curva chocada",
-        foreign_floating: "fora desta chave; scenario.market.multi-factor",
+        foreign_currency: "fora desta chave, pós-fixada ou prefixada; scenario.market.multi-factor",
       },
       tjlpShare: "0.5",
       hedge: "swap ou opção contratados e documentados reduzem o saldo exposto (hedgeOffset de applyRateShock); hedge pretendido não conta",
+      shockedInterestFormula: "saldo médio exposto × (taxa a termo do período + choque) − efeito do hedge contratado (applyRateShock)",
+      compositionGap: "em CDI mais spread, a composição de market.pricing.indexer-basis eleva a taxa em choque × (1 + spread); a fórmula do executor soma o choque, e a diferença, choque × spread, fica registrada até o alinhamento do executor",
       persistence: "deslocamento de nível de toda a curva a termo por todo o horizonte da projeção; o efeito de 12 meses é reportado à parte",
       downwardBps: [-100, -200],
       downwardUse: "somente para posição líquida credora em CDI, custo de oportunidade de dívida prefixada e valor da opção de pré-pagamento",
@@ -429,8 +442,14 @@ const drafts: Record<string, Draft> = {
           marketAccess: "open",
           operating: "base de policy.business_plan.scenarios",
         },
-        downside: {cdiShockBps: 200, ipcaShockBps: 150, brlDepreciation: "0.15", newDebtSpreadShockBps: 100, marketAccess: "open_at_shocked_spread", operating: "downside de policy.business_plan.scenarios"},
-        severe: {cdiShockBps: 300, ipcaShockBps: 300, brlDepreciation: "0.30", newDebtSpreadShockBps: 200, marketAccess: "closed_12_months", operating: "severe de policy.business_plan.scenarios"},
+        downside: {cdiShock: {key: "scenario.interest_rate.parallel_shock", role: "adverse"}, ipcaShockBps: 150, brlDepreciation: "0.15", newDebtSpreadShockBps: 100, marketAccess: "open_at_shocked_spread", operating: "downside de policy.business_plan.scenarios"},
+        severe: {cdiShock: {key: "scenario.interest_rate.parallel_shock", role: "severe"}, ipcaShockBps: 300, brlDepreciation: "0.30", newDebtSpreadShockBps: 200, marketAccess: "closed_12_months", operating: "severe de policy.business_plan.scenarios"},
+      },
+      precedence: {
+        rateShock: "scenario.interest_rate.parallel_shock",
+        operatingShocks: "policy.business_plan.scenarios",
+        isolatedFxSensitivity: "policy.currency.exposure",
+        thisKey: "combinação, inflação, câmbio dos cenários combinados, spread de nova dívida e acesso a mercado",
       },
       mapping: {declareScenariosAdverse: "downside", reviewBankCase: "downside", reviewStress: "severe"},
       shockTiming: "instantâneo na data-base e persistente por todo o horizonte da projeção",
@@ -446,7 +465,7 @@ const drafts: Record<string, Draft> = {
       ],
       coherenceTests: ["o severe nunca é mais brando que o downside em nenhum fator", "fator sem exposição na companhia é declarado sem efeito, nunca omitido"],
       calibration: {
-        series: {cdi: "BCB SGS 4189", ipca: "BCB SGS 13522", fx: "BCB SGS 3698"},
+        series: {selicAsCdiProxy: "BCB SGS 4189 (Selic)", ipca: "BCB SGS 13522", fx: "BCB SGS 3698"},
         windows: "266 janelas de 12 meses iniciadas entre julho de 2003 e agosto de 2025, meses completos",
         shareOfWindowsAtOrAbove: {
           downside: {cdi200Bps: "0.305", ipca150Bps: "0.229", brlDepreciation15: "0.244"},
@@ -462,6 +481,7 @@ const drafts: Record<string, Draft> = {
     url: SP_LIQUIDITY_URL,
     value: {
       scenarioId: "no_rollover",
+      operatingBase: "CFADS do base de policy.business_plan.scenarios; a versão combinada entra no severe de scenario.market.multi-factor, com a operação severa",
       horizonMonths: 12,
       granularity: "monthly",
       renewalShare: {
@@ -500,7 +520,7 @@ const drafts: Record<string, Draft> = {
       runway: "meses até o primeiro fechamento abaixo do piso",
       runwayBands: [{band: "sustained", minimumMonths: 12}, {band: "rollover_dependent", minimumMonths: 6}, {band: "acute", minimumMonths: 0}],
       outputs: ["pista em meses", "déficit acumulado por mês", "pico de déficit e data", "efeito por linha"],
-      executorMapping: "o cenário no_rollover do declare-scenarios (rolloverAllowed false) aplica zero a todo o principal; a leitura por linha desta chave é a do D-28 sobre o ledger",
+      executorMapping: "o cenário no_rollover do declare-scenarios (rolloverAllowed false) aplica zero a todo o principal, mais conservador que esta grade no ACC lastreado, na linha comprometida e no mútuo subordinado; a leitura por linha desta chave é a do D-28 sobre o ledger",
     },
   },
 
@@ -531,11 +551,12 @@ const drafts: Record<string, Draft> = {
   },
 
   "policy.transaction-sizing.residual": {
-    unit: "unidade monetária do caso",
+    unit: "unidade de registro do caso (a menor entre as fontes)",
     title: "House Playbook Offroad v2.1, OP-02: sources and uses fechando ao centavo (política da casa)",
     url: HOUSE_PLAYBOOK_URL,
     value: {
-      toleranceByUnit: {"BRL": "0", "BRL thousand": "0", "BRL million": "0", "USD": "0", "USD thousand": "0"},
+      tolerance: "0",
+      toleranceAppliesTo: "qualquer moeda e escala (R$, R$ mil, R$ milhões, US$, US$ mil e outras)",
       unitOfRecord: "menor unidade entre as fontes (centavos quando alguma linha vem em reais); escalas convertidas antes da soma",
       displayRounding: "largest_remainder",
       displayRule: "a tabela exibida em mil ou milhões soma exatamente o total exibido pelo método do maior resto; linha de ajuste de arredondamento é proibida",
@@ -564,21 +585,22 @@ const drafts: Record<string, Draft> = {
       venture_debt: {share: "0", runwayMonthsAfterMilestone: 6, rule: "dimensionamento por pista até o marco mais 6 meses"},
       other: {share: "0.05"},
       carryAllowanceOverCalculatedNeed: "0",
+      precedence: "contingência explícita e documentada do orçamento da companhia substitui o colchão da casa somente quando for maior",
       unusedBuffer: "tranche condicionada (OP-08) é a forma preferida; colchão sacado e não usado amortiza a dívida ao fim da obra",
       methodFields: "transaction.execution_buffer recebe o valor em moeda (fração × base); calculateExcessFundingCarry recebe authorizedBuffer = 0 porque o colchão já está na necessidade calculada",
     },
   },
 
   "policy.transaction-costs": {
-    unit: "fração do principal (provisão da casa); R$ e percentual pela tabela oficial",
-    title: "Lei nº 7.940/1989, Anexo IV (taxa de fiscalização da CVM sobre oferta pública: 0,03%, mínimo R$ 809,16); CPC 48 (custos de transação na taxa efetiva); catálogo de custos da casa",
+    unit: "fração do principal (provisão da casa); valores de tabela oficial pela chave que os governa",
+    title: "Lei nº 7.940/1989, Anexo IV (taxa de fiscalização da CVM sobre oferta pública); CPC 48 (custos de transação na taxa efetiva); catálogo de custos da casa",
     url: LEI_7940_URL,
     value: {
       catalogue: [
         {id: "structuring_and_arrangement_fee", instruments: ["all"], timing: "upfront", usualTreatment: "withheld"},
         {id: "underwriting_and_distribution_fee", instruments: ["debenture", "commercial_note", "cri", "cra", "fidc"], timing: "upfront", usualTreatment: "withheld"},
         {id: "legal_counsel", instruments: ["all"], timing: "upfront", usualTreatment: "paid_from_cash"},
-        {id: "cvm_offering_fee", instruments: ["debenture", "commercial_note", "cri", "cra", "fidc"], rate: "0.0003", minimumBrl: "809.16", timing: "protocolo do pedido de registro, ou encerramento com êxito da oferta dispensada de registro", legalBasis: "Lei 7.940/1989, art. 5º e Anexo IV"},
+        {id: "cvm_offering_fee", instruments: ["debenture", "commercial_note", "cri", "cra", "fidc"], condition: "somente em oferta pública", priceSource: "policy.pricing.cost-catalogue, publicTables.cvmOfferSupervisionFee", timing: "protocolo do pedido de registro, ou encerramento com êxito da oferta dispensada de registro", legalBasis: "Lei 7.940/1989, art. 5º e Anexo IV"},
         {id: "b3_registration_deposit_and_listing", instruments: ["debenture", "commercial_note", "cri", "cra", "fidc"], priceSource: "tabela pública vigente da B3 na data"},
         {id: "anbima_offering_registration", instruments: ["debenture", "commercial_note", "cri", "cra", "fidc"], priceSource: "tabela vigente da ANBIMA na data"},
         {id: "fiduciary_agent_initial", instruments: ["debenture", "cri", "cra"]},
@@ -602,8 +624,7 @@ const drafts: Record<string, Draft> = {
       },
       accounting: "custos incrementais de transação entram na taxa efetiva (CPC 48) e ficam como linha contra da dívida (policy.debt.views)",
       recurringCosts: "fora do S&U; anualização e custo all-in em policy.pricing.cost-catalogue (PR-10)",
-      costStates: ["quoted", "official_table", "house_provision", "not_applicable", "unknown"],
-      sourceHierarchy: ["proposta ou carta de mandato assinada", "tabela oficial vigente (CVM, B3, ANBIMA, emolumentos)", "cotação de prestador", "provisão da casa"],
+      costStatesAndSourceHierarchy: {key: "policy.pricing.cost-catalogue", fields: ["costState", "sourceHierarchy"], rule: "a provisão desta chave é a quarta fonte daquela hierarquia e dá ao custo o estado estimado"},
       houseProvisionUpfrontShareOfPrincipal: {
         bank_loan_bilateral: {low: "0.005", high: "0.015"},
         commercial_note_or_debenture: {low: "0.015", high: "0.030"},
@@ -618,7 +639,7 @@ const drafts: Record<string, Draft> = {
   },
 
   "policy.disbursement.lag": {
-    unit: "dias corridos; meses",
+    unit: "dias corridos, salvo os campos em dias úteis; meses",
     title: "BNDES, Etapas do financiamento: acompanhamento e liberação de recursos simultânea à execução do projeto; defasagens da casa (OP-08, OP-11)",
     url: BNDES_STAGES_URL,
     value: {
@@ -634,7 +655,7 @@ const drafts: Record<string, Draft> = {
         capital_markets_single_settlement: 0,
       },
       ownCashEvidence: "extrato e caixa acima do mínimo operacional de policy.capacity.minimum_headroom durante toda a defasagem",
-      leadExcess: "liberação à frente da obra além do limite volta ao OP-07 como excedente, com conta vinculada e rendimento declarados",
+      leadExcess: "liberação à frente do gasto além do adiantamento máximo volta ao OP-07 como excedente, com conta vinculada e rendimento declarados",
       test: "mês a mês; um único mês descoberto bloqueia",
     },
   },
@@ -692,11 +713,11 @@ const drafts: Record<string, Draft> = {
         breakEvenSpreadWideningBps: "(ganho esperado − custo de esperar) / (principal × duration modificada) × 10.000",
         compareWith: {
           floatingRateTarget: "choque de spread do downside de scenario.market.multi-factor (100 pontos-base)",
-          fixedRateTarget: "choque de spread do downside mais o adverseDefault de scenario.interest_rate.parallel_shock (200 pontos-base)",
+          fixedRateTarget: "as duas comparações, em separado: o choque de spread do downside (100 pontos-base) e o adverseDefault de scenario.interest_rate.parallel_shock (200 pontos-base)",
         },
         effect: "ponto de equilíbrio abaixo do choque de comparação é informado: o ganho líquido não resiste ao downside de mercado",
       },
-      liquidityCondition: {scenario: "no_rollover", runwayMonthsBeyondWait: 6, rule: "sem pista para a espera mais 6 meses, esperar sai do conjunto de alternativas"},
+      liquidityCondition: {scenario: "no_rollover", runwayMonthsBeyondWait: 6, rule: "sem pista para a espera mais 6 meses, esperar sai do conjunto de alternativas", horizonRule: "quando a espera mais 6 meses passa dos 12 meses de scenario.short_term_non_renewal, o cenário é estendido até esse prazo"},
       gainEvidence: "prêmio de spread e de envelope só com referência vigente (market.pricing.curves, policy.structure.leverage-bands); sem referência aprovada, o ganho é faixa condicionada e a leitura da casa fica pendente",
       houseReading: {waitAtOrAboveRatio: "1.5", proceedBelowRatio: "1.0", between: "a decisão depende de fatores não quantificados, listados na entrega"},
       discounting: "custo de esperar somado no período, sem desconto; ganho de spread pela duration modificada, que já equivale ao valor presente da economia",
