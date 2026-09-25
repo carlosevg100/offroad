@@ -2801,3 +2801,45 @@ Mais 17 objetos criados em laço pela mesma migração (políticas de negação,
 ## Atestações de provedor sem vencimento por prazo (24/09/2026)
 
 0 objetos novos e 0 atualizados. Decisão do fundador de 24/09/2026: a conferência de provedor de 21/09/2026 deixa de vencer por prazo; validThrough nulo vale até revogação ou substituição, e todo o resto da elegibilidade continua conferido.
+
+## Autoridade de avaliação governada na varredura da outbox
+
+0 objetos novos e 0 atualizados. Autoridade de job de avaliação governada na varredura da outbox e recusa explícita do comando legado de falha
+
+## Tetos de custo de produção no banco
+
+0 objetos novos e 0 atualizados. Tetos de custo de modelo mantidos pelo banco, elevados aos valores derivados em production-budgets.ts
+
+## Dependências de execução e marcos do trabalho
+
+30 objetos novos e 0 atualizados. Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade
+- `function:private.backfill_execution_dependencies_v1()`
+- `function:private.backfill_work_milestones_v1()`
+- `function:private.project_decision_milestone_v1()`
+- `function:private.project_execution_dependency_v1()`
+- `function:private.record_execution_result_milestone_v1(p_org uuid, p_execution uuid)`
+- `function:private.reject_work_continuity_mutation_v1()`
+- `function:private.work_milestone_label_v1(p_text text, p_fallback text)`
+- `function:private.write_work_milestone_v1(p_origin_table text, p_origin_row uuid)`
+- `policy:private.execution_dependencies.execution_dependencies_deny_clients`
+- `policy:public.work_milestones.work_milestones_deny_delete`
+- `policy:public.work_milestones.work_milestones_deny_insert`
+- `policy:public.work_milestones.work_milestones_deny_update`
+- `policy:public.work_milestones.work_milestones_select_authorized`
+- `r:private.execution_dependencies`
+- `r:public.work_milestones`
+- `trigger:private.execution_basis_bindings.execution_basis_bindings_dependency`
+- `trigger:private.execution_dependencies.execution_dependencies_immutable`
+- `trigger:private.execution_dependencies.execution_dependencies_truncate_guard`
+- `trigger:private.execution_dependencies.execution_dependencies_updated`
+- `trigger:private.execution_manifests.execution_manifests_dependency`
+- `trigger:private.execution_source_bindings.execution_source_bindings_dependency`
+- `trigger:private.institutional_model_configurations.work_milestone_decision`
+- `trigger:public.capital_project_artifact_decisions.work_milestone_decision`
+- `trigger:public.capital_project_execution_brief_dispatches.work_milestone_decision`
+- `trigger:public.work_milestones.work_milestones_audit`
+- `trigger:public.work_milestones.work_milestones_immutable`
+- `trigger:public.work_milestones.work_milestones_truncate_guard`
+- `trigger:public.work_milestones.work_milestones_updated`
+- `v:private.execution_dependency_sources_v1`
+- `v:private.work_milestone_sources_v1`

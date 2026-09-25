@@ -1551,8 +1551,20 @@
   {
    "version": "20260924111709",
    "name": "provider_assurance_without_expiry"
+  },
+  {
+   "version": "20260925153504",
+   "name": "evaluation_job_authority_in_outbox_sweep"
+  },
+  {
+   "version": "20260925153755",
+   "name": "production_budget_ceilings"
+  },
+  {
+   "version": "20260925155334",
+   "name": "work_dependencies_and_continuity"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-24T11:19:26.011163+00:00"
+ "captured_at": "2026-09-25T15:55:55Z"
 }

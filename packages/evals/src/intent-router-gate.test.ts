@@ -2,10 +2,9 @@ import {INTENT_CLASSIFIER_SYSTEM, SEMANTIC_OBJECT_EXTRACTOR_SYSTEM, canonicalize
 import {fingerprintJson} from "@offroad/case-understanding";
 import {
   buildRepairGuidance,
-  defaultTaskPolicies,
-  estimateCostReservationUsd,
+  createModelGateway,
   estimateCostUsd,
-  estimateInputTokens,
+  retentionMatrixVersion,
   type GatewayCallLog,
   type ModelRef,
 } from "@offroad/model-gateway";
@@ -142,7 +141,7 @@ describe("intent router promotion gate", () => {
     expect(verifyIntentRouterEvidenceRecord({...record, observations: 51})).toBe(false);
   });
 
-  it("requires bijective task, schema, prompt, input, output, provider, model, attempt, preflight and recomputed cost lineage", () => {
+  it("requires bijective task, schema, prompt, input, output, provider, model, attempt, preflight and recomputed cost lineage", async () => {
     const turn = intentGoldTurns[0]!;
     const rawRun = observation(turn, 1, outputFor(turn));
     const message = intentGoldMessage(turn, 1);
@@ -298,12 +297,21 @@ describe("intent router promotion gate", () => {
     };
     const fallbackCalls = [primaryError, fallbackSuccess, observationCalls[1]!, ...preflightCalls];
     const fallbackMeasured = fallbackCalls.reduce((sum, entry) => sum + entry.costUsd, 0);
-    const routeInputTokens = contract("route_intent").input.reduce((sum, part) => sum + estimateInputTokens(part.text), 0);
-    const primaryReservation = estimateCostReservationUsd(
-      primary.model,
-      routeInputTokens,
-      defaultTaskPolicies.route_intent.maxOutputTokens,
-    );
+    // What a gateway really keeps for an attempt of the router request on a route: read from the
+    // gateway itself (its eligibility hook sees the reservation before anything is sent).
+    const gatewayReservation = async (ref: ModelRef): Promise<number> => {
+      const charged: number[] = [];
+      const probe = createModelGateway({adapters: {}, processingEligibility: async ({attempt}) => {
+        charged.push(attempt.reservationUsd);
+        return {allowed: false, policyVersion: retentionMatrixVersion, assuranceId: null, reasons: ["reservation_probe"]};
+      }});
+      const {input, system, schemaName, schema} = contract("route_intent");
+      await probe.complete({task: "route_intent", system, input, schema, schemaName, outputMode: "prompted_json", thinking: "off", model: ref, allowFallback: false})
+        .catch(() => undefined);
+      expect(charged).toHaveLength(1);
+      return charged[0]!;
+    };
+    const primaryReservation = await gatewayReservation(primary);
     const forgedUnknownExposure = verifyIntentRouterCallEvidence({
       observations: [fallbackRun], calls: fallbackCalls, providerPreflight,
       gatewaySpent: {costUsd: fallbackMeasured, calls: fallbackCalls.length, unknownCostCalls: 1, budgetExposureUsd: fallbackMeasured},
@@ -325,11 +333,7 @@ describe("intent router promotion gate", () => {
     const impossibleRun = {...fallbackRun, routeAttemptCount: 3, routeLatencyMs: 60};
     const impossibleCalls = [primaryError, fallbackError, impossibleSecondFallback, observationCalls[1]!, ...preflightCalls];
     const impossibleMeasured = impossibleCalls.reduce((sum, entry) => sum + entry.costUsd, 0);
-    const fallbackReservation = estimateCostReservationUsd(
-      fallback.model,
-      routeInputTokens,
-      defaultTaskPolicies.route_intent.maxOutputTokens,
-    );
+    const fallbackReservation = await gatewayReservation(fallback);
     const impossibleVerdict = verifyIntentRouterCallEvidence({
       observations: [impossibleRun], calls: impossibleCalls, providerPreflight,
       gatewaySpent: {
