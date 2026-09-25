@@ -271,7 +271,6 @@ Risco obrigatório da etapa 17, dono engenharia de execução: o adaptador anter
 
 A revisão independente real e seus artefatos foram copiados literalmente para knowledge/reviews; o manifesto fixa o registro e a base de evidências. A candidata 2026.09.21-v3 passa a tested/ready_for_review, com26execuções atuais e21históricas preservadas. Isso permite avaliação técnica, sem task binding, capability ou aprovação do fundador. Autoria está preparada para a decisão profissional; aprovação humana e publicação auditada permanecem pendentes. TRUST-SDLC-01: hashes e negativas de promoção verificam que uma mudança de rótulo não substitui revisão, runs ou ato humano. Sem DDL, acesso, provedor ou execução nova. CI/produção e revalidação editorial final são gates; rollback conserva o método sem publicação. O check agregado dos recibos recebe30s para reexecutar21/26casos sob carga concorrente; não é SLA financeiro. O limite5s gerou timeout sem divergência de resultado. Asserções e recibos permanecem intactos; desempenho é medido separadamente.
 
-
 ## Etapa 15: integração contratual indexada v2
 
 A candidata 2026.09.21-v3 usa prepareCapitalProcedurePacketV2. A preparação v2 recebe uma única descrição de contrato indexado, inventário por instrumento/série, termos completos ou lacunas nominadas, com anchors resolvidos por versão e localização. IPCA no slot legado é recusado sem conversão. O pacote mantém resultados separados e revisão pendente, exige contexto/horizonte e recusa duplicidade econômica entre envelopes da mesma alternativa. A reconciliação de covenants recompõe o fingerprint v2; recibos v1 não são aceitos como derivações v2. V1 e seus 21 registros históricos permanecem preservados; 26 novas execuções v2 foram registradas (9 gold,8 adversariais,9 consistência), sem modelos ou aprovação humana. TRUST-APP-01/TRUST-SDLC-01: fonte e interpretação não conferem autoridade; nenhuma alteração de RLS, DDL, retenção, provedor ou estado publicado. Revisão independente integrada, CI e produção ainda são gates pendentes; não declara F5 ou etapa 15 concluídos. Rollback retorna à candidata anterior ainda não publicada, preservando bloqueio de ativação.
@@ -444,7 +443,6 @@ conteúdo; hashes são conferidos por registro, sem cache de autoridade. Quatro 
 cobrem binário/vazio, tamanho/tipo/ausência, injeção e árvore de trabalho alterada. Os94 testes
 do inventário permanecem;209governancePASS isolados em7,76s. Contrato em etapa-15-leitura-git-lotes.md.
 Sem DDL, novos acessos ou relaxamento de gates. CI/produção ainda exigem prova no completion.
-
 
 ## Etapa15: custos adotados na composição financeira em validação
 
@@ -956,6 +954,7 @@ Evidence: docs/build/arcabouco/etapa-03.md, etapa-03-installed-eval.json and doc
 ## Etapa 3: compatibilidade prévia do consumidor
 
 Envelope passa a aceitar `access_policy` exclusivamente para o efeito existente `revalidate_authority`; nenhum payload protegido ou novo efeito é aceito. Publicar web/worker antes da migração `resource_policy_and_barriers`, evitando leases recusados por consumidor antigo. Sem DDL, concessão ou ativação de política nesta entrega. Teste negativo em `domain-event.test.ts`; etapa 3 permanece em execução.
+
 ## Onda 3 autorizada: 16/09/2026
 
 Etapa 3 de política comum e barreiras autorizada após conclusão da onda 2. Governança renovada contra main `9b6ccf98`; escopo e evidências em `docs/security/INVENTORY_WAVE_3_REVIEW.md`. Telas administrativas adiadas. Implementação da etapa 3 ainda não publicada por esta revisão.
@@ -973,7 +972,6 @@ Production `20260916102242` and staging `20260916102218` install the reconciled 
 ## Wave 2: stage 2 registration cutover installed
 
 After PR 622's compatible web/worker deployment at `91edc0f152708f8fcd1fabbfff51f343a466eff9`, production `20260916041917` and staging `20260916041505` remove implicit commercial capabilities and the two label-based helpers. Existing grants and memberships remain unchanged. All 60 SQL contracts passed with the candidate in staging; the installed identity, cutover and creator regressions passed. Regenerated production types are byte-identical. Final CI, merge and deployment proof belongs to the stage completion receipt, not this pre-merge ledger entry. See `docs/build/arcabouco/etapa-02.md`.
-
 
 ## Wave 2: stage 2 additive identity rollout
 
@@ -1007,7 +1005,6 @@ The remaining fourteen file/version gaps are reconciled: eleven files now use th
 ## Stage 0 replay bootstrap diagnosis, 14 September 2026
 
 PR 614 is merged as `8ae3772c3b268f29c019b744f18fcfe3b575c06a`; its Quality, Security and preview gates passed. The recovery CI correctly rejected 355 grant differences between the local replay and hosted catalogue. All concern `service_role`; the pinned CLI changed default grants at bootstrap. `supabase/config.toml` now explicitly reproduces the hosted bootstrap before historical migrations. No comparison exception, post-replay grant patch or remote DDL was introduced. Full corrected CI remains required. Details and immutable CI source: `docs/build/arcabouco-stage0/README.md` and `REPLAY-BOOTSTRAP-DIAGNOSIS.json`.
-
 
 ## Wave 1 stage 0 integration, 14 September 2026
 
@@ -1044,7 +1041,6 @@ Founder authorization replaces the seven-day inventory review cadence with revie
 This is the prerequisite delivery for the remaining stage 0 reconciliation. Claude exclusively owns the provider mandate correction in PR612 until merge; no file or DDL from that branch is part of this change. The three stage 1 corrections remain required before the wave can close. Validation, CI and exact-commit deployment receipts are recorded separately and must pass before completion.
 
 Local verification on Node 24.19.0 and pnpm 10.32.1: `pnpm check` passed lint, types, all package tests and 43 build tasks. Release-governance passed 188 tests; web passed 679 and worker passed 559. Trusted inventory and program-board renderers passed with real clock and resolved bytes. Independent review found no new expiry, hash or authority bypass. Remote CI, merge and exact-commit web/worker deployment remain release gates.
-
 
 ## 13 September 2026: cinematic website candidate
 
@@ -1286,6 +1282,7 @@ and router227 tests passed, including the reproduced request, PT/EN drafts and n
 authority/context cases. Root review performed. Production UI completion is not proven:
 subsequent verification was blocked by the session usage limit. No new paid evaluation.
 Rollback is a code revert. Controls APP-03/10 and AI-05/07/08 remain unchanged.
+
 ## 9 September: direct Word navigation to the original source table
 
 Visual inspection of the actual PR578 documentary journey exposed two incompatible
@@ -1432,7 +1429,6 @@ Controls APP-03/04/10/11 and AI-05/07/08: same private evidence and provider bou
 no schema, RLS, grant, production flag, external action or telemetry change. Root review
 performed; independent agent review is unavailable. Rollback restores the prior code;
 no persisted source is rewritten. This change does not complete E2-E9 of the delivery plan.
-
 
 ## 9 September: ordinary documentary requests and issuer attribution
 
@@ -1860,7 +1856,6 @@ Segurança: AI-05/AI-08; nenhuma nova permissão, tabela, migração, provedor, 
 
 Próxima dependência material: FactKey/indexFacts/consumidores podem misturar escopos individual/consolidado/segmento e períodos. Não corrigir somente a chave: preservar dimensões e projetar seleção econômica explícita em TODOS os consumidores, incluindo adapters web/worker, antes de promover a reconciliação. Depois implementar revisão atômica de binding com fonte atual e invalidar dependências. A pergunta que expõe `historical_financials.{ano}.cash` também segue registrada e ainda não foi corrigida. Endgame e vertical completa não concluídos.
 
-
 ## Períodos dos apoios de recebíveis, 08/09/2026: implementação em validação
 
 Branch `fix/receivables-support-periods`, sobre `14b0360` (#557). A análise agora distingue data-base da carteira, data do lançamento, intervalo mensal e instante fiscal. O resultado versionado `receivables-support-periods.v1` conserva fonte/hash/âncora, datas originais, qualificação e política explícita de comparação pelo dia local da fonte. Eventos posteriores ficam separados; mês que atravessa o corte não é rateado. Datas ausentes, inválidas e bases sobrepostas permanecem visíveis. Ausência de valor não vira zero; linhas TOTAL não entram novamente na soma. Novos fingerprints incorporam a versão e a avaliação temporal.
@@ -1904,7 +1899,6 @@ A entrega anterior (#555) está publicada: squash `1ae521e66844c9c5794d1cc7707de
 
 A primeira prova CI (`3254d35`, Quality34261236053) aprovou 22 E2E, mas a inspeção dos logs encontrou uma lacuna no teste: o relatório era persistido antes de o job falhar no vínculo do controle operacional. A causa foi a passagem do hash econômico onde o banco exige o hash do input congelado. Correção mínima preserva ambos os contratos e passa a identidade congelada ao recorder; o E2E agora exige término `succeeded`, data-base exata, um título e saldo de R$ 1.000. Gate local da correção aprovado, 43/43 por etapa (`/tmp/offroad-confirmed-scope-check-binding.log`). Ativação permanece suspensa até a repetição integrada verde. As sete migrações aditivas já foram aplicadas em produção e os nomes foram alinhados; security advisors zero. O marcador continua ausente (sete capacidades antigas), sem ativar o novo processamento.
 
-
 ## Recebíveis: identidade das fontes e ambiguidade de carteiras, 08/09/2026, em validação
 
 Corte `fix/receivables-evidence-scope`, a partir de `8b64e9e`. A análise detecta todas as tabelas de títulos antes de construir o universo. Mais de uma tabela (inclusive abas ou cabeçalhos distintos no mesmo arquivo) produz uma pendência explícita `needs_evidence_scope`, lista as fontes na interface PT/EN e não executa a análise de carteira, matching setorial ou R01. A pendência também alimenta o canal existente de requisitos de informação. O restante do diagnóstico do projeto mantém seu próprio escopo; não é uma suspensão global do caso.
@@ -1915,7 +1909,6 @@ Limites explícitos: este corte não oferece ainda seleção e confirmação per
 
 Segurança: controles AI-05/AI-08 (origem e integridade dos resultados). Fluxo restrito aos documentos já autorizados do projeto; nomes de arquivos aparecem somente no relatório privado existente. Sem novos dados em telemetria. Provas negativas cobrem troca de fonte, hash, revisão e duplicação; provas de domínio cobrem carteiras concorrentes e abas distintas. Gate local completo aprovado (43/43 targets de lint, tipos, testes e build; worker 340 testes, web 322, receivables-analysis 86). A compilação local usou o trust store TLS do sistema para acessar Google Fonts, sem desativar validação de certificados. Revisão visual do componente real com estado sintético e CSS existente em 1440px/390px, PT/EN, concluída; não é uma prova de seleção persistida nem uma sessão real de data room. Capturas locais: /tmp/offroad-receivables-scope-desktop.png, /tmp/offroad-receivables-scope-mobile.png e /tmp/offroad-receivables-scope-en-mobile.png. Revisão independente sem bloqueio alto novo. A primeira execução de CodeQL identificou backtracking potencial na leitura de referências de células; o parser foi limitado a referências completas de coluna/linha e inteiros seguros, com regressão para entradas malformadas longas. Revalidação local completa aprovada após a correção; nova checagem de segurança e CI precedem a publicação. Rollback: reverter o PR e publicar web/worker; relatórios históricos permanecem registrados, sem reatribuir sua origem.
 
-
 ## Contexto setorial revisado publicado, 08/09/2026
 
 PR #553 integrada em `d30a9ebc374ba78048210818514b492023d59e30`. Contexto revisado da companhia, atribuição de fontes, requisitos e lacunas chegam ao plano apresentado para aprovação. Novas propostas preservam a cadeia de versões; aprovação antiga não é herdada. O escopo permanece `planning_only`: requisitos não examinados e métodos especificados, sem ativação automática de métodos financeiros por setor.
@@ -1925,7 +1918,6 @@ Quality `34248024449` e Security `34248024441` passaram no head final. São 21 E
 Produção: Vercel `ChZ7scHjutpzQfCToVJDR6c33miN`, deployment `6331888960`, confirmou o SHA exato da integração. Páginas pública e autenticada foram conferidas sem modificar dados. Após a web compatível, a migração `20260908161137_worker_runtime_schema_contract` ativou a sétima capability; advisors de segurança permaneceram sem alertas. O workflow worker `34249298359` confirmou PRIMARY exata `offroad-document-worker:282`, capacidade positiva e serviço estável. As seis migrações desta entrega correspondem aos registros de produção; este follow-up apenas alinha o nome do marcador aplicado, sem mudar seu corpo.
 
 Próximo avanço de domínio: vincular ativos, contratos e carteiras aos seus próprios dados e ligar requisitos a métodos executáveis, com casos de referência e revisão técnica. Esta publicação conecta o planejamento setorial ao fluxo real; não conclui o endgame nem homologa expertise universal, matching ou entregáveis institucionais completos. Os registros de validação abaixo são históricos.
-
 
 ## Contexto revisado conectado ao plano, 08/09/2026: em validação
 
@@ -1967,7 +1959,6 @@ Novos snapshots identificam a proveniência de principal, saldo agregado e caixa
 
 Revisão independente estática sem bloqueador material. Gate local completo aprovado em Node 24.19.0: lint, typecheck, testes e build, 43/43 targets por etapa. Inclui 290 testes web, 299 do worker, 33 do case engine e 89 de evals; o anchor Rede Horizonte passou sem mudança de corpus ou answer key. A lacuna de principal conhecido apenas por saldo permanece em missingInputs e no controle do método dependente, sem fabricar uma exceção de inconsistência no diagnóstico. PR #550 integrada em main 900e9e37b9223fe08f483beaad9d32607509bf86. Quality 34220074178 e Security 34220074160 passaram; E2E 20 aprovados e 10 dependentes de provedores pulados. Vercel de produção dpl_67ookEjQAX7Gotcq8ugX1TpXGFFZ READY e rotas pública/autenticada verificadas sem escrita; worker 34220959618 passou, PRIMARY task 279 exata e capacidade positiva verificadas pelo workflow. Sem migração de banco ou reescrita de snapshots históricos. Esta correção não homologa todo o motor financeiro nem implementa a comparação de refinanciamento para casos privados.
 
-
 ## Plano aprovado e inventário do Advisor: publicação operacional verificada, 08/09/2026
 
 [PR #547](https://github.com/carlosevg100/offroad/pull/547) integrado em main `31e5a92830f50e21e2d17f4a93d3ed4d1403dd40`. Os checks obrigatórios e de segurança passaram. [Quality 34184277267](https://github.com/carlosevg100/offroad/actions/runs/34184277267) aprovou 20 testes E2E; 10 testes dependentes de provedores foram pulados, portanto não constituem evidência de integração com esses provedores.
@@ -1994,13 +1985,11 @@ Corrige apresentação de decimais sem conversão por ponto flutuante, preserva 
 
 17 testes focados passaram: precisão, locale, inteiros grandes, negativos/zeros, anchors, escaping, linhas/colunas/lacunas finais e síntese. Verificação em Chromium reportada: expansão por Enter, 13 linhas/11 colunas/11 lacunas e viewport de 390px sem overflow da página. `pnpm check` passou com Node 24.19.0: lint, typecheck, suites e build completos. Jornada autenticada e deploy ainda pendentes; visual isolado não equivale à homologação do produto.
 
-
 ## Comandos do advisor: recuperação sem perda do rascunho: 07/09/2026
 
 Envio, edição de plano e resposta a pergunta compartilham proteção síncrona contra duplicação. Falha retornada ou exceção libera pending e conserva o conteúdo; retry idêntico reutiliza a identidade de comando já suportada pelo banco. O composer limpa somente o texto enviado após confirmação. Texto bilíngue informa aceitação incerta sem afirmar rejeição. Nenhuma alteração de schema ou regra de edição de versão obsoleta. Estado de retry e rascunho vive somente em memória do componente: reload/remount não tem recuperação durável.
 
 Seis testes focados de recuperação passaram. Adicionada regressão de navegador no fluxo document-first-intake para duas falhas de transporte, conservação de texto e identidade de retry; não executada localmente por ausência de Docker, depende do E2E de CI. Gate local `pnpm check` aprovado com Node 24: lint, typecheck, testes (incluindo 204 testes web) e build. Preview e produção não validados nesta mudança. A recuperação durável e a separação de prontidão econômica continuam pendentes.
-
 
 ## Estado de execução: recuperação comprovada, 07/09/2026
 
@@ -5539,6 +5528,7 @@ autoriza `customer_work`, `external_material` ou `external_action`. O próximo m
 os findings do board com evidência, não apenas mudar estados. `gate_passed` fecha trabalho e
 evidência; somente `promoted` exige transição registrada e capability live/exposta. Promoções
 amplas pertencem a gates agregados, não a um pack ou uma jornada isolada.
+
 ## 46. SEC-01: inventário atual de segurança, 07/09/2026
 
 O primeiro inventário de segurança agora possui fonte tipada em
@@ -5617,6 +5607,7 @@ amount, currency, percentage, indexer and tenor use normalized, single-valued sl
 conflicting values fail per object and slot kind. Case 03 therefore requires
 BRL 50 million and starts with reconciliation, while financing-meeting work remains
 understand-first. These are local candidate controls, not a real-provider promotion result.
+
 ## 10 September: integrated delivery candidate, not yet released
 
 Baseline production is PR584, main b0ba09573e0bb6295cabef47b627b89857f82a24.
@@ -5718,7 +5709,6 @@ completed its unmodified composer-to-approved-result-and-reload test in 10.6 sec
 Production-history filename alignment changes no migration SQL or application behavior;
 its final exact-head CI still precedes merge and deployment.
 
-
 ## Public capital research browser: 10 September 2026 (implementation, not production proof)
 
 An authenticated `/[locale]/app/market` surface exposes the dated, source-linked public research sample of 28 institutions. Workspace navigation and the existing provider-research artifact link to it. Users can search institution/vehicle/strategy, filter roles and strategies, inspect evidence and named vehicles, and pre-screen the economic structure. Public strategy compatibility is explicitly separate from verified mandate eligibility, which remains false for every record. Arrangers, securitizers and fiduciary services are not represented as documented risk holders. Infrastructure membership alone does not establish project-finance activity: that requires an explicit source-linked claim annotation. Unknown strategy is unconfirmed, not a fabricated exclusion.
@@ -5741,7 +5731,6 @@ Independent review matched all 899 CVM and 1,742 BCB projected identities to the
 
 The existing authenticated `provider-research.spec.ts` journey now tests rail navigation, profile search, structure selection, BCB identity search, historical sources and return to the preserved private project. It was not run here because no local Supabase/Docker E2E stack was available; CI execution remains required. Actual React component interactions (profile search, registry identity search, history tab) passed in an isolated local visual harness, with desktop and mobile captures and no horizontal overflow. That visual harness was removed and is not authentication or production proof. No deployment or outreach occurred.
 
-
 ## Approved public provider research bridge (10 September 2026)
 
 The approved provider-research workflow now consumes the same versioned 28-profile catalog as the market browser through the client-safe `@offroad/public-research/capital-catalog` export. New plans use `2026.09.10-public-research-v2`, explicitly allow public research, show mixed public/private sources before approval, and bind the exact snapshot key/hash. Context `provider-research-context.v2`, executor `2026.09.10-v2` and artifact `provider-research.v2` carry the immutable catalog pin `br-capital-2026-09-10.v1` / SHA-256 `f158ac09fc2a44a77d608cc57a1fbb074f7de8b88d558ce9d29bff917429f235`. Unknown pins, changed hashes, or an as-of date preceding the catalog fail closed.
@@ -5752,7 +5741,6 @@ V1 context, plan, executor, artifact and replay remain supported. An immutable s
 
 Migration `20260910151957_provider_research_public_catalog_v2.sql` was applied to staging by the root agent; root reported both unchanged v1 persistence SQL and the new v2 suite passed, including mutation of the approved brief. The approved-input fingerprint now binds stored and computed research-brief content hashes; public catalog changes cannot silently bypass approval. This migration has not been applied to production by this task. Full local `pnpm check` passed (43/43 tasks); the final worker suite passed 12 tests including the max-record boundary. Authenticated E2E execution still requires the CI/local Supabase harness. Deployment and production verification remain release gates.
 
-
 ## refactor/receivables-math-to-financial-core (10 September 2026)
 
 The financial mathematics that still lived in `packages/receivables-analysis/src/analyze.ts` now runs in `packages/financial-core/src/receivables/pool-*.ts` as eight deterministic, Decimal-based, traced kernels: title eligibility per declared policy, concentration caps (debtor cap then group cap, both shares of the preliminary eligible base, an excess never subtracted twice), borrowing base and structure (maximum by advance rate, maximum by overcollateralization, supported facility as the lesser, overcollateralization at request, actual subordination, reserve target, eligible share), the indicative waterfall in the fixed order servicing fee, senior interest, reserve top-up, senior principal, mezzanine and subordinated residual with cash never negative, ledger reconciliation (tape against accounting, tape collections against reported, reported against cash, mapped and linked-account shares, unknown-mapping and duplicate receipts), reported-aggregate performance with the aging fold, evidence coverage shares and trigger comparison. Every kernel returns full-precision strings and a trace with formula and operands; `analyze.ts` keeps only orchestration, presentation rounding, gap assembly and the bounded decision, and the unused `concentration` helper was deleted. `financialCoreVersion` moved to `2026.09.10-v16`; the analyzer keeps engine `2026.08.24-v1` because no number changed.
@@ -5761,10 +5749,10 @@ Byte-identity was proven before and after the refactor over 34 cases (the clean 
 
 New kernel tests (36 in `packages/financial-core`) cover the review's gold numbers, boundary cases and traces: preliminary base 6,000,000 with debtor cap 1,200,000 and group cap 1,500,000, group A of 2,000,000 plus 1,000,000 capped to 1,500,000 beside three groups of 1,000,000, adjusted base 4,500,000 and capacity 3,600,000 at 80% advance; reserve target 90,000 with opening 30,000 and top-up 60,000, 400,000 of cash paying 10,000, 100,000, 60,000, 200,000, 0 and residual 30,000 with payments summing to 400,000; the 50,000 shortfall case; inclusive policy limits; zero denominators; impossible dates, negative amounts and shares outside the unit interval refused. `AGENTS.md` now records the migration as done and states that promotion still needs the method maturity evidence and the founder's approval; the `finance.deterministic-kernels` ledger entry lists the pool kernels and their convention limits without changing availability, exposure or maturity. No migration, no user-visible change, no external effect.
 
-
 ## feat/task-capability-registry-and-review-roles (10 September 2026)
 
 Read `docs/product/PROJECT_REVIEW_ROLES.md` before touching approval, plan edits or the project entry. Roles are enforced in Postgres inside the existing commands; a project with no assignment is in open mode and behaves as before. The common entry (`apps/web/src/components/advisor/new-work-request.tsx`) and the registry (`packages/work-plan/src/project-capability-registry.ts`) are the place to plug the format policy per deliverable (each entry declares `deliverableTypes`). Migration `20260910230211_project_review_roles.sql` is on staging only (recorded there as version `20260910193505`); the PR is held for coordinated release. Traps: `record_capital_project_work_request_v1` takes a nullable `p_origin_section` that the generated types show as `string`; the roles table renders one checkbox per member and role with `data-member-email` for E2E; `t.has` is used for membership labels.
+
 ## feat/receivables-released-analysis (10 September 2026)
 
 The R01 receivables method now has its maturity evidence on record and a bounded released reading. The independent economic review of 10 September is committed as `packages/credit-playbook/knowledge/reviews/underwrite-receivables-pool-2026-09-10-independent-review.json` (kind `ai_independent_review`, result conditional, human approval false), and the gold, adversarial and consistency runs are recorded executions rather than prose: the method declares zero model calls, so the honest evidence is the executor running over the frozen Case 03 gold `gc03-assessor-recebiveis`, the five declared adversarial scenarios (`r02-accounting-mismatch`, `r11-single-debtor-concentration`, `r15-encumbered-base`, `r19-no-eligible-base`, `r20-duplicate-cash`) and twenty row permutations. `packages/evals/scripts/build-receivables-method-runs.ts` rebuilds the three run records and `packages/evals/src/receivables-method-runs.test.ts` compares the committed records with a fresh execution, so a stale record fails instead of aging quietly. With the review and the three runs, `underwrite-receivables-pool` rises from `implemented` to `tested`, and only that far: `production` needs the founder's approval on record and nothing here invents it.
@@ -5778,6 +5766,7 @@ The project page now shows, for a granted organization, the portfolio and both e
 Tests: `apps/document-worker/src/specialist-method-runtime.test.ts` (11, including policy mismatch, missing grant, other tenant, unconfirmed dataset and unconfirmed scope), `apps/document-worker/src/receivables-analytical-release.test.ts` (4 over the real R01 workbook: unchanged behaviour without the grant, the released result bound to the confirmed scope with the shadow's own fingerprints, a grant for another organization, and a selection that is not current), `apps/web/src/components/advisor/receivables-released-result.test.tsx` (5 over a real `underwriteReceivablesPool` result: both locales, an unmeasured coverage family shown as not evaluable and never as zero, the compact card without the grant, and the superseded state showing no numbers), `packages/credit-playbook` (334) and `packages/evals` (160) green. `supabase/tests/receivables_analytical_release.sql` covers the positive path, replay, the immutable conflict, an external effect, an external use, a rung below `tested`, a failed quality check, an unconfirmed dataset, an unconfirmed selection, another organization inside the payload, the cross-tenant read, the revoked member, the superseded state and the withdrawn grant; it ran clean against the staging branch inside `begin; ... rollback;`, leaving zero rows. The R01 Playwright journey now asserts the compact card before the grant, the released section with all nine blocks after it, the stored result bound to the confirmed scope fingerprint and to the assembly dataset hash, and the superseded card after a second confirmed selection.
 
 Limits recorded on purpose: exposure is one per-organization concession and the method is not promoted; concentration caps are measured on the preliminary eligible base and are not a solver for caps defined over the balance after exclusions; the waterfall is indicative and follows one fixed order; aggregate performance is reported title aggregates and never a measured historical series; `production` maturity and customer reliance remain closed until the founder's approval is on record. The migration has not been applied to production.
+
 ## feat/financier-analytical-workspace: financier analytical workspace (10 September 2026)
 
 An organization of type `capital_provider` can now run its own analysis. It creates projects and folders from the same conversation every other workspace uses, accepts the workspace terms with an information-usage declaration, registers and reads its own documents, answers gaps, renames and continues in the same project, and reaches funds and mandates on the new `/app/mandates` page. Analysing a company is not representing it: origination, representation and external disclosure stay closed and now refuse explicitly with `workspace_capability_denied` (SQLSTATE 42501) instead of by omission.
@@ -5803,6 +5792,7 @@ Visual QA and the defects it found. The short, long and wide-table cases plus th
 Evidence: `supabase/tests/client_presentation_templates.sql` ran on the staging branch inside `begin; ... rollback;` with result `client_presentation_templates_passed`, covering the organization record and its idempotent replay, the project override winning over it, clearing back to the Offroad template, a member without administration denied, another tenant receiving "not found" and reading zero rows, and the refusals for an unembeddable PDF font, a colour that is not six hexadecimal digits and a logo outside the organization's own storage prefix; no synthetic row remained afterwards. Supabase security advisors report 0 findings. `apps/web/src/types/database.ts` was regenerated from staging and is a superset: it carries the new table and the two RPCs plus objects from the other fronts already applied there. Vitest: `packages/case-export` 59 tests in 7 files, including 18 rendering cases and the format policy; `packages/release-governance` 178 tests with the new ledger entry, count 43; the web suite covers the two download routes, the two surfaces, the template reader and catalogue parity. Rendered samples are under `outputs/endgame-nine-2026-09-10/materiais-qa/`, with the PDFs rasterized to PNG.
 
 Limits: production has not received the migration, so the application code cannot be published before it. The market research deliverable is declared in the policy but has no Word or PDF synthesis renderer yet, so only the interactive reading is offered for it. The spreadsheet keeps its own governed layout and does not receive the client identity. Native PowerPoint, Word or master template files are not imported. LibreOffice is not installed on this machine, so Word and PowerPoint were inspected as package contents rather than as rendered pages, and formula recalculation was verified with the repository's own workbook audit and a formula inventory (328 formulas, 308 cross-sheet in the pt workbook) rather than with a spreadsheet application.
+
 ## feat/receivables-method-production: the receivables analysis in production, released to every organization (10 September 2026)
 
 On 10 September 2026, in the coordination session, the founder Carlos Eduardo Galves approved taking `underwrite-receivables-pool` (task R01: eligibility, borrowing base, concentration caps, indicative waterfall, coverage) to production: "ok, bota isso em produção também. Não quero nada que deveria estar em produção fora." The approval is on record in the method frontmatter as `approved_by: Carlos Eduardo Galves`, `approved_at: 2026-09-10` and `approval_source: instrução do fundador na sessão de coordenação de 10/09/2026`, and it covers this method only. `packages/credit-playbook/src/procedure-contract.ts` now requires the three together: a production method whose approval is a name without a date and a source is refused by the contract, not by a reviewer's memory.
@@ -5816,6 +5806,7 @@ The project page gives way to the released reading for every organization that h
 Evidence: `supabase/tests/receivables_analytical_release.sql` ran complete against the staging branch inside `begin; ... rollback;`, leaving zero rows, with every assertion passing: the result is recorded with no concession anywhere, replay is idempotent, a changed payload under the same input fingerprint is a conflict, and an external effect, an external use, a rung below `tested`, a failed quality check, an unconfirmed dataset, an unconfirmed portfolio selection and another organization inside the payload are all refused; the owner reads `current` at the production rung, another tenant and a revoked member read nothing, a second organization with no concession of its own reads the explicit `absent` state, pausing that one organization closes only its reading and lifting the pause restores it, a second confirmed selection is `superseded` with its reason, and pausing the platform record returns `not_granted` for every organization while no Data API role can read the platform table. Supabase security advisors report 0 findings. Vitest: `packages/credit-playbook` 336 in 41 files, `packages/evals` 160 in 23 files (the harness re-executes the recorded gold, adversarial and consistency runs, which stay valid), `packages/dcm-specialization` 59, `packages/release-governance` 178, `apps/document-worker` 559 in 59 files and `apps/web` 605 in 100 files.
 
 Limits recorded on purpose: the approval promotes this method and nothing else, and the ledger keeps exactly one production entry and exactly one entry with `customer_work`; the reading is a calculation under declared assumptions, with no external direction, no financier recommendation and no credit approval, and the maximum effect stays `none`; extraction quality of arbitrary documents is unchanged, so the analysis is only as good as the confirmed portfolio selection and the sources behind it, and a missing input stays an open gap instead of a number; concentration caps are measured on the preliminary eligible base and the waterfall follows one fixed order; aggregate performance is reported title aggregates and never a measured historical series; the objective preflight still blocks R01 for the reasons that remain (evidence regime, data class and a task effect above the method's maximum effect), so the universal dispatcher is not opened by this promotion; and production has not received the migration.
+
 ## feat/verified-mandates-and-candidate-fit: verified current mandates and candidate fit (11 September 2026)
 
 A financier's mandate now has a record of its own, and a candidate for a case now says what it rests on. Gap 8 of the nine-gap program asked for exactly two things that were missing: a way to capture and confirm what a financier wants today, separately from what it did in the past or filed in public, and a selection that tells a reader which of the two it is looking at. Both exist now, with an empty population and no contact made.
@@ -5836,11 +5827,9 @@ Evidence. `supabase/tests/verified_provider_mandates.sql` ran complete against t
 
 Limits recorded on purpose. No real fund has registered or confirmed a mandate: the contract exists and the population is empty, so the `capital.live-mandate-network` entry stays `absent` and the new `capital.verified-mandate-record` entry is `live` at `internal` exposure with `internal_validation` as its only allowed use. A confirmed mandate is a statement by the organization, never an appetite, a capacity, an approval or a commitment to fund, and a classification authorizes no disclosure, no contact and no introduction. The recorded-contact channel is accepted by reference only; the product makes no contact and sends nothing outside. Expiry is derived per question and no notification or scheduled job exists. The migration has not been applied to production.
 
-
 ## Onda 2: preflight operacional da outbox
 
 Workflow manual `event-outbox-monitoring.yml` usa a identidade OIDC de deploy existente, sem ampliar IAM. Testa filtros e confere quatro alarmes; instalação é modo explícito. A execução ao vivo ainda deve provar as permissões. Etapa 2 concluída em `d47658eb`; etapa 4 permanece aberta, sem migração permanente nesta PR. Revisão material: `docs/security/INVENTORY_WAVE_2_OUTBOX_MONITORING_REVIEW.md`.
-
 
 ## Onda 2: candidato da etapa 4
 
