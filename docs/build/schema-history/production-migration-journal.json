@@ -1571,8 +1571,12 @@
   {
    "version": "20260925204502",
    "name": "work_dependency_recompute"
+  },
+  {
+   "version": "20260925232939",
+   "name": "rfc_uuid_domain_event_identifiers"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-25T20:50:00Z"
+ "captured_at": "2026-09-25T23:35:00Z"
 }

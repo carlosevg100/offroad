@@ -2956,3 +2956,8 @@ Mais 17 objetos criados em laço pela mesma migração (políticas de negação,
 - `function:private.execution_contract_basis_as_subject_v1(p_subject uuid, p_work_id uuid, p_version_id uuid, p_method_id text)` (criada por DDL dinâmica)
 - `function:private.request_work_execution_producer_as_subject_v1(p_subject uuid, p_contract_text text, p_snapshot_text text)` (criada por DDL dinâmica)
 - `function:private.request_work_execution_producer_as_subject_v2(p_subject uuid, p_contract_text text, p_snapshot_text text, p_gates_text text)` (criada por DDL dinâmica)
+
+## Identificadores RFC dos eventos de release de método
+
+1 objetos novos e 0 atualizados. Identificadores dos eventos de release de método derivados como UUID versão 5, aceitos pelo contrato de evento do worker
+- `function:private.platform_method_release_event_id_v1(p_release text, p_org uuid)`

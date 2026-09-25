@@ -6868,6 +6868,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.platform_method_release_event_id_v1(p_release text, p_org uuid)",
+      "kind": "function",
+      "name": "platform_method_release_event_id_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_release text, p_org uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:private.platform_method_release_published_v1(p_release text)",
       "kind": "function",
       "name": "platform_method_release_published_v1",
