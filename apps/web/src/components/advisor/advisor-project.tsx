@@ -11,9 +11,16 @@ import {
   approveAdvisorExecutionBrief,
   appendAdvisorMessage,
   beginAdvisorProjectProcessing,
+  continueAdvisorWorkFromBase,
   prepareAdvisorDocumentUpload,
   requestAdvisorExecutionBriefEdit,
+  sendAdvisorMessageAsTurn,
+  type AdvisorMessageResult,
+  type ContinuationChoice,
+  type ContinuationOutcome,
 } from "@/app/[locale]/app/advisor-actions";
+import {milestoneLabelText, type MilestoneLabelKey} from "@/lib/advisor/work-update-view";
+import {ContinuationQuestion, type ContinuationQuestionState} from "./continuation-question";
 import {requestProjectWork} from "@/app/[locale]/app/projects/[projectId]/work-request-actions";
 import type {ProjectWorkRequestRecord} from "@/lib/advisor/project-work-requests";
 import {
@@ -50,6 +57,8 @@ export type AdvisorProjectMessage = {
   createdAt: string;
   artifactHref?: string;
   proposalId?: string | null;
+  /** The approved base a recorded follow-up continued from, as its turn recorded it. */
+  continuation?: {label: string; revision: number} | null;
 };
 export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string; version?: number};
 export type AdvisorProjectTask = {id: string; label: string; status: string};
@@ -135,9 +144,14 @@ export function AdvisorProject(props: Props) {
   const newWorkCopy = useTranslations("NewWorkRequest");
   const approvalCopy = useTranslations("ExecutionBriefCard");
   const inventoryCopy = useTranslations("AdvisorEvidenceInventory");
+  const continuationCopy = useTranslations("App.advisorProject.continuation");
+  const labelCopy = useTranslations("App.workUpdates.labels");
+  const baseLabel = (raw: string) => milestoneLabelText(raw, (key: MilestoneLabelKey) => labelCopy(key));
   const inputRef = useRef<HTMLInputElement>(null);
   const [commandRecovery] = useState(() => createAdvisorCommandRecovery());
   const [content, setContent] = useState("");
+  const [continuationQuestion, setContinuationQuestion] = useState<ContinuationQuestionState | null>(null);
+  const [continuationNotice, setContinuationNotice] = useState("");
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const selectedRequest = props.pendingRequests?.find((request) => request.id === selectedRequestId) ?? props.pendingRequests?.[0];
   const [pending, setPending] = useState(false);
@@ -217,12 +231,46 @@ export function AdvisorProject(props: Props) {
     return result;
   }
 
+  /** Runs a conversation command and keeps what came back about a continuation: a recorded base is
+   * announced; a question keeps the text in the composer, since nothing was recorded. */
+  async function sendTurn(key: readonly string[], message: string, action: (messageId: string) => Promise<AdvisorMessageResult>) {
+    let outcome: ContinuationOutcome | undefined;
+    setContinuationNotice("");
+    const result = await runCommand(key, message, async (messageId) => {
+      const response = await action(messageId);
+      if (!response.ok) return response;
+      outcome = response.continuation;
+      return {ok: true};
+    }, () => {
+      if (outcome?.status === "question") return;
+      setContent((current) => current.trim() === message ? "" : current);
+      setContinuationQuestion(null);
+    });
+    if (!result.ok) return;
+    if (outcome?.status === "question") setContinuationQuestion({text: message, code: outcome.code, options: outcome.options});
+    else if (outcome?.status === "proposed") setContinuationNotice(continuationCopy("recorded", {label: outcome.base.label, revision: outcome.base.revision}));
+  }
+
   async function send() {
     const message = content.trim();
     if (!message || pending || uploading) return;
-    await runCommand(["message", message], message,
-      (messageId) => appendAdvisorMessage({locale: props.locale, projectId: props.projectId, content: message, messageId}),
-      () => setContent((current) => current.trim() === message ? "" : current));
+    await sendTurn(["message", message], message,
+      (messageId) => appendAdvisorMessage({locale: props.locale, projectId: props.projectId, content: message, messageId}));
+  }
+
+  async function continueFromBase(option: ContinuationChoice) {
+    const question = continuationQuestion;
+    if (!question || pending) return;
+    await sendTurn(["continuation", question.text, option.milestoneId, String(option.revision)], question.text,
+      (messageId) => continueAdvisorWorkFromBase({locale: props.locale, projectId: props.projectId, content: question.text, messageId,
+        base: {milestoneId: option.milestoneId, decisionId: option.decisionId, revision: option.revision}}));
+  }
+
+  async function sendQuestionAsMessage() {
+    const question = continuationQuestion;
+    if (!question || pending) return;
+    await sendTurn(["turn", question.text], question.text,
+      (messageId) => sendAdvisorMessageAsTurn({locale: props.locale, projectId: props.projectId, content: question.text, messageId}));
   }
 
   async function requestPlanEdit(message: string): Promise<AdvisorCommandResult> {
@@ -383,6 +431,7 @@ export function AdvisorProject(props: Props) {
               <div>
                 {message.role === "assistant" ? <small>{props.copy.advisor}</small> : <small>{message.humanAuthorId ? message.humanAuthorId === props.currentUserId ? contributionCopy("you") : contributionCopy("person", {id: message.humanAuthorId.slice(0, 8)}) : contributionCopy("historicalAuthor")}</small>}
                 <p>{message.content}</p>
+                {message.continuation ? <p className="advisor-thread__continuation">{continuationCopy("note", {label: baseLabel(message.continuation.label), revision: message.continuation.revision})}</p> : null}
                 {message.status === "failed" && !failureWasRecovered(message.createdAt, successfulOutcomeAt) ? <p className="advisor-thread__message-error" role="alert">{props.copy.messageFailed}</p> : null}
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
                 {proposal && props.sessionId ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
@@ -417,6 +466,14 @@ export function AdvisorProject(props: Props) {
             onRequest={requestNewWork}
             requests={props.workEntry.requests}
           /> : null}
+          {continuationQuestion ? <ContinuationQuestion
+            disabled={pending || uploading}
+            key={continuationQuestion.text}
+            onChoose={(option) => void continueFromBase(option)}
+            onDismiss={() => setContinuationQuestion(null)}
+            onSendAsMessage={() => void sendQuestionAsMessage()}
+            question={continuationQuestion}
+          /> : null}
           <section className="advisor-composer">
             <label><span className="sr-only">{props.copy.placeholder}</span><textarea
               disabled={pending || uploading}
@@ -442,6 +499,7 @@ export function AdvisorProject(props: Props) {
             </footer>
           </section>
           {error ? <p className="form-notice form-notice--error" role="alert">{error}<button aria-label={props.copy.close} onClick={() => setError("")} type="button"><X aria-hidden="true" size={12} /></button></p> : null}
+          {continuationNotice ? <p className="form-notice continuation-notice" role="status">{continuationNotice}<button aria-label={props.copy.close} onClick={() => setContinuationNotice("")} type="button"><X aria-hidden="true" size={12} /></button></p> : null}
         </div>
       </section>
 

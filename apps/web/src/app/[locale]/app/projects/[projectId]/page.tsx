@@ -1,7 +1,10 @@
 import {WorkVaultPanel} from "@/components/advisor/work-vault-panel";
 import {WorkParticipationPanel} from "@/components/advisor/work-participation-panel";
 import {WorkContextPanel} from "@/components/advisor/work-context-panel";
+import {WorkUpdates} from "@/components/advisor/work-updates";
 import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
+import {continuationNote} from "@/lib/advisor/work-continuation";
+import {loadWorkUpdates} from "@/lib/advisor/work-updates-reader";
 import {StandaloneWork} from "@/components/advisor/standalone-work";
 import {ReceivablesCurrentResult} from "@/components/advisor/receivables-current-result";
 import {InstitutionalModelResultWork} from "@/components/advisor/institutional-model-result-work";
@@ -531,6 +534,7 @@ async function ConversationalCapitalProject({
               ? workSectionHref("meeting-brief") : project.entry_job !== "origination_thesis" ? `/${locale}/app/projects/${project.id}?view=work` : undefined
             : undefined,
           proposalId: message.proposal_id,
+          continuation: continuationNote(message.metadata),
         };
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t(emptyConversationCopy), status: "completed", createdAt: new Date().toISOString()}];
@@ -721,6 +725,13 @@ async function ConversationalCapitalProject({
   workSections.push({id: "contributions", title: contributionCopy("title"), content: <WorkParticipationPanel locale={locale} workId={project.id} />});
 
   workSections.push({id: "vault", title: vaultCopy("title"), content: <WorkVaultPanel locale={locale} workId={project.id} />});
+
+  // The updates of the work: first when one awaits a decision, otherwise at the end.
+  const [updates, updatesCopy] = await Promise.all([loadWorkUpdates(supabase, project.id), getTranslations({locale, namespace: "App.workUpdates"})]);
+  const updatesSection: AdvisorWorkSection = {id: "updates", title: updatesCopy("title"),
+    status: updates?.awaitingDecision ? updatesCopy("awaiting", {count: updates.awaitingDecision}) : undefined,
+    content: <WorkUpdates locale={locale === "en-US" ? "en-US" : "pt-BR"} model={updates} />};
+  if (updates?.awaitingDecision) workSections.unshift(updatesSection); else workSections.push(updatesSection);
 
   return <AdvisorProject
     currentUserId={userId}
