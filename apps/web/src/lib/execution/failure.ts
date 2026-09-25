@@ -1,11 +1,7 @@
+import type {ExecutionGateRefusal} from "@offroad/execution-request";
+
 /** Refusals the action names before anything is sent, from the gates it assembles. */
-export type ExecutionGateRefusal =
-  | "company_unregistered"
-  | "situation_required"
-  | "situation_unknown"
-  | "method_not_applicable"
-  | "selection_invalid"
-  | "voice_blocked";
+export type {ExecutionGateRefusal};
 
 export type ExecutionRequestError = "invalid" | "stale" | "denied" | "producer_denied" | "method_unavailable" | "basis_denied" | "provenance_denied" | "conflict" | "unavailable"
   | "gates_invalid" | "gates_blocked" | "gates_mismatch" | ExecutionGateRefusal;

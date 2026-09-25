@@ -8,7 +8,7 @@ import {
 import {readContextualBasis} from "@offroad/reconciliation";
 import {adoptedCapitalPeriodFixture, capitalStructureDecisionFixture} from "@offroad/testing-fixtures/capital-structure-decision";
 import {formatDecimal} from "./format";
-import {buildExecutionGates} from "./gates";
+import {buildExecutionGates} from "@offroad/execution-request";
 import {mdTestGatesOf, projectWorkExecution, projectWorkExecutionList, readCommittedResult, workExecutionState} from "./read";
 
 const id = (n: number) => `a4180000-0000-4000-9000-${String(n).padStart(12, "0")}`;

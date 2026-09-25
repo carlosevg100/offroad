@@ -9,7 +9,7 @@ import {adoptedCapitalPeriodFixture, capitalStructureDecisionFixture} from "@off
 import en from "../../../messages/en-US.json";
 import pt from "../../../messages/pt-BR.json";
 import {formatDecimal} from "@/lib/execution/format";
-import {buildExecutionGates} from "@/lib/execution/gates";
+import {buildExecutionGates} from "@offroad/execution-request";
 import {projectWorkExecution} from "@/lib/execution/read";
 import {WorkExecutionDetail} from "./work-execution-detail";
 
