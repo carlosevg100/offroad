@@ -455,7 +455,9 @@ end $$;
 -- that invalidated it, its candidate and the holds that apply with their signal, the candidates with
 -- their results and waits, the executions the update left valid, and the recent follow-ups. The
 -- private tables stay closed; they are read here under that authority only. Names of sources and
--- assumption fields appear only to a person who can read them.
+-- assumption fields appear only to a person who can read them. Each execution carries its method's
+-- catalogue id (and the house release title when it pinned one) and each premise its metric and
+-- adopted definition, so the web shows a name a finance professional recognizes, never the key.
 create function private.work_update_view_v1(p_work_id uuid) returns jsonb
 language plpgsql stable security definer set search_path='' as $$
 declare w public.capital_projects;c public.agent_conversations;milestones jsonb;bases jsonb;updates jsonb;followups jsonb;
@@ -479,6 +481,12 @@ begin
    and x.status in ('adopted','declined','superseded') order by x.updated_at desc,x.id desc limit 10) y),
  labels as (
   select e.id,private.work_milestone_label_v1(m.payload->>'purpose',m.payload#>>'{method,methodId}') as label,
+   -- What the web turns into a display name: the catalogue id of the method and, when the execution
+   -- pinned a house release, the title the organization published that release under.
+   jsonb_build_object('methodId',m.payload#>>'{method,methodId}','houseTitle',(select mr.title from private.execution_dependencies d
+     join public.method_releases mr on mr.organization_id=d.organization_id and mr.id=d.house_release_id
+     where d.organization_id=e.organization_id and d.execution_id=e.id and d.dependency_kind='method_release' and d.house_release_id is not null
+     order by d.created_at desc,d.id desc limit 1)) as method,
    (select r.id from public.work_milestones r where r.organization_id=e.organization_id and r.work_id=e.work_id and r.kind='execution_result' and r.subject_kind='work_execution' and r.subject_id=e.id) as result
   from public.work_executions e left join private.execution_manifests m on m.organization_id=e.organization_id and m.execution_id=e.id
   where e.organization_id=w.organization_id and e.work_id=w.id)
@@ -493,7 +501,7 @@ begin
     and m.subject_kind='work_continuation_request' and m.subject_id=r.id order by m.occurred_at desc,m.id limit 1),
    'events',r.payload->'events',
    'affected',(select coalesce(jsonb_agg(jsonb_build_object('executionId',a.value->>'executionId','rootExecutionId',a.value->>'rootExecutionId',
-     'label',lb.label,'resultMilestoneId',coalesce(lb.result::text,a.value->>'resultMilestoneId'),
+     'label',lb.label,'method',lb.method,'resultMilestoneId',coalesce(lb.result::text,a.value->>'resultMilestoneId'),
      'candidateId',(select k.id from public.work_recompute_candidates k where k.organization_id=r.organization_id and k.work_id=r.work_id and k.request_id=r.id
       and (a.value->>'executionId')::uuid=any(k.execution_ids) order by k.created_at desc,k.id desc limit 1),
      'changes',(select coalesce(jsonb_agg(jsonb_build_object('eventId',f.event_id,'dependencyKind',f.dependency_kind,'logicalKey',f.logical_key,'reasonClass',f.reason_class,
@@ -504,7 +512,16 @@ begin
         when 'assumption_slot' then (select d.field_path from public.adoption_decisions d where d.organization_id=f.organization_id
          and d.id=coalesce((f.head->>'decisionId')::uuid,(f.pinned->>'decisionId')::uuid)
          and private.can_read_assumption_version_v1(f.organization_id,coalesce((f.head->>'versionId')::uuid,(f.pinned->>'versionId')::uuid)))
-        when 'method_release' then f.logical_key end) order by f.created_at,f.dependency_kind,f.logical_key,f.event_id),'[]'::jsonb)
+        when 'method_release' then f.logical_key end,
+       -- The premise as the basis records it: its metric and the definition the person adopted, under
+       -- the same reading right as the name.
+       'premise',case when f.dependency_kind='assumption_slot' then (select jsonb_build_object('fieldPath',d.field_path,'definition',dv.definition)
+         from public.adoption_decisions d left join public.definition_versions dv on dv.organization_id=d.organization_id and dv.id=d.definition_version_id
+         where d.organization_id=f.organization_id and d.id=coalesce((f.head->>'decisionId')::uuid,(f.pinned->>'decisionId')::uuid)
+         and private.can_read_assumption_version_v1(f.organization_id,coalesce((f.head->>'versionId')::uuid,(f.pinned->>'versionId')::uuid))) end,
+       'method',case when f.dependency_kind='method_release' then jsonb_build_object('methodId',f.logical_key,'houseTitle',(select mr.title from public.method_releases mr
+         where mr.organization_id=f.organization_id and mr.id=coalesce((f.head->>'houseReleaseId')::uuid,(f.pinned->>'houseReleaseId')::uuid))) end)
+       order by f.created_at,f.dependency_kind,f.logical_key,f.event_id),'[]'::jsonb)
       from private.execution_invalidations f where f.organization_id=r.organization_id and f.work_id=r.work_id and f.execution_id=(a.value->>'executionId')::uuid
       and f.event_id in (select (ev.value->>'eventId')::uuid from jsonb_array_elements(r.payload->'events') ev)),
      'holds',(select coalesce(jsonb_agg(jsonb_build_object('kind',h.hold_kind,'signal',h.signal,'subject',h.subject,'createdAt',h.created_at,'releasedAt',h.released_at)
@@ -514,14 +531,14 @@ begin
     from jsonb_array_elements(r.affected_executions) a left join labels lb on lb.id=(a.value->>'executionId')::uuid),
    'candidates',(select coalesce(jsonb_agg(jsonb_build_object('candidateId',k.id,'state',k.state,'reason',k.reason,'action',k.action,'revision',k.revision,
      'maxCostMicrousd',k.max_cost_microusd,'maxModelCalls',k.max_model_calls,'baseExecutionId',k.base_execution_id,
-     'baseLabel',(select lb.label from labels lb where lb.id=k.base_execution_id),'executionIds',to_jsonb(k.execution_ids),'executionId',k.execution_id,
+     'baseLabel',(select lb.label from labels lb where lb.id=k.base_execution_id),'baseMethod',(select lb.method from labels lb where lb.id=k.base_execution_id),'executionIds',to_jsonb(k.execution_ids),'executionId',k.execution_id,
      'resultMilestoneId',(select lb.result from labels lb where lb.id=k.execution_id),
      'waitMilestoneId',(select m.id from public.work_milestones m where m.organization_id=k.organization_id and m.work_id=k.work_id and m.kind='awaiting_human'
       and m.subject_kind='work_recompute_candidate' and m.subject_id=k.id),
      'waitOpen',k.state='awaiting_authorization',
      'createdAt',k.created_at,'updatedAt',k.updated_at) order by k.created_at,k.id),'[]'::jsonb)
     from public.work_recompute_candidates k where k.organization_id=r.organization_id and k.work_id=r.work_id and k.request_id=r.id),
-   'unaffected',(select coalesce(jsonb_agg(jsonb_build_object('executionId',e.id,'label',lb.label,'resultMilestoneId',lb.result) order by e.created_at,e.id),'[]'::jsonb)
+   'unaffected',(select coalesce(jsonb_agg(jsonb_build_object('executionId',e.id,'label',lb.label,'method',lb.method,'resultMilestoneId',lb.result) order by e.created_at,e.id),'[]'::jsonb)
     from public.work_executions e join labels lb on lb.id=e.id
     where e.organization_id=r.organization_id and e.work_id=r.work_id and private.execution_is_live_v1(e.organization_id,e.id) and e.created_at<=r.updated_at
      and not exists(select 1 from jsonb_array_elements(r.affected_executions) a where a.value->>'executionId'=e.id::text)

@@ -371,6 +371,12 @@ do $$ declare r public.work_continuation_requests;v jsonb;u jsonb;x1 jsonb;x2 js
  select x into x2 from jsonb_array_elements(u->'affected') x where x->>'executionId'=pg_temp.id('X2')::text;
  if u->>'status'<>'ready' or (u->>'revision')::integer<>r.revision or u->>'proposalMilestoneId' is null or u->'decision'<>'null'::jsonb
  or x1->>'resultMilestoneId'<>pg_temp.result_of('X1')::text or x1->>'label'<>'Synthetic deterministic execution proof'
+ -- The method is named by its catalogue id, for the web to turn into a display name; no house release here.
+ or x1#>>'{method,methodId}' is distinct from (select m.payload#>>'{method,methodId}' from private.execution_manifests m where m.execution_id=pg_temp.id('X1'))
+ or x1#>>'{method,methodId}' is null or not (x1->'method' ? 'houseTitle') or x1#>'{method,houseTitle}'<>'null'::jsonb
+ or not exists(select 1 from jsonb_array_elements(u->'candidates') k where k->>'baseExecutionId'=pg_temp.id('X1')::text and k->'baseMethod'=x1->'method')
+ or not exists(select 1 from jsonb_array_elements(u->'unaffected') x where x#>>'{method,methodId}' is not null)
+ or exists(select 1 from jsonb_array_elements(x1->'changes') ch where ch->>'dependencyKind'='source_version' and (ch->'premise'<>'null'::jsonb or ch->'method'<>'null'::jsonb))
  or not exists(select 1 from jsonb_array_elements(x1->'changes') ch where ch->>'dependencyKind'='source_version' and ch->>'reasonClass'='data_change'
   and ch#>>'{pinned,versionNo}'='1' and ch#>>'{head,versionNo}'='2' and ch->>'name'='Synthetic source S2')
  or not exists(select 1 from jsonb_array_elements(x2->'holds') h where h->>'kind'='derived_source_not_rederived' and h->>'signal'='source_version:'||pg_temp.id('D')::text
