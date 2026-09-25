@@ -5696,6 +5696,54 @@ begin
 end;
 $$;
 
+-- Stage 18, increment 3A: a dependency-update request of the same work is read only by people who
+-- can read the work, and no tenant opens, rewrites or deletes one.
+set local role postgres;
+do $$
+declare d public.capital_project_execution_brief_dispatches; body jsonb; request uuid; attempt text; rejected boolean;
+begin
+  select * into strict d from public.capital_project_execution_brief_dispatches
+    where organization_id='20000000-0000-4000-8000-000000000001' and accepted_at is not null
+    order by created_at,id limit 1;
+  body:=jsonb_build_object('schemaVersion','dependency-update-request.v1','workId',d.capital_project_id,'status','open',
+    'affectedExecutionIds',jsonb_build_array('b0183000-0000-4000-9000-000000000101'),
+    'events',jsonb_build_array(jsonb_build_object('eventId','b0183000-0000-4000-9000-000000000301','aggregateKind','source_version',
+      'aggregateId','b0183000-0000-4000-9000-000000000201','aggregateVersion',2)),
+    'aggregateVersions',jsonb_build_array(jsonb_build_object('aggregateKind','source_version','aggregateId','b0183000-0000-4000-9000-000000000201','version',2)));
+  insert into public.work_continuation_requests(organization_id,work_id,kind,payload,payload_fingerprint,affected_executions)
+  values(d.organization_id,d.capital_project_id,'dependency_update',body,private.continuation_fingerprint_v1(body),
+    jsonb_build_array(jsonb_build_object('executionId','b0183000-0000-4000-9000-000000000101','rootExecutionId','b0183000-0000-4000-9000-000000000101','resultMilestoneId',null)))
+  returning id into request;
+  set local role authenticated;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
+  if (select count(*) from public.work_continuation_requests where id=request)<>1 then
+    raise exception 'owner cannot read the dependency-update request of its work';
+  end if;
+  foreach attempt in array array[
+    format('update public.work_continuation_requests set status=%L,revision=revision+1 where id=%L','declined',request),
+    format('delete from public.work_continuation_requests where id=%L',request),
+    format('insert into public.work_continuation_requests(organization_id,work_id,kind,payload,payload_fingerprint,created_by) values(%L,%L,%L,%L,%L,auth.uid())',
+      d.organization_id,d.capital_project_id,'user_followup','{}',repeat('0',64)),
+    'select count(*) from private.execution_invalidations'] loop
+    rejected:=false;
+    begin
+      execute attempt;
+    exception when insufficient_privilege then rejected:=true;
+    end;
+    if not rejected then raise exception 'tenant reached a continuation request or fact directly: %',attempt; end if;
+  end loop;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',true);
+  if exists(select 1 from public.work_continuation_requests where id=request)
+    or exists(select 1 from public.work_continuation_requests where organization_id='20000000-0000-4000-8000-000000000001') then
+    raise exception 'continuation request crossed tenant boundary';
+  end if;
+  set local role postgres;
+  if not exists(select 1 from public.work_continuation_requests where id=request and status='open' and revision=1) then
+    raise exception 'rejected request write changed the request';
+  end if;
+end;
+$$;
+
 -- Revoking the original creator removes management even while the JWT is unchanged.
 reset role;
 update public.organization_memberships set status='suspended'
@@ -5834,6 +5882,29 @@ do $$ declare role_name text; begin
  or (select count(*) from pg_policy where polrelid='public.work_milestones'::regclass and polname in ('work_milestones_deny_insert','work_milestones_deny_update','work_milestones_deny_delete'))<>3
  or not exists(select 1 from pg_policy where polrelid='private.execution_dependencies'::regclass and polname='execution_dependencies_deny_clients' and not polpermissive and polcmd='*')
  then raise exception 'Stage 18 policies missing';end if;
+end $$;
+
+-- Stage 18, increment 3A: continuation requests are read through the work's authority only; the
+-- invalidation facts are closed to every API role.
+do $$ declare role_name text; begin
+ if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='work_continuation_requests' and c.relrowsecurity and c.relforcerowsecurity)
+ or not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relname='execution_invalidations' and c.relrowsecurity and c.relforcerowsecurity)
+ then raise exception 'Stage 18 3A RLS missing';end if;
+ if has_table_privilege('anon','public.work_continuation_requests','SELECT,INSERT,UPDATE,DELETE')
+ or has_table_privilege('authenticated','public.work_continuation_requests','INSERT,UPDATE,DELETE')
+ or not has_table_privilege('authenticated','public.work_continuation_requests','SELECT')
+ or has_table_privilege('service_role','public.work_continuation_requests','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Continuation request grants are not select-only for authenticated';end if;
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+  if has_table_privilege(role_name,'private.execution_invalidations','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Execution invalidation facts exposed: %',role_name;end if;
+ end loop;
+ -- The same read authority as public.work_milestones: the expressions differ only by the table name.
+ if not exists(select 1 from pg_policy r join pg_policy m on m.polrelid='public.work_milestones'::regclass and m.polname='work_milestones_select_authorized'
+   where r.polrelid='public.work_continuation_requests'::regclass and r.polname='work_continuation_requests_select_authorized' and r.polcmd='r' and r.polpermissive
+   and replace(pg_get_expr(r.polqual,r.polrelid),'work_continuation_requests.','')=replace(pg_get_expr(m.polqual,m.polrelid),'work_milestones.','')
+   and r.polroles=m.polroles)
+ or (select count(*) from pg_policy where polrelid='public.work_continuation_requests'::regclass and polname in ('work_continuation_requests_deny_insert','work_continuation_requests_deny_update','work_continuation_requests_deny_delete'))<>3
+ or not exists(select 1 from pg_policy where polrelid='private.execution_invalidations'::regclass and polname='execution_invalidations_deny_clients' and not polpermissive and polcmd='*')
+ then raise exception 'Stage 18 3A policies missing';end if;
 end $$;
 
 select 'rls_non_interference_passed' as result;
