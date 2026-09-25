@@ -2207,7 +2207,8 @@
       "change": {
         "source_version": "Fonte {name}: a versão {from} foi substituída pela versão {to}",
         "assumption_slot": "Premissa {name}: a revisão {from} da base de trabalho foi substituída pela revisão {to}",
-        "method_release": "Método {name}: a release {from} foi substituída pela release {to}",
+        "assumption_slot_unnamed": "Uma premissa da base de trabalho: a revisão {from} foi substituída pela revisão {to}",
+        "method_release": "{name}: uma versão mais nova do método foi publicada",
         "graph_incomplete": "As dependências registradas estão incompletas; a execução será refeita por inteiro depois da reconstrução",
         "unnamed": "sem nome visível",
         "unknownVersion": "não identificada",
@@ -2294,6 +2295,20 @@
         "company_debt_diagnostic": "Diagnóstico da dívida da companhia",
         "alternative_map": "Mapa de alternativas de dívida",
         "meeting_brief": "Brief de reunião"
+      }
+    },
+    "workUpdateNames": {
+      "unnamedMethod": "A análise desta base",
+      "repeated": "{name} ({count} execuções)",
+      "metrics": {
+        "netDebt": "Dívida líquida",
+        "ebitda": "EBITDA",
+        "availableCash": "Caixa disponível",
+        "restrictedCash": "Caixa restrito"
+      },
+      "methods": {
+        "prepare-capital-structure-decision": "Preparar alternativas de estrutura de capital para uma decisão",
+        "underwrite-receivables-pool": "Conciliar e testar a capacidade de uma carteira de recebíveis"
       }
     },
     "workExecutions": {

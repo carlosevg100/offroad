@@ -5,7 +5,10 @@ import {describe, expect, it, vi} from "vitest";
 import en from "../../../messages/en-US.json";
 import pt from "../../../messages/pt-BR.json";
 import {selectClientMessages} from "@/i18n/client-messages";
-import type {WorkUpdatesModel} from "@/lib/advisor/work-updates";
+import {namesFor} from "@/lib/advisor/work-update-names.test-support";
+import {workUpdateViewSchema} from "@/lib/advisor/work-update-view";
+import {rawView} from "@/lib/advisor/work-update-view.test-support";
+import {workUpdatesModel, type WorkUpdatesModel} from "@/lib/advisor/work-updates";
 
 vi.mock("next/navigation", () => ({useRouter: () => ({refresh: vi.fn(), push: vi.fn()})}));
 vi.mock("@/app/[locale]/app/projects/[projectId]/work-update-actions", () => ({adoptWorkUpdate: vi.fn(), authorizeWorkUpdate: vi.fn(), declineWorkUpdate: vi.fn()}));
@@ -30,7 +33,7 @@ const model: WorkUpdatesModel = {
     },
     {
       updateId: id(4), status: "awaiting_authorization", revision: 2, updatedAt: "2026-09-25T12:11:00+00:00", open: true,
-      changes: [{key: "m", kind: "method_release", name: "prepare-capital-structure-decision", from: "pcsd-v3", to: "pcsd-v4", gap: null, executions: ["Estrutura de capital"]}],
+      changes: [{key: "m", kind: "method_release", name: "Preparar alternativas de estrutura de capital para uma decisão", from: null, to: null, gap: null, executions: ["Estrutura de capital"]}],
       recomputed: [], stayedValid: [],
       awaitingAuthorization: [{candidateId: id(5), revision: 1, label: "Estrutura de capital", maxCostMicrousd: 250000, maxModelCalls: 3}],
       holds: [], canAdopt: false, canDecline: true, declineReason: null, decidedAt: null,
@@ -61,7 +64,7 @@ describe("the update section of a work", () => {
       "Estrutura de capital: refeita a partir da execução original, com os insumos atuais",
       "Covenants: o recálculo não foi concluído", "Quem pediu a execução original não tem mais acesso a este trabalho.",
       "Cenário de juros", "Liquidez: aguardando uma revisão da base de trabalho que use a versão nova",
-      "Método prepare-capital-structure-decision: a release pcsd-v3 foi substituída pela release pcsd-v4",
+      "Preparar alternativas de estrutura de capital para uma decisão: uma versão mais nova do método foi publicada",
       "Estrutura de capital: recálculo com teto de US$", "3 chamadas de modelo", "Autorizar este recálculo", "Recusar este recálculo",
       "Adotar atualização", "Recusar atualização", "Motivo: O custo não se justifica.",
       "Incorporada a outra atualização", "As mudanças de insumo desta atualização estão cobertas por outra atualização deste trabalho.",
@@ -69,6 +72,32 @@ describe("the update section of a work", () => {
     // Nothing is decided on the first click: the confirmation buttons are not rendered yet.
     expect(html).not.toContain("Confirmar adoção");
     expect(html).not.toMatch(dashes);
+  });
+
+  it("renders no internal key: no method id and no dotted field path reaches the text, in either language", () => {
+    // From the view as the database returns it, through the names the server resolves, to the page.
+    const view = workUpdateViewSchema.parse(rawView);
+    const internal = ["prepare-capital-structure-decision", "underwrite-receivables-pool", "house-covenant-method", "custom-method",
+      "liquidity.available_cash", "capital.covenant_headroom", "pcsd-v3", "pcsd-v4"];
+    const expected = {
+      "pt-BR": ["Preparar alternativas de estrutura de capital para uma decisão", "Conciliar e testar a capacidade de uma carteira de recebíveis", "Covenants da casa",
+        "Premissa Caixa disponível: a revisão 2 da base de trabalho foi substituída pela revisão 3", "Uma premissa da base de trabalho: a revisão 1 foi substituída pela revisão 2",
+        "uma versão mais nova do método foi publicada", "A análise desta base", "(2 execuções)"],
+      "en-US": ["Prepare capital structure alternatives for a decision", "Reconcile and test the capacity of a receivables pool", "Covenants da casa",
+        "Assumption Available cash: revision 2 of the working basis was replaced by revision 3", "A working-basis assumption: revision 1 was replaced by revision 2",
+        "a newer version of the method was published", "This basis analysis", "(2 executions)"],
+    } as const;
+    for (const locale of ["pt-BR", "en-US"] as const) {
+      const html = render(locale, <WorkUpdates locale={locale} model={workUpdatesModel(view, namesFor(locale))} />);
+      const text = html.replace(/<[^>]*>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+      for (const key of internal) {
+        expect(html, `${locale}: ${key}`).not.toContain(key);
+      }
+      // No dotted snake_case key and no hyphenated catalogue id of three words or more.
+      expect(text).not.toMatch(/\b[a-z]+(?:_[a-z0-9]+)*\.[a-z]+_[a-z0-9_]+\b/);
+      expect(text).not.toMatch(/\b[a-z]+(?:-[a-z]+){2,}\b/);
+      for (const name of expected[locale]) expect(text, `${locale}: ${name}`).toContain(name);
+    }
   });
 
   it("says when nothing changed and when the updates could not be read, in both languages", () => {

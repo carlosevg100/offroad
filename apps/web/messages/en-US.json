@@ -2207,7 +2207,8 @@
       "change": {
         "source_version": "Source {name}: version {from} was replaced by version {to}",
         "assumption_slot": "Assumption {name}: revision {from} of the working basis was replaced by revision {to}",
-        "method_release": "Method {name}: release {from} was replaced by release {to}",
+        "assumption_slot_unnamed": "A working-basis assumption: revision {from} was replaced by revision {to}",
+        "method_release": "{name}: a newer version of the method was published",
         "graph_incomplete": "The recorded dependencies are incomplete; the execution will be redone in full once they are rebuilt",
         "unnamed": "no visible name",
         "unknownVersion": "not identified",
@@ -2294,6 +2295,20 @@
         "company_debt_diagnostic": "Company debt diagnostic",
         "alternative_map": "Debt alternatives map",
         "meeting_brief": "Meeting brief"
+      }
+    },
+    "workUpdateNames": {
+      "unnamedMethod": "This basis analysis",
+      "repeated": "{name} ({count} executions)",
+      "metrics": {
+        "netDebt": "Net debt",
+        "ebitda": "EBITDA",
+        "availableCash": "Available cash",
+        "restrictedCash": "Restricted cash"
+      },
+      "methods": {
+        "prepare-capital-structure-decision": "Prepare capital structure alternatives for a decision",
+        "underwrite-receivables-pool": "Reconcile and test the capacity of a receivables pool"
       }
     },
     "workExecutions": {

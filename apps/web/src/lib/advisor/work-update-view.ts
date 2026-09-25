@@ -38,6 +38,15 @@ export const holdKindSchema = z.enum(["derived_source_not_rederived", "basis_beh
 export type WorkUpdateHoldKind = z.infer<typeof holdKindSchema>;
 export const candidateStateSchema = z.enum(["awaiting_authorization", "scheduled", "settled", "declined", "failed"]);
 
+/** A method as the view names it: its catalogue id and, when the execution pinned a house release,
+ * the title that release was published under. Neither the id nor the label is ever shown. */
+export const methodRefSchema = z.object({methodId: z.string().min(1).nullable(), houseTitle: z.string().nullable()});
+export type MethodRef = z.infer<typeof methodRefSchema>;
+/** A premise as the basis records it: the metric (a dotted field path, never shown) and the
+ * definition the person adopted. */
+export const premiseRefSchema = z.object({fieldPath: z.string().min(1), definition: z.string().nullable()});
+export type PremiseRef = z.infer<typeof premiseRefSchema>;
+
 const changeSchema = z.object({
   eventId: recordIdSchema,
   dependencyKind: z.enum(["source_version", "assumption_slot", "method_release"]).nullable(),
@@ -49,6 +58,8 @@ const changeSchema = z.object({
   viaSourceVersionIds: z.array(recordIdSchema),
   createdAt: z.string(),
   name: z.string().nullable(),
+  premise: premiseRefSchema.nullable().default(null),
+  method: methodRefSchema.nullable().default(null),
 });
 export type WorkUpdateChangeRow = z.infer<typeof changeSchema>;
 
@@ -76,6 +87,7 @@ const updateSchema = z.object({
     executionId: recordIdSchema,
     rootExecutionId: recordIdSchema,
     label: z.string().nullable(),
+    method: methodRefSchema.nullable().default(null),
     resultMilestoneId: recordIdSchema.nullable(),
     candidateId: recordIdSchema.nullable(),
     changes: z.array(changeSchema),
@@ -91,6 +103,7 @@ const updateSchema = z.object({
     maxModelCalls: z.number().int().nonnegative(),
     baseExecutionId: recordIdSchema,
     baseLabel: z.string().nullable(),
+    baseMethod: methodRefSchema.nullable().default(null),
     executionIds: z.array(recordIdSchema),
     executionId: recordIdSchema.nullable(),
     resultMilestoneId: recordIdSchema.nullable(),
@@ -99,7 +112,7 @@ const updateSchema = z.object({
     createdAt: z.string(),
     updatedAt: z.string(),
   })),
-  unaffected: z.array(z.object({executionId: recordIdSchema, label: z.string().nullable(), resultMilestoneId: recordIdSchema.nullable()})),
+  unaffected: z.array(z.object({executionId: recordIdSchema, label: z.string().nullable(), method: methodRefSchema.nullable().default(null), resultMilestoneId: recordIdSchema.nullable()})),
 });
 export type WorkUpdateRow = z.infer<typeof updateSchema>;
 

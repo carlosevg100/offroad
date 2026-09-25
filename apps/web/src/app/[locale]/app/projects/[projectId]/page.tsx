@@ -727,7 +727,7 @@ async function ConversationalCapitalProject({
   workSections.push({id: "vault", title: vaultCopy("title"), content: <WorkVaultPanel locale={locale} workId={project.id} />});
 
   // The updates of the work: first when one awaits a decision, otherwise at the end.
-  const [updates, updatesCopy] = await Promise.all([loadWorkUpdates(supabase, project.id), getTranslations({locale, namespace: "App.workUpdates"})]);
+  const [updates, updatesCopy] = await Promise.all([loadWorkUpdates(supabase, project.id, locale === "en-US" ? "en-US" : "pt-BR"), getTranslations({locale, namespace: "App.workUpdates"})]);
   const updatesSection: AdvisorWorkSection = {id: "updates", title: updatesCopy("title"),
     status: updates?.awaitingDecision ? updatesCopy("awaiting", {count: updates.awaitingDecision}) : undefined,
     content: <WorkUpdates locale={locale === "en-US" ? "en-US" : "pt-BR"} model={updates} />};

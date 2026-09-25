@@ -8,6 +8,10 @@ import {addSourceVersion, localSql, readoptFromVersion, seedSourceBasis} from ".
 
 const continuation = messages.App.advisorProject.continuation;
 const updates = messages.App.workUpdates;
+const names = messages.App.workUpdateNames;
+/** The internal keys the update view must never show a person: the method's catalogue id and the premise's field path. */
+const internalKeys = ["prepare-capital-structure-decision", "liquidity.available_cash"];
+const capitalTitle = names.methods["prepare-capital-structure-decision"];
 const executions = messages.App.workExecutions;
 const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 const fill = (text: string, values: Record<string, string | number>) => Object.entries(values).reduce((out, [key, value]) => out.replaceAll(`{${key}}`, String(value)), text);
@@ -156,7 +160,8 @@ test("a new version of a source is recomputed by the local worker, and the perso
   await page.goto(`/pt-BR/app/projects/${projectId}#work-updates`);
   const waiting = page.locator("article.work-update").first();
   await expect(waiting).toContainText(updates.status.open);
-  await expect(waiting).toContainText("aguardando uma revisão da base de trabalho que use a versão nova");
+  await expect(waiting).toContainText(fill(updates.hold.basis_behind_source, {execution: capitalTitle}));
+  for (const key of internalKeys) await expect(page.locator("section.work-updates")).not.toContainText(key);
   await expect(waiting.getByRole("button", {name: updates.adopt.action, exact: true})).toHaveCount(0);
 
   // 4. The person reads available cash from version 2 and adopts it: the worker recomputes the root
@@ -178,7 +183,10 @@ test("a new version of a source is recomputed by the local worker, and the perso
   await page.reload();
   const ready = page.locator('article.work-update[data-status="ready"]');
   await expect(ready).toContainText(fill(updates.change.source_version, {name: "balancete-sintetico.csv", from: 1, to: 2}));
-  await expect(ready).toContainText("refeita a partir da execução original, com os insumos atuais");
+  await expect(ready).toContainText(fill(updates.recomputation.settled, {label: capitalTitle}));
+  await expect(ready).toContainText(fill(updates.change.assumption_slot, {name: names.metrics.availableCash, from: seeded.revision, to: seeded.revision + 1}));
+  await expect(ready).toContainText(fill(updates.change.affects, {executions: capitalTitle}));
+  for (const key of internalKeys) await expect(page.locator("section.work-updates")).not.toContainText(key);
   await expect(ready).toContainText(updates.adopt.explanation);
   await test.info().attach("work-update-ready", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 

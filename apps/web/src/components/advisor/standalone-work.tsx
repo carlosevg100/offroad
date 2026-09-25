@@ -21,7 +21,7 @@ export async function StandaloneWork({locale, project}: {
       .eq("organization_id", organization.id).eq("work_id", project.id)
       .order("created_at", {ascending: true}).order("id", {ascending: true}),
     advisorProjectCopy(locale),
-    loadWorkUpdates(supabase, project.id),
+    loadWorkUpdates(supabase, project.id, locale === "en-US" ? "en-US" : "pt-BR"),
   ]);
   if (error) throw new Error("work_conversation_unavailable");
   const language = locale === "en-US" ? "en-US" : "pt-BR";

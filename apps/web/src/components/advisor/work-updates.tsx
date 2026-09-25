@@ -127,7 +127,7 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
       {item.canAdopt ? <p>{t("adopt.explanation")}</p> : null}
       <ul>
         {item.awaitingAuthorization.map((wait) => <li className="work-update__authorization" key={wait.candidateId}>
-          <span>{t("authorization.item", {label: wait.label ?? t("recomputation.unnamed"), cost: cost(wait.maxCostMicrousd), calls: wait.maxModelCalls})}</span>
+          <span>{t("authorization.item", {label: wait.label, cost: cost(wait.maxCostMicrousd), calls: wait.maxModelCalls})}</span>
           {confirming?.kind === "authorize" && confirming.candidateId === wait.candidateId ? <div className="work-update__confirm" role="group">
             <p>{t("authorization.explanation")}</p>
             <button className="button button--small" disabled={busy} onClick={() => void run(confirming)} type="button">{busy ? <LoaderCircle aria-hidden="true" className="spin" size={14} /> : <ShieldCheck aria-hidden="true" size={14} />}{t("authorization.confirm")}</button>
@@ -139,7 +139,7 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
             </div>}
         </li>)}
         {item.holds.map((hold, index) => <li className="work-update__hold" key={`${hold.kind}-${index}`}>
-          <CircleAlert aria-hidden="true" size={13} />{t(`hold.${hold.kind}`, {execution: hold.execution ?? t("recomputation.unnamed")})}
+          <CircleAlert aria-hidden="true" size={13} />{t(`hold.${hold.kind}`, {execution: hold.execution})}
         </li>)}
       </ul>
     </section> : <p className="work-update__decided">{decidedText(item, t, date)}</p>}
@@ -178,15 +178,18 @@ function DeclineConfirmation({busy, explanation, onCancel, onConfirm, reason, se
 
 type Translate = ReturnType<typeof useTranslations>;
 
+/** Names arrive resolved on the server; only a document or premise nobody named needs a phrase here. */
 function changeText(change: WorkUpdateChange, t: Translate): string {
   if (change.kind === "graph_incomplete") return t("change.graph_incomplete");
-  return t(`change.${change.kind}`, {name: change.name ?? t("change.unnamed"), from: change.from ?? t("change.unknownVersion"), to: change.to ?? t("change.unknownVersion")});
+  if (change.kind === "method_release") return t("change.method_release", {name: change.name ?? t("recomputation.unnamed")});
+  const versions = {from: change.from ?? t("change.unknownVersion"), to: change.to ?? t("change.unknownVersion")};
+  if (change.kind === "assumption_slot") return change.name ? t("change.assumption_slot", {name: change.name, ...versions}) : t("change.assumption_slot_unnamed", versions);
+  return t("change.source_version", {name: change.name ?? t("change.unnamed"), ...versions});
 }
 
 function recomputationText(entry: WorkUpdateRecomputation, t: Translate): string {
-  const label = entry.label ?? t("recomputation.unnamed");
   const state = entry.state === "scheduled" && entry.produced ? "produced" : entry.state;
-  return t(`recomputation.${state}`, {label});
+  return t(`recomputation.${state}`, {label: entry.label});
 }
 
 function reasonText(entry: WorkUpdateRecomputation, t: Translate): string | null {
