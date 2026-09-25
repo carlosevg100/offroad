@@ -2843,3 +2843,41 @@ Mais 17 objetos criados em laço pela mesma migração (políticas de negação,
 - `trigger:public.work_milestones.work_milestones_updated`
 - `v:private.execution_dependency_sources_v1`
 - `v:private.work_milestone_sources_v1`
+
+## Eventos de dependência, fatos de invalidação e pedidos de atualização
+
+34 objetos novos e 0 atualizados. Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada
+- `function:private.apply_dependency_event_v1(p_org uuid, p_event uuid)`
+- `function:private.apply_outbox_dependency_effect_v1(p_org uuid, p_event uuid)`
+- `function:private.assumption_slot_head_v1(p_org uuid, p_set uuid, p_slot text)`
+- `function:private.capture_method_release_event_v1()`
+- `function:private.capture_source_version_event_v1()`
+- `function:private.continuation_fingerprint_v1(p_value jsonb)`
+- `function:private.continuation_stable_json_v1(p_value jsonb)`
+- `function:private.dependency_event_impact_v1(p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text)`
+- `function:private.domain_event_effect_v1(p_kind text)`
+- `function:private.guard_work_continuation_request_v1()`
+- `function:private.merge_dependency_update_request_v1(p_org uuid, p_work uuid, p_event uuid, p_executions uuid[])`
+- `function:private.method_procedure_aggregate_v1(p_method_id text)`
+- `function:private.method_release_head_v1(p_org uuid, p_method text, p_house boolean)`
+- `function:private.platform_method_release_published_v1(p_release text)`
+- `function:private.rebuild_incomplete_execution_dependencies_v1(p_org uuid)`
+- `function:private.source_head_v1(p_org uuid, p_source uuid)`
+- `function:private.work_continuation_transition_allowed_v1(p_from text, p_to text)`
+- `policy:private.execution_invalidations.execution_invalidations_deny_clients`
+- `policy:public.work_continuation_requests.work_continuation_requests_deny_delete`
+- `policy:public.work_continuation_requests.work_continuation_requests_deny_insert`
+- `policy:public.work_continuation_requests.work_continuation_requests_deny_update`
+- `policy:public.work_continuation_requests.work_continuation_requests_select_authorized`
+- `r:private.execution_invalidations`
+- `r:public.work_continuation_requests`
+- `trigger:private.execution_invalidations.execution_invalidations_immutable`
+- `trigger:private.execution_invalidations.execution_invalidations_truncate_guard`
+- `trigger:private.execution_invalidations.execution_invalidations_updated`
+- `trigger:private.platform_method_releases.platform_method_releases_dependency_event`
+- `trigger:public.method_releases.method_releases_dependency_event`
+- `trigger:public.source_versions.source_versions_dependency_event`
+- `trigger:public.work_continuation_requests.work_continuation_requests_audit`
+- `trigger:public.work_continuation_requests.work_continuation_requests_guard`
+- `trigger:public.work_continuation_requests.work_continuation_requests_truncate_guard`
+- `trigger:public.work_continuation_requests.work_continuation_requests_updated`

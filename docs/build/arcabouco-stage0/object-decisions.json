@@ -1434,6 +1434,114 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.apply_dependency_event_v1(p_org uuid, p_event uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.apply_dependency_event_v1(p_org uuid, p_event uuid)",
+          "kind": "function",
+          "name": "apply_dependency_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_event uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.apply_dependency_event_v1(p_org uuid, p_event uuid)",
+          "kind": "function",
+          "name": "apply_dependency_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_event uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 471,
+          "anchor": "create function private.apply_dependency_event_v1(p_org uuid,p_event uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.apply_outbox_dependency_effect_v1(p_org uuid, p_event uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.apply_outbox_dependency_effect_v1(p_org uuid, p_event uuid)",
+          "kind": "function",
+          "name": "apply_outbox_dependency_effect_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_event uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.apply_outbox_dependency_effect_v1(p_org uuid, p_event uuid)",
+          "kind": "function",
+          "name": "apply_outbox_dependency_effect_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_event uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 504,
+          "anchor": "create function private.apply_outbox_dependency_effect_v1(p_org uuid,p_event uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.approve_advisor_execution_brief_v1(p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_command_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -1761,6 +1869,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.assumption_slot_head_v1(p_org uuid, p_set uuid, p_slot text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.assumption_slot_head_v1(p_org uuid, p_set uuid, p_slot text)",
+          "kind": "function",
+          "name": "assumption_slot_head_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_set uuid, p_slot text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.assumption_slot_head_v1(p_org uuid, p_set uuid, p_slot text)",
+          "kind": "function",
+          "name": "assumption_slot_head_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_set uuid, p_slot text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 128,
+          "anchor": "create function private.assumption_slot_head_v1(p_org uuid,p_set uuid,p_slot text) returns table(version_id uuid,revision integer,decision_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.attach_intake_session_to_opportunity(p_organization_id uuid, p_session_id uuid, p_opportunity_id uuid)",
@@ -6262,6 +6424,60 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.capture_method_release_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_method_release_event_v1()",
+          "kind": "function",
+          "name": "capture_method_release_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_method_release_event_v1()",
+          "kind": "function",
+          "name": "capture_method_release_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 94,
+          "anchor": "create function private.capture_method_release_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.capture_observation_event_v1()",
       "kind": "function",
       "catalogues": {
@@ -6481,6 +6697,60 @@
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:private.capture_source_version_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_source_version_event_v1()",
+          "kind": "function",
+          "name": "capture_source_version_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_source_version_event_v1()",
+          "kind": "function",
+          "name": "capture_source_version_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 79,
+          "anchor": "create function private.capture_source_version_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.claim_case_brief(p_organization_id uuid, p_session_id uuid, p_lease_seconds integer)",
@@ -7691,6 +7961,114 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.continuation_fingerprint_v1(p_value jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.continuation_fingerprint_v1(p_value jsonb)",
+          "kind": "function",
+          "name": "continuation_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_value jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.continuation_fingerprint_v1(p_value jsonb)",
+          "kind": "function",
+          "name": "continuation_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_value jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 334,
+          "anchor": "create function private.continuation_fingerprint_v1(p_value jsonb) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.continuation_stable_json_v1(p_value jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.continuation_stable_json_v1(p_value jsonb)",
+          "kind": "function",
+          "name": "continuation_stable_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_value jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.continuation_stable_json_v1(p_value jsonb)",
+          "kind": "function",
+          "name": "continuation_stable_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_value jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 321,
+          "anchor": "create function private.continuation_stable_json_v1(p_value jsonb) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.contribution_sources_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid)",
       "kind": "function",
       "catalogues": {
@@ -8616,6 +8994,60 @@
       "consumer_status": "apps/document-worker/src/event-outbox.ts; autoridade de jobs e comandos externos existentes."
     },
     {
+      "id": "function:private.dependency_event_impact_v1(p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.dependency_event_impact_v1(p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text)",
+          "kind": "function",
+          "name": "dependency_event_impact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.dependency_event_impact_v1(p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text)",
+          "kind": "function",
+          "name": "dependency_event_impact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 178,
+          "anchor": "create function private.dependency_event_impact_v1(p_org uuid,p_source uuid,p_set uuid,p_slot text,p_method text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.detach_document_source_binding_v1()",
       "kind": "function",
       "catalogues": {
@@ -8730,6 +9162,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.domain_event_effect_v1(p_kind text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.domain_event_effect_v1(p_kind text)",
+          "kind": "function",
+          "name": "domain_event_effect_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.domain_event_effect_v1(p_kind text)",
+          "kind": "function",
+          "name": "domain_event_effect_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_kind text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 45,
+          "anchor": "create function private.domain_event_effect_v1(p_kind text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.enforce_capital_task_artifact_output()",
@@ -13634,6 +14120,60 @@
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.guard_work_continuation_request_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_work_continuation_request_v1()",
+          "kind": "function",
+          "name": "guard_work_continuation_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_work_continuation_request_v1()",
+          "kind": "function",
+          "name": "guard_work_continuation_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 401,
+          "anchor": "create function private.guard_work_continuation_request_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.handle_new_user()",
       "kind": "function",
       "catalogues": {
@@ -17879,6 +18419,168 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.merge_dependency_update_request_v1(p_org uuid, p_work uuid, p_event uuid, p_executions uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.merge_dependency_update_request_v1(p_org uuid, p_work uuid, p_event uuid, p_executions uuid[])",
+          "kind": "function",
+          "name": "merge_dependency_update_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_event uuid, p_executions uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.merge_dependency_update_request_v1(p_org uuid, p_work uuid, p_event uuid, p_executions uuid[])",
+          "kind": "function",
+          "name": "merge_dependency_update_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_event uuid, p_executions uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 425,
+          "anchor": "create function private.merge_dependency_update_request_v1(p_org uuid,p_work uuid,p_event uuid,p_executions uuid[]) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.method_procedure_aggregate_v1(p_method_id text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.method_procedure_aggregate_v1(p_method_id text)",
+          "kind": "function",
+          "name": "method_procedure_aggregate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_method_id text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.method_procedure_aggregate_v1(p_method_id text)",
+          "kind": "function",
+          "name": "method_procedure_aggregate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_method_id text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 52,
+          "anchor": "create function private.method_procedure_aggregate_v1(p_method_id text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.method_release_head_v1(p_org uuid, p_method text, p_house boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.method_release_head_v1(p_org uuid, p_method text, p_house boolean)",
+          "kind": "function",
+          "name": "method_release_head_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_method text, p_house boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.method_release_head_v1(p_org uuid, p_method text, p_house boolean)",
+          "kind": "function",
+          "name": "method_release_head_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_method text, p_house boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 149,
+          "anchor": "create function private.method_release_head_v1(p_org uuid,p_method text,p_house boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.method_release_readable_v1(p_org uuid, p_release uuid)",
       "kind": "function",
       "catalogues": {
@@ -19068,6 +19770,60 @@
         }
       ],
       "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "function:private.platform_method_release_published_v1(p_release text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.platform_method_release_published_v1(p_release text)",
+          "kind": "function",
+          "name": "platform_method_release_published_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.platform_method_release_published_v1(p_release text)",
+          "kind": "function",
+          "name": "platform_method_release_published_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 136,
+          "anchor": "create function private.platform_method_release_published_v1(p_release text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.platform_principal_live_v1(p_user_id uuid)",
@@ -23531,6 +24287,60 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.rebuild_incomplete_execution_dependencies_v1(p_org uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.rebuild_incomplete_execution_dependencies_v1(p_org uuid)",
+          "kind": "function",
+          "name": "rebuild_incomplete_execution_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.rebuild_incomplete_execution_dependencies_v1(p_org uuid)",
+          "kind": "function",
+          "name": "rebuild_incomplete_execution_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 256,
+          "anchor": "create function private.rebuild_incomplete_execution_dependencies_v1(p_org uuid) returns bigint",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.receivables_analytical_release_enabled(p_organization_id uuid)",
@@ -33311,6 +34121,60 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.source_head_v1(p_org uuid, p_source uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.source_head_v1(p_org uuid, p_source uuid)",
+          "kind": "function",
+          "name": "source_head_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.source_head_v1(p_org uuid, p_source uuid)",
+          "kind": "function",
+          "name": "source_head_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 121,
+          "anchor": "create function private.source_head_v1(p_org uuid,p_source uuid) returns table(version_id uuid,version_no integer)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.source_storage_is_unbound_v1(p_bucket text, p_path text)",
       "kind": "function",
       "catalogues": {
@@ -37999,6 +38863,60 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.work_continuation_transition_allowed_v1(p_from text, p_to text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_continuation_transition_allowed_v1(p_from text, p_to text)",
+          "kind": "function",
+          "name": "work_continuation_transition_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_from text, p_to text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.work_continuation_transition_allowed_v1(p_from text, p_to text)",
+          "kind": "function",
+          "name": "work_continuation_transition_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_from text, p_to text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 341,
+          "anchor": "create function private.work_continuation_transition_allowed_v1(p_from text,p_to text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.work_milestone_label_v1(p_text text, p_fallback text)",
@@ -77897,6 +78815,54 @@
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
     },
     {
+      "id": "policy:private.execution_invalidations.execution_invalidations_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_invalidations.execution_invalidations_deny_clients",
+          "kind": "policy",
+          "name": "execution_invalidations_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "execution_invalidations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_invalidations.execution_invalidations_deny_clients",
+          "kind": "policy",
+          "name": "execution_invalidations_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "execution_invalidations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 313,
+          "anchor": "create policy execution_invalidations_deny_clients on private.execution_invalidations as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:private.execution_manifests.execution_manifests_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -98500,6 +99466,190 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_delete",
+          "kind": "policy",
+          "name": "work_continuation_requests_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_delete",
+          "kind": "policy",
+          "name": "work_continuation_requests_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 397,
+          "anchor": "create policy work_continuation_requests_deny_delete on public.work_continuation_requests for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_insert",
+          "kind": "policy",
+          "name": "work_continuation_requests_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_insert",
+          "kind": "policy",
+          "name": "work_continuation_requests_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 395,
+          "anchor": "create policy work_continuation_requests_deny_insert on public.work_continuation_requests for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_update",
+          "kind": "policy",
+          "name": "work_continuation_requests_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_update",
+          "kind": "policy",
+          "name": "work_continuation_requests_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 396,
+          "anchor": "create policy work_continuation_requests_deny_update on public.work_continuation_requests for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_continuation_requests.work_continuation_requests_select_authorized",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_continuation_requests.work_continuation_requests_select_authorized",
+          "kind": "policy",
+          "name": "work_continuation_requests_select_authorized",
+          "qual": "( SELECT private.can_access_capital_project(work_continuation_requests.organization_id, work_continuation_requests.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_continuation_requests.work_continuation_requests_select_authorized",
+          "kind": "policy",
+          "name": "work_continuation_requests_select_authorized",
+          "qual": "( SELECT private.can_access_capital_project(work_continuation_requests.organization_id, work_continuation_requests.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 394,
+          "anchor": "create policy work_continuation_requests_select_authorized on public.work_continuation_requests for select to authenticated using((select private.can_access_capital_project(organization_id,work_id)));",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:public.work_contributions.work_contributions_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -103707,6 +104857,124 @@
         }
       ],
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "r:private.execution_invalidations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_invalidations",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_invalidations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_invalidations",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_invalidations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 269,
+          "anchor": "create table private.execution_invalidations (",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "r:private.execution_manifests",
@@ -141293,6 +142561,134 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "r:public.work_continuation_requests",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_continuation_requests",
+          "rls": true,
+          "kind": "table",
+          "name": "work_continuation_requests",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_continuation_requests",
+          "rls": true,
+          "kind": "table",
+          "name": "work_continuation_requests",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 351,
+          "anchor": "create table public.work_continuation_requests (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "r:public.work_contributions",
       "kind": "table",
       "catalogues": {
@@ -144352,6 +145748,120 @@
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
     },
     {
+      "id": "trigger:private.execution_invalidations.execution_invalidations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_invalidations.execution_invalidations_immutable",
+          "kind": "trigger",
+          "name": "execution_invalidations_immutable",
+          "table": "execution_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_invalidations_immutable BEFORE DELETE OR UPDATE ON private.execution_invalidations FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_invalidations.execution_invalidations_immutable",
+          "kind": "trigger",
+          "name": "execution_invalidations_immutable",
+          "table": "execution_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_invalidations_immutable BEFORE DELETE OR UPDATE ON private.execution_invalidations FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 314,
+          "anchor": "create trigger execution_invalidations_immutable before update or delete on private.execution_invalidations for each row execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_invalidations.execution_invalidations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_invalidations.execution_invalidations_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_invalidations_truncate_guard",
+          "table": "execution_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_invalidations_truncate_guard BEFORE TRUNCATE ON private.execution_invalidations FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_invalidations.execution_invalidations_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_invalidations_truncate_guard",
+          "table": "execution_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_invalidations_truncate_guard BEFORE TRUNCATE ON private.execution_invalidations FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 315,
+          "anchor": "create trigger execution_invalidations_truncate_guard before truncate on private.execution_invalidations for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_invalidations.execution_invalidations_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_invalidations.execution_invalidations_updated",
+          "kind": "trigger",
+          "name": "execution_invalidations_updated",
+          "table": "execution_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_invalidations_updated BEFORE UPDATE ON private.execution_invalidations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_invalidations.execution_invalidations_updated",
+          "kind": "trigger",
+          "name": "execution_invalidations_updated",
+          "table": "execution_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_invalidations_updated BEFORE UPDATE ON private.execution_invalidations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 316,
+          "anchor": "create trigger execution_invalidations_updated before update on private.execution_invalidations for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_manifests.execution_manifests_audit",
       "kind": "trigger",
       "catalogues": {
@@ -147250,6 +148760,44 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.platform_method_releases.platform_method_releases_dependency_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.platform_method_releases.platform_method_releases_dependency_event",
+          "kind": "trigger",
+          "name": "platform_method_releases_dependency_event",
+          "table": "platform_method_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_method_release_event_v1()",
+          "definition": "CREATE TRIGGER platform_method_releases_dependency_event AFTER INSERT ON private.platform_method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_release_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.platform_method_releases.platform_method_releases_dependency_event",
+          "kind": "trigger",
+          "name": "platform_method_releases_dependency_event",
+          "table": "platform_method_releases",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_method_release_event_v1()",
+          "definition": "CREATE TRIGGER platform_method_releases_dependency_event AFTER INSERT ON private.platform_method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_release_event_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 116,
+          "anchor": "create trigger platform_method_releases_dependency_event after insert on private.platform_method_releases for each row execute function private.capture_method_release_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.platform_method_releases.platform_method_releases_truncate_guard",
@@ -155609,6 +157157,44 @@
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "trigger:public.method_releases.method_releases_dependency_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.method_releases.method_releases_dependency_event",
+          "kind": "trigger",
+          "name": "method_releases_dependency_event",
+          "table": "method_releases",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_method_release_event_v1()",
+          "definition": "CREATE TRIGGER method_releases_dependency_event AFTER UPDATE OF status ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_release_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.method_releases.method_releases_dependency_event",
+          "kind": "trigger",
+          "name": "method_releases_dependency_event",
+          "table": "method_releases",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_method_release_event_v1()",
+          "definition": "CREATE TRIGGER method_releases_dependency_event AFTER UPDATE OF status ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_release_event_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 117,
+          "anchor": "create trigger method_releases_dependency_event after update of status on public.method_releases for each row execute function private.capture_method_release_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:public.method_releases.method_releases_updated",
       "kind": "trigger",
       "catalogues": {
@@ -160278,6 +161864,44 @@
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
     },
     {
+      "id": "trigger:public.source_versions.source_versions_dependency_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.source_versions.source_versions_dependency_event",
+          "kind": "trigger",
+          "name": "source_versions_dependency_event",
+          "table": "source_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_source_version_event_v1()",
+          "definition": "CREATE TRIGGER source_versions_dependency_event AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.capture_source_version_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.source_versions.source_versions_dependency_event",
+          "kind": "trigger",
+          "name": "source_versions_dependency_event",
+          "table": "source_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_source_version_event_v1()",
+          "definition": "CREATE TRIGGER source_versions_dependency_event AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.capture_source_version_event_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 88,
+          "anchor": "create trigger source_versions_dependency_event after insert on public.source_versions for each row execute function private.capture_source_version_event_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:public.source_versions.source_versions_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -161330,6 +162954,158 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_audit",
+          "kind": "trigger",
+          "name": "work_continuation_requests_audit",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_continuation_requests_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_audit",
+          "kind": "trigger",
+          "name": "work_continuation_requests_audit",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_continuation_requests_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 418,
+          "anchor": "create trigger work_continuation_requests_audit after insert or update or delete on public.work_continuation_requests for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_guard",
+          "kind": "trigger",
+          "name": "work_continuation_requests_guard",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_work_continuation_request_v1()",
+          "definition": "CREATE TRIGGER work_continuation_requests_guard BEFORE DELETE OR UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.guard_work_continuation_request_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_guard",
+          "kind": "trigger",
+          "name": "work_continuation_requests_guard",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_work_continuation_request_v1()",
+          "definition": "CREATE TRIGGER work_continuation_requests_guard BEFORE DELETE OR UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.guard_work_continuation_request_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 415,
+          "anchor": "create trigger work_continuation_requests_guard before update or delete on public.work_continuation_requests for each row execute function private.guard_work_continuation_request_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_truncate_guard",
+          "kind": "trigger",
+          "name": "work_continuation_requests_truncate_guard",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_continuation_requests_truncate_guard BEFORE TRUNCATE ON public.work_continuation_requests FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_truncate_guard",
+          "kind": "trigger",
+          "name": "work_continuation_requests_truncate_guard",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_continuation_requests_truncate_guard BEFORE TRUNCATE ON public.work_continuation_requests FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 416,
+          "anchor": "create trigger work_continuation_requests_truncate_guard before truncate on public.work_continuation_requests for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_updated",
+          "kind": "trigger",
+          "name": "work_continuation_requests_updated",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_continuation_requests_updated BEFORE UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_updated",
+          "kind": "trigger",
+          "name": "work_continuation_requests_updated",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_continuation_requests_updated BEFORE UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Eventos de mudança de insumo, fatos imutáveis de invalidação e pedidos de atualização por trabalho, base da recomputação delimitada",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+          "line": 417,
+          "anchor": "create trigger work_continuation_requests_updated before update on public.work_continuation_requests for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:public.work_contributions.work_contributions_audit",
@@ -170100,6 +171876,13 @@
       "decision": "preservar",
       "stage": "18 / 2",
       "reason": "Migração A de work_dependencies_and_continuity: private.execution_dependencies gravada pelos gatilhos do pedido de execução e public.work_milestones gravada pelo commit de execução e pelas aprovações"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Migração B de work_dependencies_and_continuity: tipos de evento source_version e method_release, efeito propagate_dependencies no consumidor da outbox, private.execution_invalidations e public.work_continuation_requests"
     }
   ],
   "staging_archive": [

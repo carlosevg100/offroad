@@ -228,6 +228,11 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-r01-integrity-concurrency.py
 
+      - name: Concurrent dependency changes merge into one open update request
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-dependency-update-concurrency.py
+
       - name: Check stage-zero access surface and every file version against production journal
         run: |
           set -euo pipefail

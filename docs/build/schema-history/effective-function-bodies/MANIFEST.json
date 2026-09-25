@@ -1,11 +1,16 @@
 {
-  "capturedAt": "2026-09-25T15:42:22Z",
-  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them; receivables_scope_sources_current(uuid,uuid,jsonb) and record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text), rewritten by the 3M migration merged after the capture, captured from production on 2026-09-23; worker_record_agent_assessment_v1(uuid,text,jsonb) and worker_sync_project_information_requests_v1(uuid,text,jsonb), restated in full by the 4B migration 20260923224304, re-captured from production on 2026-09-23 after that apply; bind_job_authority_v1(), job_for_capability(uuid,text), worker_claim_job(text,integer), worker_claim_job_v2(text,integer) and worker_runtime_schema_contract_v1(), text-patched by the increment 5 migration governed_evaluation_transport, captured from staging after its apply; production bodies after the production apply are identical (md5 compared); on 2026-09-25 the six functions rewritten by 20260925153755_production_budget_ceilings were added or refreshed from the migration replay: five equal production byte for byte; private.worker_activate_integration_preview_run_v1 keeps two comment lines that the committed 20260905175807 file carries and that production and staging lack (pre-existing, comments only), and private.worker_enqueue_receivables_method_refresh_v1 equals production while staging carries a staging-only variant",
+  "capturedAt": "2026-09-25T17:45:00Z",
+  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them; receivables_scope_sources_current(uuid,uuid,jsonb) and record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text), rewritten by the 3M migration merged after the capture, captured from production on 2026-09-23; worker_record_agent_assessment_v1(uuid,text,jsonb) and worker_sync_project_information_requests_v1(uuid,text,jsonb), restated in full by the 4B migration 20260923224304, re-captured from production on 2026-09-23 after that apply; bind_job_authority_v1(), job_for_capability(uuid,text), worker_claim_job(text,integer), worker_claim_job_v2(text,integer) and worker_runtime_schema_contract_v1(), text-patched by the increment 5 migration governed_evaluation_transport, captured from staging after its apply; production bodies after the production apply are identical (md5 compared); on 2026-09-25 the six functions rewritten by 20260925153755_production_budget_ceilings were added or refreshed from the migration replay: five equal production byte for byte; private.worker_activate_integration_preview_run_v1 keeps two comment lines that the committed 20260905175807 file carries and that production and staging lack (pre-existing, comments only), and private.worker_enqueue_receivables_method_refresh_v1 equals production while staging carries a staging-only variant; on 2026-09-25 private.append_domain_event_v1(uuid,uuid,text,uuid,text,jsonb,uuid,bigint,uuid) and private.complete_event_outbox_v1(text,uuid,text), text-patched by work_dependency_events (stage 18, increment 3A), were added from the migration replay; the staging bodies after its apply and the production bodies before it, patched by the same replacements, hash to the same sha256",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
       "file": "private.accept_workspace_invite_v1(uuid).sql",
       "sha256": "a3a7938aeb3026fd41fd12037c1176672349348e336c70e43a46bc4ff18eca9b"
+    },
+    {
+      "signature": "private.append_domain_event_v1(uuid,uuid,text,uuid,text,jsonb,uuid,bigint,uuid)",
+      "file": "private.append_domain_event_v1(uuid,uuid,text,uuid,text,jsonb,uuid,bigint,uuid).sql",
+      "sha256": "9dfe1df85f3171fbee728cc714d3a2da853ed9fb67dffc0c19507274c52af69c"
     },
     {
       "signature": "private.attest_platform_method_candidate_v1(uuid,uuid,text,text,text,jsonb)",
@@ -46,6 +51,11 @@
       "signature": "private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text)",
       "file": "private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text).sql",
       "sha256": "796417797e1ed70c4978647ab2d9cb8350e4d13a47d232964a7a7fd6f1e6f5f8"
+    },
+    {
+      "signature": "private.complete_event_outbox_v1(text,uuid,text)",
+      "file": "private.complete_event_outbox_v1(text,uuid,text).sql",
+      "sha256": "a5c3dd9ee50cdcb7c679b1d6e8ee4b8047a3ea0886562003604bb8eed2a89298"
     },
     {
       "signature": "private.compose_method_v1(uuid,text,jsonb,uuid,text)",

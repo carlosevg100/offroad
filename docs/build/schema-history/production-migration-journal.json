@@ -1563,8 +1563,12 @@
   {
    "version": "20260925155334",
    "name": "work_dependencies_and_continuity"
+  },
+  {
+   "version": "20260925180927",
+   "name": "work_dependency_events"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-25T15:55:55Z"
+ "captured_at": "2026-09-25T18:30:00Z"
 }

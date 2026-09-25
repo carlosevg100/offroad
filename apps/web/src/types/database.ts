@@ -10237,6 +10237,76 @@ export type Database = {
           },
         ]
       }
+      work_continuation_requests: {
+        Row: {
+          affected_executions: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          organization_id: string
+          payload: Json
+          payload_fingerprint: string
+          revision: number
+          status: string
+          superseded_by_request_id: string | null
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          affected_executions?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: string
+          organization_id: string
+          payload: Json
+          payload_fingerprint: string
+          revision?: number
+          status?: string
+          superseded_by_request_id?: string | null
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          affected_executions?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          organization_id?: string
+          payload?: Json
+          payload_fingerprint?: string
+          revision?: number
+          status?: string
+          superseded_by_request_id?: string | null
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_continuation_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_continuation_requests_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_continuation_requests_organization_id_work_id_superse_fkey"
+            columns: ["organization_id", "work_id", "superseded_by_request_id"]
+            isOneToOne: false
+            referencedRelation: "work_continuation_requests"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+        ]
+      }
       work_contributions: {
         Row: {
           author_user_id: string
