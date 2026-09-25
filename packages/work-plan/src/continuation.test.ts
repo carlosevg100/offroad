@@ -573,6 +573,52 @@ describe("cost never repeated", () => {
     expect(plan.candidates[0]).toMatchObject({baseExecutionId: "exec-root", executionIds: ["exec-root", "exec-update"], action: "await_authorization", openWait: true});
   });
 
+  it("plans a lineage from its newest execution: an up-to-date recomputation reuses the whole lineage", () => {
+    const lineage = graph(
+      [
+        execution("exec-root", [source("balancete", 1), method(CURRENT_RELEASE)]),
+        {...execution("exec-update", [source("balancete", 2), slot("basis", "revenue", 1, "decision-revenue"), method(CURRENT_RELEASE)], {baseExecutionId: "exec-root"}), lineageOrder: 1},
+      ],
+      [sourceHead("balancete", 2), slotHead("basis", "revenue", 1, "decision-revenue"), methodHead(CURRENT_RELEASE)],
+    );
+    const plan = planDependencyRecompute({graph: lineage, candidates: []});
+    const update = computeDependencyImpact(lineage).executions.find((entry) => entry.executionId === "exec-update");
+    expect(plan.candidates).toEqual([]);
+    expect(byId(plan.items, "exec-root")).toEqual({executionId: "exec-root", action: "reuse", inputFingerprint: update?.pinnedInputFingerprint});
+    expect(byId(plan.items, "exec-update")).toMatchObject({action: "reuse"});
+  });
+
+  it("gives a lineage one candidate even when its executions relied on different inputs, keyed on the newest", () => {
+    const lineage = graph(
+      [
+        execution("exec-root", [source("balancete", 1), method(CURRENT_RELEASE)]),
+        {...execution("exec-update", [source("balancete", 2), slot("basis", "revenue", 1, "decision-revenue"), method(CURRENT_RELEASE)], {baseExecutionId: "exec-root"}), lineageOrder: 1},
+      ],
+      [sourceHead("balancete", 3), slotHead("basis", "revenue", 1, "decision-revenue"), methodHead(CURRENT_RELEASE)],
+    );
+    const impact = computeDependencyImpact(lineage);
+    const root = impact.executions.find((entry) => entry.executionId === "exec-root");
+    const update = impact.executions.find((entry) => entry.executionId === "exec-update");
+    expect(root?.currentInputFingerprint).not.toBe(update?.currentInputFingerprint);
+    const plan = planDependencyRecompute({graph: lineage, candidates: []});
+    expect(plan.candidates).toHaveLength(1);
+    expect(plan.candidates[0]).toMatchObject({baseExecutionId: "exec-root", executionIds: ["exec-root", "exec-update"], newInputFingerprint: update?.currentInputFingerprint, enqueue: true});
+    expect(plan.candidates[0]?.idempotencyKey).toBe(dependencyRecomputeKey({workId: WORK, baseExecutionId: "exec-root", newInputFingerprint: update?.currentInputFingerprint ?? ""}));
+  });
+
+  it("keeps an open record whose execution already relies on the current heads", () => {
+    const earlier = graph([execution("exec-root", [source("balancete", 1), method(CURRENT_RELEASE)])], [sourceHead("balancete", 2), methodHead(CURRENT_RELEASE)]);
+    const [record] = persisted(planDependencyRecompute({graph: earlier, candidates: []}));
+    if (!record) throw new Error("expected a record");
+    const produced = graph(
+      [execution("exec-root", [source("balancete", 1), method(CURRENT_RELEASE)]), {...execution("exec-update", [source("balancete", 2), method(CURRENT_RELEASE)], {baseExecutionId: "exec-root"}), lineageOrder: 1}],
+      [sourceHead("balancete", 2), methodHead(CURRENT_RELEASE)],
+    );
+    expect(planDependencyRecompute({graph: produced, candidates: [{...record, executionId: "exec-update"}]}).supersededCandidateKeys).toEqual([]);
+    const moved = graph(produced.executions, [sourceHead("balancete", 3), methodHead(CURRENT_RELEASE)]);
+    expect(planDependencyRecompute({graph: moved, candidates: [{...record, executionId: "exec-update"}]}).supersededCandidateKeys).toEqual([record.idempotencyKey]);
+  });
+
   it("reports an open candidate the current heads no longer produce as superseded", () => {
     const earlier = planDependencyRecompute({graph: current, candidates: []});
     const later = planDependencyRecompute({graph: graph(executions, withHeads([sourceHead("balancete", 3)]), derivations), candidates: persisted(earlier)});

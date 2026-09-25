@@ -156,6 +156,9 @@ export type DependencyHead = z.infer<typeof dependencyHeadSchema>;
 /**
  * An execution with its recorded edges. `baseExecutionId` is set only on a dependency-update
  * recomputation and always names the root execution of its lineage, never another recomputation.
+ * `lineageOrder` places it in its lineage: 0 for the root (the default), and for a recomputation
+ * the lineage sequence the database records when it is produced (1 when absent). The executions
+ * of a graph are the live ones; the one with the highest order represents its lineage in a plan.
  */
 export const continuationExecutionSchema = z.object({
   executionId: identifierSchema,
@@ -163,6 +166,7 @@ export const continuationExecutionSchema = z.object({
   baseExecutionId: identifierSchema.nullable(),
   profileBudget: continuationBudgetSchema,
   dependencies: z.array(executionDependencySchema),
+  lineageOrder: z.number().int().nonnegative().optional(),
 }).strict();
 export type ContinuationExecution = z.infer<typeof continuationExecutionSchema>;
 
@@ -780,12 +784,13 @@ function compareEvents(left: DependencyChangeEvent, right: DependencyChangeEvent
 export const recomputeCandidateStateSchema = z.enum(["awaiting_authorization", "scheduled", "settled", "declined", "failed"]);
 export type RecomputeCandidateState = z.infer<typeof recomputeCandidateStateSchema>;
 
-/** A candidate already persisted under its idempotency key, in any state. */
+/** A candidate already persisted under its idempotency key, in any state, with the execution it produced. */
 export const recomputeCandidateRecordSchema = z.object({
   workId: identifierSchema,
   idempotencyKey: sha256Schema,
   baseExecutionId: identifierSchema,
   state: recomputeCandidateStateSchema,
+  executionId: identifierSchema.nullable().optional(),
 }).strict();
 export type RecomputeCandidateRecord = z.infer<typeof recomputeCandidateRecordSchema>;
 
@@ -837,9 +842,13 @@ export type RecomputePlan = Readonly<{
 /**
  * One item per execution: `reuse` when unaffected (identical input fingerprints), `rebuild_graph`
  * when the graph is incomplete, otherwise `recompute` for a zero budget or `await_authorization`
- * for a positive one. Affected executions of one lineage under the same heads share one candidate.
- * A key already recorded in any state is never enqueued or put to a person again, so a retry or a
- * worker restart repeats no confirmed cost.
+ * for a positive one. A lineage is planned from its representative, its execution with the
+ * highest `lineageOrder`: when the representative already relies on the current heads, every
+ * execution of the lineage is reused by the representative's input fingerprint; otherwise the
+ * representative's current identity keys the one candidate that covers every affected execution of
+ * the lineage, so a lineage is recomputed once per heads even when its executions relied on
+ * different sets of inputs. A key already recorded in any state is never enqueued or put to a
+ * person again, so a retry or a worker restart repeats no confirmed cost.
  */
 export function planDependencyRecompute(input: {
   graph: ContinuationGraph;
@@ -856,19 +865,36 @@ export function planDependencyRecompute(input: {
     recordsByKey.set(record.idempotencyKey, record);
   }
 
-  const drafts = new Map<string, {baseExecutionId: string; newInputFingerprint: string; executionIds: string[]; budgets: ContinuationBudget[]}>();
+  const rootOf = (executionId: string): string => {
+    const execution = index.executions.get(executionId);
+    return execution?.baseExecutionId ?? executionId;
+  };
+  const orderOf = (executionId: string): number => {
+    const execution = index.executions.get(executionId);
+    return execution?.lineageOrder ?? (execution?.baseExecutionId ? 1 : 0);
+  };
+  const representatives = new Map<string, Assessment>();
+  for (const assessment of assessments) {
+    const root = rootOf(assessment.executionId);
+    const known = representatives.get(root);
+    if (!known || orderOf(assessment.executionId) > orderOf(known.executionId)
+      || (orderOf(assessment.executionId) === orderOf(known.executionId) && compareText(assessment.executionId, known.executionId) > 0)) {
+      representatives.set(root, assessment);
+    }
+  }
+
+  const drafts = new Map<string, {baseExecutionId: string; newInputFingerprint: string; executionIds: string[]; budget: ContinuationBudget}>();
   const keyByExecution = new Map<string, string>();
   for (const assessment of assessments) {
-    if (assessment.status !== "affected" || assessment.currentInputFingerprint === null) continue;
-    const execution = index.executions.get(assessment.executionId);
-    if (!execution) continue;
-    const baseExecutionId = execution.baseExecutionId ?? execution.executionId;
-    const key = dependencyRecomputeKey({workId: graph.workId, baseExecutionId, newInputFingerprint: assessment.currentInputFingerprint});
-    const draft = drafts.get(key) ?? {baseExecutionId, newInputFingerprint: assessment.currentInputFingerprint, executionIds: [], budgets: []};
-    draft.executionIds.push(execution.executionId);
-    draft.budgets.push(assessment.spendCeiling);
+    if (assessment.status !== "affected") continue;
+    const baseExecutionId = rootOf(assessment.executionId);
+    const representative = representatives.get(baseExecutionId);
+    if (!representative || representative.status !== "affected" || representative.currentInputFingerprint === null) continue;
+    const key = dependencyRecomputeKey({workId: graph.workId, baseExecutionId, newInputFingerprint: representative.currentInputFingerprint});
+    const draft = drafts.get(key) ?? {baseExecutionId, newInputFingerprint: representative.currentInputFingerprint, executionIds: [], budget: representative.spendCeiling};
+    draft.executionIds.push(assessment.executionId);
     drafts.set(key, draft);
-    keyByExecution.set(execution.executionId, key);
+    keyByExecution.set(assessment.executionId, key);
   }
 
   const candidates: RecomputeCandidate[] = [...drafts.entries()]
@@ -878,7 +904,7 @@ export function planDependencyRecompute(input: {
       if (record && record.baseExecutionId !== draft.baseExecutionId) {
         throw contractError("candidate_conflict", `${idempotencyKey} is recorded for ${record.baseExecutionId}, planned for ${draft.baseExecutionId}`);
       }
-      const budget = draft.budgets.reduce(maxBudget, {maxCostMicrousd: 0, maxModelCalls: 0});
+      const budget = draft.budget;
       const action = isPositiveBudget(budget) ? "await_authorization" as const : "recompute" as const;
       const recordedState = record?.state ?? null;
       return {
@@ -899,6 +925,13 @@ export function planDependencyRecompute(input: {
   const items: RecomputePlanItem[] = assessments.map((assessment): RecomputePlanItem => {
     if (assessment.status === "graph_incomplete") return {executionId: assessment.executionId, action: "rebuild_graph", gaps: assessment.gaps};
     if (assessment.status === "unaffected") return {executionId: assessment.executionId, action: "reuse", inputFingerprint: assessment.pinnedInputFingerprint};
+    // An affected execution whose lineage is represented by a newer execution: reused when the
+    // representative already relies on the current heads, rebuilt with it when its graph is incomplete.
+    const representative = representatives.get(rootOf(assessment.executionId));
+    if (representative && representative.status === "unaffected") {
+      return {executionId: assessment.executionId, action: "reuse", inputFingerprint: representative.pinnedInputFingerprint};
+    }
+    if (representative && representative.status === "graph_incomplete") return {executionId: assessment.executionId, action: "rebuild_graph", gaps: representative.gaps};
     const candidate = candidatesByKey.get(keyByExecution.get(assessment.executionId) ?? "");
     if (!candidate) throw contractError("candidate_conflict", `${assessment.executionId} has no planned candidate`);
     return {
@@ -911,8 +944,15 @@ export function planDependencyRecompute(input: {
     };
   });
 
+  // An open record the current heads no longer produce is superseded, unless the execution it
+  // produced is the representative of its lineage and already relies on the current heads.
+  const upToDate = (record: RecomputeCandidateRecord): boolean => {
+    if (!record.executionId) return false;
+    const representative = representatives.get(rootOf(record.executionId));
+    return representative?.executionId === record.executionId && representative.status === "unaffected";
+  };
   const supersededCandidateKeys = records
-    .filter((record) => (record.state === "scheduled" || record.state === "awaiting_authorization") && !candidatesByKey.has(record.idempotencyKey))
+    .filter((record) => (record.state === "scheduled" || record.state === "awaiting_authorization") && !candidatesByKey.has(record.idempotencyKey) && !upToDate(record))
     .map((record) => record.idempotencyKey)
     .sort(compareText);
   const body = {
