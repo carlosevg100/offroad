@@ -48,7 +48,6 @@ export function ContinuationQuestion({question, disabled, onChoose, onSendAsMess
         <ArrowRight aria-hidden="true" size={14} />{t("choose")}
       </button> : null}
       <button className="button button--small button--outline" disabled={disabled} onClick={onSendAsMessage} type="button"><MessageSquare aria-hidden="true" size={14} />{t("sendAsMessage")}</button>
-      <button className="button button--small button--ghost" disabled={disabled} onClick={onDismiss} type="button">{t("dismiss")}</button>
     </footer>
   </section>;
 }
