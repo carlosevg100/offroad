@@ -3,6 +3,7 @@ import {z} from "zod";
 import {conservativeTextReservationUsd} from "./conservative-reservation";
 import {createModelGateway} from "./gateway";
 import {COST_RESERVATION_SAFETY_FACTOR, listPrices} from "./pricing";
+import {retentionMatrixVersion} from "./retention-matrix";
 import {estimateRequestInputTokens} from "./token-estimate";
 import type {AdapterRequest, AdapterResponse, GatewayRequest, ProviderAdapter} from "./types";
 
@@ -15,7 +16,7 @@ function adapter(provider:"anthropic"|"openai",outputs:Array<unknown|Error>=[{ok
   return {output,model:input.model,rawText:JSON.stringify(output),usage:{inputTokens:10,outputTokens:10,cachedInputTokens:0},stopReason:"end"} as AdapterResponse;}};
  return {calls,implementation};
 }
-describe("opt-in conservative textual reservation",()=>{
+describe("calibrated reservation of every attempt",()=>{
  it("reserves the calibrated input: the cache-writable prefix at the write rate, the rest at the input rate, and the whole output",()=>{
   const estimate=estimateRequestInputTokens("anthropic",adapterRequest);
   expect(estimate.cacheWritableInputTokens).toBeGreaterThan(0);expect(estimate.cacheWritableInputTokens).toBeLessThan(estimate.inputTokens);
@@ -81,8 +82,16 @@ describe("opt-in conservative textual reservation",()=>{
   await expect(gateway.complete(request)).rejects.toMatchObject({code:"budget_exceeded"});
   expect(primary.calls).toHaveLength(1);expect(fallback.calls).toHaveLength(1);
  });
- it("preserves the existing default reservation behavior without opt-in",async()=>{
+ it("reserves the same calibrated bound without the opt-in field, so production counts the system too",async()=>{
+  // The former default read only the text parts at four characters per token: this request, a
+  // 100,000-character system and a seven-character input, reserved under one cent and was sent.
   const primary=adapter("anthropic");const gateway=createModelGateway({adapters:{anthropic:primary.implementation},budget:{maxCostUsd:.05,maxCalls:1}});
-  await gateway.complete({...request,system:"x".repeat(100000)});expect(primary.calls).toHaveLength(1);
+  await expect(gateway.complete({...request,system:"x".repeat(100000)})).rejects.toMatchObject({code:"budget_exceeded"});
+  expect(primary.calls).toHaveLength(0);expect(gateway.spent()).toMatchObject({calls:0,budgetExposureUsd:0});
+  const charged:number[]=[];
+  const probe=createModelGateway({adapters:{anthropic:adapter("anthropic").implementation},processingEligibility:async({attempt})=>{charged.push(attempt.reservationUsd);
+   return {allowed:false,policyVersion:retentionMatrixVersion,assuranceId:null,reasons:["probe"]};}});
+  await expect(probe.complete({...request,allowFallback:false})).rejects.toMatchObject({code:"data_policy_violation"});
+  expect(charged).toEqual([conservativeTextReservationUsd("anthropic",adapterRequest,listPrices)]);
  });
 });

@@ -87,6 +87,16 @@ function runDouble(input: {documents: Array<{id: string; object_path: string; pr
   return {supabase, rpcCalls, storageCalls};
 }
 
+describe("run budget", () => {
+  it("sends the budget derived for the calibrated reservation, inside the database's bounds", () => {
+    // 1.60 per document and 3.10 for the case analysis (the model gateway's production ceilings);
+    // 16.00 = 3.10 + 8 x 1.60 keeps the whole per-document ceiling for a room of eight documents.
+    expect(DEFAULT_RUN_BUDGET).toEqual({max_cost_usd: 16, max_calls: 160, document_max_cost_usd: 1.6, document_max_calls: 8, case_max_cost_usd: 3.1, case_max_calls: 4});
+    expect(DEFAULT_RUN_BUDGET.max_cost_usd).toBeLessThanOrEqual(25);
+    expect(DEFAULT_RUN_BUDGET.case_max_cost_usd).toBeLessThan(DEFAULT_RUN_BUDGET.max_cost_usd);
+  });
+});
+
 describe("incremental processing", () => {
   it("does not schedule or repay ready immutable documents under the same pipeline contract", async () => {
     const runtime = runDouble({

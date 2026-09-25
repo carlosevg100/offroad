@@ -25,13 +25,25 @@ describe("gateway eligibility transport boundary", () => {
       processingEligibility: async ({provider}) => result(provider === "anthropic")});
     await expect(gateway.complete(request)).rejects.toThrow(); expect(secondary).not.toHaveBeenCalled();
   });
-  it("checks implicit cache and inline documents independently from inference", async () => {
+  it("checks implicit prompt and schema caches independently from inference", async () => {
     const transport = vi.fn(async () => response);
-    const authorize = vi.fn(async ({resources}: {resources: string[]}) => result(!resources.includes("inline_document")));
+    const authorize = vi.fn(async ({resources}: {resources: string[]}) => result(!resources.includes("schema_cache")));
     const gateway = createModelGateway({adapters: {anthropic: {provider: "anthropic", complete: transport}}, processingEligibility: authorize});
-    await expect(gateway.complete({...request, allowFallback: false, input: [{type: "pdf", base64: "c3ludGhldGlj"}]})).rejects.toThrow();
+    await expect(gateway.complete({...request, allowFallback: false})).rejects.toThrow();
     expect(transport).not.toHaveBeenCalled();
-    expect(authorize.mock.calls[0]?.[0].resources).toEqual(["inference", "prompt_cache", "schema_cache", "inline_document"]);
+    expect(authorize.mock.calls[0]?.[0].resources).toEqual(["inference", "prompt_cache", "schema_cache"]);
+    // Prompted JSON compiles no schema on the provider's side, so it asks for no schema cache.
+    await gateway.complete({...request, allowFallback: false, outputMode: "prompted_json"});
+    expect(authorize.mock.calls[1]?.[0].resources).toEqual(["inference", "prompt_cache"]);
+    expect(transport).toHaveBeenCalledOnce();
+  });
+  it("refuses an inline document before any decision or transmission, since the reservation cannot bound it", async () => {
+    const transport = vi.fn(async () => response);
+    const authorize = vi.fn(async () => result(true));
+    const gateway = createModelGateway({adapters: {anthropic: {provider: "anthropic", complete: transport}}, processingEligibility: authorize});
+    await expect(gateway.complete({...request, allowFallback: false, input: [{type: "pdf", base64: "c3ludGhldGlj"}]})).rejects.toMatchObject({code: "budget_exceeded"});
+    expect(transport).not.toHaveBeenCalled();
+    expect(authorize).not.toHaveBeenCalled();
   });
   it("does not reuse approval after revocation between calls", async () => {
     let allowed = true;

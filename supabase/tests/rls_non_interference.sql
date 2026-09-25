@@ -2631,6 +2631,18 @@ begin
     )), 'test');
   run_id := (first_run->>'processing_run_id')::uuid;
 
+  -- A run started without a budget takes the production defaults (migration
+  -- production_budget_ceilings), and its one document the whole per-document ceiling.
+  set local role postgres;
+  if (select budget from public.processing_runs where id = run_id) is distinct from jsonb_build_object(
+      'max_cost_usd', 16, 'max_calls', 160, 'document_max_cost_usd', 1.60, 'document_max_calls', 8,
+      'case_max_cost_usd', 3.10, 'case_max_calls', 4)
+    or (select (payload #>> '{model_budget,max_cost_usd}')::numeric from public.processing_jobs
+      where processing_run_id = run_id and kind = 'document_pipeline') is distinct from 1.60 then
+    raise exception 'a run started without a budget did not take the production defaults';
+  end if;
+  set local role authenticated;
+
   -- Put the month over the ceiling by recording what that run cost.
   set local role postgres;
   update public.processing_runs set model_cost_usd = 10000 where id = run_id;
@@ -2689,6 +2701,25 @@ begin
   end if;
 end;
 $$;
+
+-- The incremental deal-state analysis has no caller in these tests, so its production case
+-- ceiling (migration production_budget_ceilings) is read from its definition: the run, the run's
+-- case share and the job carry 3.10, and no old ceiling of 1 is left.
+set local role postgres;
+do $$
+declare
+  body text := pg_get_functiondef('private.enqueue_incremental_deal_state_analysis(uuid,uuid,text)'::regprocedure);
+begin
+  if position($ceiling$'max_cost_usd', 3.10,
+    'max_calls', 4,
+    'case_max_cost_usd', 3.10,$ceiling$ in body) = 0
+    or position($ceiling$'model_budget', jsonb_build_object('max_cost_usd', 3.10, 'max_calls', 4)$ceiling$ in body) = 0
+    or position($ceiling$'max_cost_usd', 1,$ceiling$ in body) > 0 then
+    raise exception 'the incremental deal-state analysis does not carry the production case ceiling';
+  end if;
+end;
+$$;
+set local role authenticated;
 
 -- The session's state machine is not writable by the company whose session it is.
 --
@@ -5624,6 +5655,47 @@ begin
 end;
 $$;
 
+-- Stage 18: the approval above wrote a decision milestone in the approving transaction. It is read
+-- only by people who can read the work, and no tenant writes, rewrites or deletes it.
+set local role postgres;
+do $$
+declare d public.capital_project_execution_brief_dispatches; milestone uuid; attempt text; rejected boolean;
+begin
+  select * into strict d from public.capital_project_execution_brief_dispatches
+    where organization_id='20000000-0000-4000-8000-000000000001' and accepted_at is not null
+    order by created_at,id limit 1;
+  select id into strict milestone from public.work_milestones
+    where organization_id=d.organization_id and work_id=d.capital_project_id and kind='decision'
+      and subject_kind='execution_brief' and subject_id=d.execution_brief_id and created_by=d.accepted_by;
+  set local role authenticated;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
+  if (select count(*) from public.work_milestones where id=milestone)<>1 then
+    raise exception 'owner cannot read the decision milestone of its approval';
+  end if;
+  foreach attempt in array array[
+    format('update public.work_milestones set label=%L where id=%L','forged',milestone),
+    format('delete from public.work_milestones where id=%L',milestone),
+    format('insert into public.work_milestones(organization_id,work_id,kind,subject_kind,subject_id,label,created_by,occurred_at) values(%L,%L,%L,%L,gen_random_uuid(),%L,auth.uid(),now())',
+      d.organization_id,d.capital_project_id,'decision','forged_subject','Forged')] loop
+    rejected:=false;
+    begin
+      execute attempt;
+    exception when insufficient_privilege then rejected:=true;
+    end;
+    if not rejected then raise exception 'tenant wrote a work milestone directly: %',attempt; end if;
+  end loop;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',true);
+  if exists(select 1 from public.work_milestones where id=milestone)
+    or exists(select 1 from public.work_milestones where organization_id='20000000-0000-4000-8000-000000000001') then
+    raise exception 'work milestone crossed tenant boundary';
+  end if;
+  set local role postgres;
+  if not exists(select 1 from public.work_milestones where id=milestone and label<>'forged') then
+    raise exception 'rejected milestone write changed the milestone';
+  end if;
+end;
+$$;
+
 -- Revoking the original creator removes management even while the JWT is unchanged.
 reset role;
 update public.organization_memberships set status='suspended'
@@ -5743,6 +5815,25 @@ do $$ declare relation text; begin
  or has_function_privilege('anon','public.publish_vault_entry_v1(uuid,uuid,text)','EXECUTE')
  or has_function_privilege('service_role','private.publish_vault_entry_v1(uuid,uuid,text)','EXECUTE')
  or has_table_privilege('authenticated','private.vault_source_dependencies','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Vault publication authority exposed';end if;
+end $$;
+
+-- Stage 18: milestones are read through the work's authority only; the dependency projection is
+-- closed to every API role.
+do $$ declare role_name text; begin
+ if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='work_milestones' and c.relrowsecurity and c.relforcerowsecurity)
+ or not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relname='execution_dependencies' and c.relrowsecurity and c.relforcerowsecurity)
+ then raise exception 'Stage 18 RLS missing';end if;
+ if has_table_privilege('anon','public.work_milestones','SELECT,INSERT,UPDATE,DELETE')
+ or has_table_privilege('authenticated','public.work_milestones','INSERT,UPDATE,DELETE')
+ or not has_table_privilege('authenticated','public.work_milestones','SELECT')
+ or has_table_privilege('service_role','public.work_milestones','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Work milestone grants are not select-only for authenticated';end if;
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+  if has_table_privilege(role_name,'private.execution_dependencies','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Execution dependency projection exposed: %',role_name;end if;
+ end loop;
+ if not exists(select 1 from pg_policy where polrelid='public.work_milestones'::regclass and polname='work_milestones_select_authorized' and polcmd='r' and polpermissive)
+ or (select count(*) from pg_policy where polrelid='public.work_milestones'::regclass and polname in ('work_milestones_deny_insert','work_milestones_deny_update','work_milestones_deny_delete'))<>3
+ or not exists(select 1 from pg_policy where polrelid='private.execution_dependencies'::regclass and polname='execution_dependencies_deny_clients' and not polpermissive and polcmd='*')
+ then raise exception 'Stage 18 policies missing';end if;
 end $$;
 
 select 'rls_non_interference_passed' as result;

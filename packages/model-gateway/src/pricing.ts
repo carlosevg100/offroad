@@ -117,26 +117,3 @@ export function reservationForTokensUsd(input: {
     + input.maxOutputTokens * rates.output) / 1_000_000;
   return (Math.round(cost * 1_000_000) / 1_000_000) * COST_RESERVATION_SAFETY_FACTOR;
 }
-
-export function estimateCostReservationUsd(
-  model: string,
-  inputTokens: number,
-  maxOutputTokens: number,
-  prices: Record<string, ModelPrice> = listPrices,
-): number {
-  return estimateCostUsd(model, {
-    inputTokens,
-    cachedInputTokens: 0,
-    outputTokens: maxOutputTokens,
-  }, prices) * COST_RESERVATION_SAFETY_FACTOR;
-}
-
-/**
- * Rough pre-call estimate (≈4 chars per token) of the default reservation, used only to refuse
- * calls that would obviously blow the budget. It undercounts: measured Claude usage on Portuguese
- * financial text is about 2.1 characters per token. The opt-in `conservative_text_v1`
- * reservation and the model-limit check use the calibrated upper bound in `token-estimate.ts`.
- */
-export function estimateInputTokens(text: string): number {
-  return Math.ceil(text.length / 4);
-}

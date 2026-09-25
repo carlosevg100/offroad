@@ -263,9 +263,9 @@ begin
 
   if capital_job.status <> 'awaiting_approval'
     or capital_job.payload #>> '{trigger_event,type}' <> 'advisor_semantic_route'
-    or capital_job.payload #>> '{model_budget,max_cost_usd}' <> '1.50'
+    or capital_job.payload #>> '{model_budget,max_cost_usd}' <> '1.55'
     or capital_job.payload #>> '{model_budget,max_calls}' <> '2'
-    or capital_run.budget ->> 'maxCostUsd' <> '1.50'
+    or capital_run.budget ->> 'maxCostUsd' <> '1.55'
     or capital_run.budget ->> 'externalSearchMaxUsd' <> '0.04'
     or (select company_profile ->> 'name' from public.document_intake_sessions where id = session_id) <> 'Companhia Farol'
     or (select current_run_id from public.document_intake_sessions where id = session_id) <> capital_run.id

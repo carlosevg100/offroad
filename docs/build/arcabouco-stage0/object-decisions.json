@@ -2447,6 +2447,114 @@
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
+      "id": "function:private.backfill_execution_dependencies_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.backfill_execution_dependencies_v1()",
+          "kind": "function",
+          "name": "backfill_execution_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.backfill_execution_dependencies_v1()",
+          "kind": "function",
+          "name": "backfill_execution_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 144,
+          "anchor": "create function private.backfill_execution_dependencies_v1() returns bigint",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.backfill_work_milestones_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.backfill_work_milestones_v1()",
+          "kind": "function",
+          "name": "backfill_work_milestones_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.backfill_work_milestones_v1()",
+          "kind": "function",
+          "name": "backfill_work_milestones_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 313,
+          "anchor": "create function private.backfill_work_milestones_v1() returns bigint",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.begin_intake_processing(p_organization_id uuid, p_session_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -15571,6 +15679,12 @@
           "line": 160,
           "anchor": " foreach name in array array['bind_job_authority_v1()','job_authority_is_current_v1(uuid)'] loop",
           "mechanism": "generated_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260925153504_evaluation_job_authority_in_outbox_sweep.sql",
+          "line": 25,
+          "anchor": "create or replace function private.job_authority_is_current_v1(p_job_id uuid)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
@@ -15821,6 +15935,12 @@
         {
           "path": "supabase/migrations/20260908035026_explicit_execution_brief_approval.sql",
           "line": 420,
+          "anchor": "create or replace function private.job_for_failure_capability(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260925153504_evaluation_job_authority_in_outbox_sweep.sql",
+          "line": 49,
           "anchor": "create or replace function private.job_for_failure_capability(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
         }
@@ -19608,6 +19728,60 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.project_decision_milestone_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.project_decision_milestone_v1()",
+          "kind": "function",
+          "name": "project_decision_milestone_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.project_decision_milestone_v1()",
+          "kind": "function",
+          "name": "project_decision_milestone_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 292,
+          "anchor": "create function private.project_decision_milestone_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.project_document_source_version_v1()",
       "kind": "function",
       "catalogues": {
@@ -19661,6 +19835,60 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:private.project_execution_dependency_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.project_execution_dependency_v1()",
+          "kind": "function",
+          "name": "project_execution_dependency_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.project_execution_dependency_v1()",
+          "kind": "function",
+          "name": "project_execution_dependency_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 120,
+          "anchor": "create function private.project_execution_dependency_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
@@ -24591,6 +24819,60 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.record_execution_result_milestone_v1(p_org uuid, p_execution uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_execution_result_milestone_v1(p_org uuid, p_execution uuid)",
+          "kind": "function",
+          "name": "record_execution_result_milestone_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_execution_result_milestone_v1(p_org uuid, p_execution uuid)",
+          "kind": "function",
+          "name": "record_execution_result_milestone_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 281,
+          "anchor": "create function private.record_execution_result_milestone_v1(p_org uuid,p_execution uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.record_fallback_case_snapshot(p_organization_id uuid, p_session_id uuid, p_manifest jsonb, p_case_state jsonb, p_understanding_payload jsonb)",
       "kind": "function",
       "catalogues": {
@@ -26884,6 +27166,60 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:private.reject_work_continuity_mutation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.reject_work_continuity_mutation_v1()",
+          "kind": "function",
+          "name": "reject_work_continuity_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.reject_work_continuity_mutation_v1()",
+          "kind": "function",
+          "name": "reject_work_continuity_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 23,
+          "anchor": "create function private.reject_work_continuity_mutation_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.release_governed_evaluation_transport_v1(p_command uuid, p_released boolean, p_actor_user_id uuid, p_reason text)",
@@ -37663,6 +37999,60 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.work_milestone_label_v1(p_text text, p_fallback text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_milestone_label_v1(p_text text, p_fallback text)",
+          "kind": "function",
+          "name": "work_milestone_label_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_text text, p_fallback text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.work_milestone_label_v1(p_text text, p_fallback text)",
+          "kind": "function",
+          "name": "work_milestone_label_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_text text, p_fallback text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 215,
+          "anchor": "create function private.work_milestone_label_v1(p_text text,p_fallback text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.work_turn_context_v1(p_job_id uuid)",
@@ -48487,6 +48877,60 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.write_work_milestone_v1(p_origin_table text, p_origin_row uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.write_work_milestone_v1(p_origin_table text, p_origin_row uuid)",
+          "kind": "function",
+          "name": "write_work_milestone_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_origin_table text, p_origin_row uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.write_work_milestone_v1(p_origin_table text, p_origin_row uuid)",
+          "kind": "function",
+          "name": "write_work_milestone_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_origin_table text, p_origin_row uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 261,
+          "anchor": "create function private.write_work_milestone_v1(p_origin_table text,p_origin_row uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.accept_and_apply_agent_operation_brief_proposal(p_organization_id uuid, p_proposal_id uuid, p_event_id uuid)",
@@ -77171,6 +77615,54 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "policy:private.execution_dependencies.execution_dependencies_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.execution_dependencies.execution_dependencies_deny_clients",
+          "kind": "policy",
+          "name": "execution_dependencies_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "execution_dependencies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.execution_dependencies.execution_dependencies_deny_clients",
+          "kind": "policy",
+          "name": "execution_dependencies_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "execution_dependencies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 86,
+          "anchor": "create policy execution_dependencies_deny_clients on private.execution_dependencies as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:private.execution_gate_receipts.execution_gate_receipts_deny",
       "kind": "policy",
       "catalogues": {
@@ -98572,6 +99064,190 @@
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
     },
     {
+      "id": "policy:public.work_milestones.work_milestones_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_milestones.work_milestones_deny_delete",
+          "kind": "policy",
+          "name": "work_milestones_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_milestones",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_milestones.work_milestones_deny_delete",
+          "kind": "policy",
+          "name": "work_milestones_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_milestones",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 206,
+          "anchor": "create policy work_milestones_deny_delete on public.work_milestones for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_milestones.work_milestones_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_milestones.work_milestones_deny_insert",
+          "kind": "policy",
+          "name": "work_milestones_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_milestones",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_milestones.work_milestones_deny_insert",
+          "kind": "policy",
+          "name": "work_milestones_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_milestones",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 204,
+          "anchor": "create policy work_milestones_deny_insert on public.work_milestones for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_milestones.work_milestones_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_milestones.work_milestones_deny_update",
+          "kind": "policy",
+          "name": "work_milestones_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_milestones",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_milestones.work_milestones_deny_update",
+          "kind": "policy",
+          "name": "work_milestones_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_milestones",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 205,
+          "anchor": "create policy work_milestones_deny_update on public.work_milestones for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_milestones.work_milestones_select_authorized",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_milestones.work_milestones_select_authorized",
+          "kind": "policy",
+          "name": "work_milestones_select_authorized",
+          "qual": "( SELECT private.can_access_capital_project(work_milestones.organization_id, work_milestones.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_milestones",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_milestones.work_milestones_select_authorized",
+          "kind": "policy",
+          "name": "work_milestones_select_authorized",
+          "qual": "( SELECT private.can_access_capital_project(work_milestones.organization_id, work_milestones.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_milestones",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 203,
+          "anchor": "create policy work_milestones_select_authorized on public.work_milestones for select to authenticated using((select private.can_access_capital_project(organization_id,work_id)));",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:public.work_participants.work_participants_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -102676,6 +103352,124 @@
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
+    },
+    {
+      "id": "r:private.execution_dependencies",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.execution_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.execution_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "execution_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 28,
+          "anchor": "create table private.execution_dependencies (",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "r:private.execution_gate_receipts",
@@ -140876,6 +141670,134 @@
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
     },
     {
+      "id": "r:public.work_milestones",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_milestones",
+          "rls": true,
+          "kind": "table",
+          "name": "work_milestones",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_milestones",
+          "rls": true,
+          "kind": "table",
+          "name": "work_milestones",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 164,
+          "anchor": "create table public.work_milestones (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "r:public.work_participants",
       "kind": "table",
       "catalogues": {
@@ -142812,6 +143734,44 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_dependency",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_dependency",
+          "kind": "trigger",
+          "name": "execution_basis_bindings_dependency",
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_execution_dependency_v1()",
+          "definition": "CREATE TRIGGER execution_basis_bindings_dependency AFTER INSERT ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_dependency",
+          "kind": "trigger",
+          "name": "execution_basis_bindings_dependency",
+          "table": "execution_basis_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_execution_dependency_v1()",
+          "definition": "CREATE TRIGGER execution_basis_bindings_dependency AFTER INSERT ON private.execution_basis_bindings FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 140,
+          "anchor": "create trigger execution_basis_bindings_dependency after insert on private.execution_basis_bindings for each row execute function private.project_execution_dependency_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_basis_bindings.execution_basis_bindings_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -143085,6 +144045,120 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "trigger:private.execution_dependencies.execution_dependencies_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_dependencies.execution_dependencies_immutable",
+          "kind": "trigger",
+          "name": "execution_dependencies_immutable",
+          "table": "execution_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_dependencies_immutable BEFORE DELETE OR UPDATE ON private.execution_dependencies FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_dependencies.execution_dependencies_immutable",
+          "kind": "trigger",
+          "name": "execution_dependencies_immutable",
+          "table": "execution_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_dependencies_immutable BEFORE DELETE OR UPDATE ON private.execution_dependencies FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 87,
+          "anchor": "create trigger execution_dependencies_immutable before update or delete on private.execution_dependencies for each row execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_dependencies.execution_dependencies_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_dependencies.execution_dependencies_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_dependencies_truncate_guard",
+          "table": "execution_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_dependencies_truncate_guard BEFORE TRUNCATE ON private.execution_dependencies FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_dependencies.execution_dependencies_truncate_guard",
+          "kind": "trigger",
+          "name": "execution_dependencies_truncate_guard",
+          "table": "execution_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER execution_dependencies_truncate_guard BEFORE TRUNCATE ON private.execution_dependencies FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 88,
+          "anchor": "create trigger execution_dependencies_truncate_guard before truncate on private.execution_dependencies for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.execution_dependencies.execution_dependencies_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_dependencies.execution_dependencies_updated",
+          "kind": "trigger",
+          "name": "execution_dependencies_updated",
+          "table": "execution_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_dependencies_updated BEFORE UPDATE ON private.execution_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_dependencies.execution_dependencies_updated",
+          "kind": "trigger",
+          "name": "execution_dependencies_updated",
+          "table": "execution_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER execution_dependencies_updated BEFORE UPDATE ON private.execution_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 89,
+          "anchor": "create trigger execution_dependencies_updated before update on private.execution_dependencies for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_gate_receipts.execution_gate_receipts_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -143315,6 +144389,44 @@
         }
       ],
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
+    },
+    {
+      "id": "trigger:private.execution_manifests.execution_manifests_dependency",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_manifests.execution_manifests_dependency",
+          "kind": "trigger",
+          "name": "execution_manifests_dependency",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_execution_dependency_v1()",
+          "definition": "CREATE TRIGGER execution_manifests_dependency AFTER INSERT ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_manifests.execution_manifests_dependency",
+          "kind": "trigger",
+          "name": "execution_manifests_dependency",
+          "table": "execution_manifests",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_execution_dependency_v1()",
+          "definition": "CREATE TRIGGER execution_manifests_dependency AFTER INSERT ON private.execution_manifests FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 141,
+          "anchor": "create trigger execution_manifests_dependency after insert on private.execution_manifests for each row execute function private.project_execution_dependency_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.execution_manifests.execution_manifests_identity",
@@ -144202,6 +145314,44 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "trigger:private.execution_source_bindings.execution_source_bindings_dependency",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_source_bindings.execution_source_bindings_dependency",
+          "kind": "trigger",
+          "name": "execution_source_bindings_dependency",
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_execution_dependency_v1()",
+          "definition": "CREATE TRIGGER execution_source_bindings_dependency AFTER INSERT ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_source_bindings.execution_source_bindings_dependency",
+          "kind": "trigger",
+          "name": "execution_source_bindings_dependency",
+          "table": "execution_source_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_execution_dependency_v1()",
+          "definition": "CREATE TRIGGER execution_source_bindings_dependency AFTER INSERT ON private.execution_source_bindings FOR EACH ROW EXECUTE FUNCTION private.project_execution_dependency_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 139,
+          "anchor": "create trigger execution_source_bindings_dependency after insert on private.execution_source_bindings for each row execute function private.project_execution_dependency_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_source_bindings.execution_source_bindings_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -144785,6 +145935,44 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.institutional_model_configurations.work_milestone_decision",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_model_configurations.work_milestone_decision",
+          "kind": "trigger",
+          "name": "work_milestone_decision",
+          "table": "institutional_model_configurations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_decision_milestone_v1()",
+          "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT OR UPDATE OF status ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_model_configurations.work_milestone_decision",
+          "kind": "trigger",
+          "name": "work_milestone_decision",
+          "table": "institutional_model_configurations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_decision_milestone_v1()",
+          "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT OR UPDATE OF status ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 309,
+          "anchor": "create trigger work_milestone_decision after insert or update of status on private.institutional_model_configurations for each row execute function private.project_decision_milestone_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.institutional_model_results.institutional_result_body",
@@ -148874,6 +150062,44 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.capital_project_artifact_decisions.work_milestone_decision",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.capital_project_artifact_decisions.work_milestone_decision",
+          "kind": "trigger",
+          "name": "work_milestone_decision",
+          "table": "capital_project_artifact_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.project_decision_milestone_v1()",
+          "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT ON public.capital_project_artifact_decisions FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.capital_project_artifact_decisions.work_milestone_decision",
+          "kind": "trigger",
+          "name": "work_milestone_decision",
+          "table": "capital_project_artifact_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.project_decision_milestone_v1()",
+          "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT ON public.capital_project_artifact_decisions FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 309,
+          "anchor": "create trigger work_milestone_decision after insert or update of status on private.institutional_model_configurations for each row execute function private.project_decision_milestone_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:public.capital_project_artifacts.capital_project_artifacts_audit",
       "kind": "trigger",
       "catalogues": {
@@ -149145,6 +150371,44 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.capital_project_execution_brief_dispatches.work_milestone_decision",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.capital_project_execution_brief_dispatches.work_milestone_decision",
+          "kind": "trigger",
+          "name": "work_milestone_decision",
+          "table": "capital_project_execution_brief_dispatches",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.project_decision_milestone_v1()",
+          "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT OR UPDATE OF accepted_at ON public.capital_project_execution_brief_dispatches FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.capital_project_execution_brief_dispatches.work_milestone_decision",
+          "kind": "trigger",
+          "name": "work_milestone_decision",
+          "table": "capital_project_execution_brief_dispatches",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.project_decision_milestone_v1()",
+          "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT OR UPDATE OF accepted_at ON public.capital_project_execution_brief_dispatches FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 309,
+          "anchor": "create trigger work_milestone_decision after insert or update of status on private.institutional_model_configurations for each row execute function private.project_decision_milestone_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:public.capital_project_execution_brief_events.capital_project_execution_brief_events_audit",
@@ -160419,6 +161683,158 @@
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
     },
     {
+      "id": "trigger:public.work_milestones.work_milestones_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_milestones.work_milestones_audit",
+          "kind": "trigger",
+          "name": "work_milestones_audit",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_milestones_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_milestones.work_milestones_audit",
+          "kind": "trigger",
+          "name": "work_milestones_audit",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER work_milestones_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 210,
+          "anchor": "create trigger work_milestones_audit after insert or update or delete on public.work_milestones for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_milestones.work_milestones_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_milestones.work_milestones_immutable",
+          "kind": "trigger",
+          "name": "work_milestones_immutable",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_milestones_immutable BEFORE DELETE OR UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_milestones.work_milestones_immutable",
+          "kind": "trigger",
+          "name": "work_milestones_immutable",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_milestones_immutable BEFORE DELETE OR UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 207,
+          "anchor": "create trigger work_milestones_immutable before update or delete on public.work_milestones for each row execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_milestones.work_milestones_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_milestones.work_milestones_truncate_guard",
+          "kind": "trigger",
+          "name": "work_milestones_truncate_guard",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_milestones_truncate_guard BEFORE TRUNCATE ON public.work_milestones FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_milestones.work_milestones_truncate_guard",
+          "kind": "trigger",
+          "name": "work_milestones_truncate_guard",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_milestones_truncate_guard BEFORE TRUNCATE ON public.work_milestones FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 208,
+          "anchor": "create trigger work_milestones_truncate_guard before truncate on public.work_milestones for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_milestones.work_milestones_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_milestones.work_milestones_updated",
+          "kind": "trigger",
+          "name": "work_milestones_updated",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_milestones_updated BEFORE UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_milestones.work_milestones_updated",
+          "kind": "trigger",
+          "name": "work_milestones_updated",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_milestones_updated BEFORE UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 209,
+          "anchor": "create trigger work_milestones_updated before update on public.work_milestones for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:public.work_participants.work_participants_audit",
       "kind": "trigger",
       "catalogues": {
@@ -160613,6 +162029,124 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "v:private.execution_dependency_sources_v1",
+      "kind": "view",
+      "catalogues": {
+        "production": {
+          "id": "v:private.execution_dependency_sources_v1",
+          "rls": false,
+          "kind": "view",
+          "name": "execution_dependency_sources_v1",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": false
+        },
+        "staging": {
+          "id": "v:private.execution_dependency_sources_v1",
+          "rls": false,
+          "kind": "view",
+          "name": "execution_dependency_sources_v1",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 93,
+          "anchor": "create view private.execution_dependency_sources_v1 with (security_invoker=true) as",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "v:private.execution_time_to_value",
@@ -161705,6 +163239,124 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "v:private.work_milestone_sources_v1",
+      "kind": "view",
+      "catalogues": {
+        "production": {
+          "id": "v:private.work_milestone_sources_v1",
+          "rls": false,
+          "kind": "view",
+          "name": "work_milestone_sources_v1",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": false
+        },
+        "staging": {
+          "id": "v:private.work_milestone_sources_v1",
+          "rls": false,
+          "kind": "view",
+          "name": "work_milestone_sources_v1",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Projeção tipada do que cada execução fixou e marcos imutáveis do trabalho, base da invalidação e da continuidade",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+          "line": 224,
+          "anchor": "create view private.work_milestone_sources_v1 with (security_invoker=true) as",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -168427,6 +170079,27 @@
       "decision": "preservar",
       "stage": "16 / decisão de 24/09/2026",
       "reason": "Atestação de provedor sem data de validade, por decisão do fundador de 24/09/2026."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925153504_evaluation_job_authority_in_outbox_sweep.sql",
+      "decision": "preservar",
+      "stage": "17 / correção pós-fechamento",
+      "reason": "A verificação de autoridade comum respondia falso para todo job de avaliação governada; a varredura da outbox cancelaria avaliações no primeiro evento da organização de avaliação"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925153755_production_budget_ceilings.sql",
+      "decision": "preservar",
+      "stage": "17 / correção pós-fechamento",
+      "reason": "A reserva de cada chamada passou a ser o limite superior calibrado; os tetos do banco foram dimensionados para a estimativa antiga e recusariam pedidos legítimos"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
+      "decision": "preservar",
+      "stage": "18 / 2",
+      "reason": "Migração A de work_dependencies_and_continuity: private.execution_dependencies gravada pelos gatilhos do pedido de execução e public.work_milestones gravada pelo commit de execução e pelas aprovações"
     }
   ],
   "staging_archive": [

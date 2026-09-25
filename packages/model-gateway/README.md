@@ -36,16 +36,29 @@ The only door to LLM providers (P1 plan §13.3, §15). Nothing in the monorepo c
   request whose estimated input exceeds the input limit of any route it may take is refused with
   `input_limit_exceeded`, and an output ceiling above the model's maximum with
   `output_limit_exceeded`.
-- **Reservations**: each attempt reserves its upper bound before it is sent. The opt-in
-  `conservative_text_v1` reservation (governed evaluations) reads the complete adapter payload
-  with the calibrated estimator of `token-estimate.ts`: ASCII digits and punctuation at one token
-  each, every other UTF-8 byte at 0.45 tokens (Anthropic) or 0.25 (OpenAI o200k), plus 1,024
-  tokens of hidden framing. The rates are 1.25x the largest rate real Claude usage needed and
-  above every o200k count of the repository's corpora (`reservation-calibration.json`, checked by
-  `reservation-calibration.test.ts` and by the evals test that rebuilds the gc01 run of 4 Sep
-  2026 byte for byte). Cache-writable tokens are charged at the write rate, the whole output
-  ceiling at the output rate, and 10% is added for regional pricing. The default reservation stays
-  the rough four-characters-per-token preflight of production runs.
+- **Reservations**: each attempt reserves its upper bound before it is sent, production jobs and
+  governed evaluations alike (`conservative-reservation.ts`; the `conservative_text_v1` field of
+  governed contracts names the same rule). The reservation reads the complete adapter payload with
+  the calibrated estimator of `token-estimate.ts`: ASCII digits and punctuation at one token each,
+  every other UTF-8 byte at 0.45 tokens (Anthropic) or 0.25 (OpenAI o200k), plus 1,024 tokens of
+  hidden framing, never above one token per byte. The rates are 1.25x the largest rate real
+  Claude usage needed and above every o200k count of the repository's corpora
+  (`reservation-calibration.json`, checked by `reservation-calibration.test.ts` and by the evals
+  test that rebuilds the gc01 run of 4 Sep 2026 byte for byte). Cache-writable tokens are charged
+  at the write rate, the whole output ceiling at the output rate, the GPT-5.6 long-context tariff
+  when the estimate passes 272K tokens, and 10% is added for regional pricing, so a call admitted
+  under a ceiling cannot bill past it (`production-reservation.test.ts` holds it against every
+  real bill of the calibration samples). A model without a complete price, and an image or PDF
+  part, is refused before anything is sent. Until 24 Sep 2026 production reserved with a
+  four-characters-per-token estimate of the text parts alone, about half of what Claude bills for
+  Portuguese text, so a job could cross its ceiling.
+- **Production job ceilings**: `production-budgets.ts` names the model-spend ceiling of every
+  production job kind and the run budget the web app sends to the database, each re-derived for
+  the calibrated reservation from the largest request the job's code builds, with the reasoning in
+  place. The worker (`apps/document-worker/src/model-budgets.ts`) enforces the smallest of that
+  ceiling, the job's database budget and the optional `MODEL_MAX_COST_USD_PER_JOB` override. The
+  database budgets this derivation raised are written by the migration
+  `production_budget_ceilings`, whose numbers `production-budgets.test.ts` holds to these constants.
 - **Minimization** — CPFs and e-mails in text parts are masked before leaving the
   perimeter (CNPJs and amounts are kept). Disable only for tasks whose object is the
   identifier itself.
