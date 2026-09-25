@@ -332,7 +332,7 @@ select 'a4183000-0000-4000-9000-0000000000b2','synthetic-execution-test-v2','off
 from (select jsonb_set(jsonb_set(jsonb_set(jsonb_set(p.payload,'{method,platformReleaseId}','"synthetic-execution-test-v2"'),'{method,methodVersion}','"test-v2"'),
  '{method,manifestHash}',to_jsonb(repeat('9',64))),'{method,baseManifestHash}',to_jsonb(repeat('9',64))) payload
  from private.execution_method_profiles p where p.id='a4171000-0000-4000-9000-000000000001') f;
-insert into dep values('E_M',md5('platform_method_release:synthetic-execution-test-v2:a11b0000-0000-4000-9000-000000000001')::uuid);
+insert into dep values('E_M',private.platform_method_release_event_id_v1('synthetic-execution-test-v2','a11b0000-0000-4000-9000-000000000001'));
 select pg_temp.request_execution('X5','a4183000-0000-4000-9000-0000000000b2',array[]::text[],array[]::uuid[],null);
 select pg_temp.drain_outbox();
 do $$ declare e private.domain_events;head record;begin

@@ -6690,6 +6690,12 @@
           "line": 94,
           "anchor": "create function private.capture_method_release_event_v1() returns trigger",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260925232939_rfc_uuid_domain_event_identifiers.sql",
+          "line": 34,
+          "anchor": "create or replace function private.capture_method_release_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -19657,6 +19663,12 @@
           "line": 52,
           "anchor": "create function private.method_procedure_aggregate_v1(p_method_id text) returns uuid",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260925232939_rfc_uuid_domain_event_identifiers.sql",
+          "line": 23,
+          "anchor": "create or replace function private.method_procedure_aggregate_v1(p_method_id text) returns uuid",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -21012,6 +21024,60 @@
         }
       ],
       "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
+    },
+    {
+      "id": "function:private.platform_method_release_event_id_v1(p_release text, p_org uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.platform_method_release_event_id_v1(p_release text, p_org uuid)",
+          "kind": "function",
+          "name": "platform_method_release_event_id_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release text, p_org uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.platform_method_release_event_id_v1(p_release text, p_org uuid)",
+          "kind": "function",
+          "name": "platform_method_release_event_id_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_release text, p_org uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Identificadores dos eventos de release de método derivados como UUID versão 5, aceitos pelo contrato de evento do worker",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260925232939_rfc_uuid_domain_event_identifiers.sql",
+          "line": 28,
+          "anchor": "create function private.platform_method_release_event_id_v1(p_release text,p_org uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.platform_method_release_published_v1(p_release text)",
@@ -175730,6 +175796,13 @@
       "decision": "preservar",
       "stage": "18 / 3B",
       "reason": "Migração do incremento 3B de work_dependencies_and_continuity: public.work_recompute_candidates, private.execution_lineage, private.dependency_recompute_holds e private.work_recompute_leases, o planejamento dentro do efeito de dependência, os sinais que liberam bloqueios e as quatro RPCs fechadas do worker"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925232939_rfc_uuid_domain_event_identifiers.sql",
+      "decision": "preservar",
+      "stage": "18 / 3A",
+      "reason": "Correção do 3A: o agregado do procedimento e o evento de release de plataforma passam de md5 convertido em uuid para UUID versão 5, que o contrato do worker aceita"
     }
   ],
   "staging_archive": [

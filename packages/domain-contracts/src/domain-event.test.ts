@@ -37,3 +37,21 @@ describe("dependency propagation (stage 18)",()=>{
   expect(domainEventSchema.safeParse({...change,aggregateKind:"source_version",effect:"recompute"}).success).toBe(false);
  });
 });
+describe("database-derived identifiers (stage 18)",()=>{
+ // Shared vector: supabase/tests/domain_event_identifiers.sql asserts that the database derives these
+ // version 5 UUIDs (extensions.uuid_generate_v5 over the URL namespace) for the procedure aggregate of
+ // "synthetic-execution" and for the event of release "synthetic-execution-test-v2" in organization
+ // a11b0000-0000-4000-9000-000000000001.
+ const aggregateId="8c12d8e2-daa1-5bc6-b9ab-fb695c749cab";
+ const eventId="ee927d77-2a6f-5d0f-a5d3-7d147f914061";
+ // What stage 18/3A derived before the correction: the md5 digest of "offroad:procedure:synthetic-execution".
+ const md5Aggregate="d444a65d-208a-c452-ba05-7d338c4aaa3e";
+ const change={...event,aggregateKind:"method_release",reason:"created",effect:"propagate_dependencies"};
+ it("accepts a method_release event with the version 5 identifiers the database derives",()=>{
+  expect(domainEventSchema.safeParse({...change,id:eventId,correlationId:eventId,aggregateId}).success).toBe(true);
+ });
+ it("refuses the md5 digest the database derived before the correction",()=>{
+  // An md5 digest carries an RFC 9562 version and variant only by chance (about one digest in eight).
+  expect(domainEventSchema.safeParse({...change,aggregateId:md5Aggregate}).success).toBe(false);
+ });
+});
