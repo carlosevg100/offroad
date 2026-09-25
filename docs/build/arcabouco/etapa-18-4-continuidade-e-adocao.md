@@ -62,6 +62,7 @@ O teste de projeção do incremento 2 comparava o `xmin` de uma variável de reg
 - Quando uma adoção cobre várias linhagens e uma atualização posterior toca só uma delas, a regra de `approvedBases` substitui a adoção inteira, e a base das outras linhagens deixa de ser oferecida.
 - Recusar uma atualização não cancela a execução de uma candidata que o worker já produziu: o resultado dela, se vier, fica gravado e não é adotado.
 - Autorizar tem efeito real só quando existir perfil com custo: hoje todo perfil armazenado tem teto zero, e o contrato de execução exige orçamento zero; o caminho é provado com o perfil sintético do 3B.
+- Uma mudança de insumo pode chegar em vários eventos (a adoção de um valor numa nova revisão da base de trabalho gera mais de um evento). O primeiro evento planejado agenda o recálculo na atualização aberta; os seguintes, com ela já agendada, abrem atualizações sem nada próprio a planejar, que o planejador do 3B marca como `superseded` apontando para a que já cobre a mudança, mesmo sendo mais antiga. A tela as mostra em Anteriores como incorporadas a outra atualização, e a jornada Playwright acompanha a atualização cuja candidata refaz a execução de origem.
 
 ## Aplicação
 
