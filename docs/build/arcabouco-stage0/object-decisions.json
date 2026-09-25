@@ -175114,6 +175114,36 @@
       "reason": "Vocabulário, contratos e vetores compartilhados; Postgres continua o único avaliador."
     },
     {
+      "kind": "package",
+      "path": "packages/execution-request",
+      "name": "@offroad/execution-request",
+      "decision": "preservar",
+      "stage": "18 / 3B",
+      "reason": "composição única do pedido de execução de capital (base, pacote, contrato e gates), usada pela ação da web e pela recomputação do worker com os mesmos bytes",
+      "direct_module_references": [
+        {
+          "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/actions.ts",
+          "line": 6,
+          "specifier": "@offroad/execution-request"
+        },
+        {
+          "path": "apps/web/src/lib/execution/failure.ts",
+          "line": 1,
+          "specifier": "@offroad/execution-request"
+        },
+        {
+          "path": "apps/document-worker/src/dependency-recompute.ts",
+          "line": 4,
+          "specifier": "@offroad/execution-request"
+        },
+        {
+          "path": "scripts/ci/verify-dependency-recompute.mjs",
+          "line": 62,
+          "specifier": "@offroad/execution-request"
+        }
+      ]
+    },
+    {
       "kind": "migration",
       "path": "supabase/migrations/20260916190600_entity_and_dossier_identity.sql",
       "decision": "preservar",
