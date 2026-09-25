@@ -2631,6 +2631,18 @@ begin
     )), 'test');
   run_id := (first_run->>'processing_run_id')::uuid;
 
+  -- A run started without a budget takes the production defaults (migration
+  -- production_budget_ceilings), and its one document the whole per-document ceiling.
+  set local role postgres;
+  if (select budget from public.processing_runs where id = run_id) is distinct from jsonb_build_object(
+      'max_cost_usd', 16, 'max_calls', 160, 'document_max_cost_usd', 1.60, 'document_max_calls', 8,
+      'case_max_cost_usd', 3.10, 'case_max_calls', 4)
+    or (select (payload #>> '{model_budget,max_cost_usd}')::numeric from public.processing_jobs
+      where processing_run_id = run_id and kind = 'document_pipeline') is distinct from 1.60 then
+    raise exception 'a run started without a budget did not take the production defaults';
+  end if;
+  set local role authenticated;
+
   -- Put the month over the ceiling by recording what that run cost.
   set local role postgres;
   update public.processing_runs set model_cost_usd = 10000 where id = run_id;
@@ -2689,6 +2701,25 @@ begin
   end if;
 end;
 $$;
+
+-- The incremental deal-state analysis has no caller in these tests, so its production case
+-- ceiling (migration production_budget_ceilings) is read from its definition: the run, the run's
+-- case share and the job carry 3.10, and no old ceiling of 1 is left.
+set local role postgres;
+do $$
+declare
+  body text := pg_get_functiondef('private.enqueue_incremental_deal_state_analysis(uuid,uuid,text)'::regprocedure);
+begin
+  if position($ceiling$'max_cost_usd', 3.10,
+    'max_calls', 4,
+    'case_max_cost_usd', 3.10,$ceiling$ in body) = 0
+    or position($ceiling$'model_budget', jsonb_build_object('max_cost_usd', 3.10, 'max_calls', 4)$ceiling$ in body) = 0
+    or position($ceiling$'max_cost_usd', 1,$ceiling$ in body) > 0 then
+    raise exception 'the incremental deal-state analysis does not carry the production case ceiling';
+  end if;
+end;
+$$;
+set local role authenticated;
 
 -- The session's state machine is not writable by the company whose session it is.
 --

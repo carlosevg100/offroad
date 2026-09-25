@@ -2,7 +2,7 @@ import {createHash, randomUUID} from "node:crypto";
 import {z} from "zod";
 import {cassetteKey, type CassetteMode, type CassetteStore} from "./cassette";
 import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
-import {estimateCostReservationUsd, estimateCostUsd, estimateInputTokens, listPrices, type ModelPrice} from "./pricing";
+import {estimateCostUsd, listPrices, type ModelPrice} from "./pricing";
 import {buildRepairGuidance, type RepairValidationSource} from "./repair";
 import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
@@ -37,7 +37,11 @@ export type ModelGatewayConfig = {
   redaction?: RedactionOptions | false;
   /** Per-gateway-instance ceilings (one instance per processing run). */
   budget?: {maxCostUsd?: number; maxCalls?: number};
-  /** Opt-in complete UTF-8 textual payload reservation; rejects unknown prices/non-text inputs. */
+  /**
+   * Every attempt reserves the calibrated upper bound of `conservative-reservation.ts`, with or
+   * without this field: production jobs and governed evaluations share one rule. The field stays
+   * because governed evaluation contracts name it; it no longer selects anything.
+   */
   budgetReservation?: "conservative_text_v1";
   /**
    * Extra models this gateway instance may use, beyond the production allowlist.
@@ -63,8 +67,8 @@ export type ModelGatewayConfig = {
 
 /**
  * One send, same-model repair or provider fallback, before it is decided. The invocation id is the
- * one its call log carries; the reservation is the budget exposure this gateway holds for it,
- * computed from the complete adapter request (conservatively under `conservative_text_v1`).
+ * one its call log carries; the reservation is the budget exposure this gateway holds for it: the
+ * calibrated upper bound of the complete adapter request (`conservativeTextReservationUsd`).
  */
 export type GatewayAttempt = {
   invocationId: string;
@@ -174,14 +178,13 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       assertFits(ref, adapterRequest);
       // The reservation is computed once per attempt: before the live decision when there is one,
       // so the authority reserves the same exposure this gateway charges, otherwise where it was.
+      // It is the calibrated upper bound of the whole payload (system, schema, every text part,
+      // hidden framing, the full output ceiling, cache-write and long-context tariffs), so a call
+      // admitted under the ceiling cannot bill past it. The four-characters-per-token estimate
+      // production used before read only the text parts and undercounted Claude about twofold.
       let attemptReservationUsd: number | undefined;
       const reserveAttempt = (): number => {
-        if (attemptReservationUsd === undefined) {
-          const inputTokens = adapterRequest.input.reduce((total, part) => total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
-          attemptReservationUsd = config.budgetReservation === "conservative_text_v1"
-            ? conservativeTextReservationUsd(ref.provider, adapterRequest, prices)
-            : estimateCostReservationUsd(ref.model, inputTokens, adapterRequest.maxOutputTokens, prices);
-        }
+        attemptReservationUsd ??= conservativeTextReservationUsd(ref.provider, adapterRequest, prices);
         return attemptReservationUsd;
       };
       let providerPolicyVersion: string | undefined;

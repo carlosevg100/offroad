@@ -53,17 +53,18 @@ const schema = z.object({
   SUPABASE_URL: z.url(),
 
   /**
-   * What one document is allowed to cost in model calls before the job is stopped.
+   * An operator's override that can only lower what one job attempt may cost in model calls.
    *
-   * The database allocates a share of the case-wide ceiling to each paid document. This
-   * environment value is a second, independent stop and defaults to one dollar; the worker
-   * always enforces the smaller number. Without both, a re-chunking loop can bill until the
-   * first person to notice is reading the provider invoice.
+   * Each job kind has its own derived ceiling (`productionModelCeilingsUsd` in the model gateway)
+   * and the database writes a budget into most jobs; the worker enforces the smallest of those
+   * and this value. Unset, it changes nothing: it no longer carries a default, because the one
+   * dollar it used to impose on every kind sat below what a case analysis or an origination
+   * thesis needs once reservations are an honest upper bound.
    *
    * Deliberately per job rather than per process. A process-wide ceiling would make the worker
    * refuse every document after some arbitrary one, turning a spend problem into an outage.
    */
-  MODEL_MAX_COST_USD_PER_JOB: z.coerce.number().positive().default(1),
+  MODEL_MAX_COST_USD_PER_JOB: z.coerce.number().positive().optional(),
   /** The same bound expressed in calls, which catches a loop before the cost does. */
   DOCUMENTARY_WORK_PLANNING_ENABLED: z.enum(["true", "false"]).default("false").transform(value => value === "true"),
   MODEL_MAX_CALLS_PER_JOB: z.coerce.number().int().positive().default(8),
@@ -163,7 +164,7 @@ export function describeConfig(config: WorkerConfig): Record<string, string | nu
     providerDataPolicyEnforced: true,
     verifiedProviderConnections: Object.keys(config.PROVIDER_CONNECTIONS_JSON).sort().join(","),
     ocrLanguages: config.OCR_LANGUAGES,
-    maxCostUsdPerJob: config.MODEL_MAX_COST_USD_PER_JOB,
+    maxCostUsdPerJob: config.MODEL_MAX_COST_USD_PER_JOB ?? "job_kind_ceiling",
     maxCallsPerJob: config.MODEL_MAX_CALLS_PER_JOB,
     documentaryWorkPlanningEnabled: config.DOCUMENTARY_WORK_PLANNING_ENABLED,
   };

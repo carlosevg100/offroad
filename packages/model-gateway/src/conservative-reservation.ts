@@ -3,7 +3,8 @@ import {estimateRequestInputTokens} from "./token-estimate";
 import {ModelGatewayError, type AdapterRequest, type Provider} from "./types";
 
 /**
- * Opt-in textual evaluation bound; list-price exposure, not a provider billing guarantee.
+ * The reservation of every attempt the gateway makes, production jobs and governed evaluations
+ * alike: list-price exposure, not a provider billing guarantee.
  *
  * The input is the calibrated upper bound of the complete adapter payload (`token-estimate.ts`:
  * dense characters at one token each, other bytes at the provider's measured rate with its
@@ -13,6 +14,10 @@ import {ModelGatewayError, type AdapterRequest, type Provider} from "./types";
  * passes the model's threshold; since the estimate bounds the real count from above, a request
  * below the threshold by the estimate is below it in fact. The result carries the 10% price
  * margin of every reservation.
+ *
+ * It fails closed, with `budget_exceeded` before anything is sent, on a model without a complete
+ * price and on image or PDF parts, which the text rule cannot bound. No production path sends
+ * either: every allowlisted route is priced and every production input is text.
  */
 export function conservativeTextReservationUsd(provider: Provider, request: AdapterRequest, prices: Record<string, ModelPrice>): number {
   const price = Object.hasOwn(prices, request.model) ? prices[request.model] : undefined;

@@ -168446,6 +168446,13 @@
       "decision": "preservar",
       "stage": "17 / correção pós-fechamento",
       "reason": "A verificação de autoridade comum respondia falso para todo job de avaliação governada; a varredura da outbox cancelaria avaliações no primeiro evento da organização de avaliação"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925153755_production_budget_ceilings.sql",
+      "decision": "preservar",
+      "stage": "17 / correção pós-fechamento",
+      "reason": "A reserva de cada chamada passou a ser o limite superior calibrado; os tetos do banco foram dimensionados para a estimativa antiga e recusariam pedidos legítimos"
     }
   ],
   "staging_archive": [

@@ -13,6 +13,12 @@ do $$ declare first_job uuid; replay_job uuid; begin
   raise exception 'legacy execution identity or payload changed';
  end if;
  if (select count(*) from public.processing_jobs where kind='case_analysis')<>1 then raise exception 'legacy enqueue duplicated job';end if;
+ -- The fixture run names no case share, so the job takes the production case ceiling
+ -- (migration production_budget_ceilings) and the usual four calls.
+ if (select (payload#>>'{model_budget,max_cost_usd}')::numeric from public.processing_jobs where id=first_job) is distinct from 3.10
+ or (select (payload#>>'{model_budget,max_calls}')::integer from public.processing_jobs where id=first_job) is distinct from 4 then
+  raise exception 'legacy enqueue did not fall back to the production case budget';
+ end if;
 end $$;
 select 'execution_legacy_enqueue: PASS' result;
 rollback;

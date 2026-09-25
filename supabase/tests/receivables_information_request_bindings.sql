@@ -274,6 +274,10 @@ begin
     or job_row.kind <> 'case_analysis'
     or job_row.status <> 'awaiting_approval'
     or job_row.payload #>> '{model_budget,max_calls}' <> '4'
+    -- The refresh carries the production case ceiling, 0.50 below its run (production_budget_ceilings).
+    or (job_row.payload #>> '{model_budget,max_cost_usd}')::numeric is distinct from 3.10
+    or (run_row.budget ->> 'case_max_cost_usd')::numeric is distinct from 3.10
+    or (run_row.budget ->> 'max_cost_usd')::numeric is distinct from 3.60
     or execution_row.created_by <> '10000000-0000-4000-8000-000000000741'::uuid
     or execution_row.status <> 'queued' then
     raise exception 'refresh run, controlled execution or case job was not bound correctly';

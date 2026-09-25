@@ -1555,8 +1555,12 @@
   {
    "version": "20260925153504",
    "name": "evaluation_job_authority_in_outbox_sweep"
+  },
+  {
+   "version": "20260925153755",
+   "name": "production_budget_ceilings"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-25T15:35:24Z"
+ "captured_at": "2026-09-25T15:52:05Z"
 }

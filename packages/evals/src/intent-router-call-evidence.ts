@@ -8,11 +8,12 @@ import {
 } from "@offroad/agent-contracts";
 import {
   buildRepairGuidance,
+  conservativeTextReservationUsd,
   defaultTaskPolicies,
-  estimateCostReservationUsd,
   estimateCostUsd,
-  estimateInputTokens,
   listPrices,
+  redactPersonalIdentifiers,
+  type AdapterRequest,
   type ContentPart,
   type GatewayCallLog,
   type ModelRef,
@@ -116,7 +117,7 @@ export function verifyIntentRouterCallEvidence(input: {
       const allowedRefs = configuredRefs(contract.task);
       validateAttemptTopology(calls, allowedRefs[0]!, allowedRefs[1], operation, issues);
       calls.forEach((call, index) => {
-        recordUnknownReservation(call, inputs[surface], unknownReservations, issues);
+        recordUnknownReservation(call, calls[index - 1], contract, inputs[surface], unknownReservations, issues);
         if (call.task !== contract.task) issues.push(`task_mismatch:${operation}:${index}`);
         if (call.schemaName !== contract.schemaName) issues.push(`schema_mismatch:${operation}:${index}`);
         if (call.inputFingerprint !== expectedInputFingerprint) issues.push(`input_mismatch:${operation}:${index}`);
@@ -191,7 +192,7 @@ export function verifyIntentRouterCallEvidence(input: {
       && call.task === row.task && call.schemaName === row.schemaName && call.metadata?.provider === row.provider
       && call.metadata?.configuredModel === row.configuredModel);
     for (const call of matching) claimedInvocationIds.add(call.invocationId);
-    for (const call of matching) recordUnknownReservation(call, preflightInput, unknownReservations, issues);
+    matching.forEach((call, index) => recordUnknownReservation(call, matching[index - 1], contract, preflightInput, unknownReservations, issues));
     if (matching.length === 0) issues.push(`missing_preflight_calls:${row.task}:${row.provider}`);
     if (matching.filter(({outcome}) => outcome === "ok").length !== (row.passed ? 1 : 0)) {
       issues.push(`preflight_outcome_mismatch:${row.task}:${row.provider}`);
@@ -386,8 +387,15 @@ function validateAttemptTopology(
   if (cursor < calls.length) issues.push(`unexpected_attempt_sequence:${operation}:${cursor}`);
 }
 
+/**
+ * The exposure the gateway keeps for an attempt whose cost it never learned: the calibrated
+ * reservation of the exact adapter request it built (redacted input, prompted-JSON system, repair
+ * guidance on a repair, the task's output ceiling), computed with the gateway's own function.
+ */
 function recordUnknownReservation(
   call: GatewayCallLog,
+  prior: GatewayCallLog | undefined,
+  contract: (typeof surfaceContract)[keyof typeof surfaceContract],
   input: readonly ContentPart[],
   reservations: Map<string, number>,
   issues: string[],
@@ -400,10 +408,22 @@ function recordUnknownReservation(
     reservations.set(call.invocationId, Number.NaN);
     return;
   }
-  const inputTokens = input.reduce((total, part) =>
-    total + (part.type === "text" ? estimateInputTokens(part.text) : 0), 0);
-  reservations.set(call.invocationId,
-    estimateCostReservationUsd(model, inputTokens, policy.maxOutputTokens));
+  const guidance = call.isSameModelRepair && prior?.validationSource
+    ? buildRepairGuidance(prior.validationSource, prior.validationIssues ?? [])
+    : undefined;
+  const request: AdapterRequest = {
+    model, effort: call.effort, outputMode: "prompted_json", thinking: "off",
+    system: guidance ? `${contract.system}\n\n${guidance}` : contract.system,
+    input: input.map((part) => part.type === "text" ? {type: "text", text: redactPersonalIdentifiers(part.text, {}).text} : part),
+    schema: contract.schema, schemaName: contract.schemaName,
+    maxOutputTokens: policy.maxOutputTokens, timeoutMs: policy.timeoutMs,
+  };
+  try {
+    reservations.set(call.invocationId, conservativeTextReservationUsd(call.provider, request, listPrices));
+  } catch {
+    issues.push(`unknown_cost_reservation_unbounded:${call.invocationId}`);
+    reservations.set(call.invocationId, Number.NaN);
+  }
 }
 
 function recomputedCallCost(call: GatewayCallLog): number {

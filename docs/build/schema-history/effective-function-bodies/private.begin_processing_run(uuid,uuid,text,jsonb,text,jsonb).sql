@@ -36,11 +36,11 @@ begin
   end if;
 
   effective_budget := jsonb_build_object(
-    'max_cost_usd', 5,
+    'max_cost_usd', 16,
     'max_calls', 160,
-    'document_max_cost_usd', 0.75,
+    'document_max_cost_usd', 1.60,
     'document_max_calls', 8,
-    'case_max_cost_usd', 1,
+    'case_max_cost_usd', 3.10,
     'case_max_calls', 4
   ) || coalesce(p_budget, '{}'::jsonb);
 

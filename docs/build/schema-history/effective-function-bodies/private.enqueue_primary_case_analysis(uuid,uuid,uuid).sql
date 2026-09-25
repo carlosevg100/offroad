@@ -108,7 +108,7 @@ begin
       'execution_mode', 'primary',
       'analysis_scope', 'full_case',
       'model_budget', jsonb_build_object(
-        'max_cost_usd', coalesce((run_row.budget->>'case_max_cost_usd')::numeric, 1),
+        'max_cost_usd', coalesce((run_row.budget->>'case_max_cost_usd')::numeric, 3.10),
         'max_calls', coalesce((run_row.budget->>'case_max_calls')::integer, 4)
       )
     ),

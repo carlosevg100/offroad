@@ -1,3 +1,4 @@
+import {productionRunBudget} from "@offroad/model-gateway";
 import type {SupabaseClient} from "@supabase/supabase-js";
 
 import type {Database, Json} from "@/types/database";
@@ -15,16 +16,12 @@ export const PIPELINE_VERSION = "f2-2026.08.24";
 
 /**
  * Economic contract for a production case. The database persists and distributes it to jobs;
- * the worker enforces the smaller of these values and its environment ceiling.
+ * the worker enforces the smaller of these values and its own ceiling for the job kind. Both come
+ * from `productionRunBudget` of the model gateway, derived for the calibrated reservation (24 Sep
+ * 2026): 1.60 per document, 3.10 for the case analysis, 16.00 for the run, so that a room of eight
+ * documents keeps the whole per-document ceiling.
  */
-export const DEFAULT_RUN_BUDGET = {
-  max_cost_usd: 5,
-  max_calls: 160,
-  document_max_cost_usd: 0.75,
-  document_max_calls: 8,
-  case_max_cost_usd: 1,
-  case_max_calls: 4,
-} as const;
+export const DEFAULT_RUN_BUDGET = productionRunBudget;
 
 export type ProcessingTrigger = "upload" | "manual" | "answer" | "reprocess" | "document_removed";
 
