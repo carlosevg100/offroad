@@ -460,6 +460,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.apply_dependency_event_v1(p_org uuid, p_event uuid)",
+      "kind": "function",
+      "name": "apply_dependency_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_event uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.apply_outbox_dependency_effect_v1(p_org uuid, p_event uuid)",
+      "kind": "function",
+      "name": "apply_outbox_dependency_effect_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_event uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.approve_advisor_execution_brief_v1(p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_command_id uuid)",
       "kind": "function",
       "name": "approve_advisor_execution_brief_v1",
@@ -563,6 +599,24 @@
       ],
       "signature": "p_error jsonb",
       "security_definer": false
+    },
+    {
+      "id": "function:private.assumption_slot_head_v1(p_org uuid, p_set uuid, p_slot text)",
+      "kind": "function",
+      "name": "assumption_slot_head_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_set uuid, p_slot text",
+      "security_definer": true
     },
     {
       "id": "function:private.attach_intake_session_to_opportunity(p_organization_id uuid, p_session_id uuid, p_opportunity_id uuid)",
@@ -2025,6 +2079,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capture_method_release_event_v1()",
+      "kind": "function",
+      "name": "capture_method_release_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.capture_observation_event_v1()",
       "kind": "function",
       "name": "capture_observation_event_v1",
@@ -2082,6 +2154,24 @@
       "id": "function:private.capture_source_rights_event_v1()",
       "kind": "function",
       "name": "capture_source_rights_event_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_source_version_event_v1()",
+      "kind": "function",
+      "name": "capture_source_version_event_v1",
       "grants": [
         [
           "postgres",
@@ -2481,6 +2571,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.continuation_fingerprint_v1(p_value jsonb)",
+      "kind": "function",
+      "name": "continuation_fingerprint_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_value jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.continuation_stable_json_v1(p_value jsonb)",
+      "kind": "function",
+      "name": "continuation_stable_json_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_value jsonb",
+      "security_definer": false
+    },
+    {
       "id": "function:private.contribution_sources_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid)",
       "kind": "function",
       "name": "contribution_sources_allowed_v1",
@@ -2778,6 +2904,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.dependency_event_impact_v1(p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text)",
+      "kind": "function",
+      "name": "dependency_event_impact_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.detach_document_source_binding_v1()",
       "kind": "function",
       "name": "detach_document_source_binding_v1",
@@ -2812,6 +2956,24 @@
       ],
       "signature": "p_job_id uuid",
       "security_definer": true
+    },
+    {
+      "id": "function:private.domain_event_effect_v1(p_kind text)",
+      "kind": "function",
+      "name": "domain_event_effect_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_kind text",
+      "security_definer": false
     },
     {
       "id": "function:private.enforce_capital_task_artifact_output()",
@@ -4355,6 +4517,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.guard_work_continuation_request_v1()",
+      "kind": "function",
+      "name": "guard_work_continuation_request_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.handle_new_user()",
       "kind": "function",
       "name": "handle_new_user",
@@ -5735,6 +5915,60 @@
       "security_definer": true
     },
     {
+      "id": "function:private.merge_dependency_update_request_v1(p_org uuid, p_work uuid, p_event uuid, p_executions uuid[])",
+      "kind": "function",
+      "name": "merge_dependency_update_request_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_event uuid, p_executions uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.method_procedure_aggregate_v1(p_method_id text)",
+      "kind": "function",
+      "name": "method_procedure_aggregate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_method_id text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.method_release_head_v1(p_org uuid, p_method text, p_house boolean)",
+      "kind": "function",
+      "name": "method_release_head_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_method text, p_house boolean",
+      "security_definer": true
+    },
+    {
       "id": "function:private.method_release_readable_v1(p_org uuid, p_release uuid)",
       "kind": "function",
       "name": "method_release_readable_v1",
@@ -6059,6 +6293,24 @@
       "id": "function:private.platform_method_reference_available_v1(p_release text)",
       "kind": "function",
       "name": "platform_method_reference_available_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_release text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.platform_method_release_published_v1(p_release text)",
+      "kind": "function",
+      "name": "platform_method_release_published_v1",
       "grants": [
         [
           "postgres",
@@ -7470,6 +7722,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.rebuild_incomplete_execution_dependencies_v1(p_org uuid)",
+      "kind": "function",
+      "name": "rebuild_incomplete_execution_dependencies_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid",
       "security_definer": true
     },
     {
@@ -10524,6 +10794,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.source_head_v1(p_org uuid, p_source uuid)",
+      "kind": "function",
+      "name": "source_head_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_source uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.source_storage_is_unbound_v1(p_bucket text, p_path text)",
       "kind": "function",
       "name": "source_storage_is_unbound_v1",
@@ -12007,6 +12295,24 @@
       ],
       "signature": "p_publication_id uuid, p_reason text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.work_continuation_transition_allowed_v1(p_from text, p_to text)",
+      "kind": "function",
+      "name": "work_continuation_transition_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_from text, p_to text",
+      "security_definer": false
     },
     {
       "id": "function:private.work_milestone_label_v1(p_text text, p_fallback text)",
@@ -25186,6 +25492,21 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.execution_invalidations.execution_invalidations_deny_clients",
+      "kind": "policy",
+      "name": "execution_invalidations_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "execution_invalidations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.execution_manifests.execution_manifests_deny_delete",
       "kind": "policy",
       "name": "execution_manifests_deny_delete",
@@ -31065,6 +31386,62 @@
       "with_check": null
     },
     {
+      "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_delete",
+      "kind": "policy",
+      "name": "work_continuation_requests_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_insert",
+      "kind": "policy",
+      "name": "work_continuation_requests_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_continuation_requests.work_continuation_requests_deny_update",
+      "kind": "policy",
+      "name": "work_continuation_requests_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_continuation_requests.work_continuation_requests_select_authorized",
+      "kind": "policy",
+      "name": "work_continuation_requests_select_authorized",
+      "qual": "( SELECT private.can_access_capital_project(work_continuation_requests.organization_id, work_continuation_requests.work_id) AS can_access_capital_project)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
       "id": "policy:public.work_contributions.work_contributions_deny_delete",
       "kind": "policy",
       "name": "work_contributions_deny_delete",
@@ -32891,6 +33268,56 @@
       "rls": true,
       "kind": "table",
       "name": "execution_input_snapshots",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.execution_invalidations",
+      "rls": true,
+      "kind": "table",
+      "name": "execution_invalidations",
       "grants": [
         [
           "postgres",
@@ -49207,6 +49634,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.work_continuation_requests",
+      "rls": true,
+      "kind": "table",
+      "name": "work_continuation_requests",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.work_contributions",
       "rls": true,
       "kind": "table",
@@ -50187,6 +50669,36 @@
       "definition": "CREATE TRIGGER execution_input_snapshots_updated BEFORE UPDATE ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.execution_invalidations.execution_invalidations_immutable",
+      "kind": "trigger",
+      "name": "execution_invalidations_immutable",
+      "table": "execution_invalidations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER execution_invalidations_immutable BEFORE DELETE OR UPDATE ON private.execution_invalidations FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.execution_invalidations.execution_invalidations_truncate_guard",
+      "kind": "trigger",
+      "name": "execution_invalidations_truncate_guard",
+      "table": "execution_invalidations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER execution_invalidations_truncate_guard BEFORE TRUNCATE ON private.execution_invalidations FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.execution_invalidations.execution_invalidations_updated",
+      "kind": "trigger",
+      "name": "execution_invalidations_updated",
+      "table": "execution_invalidations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER execution_invalidations_updated BEFORE UPDATE ON private.execution_invalidations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.execution_manifests.execution_manifests_audit",
       "kind": "trigger",
       "name": "execution_manifests_audit",
@@ -50935,6 +51447,16 @@
       "enabled": "O",
       "function": "private.guard_contribution_immutable_v1()",
       "definition": "CREATE TRIGGER platform_method_immutable BEFORE DELETE OR UPDATE ON private.platform_method_releases FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.platform_method_releases.platform_method_releases_dependency_event",
+      "kind": "trigger",
+      "name": "platform_method_releases_dependency_event",
+      "table": "platform_method_releases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_method_release_event_v1()",
+      "definition": "CREATE TRIGGER platform_method_releases_dependency_event AFTER INSERT ON private.platform_method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_release_event_v1()"
     },
     {
       "id": "trigger:private.platform_method_releases.platform_method_releases_truncate_guard",
@@ -53037,6 +53559,16 @@
       "definition": "CREATE TRIGGER method_releases_audit AFTER INSERT OR DELETE OR UPDATE ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
     },
     {
+      "id": "trigger:public.method_releases.method_releases_dependency_event",
+      "kind": "trigger",
+      "name": "method_releases_dependency_event",
+      "table": "method_releases",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_method_release_event_v1()",
+      "definition": "CREATE TRIGGER method_releases_dependency_event AFTER UPDATE OF status ON public.method_releases FOR EACH ROW EXECUTE FUNCTION private.capture_method_release_event_v1()"
+    },
+    {
       "id": "trigger:public.method_releases.method_releases_updated",
       "kind": "trigger",
       "name": "method_releases_updated",
@@ -54157,6 +54689,16 @@
       "definition": "CREATE TRIGGER source_versions_audit AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
     },
     {
+      "id": "trigger:public.source_versions.source_versions_dependency_event",
+      "kind": "trigger",
+      "name": "source_versions_dependency_event",
+      "table": "source_versions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_source_version_event_v1()",
+      "definition": "CREATE TRIGGER source_versions_dependency_event AFTER INSERT ON public.source_versions FOR EACH ROW EXECUTE FUNCTION private.capture_source_version_event_v1()"
+    },
+    {
       "id": "trigger:public.source_versions.source_versions_immutable",
       "kind": "trigger",
       "name": "source_versions_immutable",
@@ -54425,6 +54967,46 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER work_contexts_updated BEFORE UPDATE ON public.work_contexts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_audit",
+      "kind": "trigger",
+      "name": "work_continuation_requests_audit",
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER work_continuation_requests_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_guard",
+      "kind": "trigger",
+      "name": "work_continuation_requests_guard",
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_work_continuation_request_v1()",
+      "definition": "CREATE TRIGGER work_continuation_requests_guard BEFORE DELETE OR UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.guard_work_continuation_request_v1()"
+    },
+    {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_truncate_guard",
+      "kind": "trigger",
+      "name": "work_continuation_requests_truncate_guard",
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER work_continuation_requests_truncate_guard BEFORE TRUNCATE ON public.work_continuation_requests FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_updated",
+      "kind": "trigger",
+      "name": "work_continuation_requests_updated",
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_continuation_requests_updated BEFORE UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:public.work_contributions.work_contributions_audit",
