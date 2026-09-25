@@ -78,7 +78,9 @@ assert candidates == '1:scheduled:recompute', candidates
 first = second = None
 try:
     first = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-    first.stdin.write('begin;\n' + claim('first') + '\n\\echo RECOMPUTE_CLAIM_HELD\n')
+    # The barrier is a query, not \echo: psql flushes query results to a pipe at once, while an echo
+    # waits in its buffer, so the claim's JSON and the barrier arrive while the transaction is open.
+    first.stdin.write('begin;\n' + claim('first') + "\nselect 'RECOMPUTE_CLAIM_HELD';\n")
     first.stdin.flush()
     first_claim = ''
     deadline = time.monotonic() + 20
