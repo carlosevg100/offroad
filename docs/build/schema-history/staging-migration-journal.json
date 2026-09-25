@@ -1607,8 +1607,12 @@
   {
    "version": "20260924111433",
    "name": "provider_assurance_without_expiry"
+  },
+  {
+   "version": "20260925153721",
+   "name": "production_budget_ceilings"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-24T11:19:35.973469+00:00"
+ "captured_at": "2026-09-25T15:52:05Z"
 }
