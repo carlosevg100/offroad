@@ -15571,6 +15571,12 @@
           "line": 160,
           "anchor": " foreach name in array array['bind_job_authority_v1()','job_authority_is_current_v1(uuid)'] loop",
           "mechanism": "generated_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260925153504_evaluation_job_authority_in_outbox_sweep.sql",
+          "line": 25,
+          "anchor": "create or replace function private.job_authority_is_current_v1(p_job_id uuid)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
@@ -15821,6 +15827,12 @@
         {
           "path": "supabase/migrations/20260908035026_explicit_execution_brief_approval.sql",
           "line": 420,
+          "anchor": "create or replace function private.job_for_failure_capability(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260925153504_evaluation_job_authority_in_outbox_sweep.sql",
+          "line": 49,
           "anchor": "create or replace function private.job_for_failure_capability(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
         }
@@ -168427,6 +168439,13 @@
       "decision": "preservar",
       "stage": "16 / decisão de 24/09/2026",
       "reason": "Atestação de provedor sem data de validade, por decisão do fundador de 24/09/2026."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260925153504_evaluation_job_authority_in_outbox_sweep.sql",
+      "decision": "preservar",
+      "stage": "17 / correção pós-fechamento",
+      "reason": "A verificação de autoridade comum respondia falso para todo job de avaliação governada; a varredura da outbox cancelaria avaliações no primeiro evento da organização de avaliação"
     }
   ],
   "staging_archive": [

@@ -2801,3 +2801,7 @@ Mais 17 objetos criados em laço pela mesma migração (políticas de negação,
 ## Atestações de provedor sem vencimento por prazo (24/09/2026)
 
 0 objetos novos e 0 atualizados. Decisão do fundador de 24/09/2026: a conferência de provedor de 21/09/2026 deixa de vencer por prazo; validThrough nulo vale até revogação ou substituição, e todo o resto da elegibilidade continua conferido.
+
+## Autoridade de avaliação governada na varredura da outbox
+
+0 objetos novos e 0 atualizados. Autoridade de job de avaliação governada na varredura da outbox e recusa explícita do comando legado de falha
