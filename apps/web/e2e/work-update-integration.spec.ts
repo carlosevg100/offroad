@@ -54,6 +54,19 @@ async function privateWork(page: Page, sql: WorkContinuationSql, id: string, ema
 }
 
 /**
+ * Loads the work again and opens one of its sections through its navigation link, as a person coming
+ * back to the work does. A goto that only changes the fragment keeps the rendered document (and its
+ * forms, which the server refuses once stale), and the page's own refresh can put back the fragment
+ * the router last recorded, so the section is chosen by its link after the load.
+ */
+async function openSection(page: Page, projectId: string, section: string) {
+  const projectPath = `/pt-BR/app/projects/${projectId}`;
+  if (new URL(page.url()).pathname === projectPath) await page.reload();
+  else await page.goto(projectPath);
+  await page.locator(`.advisor-work-surface__navigation a[href="#${section}"]`).click();
+}
+
+/**
  * The institutional model of the work through the product: the financial objective, a configuration
  * over the reconciled facts (its operating cost ratio is the scenario), the review roles and the
  * approval that calculates. Returns once the configuration of this scenario is approved.
@@ -83,8 +96,7 @@ async function institutionalSetup(page: Page, email: string, projectId: string) 
     fixture,
     /** Submits one scenario and waits for its configuration to be ready for review. */
     async submitScenario(costRatio: string) {
-      await page.goto(`${projectPath}#work-institutional-setup`);
-      await page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup"]').click();
+      await openSection(page, projectId, "work-institutional-setup");
       const form = page.getByTestId("institutional-setup-form");
       await expect(form).toBeVisible();
       await form.locator('[name="asOfDate"]').fill("2026-12-31");
@@ -191,9 +203,7 @@ test("a mixed update of an execution and the financial model is adopted in one a
     {message: "the local worker recalculates the model inside the open update", timeout: 180_000, intervals: [2_000]}).toBe("settled");
   const r1 = sql(`select c.result_id ${recalculation};`);
   expect(sql(`select status from public.work_continuation_requests where id='${updateId}';`)).toBe("open");
-  // A goto that only changes the fragment keeps the rendered document, so every read of new facts reloads.
-  await page.goto(`/pt-BR/app/projects/${projectId}#work-institutional-model-result`);
-  await page.reload();
+  await openSection(page, projectId, "work-institutional-model-result");
   const panel = page.getByTestId("institutional-model-result");
   await expect(panel.getByRole("status")).toHaveText(results.status.stale);
   await expect(page.locator(`a[href$="/financial-results/${r1}/xlsx"]`)).toHaveCount(0);
@@ -204,8 +214,7 @@ test("a mixed update of an execution and the financial model is adopted in one a
   readoptFromVersion(sql, {email, projectId, seeded, documentId: version2});
   await expect.poll(() => sql(`select status from public.work_continuation_requests where id='${updateId}';`),
     {message: "the local worker recomputes the execution and the update becomes ready", timeout: 300_000, intervals: [3_000]}).toBe("ready");
-  await page.goto(`/pt-BR/app/projects/${projectId}#work-updates`);
-  await page.reload();
+  await openSection(page, projectId, "work-updates");
   const ready = page.locator('article.work-update[data-status="ready"]');
   await expect(ready).toContainText(fill(updates.recomputation.settled, {label: capitalTitle}));
   await expect(ready).toContainText(fill(updates.recomputation.institutional.settled, {label: names.institutionalModel}));
@@ -231,8 +240,7 @@ test("a mixed update of an execution and the financial model is adopted in one a
   expect(sql(`select array_to_string(m.reference_milestone_ids,',') from public.work_milestones m where m.kind='update_adopted' and m.subject_id='${updateId}';`))
     .toBe([milestone("work_execution", recomputed), milestone("institutional_model_result", r1), milestone("work_execution", rootId), milestone("institutional_model_result", r0)].join(","));
   expect(sql(`select superseded_by from private.institutional_model_results where id='${r0}';`)).toBe(r1);
-  await page.goto(`/pt-BR/app/projects/${projectId}#work-institutional-model-result`);
-  await page.reload();
+  await openSection(page, projectId, "work-institutional-model-result");
   await expect(panel.getByRole("status")).toHaveText(results.status.completed);
   await expect(page.locator(`a[href$="/financial-results/${r1}/xlsx"]`)).toHaveCount(1);
   await test.info().attach("mixed-update-adopted", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
@@ -266,8 +274,7 @@ test("a recalculation of the financial model declined before the worker runs it 
   const job = sql(`select j.id from public.processing_jobs j where j.payload->>'message_id'='${r1}';`);
   expect(sql(`select status from public.processing_jobs where id='${job}';`)).toBe("queued");
 
-  await page.goto(`/pt-BR/app/projects/${projectId}#work-updates`);
-  await page.reload();
+  await openSection(page, projectId, "work-updates");
   const scheduled = page.locator('article.work-update[data-status="scheduled"]');
   const entry = scheduled.locator('li.work-update__recomputation[data-kind="institutional"]');
   await expect(entry).toContainText(fill(updates.recomputation.institutional.scheduled, {label: names.institutionalModel}));
@@ -276,7 +283,7 @@ test("a recalculation of the financial model declined before the worker runs it 
   await entry.getByRole("button", {name: updates.decline.confirm, exact: true}).click();
   await expect.poll(() => sql(`select c.state||':'||c.reason ${candidate};`), {timeout: 30_000}).toBe("declined:person_declined:not_needed");
   expect(sql(`select status||':'||(last_error->>'reason') from public.processing_jobs where id='${job}';`)).toBe("cancelled:person_declined");
-  await page.reload();
+  await openSection(page, projectId, "work-updates");
   await expect(page.locator('article.work-update').first()).toContainText(fill(updates.recomputation.institutional.declined, {label: names.institutionalModel}));
   await test.info().attach("recalculation-declined", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 
