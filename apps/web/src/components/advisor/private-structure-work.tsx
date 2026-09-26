@@ -9,7 +9,7 @@ import {
   decidePrivateProjectStructure,
   type PrivateStructureDecisionState,
 } from "@/app/[locale]/app/projects/[projectId]/actions";
-import type {DealStateGap} from "@/lib/deal-state/analysis-gap";
+import type {DealStateGap, DealStateGapApproval} from "@/lib/deal-state/analysis-gap";
 import type {DealStateWorkbench, StructureAlternative} from "@/lib/deal-state/workbench";
 
 import {PrivateAnalysisGap} from "./private-analysis-gap";
@@ -17,6 +17,8 @@ import {PrivateAnalysisGap} from "./private-analysis-gap";
 type Props = {
   /** The structure result missing while no analysis runs, if any. */
   gap: DealStateGap | null;
+  /** The analysis of the gap is held until a person approves its execution brief. */
+  gapApproval?: DealStateGapApproval | null;
   isProcessing: boolean;
   locale: "pt-BR" | "en-US";
   projectId: string;
@@ -27,7 +29,7 @@ type Props = {
 
 const initialState: PrivateStructureDecisionState = {ok: false};
 
-export function PrivateStructureWork({gap, isProcessing, locale, projectId, sessionId, structure, structureDecision}: Props) {
+export function PrivateStructureWork({gap, gapApproval = null, isProcessing, locale, projectId, sessionId, structure, structureDecision}: Props) {
   const t = useTranslations("App.privateCase");
   const [state, action] = useActionState(decidePrivateProjectStructure, initialState);
   const confirmed = structureDecision?.status === "confirmed" || structureDecision?.status === "approved";
@@ -38,7 +40,7 @@ export function PrivateStructureWork({gap, isProcessing, locale, projectId, sess
     return <Processing t={t} />;
   }
   if (gap === "structure" || gap === "structure_revision") {
-    return <PrivateAnalysisGap gap={gap} locale={locale} projectId={projectId} sessionId={sessionId} />;
+    return <PrivateAnalysisGap approval={gapApproval} gap={gap} locale={locale} projectId={projectId} sessionId={sessionId} />;
   }
   if (declined) {
     return <section className="advisor-private-structure advisor-private-structure--state"><AlertTriangle aria-hidden="true" size={18} /><div><span>{t("structureKicker")}</span><strong>{t("structureDeclinedTitle")}</strong><p>{t("structureDeclinedBody")}</p></div></section>;

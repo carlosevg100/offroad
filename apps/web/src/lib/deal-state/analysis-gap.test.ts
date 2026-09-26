@@ -2,8 +2,8 @@ import {describe, expect, it, vi} from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import {dealStateAnalysisGap, dealStateGapTrigger, rowsAnalysisGap, workbenchAnalysisGap} from "./analysis-gap";
-import {resumeDealStateAnalysis} from "./resume-analysis";
+import {dealStateAnalysisGap, dealStateGapApproval, dealStateGapTrigger, rowsAnalysisGap, workbenchAnalysisGap} from "./analysis-gap";
+import {dealStateQueueOutcome, resumeDealStateAnalysis} from "./resume-analysis";
 import type {DealStateRow, DealStateWorkbench} from "./workbench";
 
 const none = {understandingStatus: null, structureCreatedAt: null, decision: null, productionPlanStatus: null, materialsPresent: false,
@@ -36,6 +36,16 @@ describe("a missing case result is a gap, never work in progress", () => {
       packageReview: null, matchScreen: null} as unknown as DealStateWorkbench;
     expect(workbenchAnalysisGap({...workbench, isProcessing: false}, false)).toBe("structure");
     expect(workbenchAnalysisGap({...workbench, isProcessing: true}, false)).toBeNull();
+  });
+
+  it("while the analysis is held for the approval of its plan, the gap's next step is that approval, never a resume", () => {
+    const workbench = {understanding: {row: {status: "confirmed"}}, structure: null, structureDecision: null, productionPlan: null,
+      packageReview: null, matchScreen: null, isProcessing: false} as unknown as DealStateWorkbench;
+    const held = {...workbench, awaitingApproval: true};
+    expect(workbenchAnalysisGap(held, false)).toBe("structure");
+    expect(dealStateGapApproval(held, "#execution-brief-approval")).toEqual({href: "#execution-brief-approval"});
+    expect(dealStateGapApproval(held, null)).toEqual({href: null});
+    expect(dealStateGapApproval({...workbench, awaitingApproval: false}, "#execution-brief-approval")).toBeNull();
   });
 });
 
@@ -71,6 +81,25 @@ describe("resuming the analysis of a missing result", () => {
     expect(await resumeDealStateAnalysis(client({error: {code: "55000", message: "deal_state_analysis_already_running"}}).supabase, "org", "session", [understanding])).toBe("resumed");
     expect(await resumeDealStateAnalysis(client({error: {code: "55000", message: "current_deal_state_trigger_required"}}).supabase, "org", "session", [understanding])).toBe("failed");
     expect(await resumeDealStateAnalysis(client({data: {unexpected: true}}).supabase, "org", "session", [understanding])).toBe("failed");
+  });
+
+  it("never claims a resume while an analysis of the case is held for the approval of its plan", async () => {
+    expect(await resumeDealStateAnalysis(client({data: {deduplicated: false, job_status: "awaiting_approval"}}).supabase, "org", "session", [understanding])).toBe("awaiting_approval");
+    expect(await resumeDealStateAnalysis(client({data: {deduplicated: true, job_status: "awaiting_approval"}}).supabase, "org", "session", [understanding])).toBe("awaiting_approval");
+    expect(await resumeDealStateAnalysis(client({error: {code: "55000", message: "deal_state_analysis_awaiting_approval"}}).supabase, "org", "session", [understanding])).toBe("awaiting_approval");
+  });
+
+  it("reads what a queue call left, as the decision forms show it", () => {
+    expect(dealStateQueueOutcome({deduplicated: false, job_status: "awaiting_approval"}, null)).toBe("held");
+    expect(dealStateQueueOutcome({deduplicated: true, job_status: "awaiting_approval"}, null)).toBe("held");
+    expect(dealStateQueueOutcome({deduplicated: false, job_status: "queued"}, null)).toBe("queued");
+    expect(dealStateQueueOutcome({deduplicated: true, job_status: "leased"}, null)).toBe("queued");
+    expect(dealStateQueueOutcome({deduplicated: true, job_status: "succeeded"}, null)).toBe("finished");
+    expect(dealStateQueueOutcome(null, {code: "55000", message: "deal_state_analysis_awaiting_approval"})).toBe("held_by_other");
+    expect(dealStateQueueOutcome(null, {code: "55000", message: "deal_state_analysis_already_running"})).toBe("running");
+    expect(dealStateQueueOutcome(null, {code: "55000", message: "confirmed_case_required"})).toBe("failed");
+    expect(dealStateQueueOutcome(null, {code: "42501", message: "deal_state_analysis_awaiting_approval"})).toBe("failed");
+    expect(dealStateQueueOutcome({unexpected: true}, null)).toBe("failed");
   });
 });
 

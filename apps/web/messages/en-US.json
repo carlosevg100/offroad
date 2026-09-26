@@ -2861,6 +2861,14 @@
         "resume": "Resume the analysis",
         "resuming": "Resuming the analysis...",
         "resumed": "Analysis resumed. Its progress appears on this page.",
+        "held": {
+          "body": "The analysis of this decision is already recorded and waits for its plan to be approved. It starts only after that approval and is not repeated while it waits.",
+          "nextStepBody": "Review and approve the plan for this analysis in this conversation to start it.",
+          "preparingBody": "The plan for this analysis is still being prepared. It appears in this conversation for approval as soon as it is ready.",
+          "projectBody": "The plan for this analysis is approved in the project conversation. The analysis starts only after that approval.",
+          "review": "Review the plan for approval",
+          "resumed": "The analysis is recorded and waits for its plan to be approved in this conversation. It starts after that approval."
+        },
         "errors": {
           "invalid": "The case could not be identified. Reload the page.",
           "stale": "The case changed since the page was opened. Reload the page.",
@@ -2940,7 +2948,8 @@
       "diagnosticErrors": {
         "stale": "The diagnostic changed. Reload the project before confirming.",
         "save": "The diagnostic could not be confirmed.",
-        "processing": "The diagnostic was confirmed, but the next stage needs to be started again."
+        "processing": "The diagnostic was confirmed, but the next stage needs to be started again.",
+        "awaiting_approval": "The diagnostic was confirmed. Another analysis of this case waits for its plan to be approved; the next stage can be resumed after that approval."
       },
       "structureKicker": "INDICATIVE STRUCTURE",
       "structureProcessingTitle": "Offroad is designing and testing the alternatives",
@@ -2973,7 +2982,8 @@
         "invalid": "Select an alternative and describe the adjustment when required.",
         "stale": "The structure changed. Reload the project before deciding.",
         "save": "The decision could not be recorded.",
-        "processing": "The decision was recorded, but the next stage needs to be started again."
+        "processing": "The decision was recorded, but the next stage needs to be started again.",
+        "awaiting_approval": "The decision was recorded. Another analysis of this case waits for its plan to be approved; this stage can be resumed after that approval."
       },
       "productionKicker": "PREPARATION PLAN",
       "productionTitle": "The package will be built from this same basis",
@@ -3141,6 +3151,7 @@
         "stale": "This version changed. Reload the project before deciding.",
         "save": "This decision could not be recorded.",
         "processing": "The decision was preserved, but the next analysis needs to resume.",
+        "awaiting_approval": "The decision was recorded. Another analysis of this case waits for its plan to be approved; this stage can be resumed after that approval.",
         "incomplete": "The package does not yet contain every planned artifact.",
         "forbidden": "Your role or representation verification does not yet permit this action."
       },
@@ -3792,6 +3803,7 @@
       },
       "notices": {
         "analysis_resumed": "Analysis resumed from the recorded decision.",
+        "analysis_awaiting_approval": "Decision recorded. The next analysis waits for its plan to be approved in the project and starts only after that approval.",
         "analysis_finished": "The analysis of this decision already finished without producing this result. No result was assumed.",
         "analysis_current": "No result is pending at this step.",
         "understanding_unavailable": "There is no current understanding awaiting confirmation.",

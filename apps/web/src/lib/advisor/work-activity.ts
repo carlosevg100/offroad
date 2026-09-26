@@ -132,6 +132,11 @@ export function jobKindRunning(activity: WorkActivity, kinds: readonly string[])
   return activity.jobs.some((job) => runs(job) && kinds.includes(job.kind));
 }
 
+/** A live job of one of these kinds is held until a person approves its execution brief. */
+export function jobKindHeld(activity: WorkActivity, kinds: readonly string[]): boolean {
+  return activity.jobs.some((job) => job.status === "awaiting_approval" && kinds.includes(job.kind));
+}
+
 /**
  * Whether the calculation of an institutional result runs. A recomputation is named by its
  * candidate, which stays scheduled until its job ends. A calculation a person asked for runs as a

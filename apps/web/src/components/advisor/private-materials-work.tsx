@@ -11,7 +11,7 @@ import {
   type PrivateGovernedDecisionState,
 } from "@/app/[locale]/app/projects/[projectId]/actions";
 import type {GovernedMaterialPackage} from "@/lib/deal-state/materials";
-import type {DealStateGap} from "@/lib/deal-state/analysis-gap";
+import type {DealStateGap, DealStateGapApproval} from "@/lib/deal-state/analysis-gap";
 import type {DealStateWorkbench} from "@/lib/deal-state/workbench";
 
 import {PrivateAnalysisGap} from "./private-analysis-gap";
@@ -20,6 +20,8 @@ import {privateMaterialArtifacts, privateMaterialPackageApproved} from "./privat
 type Props = {
   /** The preparation result missing while no analysis runs, if any. */
   gap: DealStateGap | null;
+  /** The analysis of the gap is held until a person approves its execution brief. */
+  gapApproval?: DealStateGapApproval | null;
   governed: GovernedMaterialPackage | null;
   isProcessing: boolean;
   locale: "pt-BR" | "en-US";
@@ -39,7 +41,7 @@ export function PrivateMaterialsWork(props: Props) {
   if (props.isProcessing) return <MaterialsProcessing />;
   // An approved plan without its materials, with no analysis running, is a gap, not work in progress.
   if (props.gap === "production_plan" || props.gap === "materials") {
-    return <PrivateAnalysisGap gap={props.gap} locale={props.locale} projectId={props.projectId} sessionId={props.sessionId} />;
+    return <PrivateAnalysisGap approval={props.gapApproval} gap={props.gap} locale={props.locale} projectId={props.projectId} sessionId={props.sessionId} />;
   }
   return null;
 }

@@ -2,7 +2,7 @@ import type {SupabaseClient} from "@supabase/supabase-js";
 import {matchScreenSchema, type MatchScreen} from "@offroad/domain-contracts";
 import {z} from "zod";
 
-import {jobKindRunning, type WorkActivity} from "@/lib/advisor/work-activity";
+import {jobKindHeld, jobKindRunning, type WorkActivity} from "@/lib/advisor/work-activity";
 import type {Database, Json} from "@/types/database";
 
 export type DealStateRow = Database["public"]["Tables"]["deal_state_objects"]["Row"];
@@ -99,6 +99,8 @@ export type DealStateWorkbench = {
   matchScreen: {row: DealStateRow; value: MatchScreen} | null;
   /** A case analysis job of the session is queued or leased, as the work activity reader saw it. */
   isProcessing: boolean;
+  /** A case analysis job of the session is held until a person approves its execution brief. */
+  awaitingApproval: boolean;
 };
 
 export function latestActiveDealState(rows: readonly DealStateRow[]) {
@@ -197,6 +199,7 @@ export async function loadDealStateWorkbench(
       latest.get("material_artifact"),
     ),
     isProcessing: jobKindRunning(activity, ["case_analysis"]),
+    awaitingApproval: jobKindHeld(activity, ["case_analysis"]),
   };
 }
 

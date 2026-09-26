@@ -12,7 +12,7 @@ import {InstitutionalModelResultWork} from "@/components/advisor/institutional-m
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
 import {institutionalCalculationRuns, jobKindRunning, summarizeWorkActivity} from "@/lib/advisor/work-activity";
 import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
-import {workbenchAnalysisGap} from "@/lib/deal-state/analysis-gap";
+import {dealStateGapApproval, workbenchAnalysisGap} from "@/lib/deal-state/analysis-gap";
 import {loadProviderWorkHistory} from "@/lib/advisor/provider-work-history";
 import {ProviderWorkHistory} from "@/components/advisor/provider-work-history";
 import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
@@ -361,6 +361,10 @@ async function ConversationalCapitalProject({
   const displayedApproval = parsedExecutionBrief?.success && executionBriefRow
     ? describeApproval(executionBriefApprovalRaw, {id: executionBriefRow.id, fingerprint: parsedExecutionBrief.data.fingerprint, version: executionBriefRow.brief_version})
     : null;
+  // While the analysis of a gap is held, its next step is the approval card of this conversation.
+  const analysisGapApproval = privateWorkbench
+    ? dealStateGapApproval(privateWorkbench, displayedApproval?.status === "awaiting" ? "#execution-brief-approval" : null)
+    : null;
   const briefJob = documentaryPlanJob;
   const plannedDocumentaryWork = (displayedApproval?.status === "awaiting" || displayedApproval?.status === "approved")
     && (briefJob === "comparison" || briefJob === "meeting" || briefJob === "review") ? {job:briefJob} as const : undefined;
@@ -665,6 +669,7 @@ async function ConversationalCapitalProject({
       understanding={privateWorkbench.understanding}
     /> : null}{privateWorkbench ? <PrivateStructureWork
       gap={analysisGap}
+      gapApproval={analysisGapApproval}
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       projectId={project.id}
@@ -673,6 +678,7 @@ async function ConversationalCapitalProject({
       structureDecision={privateWorkbench.structureDecision}
     /> : null}{privateWorkbench ? <PrivateMaterialsWork
       gap={analysisGap}
+      gapApproval={analysisGapApproval}
       governed={governedMaterials}
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
@@ -684,6 +690,7 @@ async function ConversationalCapitalProject({
     /> : null}{privateWorkbench ? <PrivateMarketWork
       feedbackEvents={feedbackEvents ?? []}
       gap={analysisGap}
+      gapApproval={analysisGapApproval}
       introductionPlan={introductionPlan}
       introductionRecipients={planRecipients}
       introductionTargets={planTargets}

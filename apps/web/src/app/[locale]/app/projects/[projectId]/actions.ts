@@ -12,7 +12,7 @@ import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import {processIntakeSession} from "@/lib/intake/server";
 import {latestActiveDealState, parseCompiledStructure} from "@/lib/deal-state/workbench";
 import {governedMaterialPackageFromRows} from "@/lib/deal-state/materials";
-import {resumeDealStateAnalysis} from "@/lib/deal-state/resume-analysis";
+import {dealStateQueueOutcome, resumeDealStateAnalysis} from "@/lib/deal-state/resume-analysis";
 import {marketFeedbackInputSchema} from "@/lib/market-feedback/input";
 import type {Json} from "@/types/database";
 
@@ -30,18 +30,18 @@ export type PrivatePreliminaryDecisionState = {
 
 export type PrivateDiagnosticDecisionState = {
   ok: boolean;
-  code?: "stale" | "save" | "processing";
+  code?: "stale" | "save" | "processing" | "awaiting_approval";
 };
 
 export type PrivateStructureDecisionState = {
   ok: boolean;
   decision?: "confirm" | "request_changes" | "decline";
-  code?: "invalid" | "stale" | "save" | "processing";
+  code?: "invalid" | "stale" | "save" | "processing" | "awaiting_approval";
 };
 
 export type PrivateGovernedDecisionState = {
   ok: boolean;
-  code?: "invalid" | "stale" | "save" | "processing" | "incomplete" | "forbidden";
+  code?: "invalid" | "stale" | "save" | "processing" | "awaiting_approval" | "incomplete" | "forbidden";
 };
 
 export type PrivateMatchDecisionState = PrivateGovernedDecisionState & {
@@ -56,7 +56,7 @@ export type AdvisorProposalDecisionState = {
 
 export type PrivateAnalysisResumeState = {
   ok: boolean;
-  code?: "invalid" | "stale" | "finished" | "current" | "processing";
+  code?: "invalid" | "stale" | "finished" | "current" | "processing" | "awaiting_approval";
 };
 
 export type MarketFeedbackState = {
@@ -113,6 +113,12 @@ export async function resumePrivateProjectAnalysis(
   const outcome = await resumeDealStateAnalysis(runtime.supabase, runtime.organization.id, runtime.session.id, runtime.rows);
   revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
   return outcome === "resumed" ? {ok: true} : {ok: false, code: outcome === "failed" ? "processing" : outcome};
+}
+
+/** The code a decision form shows when the analysis of its decision could not be queued: another
+ * analysis of the case is held for the approval of its execution brief, or the queue refused. */
+function queueRefusalCode(error: {code?: string; message?: string}): "awaiting_approval" | "processing" {
+  return dealStateQueueOutcome(null, error) === "held_by_other" ? "awaiting_approval" : "processing";
 }
 
 /** Applies a conversational edit only after the user reviews its field-level preview. The
@@ -416,7 +422,7 @@ export async function confirmPrivateProjectDiagnostic(
   });
   revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
   revalidatePath(`/${locale}/app`, "layout");
-  return queueError ? {ok: false, code: "processing"} : {ok: true};
+  return queueError ? {ok: false, code: queueRefusalCode(queueError)} : {ok: true};
 }
 
 export async function decidePrivateProjectStructure(
@@ -504,7 +510,7 @@ export async function decidePrivateProjectStructure(
       p_session_id: session.id,
       p_trigger_source: parsed.data.decision === "confirm" ? "structure_confirmed" : "structure_changes_requested",
     });
-    if (queueError) return {ok: false, code: "processing"};
+    if (queueError) return {ok: false, code: queueRefusalCode(queueError)};
   }
   revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
   revalidatePath(`/${locale}/app`, "layout");
@@ -567,7 +573,7 @@ export async function approvePrivateProjectProductionPlan(
   });
   revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
   revalidatePath(`/${locale}/app`, "layout");
-  return queueError ? {ok: false, code: "processing"} : {ok: true};
+  return queueError ? {ok: false, code: queueRefusalCode(queueError)} : {ok: true};
 }
 
 /** Pins the exact internal package after every artifact in the approved plan exists. */
@@ -637,7 +643,7 @@ export async function approvePrivateProjectMaterialPackage(
   });
   revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
   revalidatePath(`/${locale}/app`, "layout");
-  return queueError ? {ok: false, code: "processing"} : {ok: true};
+  return queueError ? {ok: false, code: queueRefusalCode(queueError)} : {ok: true};
 }
 
 /** Approves only a governed shortlist; the RPC creates a contact-free draft plan. */
