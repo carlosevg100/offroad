@@ -36,17 +36,15 @@ export async function GET(request: Request, {params}: Params) {
 
   const appendix = await materialSourcesFromRevision(supabase, organization.id, revision, material);
   if (!appendix.ok) return artifactUnavailable(copy.sourceRestricted);
-  const html = artifactRenderers["case-render.material-html"].produce({
+  const render = (autoPrint: boolean) => artifactRenderers["case-render.material-html"].produce({
     material: appendix.material,
     lang,
-    meta: {
-      issuedOn,
-      sources: appendix.sources,
-      autoPrint: new URL(request.url).searchParams.get("print") === "1",
-      ...(organization.name ? {companyName: organization.name} : {}),
-    },
+    meta: {issuedOn, sources: appendix.sources, autoPrint, ...(organization.name ? {companyName: organization.name} : {})},
   });
-  const verification = verifyRenderedBytes(revision, new TextEncoder().encode(html), {format: "html", selectors: {locale: lang, materialKind: kind}});
+  const autoPrint = new URL(request.url).searchParams.get("print") === "1";
+  const html = render(autoPrint);
+  // The print dialog is an option of the request, not of the version: pinned bytes are those of the page without it.
+  const verification = verifyRenderedBytes(revision, new TextEncoder().encode(autoPrint ? render(false) : html), {format: "html", selectors: {locale: lang, materialKind: kind}});
   if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
 
   if (!await resourceStillReadable(supabase, organization.id, sessionId, "session")) return artifactNotFound();

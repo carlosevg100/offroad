@@ -1,6 +1,7 @@
 import {createHash} from "node:crypto";
 
 import {caseExportVersion} from "@offroad/case-export";
+import {materialHtmlRendererVersion} from "@offroad/case-render";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 
 const mocks = vi.hoisted(() => ({workspace: vi.fn(), load: vi.fn(), caseState: vi.fn(), readable: vi.fn()}));
@@ -166,6 +167,18 @@ describe("the materials routes serve one exact revision", () => {
       rendered: {sha256: "e".repeat(64), byteLength: 9, renderer: "case-export.material-docx", rendererVersion: caseExportVersion,
         deterministicInputs: {materialFingerprint: "f".repeat(64), materialKind: "term_sheet", locale: "pt"}}})]);
     expect((await call(routes.docx.now)).status).toBe(409);
+  });
+  it("verifies a pinned printable page without the print dialog, which is an option of the request and not of the version", async () => {
+    const page = await (await call(routes.html.now)).arrayBuffer();
+    supabase = materialSupabase([legacyMaterialRead({legacy: undefined, format: "html", rendered: {sha256: sha(page), byteLength: page.byteLength,
+      renderer: "case-render.material-html", rendererVersion: materialHtmlRendererVersion,
+      deterministicInputs: {materialFingerprint, materialKind: "term_sheet", locale: "pt", issuedOn: governedPackage.issuedOn}}})]);
+    const printable = await call(routes.html.now, "?print=1");
+    expect(printable.status).toBe(200);
+    expect(printable.headers.get("x-artifact-content-sha256")).toBe(sha(page));
+    expect(await printable.text()).toContain("window.print()");
+    const plain = await call(routes.html.now);
+    expect(sha(await plain.arrayBuffer())).toBe(sha(page));
   });
   it("refuses a revision whose sources the reader may not use, and one a renderer of this build cannot produce", async () => {
     supabase = materialSupabase([legacyMaterialRead({restriction: {kind: "source_rights", linkIds: ["9f000000-0000-4000-8000-000000000001"], unresolvedRevisionIds: []}})]);
