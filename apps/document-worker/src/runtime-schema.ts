@@ -30,6 +30,8 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "provider-resource-retention.v2",
   // Stage 18, increment 3B: claim, basis, submit and fail of the dependency recompute.
   "dependency-recompute.v1",
+  // Stage 18, increment 6A: the recompute health the loop reads for its alarms.
+  "dependency-recompute-health.v1",
 ] as const;
 
 const runtimeSchemaContract = z.object({

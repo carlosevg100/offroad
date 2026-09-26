@@ -3189,6 +3189,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.dependency_recompute_health_v1()",
+      "kind": "function",
+      "name": "dependency_recompute_health_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.dependency_recompute_key_v1(p_work uuid, p_base uuid, p_fingerprint text)",
       "kind": "function",
       "name": "dependency_recompute_key_v1",
@@ -14288,6 +14306,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_dependency_recompute_health_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_dependency_recompute_health_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_document_advisor_authorization(p_job_id uuid, p_capability_token text, p_event_id uuid)",
       "kind": "function",
       "name": "worker_document_advisor_authorization",
@@ -23595,6 +23636,29 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_dependency_recompute_health_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "worker_dependency_recompute_health_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
       "security_definer": false
     },
     {

@@ -12800,6 +12800,10 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_dependency_recompute_health_v1: {
+        Args: { p_worker_token: string }
+        Returns: Json
+      }
       worker_document_advisor_authorization: {
         Args: {
           p_capability_token: string
