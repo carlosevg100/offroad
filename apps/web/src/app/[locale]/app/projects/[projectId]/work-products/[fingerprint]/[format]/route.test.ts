@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
+import {offroadHousePresentationStructure} from "@offroad/case-export/presentation-structure";
 import {syntheticDocumentWorkProduct} from "@offroad/testing-fixtures/document-work-product";
 import {documentWorkProductSchema} from "@offroad/domain-contracts";
 import {GET} from "./route";
@@ -12,6 +13,7 @@ const projectId = "10000000-0000-4000-8000-000000000001";
 const product = documentWorkProductSchema.parse(syntheticDocumentWorkProduct);
 const labels = {meetingTitle: "Preserved locale"};
 const supabase = {rpc: mocks.rpc, storage: {from: () => ({download: mocks.download})}};
+const versionId = "50000000-0000-4000-8000-000000000001";
 const clientTemplate = {
   template_id: "30000000-0000-4000-8000-000000000001", template_key: "synthetic-client", template_version: "2026.09.11-v1",
   origin: "client_supplied", fingerprint: "c".repeat(64), scope: "organization",
@@ -21,6 +23,9 @@ const clientTemplate = {
     fonts: {display: "Founders Grotesk", body: "Founders Grotesk", pdf_display: "Helvetica", pdf_body: "Helvetica"},
     logo: null, confidentiality_label: "CONFIDENCIAL",
   },
+  // The exact stored version the reader returns since stage 19, increment 5.
+  structure: offroadHousePresentationStructure, version_id: versionId, version_no: 1, version_created_at: "2026-09-27T13:00:00Z",
+  versions: [{version_id: versionId, version_no: 1, created_at: "2026-09-27T13:00:00Z", author_name: null, is_current: true}],
 };
 const templateContext = (effective: unknown) => ({
   project_id: projectId, organization_id: "20000000-0000-4000-8000-000000000001", can_manage: false,
@@ -80,6 +85,8 @@ describe("document work product download route", () => {
     expect(mocks.docx).toHaveBeenCalledWith(expect.objectContaining({template: expect.objectContaining({
       id: "synthetic-client", version: "2026.09.11-v1", origin: "client_supplied", fingerprint: "c".repeat(64),
       fonts: {display: "Founders Grotesk", body: "Founders Grotesk"}, pdfFonts: {display: "Helvetica", body: "Helvetica"},
+      // The exact stored version travels with the identity, so the file names it.
+      versionId, structure: offroadHousePresentationStructure,
     })}));
   });
   it("falls back to the Offroad identity when the stored record is not renderable", async () => {

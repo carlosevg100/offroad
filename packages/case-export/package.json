@@ -15,6 +15,10 @@
     "./presentation-template": {
       "types": "./src/presentation-template.ts",
       "default": "./src/presentation-template.ts"
+    },
+    "./presentation-structure": {
+      "types": "./src/presentation-structure.ts",
+      "default": "./src/presentation-structure.ts"
     }
   },
   "scripts": {

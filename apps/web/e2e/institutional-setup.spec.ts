@@ -44,6 +44,35 @@ test("guided institutional setup calculates only after review and survives resum
  expect(projectId).toBeTruthy();
  const projectPath=`/pt-BR/app/projects/${projectId}`;
  await page.goto(projectPath);
+ // Stage 19, increment 5: the visual identity and the structure of the presentations are saved as
+ // immutable versions. The owner records a client identity (version 1), then changes the structure
+ // (a required field and the order of the sections) and sees version 2 with version 1 in the
+ // history, without any identifier on the screen; the structure survives a reload.
+ await page.locator('.advisor-work-surface__navigation a[href="#work-presentation-template"]').click();
+ const template=page.getByTestId("presentation-template-settings");
+ await expect(template).toBeVisible();
+ await expect(page.getByTestId("presentation-template-current")).toHaveText(messages.PresentationTemplate.currentHouse);
+ await template.locator('input[name="templateKey"]').fill("cliente-sintetico");
+ await template.locator('input[name="fontDisplay"]').fill("Arial");
+ await template.locator('input[name="fontBody"]').fill("Arial");
+ await template.getByRole("button",{name:messages.PresentationTemplate.save,exact:true}).click();
+ await expect(page.getByTestId("presentation-template-saved")).toHaveAttribute("data-version","1");
+ await expect(page.getByTestId("presentation-template-version")).toHaveAttribute("data-version","1");
+ await template.getByTestId("presentation-template-required-open-gaps-gap-list").check();
+ await template.getByRole("button",{name:messages.PresentationTemplate.moveUp.replace("{title}","Fontes e data-base"),exact:true}).click();
+ await template.getByRole("button",{name:messages.PresentationTemplate.save,exact:true}).click();
+ await expect(page.getByTestId("presentation-template-saved")).toHaveAttribute("data-version","2");
+ await expect(page.getByTestId("presentation-template-version")).toHaveAttribute("data-version","2");
+ const templateHistory=page.getByTestId("presentation-template-history");
+ await expect(templateHistory.locator('li[data-version="1"]')).toHaveCount(1);
+ await expect(templateHistory).not.toContainText(/[0-9a-f]{8}-[0-9a-f]{4}-/);
+ await test.info().attach("presentation-template-version-2",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
+ await page.reload();
+ await page.locator('.advisor-work-surface__navigation a[href="#work-presentation-template"]').click();
+ await expect(page.getByTestId("presentation-template-version")).toHaveAttribute("data-version","2");
+ expect(await page.getByTestId("presentation-template-structure").locator("li[data-section-key]").evaluateAll(items=>items.map(item=>item.getAttribute("data-section-key"))))
+  .toEqual(["decision-headline","maturity-wall","analytical-direction","source-register","open-gaps"]);
+ await expect(page.getByTestId("presentation-template-required-open-gaps-gap-list")).toBeChecked();
  // Common entry. A documentary request is explained, not started: the documentary reading is not
  // activated in this stack and no model is called. A financial objective goes to the model
  // configuration, is recorded, and survives a reload.
