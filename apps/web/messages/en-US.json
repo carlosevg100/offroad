@@ -2179,6 +2179,138 @@
         "roleExists": "This entity already has this role in the analysis with another accounting perimeter. The recorded role was kept."
       }
     },
+    "workUpdates": {
+      "title": "Updates",
+      "heading": "Updates of this work",
+      "intro": "When an input of an execution changes, only what depends on it is redone. Earlier results and decisions stay recorded, and nothing is adopted without your decision.",
+      "empty": "No input change has affected this work so far.",
+      "unavailable": "The updates of this work could not be read right now.",
+      "awaiting": "{count, plural, one {# awaits a decision} other {# await a decision}}",
+      "openHeading": "In progress",
+      "closedHeading": "Earlier",
+      "updatedAt": "Updated on {date}",
+      "status": {
+        "open": "Under review",
+        "awaiting_authorization": "Awaiting authorization",
+        "scheduled": "Being recomputed",
+        "ready": "Ready to adopt",
+        "adopted": "Adopted",
+        "declined": "Declined",
+        "superseded": "Merged into another update"
+      },
+      "sections": {
+        "changed": "What changed",
+        "recomputed": "What was redone",
+        "stayedValid": "What stays valid",
+        "waiting": "What awaits a decision"
+      },
+      "change": {
+        "source_version": "Source {name}: version {from} was replaced by version {to}",
+        "assumption_slot": "Assumption {name}: revision {from} of the working basis was replaced by revision {to}",
+        "assumption_slot_unnamed": "A working-basis assumption: revision {from} was replaced by revision {to}",
+        "method_release": "{name}: a newer version of the method was published",
+        "graph_incomplete": "The recorded dependencies are incomplete; the execution will be redone in full once they are rebuilt",
+        "unnamed": "no visible name",
+        "unknownVersion": "not identified",
+        "affects": "Affects: {executions}"
+      },
+      "recomputation": {
+        "scheduled": "{label}: queued to be redone",
+        "produced": "{label}: being redone with the current inputs",
+        "settled": "{label}: redone from the original execution, with the current inputs",
+        "declined": "{label}: recomputation declined",
+        "failed": "{label}: the recomputation did not finish",
+        "unnamed": "Unnamed execution",
+        "reasons": {
+          "person": "Declined by a person.",
+          "requester": "The person who requested the original execution no longer has access to this work.",
+          "failed": "The recomputation could not be produced."
+        }
+      },
+      "stayedValidNone": "No other execution of this work.",
+      "waitingNone": "Nothing in this update awaits a decision.",
+      "hold": {
+        "derived_source_not_rederived": "{execution}: waiting for a new version of the derived source",
+        "basis_behind_source": "{execution}: waiting for a revision of the working basis that uses the new version",
+        "source_not_bindable": "{execution}: waiting for the verification or the usage rights of the new version",
+        "method_not_executable": "{execution}: waiting for an executable method",
+        "graph_incomplete": "{execution}: waiting for the dependencies to be rebuilt"
+      },
+      "authorization": {
+        "item": "{label}: recomputation capped at {cost} and up to {calls, plural, one {# model call} other {# model calls}}",
+        "authorize": "Authorize this recomputation",
+        "confirm": "Confirm authorization",
+        "explanation": "The recomputation runs once, within the cap shown. Earlier results stay recorded.",
+        "declineOne": "Decline this recomputation"
+      },
+      "adopt": {
+        "action": "Adopt update",
+        "confirm": "Confirm adoption",
+        "explanation": "The redone results become the approved basis of this work. Earlier results and decisions stay recorded and referenced."
+      },
+      "decline": {
+        "action": "Decline update",
+        "confirm": "Confirm decline",
+        "explanation": "The update ends declined, with the reason chosen. Results already redone stay recorded, without being adopted.",
+        "reasonLabel": "Reason",
+        "reasons": {
+          "not_needed": "No longer needed",
+          "cost_not_justified": "The cost is not justified",
+          "inputs_disputed": "The new data is not correct",
+          "other": "Another reason"
+        }
+      },
+      "cancel": "Cancel",
+      "decided": {
+        "adopted": "Adopted on {date}.",
+        "declined": "Declined on {date}. Reason: {reason}.",
+        "closed": "Closed with no result to adopt.",
+        "superseded": "The input changes of this update are covered by another update of this work."
+      },
+      "done": {
+        "adopted": "Update adopted.",
+        "authorized": "Recomputation authorized.",
+        "declined": "Decline recorded."
+      },
+      "errors": {
+        "invalid": "The request could not be validated.",
+        "denied": "You are not authorized to decide on this work.",
+        "role": "You are not authorized to decide on this work.",
+        "duplicate": "This decision is already recorded.",
+        "not_found": "The update was not found. The page was reloaded.",
+        "stale": "The update changed since it was shown. The page was reloaded; check it and decide again.",
+        "processing": "The update is no longer in that state. The page was reloaded.",
+        "save": "The decision could not be recorded. Please try again."
+      },
+      "labels": {
+        "dependency_update": "Update after an input change",
+        "dependency_update_adopted": "Adopted update",
+        "dependency_update_declined": "Declined update",
+        "dependency_recompute_authorization": "Recomputation authorization",
+        "dependency_recompute_declined": "Declined recomputation",
+        "user_followup": "Continuation requested in the conversation",
+        "execution_brief": "Execution plan",
+        "institutional_model_configuration": "Institutional model configuration",
+        "capital_project_artifact": "Work result",
+        "company_debt_diagnostic": "Company debt diagnostic",
+        "alternative_map": "Debt alternatives map",
+        "meeting_brief": "Meeting brief"
+      }
+    },
+    "workUpdateNames": {
+      "unnamedMethod": "This basis analysis",
+      "repeated": "{name} ({count} executions)",
+      "metrics": {
+        "netDebt": "Net debt",
+        "ebitda": "EBITDA",
+        "availableCash": "Available cash",
+        "restrictedCash": "Restricted cash"
+      },
+      "methods": {
+        "prepare-capital-structure-decision": "Prepare capital structure alternatives for a decision",
+        "underwrite-receivables-pool": "Reconcile and test the capacity of a receivables pool"
+      }
+    },
     "workExecutions": {
       "title": "Capital analysis executions",
       "back": "Back to the analysis basis",
@@ -2508,6 +2640,22 @@
       "continueLabel": "Continue"
     },
     "advisorProject": {
+      "continuation": {
+        "recorded": "Continuation recorded from {label} (revision {revision}).",
+        "note": "Continuation from {label}, revision {revision}",
+        "question": {
+          "title": "From which approved decision?",
+          "ambiguous_base": "More than one approved decision matches the request. Choose the basis of the continuation.",
+          "no_approved_base": "No approved decision matches the request. Choose the basis of the continuation or send the text as an ordinary message.",
+          "none": "This work has no approved decision to serve as a basis yet. Send the text as an ordinary message or approve a result before continuing.",
+          "request": "Request",
+          "legend": "Approved bases of this work",
+          "option": "{label} (revision {revision})",
+          "choose": "Continue from this basis",
+          "sendAsMessage": "Send as an ordinary message",
+          "dismiss": "Back to the text"
+        }
+      },
       "recovery": {
         "uncertain": "Receipt could not be confirmed. Your text has been preserved. Send it again to confirm the same request."
       },

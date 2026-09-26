@@ -1,6 +1,5 @@
 "use server";
 
-import {isGovernedWorkProductRevisionRequest} from "@offroad/agent-contracts";
 import {
   canCompileStandaloneDocumentWorkRequest,
   documentWorkPlanSnapshot,
@@ -10,9 +9,19 @@ import {
   capitalProjectPlanSnapshot,
   type CapitalProjectJob,
 } from "@offroad/work-plan";
+import {getTranslations} from "next-intl/server";
 import {z} from "zod";
 
 import {advisorActionError, type AdvisorActionError} from "@/lib/advisor/advisor-action-error";
+import {
+  advisorMessageRoute,
+  choiceOf,
+  continuationChoiceInputSchema,
+  draftRevisionUnavailable,
+  resolveContinuation,
+  type ContinuationOutcome,
+} from "@/lib/advisor/work-continuation";
+import {milestoneLabelText, workUpdateViewSchema, type MilestoneLabelKey} from "@/lib/advisor/work-update-view";
 import {requireUser, requireWorkspace} from "@/lib/auth/workspace";
 import type {Json} from "@/types/database";
 import {processIntakeSession} from "@/lib/intake/server";
@@ -53,7 +62,9 @@ export type {AdvisorActionError} from "@/lib/advisor/advisor-action-error";
 export type StartAdvisorProjectResult =
   | {ok: true; entryJob: CapitalProjectJob; workId: string; projectId: string; sessionId: string | null}
   | {ok: false; error: AdvisorActionError};
-export type AdvisorMessageResult = {ok: true} | {ok: false; error: AdvisorActionError};
+export type {ContinuationChoice, ContinuationOutcome} from "@/lib/advisor/work-continuation";
+/** A message may come back as a continuation: recorded from its base, or a question to ask. */
+export type AdvisorMessageResult = {ok: true; continuation?: ContinuationOutcome} | {ok: false; error: AdvisorActionError};
 export type AdvisorUploadScopeResult =
   | {ok: true; organizationId: string; sessionId: string; userId: string}
   | {ok: false; error: AdvisorActionError};
@@ -103,11 +114,22 @@ export async function startAdvisorProject(input: unknown): Promise<StartAdvisorP
   return {ok: true, entryJob, workId, projectId: workId, sessionId};
 }
 
+type WorkspaceClient = Awaited<ReturnType<typeof requireWorkspace>>["supabase"];
+type ConversationTurn = z.infer<typeof continueSchema>;
+
+/**
+ * Routes a message of the work's conversation (see `advisorMessageRoute`). A continuation is
+ * resolved against the work's approved bases and recorded only from an explicit base; an ambiguous
+ * or absent base comes back as a question and nothing is recorded until the person chooses. The
+ * revision of a draft awaiting confirmation is tried only when the message names that draft. It
+ * works the same with or without an intake session.
+ */
 export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessageResult> {
   const parsed = continueSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
   const {supabase} = await requireWorkspace(parsed.data.locale);
-  if (isGovernedWorkProductRevisionRequest(parsed.data.content)) {
+  const route = advisorMessageRoute(parsed.data.content);
+  if (route.tryDraft) {
     const revision = await supabase.rpc("submit_advisor_artifact_revision_turn_v1", {
       p_project_id: parsed.data.projectId,
       p_message_id: parsed.data.messageId,
@@ -115,19 +137,81 @@ export async function appendAdvisorMessage(input: unknown): Promise<AdvisorMessa
       p_content: parsed.data.content,
     });
     if (!revision.error) return {ok: true};
-    // No pending governed artifact means this is an ordinary conversational request. The generic
-    // turn remains available; authorization, stale-state and validation errors still fail closed.
-    if (revision.error.code !== "P0002" || !revision.error.message.includes("advisor_revision_artifact_not_available")) {
-      return {ok: false, error: advisorActionError(revision.error)};
-    }
+    // Nothing to revise here: the message follows its route. Authorization, stale-state and
+    // validation errors still fail closed.
+    if (!draftRevisionUnavailable(revision.error)) return {ok: false, error: advisorActionError(revision.error)};
   }
+  if (route.kind === "continuation") return continueFromConversation(supabase, parsed.data);
+  return appendConversationTurn(supabase, parsed.data);
+}
+
+async function appendConversationTurn(supabase: WorkspaceClient, turn: ConversationTurn): Promise<AdvisorMessageResult> {
   const {error} = await supabase.rpc("append_work_turn_v1", {
-    p_work_id: parsed.data.projectId,
-    p_message_id: parsed.data.messageId,
-    p_locale: parsed.data.locale,
-    p_content: parsed.data.content,
+    p_work_id: turn.projectId,
+    p_message_id: turn.messageId,
+    p_locale: turn.locale,
+    p_content: turn.content,
   });
   return error ? {ok: false, error: advisorActionError(error)} : {ok: true};
+}
+
+async function milestoneLabels(locale: ConversationTurn["locale"]): Promise<(key: MilestoneLabelKey) => string> {
+  const t = await getTranslations({locale, namespace: "App.workUpdates.labels"});
+  return (key) => t(key);
+}
+
+async function continueFromConversation(supabase: WorkspaceClient, turn: ConversationTurn): Promise<AdvisorMessageResult> {
+  const read = await supabase.rpc("work_update_view_v1", {p_work_id: turn.projectId});
+  if (read.error) return {ok: false, error: advisorActionError(read.error)};
+  const view = workUpdateViewSchema.safeParse(read.data);
+  if (!view.success) return {ok: false, error: "save"};
+  const translate = await milestoneLabels(turn.locale);
+  let resolution: ReturnType<typeof resolveContinuation>;
+  try {
+    resolution = resolveContinuation({workId: turn.projectId, conversationId: view.data.conversationId, text: turn.content, milestones: view.data.milestones, translate});
+  } catch {
+    return {ok: false, error: "save"};
+  }
+  if (resolution.status === "question") {
+    return {ok: true, continuation: {status: "question", code: resolution.code, options: resolution.options.map(choiceOf)}};
+  }
+  return recordContinuation(supabase, turn, resolution.base, translate);
+}
+
+async function recordContinuation(supabase: WorkspaceClient, turn: ConversationTurn,
+  base: {milestoneId: string; decisionId: string; revision: number}, translate: (key: MilestoneLabelKey) => string): Promise<AdvisorMessageResult> {
+  const {data, error} = await supabase.rpc("request_work_continuation_v1", {
+    p_request_id: turn.messageId,
+    p_work_id: turn.projectId,
+    p_locale: turn.locale,
+    p_content: turn.content,
+    p_base_milestone_id: base.milestoneId,
+    p_base_decision_id: base.decisionId,
+    p_base_revision: base.revision,
+  });
+  if (error) return {ok: false, error: advisorActionError(error)};
+  // The reply names the base the database recorded, in the person's language.
+  const recorded = record(record(data)?.base);
+  const label = typeof recorded?.label === "string" ? milestoneLabelText(recorded.label, translate) : "";
+  return {ok: true, continuation: {status: "proposed", base: {milestoneId: base.milestoneId, decisionId: base.decisionId, revision: base.revision, label}}};
+}
+
+const continuationChoiceSchema = continueSchema.extend({base: continuationChoiceInputSchema});
+
+/** Records a continuation from the base the person chose among the options of the question. */
+export async function continueAdvisorWorkFromBase(input: unknown): Promise<AdvisorMessageResult> {
+  const parsed = continuationChoiceSchema.safeParse(input);
+  if (!parsed.success) return {ok: false, error: "invalid"};
+  const {supabase} = await requireWorkspace(parsed.data.locale);
+  return recordContinuation(supabase, parsed.data, parsed.data.base, await milestoneLabels(parsed.data.locale));
+}
+
+/** Sends the text as an ordinary turn when the person chooses not to continue from a base. */
+export async function sendAdvisorMessageAsTurn(input: unknown): Promise<AdvisorMessageResult> {
+  const parsed = continueSchema.safeParse(input);
+  if (!parsed.success) return {ok: false, error: "invalid"};
+  const {supabase} = await requireWorkspace(parsed.data.locale);
+  return appendConversationTurn(supabase, parsed.data);
 }
 
 /** Starts a bounded documentary request in the same project. The atomic command preserves
