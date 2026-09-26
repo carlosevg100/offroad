@@ -47,4 +47,18 @@ insert into auth.identities(id,user_id,provider_id,provider,identity_data,create
 select gen_random_uuid(),id,id::text,'email',jsonb_build_object('sub',id::text,'email',email),now(),now() from auth.users where id='ab1e0000-0000-4000-8000-000000000001';
 insert into public.onboarding_progress(organization_id,user_id,journey,current_step,completed_at)
 values('ab1e0000-0000-4000-9000-000000000001','ab1e0000-0000-4000-8000-000000000001','originator','complete',now());
+
+-- The synthetic author declares the usage rights of the source through the production command, as
+-- an upload does: reading a source (the model route checks the reviewed source before replaying the
+-- workbook) requires them. Project access still controls who reads it.
+select set_config('request.headers','{"x-offroad-workspace":"ab1e0000-0000-4000-9000-000000000001"}',true);
+select set_config('request.jwt.claim.sub','ab1e0000-0000-4000-8000-000000000001',true);
+set local role authenticated;
+select public.set_source_rights_v1(
+ 'ab1e0000-0000-4000-9000-000000000004',0,
+ array['read','process','store','derive','export'],array['analysis','export'],
+ null,null,'ab1e0000-0000-4000-9000-000000000021',
+ encode(extensions.digest('Synthetic E2E author declaration of source usage rights.','sha256'),'hex')
+);
+reset role;
 commit;

@@ -10,6 +10,8 @@ import messages from "../messages/pt-BR.json";
 import {institutionalWorkbookFor, syntheticGovernedMaterials} from "./support/governed-materials";
 
 const sha256 = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
+/** The status, with the body the person reads when nothing was served, so a failure says why. */
+const outcome = async (response: APIResponse) => response.status() >= 400 ? `${response.status()} ${await response.text()}` : String(response.status());
 
 // Stage 19, increment 3: the governed materials and the model are served from one exact artifact
 // revision through the authorized reader. The package is seeded as the rows a confirmed case holds
@@ -66,8 +68,8 @@ test("governed materials and model come from one exact revision, and an external
   for (const [format, magic] of [["docx", "PK"], ["pdf", "%PDF-"], ["pptx", "PK"]] as const) {
     const first = await page.request.get(`${base}/term_sheet/${format}`);
     const second = await page.request.get(`${base}/term_sheet/${format}`);
-    expect(first.status(), format).toBe(200);
-    expect(second.status(), format).toBe(200);
+    expect(await outcome(first), format).toBe("200");
+    expect(await outcome(second), format).toBe("200");
     expectRevisionHeaders(first, legacyRevision);
     const bytes = await first.body();
     expect(bytes.subarray(0, magic.length).toString()).toBe(magic);
@@ -76,7 +78,7 @@ test("governed materials and model come from one exact revision, and an external
   }
   // The exact revision by its id is the same file; a revision that is not this route's is not found.
   const exact = await page.request.get(`${base}/term_sheet/docx?revision=${legacyRevision}`);
-  expect(exact.status()).toBe(200);
+  expect(await outcome(exact)).toBe("200");
   expect(sha256(await exact.body())).toBe(sha256(files.docx!));
   expect((await page.request.get(`${base}/term_sheet/docx?revision=${id("999")}`)).status()).toBe(404);
   expect((await page.request.get(`${base}/data_room_index/docx`)).status()).toBe(409);
@@ -95,7 +97,7 @@ test("governed materials and model come from one exact revision, and an external
   // The model workbook replays with the approved hash of each locale.
   for (const [locale, lang] of [["pt-BR", "pt"], ["en-US", "en"]] as const) {
     const model = await page.request.get(`/${locale}/app/model/${sessionId}`);
-    expect(model.status(), locale).toBe(200);
+    expect(await outcome(model), locale).toBe("200");
     expectRevisionHeaders(model, legacyRevision);
     expect(sha256(await model.body())).toBe(workbook.workbooks[lang].sha256);
   }
@@ -146,13 +148,13 @@ test("governed materials and model come from one exact revision, and an external
       jsonb_build_object('objectType','material_artifact','objectFingerprint','${materialFingerprint}'),
       jsonb_build_object('objectType','material_artifact','objectFingerprint','${sha256(docx)}')),'${userId}','user')`);
   const released = await page.request.get(`${base}/term_sheet/docx?revision=${external}`);
-  expect(released.status()).toBe(200);
+  expect(await outcome(released)).toBe("200");
   expect(released.headers()["x-artifact-release"]).toBe("released");
   expect(released.headers()["x-artifact-content-sha256"]).toBe(sha256(docx));
   expect(released.headers()["x-artifact-legacy"]).toBeUndefined();
   expect(sha256(await released.body())).toBe(sha256(docx));
   // The legacy revision named by its id is no longer the head, and it is still the same file.
   const previous = await page.request.get(`${base}/term_sheet/docx?revision=${legacyRevision}`);
-  expect(previous.status()).toBe(200);
+  expect(await outcome(previous)).toBe("200");
   expect(sha256(await previous.body())).toBe(sha256(docx));
 });
