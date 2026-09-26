@@ -1,18 +1,12 @@
+/**
+ * The resolution this download route used before stage 19, increment 3, kept verbatim as a pure
+ * function for the "old and new decide equal" tests only. Nothing in the product imports it; the
+ * route itself resolves the exact revision through the authorized artifact reader.
+ */
+import {resourceStillReadable} from "@/lib/auth/resource-download";
+import {materialToDocx} from "@offroad/case-export";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 
-import {
-  artifactDownloadCopy,
-  artifactNotFound,
-  artifactUnavailable,
-  legacyRowId,
-  refusalText,
-  requestedRevision,
-  resolveRouteRevision,
-  revisionRendererAllowed,
-} from "@/lib/artifacts/artifact-route";
-import {artifactResponseHeaders, resolveRenderer, revisionIssuedOn, verifyRenderedBytes, type BytesVerification} from "@/lib/artifacts/authorized-artifact-reader";
-import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
-import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 import {resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "@/lib/integration-preview/governed-material-download";
@@ -22,11 +16,6 @@ import {resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "@
  * preview. Office decision surfaces are never regenerated here: their fingerprinted manifest, private
  * object, exact SHA and binding in the latest Decision Artifact must all agree. Internal
  * validation only; the project must run in integration_preview and every read remains scoped.
- *
- * Each file is one exact artifact revision (`?revision=`, or the head of the preview type), read
- * through the authorized reader with the same release evaluation as every download: a version for
- * an external audience is never served before it is released. The Word preview is issued on the
- * date of its version and composed of the tables that existed when that version was created.
  */
 type Params = {params: Promise<{locale: string; projectId: string}>};
 
@@ -64,108 +53,73 @@ const tableKeys: Record<string, {key: string; caption: {pt: string; en: string}}
   preview_covenants: [{key: "covenants", caption: {pt: "Covenants", en: "Covenants"}}],
 };
 
-const artifactTypeFor = {docx: "preview_material", pptx: "preview_presentation_material", xlsx: "preview_workbook_material"} as const;
-
-export async function GET(request: Request, {params}: Params) {
+export async function legacyGET(request: Request, {params}: Params) {
   const {locale, projectId} = await params;
   const lang = locale === "en-US" ? "en" : "pt";
   const requestedFormat = new URL(request.url).searchParams.get("format");
   const format = requestedFormat === "xlsx" || requestedFormat === "pptx" ? requestedFormat : "docx";
-  const revisionParameter = requestedRevision(request);
-  if (!revisionParameter.ok) return artifactNotFound();
   const {supabase, organization} = await requireWorkspace(locale);
-  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
   const status = await loadIntegrationPreviewStatus(supabase, organization.id);
   if (!integrationPreviewCoversProject(status, projectId)) return new Response("Not found", {status: 404});
-  const copy = artifactDownloadCopy(lang);
-  const notReady = format === "pptx" ? copy.preview.presentationNotReady : format === "xlsx" ? copy.preview.workbookNotReady : copy.preview.synthesisMissing;
 
-  const artifactType = artifactTypeFor[format];
-  const resolved = await resolveRouteRevision(supabase, {workId: projectId, kind: "work_product", subject: artifactType}, revisionParameter.revisionId);
-  if (!resolved.ok) {
-    if (resolved.outcome === "not_found") return artifactNotFound();
-    return artifactUnavailable(resolved.outcome === "refused" ? refusalText(copy, resolved.refusal) : notReady);
-  }
-  const {revision, read} = resolved;
-  if (!revisionRendererAllowed(revision, {storage: format !== "docx", families: []})) return artifactUnavailable(copy.rendererUnavailable);
-
-  // Every preview row of the project, superseded ones included: the Word preview is composed as of its version.
   const {data} = await supabase.from("capital_project_artifacts")
     .select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at")
     .eq("organization_id", organization.id).eq("capital_project_id", projectId)
-    .like("artifact_type", "preview\\_%")
+    .like("artifact_type", "preview\\_%").neq("status", "superseded")
     .order("created_at", {ascending: false});
-  const history = (data ?? []) as ArtifactRow[];
+  const artifacts = (data ?? []) as ArtifactRow[];
   const latestByType = new Map<string, ArtifactRow>();
-  for (const artifact of history) if (artifact.status !== "superseded" && !latestByType.has(artifact.artifact_type)) latestByType.set(artifact.artifact_type, artifact);
-  const current = latestByType.get(artifactType);
-  const rowId = legacyRowId(revision, "capital_project_artifacts");
-  const renderer = resolveRenderer(revision);
-  const stored = renderer.ok && renderer.source === "storage" ? renderer : null;
-  // A legacy revision is served only while its row is the one this preview serves; a stored revision
-  // carries its own object; anything else has no content this route can produce.
-  if (!stored) {
-    if (rowId === null) return artifactUnavailable(copy.rendererUnavailable);
-    if (!current) return artifactUnavailable(notReady);
-    if (rowId !== current.id) return artifactUnavailable(copy.revisionReplaced);
-  }
-
+  for (const artifact of artifacts) if (!latestByType.has(artifact.artifact_type)) latestByType.set(artifact.artifact_type, artifact);
   if (format === "pptx" || format === "xlsx") {
-    let object: {bucket: string; path: string};
-    let legacyHeaders: Record<string, string> = {};
-    let mimeType: string;
-    let fileName: string;
-    let manifest: ReturnType<typeof resolveGovernedMaterialDownload> | null = null;
-    if (stored) {
-      object = {bucket: stored.bucket, path: stored.path};
-      mimeType = format === "pptx" ? "application/vnd.openxmlformats-officedocument.presentationml.presentation" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-      fileName = `material-preview-${projectId.slice(0, 8)}-r${revision.revisionNo}.${format}`;
-    } else {
-      try {
-        manifest = resolveGovernedMaterialDownload({
-          materialContent: current!.content,
-          decisionContractContent: latestByType.get("preview_decision_contract")?.content,
-          format,
-          organizationId: organization.id,
-          projectId,
-        });
-      } catch {
-        return artifactUnavailable(notReady);
-      }
-      object = {bucket: manifest.storage.bucket, path: manifest.storage.objectPath};
-      mimeType = manifest.mimeType;
-      fileName = manifest.fileName;
-      legacyHeaders = {"x-material-sha256": manifest.contentSha256, "x-material-manifest-fingerprint": manifest.manifestFingerprint, "x-material-release-state": manifest.release.state};
+    const artifact = latestByType.get(format === "pptx" ? "preview_presentation_material" : "preview_workbook_material");
+    const decisionContract = latestByType.get("preview_decision_contract");
+    let manifest;
+    try {
+      manifest = resolveGovernedMaterialDownload({
+        materialContent: artifact?.content,
+        decisionContractContent: decisionContract?.content,
+        format,
+        organizationId: organization.id,
+        projectId,
+      });
+    } catch {
+      const label = format === "pptx" ? (lang === "pt" ? "A apresentação governada" : "The governed presentation") : (lang === "pt" ? "O workbook governado" : "The governed workbook");
+      return new Response(`${label} ${lang === "pt" ? "ainda não está pronto." : "is not ready yet."}`, {status: 409});
     }
-    const download = await supabase.storage.from(object.bucket).download(object.path);
-    if (download.error || !download.data) return artifactUnavailable(copy.preview.storageUnavailable, 502);
+    const download = await supabase.storage.from(manifest.storage.bucket).download(manifest.storage.objectPath);
+    if (download.error || !download.data) {
+      return new Response(lang === "pt" ? "Não foi possível recuperar o material armazenado." : "The stored material could not be retrieved.", {status: 502});
+    }
     const bytes = new Uint8Array(await download.data.arrayBuffer());
-    if (manifest) {
-      try {
-        verifyGovernedMaterialDownload(manifest, bytes);
-      } catch {
-        return artifactUnavailable(copy.preview.storageMismatch);
-      }
+    try {
+      verifyGovernedMaterialDownload(manifest, bytes);
+    } catch {
+      return new Response(lang === "pt" ? "O material armazenado não corresponde ao manifesto governado." : "The stored material does not match its governed manifest.", {status: 409});
     }
-    const verification: BytesVerification = verifyRenderedBytes(revision, bytes, {format});
-    if (verification.status === "mismatch") return artifactUnavailable(copy.preview.storageMismatch);
-    if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
+    if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
     return new Response(bytes, {headers: {
-      "content-type": mimeType,
-      "content-disposition": `attachment; filename="${fileName}"`,
+      "content-type": manifest.mimeType,
+      "content-disposition": `attachment; filename="${manifest.fileName}"`,
       "cache-control": "private, no-store",
-      ...legacyHeaders,
-      ...artifactResponseHeaders(read, verification),
+      "x-material-sha256": manifest.contentSha256,
+      "x-material-manifest-fingerprint": manifest.manifestFingerprint,
+      "x-material-release-state": manifest.release.state,
     }});
   }
-
-  const material = current!;
+  const material = latestByType.get("preview_material");
+  if (!material) return new Response(lang === "pt" ? "A síntese ainda não foi produzida." : "The synthesis has not been produced yet.", {status: 409});
   const materialContent = isRecord(material.content) ? material.content : {};
   const synthesis = isRecord(materialContent.output) ? materialContent.output : {};
   const sections = Array.isArray(synthesis.sections) ? synthesis.sections as Array<{id: string; title: string; paragraphs: Array<{text: string; references: string[]}>}> : [];
   const source = isRecord(synthesis.source) ? synthesis.source : {};
   const numbers = isRecord(synthesis.numbers) ? synthesis.numbers : {};
   const changeNote = Array.isArray(synthesis.change_note) ? synthesis.change_note as string[] : [];
+  const headers = {
+    "x-preview-artifact-version": String(material.artifact_version),
+    "x-preview-artifact-fingerprint": material.artifact_fingerprint,
+    "cache-control": "private, no-store",
+  };
 
   const blocks: MaterialBlock[] = [
     {type: "callout", title: {pt: "Validação interna", en: "Internal validation"}, items: [
@@ -182,11 +136,8 @@ export async function GET(request: Request, {params}: Params) {
     ]),
     ...(changeNote.length ? [{type: "list" as const, items: changeNote.map((note) => ({pt: note, en: note}))}] : []),
   ];
-  // The tables that existed when this version was created, never newer ones: the same revision
-  // always composes the same document.
-  const createdAt = Date.parse(material.created_at);
   for (const [type, tables] of Object.entries(tableKeys)) {
-    const artifact = history.find((candidate) => candidate.artifact_type === type && Date.parse(candidate.created_at) <= createdAt);
+    const artifact = latestByType.get(type);
     const output = artifact && isRecord(artifact.content) && isRecord(artifact.content.output) ? artifact.content.output : null;
     if (!output) continue;
     for (const table of tables) {
@@ -199,24 +150,7 @@ export async function GET(request: Request, {params}: Params) {
     en: "Internal validation. Methods in the implemented rung, without an approved independent review; nothing here is a release, an opinion or an approval. Every sentence with a number the objects do not hold was removed before issue.",
   }});
   const document: Material = {kind: "credit_memo", title: {pt: "Síntese interna do Caso 01 (validação)", en: "Case 01 internal synthesis (validation)"}, blocks, dependsOn: [material.artifact_fingerprint]};
-  const rendered = await renderArtifactRevision({
-    // The date of the version, never the day of the download: the same revision is the same file.
-    revision: {issuedOn: revisionIssuedOn(revision, material.created_at)},
-    format: "docx",
-    lang,
-    material: () => document,
-    meta: {preparedBy: "Offroad Capital, validação interna"},
-  });
-  if (!rendered.ok) return artifactNotFound();
-  const verification = verifyRenderedBytes(revision, rendered.bytes, {format: "docx", selectors: {locale: lang}});
-  if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
-  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
-  return new Response(new Uint8Array(rendered.bytes), {headers: {
-    "x-preview-artifact-version": String(material.artifact_version),
-    "x-preview-artifact-fingerprint": material.artifact_fingerprint,
-    "cache-control": "private, no-store",
-    "content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "content-disposition": `attachment; filename="material-preview-${projectId.slice(0, 8)}-v${material.artifact_version}.docx"`,
-    ...artifactResponseHeaders(read, verification),
-  }});
+  const bytes = materialToDocx({material: document, lang, meta: {issuedOn: new Date().toISOString().slice(0, 10), preparedBy: "Offroad Capital, validação interna"}});
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
+  return new Response(new Uint8Array(bytes), {headers: {...headers, "content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "content-disposition": `attachment; filename="material-preview-${projectId.slice(0, 8)}-v${material.artifact_version}.docx"`}});
 }

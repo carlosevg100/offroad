@@ -1,10 +1,11 @@
-import {resourceStillReadable} from "@/lib/auth/resource-download";
-import {renderMaterialHtml} from "@offroad/case-render";
 import type {MaterialKind} from "@offroad/case-materials";
 
-import {requireWorkspace} from "@/lib/auth/workspace";
-import {governedMaterial, loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
-import {resolveCaseState} from "@/lib/intake/case-pipeline";
+import {artifactRenderers} from "@/lib/artifacts/artifact-renderers";
+import {artifactNotFound, artifactUnavailable} from "@/lib/artifacts/artifact-route";
+import {artifactResponseHeaders, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
+import {governedMaterialKinds, materialSourcesFromRevision, resolveGovernedMaterialRevision} from "@/lib/artifacts/material-download";
+import {resourceStillReadable} from "@/lib/auth/resource-download";
+import {governedMaterial} from "@/lib/deal-state/materials";
 
 /**
  * The material as a file the company can send.
@@ -15,68 +16,45 @@ import {resolveCaseState} from "@/lib/intake/case-pipeline";
  * what the recipient opens. The page opens its own print dialog, and "Save as PDF" is the
  * export.
  *
- * Authorisation is the ordinary workspace boundary and nothing more: RLS scopes every read to
- * the caller's organization, so a session id belonging to another company returns an empty
- * case, not somebody else's memo.
+ * The page renders one exact artifact revision (`?revision=`, or the head of the case's
+ * materials), read through the authorized reader under the work's read access and the release
+ * the database evaluates. Its sources appendix comes from that revision, never from the case state
+ * of the day.
  */
-
-const kinds: readonly MaterialKind[] = ["credit_memo", "term_sheet", "diligence_qa", "teaser", "credit_profile", "package", "data_room_index"];
 
 type Params = {params: Promise<{locale: string; sessionId: string; kind: string}>};
 
 export async function GET(request: Request, {params}: Params) {
   const {locale, sessionId, kind} = await params;
-  if (!kinds.includes(kind as MaterialKind)) return new Response("Not found", {status: 404});
+  if (!governedMaterialKinds.includes(kind as MaterialKind)) return new Response("Not found", {status: 404});
 
-  const {supabase, organization} = await requireWorkspace(locale);
-  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
-  const lang = locale === "en-US" ? "en" : "pt";
-
-  const governed = await loadGovernedMaterialPackage(supabase, organization.id, sessionId);
-  if (!governed) return new Response(lang === "pt" ? "O pacote aprovado ainda não está disponível." : "The approved package is not available yet.", {status: 409});
+  const resolved = await resolveGovernedMaterialRevision(request, {locale, sessionId}, (copy) => copy.materials.packageUnavailable);
+  if (!resolved.ok) return resolved.response;
+  const {supabase, organization, lang, copy, governed, revision, read, issuedOn} = resolved.value;
   const material = governedMaterial(governed, kind as MaterialKind);
-  if (!material) return new Response(lang === "pt" ? "Este material não faz parte do plano aprovado." : "This material is not part of the approved plan.", {status: 409});
+  if (!material) return artifactUnavailable(copy.materials.outsidePlan);
 
-  const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
-
-  // Resolve every citation to the field and the file it came from — an appendix of opaque ids
-  // would carry the form of traceability without the substance.
-  const documentIds = [...new Set(state.reconciliation.facts.map((fact) => fact.accepted.sourceDocument).filter(Boolean))];
-  const {data: documents} = documentIds.length
-    ? await supabase.from("source_documents").select("id, original_name").eq("organization_id", organization.id).in("id", documentIds)
-    : {data: []};
-  const filenameOf = new Map((documents ?? []).map((document) => [document.id, document.original_name]));
-
-  const sources = [
-    ...state.reconciliation.facts.map((fact) => ({
-      id: fact.key.periodEnd ? `${fact.key.fieldPath} (${fact.key.periodEnd})` : fact.key.fieldPath,
-      label: fact.key.periodEnd ? `${fact.key.fieldPath} · ${fact.key.periodEnd}` : fact.key.fieldPath,
-      ...(filenameOf.get(fact.accepted.sourceDocument) ? {document: filenameOf.get(fact.accepted.sourceDocument)!} : {}),
-    })),
-    ...state.reconciliation.calculations.map((calculation) => ({
-      id: calculation.id,
-      label: `${calculation.labels[lang]} · ${lang === "pt" ? "calculado de" : "computed from"}: ${calculation.inputs.join(", ")}`,
-    })),
-  ];
-
-  const html = renderMaterialHtml({
-    material,
+  const appendix = await materialSourcesFromRevision(supabase, organization.id, revision, material);
+  if (!appendix.ok) return artifactUnavailable(copy.sourceRestricted);
+  const render = (autoPrint: boolean) => artifactRenderers["case-render.material-html"].produce({
+    material: appendix.material,
     lang,
-    meta: {
-      issuedOn: governed.issuedOn,
-      sources,
-      autoPrint: new URL(request.url).searchParams.get("print") === "1",
-      ...(organization.name ? {companyName: organization.name} : {}),
-    },
+    meta: {issuedOn, sources: appendix.sources, autoPrint, ...(organization.name ? {companyName: organization.name} : {})},
   });
+  const autoPrint = new URL(request.url).searchParams.get("print") === "1";
+  const html = render(autoPrint);
+  // The print dialog is an option of the request, not of the version: pinned bytes are those of the page without it.
+  const verification = verifyRenderedBytes(revision, new TextEncoder().encode(autoPrint ? render(false) : html), {format: "html", selectors: {locale: lang, materialKind: kind}});
+  if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
 
-  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
+  if (!await resourceStillReadable(supabase, organization.id, sessionId, "session")) return artifactNotFound();
 
   return new Response(html, {
     headers: {
       "content-type": "text/html; charset=utf-8",
       // A credit memo is never a cacheable public asset.
       "cache-control": "private, no-store",
+      ...artifactResponseHeaders(read, verification),
     },
   });
 }
