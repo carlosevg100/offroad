@@ -17,7 +17,7 @@ Incremento 7 do contrato de execução da etapa 19 (`etapa-19-execucao.md`, item
 | 6. Consolidação: regras de evidência, aritmética dos materiais em `financial-core`, testes econômicos de renderização, bytes guardados pela concessão | #821 | nenhuma | | |
 | 6B. Pergunta 10 do Q&A dos materiais e pontos-base em `credit-analysis` | PREENCHER | PREENCHER | | |
 | 7A. Ensaio do backfill em staging | #815 | nenhuma | | |
-| 7B e 7C. Provas do pronto e este fechamento | PREENCHER | nenhuma | | |
+| 7B e 7C. Provas do pronto, a prova que faltava e este fechamento | #822 | nenhuma | | |
 | Planos das etapas 20 e 21, como documentação | #812 | nenhuma | | |
 | CI e dependências: grupos do Dependabot e ações (#804); CodeQL, `pnpm/action-setup` e `dependency-review-action` (#810); a prova da espera pulada, em vez de falhar, depois de uma falha de contrato (#814); `anchore/sbom-action` e `actions/cache` (#818, #819) | #804, #810, #814, #818, #819 | nenhuma | | |
 
@@ -47,7 +47,7 @@ Nas dez execuções do commit final: PREENCHER (job check com esses testes e ava
 
 ## CI sem instabilidade: dez execuções no commit final
 
-Commit final de código: PREENCHER (o último entre o 6B e esta PR, que muda uma prova SQL). Pushes em main cancelam o run anterior e rerun não conta; com o disparo manual da Quality, cada execução no próprio grupo de concorrência. Runs: PREENCHER (o do push e dez disparos manuais). Resultado: PREENCHER (conclusão de cada execução na primeira tentativa, sem rerun; os três jobs de cada uma; aprovados, pulados e instáveis do Playwright, que roda com `failOnFlakyTests` e uma repetição; duração; novas tentativas da subida da pilha local, se houver).
+Commit final de código: PREENCHER (o último entre o 6B e #822, que muda uma prova SQL). Pushes em main cancelam o run anterior e rerun não conta; com o disparo manual da Quality, cada execução no próprio grupo de concorrência. Runs: PREENCHER (o do push e dez disparos manuais). Resultado: PREENCHER (conclusão de cada execução na primeira tentativa, sem rerun; os três jobs de cada uma; aprovados, pulados e instáveis do Playwright, que roda com `failOnFlakyTests` e uma repetição; duração; novas tentativas da subida da pilha local, se houver).
 
 Falha de main durante a etapa com a causa corrigida: quando um teste de contrato SQL falhava, o job Database pulava a instalação das dependências e a prova da espera rodava assim mesmo, somando uma segunda falha enganosa (`Cannot find module 'esbuild'`); os dois passos passaram a exigir a instalação (#814).
 
@@ -110,7 +110,7 @@ O acabamento de web que o fechamento da 18 deixou para a PR seguinte (a lista de
 
 ## Para fechar: o que o lead mede
 
-1. O PR e a migração do 6B, e o PR desta preparação, na tabela do que a etapa entregou.
+1. O PR e a migração do 6B na tabela do que a etapa entregou.
 2. O commit final de código e as dez execuções da Quality nele, além da do push, com o resultado de cada job, o Playwright e as linhas das provas do pronto.
 3. Journals e catálogos ao vivo dos dois ambientes contra os commitados, advisors e tipos gerados.
 4. A implantação da web e as rotas públicas no commit final; o robô no commit final, com o boot, o contrato de runtime, os executores fixados e a saúde da recomputação no CloudWatch.
