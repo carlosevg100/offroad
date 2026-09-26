@@ -6277,7 +6277,6 @@
     "intro": "Files produced in this project use this identity. The Offroad template is the default and stays available.",
     "currentHouse": "In use: Offroad template.",
     "currentClient": "In use: {name}, version {version} ({scope}).",
-    "fingerprint": "Identity recorded in the files: {fingerprint}",
     "preview": "Identity preview",
     "previewMark": "WORKING MATERIAL",
     "previewTitle": "Sample material title",

@@ -6277,7 +6277,6 @@
     "intro": "Os arquivos gerados neste projeto usam esta identidade. O template Offroad é o padrão e continua disponível.",
     "currentHouse": "Em uso: template Offroad.",
     "currentClient": "Em uso: {name}, versão {version} ({scope}).",
-    "fingerprint": "Identificação gravada nos arquivos: {fingerprint}",
     "preview": "Prévia da identidade",
     "previewMark": "MATERIAL DE TRABALHO",
     "previewTitle": "Título de exemplo do material",

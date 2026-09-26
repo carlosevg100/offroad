@@ -112,7 +112,6 @@ export function PresentationTemplateSettings({context, locale, projectId}: {cont
     {effective && <p className={styles.muted} data-testid="presentation-template-version" data-version={effective.versionNo}>
       {t("version", {number: effective.versionNo, date: date(effective.versionCreatedAt)})}
     </p>}
-    {effective && <p className={styles.muted}>{t("fingerprint", {fingerprint: effective.fingerprint.slice(0, 12)})}</p>}
     <p className={styles.muted}>{t("intro")}</p>
 
     <div className={styles.preview} style={{background: `#${values.colors.paper}`, color: `#${values.colors.ink}`, borderColor: `#${values.colors.muted}`}} aria-label={t("preview")}>

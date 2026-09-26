@@ -53,12 +53,12 @@ describe("visual identity settings", () => {
     expect(html).not.toContain('data-testid="presentation-template-history"');
   });
 
-  it("shows the recorded identity, its version number, the fingerprint written into the files and the previous versions", () => {
+  it("shows the recorded identity, its version number and date and the previous versions, never the fingerprint", () => {
     const stored = storedTemplate();
     const html = render(context({effective: stored, organization: stored}));
     expect(html).toContain("synthetic-client");
     expect(html).toContain("2026.09.11-v1");
-    expect(html).toContain("cccccccccccc");
+    expect(html).not.toContain("cccccccccccc");
     expect(html).toContain("1F4E79");
     expect(html).toContain('data-testid="presentation-template-version" data-version="2"');
     expect(html).toContain("Versão 2, gravada em");

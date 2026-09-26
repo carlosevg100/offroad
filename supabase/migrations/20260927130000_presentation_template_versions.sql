@@ -137,8 +137,8 @@ create index presentation_templates_current_version_idx on public.presentation_t
 create index presentation_templates_retired_by_idx on public.presentation_templates (retired_by);
 comment on column public.presentation_templates.current_version_id is 'The version readers and renderers use; null only before the backfill of a legacy row.';
 comment on column public.presentation_templates.retired_at is 'A retired template is ignored by readers and renderers; storing a definition for the same target revives it with the next version.';
-comment on column public.presentation_templates.definition is 'The first definition of this template, frozen since 20260927130000; the current definition is the one of current_version_id.';
-comment on column public.presentation_templates.fingerprint is 'Fingerprint of the first definition, frozen since 20260927130000; legacy vault pins compare against it. The current identity is the version fingerprint.';
+comment on column public.presentation_templates.definition is 'The first definition of this template, frozen since the template versions migration (stage 19, increment 5); the current definition is the one of current_version_id.';
+comment on column public.presentation_templates.fingerprint is 'Fingerprint of the first definition, frozen since the template versions migration (stage 19, increment 5); legacy vault pins compare against it. The current identity is the version fingerprint.';
 
 -- 3. The house structure as data: the sections the house deck renders today, keyed by its block
 -- ids. packages/case-export/src/presentation-structure.ts exports the same object; the unit test
@@ -582,7 +582,7 @@ alter table public.vault_entry_versions
     references public.presentation_template_versions(organization_id, id);
 create index vault_versions_template_version_idx on public.vault_entry_versions (organization_id, presentation_template_version_id);
 comment on column public.vault_entry_versions.presentation_template_version_id is
-  'The exact template version a template reference pins since 20260927130000; reference_fingerprint is that version''s fingerprint. Null on legacy rows the backfill could not resolve.';
+  'The exact template version a template reference pins since the template versions migration (stage 19, increment 5); reference_fingerprint is that version''s fingerprint. Null on legacy rows the backfill could not resolve.';
 
 -- private.submit_vault_entry_version_v1: restated in full (pinned above). The template branch
 -- selects the current version of a non-retired template and pins its id and fingerprint.
