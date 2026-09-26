@@ -8,7 +8,7 @@ declare e private.domain_events;r public.work_continuation_requests;events jsonb
 begin
  select * into strict e from private.domain_events where organization_id=p_org and id=p_event;
  if coalesce(cardinality(p_executions),0)=0 then return 'unaffected'; end if;
- if exists(select 1 from unnest(p_executions) x where not exists(select 1 from public.work_executions w where w.organization_id=p_org and w.id=x and w.work_id=p_work)) then
+ if exists(select 1 from unnest(p_executions) x where not exists(select 1 from public.work_executions w where w.organization_id=p_org and w.id=x and w.work_id=p_work) and not exists(select 1 from private.institutional_model_results ir where ir.organization_id=p_org and ir.id=x and ir.capital_project_id=p_work)) then
   raise exception 'dependency_update_work_mismatch' using errcode='23514';
  end if;
  -- Two changes to the same work serialize here and end in one open request.
@@ -28,7 +28,7 @@ begin
  body:=jsonb_build_object('schemaVersion','dependency-update-request.v1','workId',p_work,'status','open',
   'affectedExecutionIds',affected,'events',events,'aggregateVersions',versions);
  select jsonb_agg(jsonb_build_object('executionId',q.id,'rootExecutionId',coalesce((select l.root_execution_id::text from private.execution_lineage l where l.organization_id=p_org and l.execution_id=q.id::uuid),q.id),'resultMilestoneId',(
-  select m.id from public.work_milestones m where m.organization_id=p_org and m.kind='execution_result' and m.subject_kind='work_execution' and m.subject_id=q.id::uuid))
+  select m.id from public.work_milestones m where m.organization_id=p_org and m.kind='execution_result' and m.subject_kind='work_execution' and m.subject_id=q.id::uuid))||private.institutional_dependent_detail_v1(p_org,q.id::uuid)
   order by q.id collate "C") into details
  from (select a.value#>>'{}' as id from jsonb_array_elements(affected) a) q;
  if r.id is null then

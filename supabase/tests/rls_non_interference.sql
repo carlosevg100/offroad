@@ -6007,6 +6007,47 @@ do $$ declare f text;role_name text; begin
  end loop;
 end $$;
 
+-- Stage 18, increment 5A: institutional recompute candidates are read through the work's authority
+-- only, with the policy expression of public.work_milestones; the edges, facts and holds of
+-- institutional results are closed to every API role; the only new worker RPC is granted to
+-- authenticated behind the job capability, and the retired propagation to nobody. The behaviour
+-- (owner reads, member without access, foreign tenant and anon do not, no client write) is proven
+-- with real candidates in institutional_result_dependencies.sql.
+do $$ declare role_name text;relation text;f text; begin
+ foreach relation in array array['public.institutional_recompute_candidates','private.institutional_result_dependencies','private.institutional_result_invalidations','private.institutional_recompute_holds'] loop
+  if not exists(select 1 from pg_class where oid=relation::regclass and relrowsecurity and relforcerowsecurity) then raise exception 'Stage 18 5A RLS missing: %',relation;end if;
+ end loop;
+ if has_table_privilege('anon','public.institutional_recompute_candidates','SELECT,INSERT,UPDATE,DELETE')
+ or has_table_privilege('authenticated','public.institutional_recompute_candidates','INSERT,UPDATE,DELETE,TRUNCATE')
+ or not has_table_privilege('authenticated','public.institutional_recompute_candidates','SELECT')
+ or has_table_privilege('service_role','public.institutional_recompute_candidates','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Institutional recompute candidate grants are not select-only for authenticated';end if;
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+  foreach relation in array array['private.institutional_result_dependencies','private.institutional_result_invalidations','private.institutional_recompute_holds','private.institutional_result_dependency_sources_v1'] loop
+   if has_table_privilege(role_name,relation,'SELECT,INSERT,UPDATE,DELETE') then raise exception 'Institutional dependency storage exposed to %: %',role_name,relation;end if;
+  end loop;
+  foreach f in array array['private.work_stale_dependents_v1(uuid,uuid)','private.plan_institutional_recompute_v1(uuid,uuid,uuid)','private.enqueue_institutional_recompute_v1(uuid,uuid)',
+   'private.institutional_recompute_job_subject_v1(uuid,uuid,uuid,uuid,uuid,uuid)','private.institutional_dependency_impact_v1(uuid,uuid,uuid)',
+   'private.institutional_update_through_graph_v1(uuid,uuid,uuid)','private.institutional_approval_through_graph_v1(uuid,uuid,uuid,uuid)',
+   'private.institutional_approval_request_v1(uuid,uuid)','private.backfill_institutional_result_dependencies_v1()',
+   'private.propagate_project_canonical_revision_v1(uuid,uuid,text)','public.propagate_project_canonical_revision_v1(uuid,uuid,text)'] loop
+   if has_function_privilege(role_name,f,'EXECUTE') then raise exception 'Institutional recompute function exposed to %: %',role_name,f;end if;
+  end loop;
+ end loop;
+ if has_function_privilege('anon','public.worker_load_work_freshness_v1(uuid,text)','EXECUTE')
+ or has_function_privilege('service_role','public.worker_load_work_freshness_v1(uuid,text)','EXECUTE')
+ or not has_function_privilege('authenticated','public.worker_load_work_freshness_v1(uuid,text)','EXECUTE') then raise exception 'Work freshness RPC grants are not authenticated-only';end if;
+ if not exists(select 1 from pg_policy r join pg_policy m on m.polrelid='public.work_milestones'::regclass and m.polname='work_milestones_select_authorized'
+   where r.polrelid='public.institutional_recompute_candidates'::regclass and r.polname='institutional_recompute_candidates_select_authorized' and r.polcmd='r' and r.polpermissive
+   and replace(pg_get_expr(r.polqual,r.polrelid),'institutional_recompute_candidates.','')=replace(pg_get_expr(m.polqual,m.polrelid),'work_milestones.','')
+   and r.polroles=m.polroles)
+ or (select count(*) from pg_policy where polrelid='public.institutional_recompute_candidates'::regclass
+   and polname in ('institutional_recompute_candidates_deny_insert','institutional_recompute_candidates_deny_update','institutional_recompute_candidates_deny_delete'))<>3
+ or exists(select 1 from pg_policy where polrelid='public.institutional_recompute_candidates'::regclass and polcmd in ('a','w','d') and coalesce(pg_get_expr(polqual,polrelid),'false')<>'false')
+ or exists(select 1 from unnest(array['private.institutional_result_dependencies','private.institutional_result_invalidations','private.institutional_recompute_holds']) t(relation) where not exists(
+   select 1 from pg_policy where polrelid=t.relation::regclass and not polpermissive and polcmd='*' and pg_get_expr(polqual,polrelid)='false' and pg_get_expr(polwithcheck,polrelid)='false'))
+ then raise exception 'Stage 18 5A policies missing';end if;
+end $$;
+
 select 'rls_non_interference_passed' as result;
 
 -- Internal explicit-subject core is never an API impersonation surface.

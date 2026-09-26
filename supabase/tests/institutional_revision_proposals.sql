@@ -3,8 +3,8 @@
 -- What must hold: preparing a proposal needs the preparer role, approving it needs an approver and
 -- obeys the self-approval setting, a file that no longer matches the approved configuration is
 -- refused, the same file never opens a second review, nothing is applied before approval, and an
--- approval writes the candidate configuration with honest provenance and queues the recompute
--- through the configuration review that already exists.
+-- approval writes the candidate configuration with honest provenance and goes through the
+-- configuration review that already exists, whose dependency event recomputes the live result.
 begin;
 \ir support/legacy_workspace_capabilities.sql
 set local lock_timeout = '5s';
@@ -141,15 +141,39 @@ do $$ declare rejected boolean:=false; begin
 end $$;
 
 -- 6. The approver approves: the candidate configuration carries the proposed value with honest
---    provenance, and the recompute is queued through the existing configuration review.
+--    provenance, and goes through the existing configuration review. The project already has a live
+--    result, so the recompute is the dependency graph's (stage 18, increment 5A): the approval emits
+--    one institutional_configuration event and applies its effect in the same transaction; the graph
+--    queues the recomputation of the live result in the approving person's name under the request id,
+--    and no message is posted.
 create temp table proposal_probe(label text primary key, body jsonb);
 do $$ declare body jsonb; begin
   body := public.review_institutional_revision_proposal_v1('62000000-0000-4000-8000-000000000b01','approved',repeat('e',64),'63000000-0000-4000-8000-000000000b01','pt-BR');
   insert into proposal_probe values ('approval',body);
-  if body->>'status'<>'approved' or body#>>'{calculation,status}'<>'queued' then
-    raise exception 'the approved proposal did not queue the recompute: %',body;
+  if body->>'status'<>'approved' or body#>>'{calculation,status}'<>'dependency_update' or (body#>>'{calculation,replayed}')::boolean then
+    raise exception 'the approved proposal did not hand the recompute to the dependency graph: %',body;
   end if;
 end $$;
+reset role;
+do $$ declare e private.domain_events; begin
+  select * into strict e from private.domain_events where aggregate_kind='institutional_configuration' and aggregate_id='30000000-0000-4000-8000-000000000b01';
+  if e.id<>((select body from proposal_probe where label='approval')->>'candidateConfigurationId')::uuid or e.effect<>'propagate_dependencies'
+     or not exists(select 1 from private.event_outbox where event_id=e.id and status='pending') then
+    raise exception 'the approval did not emit its dependency event: %',to_jsonb(e);
+  end if;
+  if exists(select 1 from public.agent_messages where id='63000000-0000-4000-8000-000000000b01') then
+    raise exception 'the approval posted a synthetic message';
+  end if;
+  if (select count(*) from public.institutional_recompute_candidates c join private.institutional_model_results r on r.id=c.result_id
+      where c.work_id='30000000-0000-4000-8000-000000000b01' and c.state='scheduled' and r.status='queued'
+      and r.id='63000000-0000-4000-8000-000000000b01' and r.requested_by='10000000-0000-4000-8000-000000000b02'
+      and c.requested_by='10000000-0000-4000-8000-000000000b02')<>1
+     or (select count(*) from public.processing_jobs where payload->>'message_id'='63000000-0000-4000-8000-000000000b01' and payload ? 'institutional_recompute_candidate_id')<>1 then
+    raise exception 'the approval did not queue the graph recompute of the live result under its request id';
+  end if;
+end $$;
+set local role authenticated;
+select pg_temp.as_user('10000000-0000-4000-8000-000000000b02');
 reset role;
 do $$ declare candidate private.institutional_model_configurations; begin
   select * into candidate from private.institutional_model_configurations
@@ -168,12 +192,9 @@ do $$ declare pr private.institutional_revision_proposals; rejected boolean:=fal
   if pr.status<>'approved' or pr.reviewed_by<>'10000000-0000-4000-8000-000000000b02' or pr.candidate_configuration_id is null then
     raise exception 'the approval was not recorded against the approver: %',to_jsonb(pr);
   end if;
-  if (select count(*) from private.project_canonical_revisions where capital_project_id='30000000-0000-4000-8000-000000000b01')<>2 then
+  if (select count(*) from private.project_canonical_revisions where capital_project_id='30000000-0000-4000-8000-000000000b01')<>2
+     or ((select body from proposal_probe where label='approval')#>>'{calculation,revisionId}')::uuid = current_setting('test.proposal_revision')::uuid then
     raise exception 'the approved change did not record a new canonical revision';
-  end if;
-  if (select canonical_revision_id from private.institutional_model_results where id='63000000-0000-4000-8000-000000000b01')
-     = current_setting('test.proposal_revision')::uuid then
-    raise exception 'the recompute was bound to the previous revision';
   end if;
   -- A reviewed proposal is never reviewed again and never deleted.
   begin update private.institutional_revision_proposals set status='rejected' where id=pr.id;

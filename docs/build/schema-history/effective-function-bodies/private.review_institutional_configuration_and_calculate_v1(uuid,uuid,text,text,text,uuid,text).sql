@@ -27,6 +27,9 @@ begin
  if exists(select 1 from public.agent_messages where id=p_request_id) then raise exception 'institutional_result_message_reused';end if;
  canonical:=private.record_project_canonical_revision_v1(c.organization_id,p_project_id);
  insert into private.review_execution_authorizations(id,organization_id,resource_id,subject_user_id,configuration_id) values(p_request_id,c.organization_id,p_project_id,auth.uid(),c.id);
+ if private.institutional_approval_through_graph_v1(c.organization_id,p_project_id,c.id,p_request_id) then
+  return jsonb_build_object('requestId',p_request_id,'status','dependency_update','replayed',false,'revisionId',canonical.id);
+ end if;
  queued:=private.submit_review_execution_turn_v1(p_project_id,p_request_id,p_locale,case when p_locale='pt-BR' then 'Calcular as demonstrações e exportar os resultados desta configuração aprovada.' else 'Calculate the financial statements and export the results of this approved configuration.' end);
  update public.agent_messages set metadata=metadata||jsonb_build_object('kind','institutional_model_refresh','institutionalResultRequestId',p_request_id,'configurationId',c.id,'configurationFingerprint',c.configuration_fingerprint,'canonicalRevisionId',canonical.id) where organization_id=c.organization_id and id=p_request_id;
  update public.processing_runs set budget=jsonb_build_object('maxCalls',0,'maxCostUsd',0) where organization_id=c.organization_id and id in (select processing_run_id from public.processing_jobs where organization_id=c.organization_id and intake_session_id=s.id and kind='agent_operation_brief' and payload->>'message_id'=p_request_id::text);

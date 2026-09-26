@@ -158,6 +158,20 @@ export type AgentOperationBriefJob = z.infer<typeof agentOperationBriefJobSchema
 export type CapitalProjectAnalysisJob = z.infer<typeof capitalProjectAnalysisJobSchema>;
 export type AgentPlanJob = CaseAnalysisJob | CapitalProjectAnalysisJob;
 
+/**
+ * work-freshness.v1: the live dependents of the case's work (executions and institutional results)
+ * with an invalidation fact in an update request that is neither adopted nor declined. A session
+ * without a work has no graph and reads zero.
+ */
+export const workFreshnessSchema = z.strictObject({
+  schemaVersion: z.literal("work-freshness.v1"),
+  workId: z.uuid().nullable(),
+  staleDependents: z.number().int().nonnegative(),
+  staleExecutions: z.number().int().nonnegative(),
+  staleInstitutionalResults: z.number().int().nonnegative(),
+}).refine((value) => value.staleDependents === value.staleExecutions + value.staleInstitutionalResults, {message: "stale dependents must add up"});
+export type WorkFreshness = z.infer<typeof workFreshnessSchema>;
+
 const noJobSchema = z.object({
   claimed: z.literal(false),
   poisoned_job_id: z.uuid().optional(),
@@ -311,6 +325,8 @@ export type QueueClient = {
     dependencies?: unknown[];
   }): Promise<string>;
   recordCaseSnapshot(job: FullCaseAnalysisJob, manifest: unknown, state: unknown): Promise<string>;
+  /** Stale dependents of the case's work, read from the recorded invalidation facts (stage 18, increment 5A). */
+  loadWorkFreshness?(job: FullCaseAnalysisJob): Promise<WorkFreshness>;
   recordOperatingControlSnapshot(job: FullCaseAnalysisJob, input: {
     scopeId: string;
     requestedUse: "internal_decision";
@@ -944,6 +960,13 @@ export function createQueueClient(
         p_case_state: state,
       });
       return String(data);
+    },
+
+    async loadWorkFreshness(job) {
+      return workFreshnessSchema.parse(await call("worker_load_work_freshness_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+      }));
     },
 
     async recordOperatingControlSnapshot(job, input) {

@@ -460,6 +460,26 @@ export type CaseAnalysisOutcome = {
   manifestId?: string;
 };
 
+/**
+ * The stale dependents of the case's work, as the database counts them from the recorded facts. An
+ * unread count (a queue without the reader, a database before stage 18 increment 5A, a transport
+ * failure) returns null, and the freshness control then fails instead of assuming zero.
+ */
+export async function loadCaseWorkFreshness(
+  job: FullCaseAnalysisJob,
+  queue: Pick<QueueClient, "loadWorkFreshness">,
+  log: (event: string, detail?: Record<string, unknown>) => void,
+): Promise<{staleDependents: number} | null> {
+  if (!queue.loadWorkFreshness) return null;
+  try {
+    const freshness = await queue.loadWorkFreshness(job);
+    return {staleDependents: freshness.staleDependents};
+  } catch (error) {
+    log("case_analysis.work_freshness_unavailable", {job: job.job_id, reason: error instanceof Error ? error.message.slice(0, 160) : "unknown"});
+    return null;
+  }
+}
+
 export type CaseAnalysisExecutionPlan = {
   designStructure: boolean;
   produceMaterials: boolean;
@@ -1389,6 +1409,8 @@ export async function processCaseAnalysisJob(
     const manifestId = raw._execution.mode === "primary"
       ? await dependencies.queue.recordCaseSnapshot(job, manifest, stateWithManifest)
       : undefined;
+    failurePhase = "load_work_freshness";
+    const workFreshness = raw._execution.mode === "primary" ? await loadCaseWorkFreshness(job, dependencies.queue, log) : null;
     failurePhase = "record_operating_control";
     const operatingControl = raw._execution.mode === "primary"
       ? await dependencies.queue.recordOperatingControlSnapshot(job, {
@@ -1416,6 +1438,7 @@ export async function processCaseAnalysisJob(
               providerPolicyEnforced: false,
               externalToolsAllowlisted: false,
             },
+            freshness: workFreshness,
           }),
         })
       : undefined;
