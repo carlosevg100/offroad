@@ -184,7 +184,8 @@ test("a v4 capital execution is refused until the company under analysis is regi
  await expect(recorded).toHaveCount(1);
  await expect(recorded).toContainText(copy.detail.recorded.replace("{revision}", "1").split("{date}")[0]!);
  await expect(recorded.getByRole("status")).toHaveText(copy.detail.freshness.current);
- await expect(recorded.locator("code")).toHaveCount(0);
+ // Field paths of the missing inputs stay as code; no fingerprint appears in the result.
+ await expect(recorded).not.toContainText(/[0-9a-f]{64}/);
  // The screen of a registered result names no identifier: not the execution, not a fingerprint.
  await expect(page.locator("main.work-executions")).not.toContainText(executionId);
  await expect(page.locator("main.work-executions")).not.toContainText(copy.detail.contractFingerprint);
