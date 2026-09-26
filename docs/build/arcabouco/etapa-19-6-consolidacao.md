@@ -77,3 +77,59 @@ A rota da prévia usa essa leitura para a revisão com bytes guardados e para o 
 4. O leitor não lê o registro da concessão, fechado a clientes; se uma rotação futura passar a atualizar concessões, o leitor precisará de uma leitura da concessão por revisão, com migração.
 5. O resultado da execução não tem arquivo; o teste econômico cobre os blocos, e os arquivos entram quando a etapa 21 exportar.
 6. O manifesto de métodos gerado muda sempre que o lockfile ou `financial-core` mudam; a PR que for mesclada depois de outra que também o regenere precisa rodar `manifest:generate` de novo.
+
+## Incremento 6B: as duas correções que a consolidação encontrou
+
+Uma PR (`fix/19-6b-materials-fixes`) sobre `main` `a795f3b8`, que já tem o incremento 6 (PR #821). Sem migração, sem banco. Resolve as perguntas abertas 1 e 2 acima.
+
+### 1. A pergunta 10 do Q&A responde a partir do caso
+
+**Causa.** A pergunta sobre itens não recorrentes do EBITDA achava o EBITDA ajustado mais recente e montava a busca do reportado com `new RegExp(...)` sobre o caminho do fato, trocando cada ponto por `"\\\\."`. Esse texto de substituição são duas barras invertidas e um ponto, então a expressão pedia uma barra invertida literal antes de cada ponto: nenhum caminho de fato tem barra invertida, o EBITDA reportado nunca era encontrado e a pergunta ficava em aberto em todo caso, mesmo com os dois números na sala.
+
+**Correção.** `packages/case-materials/src/diligence.ts` ganha `at(fatos, caminho)`, que compara o caminho como texto (não há padrão a escapar) e, como `find`, fica com o período mais recente. A pergunta lê o EBITDA ajustado mais recente e o EBITDA reportado do mesmo exercício, no caminho exato, e responde pelo núcleo `calculateEbitdaAdjustments`:
+
+- com os dois números: "EBITDA ajustado de R$ 17,4M contra reportado de R$ 16,8M: R$ 0,6M de ajustes, a detalhar item a item." (a magnitude vem do núcleo; os dois números mostram a direção, inclusive quando o ajuste reduz o EBITDA);
+- com o ajustado igual ao reportado: "EBITDA ajustado igual ao reportado, de R$ 16,8M: a companhia não declara ajustes." (a frase anterior pediria o detalhe de R$ 0,0M de ajustes);
+- sem o par (sem ajustado, sem reportado, reportado só de outro exercício) ou com um valor que não é número decimal finito (o núcleo recusa): a pergunta fica em aberto, "Em aberto: pedido à companhia.", sem suporte e fora das afirmações materiais. Nenhuma resposta é inventada.
+
+**Versão e pinos.** `caseMaterialsVersion` passa de `2026.09.09-v4` para `2026.09.26-v5`. Dos 22 pinos de `material-parity.test.ts` (sha256 de `JSON.stringify(material, null, 1)`), mudaram exatamente os três do Q&A:
+
+| Pino | 2026.09.09-v4 | 2026.09.26-v5 |
+|---|---|---|
+| `balanceAboveSchedule:diligence_qa` | `a3a83e9589a9a5484540c73db231bef5f8a0d7c2481f1acb09822145afbe5c11` | `9608983bf564eb5ca0539ae4d68353aa41002dd72d0a25833c49c78ec83e31bb` |
+| `withinTolerance:diligence_qa` | `1d65d42e5b9361b9d15e6bb63400ecca3df3a54cf6a0a19afa4d6976cf60c09c` | `f8f18aa4a3bca2df5abb0b0e36e4de6bed0b9f890b7e02d82b0909bd51ce4ef6` |
+| `scheduleAboveBalance:diligence_qa` | `9df3538b0e37a93aabbe73788cb3fd5ca07008f1a7e9911b5c985b6613cd3901` | `6675488487521990c83bf214dc020e65811f7d97a2e417dce6f3db8c96b5315b` |
+
+Os outros 19 (memorando, term sheet, teaser, perfil e pacote nas três variantes, e as quatro entradas do modelo financeiro) não mudaram: o diff do teste altera só essas três linhas, e ele passa com os outros 19 valores da v4. O JSON do Q&A antes e depois, comparado nas três variantes, difere só em: a contagem de abertura (26 respondidas e 9 em aberto passam a 27 e 8), a linha da pergunta 10 (resposta nas duas línguas, `material: true`, `claimKind: "fact"` e os suportes `historical_financials.2025.adjusted_ebitda` e `historical_financials.2025.ebitda`), o EBITDA ajustado entre as dependências e a impressão da auditoria de conduta em sombra, cujos achados são os mesmos.
+
+**Onde a versão é fixada.** `caseMaterialsVersion` existe só em `packages/case-materials/src/index.ts`; o motor do caso grava a constante em `versions.materialCompiler` dos relatórios e do manifesto do caso, e `engine.test.ts` compara com a constante. Nenhuma fixture, SQL, auditoria de renderização ou manifesto fixa o texto da versão, e `case-materials` não entra no fechamento de nenhum executor do manifesto de métodos. Revisões já gravadas não mudam; a compilação seguinte de um caso com o par de EBITDA publica o Q&A novo.
+
+**Testes.** `diligence.test.ts`: a resposta pelo núcleo, o ajuste que reduz o EBITDA, a ausência de ajustes, o exercício mais recente contra o reportado do mesmo exercício, cinco casos em aberto (inclusive valor não numérico) com a linha "Em aberto" no material, e a regressão, que reconstrói a expressão com escape duplo, mostra que ela não casa com o caminho e exige a resposta; os quatro testes de resposta falham no código anterior. `kernel-arithmetic.test.ts`: no caso Aurora a resposta sai do núcleo e a contagem passa a 27 respondidas. `apps/web/src/lib/artifacts/economic-rendering.test.ts`: o valor dos ajustes aparece em docx, pdf, pptx e HTML nas duas línguas, e a identidade econômica do Q&A nos dois sentidos segue verde com a resposta nova.
+
+### 2. Pontos-base do veredito pelo núcleo
+
+**Antes.** `packages/credit-analysis/src/verdict.ts` convertia com `(bps / 100).toFixed(2)` em ponto flutuante a faixa `CDI + x% a y%` do preço da estrutura e das alternativas, a diferença do tíquete maior na ponta baixa e a economia do prazo mais curto (estas duas com a subtração também em ponto flutuante).
+
+**Agora.** A faixa usa `presentationFigure` com a escala `basis_points_as_percent` e duas casas, o núcleo do incremento 6, e as diferenças vêm do núcleo novo `calculateSpreadDifference` de `material-arithmetic.ts`: subtração Decimal em pontos-base, rastro `material.spread_difference` (registrado em `financialCalculationRegistry`) e recusa de valor que não é número decimal finito. `materialArithmeticVersion` passa a `2026.09.26-v2` pelo núcleo novo; nenhum núcleo existente mudou de resultado, e `financialCoreVersion` segue `2026.09.20-v24`.
+
+**Prova de paridade.** `packages/credit-analysis/src/verdict-parity.test.ts` entrou no primeiro commit da PR, antes de qualquer mudança no veredito, e fixa o sha256 de 12 vereditos: as respostas gold que a mesa lê (Camil, Fakeco, Nimbus e Rede Horizonte), sem preço, como o motor do caso chama o veredito, e com o preço de `pnpm --filter @offroad/evals desk:gold` (referência de mercado para CRA na nota interna, alternativas refeitas pela trajetória); o CCB da Fakeco, cujo tíquete maior sai com spread mais largo; o pedido simulado que o script documenta para a Camil; e o caso Aurora dos materiais, sem preço e com a referência do próprio fixture (as três variantes do mapa de dívida dão o mesmo veredito, então uma é fixada). O teste também exige que as execuções alcancem as quatro frases com pontos-base (faixa da estrutura, mesmo spread, ponta baixa mais larga, economia do prazo curto). Os 12 pinos se reproduzem depois da mudança. Em produção o motor do caso chama o veredito sem referência de preço, então nenhuma dessas frases é impressa hoje e nenhum material publicado muda. `@offroad/market-reference` e `@offroad/testing-fixtures` entram como dependências de desenvolvimento de `credit-analysis`; o lockfile muda só nessas duas entradas de workspace.
+
+**Diferenças deliberadas, fora de toda fixture:**
+
+- Meio ponto-base num empate que o binário guarda abaixo passa a arredondar para cima, como o valor decimal manda: 500,5 bps imprime 5,01% (antes 5,00%), uma diferença de 99,5 bps imprime 1,00 (antes 0,99) e uma de 100,5 bps imprime 1,01 (antes 1,00). A referência de mercado só cota pontos-base inteiros, e para todo inteiro de -10000 a 10000 o núcleo imprime o mesmo texto de `(bps / 100).toFixed(2)`, provado em `material-arithmetic.test.ts`.
+- Spread que não é número finito é recusado com `RangeError`, em vez de imprimir `CDI + NaN%`.
+- A diferença entre spreads fracionários é exata (372,3 menos 370,1 é 2,2, e não 2,1999999999999886).
+
+Os dois primeiros casos estão em `verdict.test.ts` e falham no código anterior; o núcleo, seu rastro, as recusas e a exatidão estão em `material-arithmetic.test.ts`.
+
+### Manifesto de métodos
+
+Regenerado por `pnpm --filter @offroad/credit-playbook manifest:generate`: mudam os hashes de fonte de `verdict.ts`, `packages/credit-analysis/package.json`, `credit-math.ts`, `material-arithmetic.ts` e `pnpm-lock.yaml` e os hashes de proveniência dos procedimentos implementados que os fixam. R01 publicado segue com `manifestHash` `17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090`, e os 496 testes de `credit-playbook` passam.
+
+### Limites e perguntas abertas do 6B
+
+1. `packages/market-reference/src/index.ts` monta a frase do preço (mostrada nas telas de entrada do caso) com `Math.abs(bps) / 100` e `Number(allIn) * 100` em ponto flutuante. Para pontos-base inteiros e taxas com quatro casas o texto sai exato, mas não passa por núcleo de `financial-core`; fica para uma PR própria.
+2. A auditoria de conduta em sombra do Q&A já tinha, antes desta PR, um achado LC-07 na pergunta 20 (taxa pedida contra o estoque): o texto em inglês da leitura `rate-ask-vs-stack` de `credit-analysis/src/analyze.ts` omite o múltiplo de 2,19x e usa vírgula decimal. Corrigir muda o Q&A publicado e pede versão nova de `case-materials`.
+3. O Q&A imprime valores em milhões com uma casa, então ajustes de EBITDA abaixo de R$ 50 mil aparecem como "R$ 0,0M de ajustes" embora não sejam zero; é o mesmo formato de todas as respostas do Q&A.
+4. `verdict.ts` ainda faz contas Decimal próprias (milhões, múltiplos, percentual do EBITDA, alavancagem após a estrutura) e ordena os anos pesados por `toNumber()` da diferença; não são ponto flutuante na conta e ficam fora deste incremento, que tratou os pontos-base.
+5. O manifesto de métodos precisa ser regenerado de novo pela PR que for mesclada depois de outra que também o regenere.
