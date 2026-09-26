@@ -9,6 +9,9 @@ import {StandaloneWork} from "@/components/advisor/standalone-work";
 import {ReceivablesCurrentResult} from "@/components/advisor/receivables-current-result";
 import {InstitutionalModelResultWork} from "@/components/advisor/institutional-model-result-work";
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
+import {institutionalCalculationRuns, jobKindRunning, summarizeWorkActivity} from "@/lib/advisor/work-activity";
+import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
+import {workbenchAnalysisGap} from "@/lib/deal-state/analysis-gap";
 import {loadProviderWorkHistory} from "@/lib/advisor/provider-work-history";
 import {ProviderWorkHistory} from "@/components/advisor/provider-work-history";
 import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
@@ -19,15 +22,12 @@ import {loadReceivablesReleasedResult} from "@/lib/receivables/released-result";
 import {ReceivablesScopeCard, type ReceivablesScopeCopy} from "@/components/advisor/receivables-scope-card";
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
 import {decisionArtifactContractSchema} from "@offroad/case-understanding";
-import {originationConversationArtifactSchema, originationMeetingBriefArtifactSchema} from "@offroad/domain-contracts";
+import {originationConversationArtifactSchema} from "@offroad/domain-contracts";
 import {executionBriefChangeSchema, executionBriefNarrativeSchema, executionBriefProgressSchema, localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
-import {AlertCircle, ArrowLeft, Check, Circle, Clock3, ExternalLink, Globe2, Lightbulb, SearchCheck} from "lucide-react";
 import type {Metadata} from "next";
-import Link from "next/link";
 import {getTranslations} from "next-intl/server";
 import {notFound, redirect} from "next/navigation";
 
-import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {AdvisorProject} from "@/components/advisor/advisor-project";
 import type {AdvisorWorkSection} from "@/components/advisor/advisor-work-surface";
 import {workSectionHref} from "@/components/advisor/advisor-work-links";
@@ -46,9 +46,7 @@ import {ProviderResearchWork} from "@/components/advisor/provider-research-work"
 import {currentProviderResearch} from "@/lib/advisor/provider-research-reader";
 import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work";
 import {PrivateStructureWork} from "@/components/advisor/private-structure-work";
-import {IntegrationPreviewBanner} from "@/components/integration-preview/integration-preview-banner";
 import {AdvisorDecisionWork} from "@/components/integration-preview/advisor-decision-work";
-import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
 import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
@@ -72,7 +70,6 @@ import {InstitutionalSetupForm} from "@/components/advisor/institutional-setup-f
 import {loadInstitutionalSetupContext} from "@/lib/advisor/institutional-setup-reader";
 import {InstitutionalConfigurationReviewWork} from "@/components/advisor/institutional-configuration-review";
 
-import {OriginationDecision} from "./origination-decision";
 import {CompanyDebtProject} from "./company-debt-project";
 import {CapitalPlanningProject} from "./capital-planning-project";
 
@@ -88,8 +85,6 @@ function record(value: unknown): Record<string, unknown> | null {
 export default async function CapitalProjectPage({params, searchParams}: Props) {
   const {locale, projectId} = await params;
   const {view} = await searchParams;
-  const t = await getTranslations({locale, namespace: "App.origination"});
-  const tApp = await getTranslations({locale, namespace: "App"});
   const {supabase, organization} = await requireWorkspace(locale);
   const {data: project} = await supabase.from("capital_projects")
     .select("id, project_name, entry_job, access_basis, current_phase, status, updated_at")
@@ -121,156 +116,12 @@ export default async function CapitalProjectPage({params, searchParams}: Props) 
     }
     return <CompanyDebtProject locale={locale} projectId={projectId} />;
   }
+  // The only specialized view left is capital planning: origination theses answer in the
+  // conversation (#364), and the dedicated view that inferred work from a missing brief is retired.
   if (project.entry_job === "capital_planning") {
     return <CapitalPlanningProject locale={locale} projectId={projectId} />;
   }
-  if (project.entry_job !== "origination_thesis") notFound();
-
-  const [{data: session}, {data: plan}, {data: artifacts}, {data: decisions}] = await Promise.all([
-    supabase.from("document_intake_sessions")
-      .select("id, company_profile, status, updated_at")
-      .eq("organization_id", organization.id)
-      .eq("capital_project_id", project.id)
-      .maybeSingle(),
-    supabase.from("capital_project_plans")
-      .select("id, plan_fingerprint, task_count")
-      .eq("organization_id", organization.id)
-      .eq("capital_project_id", project.id)
-      .eq("status", "active")
-      .maybeSingle(),
-    supabase.from("capital_project_artifacts")
-      .select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at")
-      .eq("organization_id", organization.id)
-      .eq("capital_project_id", project.id)
-      .order("created_at", {ascending: false}),
-    supabase.from("capital_project_artifact_decisions")
-      .select("artifact_id, decision, note, decided_at")
-      .eq("organization_id", organization.id)
-      .eq("capital_project_id", project.id)
-      .order("decided_at", {ascending: false}),
-  ]);
-  if (!session || !plan) notFound();
-
-  const [{data: tasks}, {data: runs}] = await Promise.all([
-    supabase.from("capital_project_plan_tasks")
-      .select("id, task_id, label, ordinal, dependencies")
-      .eq("organization_id", organization.id)
-      .eq("plan_id", plan.id)
-      .order("ordinal"),
-    supabase.from("capital_project_task_runs")
-      .select("id, plan_task_id, attempt_no, status, started_at, completed_at, error")
-      .eq("organization_id", organization.id)
-      .eq("plan_id", plan.id)
-      .order("attempt_no", {ascending: false}),
-  ]);
-  const latestRunByTask = new Map<string, NonNullable<typeof runs>[number]>();
-  for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
-  const meetingArtifact = artifacts?.find((artifact) => artifact.artifact_type === "meeting_brief" && artifact.status !== "superseded");
-  const parsedBrief = meetingArtifact ? originationMeetingBriefArtifactSchema.safeParse(meetingArtifact.content) : null;
-  const decision = meetingArtifact ? decisions?.find((item) => item.artifact_id === meetingArtifact.id) : null;
-  const active = session.status === "processing" || (runs ?? []).some((run) => run.status === "running") || (!meetingArtifact && session.status !== "failed");
-  const companyProfile = session.company_profile && typeof session.company_profile === "object" && !Array.isArray(session.company_profile)
-    ? session.company_profile
-    : {};
-  const companyName = typeof companyProfile.name === "string" ? companyProfile.name : t("project.unknownCompany");
-  const completedTasks = (tasks ?? []).filter((task) => latestRunByTask.get(task.id)?.status === "succeeded").length;
-
-  // A grant scoped to listed projects marks only those projects; the organization-wide banner
-  // in the layout covers the other scope.
-  const integrationPreview = await loadIntegrationPreviewStatus(supabase, organization.id);
-  const projectRunsInPreview = integrationPreview.scope === "projects" && integrationPreviewCoversProject(integrationPreview, project.id);
-
-  return (
-    <main className="app-canvas origination-project">
-      <DealStateRefresh active={active} />
-      {projectRunsInPreview ? <IntegrationPreviewBanner
-        copy={{
-          kicker: tApp("integrationPreview.kicker"),
-          title: tApp("integrationPreview.title"),
-          body: tApp("integrationPreview.body"),
-          note: tApp("integrationPreview.note"),
-        }}
-        note={[integrationPreview.mode === "live" ? (locale === "en-US" ? "Live mode: the semantic router decides, one model call per turn under budget." : "Modo vivo: o roteador semântico decide, uma chamada de modelo por turno sob orçamento.") : null, integrationPreview.note].filter((part): part is string => Boolean(part)).join(" ") || null}
-      /> : null}
-      <Link className="text-link origination-back" href={`/${locale}/app`}><ArrowLeft aria-hidden="true" size={14} />{t("back")}</Link>
-      <header className="origination-project__header">
-        <div>
-          <p className="section-kicker">{t("project.kicker")}</p>
-          <h1>{project.project_name}</h1>
-          <p>{t("project.subtitle", {company: companyName})}</p>
-        </div>
-        <div className="origination-project__access"><Globe2 aria-hidden="true" size={15} /><span><strong>{t("project.publicOnly")}</strong>{t("project.publicOnlyBody")}</span></div>
-      </header>
-
-      <div className="origination-project__layout">
-        <section className="origination-project__work">
-          {!meetingArtifact ? (
-            <div className="origination-working">
-              <SearchCheck aria-hidden="true" size={23} />
-              <p className="section-kicker">{t("project.workingKicker")}</p>
-              <h2>{session.status === "failed" ? t("project.failedTitle") : t("project.workingTitle")}</h2>
-              <p>{session.status === "failed" ? t("project.failedBody") : t("project.workingBody")}</p>
-              <div><span style={{width: `${Math.round((completedTasks / Math.max(tasks?.length ?? 1, 1)) * 100)}%`}} /></div>
-              <small>{t("project.taskProgress", {complete: completedTasks, total: tasks?.length ?? plan.task_count})}</small>
-            </div>
-          ) : parsedBrief?.success ? (
-            <article className="origination-brief">
-              <header>
-                <div><p className="section-kicker">{t("brief.kicker")}</p><h2>{t("brief.title")}</h2><p>{t("brief.asOf", {date: parsedBrief.data.asOfDate})}</p></div>
-                <span className={`origination-status origination-status--${meetingArtifact.status}`}><Check aria-hidden="true" size={12} />{t(`artifactStatus.${meetingArtifact.status}`)}</span>
-              </header>
-
-              <section className="origination-brief__executive"><span>{t("brief.executiveRead")}</span><p>{parsedBrief.data.executiveRead}</p></section>
-              <section className="origination-brief__snapshot"><span>{t("brief.companySnapshot")}</span><p>{parsedBrief.data.companySnapshot}</p></section>
-
-              <section className="origination-brief__section">
-                <header><Lightbulb aria-hidden="true" size={16} /><div><span>{t("brief.signals")}</span><p>{t("brief.signalsBody")}</p></div></header>
-                <div className="origination-brief__cards">
-                  {parsedBrief.data.debtLensSignals.map((signal, index) => <article key={`${signal.finding}-${index}`}><small>{t(`confidence.${signal.confidence}`)}</small><strong>{signal.finding}</strong><p>{signal.relevance}</p><SourceLinks label={t("brief.sources")} urls={signal.sourceUrls} /></article>)}
-                </div>
-              </section>
-
-              <section className="origination-brief__section">
-                <header><SearchCheck aria-hidden="true" size={16} /><div><span>{t("brief.angles")}</span><p>{t("brief.anglesBody")}</p></div></header>
-                <div className="origination-angles">
-                  {parsedBrief.data.financingAngles.map((angle, index) => <article key={`${angle.title}-${index}`}><span>{angle.route}</span><h3>{angle.title}</h3><p>{angle.rationale}</p><div><section><strong>{t("brief.prerequisites")}</strong><ul>{angle.prerequisites.map((item) => <li key={item}>{item}</li>)}</ul></section><section><strong>{t("brief.disconfirmers")}</strong><ul>{angle.disconfirmers.map((item) => <li key={item}>{item}</li>)}</ul></section></div><SourceLinks label={t("brief.sources")} urls={angle.sourceUrls} /></article>)}
-                </div>
-              </section>
-
-              <section className="origination-brief__section">
-                <header><Circle aria-hidden="true" size={16} /><div><span>{t("brief.questions")}</span><p>{t("brief.questionsBody")}</p></div></header>
-                <ol className="origination-questions">{parsedBrief.data.meetingQuestions.map((question, index) => <li key={`${question.question}-${index}`}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{question.question}</strong><p><em>{t("brief.why")}</em>{question.whyItMatters}</p><p><em>{t("brief.changes")}</em>{question.answerChanges}</p></div></li>)}</ol>
-              </section>
-
-              <div className="origination-brief__closing">
-                <section><span>{t("brief.opening")}</span><p>{parsedBrief.data.suggestedOpening}</p></section>
-                <section><span>{t("brief.unknowns")}</span><ul>{parsedBrief.data.unknowns.map((unknown) => <li key={unknown}>{unknown}</li>)}</ul></section>
-              </div>
-
-              <section className="origination-sources"><span>{t("brief.sourceList")}</span><ul>{parsedBrief.data.sources.map((source) => <li key={`${source.topic}-${source.url}`}><small>{t(`sourceTopics.${source.topic}`)}</small><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={11} /></a></li>)}</ul></section>
-              <p className="origination-brief__boundary"><AlertCircle aria-hidden="true" size={14} />{parsedBrief.data.scopeBoundary}</p>
-
-              {meetingArtifact.status === "pending_confirmation" ? <OriginationDecision artifactId={meetingArtifact.id} copy={{
-                confirm: t("decision.confirm"), confirmed: t("decision.confirmed"), errorInvalid: t("decision.errors.invalid"), errorSave: t("decision.errors.save"), errorStale: t("decision.errors.stale"), note: t("decision.note"), notePlaceholder: t("decision.notePlaceholder"), requestChanges: t("decision.requestChanges"), requested: t("decision.requested"), title: t("decision.title"),
-              }} fingerprint={meetingArtifact.artifact_fingerprint} locale={locale} projectId={project.id} /> : decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{decision.decision === "confirm" ? t("decision.confirmed") : t("decision.requested")}</p> : null}
-            </article>
-          ) : (
-            <div className="origination-working"><AlertCircle aria-hidden="true" size={23} /><h2>{t("project.invalidArtifactTitle")}</h2><p>{t("project.invalidArtifactBody")}</p></div>
-          )}
-        </section>
-
-        <aside className="origination-task-panel">
-          <header><span>{t("tasks.kicker")}</span><strong>{t("tasks.title")}</strong><small>{t("project.taskProgress", {complete: completedTasks, total: tasks?.length ?? plan.task_count})}</small></header>
-          <ol>{(tasks ?? []).map((task) => {
-            const run = latestRunByTask.get(task.id);
-            const status = run?.status ?? "waiting";
-            return <li className={`is-${status}`} key={task.id}>{status === "succeeded" ? <Check aria-hidden="true" size={12} /> : status === "running" ? <Clock3 aria-hidden="true" className="spin-slow" size={12} /> : status === "failed" ? <AlertCircle aria-hidden="true" size={12} /> : <Circle aria-hidden="true" size={12} />}<span><strong>{t(`taskLabels.${task.task_id}`)}</strong><small>{t(`taskStatus.${status}`)}</small></span></li>;
-          })}</ol>
-          <footer>{t("tasks.footer")}</footer>
-        </aside>
-      </div>
-    </main>
-  );
+  notFound();
 }
 
 async function ConversationalCapitalProject({
@@ -319,11 +170,9 @@ async function ConversationalCapitalProject({
     };
   };
 
-  // Read the queue before its produced brief: a completion between the two reads
-  // may cause one extra refresh, but can never leave the initial page frozen.
-  const {data: pendingPlanJobs} = await supabase.from("processing_jobs").select("status")
-    .eq("organization_id", organization.id).eq("intake_session_id", session.id)
-    .eq("kind", "execution_brief_proposal").in("status", ["queued", "leased"]).limit(1);
+  // Read what is in progress before what it produces: a completion between the two reads may
+  // cause one extra refresh, but can never leave a missing result without its refresh.
+  const activity = await loadWorkActivity(supabase, {organizationId: organization.id, workId: project.id, sessionId: session.id});
 
   const [{data: conversation}, {data: documents}, {data: plan}, {data: artifacts}, {data: artifactDecisions}, {data: executionBriefRow}] = await Promise.all([
     supabase.from("agent_conversations").select("id, state").eq("organization_id", organization.id).eq("intake_session_id", session.id).maybeSingle(),
@@ -384,11 +233,13 @@ async function ConversationalCapitalProject({
       })
     : null;
   const privateWorkbench = preliminary?.current?.row.status === "confirmed"
-    ? await loadDealStateWorkbench(supabase, organization.id, session.id)
+    ? await loadDealStateWorkbench(supabase, organization.id, session.id, activity)
     : null;
   const governedMaterials = privateWorkbench?.productionPlan?.row.status === "approved"
     ? await loadGovernedMaterialPackage(supabase, organization.id, session.id)
     : null;
+  // A decision whose result is missing while no analysis runs is a gap with its next step.
+  const analysisGap = privateWorkbench ? workbenchAnalysisGap(privateWorkbench, governedMaterials !== null) : null;
   const [{data: introductionPlans}, {data: introductionTargets}, {data: introductionRecipients}] = privateWorkbench?.matchScreen
     ? await Promise.all([
         supabase.from("qualified_introduction_plans")
@@ -512,10 +363,12 @@ async function ConversationalCapitalProject({
   const briefJob = documentaryPlanJob;
   const plannedDocumentaryWork = (displayedApproval?.status === "awaiting" || displayedApproval?.status === "approved")
     && (briefJob === "comparison" || briefJob === "meeting" || briefJob === "review") ? {job:briefJob} as const : undefined;
+  // The plan is said to be in preparation only while its job runs.
   const emptyConversationCopy = displayedApproval?.status === "awaiting"
     ? "awaitingPlanFallback"
     : artifacts?.length ? "existingProject"
-      : displayedApproval?.status === "approved" ? "approvedPlanFallback" : "preparingPlanFallback";
+      : displayedApproval?.status === "approved" ? "approvedPlanFallback"
+        : jobKindRunning(activity, ["execution_brief_proposal"]) ? "preparingPlanFallback" : "startFallback";
   const advisorMessages = messages?.length
     ? messages.map((message) => {
         const artifactId = specializedCompletionArtifactId(message.metadata);
@@ -652,7 +505,8 @@ async function ConversationalCapitalProject({
   const institutionalResult = await loadInstitutionalModelResult(supabase, project.id);
   if (institutionalResult) {
     const resultCopy = await getTranslations({locale, namespace: "InstitutionalModelResult"});
-    workSections.push({id: "institutional-model-result", title: resultCopy("title"), content: <InstitutionalModelResultWork projectId={project.id} result={institutionalResult} />});
+    workSections.push({id: "institutional-model-result", title: resultCopy("title"), content: <InstitutionalModelResultWork projectId={project.id} result={institutionalResult}
+      calculating={institutionalCalculationRuns(activity, institutionalResult.id)} />});
   }
   const providerHistory = plan ? await loadProviderWorkHistory(supabase, artifacts ?? [], {organizationId: organization.id, projectId: project.id, currentPlanId: plan.id}) : [];
 
@@ -770,7 +624,7 @@ async function ConversationalCapitalProject({
     } : null}
     locale={locale === "en-US" ? "en-US" : "pt-BR"}
     messages={advisorMessages}
-    planPreparationStatus={pendingPlanJobs?.[0]?.status ?? null}
+    activity={summarizeWorkActivity(activity)}
     activityEvents={activityEvents}
     outcomeEvents={outcomeEvents}
     coverage={{verified: verifiedCoverage, total: totalCoverage, openIssues: openCoverage, notExamined: notExaminedCoverage}}
@@ -806,6 +660,7 @@ async function ConversationalCapitalProject({
       sessionId={session.id}
       understanding={privateWorkbench.understanding}
     /> : null}{privateWorkbench ? <PrivateStructureWork
+      gap={analysisGap}
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       projectId={project.id}
@@ -813,6 +668,7 @@ async function ConversationalCapitalProject({
       structure={privateWorkbench.structure}
       structureDecision={privateWorkbench.structureDecision}
     /> : null}{privateWorkbench ? <PrivateMaterialsWork
+      gap={analysisGap}
       governed={governedMaterials}
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
@@ -885,8 +741,4 @@ function specializedCompletionArtifactId(metadata: unknown): string | null {
   if (!artifact || typeof artifact !== "object" || Array.isArray(artifact)) return null;
   const id = (artifact as Record<string, unknown>).id;
   return typeof id === "string" ? id : null;
-}
-
-function SourceLinks({label, urls}: {label: string; urls: string[]}) {
-  return <div className="origination-source-links"><span>{label}</span>{urls.map((url) => <a href={url} key={url} rel="noreferrer" target="_blank">{new URL(url).hostname}<ExternalLink aria-hidden="true" size={10} /></a>)}</div>;
 }

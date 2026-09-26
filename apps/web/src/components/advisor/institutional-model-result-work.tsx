@@ -6,20 +6,21 @@ import {deliverableFormatDecisions} from "@offroad/case-export/deliverable-forma
 import type {InstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
 import {institutionalResultDeliverableContext, institutionalResultDeliverableTypes} from "@/lib/advisor/institutional-result-formats";
 import {DeliverableFormatList} from "./deliverable-format-list";
-import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {institutionalResultIssues} from "@/lib/advisor/institutional-issue-presentation";
 import {InstitutionalIssues} from "./institutional-issues";
 import {InstitutionalScenarioComparison} from "./institutional-scenario-comparison";
 import styles from "./institutional-model-result-work.module.css";
 
-export function InstitutionalModelResultWork({projectId, result}: {projectId: string; result: InstitutionalModelResult}) {
+/** `calculating` is what the work activity says of the calculation of this result (see
+ * `institutionalCalculationRuns`). A queued result that nothing calculates is a gap, not "calculating".
+ * The page refreshes from the work activity; this view has no refresh of its own. */
+export function InstitutionalModelResultWork({projectId, result, calculating = false}: {projectId: string; result: InstitutionalModelResult; calculating?: boolean}) {
   const t = useTranslations("InstitutionalModelResult");
   const locale = useLocale();
   const formatter = useFormatter();
   return <section className={styles.result} data-testid="institutional-model-result">
-    <DealStateRefresh active={result.status === "queued"} />
     <header><span>{t("kicker")}</span><h2>{t("title")}</h2>
-      <p role="status">{t(`status.${result.status}`)}</p>
+      <p role="status">{t(`status.${result.status === "queued" && !calculating ? "notRunning" : result.status}`)}</p>
       <small>{t("prepared", {date: formatter.dateTime(new Date(result.createdAt), {dateStyle: "medium", timeZone: "UTC"})})}</small>
     </header>
     {result.status === "completed" && result.artifact ? <>

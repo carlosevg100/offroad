@@ -1,0 +1,9 @@
+/* Stage 18, increment 5B: a wait for a person and a missing result are not work in progress. */
+.advisor-project__header > span.is-waiting {color: #7a6433;}
+
+.analysis-gap__action {align-items: center; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px;}
+.analysis-gap__action .button {font-size: 11px;}
+.analysis-gap__note {color: #4e5a44; font-size: 11px; margin: 8px 0 0;}
+
+.origination-working--gap > p:last-of-type {margin-bottom: 18px;}
+.origination-working--gap > a {font-size: 13px;}

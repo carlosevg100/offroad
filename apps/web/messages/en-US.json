@@ -2731,6 +2731,7 @@
       "working": "Working now",
       "ready": "Ready to continue",
       "needsAttention": "Needs attention",
+      "waitingForPerson": "Awaiting a decision",
       "messageFailed": "This message was not processed. You can send it again; completed work will be preserved.",
       "informationRequest": {
         "eyebrow": "One answer can materially improve the analysis",
@@ -2807,7 +2808,8 @@
       },
       "awaitingPlanFallback": "Review the plan above and approve this version to begin the analysis. Adjust the scope or add documents before approving if needed.",
       "approvedPlanFallback": "The plan has been approved. Follow its progress here; results will appear as the work is completed.",
-      "preparingPlanFallback": "The project has been created. Add context or documents while the work plan is being prepared."
+      "preparingPlanFallback": "The project has been created. Add context or documents while the work plan is being prepared.",
+      "startFallback": "The project has been created. Add context or documents to guide the work."
     },
     "integrationPreview": {
       "kicker": "Internal validation",
@@ -2815,7 +2817,46 @@
       "body": "Methods in the implemented rung run here for internal validation only. Nothing shown is a client release, an approval or an opinion; every result carries the preview mark and the maturity of the method that produced it.",
       "note": "Operator note: {note}."
     },
+    "workActivity": {
+      "analysisGap": {
+        "kicker": "Result not produced",
+        "title": "The analysis did not produce the result",
+        "body": "No analysis is running for this work. Return to the conversation to request the analysis again or to add context.",
+        "action": "Back to the conversation"
+      }
+    },
     "privateCase": {
+      "analysisGap": {
+        "kicker": "Result not produced",
+        "structure": {
+          "title": "The structure alternatives were not produced",
+          "body": "The understanding of the case was confirmed, but no analysis is running to design the alternatives."
+        },
+        "structure_revision": {
+          "title": "The new version of the alternatives was not produced",
+          "body": "The requested adjustments are recorded, but no analysis is running to revise the alternatives."
+        },
+        "production_plan": {
+          "title": "The preparation plan was not produced",
+          "body": "The structure direction was confirmed, but no analysis is running to build the materials preparation plan."
+        },
+        "materials": {
+          "title": "The materials were not compiled",
+          "body": "The preparation plan was approved, but no analysis is running to compile the materials."
+        },
+        "nextStepTitle": "Next step",
+        "nextStepBody": "The analysis restarts from the recorded decision. An analysis already running or finished for the same decision is not repeated.",
+        "resume": "Resume the analysis",
+        "resuming": "Resuming the analysis...",
+        "resumed": "Analysis resumed. Its progress appears on this page.",
+        "errors": {
+          "invalid": "The case could not be identified. Reload the page.",
+          "stale": "The case changed since the page was opened. Reload the page.",
+          "finished": "The analysis of this decision already finished without producing this result. No result was assumed.",
+          "current": "No result is pending at this step. Reload the page.",
+          "processing": "The analysis could not be resumed now. The decision remains recorded; try again shortly."
+        }
+      },
       "processingTitle": "Offroad is working on this project",
       "processingBody": "Documents, evidence, and public context are being organized before the next work product.",
       "tasks": {
@@ -3432,162 +3473,6 @@
         "cancelled": "Cancelled"
       }
     },
-    "origination": {
-      "back": "Back to workspace",
-      "kicker": "Prepare for a debt conversation",
-      "title": "Walk into the meeting with a point of view.",
-      "body": "Identify the company and the meeting context. Offroad researches public sources, reads the situation through a debt lens, and prepares company-specific hypotheses and questions without assuming a transaction.",
-      "projectSection": {
-        "title": "Identify this work",
-        "body": "The project preserves research, decisions, and versions so you can resume without losing context."
-      },
-      "briefSection": {
-        "title": "Provide meeting context",
-        "body": "Explain what prompted the conversation and what you need to discover. You do not need to arrive with a finished structure."
-      },
-      "fields": {
-        "projectName": "Project name",
-        "projectNamePlaceholder": "E.g. Project Horizon",
-        "companyName": "Company",
-        "companyNamePlaceholder": "Company to research",
-        "website": "Company website",
-        "websitePlaceholder": "https://company.com",
-        "meetingContext": "What is the meeting context?",
-        "meetingContextPlaceholder": "E.g. we have a first meeting with the CFO. We want to understand the current debt profile, upcoming maturities, and potential financing opportunities.",
-        "meetingContextHelp": "Include only information suitable for this public-research environment.",
-        "audience": "Who will attend?",
-        "audiencePlaceholder": "E.g. CFO and head of treasury",
-        "meetingDate": "Meeting date",
-        "thesis": "Is there a hypothesis you want to test?",
-        "thesisPlaceholder": "E.g. test whether maturities can be extended without adding collateral.",
-        "thesisHelp": "Optional. Offroad can also build hypotheses from the research."
-      },
-      "boundary": {
-        "title": "Public research, with no market contact.",
-        "body": "Do not include confidential documents or information here. No representation, offer, or lender outreach will occur."
-      },
-      "actionNote": "Research starts in the background and the project opens immediately.",
-      "submit": "Prepare analysis",
-      "submitting": "Creating project...",
-      "aside": {
-        "kicker": "What happens next",
-        "title": "A company-specific origination agenda.",
-        "steps": {
-          "research": {
-            "title": "Research",
-            "body": "Identity, financial disclosures, news, sector, regulation, and comparable transactions."
-          },
-          "read": {
-            "title": "Interpret",
-            "body": "Debt-relevant signals, clearly separated into facts, hypotheses, and open questions."
-          },
-          "prepare": {
-            "title": "Prepare",
-            "body": "Financing angles, conditions that must be confirmed, and questions that can change the recommendation."
-          }
-        },
-        "footer": "Research uses public sources only and preserves every supporting link."
-      },
-      "errors": {
-        "duplicate": "An active project already uses this name.",
-        "save": "The project could not be created. Review the fields or try again."
-      },
-      "project": {
-        "kicker": "Origination thesis",
-        "unknownCompany": "company not yet identified",
-        "subtitle": "Public research and meeting agenda for {company}.",
-        "publicOnly": "Public sources only",
-        "publicOnlyBody": "No private document was used.",
-        "workingKicker": "Research in progress",
-        "workingTitle": "Offroad is building the analysis.",
-        "workingBody": "The tasks below run through explicit dependencies. Synthesis begins only after company, sector, and comparable transaction research is complete.",
-        "failedTitle": "The research needs attention.",
-        "failedBody": "One task did not complete. Its history was preserved for diagnosis and safe recovery.",
-        "taskProgress": "{complete} of {total} tasks complete",
-        "invalidArtifactTitle": "The brief did not pass validation.",
-        "invalidArtifactBody": "The output was preserved but will not be displayed as usable work product until it satisfies the quality contract."
-      },
-      "brief": {
-        "kicker": "Work product for review",
-        "title": "Meeting brief",
-        "asOf": "Sources reviewed through {date}",
-        "executiveRead": "Executive read",
-        "companySnapshot": "Company on one page",
-        "signals": "Debt-relevant signals",
-        "signalsBody": "What public sources support and why it matters for the conversation.",
-        "sources": "Sources",
-        "angles": "Financing angles to explore",
-        "anglesBody": "Working hypotheses, not offers or final recommendations.",
-        "prerequisites": "What must be true",
-        "disconfirmers": "What weakens the hypothesis",
-        "questions": "Meeting questions",
-        "questionsBody": "Each question states why it matters and what the answer may change.",
-        "why": "Why it matters: ",
-        "changes": "What changes: ",
-        "opening": "Suggested opening",
-        "unknowns": "What remains unknown",
-        "sourceList": "Sources reviewed"
-      },
-      "artifactStatus": {
-        "pending_confirmation": "Awaiting your review",
-        "confirmed": "Confirmed",
-        "superseded": "Superseded",
-        "draft": "Draft",
-        "approved": "Approved",
-        "stale": "Stale"
-      },
-      "confidence": {
-        "high": "High confidence",
-        "medium": "Medium confidence",
-        "low": "Low confidence"
-      },
-      "sourceTopics": {
-        "identity": "Company",
-        "news": "News",
-        "sector": "Sector",
-        "regulation": "Regulation",
-        "market": "Debt market"
-      },
-      "decision": {
-        "title": "Your decision on this version",
-        "confirm": "Confirm this analysis",
-        "confirmed": "Analysis confirmed",
-        "requestChanges": "Request corrections",
-        "requested": "Correction recorded; a new version is being prepared",
-        "note": "What needs to change?",
-        "notePlaceholder": "Identify the incorrect fact, the source that should prevail, or the hypothesis that does not reflect the conversation.",
-        "errors": {
-          "invalid": "Describe the correction before recording it.",
-          "save": "Your decision could not be recorded.",
-          "stale": "This version has changed. Reload the page before deciding."
-        }
-      },
-      "tasks": {
-        "kicker": "Work plan",
-        "title": "How this analysis was built",
-        "footer": "Every result remains linked to the tasks, versions, and sources that produced it."
-      },
-      "taskLabels": {
-        "M01": "Resolve company identity",
-        "M02": "Define the meeting mandate",
-        "M03": "Register constraints and assumptions",
-        "M04": "Define research lenses",
-        "M05": "Specify the brief",
-        "M06": "Compile execution plan",
-        "C02": "Research company, sector, and regulation",
-        "K04": "Research comparable transactions",
-        "M07": "Synthesize meeting brief"
-      },
-      "taskStatus": {
-        "waiting": "Waiting for dependencies",
-        "queued": "Queued",
-        "running": "Running",
-        "succeeded": "Complete",
-        "failed": "Needs attention",
-        "blocked": "Blocked",
-        "cancelled": "Cancelled"
-      }
-    },
     "notifications": "Notifications",
     "resources": "Resources",
     "settings": "Settings",
@@ -3901,6 +3786,9 @@
         "body": "The basis remains preserved. No external step advances automatically."
       },
       "notices": {
+        "analysis_resumed": "Analysis resumed from the recorded decision.",
+        "analysis_finished": "The analysis of this decision already finished without producing this result. No result was assumed.",
+        "analysis_current": "No result is pending at this step.",
         "understanding_unavailable": "There is no current understanding awaiting confirmation.",
         "decision_failed": "The decision could not be recorded. The basis was not changed.",
         "queue_failed": "The decision was preserved, but the next analysis has not started yet. Try again shortly.",
@@ -5783,6 +5671,7 @@
     "edit": "Review data and assumptions",
     "blockedHelp": "Review the configuration and indicated sources before calculating again. Missing values have not been assumed.",
     "status": {
+      "notRunning": "No calculation is running for this configuration and the result was not produced. Review the data and assumptions to calculate again.",
       "queued": "Calculating the approved configuration. Results will appear here.",
       "completed": "Calculation completed. All four formats use the same approved configuration.",
       "blocked": "The calculation needs corrections or additional information.",
