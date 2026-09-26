@@ -1,6 +1,11 @@
 import {createHash} from "node:crypto";
 
 import {
+  offroadHousePresentationStructure,
+  presentationStructureFromStored,
+  type PresentationStructure,
+} from "@offroad/case-export/presentation-structure";
+import {
   institutionalTemplateFromDefinition,
   offroadHouseTemplateDefinition,
   presentationTemplateFromStored,
@@ -12,6 +17,13 @@ import {z} from "zod";
 
 import type {Database} from "@/types/database";
 
+const versionSummarySchema = z.object({
+  version_id: z.uuid(),
+  version_no: z.number().int().positive(),
+  created_at: z.string(),
+  author_name: z.string().nullable(),
+  is_current: z.boolean(),
+});
 const storedTemplateSchema = z.object({
   template_id: z.uuid(),
   template_key: z.string().min(1),
@@ -19,6 +31,11 @@ const storedTemplateSchema = z.object({
   origin: z.enum(["offroad_house", "client_supplied"]),
   fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   definition: z.unknown(),
+  structure: z.unknown(),
+  version_id: z.uuid(),
+  version_no: z.number().int().positive(),
+  version_created_at: z.string(),
+  versions: z.array(versionSummarySchema),
   scope: z.enum(["organization", "project"]).optional(),
 });
 const contextSchema = z.object({
@@ -28,14 +45,29 @@ const contextSchema = z.object({
   effective: storedTemplateSchema.nullable(),
   organization: storedTemplateSchema.nullable(),
   project: storedTemplateSchema.nullable(),
+  house_structure: z.unknown().optional(),
   pdf_fonts: z.array(z.string()).min(1),
 });
 
+export type PresentationTemplateVersionSummary = {
+  versionId: string;
+  versionNo: number;
+  createdAt: string;
+  /** The display name of the person who saved it; null when the profile has none. Never an identifier. */
+  authorName: string | null;
+  isCurrent: boolean;
+};
 export type StoredPresentationTemplate = {
   templateId: string;
   scope: "organization" | "project";
+  /** Fingerprint of the exact current version: definition plus structure. */
   fingerprint: string;
   definition: PresentationTemplateDefinition;
+  structure: PresentationStructure;
+  versionId: string;
+  versionNo: number;
+  versionCreatedAt: string;
+  versions: PresentationTemplateVersionSummary[];
 };
 export type PresentationTemplateContext = {
   projectId: string;
@@ -44,16 +76,23 @@ export type PresentationTemplateContext = {
   effective: StoredPresentationTemplate | null;
   organization: StoredPresentationTemplate | null;
   project: StoredPresentationTemplate | null;
+  /** The structure a new client template starts from, as the database defaults it. */
+  houseStructure: PresentationStructure;
   pdfFonts: readonly string[];
 };
 
 function parseStored(value: z.infer<typeof storedTemplateSchema> | null, fallbackScope: "organization" | "project"): StoredPresentationTemplate | null {
   if (!value) return null;
   const definition = presentationTemplateFromStored(value.definition);
+  const structure = presentationStructureFromStored(value.structure);
   // A stored record the renderers cannot honour is treated as absent: the delivery falls back to
   // the Offroad template instead of exporting something that is almost the client's identity.
-  if (!definition) return null;
-  return {templateId: value.template_id, scope: value.scope ?? fallbackScope, fingerprint: value.fingerprint, definition};
+  if (!definition || !structure) return null;
+  return {
+    templateId: value.template_id, scope: value.scope ?? fallbackScope, fingerprint: value.fingerprint, definition, structure,
+    versionId: value.version_id, versionNo: value.version_no, versionCreatedAt: value.version_created_at,
+    versions: value.versions.map((version) => ({versionId: version.version_id, versionNo: version.version_no, createdAt: version.created_at, authorName: version.author_name, isCurrent: version.is_current})),
+  };
 }
 
 export async function loadPresentationTemplateContext(
@@ -71,6 +110,7 @@ export async function loadPresentationTemplateContext(
     effective: parseStored(parsed.data.effective, "organization"),
     organization: parseStored(parsed.data.organization, "organization"),
     project: parseStored(parsed.data.project, "project"),
+    houseStructure: presentationStructureFromStored(parsed.data.house_structure) ?? offroadHousePresentationStructure,
     pdfFonts: parsed.data.pdf_fonts,
   };
 }
@@ -82,9 +122,10 @@ export type ResolvedPresentationTemplate = {
 };
 
 /**
- * The identity an export must use. The logo is fetched from the organization's own private object
- * and its SHA-256 is recomputed: a mismatch, a missing object or a revoked read drops the mark
- * instead of embedding an unverified image. Nothing else about the identity changes.
+ * The identity an export must use: the exact stored version, its structure and its fingerprint.
+ * The logo is fetched from the organization's own private object and its SHA-256 is recomputed: a
+ * mismatch, a missing object or a revoked read drops the mark instead of embedding an unverified
+ * image. Nothing else about the identity changes.
  */
 export async function resolvePresentationTemplate(
   client: SupabaseClient<Database>,
@@ -93,9 +134,10 @@ export async function resolvePresentationTemplate(
   if (!stored) {
     return {template: {...institutionalTemplateFromDefinition(offroadHouseTemplateDefinition)}, logoOmitted: false};
   }
+  const identity = {fingerprint: stored.fingerprint, versionId: stored.versionId, structure: stored.structure};
   const logo = stored.definition.logo;
   if (!logo) {
-    return {template: {...institutionalTemplateFromDefinition(stored.definition), fingerprint: stored.fingerprint}, logoOmitted: false};
+    return {template: {...institutionalTemplateFromDefinition(stored.definition), ...identity}, logoOmitted: false};
   }
   const download = await client.storage.from("brand-templates").download(logo.objectPath);
   const bytes = download.data ? new Uint8Array(await download.data.arrayBuffer()) : null;
@@ -107,7 +149,7 @@ export async function resolvePresentationTemplate(
       ...institutionalTemplateFromDefinition(stored.definition, verified && bytes
         ? {data: bytes, extension: logo.contentType === "image/png" ? "png" : "jpeg"}
         : undefined),
-      fingerprint: stored.fingerprint,
+      ...identity,
     },
     logoOmitted: !verified,
   };

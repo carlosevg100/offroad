@@ -61,6 +61,8 @@ const renderedMaterialBodySchema = z.object({
     version: idSchema,
     fingerprint: hashSchema,
     origin: z.enum(["offroad_house", "client_supplied"]),
+    /** The exact stored template version the file was rendered with; absent for the house template. */
+    versionId: z.uuid().nullable().optional(),
   }),
   storage: z.object({
     bucket: z.literal("case-artifacts"),

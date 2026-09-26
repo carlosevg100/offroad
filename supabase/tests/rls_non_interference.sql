@@ -6146,3 +6146,26 @@ do $$ declare f text; begin
   if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') then raise exception 'Preparation authority exposed: %',f;end if;
  end loop;
 end $$;
+
+-- Stage 19, increment 5: template versions are read through the template's own rule and written
+-- only by the command; anon and service_role have nothing; nobody rewrites or truncates a version.
+do $$ declare f text; begin
+ if not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relname='presentation_template_versions' and c.relrowsecurity and c.relforcerowsecurity)
+ or has_table_privilege('anon','public.presentation_template_versions','SELECT,INSERT,UPDATE,DELETE')
+ or has_table_privilege('authenticated','public.presentation_template_versions','INSERT,UPDATE,DELETE')
+ or has_table_privilege('service_role','public.presentation_template_versions','SELECT,INSERT,UPDATE,DELETE') then raise exception 'Template version isolation missing';end if;
+ foreach f in array array['presentation_template_versions_select','presentation_template_versions_deny_insert','presentation_template_versions_deny_update','presentation_template_versions_deny_delete'] loop
+  if not exists(select 1 from pg_policy where polrelid='public.presentation_template_versions'::regclass and polname=f) then raise exception 'Template version policy missing: %',f;end if;
+ end loop;
+ foreach f in array array['presentation_template_versions_immutable','presentation_template_versions_truncate_guard','presentation_template_versions_audit'] loop
+  if not exists(select 1 from pg_trigger where tgrelid='public.presentation_template_versions'::regclass and tgname=f and tgenabled<>'D') then raise exception 'Template version guard missing: %',f;end if;
+ end loop;
+ if not exists(select 1 from pg_trigger where tgrelid='public.vault_entry_versions'::regclass and tgname='vault_version_immutable' and tgenabled<>'D') then raise exception 'Vault version guard left disabled by the template backfill';end if;
+ foreach f in array array['public.set_presentation_template_v1(uuid,uuid,jsonb,jsonb)','public.read_presentation_template_version_v1(uuid)','public.worker_read_presentation_template_version_v1(uuid,text)','private.set_presentation_template_v1(uuid,uuid,jsonb,jsonb)','private.read_presentation_template_version_v1(uuid)','private.worker_read_presentation_template_version_v1(uuid,text)'] loop
+  if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') or not has_function_privilege('authenticated',f,'EXECUTE') then raise exception 'Template command authority wrong: %',f;end if;
+ end loop;
+ foreach f in array array['private.validate_presentation_template_structure_v1(jsonb)','private.presentation_template_house_structure_v1()','private.presentation_template_json_v1(uuid,uuid)','private.presentation_template_version_guard()'] loop
+  if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') then raise exception 'Template helper exposed: %',f;end if;
+ end loop;
+ if exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private') and p.proname='set_presentation_template_v1' and pg_get_function_identity_arguments(p.oid) not like '%p_structure jsonb%') then raise exception 'Three-argument template command still installed';end if;
+end $$;

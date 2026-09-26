@@ -18,6 +18,7 @@ import {bindRenderedMaterialsToDecisionArtifact, buildRenderedMaterialManifest, 
 import type {ModelGateway} from "@offroad/model-gateway";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 
+import {resolvePresentationTemplateForJob} from "./presentation-template-resolver";
 import {generatePreviewQuestions, type CandidateQuestion, type PreviewQuestionsResult} from "./preview-questions";
 import {writePreviewSynthesis} from "./preview-synthesis";
 
@@ -483,6 +484,10 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
         const materialManifests: RenderedMaterialManifest[] = [];
 
         if (dependencies.presentationTemplate) {
+          // The project's current client template version renders the deck when there is one; the
+          // house template otherwise. The version id and fingerprint travel in the manifest and audit.
+          const chosen = await resolvePresentationTemplateForJob(job, queue, dependencies.presentationTemplate, log);
+          const presentationTemplate = chosen.template;
           const rendered = await renderInstitutionalPresentation({
             contract: sourceContract,
             title: `${companyName ?? context.project.project_name} · Estrutura de capital`,
@@ -490,15 +495,17 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
             ...(companyName ? {companyName} : {}),
             ...(request.audience?.primary ? {audience: request.audience.primary} : {}),
             locale,
-            template: dependencies.presentationTemplate,
+            template: presentationTemplate,
           });
           const inspection = await dependencies.materialInspector.inspect({bytes: rendered.bytes, contentSha256: rendered.audit.fileSha256, format: "pptx", inspectedAt});
           const stored = await queue.storeCapitalProjectMaterial(job, {bytes: rendered.bytes, contentSha256: rendered.audit.fileSha256, format: "pptx", mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation"});
-          const templateFingerprint = fingerprintJson({
-            id: dependencies.presentationTemplate.id, version: dependencies.presentationTemplate.version, origin: dependencies.presentationTemplate.origin,
-            colors: dependencies.presentationTemplate.colors, fonts: dependencies.presentationTemplate.fonts,
-            logo: dependencies.presentationTemplate.logo ? createHash("sha256").update(dependencies.presentationTemplate.logo.data).digest("hex") : null,
-            logoOnDark: dependencies.presentationTemplate.logoOnDark ? createHash("sha256").update(dependencies.presentationTemplate.logoOnDark.data).digest("hex") : null,
+          // A stored version is identified by its own fingerprint; the house template, which is not
+          // stored, keeps the derived fingerprint it always had.
+          const templateFingerprint = presentationTemplate.fingerprint ?? fingerprintJson({
+            id: presentationTemplate.id, version: presentationTemplate.version, origin: presentationTemplate.origin,
+            colors: presentationTemplate.colors, fonts: presentationTemplate.fonts,
+            logo: presentationTemplate.logo ? createHash("sha256").update(presentationTemplate.logo.data).digest("hex") : null,
+            logoOnDark: presentationTemplate.logoOnDark ? createHash("sha256").update(presentationTemplate.logoOnDark.data).digest("hex") : null,
           });
           const manifest = buildRenderedMaterialManifest({
             schemaVersion: "2026.09.07-v1", id: `preview-presentation-${rendered.audit.fileSha256.slice(0, 16)}`,
@@ -507,7 +514,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
             fileName: `offroad-${sourceContract.caseId}-${sourceContract.asOf}.pptx`, mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             byteLength: rendered.bytes.byteLength, contentSha256: rendered.audit.fileSha256,
             renderer: {id: "offroad-institutional-presentation", version: rendered.audit.rendererVersion},
-            template: {id: dependencies.presentationTemplate.id, version: dependencies.presentationTemplate.version, fingerprint: templateFingerprint, origin: dependencies.presentationTemplate.origin},
+            template: {id: presentationTemplate.id, version: presentationTemplate.version, fingerprint: templateFingerprint, origin: presentationTemplate.origin, versionId: chosen.versionId},
             storage: {bucket: "case-artifacts", objectPath: stored.objectPath, state: "stored", etag: stored.storageEtag}, generatedAt: inspectedAt,
             quality: {schemaValidated: rendered.audit.packageInspection.valid, numericIdentityPassed: decisionArtifactIdentityReport(sourceContract).valid, formulaAuditPassed: true, visualInspection: "not_run", openIssues: [{code: "visual_review_pending", severity: "high", detail: `Renderability passed for ${inspection.pdf.pageCount} pages; visual approval remains required before release.`}], releaseEligible: false},
             release: {state: "internal_only", recipientIds: []}, claimIds: rendered.audit.renderedClaimIds, sourceIds: rendered.audit.renderedSourceIds, assumptionIds: rendered.audit.renderedAssumptionIds, gapIds: rendered.audit.renderedGapIds,
@@ -529,7 +536,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           });
           materialManifests.push(manifest);
           contractDependencies.push({artifactId: materialArtifact.id, artifactFingerprint: materialArtifact.artifactFingerprint});
-          log("integration_preview.presentation_stored", {job: job.job_id, pages: inspection.pdf.pageCount, bytes: rendered.bytes.byteLength, replayed: stored.replayed});
+          log("integration_preview.presentation_stored", {job: job.job_id, pages: inspection.pdf.pageCount, bytes: rendered.bytes.byteLength, replayed: stored.replayed, template: chosen.source, templateVersionId: chosen.versionId, templateReason: chosen.reason, logoOmitted: chosen.logoOmitted, structureGaps: rendered.audit.structure?.gaps.length ?? 0});
         }
 
         const workbook = await renderDecisionWorkbook({contract: sourceContract, locale, title: `${companyName ?? context.project.project_name} · Workbook de decisão`, ...(companyName ? {companyName} : {})});

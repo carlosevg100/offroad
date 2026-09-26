@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 
 import {offroadHousePresentationTemplate} from "@offroad/case-export";
-import {decisionArtifactContractSchema, decisionArtifactIdentityReport, renderedMaterialManifestSchema} from "@offroad/case-understanding";
+import {decisionArtifactContractSchema, decisionArtifactIdentityReport, fingerprintJson, renderedMaterialManifestSchema} from "@offroad/case-understanding";
 import {case01, executors, preview} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
 
@@ -49,7 +49,7 @@ const previewJob = (composition: TestComposition, premises: Record<string, unkno
 
 type Recorded = {taskId: string; artifactType: string; inputFingerprint: string; content: Record<string, unknown>; id: string; artifactFingerprint: string};
 
-function fakeQueue(input: {composition: TestComposition; premises?: Record<string, unknown>; request?: Record<string, unknown>; prior?: Recorded[]}) {
+function fakeQueue(input: {composition: TestComposition; premises?: Record<string, unknown>; request?: Record<string, unknown>; prior?: Recorded[]; templateVersion?: Record<string, unknown> | null}) {
   const selectedSteps = stepsFor(input.composition);
   const recorded: Recorded[] = [];
   const started: string[] = [];
@@ -105,6 +105,8 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
       };
     },
     finishCapitalTask: async () => "finished",
+    // Present only when the test names a client version; otherwise the worker renders with the house template.
+    ...(input.templateVersion !== undefined ? {readPresentationTemplateVersion: async () => ({template: input.templateVersion})} : {}),
     syncProjectInformationRequests: async (_job: unknown, projection: unknown) => {
       questionProjection = projection as Record<string, unknown>;
       return {openCount: ((questionProjection.requests as unknown[]) ?? []).length, preservedClosedCount: 0, supersededCount: 0};
@@ -397,5 +399,61 @@ describe("integration_preview run processor", () => {
       artifactId: workbookManifest.id,
       artifactFingerprint: workbookManifest.contentSha256,
     });
+    // Without a client version the house template renders and the manifest names no stored version.
+    expect(presentationManifest.template).toMatchObject({id: "offroad-house", origin: "offroad_house", versionId: null});
+    expect((presentationArtifact.content.rendererAudit as {structure: unknown}).structure).toBeNull();
+  });
+
+  it("renders with the project's current client template version and names it in the manifest and the audit", async () => {
+    const first = fakeQueue({composition: "prepare_meeting"});
+    await processIntegrationPreviewRunJob(previewJob("prepare_meeting"), {queue: first.queue});
+    const versionId = "50000000-0000-4000-8000-000000000007";
+    const fingerprint = "f".repeat(64);
+    const material = fakeQueue({
+      composition: "prepare_material",
+      prior: first.recorded,
+      request: {turn: 2, audience: {primary: "vp", others: ["companhia"]}, form: "pitch_pages", pages: 3, sponsorInstruction: "três páginas de pitch", undefinedAspects: []},
+      templateVersion: {
+        template_id: "30000000-0000-4000-8000-000000000001", scope: "project", template_key: "synthetic-client", template_version: "2026.09.27-v1", origin: "client_supplied",
+        version_id: versionId, version_no: 2, fingerprint,
+        definition: {
+          template_key: "synthetic-client", template_version: "2026.09.27-v1", origin: "client_supplied",
+          colors: {ink: "1B2430", paper: "FFFFFF", accent: "1F4E79", muted: "6B7780", warning: "A66C1F", danger: "A23B3B"},
+          fonts: {display: "Arial", body: "Arial", pdf_display: "Helvetica", pdf_body: "Helvetica"}, logo: null, confidentiality_label: "CONFIDENCIAL",
+        },
+        // Sources first and required; the headline requires a chart the house blocks cannot offer: a named gap.
+        structure: {schemaVersion: "2026.09.27-structure-v1", sections: [
+          {key: "source-register", title: {"pt-BR": "Fontes", "en-US": "Sources"}, audiences: ["external"], fields: [{key: "sources", kind: "source_list", required: true, title: {"pt-BR": "Fontes citadas", "en-US": "Cited sources"}}]},
+          {key: "decision-headline", title: {"pt-BR": "Situação", "en-US": "Situation"}, audiences: ["internal"], fields: [
+            {key: "headline-metrics", kind: "number", required: true, title: {"pt-BR": "Indicadores", "en-US": "Indicators"}},
+            {key: "headline-chart", kind: "chart", required: true, title: {"pt-BR": "Gráfico de síntese", "en-US": "Summary chart"}},
+          ]},
+        ]},
+      },
+    });
+    const inspector: MaterialRenderInspector = {
+      inspect: async (input) => ({
+        version: "2026.09.07-v1",
+        source: {format: input.format, byteLength: input.bytes.byteLength, sha256: input.contentSha256},
+        renderer: {id: "libreoffice", version: "test"},
+        pdf: {byteLength: 999, sha256: "1".repeat(64), pageCount: 4},
+        pages: [{pageNumber: 1, byteLength: 111, sha256: "2".repeat(64), widthPx: 1600, heightPx: 900}],
+        renderabilityPassed: true, visualInspection: "awaiting_review", releaseEligible: false, inspectedAt: input.inspectedAt, receiptFingerprint: "3".repeat(64),
+      }),
+    };
+    const outcome = await processIntegrationPreviewRunJob(previewJob("prepare_material"), {
+      queue: material.queue, materialInspector: inspector, presentationTemplate: offroadHousePresentationTemplate, now: () => new Date("2026-09-27T12:00:00.000Z"),
+    });
+    expect(material.failure(), JSON.stringify(material.failure())).toBeNull();
+    expect(outcome.status).toBe("succeeded");
+    const presentationArtifact = material.recorded.find((artifact) => artifact.artifactType === "preview_presentation_material")!;
+    const manifest = renderedMaterialManifestSchema.parse(presentationArtifact.content.manifest);
+    expect(manifest.template).toEqual({id: "synthetic-client", version: "2026.09.27-v1", origin: "client_supplied", fingerprint, versionId});
+    const audit = presentationArtifact.content.rendererAudit as {template: {versionId: string | null; fingerprint: string | null}; renderedBlockIds: string[]; structure: {gaps: Array<{sectionKey: string; fieldKey: string}>; omittedBlockIds: string[]}};
+    expect(audit.template).toMatchObject({versionId, fingerprint});
+    expect(audit.renderedBlockIds).toEqual(["source-register", "decision-headline"]);
+    expect(audit.structure.gaps).toEqual([{sectionKey: "decision-headline", fieldKey: "headline-chart", kind: "chart", blockId: "decision-headline"}]);
+    expect(audit.structure.omittedBlockIds.length).toBeGreaterThan(0);
+    expect(presentationArtifact.content.derivationFingerprint).toBe(fingerprintJson({contract: (presentationArtifact.content.manifest as {decisionContractFingerprint: string}).decisionContractFingerprint, format: "pptx", template: fingerprint}));
   });
 });

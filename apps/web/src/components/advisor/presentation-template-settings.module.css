@@ -22,3 +22,24 @@
 .actions button:focus-visible, .form input:focus-visible, .form select:focus-visible {outline: 2px solid #71884f; outline-offset: 3px;}
 .saved {margin: 0; font-size: 12px; color: #4a6336;}
 .error {margin: 0; font-size: 12px; color: #a23b3b;}
+.structure {display: grid; gap: 10px; border: 1px solid #e2e6de; border-radius: 9px; padding: 12px; margin: 0;}
+.structure legend {font-size: 12px; font-weight: 600; padding: 0 4px;}
+.sections {display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: section;}
+.section {display: grid; gap: 8px; border: 1px solid #e2e6de; border-radius: 8px; padding: 10px 12px; background: #fff;}
+.sectionHeader {display: flex; align-items: center; justify-content: space-between; gap: 10px;}
+.sectionTitle {font-size: 13px; font-weight: 600;}
+.sectionTitle::before {counter-increment: section; content: counter(section) ". "; color: #65717a;}
+.sectionMoves {display: flex; gap: 6px;}
+.sectionMoves button {width: 30px; height: 30px; border-radius: 6px; border: 1px solid #cbd4c2; background: #fff; color: #38482d; font: inherit; cursor: pointer;}
+.sectionMoves button:disabled {opacity: .4; cursor: not-allowed;}
+.audiences {display: flex; flex-wrap: wrap; gap: 12px;}
+.audiences label, .fields label {display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 400;}
+.fields {display: grid; gap: 6px; margin: 0; padding: 0; list-style: none;}
+.kind {color: #65717a;}
+.kind::before {content: "· ";}
+.required {display: none; color: #65717a;}
+.fields input:checked ~ .required {display: inline;}
+.history {display: grid; gap: 6px; border-top: 1px solid #e2e6de; padding-top: 12px;}
+.history h3 {margin: 0; font-size: 12px; font-weight: 600;}
+.history ul {margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.6; color: #65717a;}
+@media (max-width: 560px) {.sectionHeader {flex-direction: column; align-items: flex-start;}}
