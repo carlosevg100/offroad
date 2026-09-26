@@ -179065,6 +179065,13 @@
     },
     {
       "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/work-update-actions.ts",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Etapa 18, incremento 4: adoção, autorização de custo e recusa das atualizações do trabalho; cada ação valida a entrada com Zod, deriva o escopo de requireWorkspace e chama um único comando do banco (adopt_work_update_v1, authorize_work_update_v1, decline_work_update_v1), que revalida a autoridade atual da pessoa sobre o trabalho sob a trava do trabalho."
+    },
+    {
+      "kind": "entrypoint",
       "path": "apps/web/src/app/[locale]/app/sounding/[sessionId]/page.tsx",
       "decision": "refatorar",
       "stage": "1B, 2, 10, 19, 23",
