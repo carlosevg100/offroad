@@ -6713,5 +6713,35 @@
     },
     "yes": "Yes",
     "no": "No"
+  },
+  "ArtifactDownload": {
+    "releaseBlocked": "This version is meant for people outside the work and has not been approved yet, so the file was not produced. Once it is approved, the same address delivers the file.",
+    "sourceRestricted": "One of the sources of this version is not available to you, so the file was not produced.",
+    "bytesMismatch": "The file produced now is not the one recorded for this version, so nothing was delivered. Request a new version before downloading.",
+    "revisionReplaced": "This version is no longer the current one, so the file was not produced. Open the current version and download from it.",
+    "rendererUnavailable": "This version was recorded in a format this page does not produce, so the file was not produced.",
+    "templateUnavailable": "The visual identity recorded with this version is no longer available, so the file was not produced.",
+    "materials": {
+      "packageUnavailable": "The approved package is not available yet.",
+      "outsidePlan": "This material is not part of the approved plan.",
+      "linkedDocuments": "Documents linked to this version",
+      "sourcesNotRecorded": "The numbered references come from the text of this version. It was recorded before sources were linked to each version, so it does not point to the source file of each reference."
+    },
+    "model": {
+      "unavailable": "The approved model is not available yet.",
+      "sourcesChanged": "Sources changed; review the model before preparing a new delivery.",
+      "prepareAgain": "The model must be prepared again.",
+      "changed": "The model changed since compilation and must be prepared again."
+    },
+    "financialResult": {
+      "unavailable": "This result needs a new review or is still being prepared."
+    },
+    "preview": {
+      "presentationNotReady": "The governed presentation is not ready yet.",
+      "workbookNotReady": "The governed workbook is not ready yet.",
+      "storageUnavailable": "The stored material could not be retrieved.",
+      "storageMismatch": "The stored material does not match its governed manifest.",
+      "synthesisMissing": "The synthesis has not been produced yet."
+    }
   }
 }

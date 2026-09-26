@@ -6713,5 +6713,35 @@
     },
     "yes": "Sim",
     "no": "Não"
+  },
+  "ArtifactDownload": {
+    "releaseBlocked": "Esta versão é destinada a quem está fora do trabalho e ainda não foi aprovada, então o arquivo não foi gerado. Depois da aprovação, o mesmo endereço entrega o arquivo.",
+    "sourceRestricted": "Uma das fontes desta versão não está disponível para você, então o arquivo não foi gerado.",
+    "bytesMismatch": "O arquivo produzido agora não é igual ao registrado para esta versão, então nada foi entregue. Peça uma nova versão antes de baixar.",
+    "revisionReplaced": "Esta versão não é mais a vigente, então o arquivo não foi gerado. Abra a versão vigente e baixe a partir dela.",
+    "rendererUnavailable": "Esta versão foi registrada num formato que esta página não produz, então o arquivo não foi gerado.",
+    "templateUnavailable": "A identidade visual registrada com esta versão não está mais disponível, então o arquivo não foi gerado.",
+    "materials": {
+      "packageUnavailable": "O pacote aprovado ainda não está disponível.",
+      "outsidePlan": "Este material não faz parte do plano aprovado.",
+      "linkedDocuments": "Documentos vinculados a esta versão",
+      "sourcesNotRecorded": "As referências numeradas vêm do texto desta versão. Ela foi registrada antes do vínculo de fontes por versão, então não aponta o arquivo de origem de cada referência."
+    },
+    "model": {
+      "unavailable": "O modelo aprovado ainda não está disponível.",
+      "sourcesChanged": "As fontes mudaram; revise o modelo antes de gerar uma nova entrega.",
+      "prepareAgain": "O modelo precisa ser preparado novamente.",
+      "changed": "O modelo mudou desde a compilação e precisa ser preparado novamente."
+    },
+    "financialResult": {
+      "unavailable": "Este resultado precisa de uma nova revisão ou ainda está sendo preparado."
+    },
+    "preview": {
+      "presentationNotReady": "A apresentação governada ainda não está pronta.",
+      "workbookNotReady": "O workbook governado ainda não está pronto.",
+      "storageUnavailable": "Não foi possível recuperar o material armazenado.",
+      "storageMismatch": "O material armazenado não corresponde ao manifesto governado.",
+      "synthesisMissing": "A síntese ainda não foi produzida."
+    }
   }
 }

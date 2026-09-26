@@ -24,6 +24,9 @@ import type {Material, MaterialBlock, MaterialKind} from "@offroad/case-material
 
 export type Lang = "pt" | "en";
 
+/** Names this renderer in an artifact manifest; bump it whenever the same input would produce other bytes. */
+export const materialHtmlRendererVersion = "2026.09.26-v1";
+
 export type RenderMeta = {
   /** Redacted upstream when the company has not authorised disclosure. */
   companyName?: string;
