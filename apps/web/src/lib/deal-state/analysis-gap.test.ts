@@ -6,7 +6,8 @@ import {dealStateAnalysisGap, dealStateGapTrigger, rowsAnalysisGap, workbenchAna
 import {resumeDealStateAnalysis} from "./resume-analysis";
 import type {DealStateRow, DealStateWorkbench} from "./workbench";
 
-const none = {understandingStatus: null, structureCreatedAt: null, decision: null, productionPlanStatus: null, materialsPresent: false};
+const none = {understandingStatus: null, structureCreatedAt: null, decision: null, productionPlanStatus: null, materialsPresent: false,
+  packageReviewStatus: null, matchScreenPresent: false};
 
 describe("a missing case result is a gap, never work in progress", () => {
   it("names the most advanced decision whose result is missing", () => {
@@ -27,7 +28,7 @@ describe("a missing case result is a gap, never work in progress", () => {
 
   it("resumes each gap from the decision the analysis starts from", () => {
     expect(dealStateGapTrigger).toEqual({structure: "understanding_confirmed", structure_revision: "structure_changes_requested",
-      production_plan: "structure_confirmed", materials: "production_plan_approved"});
+      production_plan: "structure_confirmed", materials: "production_plan_approved", match_screen: "material_package_approved"});
   });
 
   it("shows no gap while the case analysis runs", () => {
@@ -70,5 +71,53 @@ describe("resuming the analysis of a missing result", () => {
     expect(await resumeDealStateAnalysis(client({error: {code: "55000", message: "deal_state_analysis_already_running"}}).supabase, "org", "session", [understanding])).toBe("resumed");
     expect(await resumeDealStateAnalysis(client({error: {code: "55000", message: "current_deal_state_trigger_required"}}).supabase, "org", "session", [understanding])).toBe("failed");
     expect(await resumeDealStateAnalysis(client({data: {unexpected: true}}).supabase, "org", "session", [understanding])).toBe("failed");
+  });
+});
+
+describe("the financier screening of an approved package", () => {
+  const confirmedDecision = {status: "confirmed", createdAt: "2026-09-26T11:00:00Z"};
+  const approvedPackage = {...none, understandingStatus: "confirmed", structureCreatedAt: "2026-09-26T10:00:00Z", decision: confirmedDecision,
+    productionPlanStatus: "approved", materialsPresent: true, packageReviewStatus: "approved"};
+
+  it("is a gap while no screening exists, and only once the package is approved", () => {
+    expect(dealStateAnalysisGap(approvedPackage)).toBe("match_screen");
+    expect(dealStateAnalysisGap({...approvedPackage, matchScreenPresent: true})).toBeNull();
+    expect(dealStateAnalysisGap({...approvedPackage, packageReviewStatus: null})).toBeNull();
+    expect(dealStateAnalysisGap({...approvedPackage, packageReviewStatus: "changes_requested"})).toBeNull();
+    expect(dealStateGapTrigger.match_screen).toBe("material_package_approved");
+  });
+
+  it("is absent while the case analysis runs and once the screening exists", () => {
+    const workbench = {understanding: {row: {status: "confirmed"}}, structure: {row: {created_at: "2026-09-26T10:00:00Z"}},
+      structureDecision: {status: "confirmed", created_at: "2026-09-26T11:00:00Z"}, productionPlan: {row: {status: "approved"}},
+      packageReview: {status: "approved"}, matchScreen: null} as unknown as DealStateWorkbench;
+    expect(workbenchAnalysisGap({...workbench, isProcessing: false}, true)).toBe("match_screen");
+    expect(workbenchAnalysisGap({...workbench, isProcessing: true}, true)).toBeNull();
+    expect(workbenchAnalysisGap({...workbench, isProcessing: false, matchScreen: {row: {}, value: {}}} as unknown as DealStateWorkbench, true)).toBeNull();
+  });
+
+  const fingerprint = (character: string) => character.repeat(64);
+  const stateRow = (objectType: string, status: string, objectFingerprint: string, payload: unknown, dependencies: unknown[] = []): DealStateRow => ({
+    ...row(objectType, status, payload), object_fingerprint: objectFingerprint, dependencies,
+  } as unknown as DealStateRow);
+  const packageReview = stateRow("package_review", "approved", fingerprint("c"), {approval: {scope: "internal_material_package"}});
+  const materialArtifact = stateRow("material_artifact", "pending_confirmation", fingerprint("d"), {});
+  const screen = (packageFingerprint: string) => stateRow("match_screen", "pending_confirmation", fingerprint("e"), {
+    schemaVersion: "2026.08.29-v3", status: "no_eligible_mandates", packageReviewFingerprint: packageFingerprint,
+    materialArtifactFingerprint: fingerprint("d"), materialTruthFingerprint: fingerprint("f"), matchingFingerprint: fingerprint("a"),
+    candidates: [], summary: {screened: 0, eligible: 0, possible: 0, excluded: 0, blockedByGovernance: 0}, structuralExclusions: [],
+    noContactAuthorized: true,
+  }, [{objectType: "package_review", objectFingerprint: packageFingerprint}, {objectType: "material_artifact", objectFingerprint: fingerprint("d")}]);
+
+  it("is read from the stored rows, where only the screening of the current package counts", () => {
+    expect(rowsAnalysisGap([materialArtifact, packageReview])).toBe("match_screen");
+    expect(rowsAnalysisGap([materialArtifact, packageReview, screen(fingerprint("9"))])).toBe("match_screen");
+    expect(rowsAnalysisGap([materialArtifact, packageReview, screen(fingerprint("c"))])).toBeNull();
+  });
+
+  it("resumes the analysis from the package approval", async () => {
+    const rpc = vi.fn().mockResolvedValue({data: {deduplicated: false, job_status: "queued"}, error: null});
+    expect(await resumeDealStateAnalysis({rpc} as never, "org", "session", [understanding, materialArtifact, packageReview])).toBe("resumed");
+    expect(rpc).toHaveBeenCalledWith("enqueue_deal_state_analysis", {p_organization_id: "org", p_session_id: "session", p_trigger_source: "material_package_approved"});
   });
 });

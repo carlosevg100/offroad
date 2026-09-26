@@ -203,12 +203,9 @@ function renderDecisionStage({
     return <MaterialReview governed={governedMaterials} locale={locale} opportunityId={opportunityId} sessionId={sessionId} t={t} />;
   }
 
+  // An approved package without its financier screening is the match_screen gap above.
   if (workbench.matchScreen) {
     return <MatchReview introductionPlan={introductionPlan} introductionRecipients={introductionRecipients} introductionTargets={introductionTargets} locale={locale} match={workbench.matchScreen} opportunityId={opportunityId} t={t} />;
-  }
-
-  if (workbench.packageReview?.status === "approved") {
-    return <article className="deal-review deal-review--state"><CheckCircle2 aria-hidden="true" size={22} /><span>{t("materialsApproved.kicker")}</span><h2>{t("materialsApproved.title")}</h2><p>{t("materialsApproved.body")}</p></article>;
   }
 
   if (workbench.productionPlan?.row.status === "pending_confirmation") {

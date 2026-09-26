@@ -36,7 +36,8 @@ begin
     'understanding_confirmed',
     'structure_changes_requested',
     'structure_confirmed',
-    'production_plan_approved'
+    'production_plan_approved',
+    'material_package_approved'
   ) then
     raise exception 'deal_state_analysis_trigger_invalid' using errcode = '22023';
   end if;
@@ -44,6 +45,7 @@ begin
   trigger_object_type := case p_trigger_source
     when 'understanding_confirmed' then 'understanding_snapshot'
     when 'production_plan_approved' then 'production_plan'
+    when 'material_package_approved' then 'package_review'
     else 'structure_decision'
   end;
 
@@ -83,6 +85,10 @@ begin
     )
     or (
       p_trigger_source = 'production_plan_approved'
+      and trigger_object.status <> 'approved'
+    )
+    or (
+      p_trigger_source = 'material_package_approved'
       and trigger_object.status <> 'approved'
     ) then
     raise exception 'current_deal_state_trigger_required' using errcode = '55000';
