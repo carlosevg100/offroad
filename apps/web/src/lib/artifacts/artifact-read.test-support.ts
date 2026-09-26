@@ -33,6 +33,7 @@ export type ReadFixtureInput = {
   stored?: {sha256: string; byteLength: number; bucket: string; path: string};
   blocks?: Array<{blockKey: string; kind: string; content: Record<string, unknown>; claims: Array<Record<string, unknown>>}>;
   sources?: Array<{sourceVersionId: string; rightsVersionId: string | null}>;
+  traces?: string[];
   restriction?: {kind: "source_rights"; linkIds: string[]; unresolvedRevisionIds: string[]} | {kind: "release"; release: "blocked"} | null;
 };
 
@@ -59,7 +60,7 @@ export function artifactReadFixture(input: ReadFixtureInput) {
     institutionalResult: input.institutionalResult ?? null,
     sources: input.sources ?? [],
     claims: blocks.filter((block) => block.claims.length > 0).map((block) => ({blockKey: block.blockKey, claimIds: block.claims.map((claim) => claim.claimId)})),
-    traces: [],
+    traces: input.traces ?? [],
     template: input.template ?? null,
     provenance: {producer: legacy ? `legacy:${legacy.table}` : "person", jobId: null, taskRunId: null, messageId: null, capability: null},
     legacy,

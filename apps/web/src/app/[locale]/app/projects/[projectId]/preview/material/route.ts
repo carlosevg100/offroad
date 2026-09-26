@@ -102,8 +102,10 @@ export async function GET(request: Request, {params}: Params) {
   const rowId = legacyRowId(revision, "capital_project_artifacts");
   const renderer = resolveRenderer(revision);
   const stored = renderer.ok && renderer.source === "storage" ? renderer : null;
-  // A legacy revision is served only while its row is the one this preview serves; a stored revision carries its own object.
+  // A legacy revision is served only while its row is the one this preview serves; a stored revision
+  // carries its own object; anything else has no content this route can produce.
   if (!stored) {
+    if (rowId === null) return artifactUnavailable(copy.rendererUnavailable);
     if (!current) return artifactUnavailable(notReady);
     if (rowId !== current.id) return artifactUnavailable(copy.revisionReplaced);
   }

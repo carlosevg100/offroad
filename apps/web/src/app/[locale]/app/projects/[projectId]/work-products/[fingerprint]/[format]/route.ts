@@ -53,8 +53,9 @@ export async function GET(request:Request,{params}:{params:Promise<{locale:strin
   }
   const {revision,read}=resolved;
   if(!revisionRendererAllowed(revision,{families:["material"]}))return artifactUnavailable(copy.rendererUnavailable);
-  // The revision must be the version of this reading: the case manifest it was published with.
-  if(legacyRowId(revision,"case_artifact_manifests")!==result.manifestId){
+  // The revision must be the version of this reading: the case manifest it was published with, or
+  // the reading's own fingerprint in the traces of a revision written through the command.
+  if(legacyRowId(revision,"case_artifact_manifests")!==result.manifestId&&!revision.manifest.traces.includes(`document-work-product:${result.product.fingerprint}`)){
     return resolved.exact?artifactUnavailable(copy.revisionReplaced):new Response(null,{status:404});
   }
   const labels=await documentWorkProductLabels(result.product.locale);

@@ -51,7 +51,9 @@ export async function GET(request: Request, {params}: Params) {
   const {revision, read} = resolved;
   if (!revisionRendererAllowed(revision, {families: ["institutional_workbook", "material"]})) return artifactUnavailable(copy.rendererUnavailable);
   const result = await loadInstitutionalModelResult(supabase, projectId);
-  if (!result || result.id !== resultId) return artifactUnavailable(copy.financialResult.unavailable);
+  if (!result || result.id !== resultId) {
+    return artifactUnavailable(resolved.exact && result ? copy.revisionReplaced : copy.financialResult.unavailable);
+  }
   const artifact = result.artifact;
   const template = format === "xlsx" ? {ok: true as const, template: undefined} : await templateForRevision(supabase, projectId, revision, "project");
   if (!template.ok) return artifactUnavailable(copy.templateUnavailable);
