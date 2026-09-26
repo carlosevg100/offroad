@@ -6765,6 +6765,7 @@
       "workbookNotReady": "The spreadsheet is not ready yet.",
       "storageUnavailable": "The stored file could not be retrieved.",
       "storageMismatch": "The stored file does not match the record of this version, so nothing was delivered.",
+      "storageMissing": "The stored file of this version was not found where it was recorded, so nothing was delivered. Request a new version before downloading.",
       "synthesisMissing": "The synthesis has not been produced yet."
     }
   }

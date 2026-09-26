@@ -57,13 +57,20 @@ const previewRevision = (subject: string, rowId: string, overrides: Partial<Read
 let rows: ReturnType<typeof row>[];
 let reads: ReturnType<typeof artifactReadFixture>[];
 let stored: Record<string, Uint8Array>;
+let storageDown: boolean;
+const downloads: string[] = [];
 function client() {
   return supabaseDouble({
     // The old route asked for non-superseded rows; the new one reads the whole history.
     tables: {capital_project_artifacts: (filters) => ({data: [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at))
       .filter(candidate => !filters.some(([method, args]) => method === "neq" && args[0] === "status" && candidate.status === args[1])), error: null})},
     rpc: artifactRpc(reads),
-    storage: {"case-artifacts": (path) => stored[path] ? {data: new Blob([new Uint8Array(stored[path]!)]), error: null} : {data: null, error: {message: "missing"}}},
+    // What Storage answers: the object, "not found" (also for an object the person cannot read), or a failure.
+    storage: {"case-artifacts": (path) => {
+      downloads.push(path);
+      if (storageDown) return {data: null, error: {message: "upstream timeout", statusCode: "503"}};
+      return stored[path] ? {data: new Blob([new Uint8Array(stored[path]!)]), error: null} : {data: null, error: {message: "Object not found", statusCode: "404"}};
+    }},
   }).client;
 }
 const request = (format = "docx", query = "") => GET(new Request(`https://offroad.test/preview?format=${format}${query}`), {params: Promise.resolve({locale: "pt-BR", projectId})});
@@ -74,6 +81,8 @@ beforeEach(() => {
   rows = [synthesis, ledger, workbookRow, contractRow];
   reads = [previewRevision("preview_material", synthesis.id), previewRevision("preview_workbook_material", workbookRow.id)];
   stored = {[workbookManifest.storage.objectPath]: workbookBytes};
+  storageDown = false;
+  downloads.length = 0;
   mocks.readable.mockResolvedValue(true);
   mocks.workspace.mockImplementation(async () => ({supabase: client(), organization: {id: organizationId}}));
 });
@@ -115,7 +124,43 @@ describe("integration preview material", () => {
     stored = {[workbookManifest.storage.objectPath]: new TextEncoder().encode("tampered")};
     expect((await request("xlsx")).status).toBe(409);
     stored = {};
+    const missing = await request("xlsx");
+    expect(missing.status).toBe(409);
+    expect(await missing.text()).toContain("não foi encontrado onde foi registrado");
+    storageDown = true;
     expect((await request("xlsx")).status).toBe(502);
+  });
+  it("reads stored bytes only at the address of their upload grant: a rotated or missing object is refused with a reason", async () => {
+    const storedRevision = (path: string, byteLength = workbookBytes.byteLength) => previewRevision("preview_workbook_material", workbookRow.id, {
+      legacy: undefined, audience: "internal", release: "internal", format: "xlsx", stored: {sha256: workbookSha, byteLength, bucket: "case-artifacts", path}});
+    const grantPath = `${organizationId}/${projectId}/materials/${workbookSha}.xlsx`;
+    const rotatedPath = `${organizationId}/${projectId}/revocable-7d1f0c2e-5b7a-4c1e-9a55-1f7c2d3e4b5a/${workbookSha}.xlsx`;
+    reads = [storedRevision(grantPath)];
+    const served = await request("xlsx");
+    expect(served.status).toBe(200);
+    expect(served.headers.get("x-artifact-content-sha256")).toBe(workbookSha);
+    // The 1B rotation renamed objects without updating grants or manifests: the grant's address is empty.
+    stored = {[rotatedPath]: workbookBytes};
+    downloads.length = 0;
+    const rotated = await request("xlsx");
+    expect(rotated.status).toBe(409);
+    expect(await rotated.text()).toContain("não foi encontrado onde foi registrado");
+    expect(downloads).toEqual([grantPath]);
+    // A manifest that names any other address is not the grant's object and is never downloaded.
+    reads = [storedRevision(rotatedPath)];
+    downloads.length = 0;
+    expect((await request("xlsx")).status).toBe(409);
+    expect(downloads).toEqual([]);
+    // The object at the grant's address with another size is refused before its hash is trusted.
+    stored = {[grantPath]: workbookBytes};
+    reads = [storedRevision(grantPath, workbookBytes.byteLength + 1)];
+    const resized = await request("xlsx");
+    expect(resized.status).toBe(409);
+    expect(await resized.text()).toContain("não confere com o registro");
+    // A legacy receipt resolves the same address and is refused the same way when the object moved.
+    reads = [previewRevision("preview_workbook_material", workbookRow.id)];
+    stored = {[rotatedPath]: workbookBytes};
+    expect((await request("xlsx")).status).toBe(409);
   });
   it("uses the same release evaluation as every download: an external version is served only once released", async () => {
     reads = [previewRevision("preview_workbook_material", workbookRow.id, {legacy: undefined, audience: "external", release: "blocked",
@@ -166,7 +211,7 @@ describe("old and new resolution decide equal for the preview", () => {
     expect(after.headers.get("x-material-manifest-fingerprint")).toBe(before.headers.get("x-material-manifest-fingerprint"));
     const cases: Array<() => void> = [
       () => {stored = {[workbookManifest.storage.objectPath]: new TextEncoder().encode("tampered")};},
-      () => {stored = {};},
+      () => {storageDown = true;},
       () => {rows = [synthesis, ledger, workbookRow];},
       () => {rows = [ledger, workbookRow, contractRow]; reads = reads.filter(read => read.artifact.subject !== "preview_material");},
       () => {mocks.readable.mockResolvedValue(false);},
@@ -175,9 +220,15 @@ describe("old and new resolution decide equal for the preview", () => {
       rows = [synthesis, ledger, workbookRow, contractRow];
       reads = [previewRevision("preview_material", synthesis.id), previewRevision("preview_workbook_material", workbookRow.id)];
       stored = {[workbookManifest.storage.objectPath]: workbookBytes};
+      storageDown = false;
       mocks.readable.mockResolvedValue(true);
       arrange();
       for (const format of ["xlsx", "docx", "pptx"]) expect((await request(format)).status, format).toBe((await legacyRequest(format)).status);
     }
+  });
+  it("differ on purpose for a missing object: the old route answered as if storage failed, the new one says the file is missing", async () => {
+    stored = {};
+    expect((await legacyRequest("xlsx")).status).toBe(502);
+    expect((await request("xlsx")).status).toBe(409);
   });
 });
