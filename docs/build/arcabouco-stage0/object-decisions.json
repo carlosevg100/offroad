@@ -766,6 +766,12 @@
           "line": 288,
           "anchor": "create function private.adopt_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 277,
+          "anchor": "create or replace function private.adopt_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -985,6 +991,60 @@
           "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
           "line": 677,
           "anchor": "create function private.advance_dependency_update_request_v1(p_org uuid,p_request uuid,p_newer uuid default null) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.advance_work_followups_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.advance_work_followups_v1()",
+          "kind": "function",
+          "name": "advance_work_followups_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.advance_work_followups_v1()",
+          "kind": "function",
+          "name": "advance_work_followups_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 253,
+          "anchor": "create function private.advance_work_followups_v1() returns trigger",
           "mechanism": "direct_ddl"
         }
       ]
@@ -5983,6 +6043,60 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.cancel_declined_jobs_v1(p_org uuid, p_jobs uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.cancel_declined_jobs_v1(p_org uuid, p_jobs uuid[])",
+          "kind": "function",
+          "name": "cancel_declined_jobs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_jobs uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.cancel_declined_jobs_v1(p_org uuid, p_jobs uuid[])",
+          "kind": "function",
+          "name": "cancel_declined_jobs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_jobs uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 397,
+          "anchor": "create function private.cancel_declined_jobs_v1(p_org uuid,p_jobs uuid[]) returns integer",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.canonical_job_storage_payload_v1(p_job_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -9563,6 +9677,12 @@
           "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
           "line": 383,
           "anchor": "create function private.decline_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer,p_reason text,p_candidate_id uuid default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 421,
+          "anchor": "create or replace function private.decline_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer,p_reason text,p_candidate_id uuid default null) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -13390,6 +13510,60 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.fulfil_work_followups_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.fulfil_work_followups_v1()",
+          "kind": "function",
+          "name": "fulfil_work_followups_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.fulfil_work_followups_v1()",
+          "kind": "function",
+          "name": "fulfil_work_followups_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 218,
+          "anchor": "create function private.fulfil_work_followups_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.get_integration_preview_status(p_organization_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -16368,6 +16542,12 @@
           "line": 853,
           "anchor": "create function private.institutional_approval_through_graph_v1(p_org uuid,p_work uuid,p_configuration uuid,p_request uuid) returns boolean",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 743,
+          "anchor": "create or replace function private.institutional_approval_through_graph_v1(p_org uuid,p_work uuid,p_configuration uuid,p_request uuid) returns boolean",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -17075,6 +17255,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.institutional_result_established_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_result_established_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_result_established_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_result_established_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_result_established_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 135,
+          "anchor": "create function private.institutional_result_established_v1(p_org uuid,p_result uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.institutional_result_is_live_v1(p_org uuid, p_result uuid)",
@@ -20490,6 +20724,60 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.lock_new_declinable_jobs_v1(p_org uuid, p_jobs uuid[], p_locked uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_new_declinable_jobs_v1(p_org uuid, p_jobs uuid[], p_locked uuid[])",
+          "kind": "function",
+          "name": "lock_new_declinable_jobs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_jobs uuid[], p_locked uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_new_declinable_jobs_v1(p_org uuid, p_jobs uuid[], p_locked uuid[])",
+          "kind": "function",
+          "name": "lock_new_declinable_jobs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_jobs uuid[], p_locked uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 387,
+          "anchor": "create function private.lock_new_declinable_jobs_v1(p_org uuid,p_jobs uuid[],p_locked uuid[]) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.lock_receivables_scope_fragment()",
       "kind": "function",
       "catalogues": {
@@ -23456,6 +23744,60 @@
           "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
           "line": 184,
           "anchor": "create function private.project_institutional_result_dependencies_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.project_institutional_result_milestone_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.project_institutional_result_milestone_v1()",
+          "kind": "function",
+          "name": "project_institutional_result_milestone_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.project_institutional_result_milestone_v1()",
+          "kind": "function",
+          "name": "project_institutional_result_milestone_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 110,
+          "anchor": "create function private.project_institutional_result_milestone_v1() returns trigger",
           "mechanism": "direct_ddl"
         }
       ]
@@ -42555,6 +42897,60 @@
       ]
     },
     {
+      "id": "function:private.work_followup_citation_v1(p_text text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_followup_citation_v1(p_text text)",
+          "kind": "function",
+          "name": "work_followup_citation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_text text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.work_followup_citation_v1(p_text text)",
+          "kind": "function",
+          "name": "work_followup_citation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_text text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 208,
+          "anchor": "create function private.work_followup_citation_v1(p_text text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.work_milestone_label_v1(p_text text, p_fallback text)",
       "kind": "function",
       "catalogues": {
@@ -42934,6 +43330,60 @@
       ]
     },
     {
+      "id": "function:private.work_update_declinable_jobs_v1(p_org uuid, p_request uuid, p_candidate uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_update_declinable_jobs_v1(p_org uuid, p_request uuid, p_candidate uuid)",
+          "kind": "function",
+          "name": "work_update_declinable_jobs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_request uuid, p_candidate uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_update_declinable_jobs_v1(p_org uuid, p_request uuid, p_candidate uuid)",
+          "kind": "function",
+          "name": "work_update_declinable_jobs_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_request uuid, p_candidate uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 367,
+          "anchor": "create function private.work_update_declinable_jobs_v1(p_org uuid,p_request uuid,p_candidate uuid) returns uuid[]",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.work_update_view_v1(p_work_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -42993,6 +43443,12 @@
           "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
           "line": 477,
           "anchor": "create function private.work_update_view_v1(p_work_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 563,
+          "anchor": "create or replace function private.work_update_view_v1(p_work_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -88669,6 +89125,54 @@
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "policy:private.work_followup_executions.work_followup_executions_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.work_followup_executions.work_followup_executions_deny_clients",
+          "kind": "policy",
+          "name": "work_followup_executions_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "work_followup_executions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.work_followup_executions.work_followup_executions_deny_clients",
+          "kind": "policy",
+          "name": "work_followup_executions_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "work_followup_executions",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 201,
+          "anchor": "create policy work_followup_executions_deny_clients on private.work_followup_executions as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:private.work_recompute_leases.work_recompute_leases_deny_clients",
       "kind": "policy",
       "catalogues": {
@@ -119004,6 +119508,124 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "r:private.work_followup_executions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.work_followup_executions",
+          "rls": true,
+          "kind": "table",
+          "name": "work_followup_executions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.work_followup_executions",
+          "rls": true,
+          "kind": "table",
+          "name": "work_followup_executions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 171,
+          "anchor": "create table private.work_followup_executions (",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "r:private.work_recompute_leases",
@@ -152526,6 +153148,44 @@
       "consumer_status": "Sem RPC, grant ou consumidor novo. Origem reservada ao próximo incremento de execução."
     },
     {
+      "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_work_followup",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_work_followup",
+          "kind": "trigger",
+          "name": "execution_input_snapshots_work_followup",
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.fulfil_work_followups_v1()",
+          "definition": "CREATE TRIGGER execution_input_snapshots_work_followup AFTER INSERT ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.fulfil_work_followups_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_work_followup",
+          "kind": "trigger",
+          "name": "execution_input_snapshots_work_followup",
+          "table": "execution_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.fulfil_work_followups_v1()",
+          "definition": "CREATE TRIGGER execution_input_snapshots_work_followup AFTER INSERT ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.fulfil_work_followups_v1()"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 249,
+          "anchor": "create trigger execution_input_snapshots_work_followup after insert on private.execution_input_snapshots for each row execute function private.fulfil_work_followups_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_invalidations.execution_invalidations_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -153791,6 +154451,44 @@
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
     },
     {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_work_followup",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_work_followup",
+          "kind": "trigger",
+          "name": "execution_result_receipts_work_followup",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.advance_work_followups_v1()",
+          "definition": "CREATE TRIGGER execution_result_receipts_work_followup AFTER INSERT ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.advance_work_followups_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.execution_result_receipts.execution_result_receipts_work_followup",
+          "kind": "trigger",
+          "name": "execution_result_receipts_work_followup",
+          "table": "execution_result_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.advance_work_followups_v1()",
+          "definition": "CREATE TRIGGER execution_result_receipts_work_followup AFTER INSERT ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.advance_work_followups_v1()"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 267,
+          "anchor": "create trigger execution_result_receipts_work_followup after insert on private.execution_result_receipts for each row execute function private.advance_work_followups_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.execution_source_bindings.execution_source_bindings_audit",
       "kind": "trigger",
       "catalogues": {
@@ -154579,7 +155277,7 @@
           "schema": "private",
           "enabled": "O",
           "function": "private.supersede_previous_institutional_results()",
-          "definition": "CREATE TRIGGER institutional_result_supersedes AFTER UPDATE ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text) AND (new.canonical_revision_id IS NOT NULL))) EXECUTE FUNCTION private.supersede_previous_institutional_results()"
+          "definition": "CREATE TRIGGER institutional_result_supersedes AFTER UPDATE ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text) AND (new.canonical_revision_id IS NOT NULL) AND (new.recompute_candidate_id IS NULL))) EXECUTE FUNCTION private.supersede_previous_institutional_results()"
         },
         "staging": {
           "id": "trigger:private.institutional_model_results.institutional_result_supersedes",
@@ -154589,7 +155287,7 @@
           "schema": "private",
           "enabled": "O",
           "function": "private.supersede_previous_institutional_results()",
-          "definition": "CREATE TRIGGER institutional_result_supersedes AFTER UPDATE ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text) AND (new.canonical_revision_id IS NOT NULL))) EXECUTE FUNCTION private.supersede_previous_institutional_results()"
+          "definition": "CREATE TRIGGER institutional_result_supersedes AFTER UPDATE ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text) AND (new.canonical_revision_id IS NOT NULL) AND (new.recompute_candidate_id IS NULL))) EXECUTE FUNCTION private.supersede_previous_institutional_results()"
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
@@ -154601,6 +155299,12 @@
           "path": "supabase/migrations/20260911020808_project_revision_propagation.sql",
           "line": 59,
           "anchor": "create trigger institutional_result_supersedes after update on private.institutional_model_results",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 128,
+          "anchor": "create trigger institutional_result_supersedes after update on private.institutional_model_results for each row",
           "mechanism": "direct_ddl"
         }
       ],
@@ -154679,6 +155383,44 @@
           "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
           "line": 203,
           "anchor": "create trigger institutional_results_dependencies after insert on private.institutional_model_results for each row execute function private.project_institutional_result_dependencies_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_model_results.institutional_results_milestone",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_model_results.institutional_results_milestone",
+          "kind": "trigger",
+          "name": "institutional_results_milestone",
+          "table": "institutional_model_results",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_institutional_result_milestone_v1()",
+          "definition": "CREATE TRIGGER institutional_results_milestone AFTER UPDATE OF status ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text))) EXECUTE FUNCTION private.project_institutional_result_milestone_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_model_results.institutional_results_milestone",
+          "kind": "trigger",
+          "name": "institutional_results_milestone",
+          "table": "institutional_model_results",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_institutional_result_milestone_v1()",
+          "definition": "CREATE TRIGGER institutional_results_milestone AFTER UPDATE OF status ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text))) EXECUTE FUNCTION private.project_institutional_result_milestone_v1()"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 116,
+          "anchor": "create trigger institutional_results_milestone after update of status on private.institutional_model_results for each row",
           "mechanism": "direct_ddl"
         }
       ]
@@ -157896,6 +158638,120 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "trigger:private.work_followup_executions.work_followup_executions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.work_followup_executions.work_followup_executions_immutable",
+          "kind": "trigger",
+          "name": "work_followup_executions_immutable",
+          "table": "work_followup_executions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_followup_executions_immutable BEFORE DELETE OR UPDATE ON private.work_followup_executions FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.work_followup_executions.work_followup_executions_immutable",
+          "kind": "trigger",
+          "name": "work_followup_executions_immutable",
+          "table": "work_followup_executions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_followup_executions_immutable BEFORE DELETE OR UPDATE ON private.work_followup_executions FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 202,
+          "anchor": "create trigger work_followup_executions_immutable before update or delete on private.work_followup_executions for each row execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.work_followup_executions.work_followup_executions_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.work_followup_executions.work_followup_executions_truncate_guard",
+          "kind": "trigger",
+          "name": "work_followup_executions_truncate_guard",
+          "table": "work_followup_executions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_followup_executions_truncate_guard BEFORE TRUNCATE ON private.work_followup_executions FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.work_followup_executions.work_followup_executions_truncate_guard",
+          "kind": "trigger",
+          "name": "work_followup_executions_truncate_guard",
+          "table": "work_followup_executions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER work_followup_executions_truncate_guard BEFORE TRUNCATE ON private.work_followup_executions FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 203,
+          "anchor": "create trigger work_followup_executions_truncate_guard before truncate on private.work_followup_executions for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.work_followup_executions.work_followup_executions_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.work_followup_executions.work_followup_executions_updated",
+          "kind": "trigger",
+          "name": "work_followup_executions_updated",
+          "table": "work_followup_executions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_followup_executions_updated BEFORE UPDATE ON private.work_followup_executions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.work_followup_executions.work_followup_executions_updated",
+          "kind": "trigger",
+          "name": "work_followup_executions_updated",
+          "table": "work_followup_executions",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_followup_executions_updated BEFORE UPDATE ON private.work_followup_executions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Costuras entre 3B, 4 e 5A: marco de resultado dos resultados institucionais, adoção que cobre execuções e resultados institucionais, recusa que cancela os jobs do que recusa, follow-up que termina ligado à execução que o cita e a ordem única de travas da aprovação",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 204,
+          "anchor": "create trigger work_followup_executions_updated before update on private.work_followup_executions for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.work_recompute_leases.work_recompute_leases_guard",
@@ -173357,6 +174213,12 @@
           "line": 224,
           "anchor": "create view private.work_milestone_sources_v1 with (security_invoker=true) as",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+          "line": 61,
+          "anchor": "create or replace view private.work_milestone_sources_v1 with (security_invoker=true) as",
+          "mechanism": "direct_ddl"
         }
       ]
     }
@@ -180181,6 +181043,13 @@
       "decision": "preservar",
       "stage": "18 / 6A",
       "reason": "Migração do incremento 6A da etapa 18: a leitura de saúde do recálculo, a entrada do worker com a vinculação do claim e a capacidade dependency-recompute-health.v1 no contrato de runtime do worker"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260926051417_work_update_integration.sql",
+      "decision": "preservar",
+      "stage": "18 / 5C",
+      "reason": "Migração do incremento 5C de work_dependencies_and_continuity: private.work_followup_executions, oito funções, seis gatilhos e o gatilho de substituição recriado, a visão de marcos com o resultado institucional, as redefinições de adoção, recusa, leitura das atualizações e passo do grafo, e os remendos de leitura e de travas do fluxo institucional"
     }
   ],
   "staging_archive": [
