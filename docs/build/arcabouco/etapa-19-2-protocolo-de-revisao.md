@@ -1,6 +1,6 @@
 # Etapa 19, incremento 2: a capacidade do robô (2a) e a migração A do protocolo de revisão (2b)
 
-Duas PRs. A 2a (`feat/19-2a-artifact-capability`, PR #805) muda só o robô e vai antes; a 2b (`feat/19-2b-artifact-revision-protocol`) traz a migração `supabase/migrations/20260927120000_artifact_revision_protocol.sql` (carimbo provisório; o lead aplica e renomeia), as provas SQL, os tipos gerados da web, o corpo efetivo do contrato de runtime e esta nota. A migração é o lado SQL do contrato de domínio do incremento 1 (`packages/domain-contracts/src/artifact-protocol.ts`, PR #806): a forma do manifesto, os nomes das regras, a projeção de legado e as avaliações de release e frescor são as do contrato, e o validador SQL é o validador da escrita; nada de zod entra no banco.
+Duas PRs. A 2a (`feat/19-2a-artifact-capability`, PR #805) muda só o robô e vai antes; a 2b (`feat/19-2b-artifact-revision-protocol`) traz a migração `supabase/migrations/20260926183957_artifact_revision_protocol.sql` (aplicada em staging como `20260926183532` e em produção como `20260926183957`), as provas SQL, os tipos gerados da web, o corpo efetivo do contrato de runtime e esta nota. A migração é o lado SQL do contrato de domínio do incremento 1 (`packages/domain-contracts/src/artifact-protocol.ts`, PR #806): a forma do manifesto, os nomes das regras, a projeção de legado e as avaliações de release e frescor são as do contrato, e o validador SQL é o validador da escrita; nada de zod entra no banco.
 
 ## A capacidade do robô (2a)
 
@@ -62,7 +62,7 @@ O leitor autorizado da web e as cinco rotas (3); o pacote do resultado de execu�
 - A projeção de `case_artifact_manifests` guarda as fontes como evidência (`source_document`) e nunca como vínculo, como o contrato decidiu; um manifesto de caso não carrega versão de direitos.
 - A origem de uma linha nova de `case_artifact_manifests` é inferida do `created_by` (conta de execução de token do robô ou pessoa), porque a tabela não tem `created_by_kind`.
 - A réplica local é um Postgres 18 sem a pilha Supabase (auth, storage e pgvector substituídos por stand-ins mínimos), então prova a lógica das migrações e das provas, não a pilha; dois testes do repositório (`r01_persisted_evidence_integrity.sql`, `source_rights_performance.sql`) falham nessa réplica também sem a migração, por diferenças do Postgres 18, e passam na CI.
-- O inventário da etapa 0 (`object-decisions.json` e os catálogos) não foi editado: o lead aplica, captura e concilia; até lá a verificação de inventário da CI falha, como o brief prevê. Os tipos gerados da web receberam à mão só as quatro RPCs públicas novas.
+- O inventário da etapa 0 (`object-decisions.json`) e os dois catálogos foram conciliados depois da aplicação, com os 63 objetos novos. Os tipos da web foram regenerados da produção: nas duas escritas, `p_content_sha256` e `p_byte_length` aparecem obrigatórios, porque a função não tem valor padrão; o banco aceita os dois nulos quando a revisão não tem bytes.
 
 ## Aplicação
 
@@ -72,3 +72,7 @@ O leitor autorizado da web e as cinco rotas (3); o pacote do resultado de execu�
 4. Conferir linha a linha o backfill de produção contra as tabelas de origem (133 linhas).
 
 Reversão: apagar os gatilhos de projeção, as quatro tabelas e as funções, e devolver o corpo anterior do contrato; o robô continua subindo, porque a capacidade é anunciada e não exigida.
+
+## Resultado da aplicação, 26/09/2026
+
+O texto aplicado tem o md5 do arquivo revisado (`65a68be9`) nos dois bancos. Staging registrou `20260926183532` e projetou zero, porque não tem dados. Produção registrou `20260926183957` e projetou 133 revisões de origem `legacy`: 129 de `capital_project_artifacts` e 4 de `case_artifact_manifests`. Cada revisão casa com a linha de origem pela mesma impressão, o identificador de cada uma é o derivado da tabela e da linha, e os 130 artefatos apontam para a revisão mais recente. O corpo de `worker_runtime_schema_contract_v1` lido nos dois bancos tem o sha256 do snapshot (`352cbda9`). Os advisors de segurança não acusam nada em nenhum dos dois, e os 64 objetos capturados (63 novos e o contrato de runtime) são iguais entre produção e staging.
