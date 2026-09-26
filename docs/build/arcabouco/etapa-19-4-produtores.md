@@ -1,6 +1,6 @@
 # Etapa 19, incremento 4: produtores no comando comum
 
-Parte A (banco e robô) numa PR sobre `main` com a 2b (`f32a5bc5`, PR #813) e o incremento 5 (`b8e4a537`, PR #811): a migração B `supabase/migrations/20260927140000_artifact_producers.sql` (carimbo provisório; o lead aplica e renomeia), as provas `supabase/tests/artifact_producers.sql`, o mapeamento único no contrato (`packages/domain-contracts/src/artifact-protocol.ts`), o robô com `artifact-revision.v1` exigida e os materiais da prévia gravados pelo comando, e os corpos efetivos das duas funções alteradas. A parte B (a tela da execução lendo os blocos pelo leitor autorizado e a resposta da conversa apontando a revisão) espera o incremento 3 em `main`.
+Parte A (banco e robô) numa PR sobre `main` com a 2b (`f32a5bc5`, PR #813) e o incremento 5 (`b8e4a537`, PR #811): a migração B `supabase/migrations/20260926203623_artifact_producers.sql` (aplicada em staging como `20260926203509` e em produção como `20260926203623`), as provas `supabase/tests/artifact_producers.sql`, o mapeamento único no contrato (`packages/domain-contracts/src/artifact-protocol.ts`), o robô com `artifact-revision.v1` exigida e os materiais da prévia gravados pelo comando, e os corpos efetivos das duas funções alteradas. A parte B (a tela da execução lendo os blocos pelo leitor autorizado e a resposta da conversa apontando a revisão) espera o incremento 3 em `main`.
 
 ## O que cada produtor escreve
 
@@ -70,3 +70,13 @@ A tela da execução (`work-execution-detail.tsx` e o carregador) passa a ler os
 - O número decisivo é selecionado, não recalculado, e a igualdade com a série do gráfico está provada na fixture compartilhada e na regra; um pacote cujo valor não é texto decimal não gera revisão.
 - Um id de alternativa, índice ou período maior que o limite do contrato para afirmações (160 caracteres no id, 80 no período) torna o pacote não mapeável; nenhum pacote real conhecido chega perto.
 - A conferência dos bytes guardados lê a concessão de upload; a rotação de Storage de 1B renomeou objetos antigos de `case-artifacts` sem atualizar concessões, e produção não tem objeto nesse bucket, então nenhum material existente é afetado.
+
+## Decisões do lead, 26/09/2026
+
+1. O teste do MD não vira bloco. Ele é uma avaliação da revisão, não uma afirmação material, e precisa do avaliador em TypeScript e do catálogo de situações do playbook; uma cópia em SQL seria uma segunda regra. A revisão fixa o pacote e o recibo de portões (`execution-gates:<impressão>` nos rastros), e a tela avalia o teste na leitura sobre esses dois, com o mesmo avaliador de hoje. Um comando v2 de commit com blocos calculados pelo robô fica fora desta etapa.
+2. Um artefato por execução (`execution:<id>`). Recálculos não encadeiam revisões do mesmo artefato; a atualidade vem do vínculo com a execução, como a etapa 18 já avalia.
+3. Os vínculos com as premissas que a execução fixou ficam na revisão, porque são parte do grafo de dependências do resultado.
+
+## Resultado da aplicação, 26/09/2026
+
+O texto aplicado tem o md5 do arquivo revisado (`9c9537d8`) nos dois bancos. Antes da aplicação, as duas agulhas existiam uma vez em staging e em produção, com os corpos anteriores iguais entre os bancos. Staging registrou `20260926203509` e produção `20260926203623`. O backfill não encontrou recibo de resultado em nenhum dos dois, e as 133 revisões legadas da produção ficaram intactas. Os dois corpos alterados, lidos nos dois bancos, são iguais ao snapshot (sha256 `f2e39d37` e `6bf6bab4`). Os advisors de segurança não acusam nada. Os cinco objetos capturados (três novos e as duas funções alteradas) são iguais entre produção e staging, e os tipos gerados da produção são iguais aos da web.
