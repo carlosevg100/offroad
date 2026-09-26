@@ -5793,6 +5793,92 @@ begin
 end;
 $$;
 
+-- Stage 19, increment 2b: artifacts, their revisions and blocks are read through the work's read
+-- access only; no tenant, anon, foreign member or revoked member inserts, updates or deletes one; the
+-- two public commands and the two readers are authenticated only, invoker over definer, and refuse
+-- the foreign tenant and the revoked member without leaking existence; the link table is closed. The
+-- behaviour is proven in artifact_revision_protocol.sql.
+set local role postgres;
+insert into auth.users(id,email) values('10000000-0000-4000-8000-000000000019','rls-revoked-artifact@example.invalid');
+insert into public.organization_memberships(organization_id,user_id,role,status,joined_at)
+values('20000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000019','member','revoked',now());
+do $$
+declare d public.capital_project_execution_brief_dispatches; written jsonb; rev uuid; attempt text; rejected boolean; f text; probe text;
+begin
+  select * into strict d from public.capital_project_execution_brief_dispatches
+    where organization_id='20000000-0000-4000-8000-000000000001' and accepted_at is not null
+    order by created_at,id limit 1;
+  written:=private.create_artifact_revision_v1(d.organization_id,d.capital_project_id,'answer','rls-probe','internal','person',
+    jsonb_build_object('schemaVersion','artifact-manifest.2026.09.26-v1','kind','answer','audience','internal','format','json','bytes',null,
+      'method',null,'execution',null,'inputSnapshot',null,'institutionalResult',null,'sources','[]'::jsonb,
+      'claims',jsonb_build_array(jsonb_build_object('blockKey','k','claimIds',jsonb_build_array('c1'))),'traces','[]'::jsonb,'template',null,
+      'provenance',jsonb_build_object('producer','rls-probe','jobId',null,'taskRunId',null,'messageId',null,'capability',null),'legacy',null),
+    jsonb_build_array(jsonb_build_object('blockKey','k','kind','number','content',jsonb_build_object('value','1'),
+      'claims',jsonb_build_array(jsonb_build_object('claimId','c1','kind','fact','value',1,'unit',null,'period',null,'supportIds','[]'::jsonb)))),
+    '[]'::jsonb,null,null,null,d.accepted_by,null,null,false);
+  rev:=(written->>'revision_id')::uuid;
+  set local role authenticated;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
+  if (select count(*) from public.artifact_revisions where id=rev)<>1 or (select count(*) from public.artifact_blocks where revision_id=rev)<>1
+    or (select count(*) from public.artifacts where head_revision_id=rev)<>1 or public.read_artifact_revision_v1(rev)->>'release'<>'internal' then
+    raise exception 'owner cannot read the artifact revision of its work';
+  end if;
+  foreach attempt in array array[
+    format('update public.artifact_revisions set audience=%L where id=%L','external',rev),
+    format('delete from public.artifact_revisions where id=%L',rev),
+    format('update public.artifact_blocks set content=%L where revision_id=%L','{"forged":true}',rev),
+    format('delete from public.artifact_blocks where revision_id=%L',rev),
+    format('update public.artifacts set subject=%L where head_revision_id=%L','forged',rev),
+    format('insert into public.artifacts(organization_id,work_id,kind,subject) values(%L,%L,%L,%L)',d.organization_id,d.capital_project_id,'answer','forged'),
+    format('insert into public.artifact_revisions(organization_id,artifact_id,revision_no,audience,origin,manifest,manifest_fingerprint) select organization_id,artifact_id,99,%L,%L,manifest,manifest_fingerprint from public.artifact_revisions where id=%L','internal','person',rev),
+    format('select * from private.artifact_dependency_links where revision_id=%L',rev)] loop
+    rejected:=false;
+    begin
+      execute attempt;
+    exception when insufficient_privilege then rejected:=true;
+    end;
+    if not rejected then raise exception 'tenant wrote an artifact table directly: %',attempt; end if;
+  end loop;
+  -- The foreign tenant and the revoked member: no row, no read, no write, no existence leak.
+  foreach probe in array array['10000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000019'] loop
+    perform set_config('request.jwt.claims',format('{"sub":"%s","role":"authenticated","aal":"aal1"}',probe),true);
+    if exists(select 1 from public.artifacts where organization_id='20000000-0000-4000-8000-000000000001')
+      or exists(select 1 from public.artifact_revisions where id=rev) or exists(select 1 from public.artifact_blocks where revision_id=rev) then
+      raise exception 'artifact rows crossed the access boundary for %',probe;
+    end if;
+    rejected:=false;
+    begin perform public.read_artifact_revision_v1(rev); exception when others then rejected:=sqlerrm='artifact_revision_not_found'; end;
+    if not rejected then raise exception '% read an artifact revision',probe; end if;
+    rejected:=false;
+    begin perform public.read_artifact_head_v1(d.capital_project_id,'answer','rls-probe'); exception when others then rejected:=sqlerrm='artifact_revision_not_found'; end;
+    if not rejected then raise exception '% read an artifact head',probe; end if;
+    rejected:=false;
+    begin
+      perform public.create_artifact_revision_v1(d.capital_project_id,'answer','rls-probe','internal','{}'::jsonb,'[]'::jsonb,'[]'::jsonb,null,null);
+    exception when others then rejected:=sqlerrm='artifact_revision_forbidden'; end;
+    if not rejected then raise exception '% wrote an artifact revision',probe; end if;
+  end loop;
+  set local role anon;
+  perform set_config('request.jwt.claims','',true);
+  rejected:=false;
+  begin perform public.read_artifact_revision_v1(rev); exception when insufficient_privilege then rejected:=true; end;
+  if not rejected then raise exception 'anonymous called the artifact reader'; end if;
+  set local role postgres;
+  if not exists(select 1 from public.artifact_revisions where id=rev and audience='internal') then raise exception 'rejected write changed the revision'; end if;
+  foreach f in array array['public.create_artifact_revision_v1(uuid,text,text,text,jsonb,jsonb,jsonb,text,bigint)','public.worker_create_artifact_revision_v1(uuid,text,text,uuid,text,text,text,jsonb,jsonb,jsonb,text,bigint)','public.read_artifact_revision_v1(uuid)','public.read_artifact_head_v1(uuid,text,text)'] loop
+    if not has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE')
+      or (select prosecdef from pg_proc where oid=f::regprocedure) then raise exception 'Artifact entry grant or security mismatch: %',f; end if;
+  end loop;
+  foreach f in array array['private.create_artifact_revision_v1(uuid,uuid,text,text,text,text,jsonb,jsonb,jsonb,text,bigint,jsonb,uuid,uuid,uuid,boolean)','private.project_legacy_artifact_revision_v1(text,uuid,uuid)','private.backfill_artifact_revisions_v1()','private.validate_artifact_manifest_v1(jsonb)'] loop
+    if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') then raise exception 'Artifact core exposed: %',f; end if;
+  end loop;
+  if has_table_privilege('authenticated','private.artifact_dependency_links','SELECT') or has_table_privilege('anon','public.artifacts','SELECT')
+    or has_table_privilege('authenticated','public.artifact_revisions','INSERT') or has_table_privilege('authenticated','public.artifact_blocks','UPDATE') then
+    raise exception 'artifact table grants widened';
+  end if;
+end $$;
+reset role;
+
 -- Stage 18, increment 5C: no public object is new. The execution a follow-up led to is recorded in a
 -- private table with RLS forced and no API grant; the helpers are closed to every API role; the owner
 -- of tenant B is refused, with the same error, the decline of a candidate of tenant A's update and the
