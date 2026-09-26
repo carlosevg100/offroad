@@ -6,7 +6,9 @@ import {useRouter} from "next/navigation";
 import {useRef, useState} from "react";
 
 import {adoptWorkUpdate, authorizeWorkUpdate, declineWorkUpdate, type WorkUpdateActionResult} from "@/app/[locale]/app/projects/[projectId]/work-update-actions";
-import {declineReasonCodes, type DeclineReasonCode, type WorkUpdateChange, type WorkUpdateItem, type WorkUpdateRecomputation, type WorkUpdatesModel} from "@/lib/advisor/work-updates";
+import {
+  declineReasonCodes, type DeclineReasonCode, type WorkFollowupItem, type WorkUpdateChange, type WorkUpdateItem, type WorkUpdateRecomputation, type WorkUpdatesModel,
+} from "@/lib/advisor/work-updates";
 
 import "@/app/work-updates.css";
 
@@ -18,8 +20,9 @@ type Pending =
 
 /**
  * The updates of a work: what changed and why, what was redone and from which execution, what
- * stayed valid and what waits for a decision. Adopting, authorizing and declining each need a
- * second, explicit confirmation; the database checks the revision the person saw.
+ * stayed valid and what waits for a decision; then the follow-ups typed in the conversation.
+ * Adopting, authorizing and declining each need a second, explicit confirmation; the database
+ * checks the revision the person saw.
  */
 export function WorkUpdates({locale, model}: {locale: "pt-BR" | "en-US"; model: WorkUpdatesModel | null}) {
   const t = useTranslations("App.workUpdates");
@@ -29,7 +32,7 @@ export function WorkUpdates({locale, model}: {locale: "pt-BR" | "en-US"; model: 
       <p>{t("intro")}</p>
     </header>
     {model === null ? <p className="form-notice form-notice--error" role="alert">{t("unavailable")}</p>
-      : model.open.length === 0 && model.closed.length === 0 ? <p className="work-updates__empty">{t("empty")}</p> : null}
+      : model.open.length === 0 && model.closed.length === 0 && model.followups.length === 0 ? <p className="work-updates__empty">{t("empty")}</p> : null}
     {model?.open.length ? <div className="work-updates__group">
       <h3>{t("openHeading")}</h3>
       {model.open.map((item) => <WorkUpdateCard item={item} key={item.updateId} locale={locale} />)}
@@ -38,14 +41,35 @@ export function WorkUpdates({locale, model}: {locale: "pt-BR" | "en-US"; model: 
       <summary>{t("closedHeading")} <span>{model.closed.length}</span></summary>
       {model.closed.map((item) => <WorkUpdateCard item={item} key={item.updateId} locale={locale} />)}
     </details> : null}
+    {model?.followups.length ? <div className="work-updates__group work-updates__followups">
+      <h3>{t("followups.heading")}</h3>
+      {model.followups.map((item) => <WorkFollowupCard item={item} key={item.requestId} locale={locale} />)}
+    </div> : null}
   </section>;
+}
+
+/** The command id of one decision attempt, stable while the person retries the same decision. */
+function useCommandIds() {
+  const commands = useRef(new Map<string, string>());
+  return {
+    get(key: string): string {
+      const known = commands.current.get(key);
+      if (known) return known;
+      const created = crypto.randomUUID();
+      commands.current.set(key, created);
+      return created;
+    },
+    forget(key: string) {
+      commands.current.delete(key);
+    },
+  };
 }
 
 function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" | "en-US"}) {
   const t = useTranslations("App.workUpdates");
   const format = useFormatter();
   const router = useRouter();
-  const commands = useRef(new Map<string, string>());
+  const commands = useCommandIds();
   const [confirming, setConfirming] = useState<Pending | null>(null);
   const [reason, setReason] = useState<DeclineReasonCode>("not_needed");
   const [busy, setBusy] = useState(false);
@@ -54,14 +78,6 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
   const date = (value: string) => format.dateTime(new Date(value), {dateStyle: "medium", timeStyle: "short"});
   const cost = (microusd: number) => format.number(microusd / 1_000_000, {style: "currency", currency: "USD"});
 
-  function commandId(key: string): string {
-    const known = commands.current.get(key);
-    if (known) return known;
-    const created = crypto.randomUUID();
-    commands.current.set(key, created);
-    return created;
-  }
-
   async function run(pending: Pending) {
     if (busy) return;
     setBusy(true);
@@ -69,7 +85,7 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
     const key = JSON.stringify(pending.kind === "decline" || pending.kind === "decline_candidate" ? {...pending, reason} : pending);
     let result: WorkUpdateActionResult;
     try {
-      const shared = {locale, commandId: commandId(key)};
+      const shared = {locale, commandId: commands.get(key)};
       result = pending.kind === "adopt" ? await adoptWorkUpdate({...shared, updateId: item.updateId, expectedRevision: item.revision})
         : pending.kind === "decline" ? await declineWorkUpdate({...shared, updateId: item.updateId, expectedRevision: item.revision, reason, candidateId: null})
           : pending.kind === "authorize" ? await authorizeWorkUpdate({...shared, candidateId: pending.candidateId, expectedRevision: pending.revision})
@@ -79,7 +95,7 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
     }
     setBusy(false);
     if (result.ok) {
-      commands.current.delete(key);
+      commands.forget(key);
       setConfirming(null);
       setDone(t(pending.kind === "adopt" ? "done.adopted" : pending.kind === "authorize" ? "done.authorized" : "done.declined"));
       router.refresh();
@@ -87,7 +103,7 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
     }
     setError(t(`errors.${result.error}`));
     if (["stale", "processing", "not_found"].includes(result.error)) {
-      commands.current.delete(key);
+      commands.forget(key);
       setConfirming(null);
       router.refresh();
     }
@@ -106,13 +122,19 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
         <span>{changeText(change, t)}</span>
         {change.executions.length ? <small>{t("change.affects", {executions: change.executions.join(", ")})}</small> : null}
       </li>)}</ul>
+      {item.merged ? <p className="work-update__merged">{t("merged", {count: item.merged})}</p> : null}
     </section>
 
     {item.recomputed.length ? <section className="work-update__part">
       <h4>{t("sections.recomputed")}</h4>
-      <ul>{item.recomputed.map((entry) => <li key={entry.candidateId}>
+      <ul>{item.recomputed.map((entry) => <li className="work-update__recomputation" data-kind={entry.kind} data-state={entry.state} key={entry.candidateId}>
         <span>{recomputationText(entry, t)}</span>
         {reasonText(entry, t) ? <small>{reasonText(entry, t)}</small> : null}
+        {entry.canDecline ? confirming?.kind === "decline_candidate" && confirming.candidateId === entry.candidateId
+          ? <DeclineConfirmation busy={busy} explanation={t("recomputation.declineExplanation")} onCancel={() => setConfirming(null)} onConfirm={() => void run(confirming)} reason={reason} setReason={setReason} />
+          : <div className="work-update__actions">
+            <button className="button button--small button--ghost" disabled={busy} onClick={() => {setDone(""); setConfirming({kind: "decline_candidate", candidateId: entry.candidateId, revision: entry.revision});}} type="button">{t("recomputation.declineOne")}</button>
+          </div> : null}
       </li>)}</ul>
     </section> : null}
 
@@ -159,6 +181,76 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
   </article>;
 }
 
+/** A follow-up typed in the conversation, the base it continues, the execution it led to and the
+ * person's decision: a ready one is adopted as the new base, an open one can be declined. */
+function WorkFollowupCard({item, locale}: {item: WorkFollowupItem; locale: "pt-BR" | "en-US"}) {
+  const t = useTranslations("App.workUpdates");
+  const format = useFormatter();
+  const router = useRouter();
+  const commands = useCommandIds();
+  const [confirming, setConfirming] = useState<"adopt" | "decline" | null>(null);
+  const [reason, setReason] = useState<DeclineReasonCode>("not_needed");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [done, setDone] = useState("");
+  const date = (value: string) => format.dateTime(new Date(value), {dateStyle: "medium", timeStyle: "short"});
+
+  async function run(kind: "adopt" | "decline") {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    const key = JSON.stringify(kind === "decline" ? {kind, reason} : {kind});
+    let result: WorkUpdateActionResult;
+    try {
+      const shared = {locale, commandId: commands.get(key), updateId: item.requestId, expectedRevision: item.revision};
+      result = kind === "adopt" ? await adoptWorkUpdate(shared) : await declineWorkUpdate({...shared, reason, candidateId: null});
+    } catch {
+      result = {ok: false, error: "save"};
+    }
+    setBusy(false);
+    if (result.ok) {
+      commands.forget(key);
+      setConfirming(null);
+      setDone(t(kind === "adopt" ? "followups.done.adopted" : "done.declined"));
+      router.refresh();
+      return;
+    }
+    setError(t(`errors.${result.error}`));
+    if (["stale", "processing", "not_found"].includes(result.error)) {
+      commands.forget(key);
+      setConfirming(null);
+      router.refresh();
+    }
+  }
+
+  const statusLabel = t(`followups.status.${item.status}`);
+  return <article aria-label={statusLabel} className="work-update work-update--followup" data-status={item.status}>
+    <header>
+      <span className="work-update__status">{item.status === "ready" ? <Check aria-hidden="true" size={13} /> : null}{statusLabel}</span>
+    </header>
+    <section className="work-update__part">
+      <blockquote className="work-update__followup-text">{item.text}</blockquote>
+      <p>{t("followups.base", {label: item.base.label, revision: item.base.revision})}</p>
+      <p>{item.execution ? t(`followups.execution.${item.execution.state}`, {name: item.execution.name}) : item.open ? t("followups.execution.none") : null}</p>
+    </section>
+    {item.open ? <footer className="work-update__actions">
+      {confirming === "adopt" ? <div className="work-update__confirm" role="group">
+        <p>{t("followups.adoptExplanation")}</p>
+        <button className="button button--small" disabled={busy} onClick={() => void run("adopt")} type="button">{busy ? <LoaderCircle aria-hidden="true" className="spin" size={14} /> : <Check aria-hidden="true" size={14} />}{t("followups.adoptConfirm")}</button>
+        <button className="button button--small button--ghost" disabled={busy} onClick={() => setConfirming(null)} type="button">{t("cancel")}</button>
+      </div> : confirming === "decline" ? <DeclineConfirmation busy={busy} explanation={t("followups.declineExplanation")} onCancel={() => setConfirming(null)} onConfirm={() => void run("decline")} reason={reason} setReason={setReason} />
+        : <>
+          {item.canAdopt ? <button className="button button--small" disabled={busy} onClick={() => {setDone(""); setConfirming("adopt");}} type="button"><Check aria-hidden="true" size={14} />{t("followups.adopt")}</button> : null}
+          {item.canDecline ? <button className="button button--small button--outline" disabled={busy} onClick={() => {setDone(""); setConfirming("decline");}} type="button"><X aria-hidden="true" size={14} />{t("followups.decline")}</button> : null}
+        </>}
+    </footer> : <p className="work-update__decided">{item.status === "adopted" && item.decidedAt ? t("followups.decided.adopted", {date: date(item.decidedAt)})
+      : item.status === "declined" && item.declineReason && item.decidedAt ? t("decided.declined", {date: date(item.decidedAt), reason: t(`decline.reasons.${item.declineReason}`)})
+        : t("decided.closed")}</p>}
+    {error ? <p className="form-notice form-notice--error" role="alert">{error}</p> : null}
+    {done ? <p className="form-notice" role="status">{done}</p> : null}
+  </article>;
+}
+
 function DeclineConfirmation({busy, explanation, onCancel, onConfirm, reason, setReason}: {
   busy: boolean; explanation?: string; onCancel: () => void; onConfirm: () => void; reason: DeclineReasonCode; setReason: (reason: DeclineReasonCode) => void;
 }) {
@@ -183,13 +275,14 @@ function changeText(change: WorkUpdateChange, t: Translate): string {
   if (change.kind === "graph_incomplete") return t("change.graph_incomplete");
   if (change.kind === "method_release") return t("change.method_release", {name: change.name ?? t("recomputation.unnamed")});
   const versions = {from: change.from ?? t("change.unknownVersion"), to: change.to ?? t("change.unknownVersion")};
+  if (change.kind === "institutional_configuration") return t("change.institutional_configuration", versions);
   if (change.kind === "assumption_slot") return change.name ? t("change.assumption_slot", {name: change.name, ...versions}) : t("change.assumption_slot_unnamed", versions);
   return t("change.source_version", {name: change.name ?? t("change.unnamed"), ...versions});
 }
 
 function recomputationText(entry: WorkUpdateRecomputation, t: Translate): string {
   const state = entry.state === "scheduled" && entry.produced ? "produced" : entry.state;
-  return t(`recomputation.${state}`, {label: entry.label});
+  return t(`recomputation.${entry.kind === "institutional" ? `institutional.${state}` : state}`, {label: entry.label});
 }
 
 function reasonText(entry: WorkUpdateRecomputation, t: Translate): string | null {

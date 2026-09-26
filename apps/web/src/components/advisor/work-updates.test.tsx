@@ -7,7 +7,7 @@ import pt from "../../../messages/pt-BR.json";
 import {selectClientMessages} from "@/i18n/client-messages";
 import {namesFor} from "@/lib/advisor/work-update-names.test-support";
 import {workUpdateViewSchema} from "@/lib/advisor/work-update-view";
-import {rawView} from "@/lib/advisor/work-update-view.test-support";
+import {rawIntegrationView, rawView} from "@/lib/advisor/work-update-view.test-support";
 import {workUpdatesModel, type WorkUpdatesModel} from "@/lib/advisor/work-updates";
 
 vi.mock("next/navigation", () => ({useRouter: () => ({refresh: vi.fn(), push: vi.fn()})}));
@@ -20,15 +20,16 @@ const dashes = new RegExp(`[${String.fromCodePoint(0x2014)}${String.fromCodePoin
 
 const model: WorkUpdatesModel = {
   awaitingDecision: 2,
+  followups: [],
   open: [
     {
       updateId: id(1), status: "ready", revision: 5, updatedAt: "2026-09-25T12:09:00+00:00", open: true,
       changes: [{key: "s", kind: "source_version", name: "balancete.xlsx", from: "1", to: "3", gap: null, executions: ["Estrutura de capital", "Liquidez"]}],
-      recomputed: [{candidateId: id(2), label: "Estrutura de capital", state: "settled", produced: true, resultReady: true, reason: null},
-        {candidateId: id(3), label: "Covenants", state: "failed", produced: false, resultReady: false, reason: "requester_not_authorized:execution_access_denied"}],
+      recomputed: [{candidateId: id(2), kind: "execution", revision: 3, label: "Estrutura de capital", state: "settled", produced: true, resultReady: true, reason: null, canDecline: false},
+        {candidateId: id(3), kind: "execution", revision: 2, label: "Covenants", state: "failed", produced: false, resultReady: false, reason: "requester_not_authorized:execution_access_denied", canDecline: false}],
       stayedValid: ["Cenário de juros"],
       awaitingAuthorization: [],
-      holds: [{kind: "basis_behind_source", execution: "Liquidez"}],
+      holds: [{kind: "basis_behind_source", execution: "Liquidez"}], merged: 0,
       canAdopt: true, canDecline: true, declineReason: null, decidedAt: null,
     },
     {
@@ -36,17 +37,17 @@ const model: WorkUpdatesModel = {
       changes: [{key: "m", kind: "method_release", name: "Preparar alternativas de estrutura de capital para uma decisão", from: null, to: null, gap: null, executions: ["Estrutura de capital"]}],
       recomputed: [], stayedValid: [],
       awaitingAuthorization: [{candidateId: id(5), revision: 1, label: "Estrutura de capital", maxCostMicrousd: 250000, maxModelCalls: 3}],
-      holds: [], canAdopt: false, canDecline: true, declineReason: null, decidedAt: null,
+      holds: [], merged: 0, canAdopt: false, canDecline: true, declineReason: null, decidedAt: null,
     },
   ],
   closed: [{
     updateId: id(6), status: "declined", revision: 4, updatedAt: "2026-09-25T12:14:00+00:00", open: false, changes: [], recomputed: [], stayedValid: [],
-    awaitingAuthorization: [], holds: [], canAdopt: false, canDecline: false, declineReason: "cost_not_justified", decidedAt: "2026-09-25T12:14:00+00:00",
+    awaitingAuthorization: [], holds: [], merged: 0, canAdopt: false, canDecline: false, declineReason: "cost_not_justified", decidedAt: "2026-09-25T12:14:00+00:00",
   }, {
     // A later change the recomputation of an earlier update already covers: 3B supersedes it
     // pointing at that earlier update, so the wording names no direction in time.
     updateId: id(7), status: "superseded", revision: 2, updatedAt: "2026-09-25T12:15:00+00:00", open: false, changes: [], recomputed: [], stayedValid: [],
-    awaitingAuthorization: [], holds: [], canAdopt: false, canDecline: false, declineReason: null, decidedAt: null,
+    awaitingAuthorization: [], holds: [], merged: 0, canAdopt: false, canDecline: false, declineReason: null, decidedAt: null,
   }],
 };
 
@@ -101,11 +102,41 @@ describe("the update section of a work", () => {
   });
 
   it("says when nothing changed and when the updates could not be read, in both languages", () => {
-    expect(render("pt-BR", <WorkUpdates locale="pt-BR" model={{open: [], closed: [], awaitingDecision: 0}} />)).toContain("Nenhuma mudança de insumo afetou este trabalho até agora.");
+    expect(render("pt-BR", <WorkUpdates locale="pt-BR" model={{open: [], closed: [], followups: [], awaitingDecision: 0}} />)).toContain("Nenhuma mudança de insumo afetou este trabalho até agora.");
     const unavailable = render("en-US", <WorkUpdates locale="en-US" model={null} />);
     expect(unavailable).toContain("role=\"alert\"");
     expect(unavailable).toContain("The updates of this work could not be read right now.");
     expect(render("en-US", <WorkUpdates locale="en-US" model={model} />)).toContain("Ready to adopt");
+  });
+});
+
+describe("the update section with the financial model, merged updates and follow-ups (5C)", () => {
+  it("names the financial model, shows a merged update inside the one that covers it and the follow-ups with their decisions, in both languages", () => {
+    const view = workUpdateViewSchema.parse(rawIntegrationView);
+    const expected = {
+      "pt-BR": ["O modelo financeiro: recalculado com os insumos atuais; o novo resultado só passa a valer quando a atualização for adotada",
+        "O modelo financeiro: na fila para ser recalculado", "Recusar este recálculo",
+        "Configuração do modelo financeiro: a revisão aprovada 1 foi substituída pela revisão 2", "Afeta: Preparar alternativas de estrutura de capital para uma decisão, O modelo financeiro",
+        "O modelo financeiro: aguardando a aprovação de uma configuração sobre os documentos atuais", "Inclui 1 mudança registrada depois, já coberta por esta atualização.",
+        "Continuações pedidas na conversa", "Aprofundar o cenário de refinanciamento", "Continua a partir de Alongamento com os bancos atuais, revisão 3.",
+        "Resultado pronto para adoção", "Adotar como base", "Recusar continuação", "Aguardando uma execução",
+        "Nenhuma execução foi pedida para esta continuação. Ela começa quando um objetivo de execução repete este texto.", "Motivo: Outro motivo."],
+      "en-US": ["The financial model: recalculated with the current inputs; the new result takes effect only when the update is adopted",
+        "Financial model configuration: approved revision 1 was replaced by revision 2", "Includes 1 change recorded later, already covered by this update.",
+        "Follow-ups requested in the conversation", "Continues from Alongamento com os bancos atuais, revision 3.", "Adopt as a base", "Decline follow-up"],
+    } as const;
+    for (const locale of ["pt-BR", "en-US"] as const) {
+      const html = render(locale, <WorkUpdates locale={locale} model={workUpdatesModel(view, namesFor(locale), (raw) => raw)} />);
+      const text = html.replace(/<[^>]*>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
+      for (const phrase of expected[locale]) expect(text, `${locale}: ${phrase}`).toContain(phrase);
+      expect(text).not.toMatch(dashes);
+      expect(text).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/);
+      expect(html).not.toContain("liquidity.available_cash");
+      expect(html).not.toContain("institutional_configuration");
+    }
+    // The update merged into the older one is not a separate closed entry.
+    const html = render("pt-BR", <WorkUpdates locale="pt-BR" model={workUpdatesModel(view, namesFor("pt-BR"), (raw) => raw)} />);
+    expect(html.match(/data-status="superseded"/g)?.length).toBe(1);
   });
 });
 

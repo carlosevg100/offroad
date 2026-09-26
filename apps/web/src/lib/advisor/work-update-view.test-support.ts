@@ -72,3 +72,77 @@ export const rawView = {
     },
   ],
 };
+
+const config = (revision: number) => ({configurationId: id(800 + revision), revision});
+const institutionalFacts = (event: number, minute: number) => [
+  {eventId: id(event), dependencyKind: "source_version", logicalKey: id(500), reasonClass: "data_change", gap: null, pinned: source(1), head: source(2), createdAt: at(minute), name: "balancete.xlsx"},
+  {eventId: id(event + 1), dependencyKind: "institutional_configuration", logicalKey: id(1), reasonClass: "data_change", gap: null, pinned: config(1), head: config(2), createdAt: at(minute), name: null},
+];
+
+/**
+ * Increment 5C: a ready mixed update (an execution and the financial model) with a later update
+ * merged into it, an open update whose institutional recomputation is scheduled and held, an update
+ * a newer one replaced, and the follow-ups of the conversation.
+ */
+export const rawIntegrationView = {
+  schemaVersion: "work-update-view.v1",
+  workId: id(1),
+  conversationId: id(2),
+  milestones: [{milestoneId: id(900), sequence: 1, kind: "decision", subjectKind: "execution_brief", subjectId: id(901), label: "Alongamento com os bancos atuais",
+    revision: 3, outcome: null, references: [], createdBy: id(902), occurredAt: at(1)}],
+  bases: [],
+  updates: [
+    {
+      requestId: id(66), status: "scheduled", revision: 2, createdAt: at(30), updatedAt: at(31), supersededByRequestId: null, declineReason: null, proposalMilestoneId: id(67), decision: null,
+      events: [{eventId: id(70), aggregateKind: "institutional_configuration", aggregateId: id(1), aggregateVersion: 2}],
+      affected: [{executionId: id(80), rootExecutionId: id(80), label: null, method: null, resultMilestoneId: id(81), candidateId: null, changes: [], holds: [],
+        dependentKind: "institutional_result", institutionalCandidateId: id(82), institutionalChanges: institutionalFacts(70, 30),
+        institutionalHolds: [{kind: "configuration_behind_source", signal: "institutional_configuration:work", subject: {}, createdAt: at(30), releasedAt: null}]}],
+      candidates: [],
+      institutionalCandidates: [{candidateId: id(82), state: "scheduled", reason: null, revision: 1, baseResultId: id(80), resultIds: [id(80)], resultId: id(83), resultStatus: "queued",
+        resultMilestoneId: null, current: false, createdAt: at(30), updatedAt: at(30)}],
+      unaffected: [],
+    },
+    {
+      requestId: id(60), status: "ready", revision: 6, createdAt: at(20), updatedAt: at(29), supersededByRequestId: null, declineReason: null, proposalMilestoneId: id(61), decision: null,
+      events: [{eventId: id(71), aggregateKind: "source_version", aggregateId: id(500), aggregateVersion: 2}],
+      affected: [
+        {executionId: id(30), rootExecutionId: id(30), label: null, method: capital, resultMilestoneId: id(31), candidateId: id(40), holds: [], changes: [
+          {eventId: id(71), dependencyKind: "source_version", logicalKey: id(500), reasonClass: "data_change", gap: null, pinned: source(1), head: source(2), viaSourceVersionIds: [], createdAt: at(20),
+            name: "balancete.xlsx", premise: null, method: null}]},
+        {executionId: id(84), rootExecutionId: id(84), label: null, method: null, resultMilestoneId: id(85), candidateId: null, changes: [], holds: [],
+          dependentKind: "institutional_result", institutionalCandidateId: id(86), institutionalChanges: institutionalFacts(71, 21),
+          institutionalHolds: [{kind: "configuration_behind_source", signal: "institutional_configuration:work", subject: {}, createdAt: at(20), releasedAt: at(22)}]},
+      ],
+      candidates: [{candidateId: id(40), state: "settled", reason: null, action: "recompute", revision: 3, maxCostMicrousd: 0, maxModelCalls: 0, baseExecutionId: id(30), baseLabel: null,
+        baseMethod: capital, executionIds: [id(30)], executionId: id(42), resultMilestoneId: id(43), waitMilestoneId: null, waitOpen: false, createdAt: at(22), updatedAt: at(28)}],
+      institutionalCandidates: [{candidateId: id(86), state: "settled", reason: null, revision: 3, baseResultId: id(84), resultIds: [id(84)], resultId: id(87), resultStatus: "completed",
+        resultMilestoneId: id(88), current: false, createdAt: at(22), updatedAt: at(27)}],
+      unaffected: [],
+    },
+    {
+      // Superseded toward the older update 60, which already covers its change: merged into it.
+      requestId: id(62), status: "superseded", revision: 2, createdAt: at(24), updatedAt: at(25), supersededByRequestId: id(60), declineReason: null, proposalMilestoneId: id(63), decision: null,
+      events: [{eventId: id(72), aggregateKind: "assumption_version", aggregateId: id(599), aggregateVersion: 4}],
+      affected: [{executionId: id(30), rootExecutionId: id(30), label: null, method: capital, resultMilestoneId: id(31), candidateId: null, holds: [], changes: [
+        {eventId: id(72), dependencyKind: "assumption_slot", logicalKey: `${id(599)}:cash`, reasonClass: "data_change", gap: null, pinned: slot(2), head: slot(3), viaSourceVersionIds: [], createdAt: at(24),
+          name: "liquidity.available_cash", premise: {fieldPath: "liquidity.available_cash", definition: null}, method: null}]}],
+      candidates: [], unaffected: [],
+    },
+    {
+      // Superseded toward the newer update 66, whose heads replaced it: it stays among the closed ones.
+      requestId: id(64), status: "superseded", revision: 3, createdAt: at(18), updatedAt: at(30), supersededByRequestId: id(66), declineReason: null, proposalMilestoneId: id(65), decision: null,
+      events: [], affected: [], candidates: [], unaffected: [],
+    },
+  ],
+  followups: [
+    {requestId: id(90), status: "ready", createdAt: at(10), createdBy: id(902), request: "Aprofundar o cenário de refinanciamento", baseMilestoneId: id(900), baseDecisionId: id(901),
+      baseRevision: 3, milestoneId: id(91), revision: 3, updatedAt: at(12), declineReason: null, decision: null,
+      execution: {executionId: id(92), baseMilestoneId: id(900), baseDecisionId: id(901), baseRevision: 3, linkedAt: at(11), jobStatus: "succeeded", resultMilestoneId: id(93), method: capital}},
+    {requestId: id(94), status: "open", createdAt: at(13), createdBy: id(902), request: "Revisar o covenant de alavancagem", baseMilestoneId: id(900), baseDecisionId: id(901),
+      baseRevision: 3, milestoneId: id(95), revision: 1, updatedAt: at(13), declineReason: null, decision: null, execution: null},
+    {requestId: id(96), status: "declined", createdAt: at(14), createdBy: id(902), request: "Atualizar a estrutura de garantias", baseMilestoneId: id(900), baseDecisionId: id(901),
+      baseRevision: 3, milestoneId: id(97), revision: 2, updatedAt: at(15), declineReason: "person_declined:other",
+      decision: {milestoneId: id(98), kind: "decision", outcome: "rejected", revision: 1, createdBy: id(902), occurredAt: at(15)}, execution: null},
+  ],
+};

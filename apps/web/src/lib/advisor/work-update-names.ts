@@ -20,6 +20,8 @@ export type WorkUpdateNames = Readonly<{
   premise: (ref: PremiseRef | null) => string | null;
   /** One name shared by several executions, with how many. */
   repeated: (name: string, count: number) => string;
+  /** The results of the work's financial model (the institutional model), as one dependent. */
+  institutionalModel: () => string;
 }>;
 
 /** Metrics the basis names in words. Any other one is named by the definition the person adopted. */
@@ -57,5 +59,6 @@ export function workUpdateNames(t: WorkUpdateNameTranslator): WorkUpdateNames {
       return definition.length > definitionLength ? `${definition.slice(0, definitionLength - 1).trimEnd()}…` : definition;
     },
     repeated: (name, count) => count > 1 ? t.text("repeated", {name, count}) : name,
+    institutionalModel: () => t.text("institutionalModel"),
   };
 }

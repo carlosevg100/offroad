@@ -8,7 +8,7 @@ declare c private.institutional_model_configurations;r private.institutional_mod
 begin
  select * into c from private.institutional_model_configurations where capital_project_id=p_project_id and id=p_candidate_id;
  if c.id is null or not private.can_access_capital_project(c.organization_id,p_project_id) then raise exception 'institutional_result_forbidden' using errcode='42501';end if;
- perform 1 from public.capital_projects where organization_id=c.organization_id and id=p_project_id for update;
+ perform 1 from public.capital_projects where organization_id=c.organization_id and id=p_project_id for no key update;
  perform private.assert_capital_project_review_action(c.organization_id,p_project_id,case when p_decision='approved' then 'approve' else 'return' end,
    (select sub.submitted_by from private.institutional_model_setup_submissions sub where sub.organization_id=c.organization_id and sub.candidate_id=c.id order by sub.submitted_at desc limit 1));
  if p_request_id is null or coalesce(p_locale,'') not in ('pt-BR','en-US') or coalesce(p_decision,'') not in ('approved','rejected') then raise exception 'institutional_result_request_invalid';end if;

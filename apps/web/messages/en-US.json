@@ -2210,6 +2210,7 @@
         "assumption_slot_unnamed": "A working-basis assumption: revision {from} was replaced by revision {to}",
         "method_release": "{name}: a newer version of the method was published",
         "graph_incomplete": "The recorded dependencies are incomplete; the execution will be redone in full once they are rebuilt",
+        "institutional_configuration": "Financial model configuration: approved revision {from} was replaced by revision {to}",
         "unnamed": "no visible name",
         "unknownVersion": "not identified",
         "affects": "Affects: {executions}"
@@ -2221,12 +2222,22 @@
         "declined": "{label}: recomputation declined",
         "failed": "{label}: the recomputation did not finish",
         "unnamed": "Unnamed execution",
+        "declineOne": "Decline this recomputation",
+        "declineExplanation": "The recomputation stops and nothing more is written for it. What was already recorded stays as it is, not adopted.",
+        "institutional": {
+          "scheduled": "{label}: queued to be recalculated",
+          "produced": "{label}: being recalculated with the current inputs",
+          "settled": "{label}: recalculated with the current inputs; the new result takes effect only when the update is adopted",
+          "declined": "{label}: recalculation declined",
+          "failed": "{label}: the recalculation did not finish"
+        },
         "reasons": {
           "person": "Declined by a person.",
           "requester": "The person who requested the original execution no longer has access to this work.",
           "failed": "The recomputation could not be produced."
         }
       },
+      "merged": "{count, plural, one {Includes # change recorded later, already covered by this update.} other {Includes # changes recorded later, already covered by this update.}}",
       "stayedValidNone": "No other execution of this work.",
       "waitingNone": "Nothing in this update awaits a decision.",
       "hold": {
@@ -2234,7 +2245,8 @@
         "basis_behind_source": "{execution}: waiting for a revision of the working basis that uses the new version",
         "source_not_bindable": "{execution}: waiting for the verification or the usage rights of the new version",
         "method_not_executable": "{execution}: waiting for an executable method",
-        "graph_incomplete": "{execution}: waiting for the dependencies to be rebuilt"
+        "graph_incomplete": "{execution}: waiting for the dependencies to be rebuilt",
+        "configuration_behind_source": "{execution}: waiting for a configuration approved over the current documents"
       },
       "authorization": {
         "item": "{label}: recomputation capped at {cost} and up to {calls, plural, one {# model call} other {# model calls}}",
@@ -2294,11 +2306,44 @@
         "capital_project_artifact": "Work result",
         "company_debt_diagnostic": "Company debt diagnostic",
         "alternative_map": "Debt alternatives map",
-        "meeting_brief": "Meeting brief"
+        "meeting_brief": "Meeting brief",
+        "user_followup_declined": "Follow-up declined",
+        "institutional_model_result": "Financial model result"
+      },
+      "followups": {
+        "heading": "Follow-ups requested in the conversation",
+        "status": {
+          "open": "Waiting for an execution",
+          "awaiting_authorization": "Awaiting authorization",
+          "scheduled": "Execution requested",
+          "ready": "Result ready to adopt",
+          "adopted": "Adopted as a base",
+          "declined": "Declined",
+          "superseded": "Replaced"
+        },
+        "base": "Continues from {label}, revision {revision}.",
+        "execution": {
+          "none": "No execution was requested for this follow-up. It starts when an execution objective repeats this text.",
+          "running": "{name}: execution in progress.",
+          "result": "{name}: result recorded.",
+          "ended": "{name}: the execution ended without a result. A new request with this objective continues from here."
+        },
+        "adopt": "Adopt as a base",
+        "adoptConfirm": "Confirm adoption",
+        "adoptExplanation": "The result of this execution becomes the approved base, in place of the base the follow-up started from, which stays recorded.",
+        "decline": "Decline follow-up",
+        "declineExplanation": "The follow-up ends declined, with the reason chosen. An execution already requested stays recorded.",
+        "decided": {
+          "adopted": "Adopted as a base on {date}."
+        },
+        "done": {
+          "adopted": "Follow-up adopted as a base."
+        }
       }
     },
     "workUpdateNames": {
       "unnamedMethod": "This basis analysis",
+      "institutionalModel": "The financial model",
       "repeated": "{name} ({count} executions)",
       "metrics": {
         "netDebt": "Net debt",

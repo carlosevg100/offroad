@@ -5793,6 +5793,51 @@ begin
 end;
 $$;
 
+-- Stage 18, increment 5C: no public object is new. The execution a follow-up led to is recorded in a
+-- private table with RLS forced and no API grant; the helpers are closed to every API role; the owner
+-- of tenant B is refused, with the same error, the decline of a candidate of tenant A's update and the
+-- adoption and decline of any follow-up it does not own, and nothing changes.
+set local role postgres;
+do $$
+declare request public.work_continuation_requests; attempt text; refused integer:=0; actor text; f record;
+begin
+  if not exists(select 1 from pg_class where oid='private.work_followup_executions'::regclass and relrowsecurity and relforcerowsecurity) then
+    raise exception 'Stage 18 5C RLS missing on the follow-up executions';
+  end if;
+  foreach actor in array array['anon','authenticated','service_role'] loop
+    if has_table_privilege(actor,'private.work_followup_executions','SELECT,INSERT,UPDATE,DELETE,TRUNCATE') then raise exception 'Follow-up executions exposed: %',actor; end if;
+    for f in select p.oid::regprocedure as signature from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+      where n.nspname='private' and p.proname in ('project_institutional_result_milestone_v1','institutional_result_established_v1','work_followup_citation_v1',
+        'fulfil_work_followups_v1','advance_work_followups_v1','work_update_declinable_jobs_v1','lock_new_declinable_jobs_v1','cancel_declined_jobs_v1') loop
+      if has_function_privilege(actor,f.signature,'EXECUTE') then raise exception 'Stage 18 5C helper exposed to %: %',actor,f.signature; end if;
+    end loop;
+  end loop;
+  -- Tenant A's update of the increment 4 block above.
+  select * into request from public.work_continuation_requests
+    where organization_id='20000000-0000-4000-8000-000000000001' and kind='dependency_update' order by created_at,id limit 1;
+  if request.id is null then request.id:=gen_random_uuid(); end if;
+  set local role authenticated;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","role":"authenticated","aal":"aal1"}',true);
+  foreach attempt in array array[
+    format('select public.decline_work_update_v1(%L,%L,%L,%L,%L)',gen_random_uuid(),request.id,1,'not_needed',gen_random_uuid()),
+    format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),gen_random_uuid(),1),
+    format('select public.decline_work_update_v1(%L,%L,%L,%L)',gen_random_uuid(),gen_random_uuid(),1,'other')] loop
+    begin
+      execute attempt;
+      raise exception 'other tenant reached a 5C command: %',attempt;
+    exception when insufficient_privilege then
+      if sqlerrm<>'work_continuation_access_denied' then raise; end if;
+      refused:=refused+1;
+    end;
+  end loop;
+  if refused<>3 then raise exception 'not every cross-tenant 5C command was refused'; end if;
+  set local role postgres;
+  if request.organization_id is not null and not exists(select 1 from public.work_continuation_requests where id=request.id and status=request.status and revision=request.revision) then
+    raise exception 'a refused cross-tenant 5C command changed the work';
+  end if;
+end;
+$$;
+
 -- Revoking the original creator removes management even while the JWT is unchanged.
 reset role;
 update public.organization_memberships set status='suspended'

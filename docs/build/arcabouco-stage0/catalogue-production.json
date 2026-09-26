@@ -324,6 +324,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.advance_work_followups_v1()",
+      "kind": "function",
+      "name": "advance_work_followups_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.agent_operation_brief_snapshot(p_session document_intake_sessions)",
       "kind": "function",
       "name": "agent_operation_brief_snapshot",
@@ -1942,6 +1960,24 @@
         "search_path=\"\""
       ],
       "signature": "p_organization_id uuid, p_session_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.cancel_declined_jobs_v1(p_org uuid, p_jobs uuid[])",
+      "kind": "function",
+      "name": "cancel_declined_jobs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_jobs uuid[]",
       "security_definer": true
     },
     {
@@ -4304,6 +4340,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.fulfil_work_followups_v1()",
+      "kind": "function",
+      "name": "fulfil_work_followups_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.get_integration_preview_status(p_organization_id uuid)",
       "kind": "function",
       "name": "get_integration_preview_status",
@@ -5501,6 +5555,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.institutional_result_established_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "name": "institutional_result_established_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_result uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.institutional_result_is_live_v1(p_org uuid, p_result uuid)",
       "kind": "function",
       "name": "institutional_result_is_live_v1",
@@ -6612,6 +6684,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.lock_new_declinable_jobs_v1(p_org uuid, p_jobs uuid[], p_locked uuid[])",
+      "kind": "function",
+      "name": "lock_new_declinable_jobs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_jobs uuid[], p_locked uuid[]",
+      "security_definer": true
+    },
+    {
       "id": "function:private.lock_receivables_scope_fragment()",
       "kind": "function",
       "name": "lock_receivables_scope_fragment",
@@ -7493,6 +7583,24 @@
       "id": "function:private.project_institutional_result_dependencies_v1()",
       "kind": "function",
       "name": "project_institutional_result_dependencies_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.project_institutional_result_milestone_v1()",
+      "kind": "function",
+      "name": "project_institutional_result_milestone_v1",
       "grants": [
         [
           "postgres",
@@ -13518,6 +13626,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.work_followup_citation_v1(p_text text)",
+      "kind": "function",
+      "name": "work_followup_citation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_text text",
+      "security_definer": false
+    },
+    {
       "id": "function:private.work_milestone_label_v1(p_text text, p_fallback text)",
       "kind": "function",
       "name": "work_milestone_label_v1",
@@ -13641,6 +13767,24 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_work uuid, p_create boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.work_update_declinable_jobs_v1(p_org uuid, p_request uuid, p_candidate uuid)",
+      "kind": "function",
+      "name": "work_update_declinable_jobs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_request uuid, p_candidate uuid",
       "security_definer": true
     },
     {
@@ -28630,6 +28774,21 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.work_followup_executions.work_followup_executions_deny_clients",
+      "kind": "policy",
+      "name": "work_followup_executions_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "work_followup_executions",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.work_recompute_leases.work_recompute_leases_deny_clients",
       "kind": "policy",
       "name": "work_recompute_leases_deny_clients",
@@ -38717,6 +38876,56 @@
       "rls": true,
       "kind": "table",
       "name": "vault_source_dependencies",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.work_followup_executions",
+      "rls": true,
+      "kind": "table",
+      "name": "work_followup_executions",
       "grants": [
         [
           "postgres",
@@ -53008,6 +53217,16 @@
       "definition": "CREATE TRIGGER execution_input_snapshots_updated BEFORE UPDATE ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.execution_input_snapshots.execution_input_snapshots_work_followup",
+      "kind": "trigger",
+      "name": "execution_input_snapshots_work_followup",
+      "table": "execution_input_snapshots",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.fulfil_work_followups_v1()",
+      "definition": "CREATE TRIGGER execution_input_snapshots_work_followup AFTER INSERT ON private.execution_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.fulfil_work_followups_v1()"
+    },
+    {
       "id": "trigger:private.execution_invalidations.execution_invalidations_immutable",
       "kind": "trigger",
       "name": "execution_invalidations_immutable",
@@ -53338,6 +53557,16 @@
       "definition": "CREATE TRIGGER execution_result_receipts_updated BEFORE UPDATE ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.execution_result_receipts.execution_result_receipts_work_followup",
+      "kind": "trigger",
+      "name": "execution_result_receipts_work_followup",
+      "table": "execution_result_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.advance_work_followups_v1()",
+      "definition": "CREATE TRIGGER execution_result_receipts_work_followup AFTER INSERT ON private.execution_result_receipts FOR EACH ROW EXECUTE FUNCTION private.advance_work_followups_v1()"
+    },
+    {
       "id": "trigger:private.execution_source_bindings.execution_source_bindings_audit",
       "kind": "trigger",
       "name": "execution_source_bindings_audit",
@@ -53545,7 +53774,7 @@
       "schema": "private",
       "enabled": "O",
       "function": "private.supersede_previous_institutional_results()",
-      "definition": "CREATE TRIGGER institutional_result_supersedes AFTER UPDATE ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text) AND (new.canonical_revision_id IS NOT NULL))) EXECUTE FUNCTION private.supersede_previous_institutional_results()"
+      "definition": "CREATE TRIGGER institutional_result_supersedes AFTER UPDATE ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text) AND (new.canonical_revision_id IS NOT NULL) AND (new.recompute_candidate_id IS NULL))) EXECUTE FUNCTION private.supersede_previous_institutional_results()"
     },
     {
       "id": "trigger:private.institutional_model_results.institutional_results_audit",
@@ -53566,6 +53795,16 @@
       "enabled": "O",
       "function": "private.project_institutional_result_dependencies_v1()",
       "definition": "CREATE TRIGGER institutional_results_dependencies AFTER INSERT ON private.institutional_model_results FOR EACH ROW EXECUTE FUNCTION private.project_institutional_result_dependencies_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_model_results.institutional_results_milestone",
+      "kind": "trigger",
+      "name": "institutional_results_milestone",
+      "table": "institutional_model_results",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.project_institutional_result_milestone_v1()",
+      "definition": "CREATE TRIGGER institutional_results_milestone AFTER UPDATE OF status ON private.institutional_model_results FOR EACH ROW WHEN (((old.status = 'queued'::text) AND (new.status = 'completed'::text))) EXECUTE FUNCTION private.project_institutional_result_milestone_v1()"
     },
     {
       "id": "trigger:private.institutional_model_results.institutional_results_updated",
@@ -54396,6 +54635,36 @@
       "enabled": "O",
       "function": "private.guard_contribution_immutable_v1()",
       "definition": "CREATE TRIGGER vault_dependency_immutable BEFORE DELETE OR UPDATE ON private.vault_source_dependencies FOR EACH ROW EXECUTE FUNCTION private.guard_contribution_immutable_v1()"
+    },
+    {
+      "id": "trigger:private.work_followup_executions.work_followup_executions_immutable",
+      "kind": "trigger",
+      "name": "work_followup_executions_immutable",
+      "table": "work_followup_executions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER work_followup_executions_immutable BEFORE DELETE OR UPDATE ON private.work_followup_executions FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.work_followup_executions.work_followup_executions_truncate_guard",
+      "kind": "trigger",
+      "name": "work_followup_executions_truncate_guard",
+      "table": "work_followup_executions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER work_followup_executions_truncate_guard BEFORE TRUNCATE ON private.work_followup_executions FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.work_followup_executions.work_followup_executions_updated",
+      "kind": "trigger",
+      "name": "work_followup_executions_updated",
+      "table": "work_followup_executions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_followup_executions_updated BEFORE UPDATE ON private.work_followup_executions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.work_recompute_leases.work_recompute_leases_guard",
