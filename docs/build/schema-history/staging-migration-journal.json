@@ -1631,8 +1631,12 @@
   {
    "version": "20260925232902",
    "name": "rfc_uuid_domain_event_identifiers"
+  },
+  {
+   "version": "20260926011152",
+   "name": "work_continuation_commands"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-25T23:35:00Z"
+ "captured_at": "2026-09-26T01:15:50.700321+00:00"
 }

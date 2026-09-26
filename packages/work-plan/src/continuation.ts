@@ -1002,8 +1002,11 @@ export type WorkMilestoneDecision = z.infer<typeof workMilestoneDecisionSchema>;
 
 /**
  * An immutable milestone of a work, in append order. Results carry their execution and reference
- * nothing; every other milestone references earlier milestones it is about. A wait
+ * nothing; the other milestones reference the earlier milestones they are about. A wait
  * (`awaiting_human`) stays open until a `human_resolved` references it; it holds no job or lease.
+ * An adoption references the results it adopts and a resolution the wait it resolves. A decision or
+ * a proposal may reference nothing when what it is about lies outside the log: the approval of an
+ * artifact version, a brief or a configuration, or an update proposed for executions without results.
  */
 export const workMilestoneSchema = z.object({
   milestoneId: identifierSchema,
@@ -1022,8 +1025,9 @@ export const workMilestoneSchema = z.object({
   if ((milestone.kind === "execution_result" || milestone.kind === "awaiting_human" || milestone.kind === "continuation_proposed") && milestone.decision !== null) {
     issue("decision", "only decisions, adoptions and human resolutions carry a decision");
   }
-  if ((milestone.kind === "decision" || milestone.kind === "update_adopted" || milestone.kind === "human_resolved" || milestone.kind === "continuation_proposed")
-    && milestone.references.length === 0) issue("references", "this milestone must reference what it is about");
+  if ((milestone.kind === "update_adopted" || milestone.kind === "human_resolved") && milestone.references.length === 0) {
+    issue("references", "this milestone must reference what it is about");
+  }
   if (new Set(milestone.references).size !== milestone.references.length) issue("references", "references repeat");
 });
 export type WorkMilestone = z.infer<typeof workMilestoneSchema>;
@@ -1161,6 +1165,17 @@ export type WorkContinuationResolution =
   }>;
 
 /**
+ * Continuation verbs, in pt-BR and en-US without accents. A follow-up that uses one asks to continue
+ * the work from an approved base; the same words carry no reference to a milestone.
+ */
+export const workContinuationVerbs: readonly string[] = [
+  "aprofundar", "aprofunde", "aprofunda", "detalhar", "detalhe", "detalha", "revisar", "revise", "revisa",
+  "atualizar", "atualize", "atualiza", "continuar", "continue", "continua", "retomar", "retome", "retoma",
+  "expandir", "expanda", "desenvolver", "desenvolva", "explorar", "explore", "refazer", "refaca", "seguir", "siga",
+  "avancar", "avance", "deepen", "detail", "review", "update", "resume", "expand", "develop", "extend", "redo", "revisit",
+];
+
+/**
  * Words that carry no reference to a milestone: function words, continuation verbs and approval
  * status (every candidate base is approved already), in pt-BR and en-US, without accents.
  */
@@ -1171,13 +1186,31 @@ const nonReferentialWords: ReadonlySet<string> = new Set([
   "meu", "minha", "nosso", "nossa", "seu", "sua", "favor",
   "the", "an", "of", "to", "for", "on", "in", "at", "by", "with", "and", "or", "this", "that", "these", "those",
   "our", "my", "your", "please", "now", "more",
-  "aprofundar", "aprofunde", "aprofunda", "detalhar", "detalhe", "detalha", "revisar", "revise", "revisa",
-  "atualizar", "atualize", "atualiza", "continuar", "continue", "continua", "retomar", "retome", "retoma",
-  "expandir", "expanda", "desenvolver", "desenvolva", "explorar", "explore", "refazer", "refaca", "seguir", "siga",
-  "avancar", "avance", "deepen", "detail", "review", "update", "resume", "expand", "develop", "extend", "redo", "revisit",
+  ...workContinuationVerbs,
   "aprovado", "aprovada", "aprovados", "aprovadas", "approved",
   "decisao", "decisoes", "decision", "decisions", "resultado", "resultados", "result", "results",
 ]);
+
+const continuationVerbSet: ReadonlySet<string> = new Set(workContinuationVerbs);
+
+/**
+ * Whether a message asks to continue the work: it uses one of the continuation verbs, the same
+ * words resolveWorkContinuation treats as non-referential. Case and accents are normalised.
+ */
+export function isWorkContinuationRequest(text: string): boolean {
+  return words(text).some((word) => continuationVerbSet.has(word));
+}
+
+/** Words with which a person names the draft still awaiting confirmation, in pt-BR and en-US. */
+const pendingDraftWords: ReadonlySet<string> = new Set(["rascunho", "rascunhos", "minuta", "minutas", "pendente", "pendentes", "draft", "drafts", "pending"]);
+
+/**
+ * Whether a message names the draft that still awaits confirmation. Only then may a continuation
+ * revise that draft; a draft is never the default target of a continuation.
+ */
+export function namesPendingDraft(text: string): boolean {
+  return words(text).some((word) => pendingDraftWords.has(word));
+}
 
 /**
  * Resolves a follow-up to an explicit approved base. Case and accents are normalised; the words

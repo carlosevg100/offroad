@@ -10242,6 +10242,7 @@ export type Database = {
           affected_executions: Json
           created_at: string
           created_by: string | null
+          decline_reason: string | null
           id: string
           kind: string
           organization_id: string
@@ -10257,6 +10258,7 @@ export type Database = {
           affected_executions?: Json
           created_at?: string
           created_by?: string | null
+          decline_reason?: string | null
           id?: string
           kind: string
           organization_id: string
@@ -10272,6 +10274,7 @@ export type Database = {
           affected_executions?: Json
           created_at?: string
           created_by?: string | null
+          decline_reason?: string | null
           id?: string
           kind?: string
           organization_id?: string
@@ -10479,6 +10482,7 @@ export type Database = {
           occurred_at: string
           organization_id: string
           outcome: string | null
+          reference_milestone_ids: string[]
           resolves_milestone_id: string | null
           revision: number | null
           subject_id: string
@@ -10497,6 +10501,7 @@ export type Database = {
           occurred_at: string
           organization_id: string
           outcome?: string | null
+          reference_milestone_ids?: string[]
           resolves_milestone_id?: string | null
           revision?: number | null
           subject_id: string
@@ -10515,6 +10520,7 @@ export type Database = {
           occurred_at?: string
           organization_id?: string
           outcome?: string | null
+          reference_milestone_ids?: string[]
           resolves_milestone_id?: string | null
           revision?: number | null
           subject_id?: string
@@ -10840,6 +10846,14 @@ export type Database = {
         Args: { p_payload: Json }
         Returns: string
       }
+      adopt_work_update_v1: {
+        Args: {
+          p_command_id: string
+          p_expected_revision: number
+          p_update_id: string
+        }
+        Returns: Json
+      }
       append_advisor_message_v1: {
         Args: {
           p_content: string
@@ -10911,6 +10925,14 @@ export type Database = {
       }
       authorize_source_version_download_v1: {
         Args: { p_version_id: string }
+        Returns: Json
+      }
+      authorize_work_update_v1: {
+        Args: {
+          p_candidate_id: string
+          p_command_id: string
+          p_expected_revision: number
+        }
         Returns: Json
       }
       begin_intake_processing: {
@@ -11125,6 +11147,16 @@ export type Database = {
           p_version_id: string
         }
         Returns: string
+      }
+      decline_work_update_v1: {
+        Args: {
+          p_candidate_id?: string
+          p_command_id: string
+          p_expected_revision: number
+          p_reason: string
+          p_update_id: string
+        }
+        Returns: Json
       }
       enqueue_deal_state_analysis: {
         Args: {
@@ -11727,6 +11759,18 @@ export type Database = {
           p_artifact_fingerprint: string
           p_artifact_id: string
           p_note: string
+        }
+        Returns: Json
+      }
+      request_work_continuation_v1: {
+        Args: {
+          p_base_decision_id: string
+          p_base_milestone_id: string
+          p_base_revision: number
+          p_content: string
+          p_locale: string
+          p_request_id: string
+          p_work_id: string
         }
         Returns: Json
       }
@@ -12490,6 +12534,7 @@ export type Database = {
         Args: { p_publication_id: string; p_reason: string }
         Returns: string
       }
+      work_update_view_v1: { Args: { p_work_id: string }; Returns: Json }
       worker_apply_institutional_assumption_answer_v1: {
         Args: {
           p_application: Json

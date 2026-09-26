@@ -229,6 +229,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.adopt_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer)",
+      "kind": "function",
+      "name": "adopt_work_update_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer",
+      "security_definer": true
+    },
+    {
       "id": "function:private.adoption_dependency_allowed_v1(p_org uuid, p_source uuid, p_rights uuid)",
       "kind": "function",
       "name": "adoption_dependency_allowed_v1",
@@ -880,6 +903,29 @@
         "search_path=\"\""
       ],
       "signature": "p_version_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.authorize_work_update_v1(p_command_id uuid, p_candidate_id uuid, p_expected_revision integer)",
+      "kind": "function",
+      "name": "authorize_work_update_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command_id uuid, p_candidate_id uuid, p_expected_revision integer",
       "security_definer": true
     },
     {
@@ -3017,6 +3063,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.decline_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid)",
+      "kind": "function",
+      "name": "decline_work_update_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.delegated_policy_access_v1(p_principal_id uuid, p_resource_id uuid, p_action text)",
       "kind": "function",
       "name": "delegated_policy_access_v1",
@@ -4918,6 +4987,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.guard_work_continuation_decline_reason_v1()",
+      "kind": "function",
+      "name": "guard_work_continuation_decline_reason_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.guard_work_continuation_request_v1()",
       "kind": "function",
       "name": "guard_work_continuation_request_v1",
@@ -6275,6 +6362,24 @@
         "search_path=\"\""
       ],
       "signature": "p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.lock_work_for_continuation_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "lock_work_for_continuation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
       "security_definer": true
     },
     {
@@ -9883,6 +9988,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.request_work_continuation_v1(p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+      "kind": "function",
+      "name": "request_work_continuation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer",
+      "security_definer": true
+    },
+    {
       "id": "function:private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
       "kind": "function",
       "name": "request_work_execution_as_subject_v1",
@@ -10286,6 +10414,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_work_continuation_authority_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "require_work_continuation_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
       "security_definer": true
     },
     {
@@ -13075,6 +13221,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.validate_work_milestone_references_v1()",
+      "kind": "function",
+      "name": "validate_work_milestone_references_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.vault_reader_org_v1()",
       "kind": "function",
       "name": "vault_reader_org_v1",
@@ -13226,6 +13390,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.work_command_milestone_id_v1(p_org uuid, p_command uuid)",
+      "kind": "function",
+      "name": "work_command_milestone_id_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_command uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.work_continuation_bases_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "work_continuation_bases_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.work_continuation_transition_allowed_v1(p_from text, p_to text)",
       "kind": "function",
       "name": "work_continuation_transition_allowed_v1",
@@ -13262,6 +13462,42 @@
       "security_definer": false
     },
     {
+      "id": "function:private.work_milestone_log_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "work_milestone_log_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.work_milestone_references_v1(p_references uuid[], p_resolves uuid, p_supersedes uuid)",
+      "kind": "function",
+      "name": "work_milestone_references_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_references uuid[], p_resolves uuid, p_supersedes uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:private.work_recompute_transition_allowed_v1(p_from text, p_to text)",
       "kind": "function",
       "name": "work_recompute_transition_allowed_v1",
@@ -13295,6 +13531,47 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.work_turn_conversation_v1(p_org uuid, p_work uuid, p_create boolean)",
+      "kind": "function",
+      "name": "work_turn_conversation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_create boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.work_update_view_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "work_update_view_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
       "security_definer": true
     },
     {
@@ -17060,6 +17337,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.adopt_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer)",
+      "kind": "function",
+      "name": "adopt_work_update_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer",
+      "security_definer": false
+    },
+    {
       "id": "function:public.append_advisor_message_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
       "kind": "function",
       "name": "append_advisor_message_v1",
@@ -17355,6 +17655,29 @@
         "search_path=\"\""
       ],
       "signature": "p_version_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.authorize_work_update_v1(p_command_id uuid, p_candidate_id uuid, p_expected_revision integer)",
+      "kind": "function",
+      "name": "authorize_work_update_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command_id uuid, p_candidate_id uuid, p_expected_revision integer",
       "security_definer": false
     },
     {
@@ -17997,6 +18320,29 @@
         "search_path=\"\""
       ],
       "signature": "p_version_id uuid, p_expected_revision integer, p_source_url text, p_payload_sha256 text, p_expires_at timestamp with time zone, p_store_until timestamp with time zone, p_evidence_id uuid, p_evidence_sha256 text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.decline_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid)",
+      "kind": "function",
+      "name": "decline_work_update_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid",
       "security_definer": false
     },
     {
@@ -20664,6 +21010,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.request_work_continuation_v1(p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+      "kind": "function",
+      "name": "request_work_continuation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer",
+      "security_definer": false
+    },
+    {
       "id": "function:public.request_work_execution_v1(p_contract_text text, p_snapshot_text text)",
       "kind": "function",
       "name": "request_work_execution_v1",
@@ -22835,6 +23204,29 @@
         "search_path=\"\""
       ],
       "signature": "p_publication_id uuid, p_reason text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.work_update_view_v1(p_work_id uuid)",
+      "kind": "function",
+      "name": "work_update_view_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid",
       "security_definer": false
     },
     {
@@ -57948,6 +58340,16 @@
       "definition": "CREATE TRIGGER work_continuation_requests_audit AFTER INSERT OR DELETE OR UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
     },
     {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_decline_reason",
+      "kind": "trigger",
+      "name": "work_continuation_requests_decline_reason",
+      "table": "work_continuation_requests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_work_continuation_decline_reason_v1()",
+      "definition": "CREATE TRIGGER work_continuation_requests_decline_reason BEFORE UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.guard_work_continuation_decline_reason_v1()"
+    },
+    {
       "id": "trigger:public.work_continuation_requests.work_continuation_requests_guard",
       "kind": "trigger",
       "name": "work_continuation_requests_guard",
@@ -58086,6 +58488,16 @@
       "enabled": "O",
       "function": "private.reject_work_continuity_mutation_v1()",
       "definition": "CREATE TRIGGER work_milestones_immutable BEFORE DELETE OR UPDATE ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.work_milestones.work_milestones_references",
+      "kind": "trigger",
+      "name": "work_milestones_references",
+      "table": "work_milestones",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.validate_work_milestone_references_v1()",
+      "definition": "CREATE TRIGGER work_milestones_references BEFORE INSERT ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.validate_work_milestone_references_v1()"
     },
     {
       "id": "trigger:public.work_milestones.work_milestones_truncate_guard",
