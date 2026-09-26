@@ -2686,7 +2686,7 @@
       "working": "Working now",
       "ready": "Ready to continue",
       "needsAttention": "Needs attention",
-      "waitingForPerson": "Waiting for a person's decision",
+      "waitingForPerson": "Awaiting a decision",
       "messageFailed": "This message was not processed. You can send it again; completed work will be preserved.",
       "informationRequest": {
         "eyebrow": "One answer can materially improve the analysis",

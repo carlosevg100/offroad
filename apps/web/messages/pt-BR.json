@@ -2686,7 +2686,7 @@
       "working": "Trabalhando agora",
       "ready": "Pronto para continuar",
       "needsAttention": "Precisa de atenção",
-      "waitingForPerson": "Aguardando decisão de uma pessoa",
+      "waitingForPerson": "Aguardando decisão",
       "messageFailed": "Esta mensagem não foi processada. Você pode enviá-la novamente; o trabalho já concluído será preservado.",
       "informationRequest": {
         "eyebrow": "Uma informação pode melhorar a análise",
