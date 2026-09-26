@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {useFormatter, useLocale, useTranslations} from "next-intl";
 import {deliverableFormatDecisions} from "@offroad/case-export/deliverable-formats";
 import type {InstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
@@ -49,6 +48,6 @@ export function InstitutionalModelResultWork({projectId, result, calculating = f
         />
       </div>
     </> : result.status === "blocked" ? <><p>{t("blockedHelp")}</p><InstitutionalIssues issues={institutionalResultIssues(result.blockers)} /></> : null}
-    <footer><Link href="#work-institutional-setup">{t("edit")}</Link></footer>
+    <footer><a href={workSectionHref("institutional-setup")} onClick={followWorkSectionLink}>{t("edit")}</a></footer>
   </section>;
 }

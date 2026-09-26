@@ -147,7 +147,11 @@ test("a v4 capital execution is refused until the company under analysis is regi
  await expect(page.getByRole("heading", {name: copy.list.title, exact: true})).toBeVisible();
  const listed = page.locator(".execution-records > li");
  await expect(listed).toHaveCount(1);
- await expect(listed.locator("code")).toHaveText(executionId);
+ // The list names the execution by when it was requested and its state; the internal identifier
+ // stays in the link and never appears in the text.
+ await expect(listed).not.toContainText(executionId);
+ await expect(listed.locator("code")).toHaveCount(0);
+ await expect(listed.getByRole("link", {name: copy.list.open, exact: true})).toHaveAttribute("href", new RegExp(`/executions/${executionId}$`));
  await listed.getByRole("link", {name: copy.list.open, exact: true}).click();
  await expect(page).toHaveURL(new RegExp(`/executions/${executionId}$`));
 
