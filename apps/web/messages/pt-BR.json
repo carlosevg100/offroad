@@ -2292,7 +2292,8 @@
         "not_found": "A atualização não foi encontrada. A tela foi recarregada.",
         "stale": "A atualização mudou desde que foi exibida. A tela foi recarregada; confira e decida de novo.",
         "processing": "A atualização não está mais nesse estado. A tela foi recarregada.",
-        "save": "Não foi possível registrar a decisão. Tente novamente."
+        "save": "Não foi possível registrar a decisão. Tente novamente.",
+        "busy": "Um cálculo desta atualização está terminando agora. Tente novamente em alguns segundos."
       },
       "labels": {
         "dependency_update": "Atualização por mudança de insumo",
@@ -2331,6 +2332,7 @@
         "adopt": "Adotar como base",
         "adoptConfirm": "Confirmar adoção",
         "adoptExplanation": "O resultado desta execução passa a ser a base aprovada, no lugar da base de que a continuação partiu, que continua registrada.",
+        "requestExecution": "Pedir uma execução para esta continuação",
         "decline": "Recusar continuação",
         "declineExplanation": "A continuação termina recusada, com o motivo escolhido. Uma execução já pedida continua registrada.",
         "decided": {
@@ -2369,6 +2371,12 @@
         "question": "Pergunta",
         "objectives": "Objetivos",
         "objectivesHelp": "Um objetivo por linha.",
+        "followup": {
+          "title": "Continuação pedida na conversa",
+          "base": "Continua a partir de {label}, revisão {revision}.",
+          "help": "O primeiro objetivo repete o texto da continuação, e é ele que liga esta execução a ela. Mantenha esse texto e acrescente outros objetivos em linhas novas, se precisar.",
+          "unavailable": "A continuação escolhida não aguarda mais uma execução, e nenhum objetivo foi preenchido."
+        },
         "asOf": "Data de referência",
         "submit": "Pedir execução",
         "situations": "Situações da decisão",
@@ -5669,13 +5677,16 @@
       "pdf": "PDF"
     },
     "edit": "Revisar dados e premissas",
+    "openUpdate": "Abrir a atualização",
     "blockedHelp": "Revise a configuração e as fontes indicadas antes de calcular novamente. Nenhum valor ausente foi presumido.",
     "status": {
       "notRunning": "Nenhum cálculo está em andamento para esta configuração e o resultado não foi gerado. Revise os dados e as premissas para calcular de novo.",
       "queued": "Calculando a configuração aprovada. O resultado aparecerá aqui.",
       "completed": "Cálculo concluído. Os quatro formatos usam a mesma configuração aprovada.",
       "blocked": "O cálculo precisa de correções ou informações adicionais.",
-      "stale": "As fontes ou premissas mudaram. Revise e calcule novamente para obter materiais atualizados."
+      "stale": "As fontes ou premissas mudaram. Revise e calcule novamente para obter materiais atualizados.",
+      "recalculationReady": "Um resultado recalculado com os insumos atuais está pronto e aguarda a sua decisão em Atualizações. Ele passa a valer quando você adotar a atualização.",
+      "recalculationWaiting": "Um resultado recalculado com os insumos atuais está pronto em Atualizações. A atualização ainda aguarda outra etapa antes da sua decisão, e o novo resultado passa a valer quando ela for adotada."
     }
   },
   "InstitutionalIssues": {

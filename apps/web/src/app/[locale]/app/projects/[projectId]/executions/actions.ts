@@ -7,9 +7,10 @@ import {composeCapitalExecutionRequest, executionContractBasisSchema, type Execu
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {capitalDecisionPurpose} from "@/lib/advisor/adoption-basis-reader";
 import {executionRequestFailure, type ExecutionRequestError} from "@/lib/execution/failure";
+import {executionRequestTextMaxLength} from "@/lib/execution/request-limits";
 
 const route = z.object({locale: z.enum(["pt-BR", "en-US"]), projectId: z.uuid()});
-const text = z.string().trim().min(1).max(2000);
+const text = z.string().trim().min(1).max(executionRequestTextMaxLength);
 type Failure = {ok: false; error: ExecutionRequestError; unverifiedSources?: ExecutionContractBasis["unverifiedSources"]};
 type Success = {ok: true; executionId: string; replayed: boolean};
 const failure = (error: {code?: string; message?: string} | null | undefined): Failure => ({ok: false, error: executionRequestFailure(error)});

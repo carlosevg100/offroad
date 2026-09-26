@@ -3,7 +3,7 @@ import {describe, expect, it} from "vitest";
 import {namesFor} from "./work-update-names.test-support";
 import {CAPITAL, RECEIVABLES, at, id, rawIntegrationView, rawView} from "./work-update-view.test-support";
 import {workUpdateViewSchema, type WorkUpdateView} from "./work-update-view";
-import {workUpdatesModel} from "./work-updates";
+import {executionFollowup, followupObjective, recalculationAwaitingAdoption, workUpdatesModel} from "./work-updates";
 
 const view: WorkUpdateView = workUpdateViewSchema.parse(rawView);
 
@@ -101,13 +101,81 @@ describe("the update section of a work with institutional results, merged update
   it("lists the follow-ups with their base, the execution they led to and the decision they allow", () => {
     expect(model.followups).toEqual([
       {requestId: id(90), status: "ready", revision: 3, text: "Aprofundar o cenário de refinanciamento", base: {label: "Alongamento com os bancos atuais", revision: 3},
-        execution: {name: CAPITAL, state: "result"}, open: true, canAdopt: true, canDecline: true, declineReason: null, decidedAt: null},
+        execution: {name: CAPITAL, state: "result"}, open: true, canAdopt: true, canDecline: true, objective: "Aprofundar o cenário de refinanciamento", canRequestExecution: false,
+        declineReason: null, decidedAt: null},
       {requestId: id(94), status: "open", revision: 1, text: "Revisar o covenant de alavancagem", base: {label: "Alongamento com os bancos atuais", revision: 3},
-        execution: null, open: true, canAdopt: false, canDecline: true, declineReason: null, decidedAt: null},
+        execution: null, open: true, canAdopt: false, canDecline: true, objective: "Revisar o covenant de alavancagem", canRequestExecution: true, declineReason: null, decidedAt: null},
       {requestId: id(96), status: "declined", revision: 2, text: "Atualizar a estrutura de garantias", base: {label: "Alongamento com os bancos atuais", revision: 3},
-        execution: null, open: false, canAdopt: false, canDecline: false, declineReason: "other", decidedAt: at(15)},
+        execution: null, open: false, canAdopt: false, canDecline: false, objective: "Atualizar a estrutura de garantias", canRequestExecution: false, declineReason: "other", decidedAt: at(15)},
     ]);
     // The ready update and the ready follow-up await a decision.
     expect(model.awaitingDecision).toBe(2);
+  });
+});
+
+describe("the results panel and the execution request read the update section (5D)", () => {
+  const integration = workUpdateViewSchema.parse(rawIntegrationView);
+  const model = workUpdatesModel(integration, namesFor("pt-BR"), (raw) => raw);
+  type Candidate = WorkUpdateView["updates"][number]["institutionalCandidates"][number];
+  const readyUpdate = integration.updates.find((update) => update.requestId === id(60))!;
+  const withUpdate = (status: WorkUpdateView["updates"][number]["status"], candidate: Partial<Candidate>) => workUpdatesModel({...integration, updates: [
+    {...readyUpdate, status, institutionalCandidates: [{...readyUpdate.institutionalCandidates[0]!, ...candidate}]}]}, namesFor("pt-BR"), (raw) => raw);
+
+  it("names the recalculated result that waits in a ready update and the result it would replace", () => {
+    // Update 60 is ready with the model recalculated (87, completed, not current) over result 84;
+    // update 66 still calculates (83 queued), which is no recalculation waiting for adoption.
+    expect(model.recalculations).toEqual([{updateId: id(60), adoptable: true, covers: [id(84)]}]);
+    expect(recalculationAwaitingAdoption(model, id(84))).toEqual({updateId: id(60), adoptable: true, covers: [id(84)]});
+    expect(recalculationAwaitingAdoption(model, id(80))).toBeNull();
+    expect(recalculationAwaitingAdoption(model, id(87))).toBeNull();
+    expect(recalculationAwaitingAdoption(null, id(84))).toBeNull();
+  });
+
+  it("says the update still waits when its recalculated result is ready but the update is not, and drops what is no longer waiting", () => {
+    expect(recalculationAwaitingAdoption(withUpdate("open", {}), id(84))).toEqual({updateId: id(60), adoptable: false, covers: [id(84)]});
+    expect(recalculationAwaitingAdoption(withUpdate("scheduled", {}), id(84))?.adoptable).toBe(false);
+    // Adopted: the recalculation is current. Declined or superseded: nothing waits in it anymore.
+    expect(withUpdate("ready", {current: true}).recalculations).toEqual([]);
+    expect(withUpdate("declined", {}).recalculations).toEqual([]);
+    expect(withUpdate("adopted", {}).recalculations).toEqual([]);
+    // A recalculation that ended blocked, or one still calculating, is not ready.
+    expect(withUpdate("ready", {resultStatus: "blocked"}).recalculations).toEqual([]);
+    expect(withUpdate("ready", {state: "scheduled", resultStatus: "queued"}).recalculations).toEqual([]);
+  });
+
+  it("prefers a recalculation the person can adopt now when two cover the shown result", () => {
+    const held = {...readyUpdate, requestId: id(61), status: "open" as const};
+    const both = workUpdatesModel({...integration, updates: [held, readyUpdate]}, namesFor("pt-BR"), (raw) => raw);
+    expect(recalculationAwaitingAdoption(both, id(84))).toEqual({updateId: id(60), adoptable: true, covers: [id(84)]});
+  });
+
+  it("fills an execution request only from a follow-up that waits for one, with its text on one line as the objective", () => {
+    expect(executionFollowup(model, id(94))).toEqual({state: "ready", requestId: id(94), text: "Revisar o covenant de alavancagem", objective: "Revisar o covenant de alavancagem",
+      base: {label: "Alongamento com os bancos atuais", revision: 3}});
+    // Ready (its result exists), declined, unknown, or updates that could not be read: nothing to fill.
+    for (const requestId of [id(90), id(96), id(999)]) expect(executionFollowup(model, requestId)).toEqual({state: "unavailable"});
+    expect(executionFollowup(null, id(94))).toEqual({state: "unavailable"});
+  });
+
+  it("reopens the request of a follow-up whose execution ended without a result, and not of one whose execution runs", () => {
+    const [ready] = integration.followups;
+    const scheduled = (jobStatus: string) => workUpdatesModel({...integration, followups: [{...ready!, status: "scheduled",
+      execution: {...ready!.execution!, jobStatus, resultMilestoneId: null}}]}, namesFor("pt-BR"), (raw) => raw).followups[0];
+    expect(scheduled("failed")).toMatchObject({execution: {state: "ended"}, canRequestExecution: true});
+    expect(scheduled("cancelled")).toMatchObject({execution: {state: "ended"}, canRequestExecution: true});
+    expect(scheduled("leased")).toMatchObject({execution: {state: "running"}, canRequestExecution: false});
+  });
+
+  it("writes the objective as the database cites it: one line, the same whitespace collapsed, within one objective", () => {
+    expect(followupObjective("  Revisar o covenant\n\tde alavancagem  e a liquidez \r\n")).toBe("Revisar o covenant de alavancagem e a liquidez");
+    // A space the database does not collapse stays as it is, so both sides compare the same text.
+    expect(followupObjective("Revisar o covenant de alavancagem")).toBe("Revisar o covenant de alavancagem");
+    expect(followupObjective("a".repeat(2000))).toHaveLength(2000);
+    expect(followupObjective(`${"a".repeat(1000)}\n\n${"b".repeat(999)}`)).toHaveLength(2000);
+    expect(followupObjective("a".repeat(2001))).toBeNull();
+    expect(followupObjective(" \n ")).toBeNull();
+    const [, open] = integration.followups;
+    const long = workUpdatesModel({...integration, followups: [{...open!, request: "a".repeat(2001)}]}, namesFor("pt-BR"), (raw) => raw).followups[0];
+    expect(long).toMatchObject({status: "open", objective: null, canRequestExecution: false});
   });
 });

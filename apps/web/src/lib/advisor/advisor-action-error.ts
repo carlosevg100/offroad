@@ -13,3 +13,12 @@ export function advisorActionError(error: {code?: string; message?: string} | nu
   if (error?.code === "42501" || message.includes("required")) return "denied";
   return "save";
 }
+
+/** The errors of the decisions on a work's updates: the shared ones, and a decline the database
+ * refused because the worker holds, at that moment, one of the jobs it would stop
+ * (`work_update_job_busy`). Nothing was recorded; the same decision can be repeated in a moment. */
+export type WorkUpdateActionError = AdvisorActionError | "busy";
+
+export function workUpdateActionError(error: {code?: string; message?: string} | null): WorkUpdateActionError {
+  return error?.message?.includes("work_update_job_busy") ? "busy" : advisorActionError(error);
+}

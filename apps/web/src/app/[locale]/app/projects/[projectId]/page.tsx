@@ -5,6 +5,7 @@ import {WorkUpdates} from "@/components/advisor/work-updates";
 import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
 import {continuationNote} from "@/lib/advisor/work-continuation";
 import {loadWorkUpdates} from "@/lib/advisor/work-updates-reader";
+import {recalculationAwaitingAdoption} from "@/lib/advisor/work-updates";
 import {StandaloneWork} from "@/components/advisor/standalone-work";
 import {ReceivablesCurrentResult} from "@/components/advisor/receivables-current-result";
 import {InstitutionalModelResultWork} from "@/components/advisor/institutional-model-result-work";
@@ -502,11 +503,14 @@ async function ConversationalCapitalProject({
     + (requirementCoverage ?? []).filter((item) => !expectedKeys.has(item.requirement_key)).length;
 
   const workSections: AdvisorWorkSection[] = [];
+  // The updates are read once, before the result they may replace: the results panel points to the
+  // update whose recalculated result waits for adoption, and the Updates section shows the same read.
+  const updates = await loadWorkUpdates(supabase, project.id, locale === "en-US" ? "en-US" : "pt-BR");
   const institutionalResult = await loadInstitutionalModelResult(supabase, project.id);
   if (institutionalResult) {
     const resultCopy = await getTranslations({locale, namespace: "InstitutionalModelResult"});
     workSections.push({id: "institutional-model-result", title: resultCopy("title"), content: <InstitutionalModelResultWork projectId={project.id} result={institutionalResult}
-      calculating={institutionalCalculationRuns(activity, institutionalResult.id)} />});
+      calculating={institutionalCalculationRuns(activity, institutionalResult.id)} recalculation={recalculationAwaitingAdoption(updates, institutionalResult.id)} />});
   }
   const providerHistory = plan ? await loadProviderWorkHistory(supabase, artifacts ?? [], {organizationId: organization.id, projectId: project.id, currentPlanId: plan.id}) : [];
 
@@ -581,10 +585,10 @@ async function ConversationalCapitalProject({
   workSections.push({id: "vault", title: vaultCopy("title"), content: <WorkVaultPanel locale={locale} workId={project.id} />});
 
   // The updates of the work: first when one awaits a decision, otherwise at the end.
-  const [updates, updatesCopy] = await Promise.all([loadWorkUpdates(supabase, project.id, locale === "en-US" ? "en-US" : "pt-BR"), getTranslations({locale, namespace: "App.workUpdates"})]);
+  const updatesCopy = await getTranslations({locale, namespace: "App.workUpdates"});
   const updatesSection: AdvisorWorkSection = {id: "updates", title: updatesCopy("title"),
     status: updates?.awaitingDecision ? updatesCopy("awaiting", {count: updates.awaitingDecision}) : undefined,
-    content: <WorkUpdates locale={locale === "en-US" ? "en-US" : "pt-BR"} model={updates} />};
+    content: <WorkUpdates locale={locale === "en-US" ? "en-US" : "pt-BR"} model={updates} workId={project.id} />};
   if (updates?.awaitingDecision) workSections.unshift(updatesSection); else workSections.push(updatesSection);
 
   return <AdvisorProject
