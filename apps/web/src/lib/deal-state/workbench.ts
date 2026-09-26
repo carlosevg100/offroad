@@ -2,6 +2,7 @@ import type {SupabaseClient} from "@supabase/supabase-js";
 import {matchScreenSchema, type MatchScreen} from "@offroad/domain-contracts";
 import {z} from "zod";
 
+import {jobKindRunning, type WorkActivity} from "@/lib/advisor/work-activity";
 import type {Database, Json} from "@/types/database";
 
 export type DealStateRow = Database["public"]["Tables"]["deal_state_objects"]["Row"];
@@ -96,6 +97,7 @@ export type DealStateWorkbench = {
   productionPlan: {row: DealStateRow; value: ProductionPlan} | null;
   packageReview: DealStateRow | null;
   matchScreen: {row: DealStateRow; value: MatchScreen} | null;
+  /** A case analysis job of the session is queued or leased, as the work activity reader saw it. */
   isProcessing: boolean;
 };
 
@@ -168,27 +170,20 @@ export function parseGovernedMatchScreen(
   return {row, value: parsed.data};
 }
 
+/** The case state objects of a session. Whether the analysis runs comes from the work activity,
+ * read before these objects (see `loadWorkActivity`), never from a missing object. */
 export async function loadDealStateWorkbench(
   supabase: SupabaseClient<Database>,
   organizationId: string,
   sessionId: string,
+  activity: WorkActivity,
 ): Promise<DealStateWorkbench> {
-  const [{data: rows}, {data: activeJobs}] = await Promise.all([
-    supabase
-      .from("deal_state_objects")
-      .select("id, organization_id, intake_session_id, object_type, object_version, status, input_fingerprint, object_fingerprint, payload, dependencies, created_by, created_by_kind, created_at, updated_at, superseded_at")
-      .eq("organization_id", organizationId)
-      .eq("intake_session_id", sessionId)
-      .order("object_version", {ascending: false}),
-    supabase
-      .from("processing_jobs")
-      .select("id")
-      .eq("organization_id", organizationId)
-      .eq("intake_session_id", sessionId)
-      .eq("kind", "case_analysis")
-      .in("status", ["queued", "leased"])
-      .limit(1),
-  ]);
+  const {data: rows} = await supabase
+    .from("deal_state_objects")
+    .select("id, organization_id, intake_session_id, object_type, object_version, status, input_fingerprint, object_fingerprint, payload, dependencies, created_by, created_by_kind, created_at, updated_at, superseded_at")
+    .eq("organization_id", organizationId)
+    .eq("intake_session_id", sessionId)
+    .order("object_version", {ascending: false});
   const latest = latestActiveDealState(rows ?? []);
   return {
     understanding: parseUnderstanding(latest.get("understanding_snapshot")),
@@ -201,7 +196,7 @@ export async function loadDealStateWorkbench(
       latest.get("package_review"),
       latest.get("material_artifact"),
     ),
-    isProcessing: Boolean(activeJobs?.length),
+    isProcessing: jobKindRunning(activity, ["case_analysis"]),
   };
 }
 

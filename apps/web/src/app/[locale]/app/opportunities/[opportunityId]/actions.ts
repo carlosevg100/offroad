@@ -9,6 +9,7 @@ import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {latestActiveDealState, parseCompiledStructure} from "@/lib/deal-state/workbench";
 import {governedMaterialPackageFromRows} from "@/lib/deal-state/materials";
+import {resumeDealStateAnalysis} from "@/lib/deal-state/resume-analysis";
 import type {Json} from "@/types/database";
 
 const fingerprintSchema = z.string().regex(/^[a-f0-9]{64}$/);
@@ -60,12 +61,24 @@ async function opportunityRuntime(formData: FormData) {
     locale: parsed.data.locale,
     opportunityId: parsed.data.opportunityId,
     sessionId: session.id,
+    rows: rows ?? [],
     latest: latestActiveDealState(rows ?? []),
   };
 }
 
 function destination(locale: string, opportunityId: string, notice: string) {
   return `/${locale}/app/opportunities/${opportunityId}?notice=${notice}`;
+}
+
+const resumeNotice = {resumed: "analysis_resumed", finished: "analysis_finished", current: "analysis_current", failed: "queue_failed"} as const;
+
+/** The next step of a missing result: resume the analysis of the decision it depends on. The
+ * database decides again whether that decision is current and never duplicates its work. */
+export async function resumeAnalysis(formData: FormData) {
+  const runtime = await opportunityRuntime(formData);
+  const outcome = await resumeDealStateAnalysis(runtime.supabase, runtime.organization.id, runtime.sessionId, runtime.rows);
+  revalidatePath(`/${runtime.locale}/app/opportunities/${runtime.opportunityId}`);
+  redirect(destination(runtime.locale, runtime.opportunityId, resumeNotice[outcome]));
 }
 
 export async function confirmUnderstanding(formData: FormData) {

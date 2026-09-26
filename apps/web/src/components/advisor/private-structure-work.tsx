@@ -9,9 +9,14 @@ import {
   decidePrivateProjectStructure,
   type PrivateStructureDecisionState,
 } from "@/app/[locale]/app/projects/[projectId]/actions";
+import type {DealStateGap} from "@/lib/deal-state/analysis-gap";
 import type {DealStateWorkbench, StructureAlternative} from "@/lib/deal-state/workbench";
 
+import {PrivateAnalysisGap} from "./private-analysis-gap";
+
 type Props = {
+  /** The structure result missing while no analysis runs, if any. */
+  gap: DealStateGap | null;
   isProcessing: boolean;
   locale: "pt-BR" | "en-US";
   projectId: string;
@@ -22,7 +27,7 @@ type Props = {
 
 const initialState: PrivateStructureDecisionState = {ok: false};
 
-export function PrivateStructureWork({isProcessing, locale, projectId, sessionId, structure, structureDecision}: Props) {
+export function PrivateStructureWork({gap, isProcessing, locale, projectId, sessionId, structure, structureDecision}: Props) {
   const t = useTranslations("App.privateCase");
   const [state, action] = useActionState(decidePrivateProjectStructure, initialState);
   const confirmed = structureDecision?.status === "confirmed" || structureDecision?.status === "approved";
@@ -31,6 +36,9 @@ export function PrivateStructureWork({isProcessing, locale, projectId, sessionId
 
   if (isProcessing && (!structure || confirmed || changesRequested)) {
     return <Processing t={t} />;
+  }
+  if (gap === "structure" || gap === "structure_revision") {
+    return <PrivateAnalysisGap gap={gap} locale={locale} projectId={projectId} sessionId={sessionId} />;
   }
   if (declined) {
     return <section className="advisor-private-structure advisor-private-structure--state"><AlertTriangle aria-hidden="true" size={18} /><div><span>{t("structureKicker")}</span><strong>{t("structureDeclinedTitle")}</strong><p>{t("structureDeclinedBody")}</p></div></section>;

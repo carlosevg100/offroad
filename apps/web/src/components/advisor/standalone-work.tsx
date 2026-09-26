@@ -7,6 +7,8 @@ import {WorkUpdates} from "./work-updates";
 import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
 import {continuationNote} from "@/lib/advisor/work-continuation";
 import {loadWorkUpdates} from "@/lib/advisor/work-updates-reader";
+import {summarizeWorkActivity} from "@/lib/advisor/work-activity";
+import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import type {AdvisorWorkSection} from "./advisor-work-surface";
 
@@ -16,6 +18,9 @@ export async function StandaloneWork({locale, project}: {
   project: {id: string; project_name: string; access_basis: string};
 }) {
   const {supabase, organization, userId} = await requireWorkspace(locale);
+  // What is in progress is read before what it produces: a turn answered between the two reads
+  // costs one more refresh and never leaves the page waiting without one.
+  const activity = await loadWorkActivity(supabase, {organizationId: organization.id, workId: project.id, sessionId: null});
   const [{data: messages, error}, copy, updates] = await Promise.all([
     supabase.from("agent_messages").select("id, role, content, status, error_code, created_at, human_author_id, metadata")
       .eq("organization_id", organization.id).eq("work_id", project.id)
@@ -42,6 +47,7 @@ export async function StandaloneWork({locale, project}: {
     contextPanel={<WorkContextPanel locale={locale} workId={project.id} />}
     accessBasis={project.access_basis} artifacts={[]} copy={copy} documents={[]}
     locale={language}
+    activity={summarizeWorkActivity(activity)}
     messages={(messages ?? []).map(message => ({id: message.id, role: message.role,
       humanAuthorId: message.human_author_id, content: message.content, status: message.status, errorCode: message.error_code, createdAt: message.created_at,
       continuation: continuationNote(message.metadata)}))}
