@@ -2179,6 +2179,138 @@
         "roleExists": "Esta entidade já tem esse papel nesta análise, com outro perímetro contábil. O papel registrado foi mantido."
       }
     },
+    "workUpdates": {
+      "title": "Atualizações",
+      "heading": "Atualizações do trabalho",
+      "intro": "Quando um insumo de uma execução muda, só o que depende dele é refeito. Os resultados e as decisões anteriores continuam registrados, e nada é adotado sem a sua decisão.",
+      "empty": "Nenhuma mudança de insumo afetou este trabalho até agora.",
+      "unavailable": "Não foi possível ler as atualizações deste trabalho agora.",
+      "awaiting": "{count, plural, one {# aguarda decisão} other {# aguardam decisão}}",
+      "openHeading": "Em andamento",
+      "closedHeading": "Anteriores",
+      "updatedAt": "Atualizada em {date}",
+      "status": {
+        "open": "Em análise",
+        "awaiting_authorization": "Aguardando autorização",
+        "scheduled": "Em recálculo",
+        "ready": "Pronta para adoção",
+        "adopted": "Adotada",
+        "declined": "Recusada",
+        "superseded": "Incorporada a outra atualização"
+      },
+      "sections": {
+        "changed": "O que mudou",
+        "recomputed": "O que foi refeito",
+        "stayedValid": "O que continua válido",
+        "waiting": "O que espera decisão"
+      },
+      "change": {
+        "source_version": "Fonte {name}: a versão {from} foi substituída pela versão {to}",
+        "assumption_slot": "Premissa {name}: a revisão {from} da base de trabalho foi substituída pela revisão {to}",
+        "assumption_slot_unnamed": "Uma premissa da base de trabalho: a revisão {from} foi substituída pela revisão {to}",
+        "method_release": "{name}: uma versão mais nova do método foi publicada",
+        "graph_incomplete": "As dependências registradas estão incompletas; a execução será refeita por inteiro depois da reconstrução",
+        "unnamed": "sem nome visível",
+        "unknownVersion": "não identificada",
+        "affects": "Afeta: {executions}"
+      },
+      "recomputation": {
+        "scheduled": "{label}: na fila para ser refeita",
+        "produced": "{label}: sendo refeita com os insumos atuais",
+        "settled": "{label}: refeita a partir da execução original, com os insumos atuais",
+        "declined": "{label}: recálculo recusado",
+        "failed": "{label}: o recálculo não foi concluído",
+        "unnamed": "Execução sem nome",
+        "reasons": {
+          "person": "Recusado por uma pessoa.",
+          "requester": "Quem pediu a execução original não tem mais acesso a este trabalho.",
+          "failed": "O recálculo não pôde ser produzido."
+        }
+      },
+      "stayedValidNone": "Nenhuma outra execução deste trabalho.",
+      "waitingNone": "Nada espera decisão nesta atualização.",
+      "hold": {
+        "derived_source_not_rederived": "{execution}: aguardando uma versão nova da fonte derivada",
+        "basis_behind_source": "{execution}: aguardando uma revisão da base de trabalho que use a versão nova",
+        "source_not_bindable": "{execution}: aguardando a verificação ou o direito de uso da versão nova",
+        "method_not_executable": "{execution}: aguardando um método executável",
+        "graph_incomplete": "{execution}: aguardando a reconstrução das dependências"
+      },
+      "authorization": {
+        "item": "{label}: recálculo com teto de {cost} e até {calls, plural, one {# chamada de modelo} other {# chamadas de modelo}}",
+        "authorize": "Autorizar este recálculo",
+        "confirm": "Confirmar autorização",
+        "explanation": "O recálculo roda uma vez, dentro do teto mostrado. Os resultados anteriores continuam registrados.",
+        "declineOne": "Recusar este recálculo"
+      },
+      "adopt": {
+        "action": "Adotar atualização",
+        "confirm": "Confirmar adoção",
+        "explanation": "Os resultados refeitos passam a ser a base aprovada deste trabalho. Os resultados e as decisões anteriores continuam registrados e referenciados."
+      },
+      "decline": {
+        "action": "Recusar atualização",
+        "confirm": "Confirmar recusa",
+        "explanation": "A atualização termina recusada, com o motivo escolhido. Os resultados já refeitos continuam registrados, sem serem adotados.",
+        "reasonLabel": "Motivo",
+        "reasons": {
+          "not_needed": "Não é mais necessária",
+          "cost_not_justified": "O custo não se justifica",
+          "inputs_disputed": "Os dados novos não estão corretos",
+          "other": "Outro motivo"
+        }
+      },
+      "cancel": "Cancelar",
+      "decided": {
+        "adopted": "Adotada em {date}.",
+        "declined": "Recusada em {date}. Motivo: {reason}.",
+        "closed": "Encerrada sem resultado a adotar.",
+        "superseded": "As mudanças de insumo desta atualização estão cobertas por outra atualização deste trabalho."
+      },
+      "done": {
+        "adopted": "Atualização adotada.",
+        "authorized": "Recálculo autorizado.",
+        "declined": "Recusa registrada."
+      },
+      "errors": {
+        "invalid": "O pedido não pôde ser validado.",
+        "denied": "Você não tem autorização para decidir sobre este trabalho.",
+        "role": "Você não tem autorização para decidir sobre este trabalho.",
+        "duplicate": "Esta decisão já foi registrada.",
+        "not_found": "A atualização não foi encontrada. A tela foi recarregada.",
+        "stale": "A atualização mudou desde que foi exibida. A tela foi recarregada; confira e decida de novo.",
+        "processing": "A atualização não está mais nesse estado. A tela foi recarregada.",
+        "save": "Não foi possível registrar a decisão. Tente novamente."
+      },
+      "labels": {
+        "dependency_update": "Atualização por mudança de insumo",
+        "dependency_update_adopted": "Atualização adotada",
+        "dependency_update_declined": "Atualização recusada",
+        "dependency_recompute_authorization": "Autorização de recálculo",
+        "dependency_recompute_declined": "Recálculo recusado",
+        "user_followup": "Continuação pedida na conversa",
+        "execution_brief": "Plano de execução",
+        "institutional_model_configuration": "Configuração do modelo institucional",
+        "capital_project_artifact": "Resultado do trabalho",
+        "company_debt_diagnostic": "Diagnóstico da dívida da companhia",
+        "alternative_map": "Mapa de alternativas de dívida",
+        "meeting_brief": "Brief de reunião"
+      }
+    },
+    "workUpdateNames": {
+      "unnamedMethod": "A análise desta base",
+      "repeated": "{name} ({count} execuções)",
+      "metrics": {
+        "netDebt": "Dívida líquida",
+        "ebitda": "EBITDA",
+        "availableCash": "Caixa disponível",
+        "restrictedCash": "Caixa restrito"
+      },
+      "methods": {
+        "prepare-capital-structure-decision": "Preparar alternativas de estrutura de capital para uma decisão",
+        "underwrite-receivables-pool": "Conciliar e testar a capacidade de uma carteira de recebíveis"
+      }
+    },
     "workExecutions": {
       "title": "Execuções da análise de capital",
       "back": "Voltar à base da análise",
@@ -2508,6 +2640,22 @@
       "continueLabel": "Continuar"
     },
     "advisorProject": {
+      "continuation": {
+        "recorded": "Continuação registrada a partir de {label} (revisão {revision}).",
+        "note": "Continuação a partir de {label}, revisão {revision}",
+        "question": {
+          "title": "A partir de qual decisão aprovada?",
+          "ambiguous_base": "Mais de uma decisão aprovada corresponde ao pedido. Escolha a base da continuação.",
+          "no_approved_base": "Nenhuma decisão aprovada corresponde ao pedido. Escolha a base da continuação ou envie o texto como mensagem comum.",
+          "none": "Este trabalho ainda não tem decisão aprovada para servir de base. Envie o texto como mensagem comum ou aprove um resultado antes de continuar.",
+          "request": "Pedido",
+          "legend": "Bases aprovadas deste trabalho",
+          "option": "{label} (revisão {revision})",
+          "choose": "Continuar a partir desta base",
+          "sendAsMessage": "Enviar como mensagem comum",
+          "dismiss": "Voltar ao texto"
+        }
+      },
       "recovery": {
         "uncertain": "Não foi possível confirmar o recebimento. Seu texto foi preservado. Tente enviar novamente para confirmar o mesmo pedido."
       },
