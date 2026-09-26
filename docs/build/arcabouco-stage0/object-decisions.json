@@ -3735,6 +3735,60 @@
       ]
     },
     {
+      "id": "function:private.backfill_execution_result_artifacts_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.backfill_execution_result_artifacts_v1()",
+          "kind": "function",
+          "name": "backfill_execution_result_artifacts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.backfill_execution_result_artifacts_v1()",
+          "kind": "function",
+          "name": "backfill_execution_result_artifacts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 4",
+      "reason": "Produtores no comando comum da etapa 19: os blocos do resultado de execução espelhando o contrato, o produtor que registra a revisão do resultado no commit sem nunca falhar o commit, e o backfill idempotente dos resultados já comprometidos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926203623_artifact_producers.sql",
+          "line": 206,
+          "anchor": "create function private.backfill_execution_result_artifacts_v1() returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.backfill_institutional_result_dependencies_v1()",
       "kind": "function",
       "catalogues": {
@@ -14108,6 +14162,60 @@
           "path": "supabase/migrations/20260923233409_execution_producer_commands.sql",
           "line": 10,
           "anchor": "create function private.execution_released_profile_v1(p_method_id text) returns private.execution_method_profiles",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.execution_result_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_result_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.execution_result_blocks_v1(p_packet jsonb)",
+          "kind": "function",
+          "name": "execution_result_blocks_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_packet jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 4",
+      "reason": "Produtores no comando comum da etapa 19: os blocos do resultado de execução espelhando o contrato, o produtor que registra a revisão do resultado no commit sem nunca falhar o commit, e o backfill idempotente dos resultados já comprometidos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926203623_artifact_producers.sql",
+          "line": 40,
+          "anchor": "create function private.execution_result_blocks_v1(p_packet jsonb) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -30432,6 +30540,60 @@
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.record_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid)",
+          "kind": "function",
+          "name": "record_execution_result_artifact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_job uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid)",
+          "kind": "function",
+          "name": "record_execution_result_artifact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_job uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 4",
+      "reason": "Produtores no comando comum da etapa 19: os blocos do resultado de execução espelhando o contrato, o produtor que registra a revisão do resultado no commit sem nunca falhar o commit, e o backfill idempotente dos resultados já comprometidos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926203623_artifact_producers.sql",
+          "line": 99,
+          "anchor": "create function private.record_execution_result_artifact_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.record_execution_result_milestone_v1(p_org uuid, p_execution uuid)",
@@ -185754,6 +185916,13 @@
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Etapa 19, incremento 5: templates de apresentação com estrutura semântica versionada, versões imutáveis, retirada em vez de exclusão, cofre e robô fixados na versão exata."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260926203623_artifact_producers.sql",
+      "decision": "preservar",
+      "stage": "19 / 4",
+      "reason": "Migração B do incremento 4 da etapa 19: o commit da execução registra a revisão do resultado com blocos, afirmações, fontes fixadas, retrato dos insumos e recibo de gates; o comando comum só aceita bytes guardados que a concessão de upload gravou para o trabalho; backfill sem linhas nos dois ambientes"
     }
   ],
   "staging_archive": [

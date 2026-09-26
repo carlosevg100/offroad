@@ -7,6 +7,7 @@ import {z} from "zod";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import type {DcmAgentAssessment} from "@offroad/agent-contracts";
 import {jobFailureRecordSchema} from "./job-failure";
+import {ARTIFACT_REVISION_CAPABILITY} from "./runtime-schema";
 
 /**
  * The worker's database vocabulary, extended through versioned contracts since
@@ -213,6 +214,10 @@ export type QueueClient = {
     format: "xlsx" | "pptx" | "docx";
     mimeType: string;
   }): Promise<{objectPath: string; storageEtag: string; replayed: boolean}>;
+  /** Writes one revision through the common artifact command under the artifact-revision.v1
+   * capability. The database fills the job and capability of the provenance, derives the links from
+   * the manifest and accepts stored bytes only for an object the governed upload stored for the work. */
+  createArtifactRevision?(job: ClaimedJob, input: ArtifactRevisionWrite): Promise<ArtifactRevisionWritten>;
   finishCapitalTask(job: ClaimedJob, input: {
     taskRunId: string;
     status: CapitalTaskFinishStatus;
@@ -449,6 +454,19 @@ export type QueueClient = {
   fail(job: ClaimedJob, error: unknown, options?: {retryable?: boolean; retryInSeconds?: number}): Promise<void>;
 };
 
+export type ArtifactRevisionWrite = {
+  workId: string;
+  kind: string;
+  subject: string;
+  audience: "internal" | "advisor" | "external";
+  manifest: unknown;
+  blocks: unknown;
+  links?: unknown;
+  contentSha256: string | null;
+  byteLength: number | null;
+};
+export type ArtifactRevisionWritten = {artifactId: string; revisionId: string; revisionNo: number; manifestFingerprint: string; replayed: boolean};
+
 export function createQueueClient(
   supabase: SupabaseClient,
   options: {workerToken: string; leaseSeconds: number},
@@ -611,6 +629,32 @@ export function createQueueClient(
         p_storage_etag: storageEtag,
       }));
       return {objectPath: completed.object_path, storageEtag: completed.storage_etag, replayed: completed.replayed};
+    },
+
+    async createArtifactRevision(job, input) {
+      const data = await call("worker_create_artifact_revision_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+        p_capability: ARTIFACT_REVISION_CAPABILITY,
+        p_work: input.workId,
+        p_kind: input.kind,
+        p_subject: input.subject,
+        p_audience: input.audience,
+        p_manifest: input.manifest,
+        p_blocks: input.blocks,
+        p_links: input.links ?? [],
+        p_content_sha256: input.contentSha256,
+        p_byte_length: input.byteLength,
+      });
+      const parsed = z.object({
+        artifact_id: z.uuid(),
+        revision_id: z.uuid(),
+        revision_no: z.number().int().positive(),
+        manifest_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+        replayed: z.boolean(),
+      }).strict().parse(data);
+      return {artifactId: parsed.artifact_id, revisionId: parsed.revision_id, revisionNo: parsed.revision_no,
+        manifestFingerprint: parsed.manifest_fingerprint, replayed: parsed.replayed};
     },
 
     async finishCapitalTask(job, input) {

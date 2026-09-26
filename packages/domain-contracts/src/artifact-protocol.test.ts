@@ -2,7 +2,13 @@ import {describe, expect, it} from "vitest";
 import type {z} from "zod";
 
 import {
+  artifactBlockDraftSchema,
   artifactBlockSchema,
+  blockDraftsClaimsSummary,
+  capitalProcedurePacketBlocks,
+  compareDecimalText,
+  renderedMaterialBlocks,
+  type CapitalProcedurePacketLike,
   artifactClaimSchema,
   artifactManifestSchema,
   artifactManifestSchemaVersion,
@@ -35,6 +41,8 @@ import {
   type LineageHeads,
 } from "./artifact-protocol";
 import {documentWorkProductSchema} from "./document-work-product";
+import executionResultBlocksFixture from "./fixtures/execution-result-blocks.json";
+import executionResultPacketFixture from "./fixtures/execution-result-packet.json";
 
 const hex = (seed: string) => seed.repeat(64).slice(0, 64);
 const id = (n: number) => `a1b2c3d4-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -419,7 +427,38 @@ describe("adapters", () => {
       template: {templateVersionId: "offroad-house-credit@1.0.0", fingerprint: hex("1a")},
     });
     expect(manifestFromRenderedMaterialManifest({...receipt, surface: "supporting_document", format: "docx"}, context).kind).toBe("document");
+    // A client template renders from a stored version: the manifest pins that version, not the mutable template row.
+    const clientTemplate = {id: "client-deck", version: "3", fingerprint: hex("1b"), origin: "client_supplied", versionId: id(77)} as const;
+    expect(manifestFromRenderedMaterialManifest({...receipt, template: clientTemplate}, context).template).toEqual({templateVersionId: id(77), fingerprint: hex("1b")});
+    expect(manifestFromRenderedMaterialManifest({...receipt, template: {...receipt.template, versionId: null}}, context).template?.templateVersionId).toBe("offroad-house-credit@1.0.0");
     expect(() => manifestFromRenderedMaterialManifest({...receipt, storage: {...receipt.storage, state: "pending_upload", etag: null}}, context)).toThrow("artifact_adapter_material_not_stored");
+  });
+
+  it("gives a stored file one block whose claims are the receipt's, in its order, and matches the manifest summary", () => {
+    const receipt = {
+      schemaVersion: "2026.09.07-v1", id: "gc02-deck-v1", decisionContractFingerprint: hex("d"), surface: "presentation", format: "pptx",
+      byteLength: 41, contentSha256: hex("f"), renderer: {id: "offroad-institutional-presentation", version: "2026.09.10-v3"},
+      template: {id: "offroad-house", version: "1", fingerprint: hex("1a"), origin: "offroad_house"},
+      storage: {bucket: "case-artifacts", objectPath: `${id(4)}/${id(5)}/materials/${hex("f")}.pptx`, state: "stored", etag: "etag-v1"},
+      claimIds: ["claim-rate", "claim-debt", "claim-premise"], manifestFingerprint: hex("2b"),
+    } as const;
+    const claims = [
+      {id: "claim-debt", value: 4200.5, unit: "BRL mn", evidenceState: "observed_private", sourceIds: ["src-dfp"], assumptionIds: [], gapIds: []},
+      {id: "claim-rate", value: "CDI + 1,85%", unit: null, evidenceState: "mixed", sourceIds: ["src-anbima"], assumptionIds: ["as-spread"], gapIds: ["src-anbima"]},
+      {id: "claim-premise", value: null, unit: null, evidenceState: "assumption", sourceIds: [], assumptionIds: ["as-growth"], gapIds: ["gap-budget"]},
+      {id: "claim-unused", value: true, unit: null, evidenceState: "calculated", sourceIds: [], assumptionIds: [], gapIds: []},
+    ] as const;
+    const blocks = renderedMaterialBlocks(receipt, claims);
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]).toMatchObject({blockKey: "presentation", kind: "section", content: {surface: "presentation", format: "pptx", renderer: "offroad-institutional-presentation@2026.09.10-v3"}});
+    expect(blocks[0]!.claims).toEqual([
+      {claimId: "claim-rate", kind: "calculation", value: "CDI + 1,85%", unit: null, period: null, supportIds: ["src-anbima", "as-spread"]},
+      {claimId: "claim-debt", kind: "fact", value: 4200.5, unit: "BRL mn", period: null, supportIds: ["src-dfp"]},
+      {claimId: "claim-premise", kind: "judgment", value: null, unit: null, period: null, supportIds: ["as-growth", "gap-budget"]},
+    ]);
+    expect(blockDraftsClaimsSummary(blocks)).toEqual(manifestFromRenderedMaterialManifest(receipt, context).claims);
+    expect(() => renderedMaterialBlocks({...receipt, claimIds: ["claim-absent"]}, claims)).toThrow("artifact_adapter_claim_missing");
+    expect(() => renderedMaterialBlocks(receipt, [...claims.slice(0, 2), {...claims[2], value: "x".repeat(2001)}])).toThrow();
   });
 
   it("maps an institutional workbook artifact for one locale", () => {
@@ -459,26 +498,92 @@ describe("adapters", () => {
   });
 
   it("maps a capital procedure packet to an execution result", () => {
-    const packet = {
-      schemaVersion: "capital-procedure-packet.v2", status: "prepared_for_human_review",
-      decision: {procedureId: "prepare-capital-structure-decision", workId: id(5), fingerprint: hex("7"),
-        alternatives: [{id: "alt-maintain"}, {id: "alt-extend"}], ratios: [{id: "ratio-leverage", fingerprint: hex("8")}],
-        recommendation: {alternativeId: "alt-extend"}, provenance: {financialCoreVersion: "financial-core.2026.09.18"}},
-      contractSourceVersionIds: [id(31), id(32)], inputFingerprint: hex("9"), fingerprint: hex("a"),
-    } as const;
-    const mapped = manifestFromCapitalProcedurePacket(packet, {...context, execution: executionRef, inputSnapshot: {fingerprint: hex("6")}, sources: [sourceA]});
+    const packet = {...executionResultPacket(), contractSourceVersionIds: [id(31), id(32)]};
+    const mapped = manifestFromCapitalProcedurePacket(packet, {...context, execution: executionRef, inputSnapshot: {fingerprint: hex("6")}, sources: [sourceA], gatesFingerprint: hex("5")});
     expect(mapped).toMatchObject({kind: "execution_result", format: "json", execution: executionRef, inputSnapshot: {fingerprint: hex("6")}, method: null});
     // The producer's resolved rights version refines the packet's unpinned reference to the same source version.
     expect(mapped.sources).toEqual([sourceA, {sourceVersionId: id(32), rightsVersionId: null}]);
-    expect(mapped.claims).toEqual([
-      {blockKey: "alternatives", claimIds: ["alt-maintain", "alt-extend"]},
-      {blockKey: "ratios", claimIds: ["ratio-leverage"]},
-      {blockKey: "recommendation", claimIds: ["alt-extend"]},
+    // The summary is the one of the blocks: the recommendation is its own claim, never a second copy of an alternative's.
+    expect(mapped.claims).toEqual(blockDraftsClaimsSummary(capitalProcedurePacketBlocks(packet)));
+    expect(mapped.claims.slice(0, 3)).toEqual([
+      {blockKey: "alternatives", claimIds: ["alt-maintain", "alt-extend", "alt-defer"]},
+      {blockKey: "ratios", claimIds: ["ratio-leverage", "ratio-coverage"]},
+      {blockKey: "recommendation", claimIds: ["recommendation"]},
     ]);
-    expect(mapped.traces).toContain(`ratio:ratio-leverage:${hex("8")}`);
+    expect(mapped.traces).toEqual([
+      `capital-procedure-packet:${hex("a")}`, `capital-decision-delivery:${hex("7")}`, "financial-core:financial-core.2026.09.18",
+      `ratio:ratio-leverage:${hex("8")}`, `ratio:ratio-coverage:${hex("9")}`, `execution-gates:${hex("5")}`,
+    ]);
     const withMethod = manifestFromCapitalProcedurePacket({...packet, decision: {...packet.decision, recommendation: null}}, {...context, execution: executionRef, method: {platformReleaseId: "rel-1", houseReleaseId: null, version: "1"}});
     expect(withMethod.method).toEqual({procedureId: "prepare-capital-structure-decision", platformReleaseId: "rel-1", houseReleaseId: null, version: "1"});
-    expect(withMethod.claims.map((entry) => entry.blockKey)).toEqual(["alternatives", "ratios"]);
+    expect(withMethod.claims.map((entry) => entry.blockKey).slice(0, 3)).toEqual(["alternatives", "ratios", "decisive:lowest_available_cash_by_period:0"]);
+    expect(withMethod.traces.some((trace) => trace.startsWith("execution-gates:"))).toBe(false);
+    expect(manifestFromCapitalProcedurePacket(packet, {...context, execution: executionRef, method: {procedureId: "pinned-procedure", platformReleaseId: "rel-1", houseReleaseId: null, version: "1"}}).method?.procedureId).toBe("pinned-procedure");
     expect(revisionSubstance({manifest: withMethod}, [])).toBe("material");
+  });
+});
+
+// The fixture the SQL producer is proved against (supabase/tests/artifact_producers.sql reads the same two files).
+function executionResultPacket(): CapitalProcedurePacketLike {
+  return structuredClone(executionResultPacketFixture) as unknown as CapitalProcedurePacketLike;
+}
+
+describe("execution result blocks", () => {
+  it("map the fixture packet exactly as the SQL producer does", () => {
+    const expected: unknown[] = executionResultBlocksFixture;
+    const blocks = capitalProcedurePacketBlocks(executionResultPacket());
+    expect(blocks).toEqual(expected);
+    expect(expected.every((block) => artifactBlockDraftSchema.safeParse(block).success)).toBe(true);
+    expect(Object.isFrozen(blocks)).toBe(true);
+  });
+
+  it("carry a claim with its supportIds on every number block and form a consistent revision", () => {
+    const blocks = capitalProcedurePacketBlocks(executionResultPacket());
+    const numbers = blocks.filter((block) => block.kind === "number");
+    expect(numbers.map((block) => block.blockKey)).toEqual([
+      "decisive:lowest_available_cash_by_period:0", "decisive:largest_net_financing_outflow_by_period:0",
+      "decisive:lowest_available_cash_by_period:1", "decisive:largest_net_financing_outflow_by_period:1",
+    ]);
+    for (const block of numbers) {
+      expect(block.claims).toHaveLength(1);
+      expect(block.claims[0]).toMatchObject({kind: "calculation", value: block.content.value, unit: block.content.unit, period: block.content.periodLabel});
+      expect(block.claims[0]!.supportIds.length).toBeGreaterThan(0);
+    }
+    const revisionId = id(10);
+    const persisted = blocks.map((block, index) => artifactBlockSchema.parse({...block, id: id(100 + index), revisionId, blockNo: index + 1, contentFingerprint: hex(String(index % 10))}));
+    const summary = blockDraftsClaimsSummary(blocks);
+    expect(revisionSnapshotIssues({revision: revision({manifest: manifest({kind: "execution_result", execution: executionRef, claims: summary.map((entry) => ({blockKey: entry.blockKey, claimIds: [...entry.claimIds]}))})}), blocks: persisted})).toEqual([]);
+  });
+
+  it("select the decisive number with the chart series rule: the lowest value, a tie to the earliest period, calculated rows only", () => {
+    const packet = executionResultPacket();
+    const maintain = capitalProcedurePacketBlocks(packet).find((block) => block.blockKey === "decisive:lowest_available_cash_by_period:0");
+    // -35.25 in the second period and -35.250 in the third are equal: the earlier period decides.
+    expect(maintain?.content).toMatchObject({value: "-35.25", periodLabel: "2026-Q2", path: "decision.alternatives[0].projection.rows[1].closingAvailable"});
+    // An alternative without rows yields no number, as the chart series omits it.
+    expect(capitalProcedurePacketBlocks(packet).some((block) => block.blockKey.endsWith(":2"))).toBe(false);
+    const emptyRows = {...packet, decision: {...packet.decision, alternatives: packet.decision.alternatives.map((alternative) => ({...alternative, projection: {...alternative.projection, rows: []}}))}};
+    expect(capitalProcedurePacketBlocks(emptyRows).filter((block) => block.kind === "number")).toEqual([]);
+    const broken = {...packet, decision: {...packet.decision, alternatives: [{...packet.decision.alternatives[0]!, projection: {...packet.decision.alternatives[0]!.projection, rows: [{periodId: "2026-Q1", closingAvailable: "1e3", netFinancingAvailable: "0"}]}}]}};
+    expect(() => capitalProcedurePacketBlocks(broken)).toThrow("artifact_adapter_decimal_invalid");
+  });
+
+  it("refuse a packet whose identities collide or exceed the claim bounds", () => {
+    const packet = executionResultPacket();
+    const collide = {...packet, decision: {...packet.decision, ratios: [{...packet.decision.ratios[0]!, id: "alt-maintain"}]}};
+    expect(() => capitalProcedurePacketBlocks(collide)).toThrow("duplicate_claim_id");
+    const long = {...packet, decision: {...packet.decision, alternatives: [{...packet.decision.alternatives[2]!, id: "a".repeat(161)}]}};
+    expect(() => capitalProcedurePacketBlocks(long)).toThrow();
+  });
+
+  it("compare decimal texts exactly", () => {
+    expect(compareDecimalText("9.9", "10")).toBe(-1);
+    expect(compareDecimalText("-35.25", "-35.250")).toBe(0);
+    expect(compareDecimalText("-0", "0.000")).toBe(0);
+    expect(compareDecimalText("-2.75", "-10")).toBe(1);
+    expect(compareDecimalText("0.1", "-0.1")).toBe(1);
+    expect(compareDecimalText("007.50", "7.5")).toBe(0);
+    expect(compareDecimalText("123456789012345678901234567890.1", "123456789012345678901234567890.09")).toBe(1);
+    expect(() => compareDecimalText("1,5", "1")).toThrow("artifact_adapter_decimal_invalid");
   });
 });

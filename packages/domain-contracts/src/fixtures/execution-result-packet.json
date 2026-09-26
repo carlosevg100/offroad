@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "capital-procedure-packet.v2",
+  "status": "partial",
+  "decision": {
+    "schemaVersion": "capital-decision-delivery.v1",
+    "procedureId": "prepare-capital-structure-decision",
+    "workId": "a11b0000-0000-4000-9000-000000000002",
+    "purpose": "Synthetic execution result fixture",
+    "question": "Pergunta sintética: a estrutura atual comporta o vencimento do ano seguinte?",
+    "objectives": ["Medir a liquidez sob a estrutura atual e sob o alongamento"],
+    "asOf": "2026-12-31",
+    "status": "partial",
+    "fingerprint": "7777777777777777777777777777777777777777777777777777777777777777",
+    "alternatives": [
+      {
+        "id": "alt-maintain",
+        "label": "Manter a estrutura atual",
+        "kind": "maintain",
+        "rationale": "Base de comparação",
+        "conditions": [],
+        "disconfirmers": ["Caixa negativo em algum trimestre"],
+        "projection": {
+          "currency": "BRL",
+          "basisFingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+          "calculationFingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+          "rows": [
+            {"periodId": "2026-Q1", "closingAvailable": "120.50", "netFinancingAvailable": "-10"},
+            {"periodId": "2026-Q2", "closingAvailable": "-35.25", "netFinancingAvailable": "-40.5"},
+            {"periodId": "2026-Q3", "closingAvailable": "-35.250", "netFinancingAvailable": "-40.50"},
+            {"periodId": "2026-Q4", "closingAvailable": "0", "netFinancingAvailable": "12"}
+          ],
+          "summary": {"periods": 4}
+        }
+      },
+      {
+        "id": "alt-extend",
+        "label": "Alongar a dívida bancária",
+        "kind": "change",
+        "rationale": "Alivia o vencimento",
+        "conditions": [],
+        "disconfirmers": ["Custo acima do limite"],
+        "projection": {
+          "currency": "BRL",
+          "basisFingerprint": "3333333333333333333333333333333333333333333333333333333333333333",
+          "calculationFingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+          "rows": [
+            {"periodId": "2026-Q1", "closingAvailable": "80", "netFinancingAvailable": "5"},
+            {"periodId": "2026-Q2", "closingAvailable": "9.9", "netFinancingAvailable": "-2.75"},
+            {"periodId": "2026-Q3", "closingAvailable": "10", "netFinancingAvailable": "-0.5"}
+          ],
+          "summary": {"periods": 3}
+        }
+      },
+      {
+        "id": "alt-defer",
+        "label": "Adiar a decisão",
+        "kind": "defer",
+        "rationale": "Aguardar o balanço",
+        "conditions": [],
+        "disconfirmers": [],
+        "projection": {
+          "currency": "BRL",
+          "basisFingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+          "calculationFingerprint": "6666666666666666666666666666666666666666666666666666666666666666",
+          "rows": null,
+          "summary": null
+        }
+      }
+    ],
+    "ratios": [
+      {
+        "id": "ratio-leverage",
+        "alternativeId": "alt-extend",
+        "ratioId": "net_debt_to_ebitda",
+        "definitionKind": "managerial",
+        "measurementDate": "2026-12-31",
+        "fingerprint": "8888888888888888888888888888888888888888888888888888888888888888",
+        "displayedRatio": "2.1"
+      },
+      {
+        "id": "ratio-coverage",
+        "alternativeId": "alt-maintain",
+        "ratioId": "interest_coverage",
+        "definitionKind": "contractual",
+        "measurementDate": "2026-12-31",
+        "fingerprint": "9999999999999999999999999999999999999999999999999999999999999999",
+        "displayedRatio": null
+      }
+    ],
+    "recommendation": {
+      "alternativeId": "alt-extend",
+      "rationale": "Preserva caixa positivo",
+      "basisDecisionIds": ["a11b0000-0000-4000-9000-0000000000d1"],
+      "conditions": [],
+      "wouldChangeIf": ["Custo acima do limite"],
+      "status": "proposed_judgment"
+    },
+    "informationGaps": [
+      {"subjectId": null, "code": "projection_input_missing", "reason": "capex: sem orçamento aprovado"},
+      {"subjectId": "alt-extend", "code": "market_reference_missing", "reason": "Sem cotação indicativa"}
+    ],
+    "unresolved": [],
+    "pendingReviewDomains": [],
+    "nextRequirements": ["source", "market"],
+    "provenance": {
+      "inputFingerprint": "abababababababababababababababababababababababababababababababab",
+      "reviewFingerprint": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+      "financialCoreVersion": "financial-core.2026.09.18",
+      "contributionIds": ["a11b0000-0000-4000-9000-0000000000c1"],
+      "observationIds": [],
+      "definitionVersionIds": [],
+      "requiresPinnedInputAndManifest": true
+    }
+  },
+  "contracts": [],
+  "adoptionLinks": [],
+  "contractualGaps": [
+    {"subjectId": "ratio-coverage", "code": "contract_preparation_and_adoption_link_required"}
+  ],
+  "contractSourceVersionIds": [],
+  "observationIds": [],
+  "inputFingerprint": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+  "requiresPinnedInputAndManifest": true,
+  "requiresLiveRightsCheck": true,
+  "mutatesWorkingBasis": false,
+  "grantsExecution": false,
+  "grantsPublication": false,
+  "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
