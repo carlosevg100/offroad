@@ -50,6 +50,21 @@ export function dealStateAnalysisGap(facts: GapFacts): DealStateGap | null {
   return null;
 }
 
+/**
+ * A gap whose analysis is held until a person approves its execution brief. Its next step is that
+ * approval, never a resume: resuming would only replay the held job. `href` is where the approval
+ * control is, or null while the page has none to show (the brief is still being prepared).
+ */
+export type DealStateGapApproval = {href: string | null};
+
+/** The approval a gap waits for, or null when its next step is to resume the analysis. */
+export function dealStateGapApproval(
+  workbench: Pick<DealStateWorkbench, "awaitingApproval">,
+  href: string | null,
+): DealStateGapApproval | null {
+  return workbench.awaitingApproval ? {href} : null;
+}
+
 /** The gap a page shows: none while the case analysis runs. */
 export function workbenchAnalysisGap(workbench: DealStateWorkbench, materialsPresent: boolean): DealStateGap | null {
   if (workbench.isProcessing) return null;

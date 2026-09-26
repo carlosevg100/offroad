@@ -14,7 +14,7 @@ import {
   type PrivateGovernedDecisionState,
   type PrivateMatchDecisionState,
 } from "@/app/[locale]/app/projects/[projectId]/actions";
-import type {DealStateGap} from "@/lib/deal-state/analysis-gap";
+import type {DealStateGap, DealStateGapApproval} from "@/lib/deal-state/analysis-gap";
 import type {DealStateWorkbench} from "@/lib/deal-state/workbench";
 import type {Database} from "@/types/database";
 
@@ -29,6 +29,8 @@ type FeedbackEvent = Database["public"]["Tables"]["qualified_introduction_feedba
 type Props = {
   /** The case result missing while no analysis runs, if any; here only the financier screening. */
   gap: DealStateGap | null;
+  /** The analysis of the gap is held until a person approves its execution brief. */
+  gapApproval?: DealStateGapApproval | null;
   introductionPlan: IntroductionPlan | null;
   introductionRecipients: IntroductionRecipient[];
   introductionTargets: IntroductionTarget[];
@@ -54,7 +56,7 @@ export function PrivateMarketWork(props: Props) {
     // An approved package without its financier screening, with no analysis running, is a gap
     // with its next step, not a list still to come.
     return props.gap === "match_screen"
-      ? <PrivateAnalysisGap gap={props.gap} locale={props.locale} projectId={props.projectId} sessionId={props.sessionId} />
+      ? <PrivateAnalysisGap approval={props.gapApproval} gap={props.gap} locale={props.locale} projectId={props.projectId} sessionId={props.sessionId} />
       : null;
   }
   return <MatchScreen {...props} matchScreen={props.matchScreen} />;

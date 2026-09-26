@@ -27,6 +27,7 @@ import {
 import {canStartPreliminaryUnderstanding, dealBriefFormSchema, saveDealBrief, toDealBrief} from "@/lib/intake/deal-brief";
 import {normalizeCompanyWebsite} from "@/lib/intake/company-profile";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
+import {dealStateQueueOutcome} from "@/lib/deal-state/resume-analysis";
 import type {IntakeErrorCode} from "@/lib/intake/types";
 import type {Json} from "@/types/database";
 import {compiledCapitalProjectPlan} from "@/lib/capital-project/plan";
@@ -345,12 +346,16 @@ export async function confirmWorkspaceDocumentIntake(formData: FormData) {
 
   // `confirm_document_intake` atomically countersigns the exact worker snapshot and creates the
   // opportunity. Only after that transaction commits may the structuring DAG be enqueued.
-  const {error: queueError} = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
+  const queue = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
     p_organization_id: runtime.organizationId,
     p_session_id: sessionId,
     p_trigger_source: "understanding_confirmed",
   });
-  redirect(`/${locale}/app/opportunities/${outcome.value.opportunityId}?notice=${queueError ? "queue_failed" : "structure_started"}`);
+  // Every case analysis of a project is held first for the approval of its execution brief.
+  const queued = dealStateQueueOutcome(queue.data, queue.error);
+  const notice = queued === "held" || queued === "held_by_other" ? "analysis_awaiting_approval"
+    : queued === "failed" || queued === "running" ? "queue_failed" : "structure_started";
+  redirect(`/${locale}/app/opportunities/${outcome.value.opportunityId}?notice=${notice}`);
 }
 
 /**
