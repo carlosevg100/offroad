@@ -48,7 +48,7 @@ create function pg_temp.remember(p_name text,p_value jsonb) returns void languag
 -- One immutable version of a logical source with verified bytes (a null logical id starts a source);
 -- the stage 7 factory of contextual_adoption_setup declares full rights on every version.
 create function pg_temp.source_version(p_name text,p_logical uuid) returns uuid language plpgsql as $$
-declare v uuid:=md5('artifact-source:'||p_name)::uuid;hash text:=encode(extensions.digest(p_name,'sha256'),'hex');
+declare v uuid:=extensions.uuid_generate_v5(extensions.uuid_ns_url(),'offroad:test:artifact-source:'||p_name);hash text:=encode(extensions.digest(p_name,'sha256'),'hex');
 begin
  insert into public.source_documents(id,organization_id,intake_session_id,logical_source_id,object_path,original_name,mime_type,byte_size,sha256,created_by,processing_status)
  values(v,'a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000003',p_logical,
@@ -188,6 +188,13 @@ begin
  perform pg_temp.refused(format('select pg_temp.person_write(%L,%L,%L,%L,%L)','answer','v1','internal',pg_temp.manifest('answer','internal','[]',pg_temp.summary(b),null,'json',jsonb_build_object('legacy',jsonb_build_object('table','deal_state_objects','id','a11b0000-0000-4000-9000-000000000003','fingerprint',repeat('b',64),'evidence','[]'::jsonb))),b),'artifact_manifest_legacy_reserved','a person writing a legacy label');
  perform pg_temp.refused(format('select pg_temp.person_write(%L,%L,%L,%L,%L,%L)','answer','v1','internal',pg_temp.manifest('answer','internal','[]',pg_temp.summary(b)),b,jsonb_build_array(jsonb_build_object('kind','source_version','sourceVersionId',a,'rightsVersionId',null))),'artifact_link_not_in_manifest','a source link the manifest does not declare');
  perform pg_temp.refused(format('select pg_temp.person_write(%L,%L,%L,%L,%L,%L)','answer','v1','internal',pg_temp.manifest('answer','internal','[]',pg_temp.summary(b)),b,jsonb_build_array(jsonb_build_object('kind','artifact_revision','derivedFromRevisionId',gen_random_uuid()))),'artifact_link_target_not_found','a derivation from a revision that does not exist in this organization');
+ -- The ids zod's z.uuid() refuses (version 0, variant 0) are refused here too.
+ perform pg_temp.refused(format('select pg_temp.person_write(%L,%L,%L,%L,%L)','answer','v1','internal',pg_temp.manifest('answer','internal',jsonb_build_array(jsonb_build_object('sourceVersionId','a4192000-0000-0000-0000-000000000001','rightsVersionId',null)),pg_temp.summary(b)),b),'artifact_manifest_source_invalid','a source version id that is not an RFC 9562 uuid');
+ perform pg_temp.refused(format('select pg_temp.person_write(%L,%L,%L,%L,%L)','answer','v1','internal',pg_temp.manifest('answer','internal','[]',pg_temp.summary(b),null,'json',jsonb_build_object('provenance',jsonb_build_object('producer','synthetic-test','jobId','a4192000-0000-4000-0000-000000000001','taskRunId',null,'messageId',null,'capability',null))),b),'artifact_manifest_provenance_invalid','a job id with an RFC variant nibble of 0');
+ -- The contract's subject is any text of 1 to 300 characters, spaces included.
+ if (pg_temp.person_write('answer','Memo de estrutura 2026','internal',pg_temp.manifest('answer','internal','[]',pg_temp.summary(b)),b)->>'revision_no')::integer<>1 then
+  raise exception 'subject with spaces refused'; end if;
+ raise notice 'PASS: the validator refuses the contract''s violations with its names, non-RFC ids included; a subject with spaces is accepted';
 end $$;
 
 -- 5. Substance: an informational answer of sections and paragraphs is accepted; a number without a
@@ -509,7 +516,7 @@ end $$;
 do $$ declare a2 uuid;orphan uuid;c jsonb;req jsonb;claim jsonb;r jsonb;x jsonb;m jsonb;b jsonb;pinned uuid;receipt text;exec uuid:='a4192000-0000-4000-9000-000000000091';
 begin
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
- a2:=md5('artifact-source:balancete-v2')::uuid;
+ a2:=extensions.uuid_generate_v5(extensions.uuid_ns_url(),'offroad:test:artifact-source:balancete-v2');
  -- (a) Without an execution: the pin is the rights version in force today.
  b:=jsonb_build_array(pg_temp.block('lead','paragraph','{"text":"Leitura do balancete atualizado."}',jsonb_build_array(pg_temp.claim('cash-2026','310'))));
  m:=pg_temp.manifest('answer','internal',jsonb_build_array(jsonb_build_object('sourceVersionId',a2,'rightsVersionId',null)),pg_temp.summary(b));

@@ -54,7 +54,7 @@ create table public.artifacts (
  organization_id uuid not null references public.organizations(id),
  work_id uuid not null,
  kind text not null check(kind in ('answer','material','workbook','model_result','work_product','execution_result','presentation','document')),
- subject text not null check(subject ~ '^[^[:space:]]+$' and length(subject)<=300),
+ subject text not null check(char_length(subject) between 1 and 300),
  legacy_origin jsonb check(legacy_origin is null or (jsonb_typeof(legacy_origin)='object' and legacy_origin ?& array['table','id']
   and legacy_origin-array['table','id']='{}'::jsonb
   and legacy_origin->>'table' in ('capital_project_artifacts','case_artifact_manifests','institutional_model_results','deal_state_objects'))),
@@ -236,7 +236,8 @@ create trigger artifact_dependency_links_immutable before update or delete on pr
 create trigger artifact_dependency_links_truncate_guard before truncate on private.artifact_dependency_links for each statement execute function private.reject_artifact_history_mutation_v1();
 
 -- 2. The manifest validator: artifactManifestSchema of the contract, key for key, with the same
--- rule names. Shape failures raise artifact_manifest_<section>_invalid; the cross-field rules raise
+-- rule names. Every id is an RFC 9562 uuid as zod's z.uuid() reads it (version 1 to 8, variant 8 to b,
+-- or the nil and max uuids), so a manifest SQL accepts always parses in TypeScript. Shape failures raise artifact_manifest_<section>_invalid; the cross-field rules raise
 -- bytes_without_format, execution_result_without_execution, model_result_without_institutional_result,
 -- legacy_with_fabricated_links, duplicate_source, duplicate_claims_block and duplicate_trace.
 create function private.jsonb_array_or_empty_v1(p jsonb) returns jsonb
@@ -246,7 +247,7 @@ create function private.validate_artifact_manifest_v1(p_manifest jsonb) returns 
 language plpgsql immutable set search_path='' as $$
 declare m jsonb:=p_manifest;b jsonb;x jsonb;
  hex text:='^[a-f0-9]{64}$';
- uid text:='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+ uid text:='^([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$';
  keys text[]:=array['schemaVersion','kind','audience','format','bytes','method','execution','inputSnapshot','institutionalResult','sources','claims','traces','template','provenance','legacy'];
 begin
  if m is null or jsonb_typeof(m)<>'object' or not (m ?& keys) or exists(select 1 from jsonb_object_keys(m) k where k<>all(keys))
@@ -384,16 +385,16 @@ create function private.create_artifact_revision_v1(
  p_rights_subject uuid default null,p_revision_id uuid default null,p_lock_work boolean default true) returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare
- hex text:='^[a-f0-9]{64}$';uid text:='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+ hex text:='^[a-f0-9]{64}$';uid text:='^([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$';
  blocks jsonb:=coalesce(p_blocks,'[]'::jsonb);links jsonb:=coalesce(p_links,'[]'::jsonb);all_links jsonb:='[]'::jsonb;
  a public.artifacts;existing public.artifact_revisions;head public.artifact_revisions;rev_id uuid;fingerprint text;next_no integer;
  blk jsonb;blk_no integer:=0;lnk jsonb;lnk_kind text;lnk_block uuid;sv uuid;rv uuid;set_id uuid;summary jsonb;informational boolean;substance boolean;
 begin
  if p_org is null or p_work is null
   or p_kind not in ('answer','material','workbook','model_result','work_product','execution_result','presentation','document')
-  or coalesce(p_subject,'') !~ '^[^[:space:]]+$' or length(p_subject)>300
+  or coalesce(char_length(p_subject),0) not between 1 and 300
   or p_audience not in ('internal','advisor','external') or p_origin not in ('worker','person','legacy')
-  or jsonb_typeof(blocks)<>'array' or jsonb_array_length(blocks)>500 or jsonb_typeof(links)<>'array' or jsonb_array_length(links)>2000
+  or jsonb_typeof(blocks)<>'array' or jsonb_array_length(blocks)>1000 or jsonb_typeof(links)<>'array' or jsonb_array_length(links)>2000
   or (p_content_sha256 is null)<>(p_byte_length is null) or (p_content_sha256 is not null and (p_content_sha256 !~ hex or p_byte_length<=0))
   or (p_origin='person' and p_actor is null)
  then raise exception 'artifact_revision_invalid' using errcode='22023'; end if;
