@@ -2,7 +2,7 @@ import {renderToStaticMarkup} from "react-dom/server";
 import {NextIntlClientProvider} from "next-intl";
 import {describe, expect, it} from "vitest";
 import {AdvisorWorkSurface} from "./advisor-work-surface";
-import {workSectionFromHash, workSectionHref} from "./advisor-work-links";
+import {workSectionFromHash, workSectionHref, workSectionTargetFromHash} from "./advisor-work-links";
 
 const messages = {AdvisorWorkSurface: {work: "Trabalho", results: "Resultados", version: "Versão {version}"}};
 function render(selectedId: string) {
@@ -32,5 +32,16 @@ describe("AdvisorWorkSurface", () => {
     expect(workSectionFromHash("#project-evidence")).toBeNull();
     expect(workSectionFromHash("#work-%E0%A4%A")).toBeNull();
     expect(workSectionFromHash("#work-")).toBeNull();
+  });
+  it("links to one entry of a section, which opens the section and names the entry (5D)", () => {
+    const update = "a4210000-0000-4000-9000-000000000060";
+    expect(workSectionHref("updates", update)).toBe(`#work-updates/${update}`);
+    expect(workSectionFromHash(workSectionHref("updates", update))).toBe("updates");
+    expect(workSectionTargetFromHash(workSectionHref("updates", update), "updates")).toBe(update);
+    // A section id with a slash stays one encoded id, and a plain section link names no entry.
+    expect(workSectionFromHash(workSectionHref("brief / versão 2", "x"))).toBe("brief / versão 2");
+    expect(workSectionTargetFromHash(workSectionHref("updates"), "updates")).toBeNull();
+    expect(workSectionTargetFromHash(workSectionHref("vault", update), "updates")).toBeNull();
+    expect(workSectionTargetFromHash("#work-updates/%E0%A4%A", "updates")).toBeNull();
   });
 });

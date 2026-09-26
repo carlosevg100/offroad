@@ -12,6 +12,7 @@ const updates = messages.App.workUpdates;
 const names = messages.App.workUpdateNames;
 const executions = messages.App.workExecutions;
 const results = messages.InstitutionalModelResult;
+const continuation = messages.App.advisorProject.continuation;
 const capitalTitle = names.methods["prepare-capital-structure-decision"];
 const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 const fill = (text: string, values: Record<string, string | number>) => Object.entries(values).reduce((out, [key, value]) => out.replaceAll(`{${key}}`, String(value)), text);
@@ -195,7 +196,8 @@ test("a mixed update of an execution and the financial model is adopted in one a
 
   // 4. A newer configuration of the model approved while the update is open joins it: the graph
   // recalculates the model in the same update, and the worker produces the result. The first result
-  // stays the current one: the work's view shows it as outdated, with no download.
+  // stays the current one, with no download of the recalculation, and the panel says the recalculated
+  // result waits in the update, which still waits for a working basis before the person's decision.
   await setup.submitScenario("40");
   await setup.approve();
   const recalculation = `from public.institutional_recompute_candidates c where c.request_id='${updateId}'`;
@@ -205,7 +207,9 @@ test("a mixed update of an execution and the financial model is adopted in one a
   expect(sql(`select status from public.work_continuation_requests where id='${updateId}';`)).toBe("open");
   await openSection(page, projectId, "work-institutional-model-result");
   const panel = page.getByTestId("institutional-model-result");
-  await expect(panel.getByRole("status")).toHaveText(results.status.stale);
+  const updateLink = panel.getByRole("link", {name: results.openUpdate, exact: true});
+  await expect(panel.getByRole("status")).toHaveText(results.status.recalculationWaiting);
+  await expect(updateLink).toHaveAttribute("href", `#work-updates/${updateId}`);
   await expect(page.locator(`a[href$="/financial-results/${r1}/xlsx"]`)).toHaveCount(0);
 
   // 5. The person reads available cash from version 2: the execution is recomputed in the same update,
@@ -214,6 +218,18 @@ test("a mixed update of an execution and the financial model is adopted in one a
   readoptFromVersion(sql, {email, projectId, seeded, documentId: version2});
   await expect.poll(() => sql(`select status from public.work_continuation_requests where id='${updateId}';`),
     {message: "the local worker recomputes the execution and the update becomes ready", timeout: 300_000, intervals: [3_000]}).toBe("ready");
+  // The results panel says the recalculated result is ready and waits for the person's decision, and
+  // its link opens the Updates section on that update (5D).
+  await openSection(page, projectId, "work-institutional-model-result");
+  await expect(panel.getByRole("status")).toHaveText(results.status.recalculationReady);
+  await test.info().attach("recalculation-ready-panel", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
+  await updateLink.click();
+  const targeted = page.locator(`article.work-update[data-targeted="true"]`);
+  await expect(targeted).toHaveAttribute("id", `work-update-${updateId}`);
+  await expect(targeted).toHaveAttribute("data-status", "ready");
+  await expect(targeted).toBeInViewport();
+  await expect(page.locator('.advisor-work-surface__navigation a[href="#work-updates"]')).toHaveAttribute("aria-current", "true");
+  await test.info().attach("recalculation-ready-update", {body: await page.screenshot(), contentType: "image/png"});
   await openSection(page, projectId, "work-updates");
   const ready = page.locator('article.work-update[data-status="ready"]');
   await expect(ready).toContainText(fill(updates.recomputation.settled, {label: capitalTitle}));
@@ -242,8 +258,59 @@ test("a mixed update of an execution and the financial model is adopted in one a
   expect(sql(`select superseded_by from private.institutional_model_results where id='${r0}';`)).toBe(r1);
   await openSection(page, projectId, "work-institutional-model-result");
   await expect(panel.getByRole("status")).toHaveText(results.status.completed);
+  await expect(updateLink).toHaveCount(0);
   await expect(page.locator(`a[href$="/financial-results/${r1}/xlsx"]`)).toHaveCount(1);
   await test.info().attach("mixed-update-adopted", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
+
+  // 7. A follow-up typed in the conversation from the adopted update waits for an execution. From the
+  // Updates section it opens the execution request with its text as the objective and its base for
+  // reference; the request is validated as any other, and its objective cites the follow-up, which
+  // the database links to the new execution (5D).
+  await expect.poll(() => sql(`select count(*) from public.agent_messages where work_id='${projectId}' and role='user' and status in ('queued','processing');`),
+    {message: "no turn of the conversation is in progress", timeout: 120_000, intervals: [2_000]}).toBe("0");
+  const followupText = "Aprofundar a liquidez do plano com a versão 2 do balancete";
+  await page.locator(".advisor-composer textarea").fill(followupText);
+  await page.locator(".advisor-composer .advisor-composer__send").click();
+  const question = page.locator(".continuation-question");
+  const recorded = page.locator(".continuation-notice");
+  await expect(question.or(recorded)).toBeVisible();
+  // The text names no base, so the conversation asks from which approved decision it continues; any
+  // of them serves this journey, and the follow-up shows the one chosen.
+  if (await question.isVisible()) {
+    await question.getByRole("radio").first().check();
+    await question.getByRole("button", {name: continuation.question.choose, exact: true}).click();
+  }
+  await expect(recorded).toBeVisible();
+  const followupId = sql(`select r.id from public.work_continuation_requests r where r.work_id='${projectId}' and r.kind='user_followup';`);
+  expect(sql(`select status from public.work_continuation_requests where id='${followupId}';`)).toBe("open");
+  await openSection(page, projectId, "work-updates");
+  const followup = page.locator('article.work-update--followup[data-status="open"]').filter({hasText: followupText});
+  await expect(followup).toContainText(updates.followups.execution.none);
+  const baseLine = (await followup.locator("p").first().textContent())!.trim();
+  expect(baseLine).toMatch(/^Continua a partir de .+, revisão \d+\.$/);
+  await followup.getByRole("link", {name: updates.followups.requestExecution, exact: true}).click();
+  await expect(page).toHaveURL(new RegExp(`/pt-BR/app/projects/${projectId}/executions\\?followup=${followupId}$`));
+  const reference = page.locator(".execution-followup");
+  await expect(reference).toContainText(executions.request.followup.title);
+  await expect(reference).toContainText(followupText);
+  await expect(reference).toContainText(baseLine);
+  const cite = page.locator("form").filter({has: page.getByRole("button", {name: executions.request.submit, exact: true})});
+  await expect(cite.locator('textarea[name="objectives"]')).toHaveValue(followupText);
+  await test.info().attach("followup-request-prefilled", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
+  await cite.locator('input[name="asOf"]').fill("2026-06-30");
+  await cite.locator('input[name="question"]').fill("Does the plan still hold with version 2 of the balancete?");
+  await cite.getByRole("checkbox", {name: executions.situations.refinancing, exact: true}).check();
+  await cite.getByRole("button", {name: executions.request.submit, exact: true}).click();
+  await expect(page).toHaveURL(new RegExp(`/pt-BR/app/projects/${projectId}/executions/[0-9a-f-]{36}$`), {timeout: 60_000});
+  // The request is linked to the follow-up in its own transaction; the local worker may already have
+  // written the result, which makes the follow-up ready.
+  const citing = new URL(page.url()).pathname.split("/").at(-1)!;
+  expect(sql(`select l.execution_id||':'||(r.status in ('scheduled','ready'))::text from public.work_continuation_requests r
+    join private.work_followup_executions l on l.request_id=r.id where r.id='${followupId}';`)).toBe(`${citing}:true`);
+  // The follow-up no longer waits for an execution: requested, or already with its result if the
+  // local worker was quicker than this page.
+  await openSection(page, projectId, "work-updates");
+  await expect(page.locator("article.work-update--followup").filter({hasText: followupText})).toHaveAttribute("data-status", /^(scheduled|ready)$/);
 });
 
 test("a recalculation of the financial model declined before the worker runs it writes nothing", async ({page}) => {

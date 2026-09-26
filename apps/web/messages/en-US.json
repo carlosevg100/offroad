@@ -2292,7 +2292,8 @@
         "not_found": "The update was not found. The page was reloaded.",
         "stale": "The update changed since it was shown. The page was reloaded; check it and decide again.",
         "processing": "The update is no longer in that state. The page was reloaded.",
-        "save": "The decision could not be recorded. Please try again."
+        "save": "The decision could not be recorded. Please try again.",
+        "busy": "A calculation of this update is finishing right now. Try again in a few seconds."
       },
       "labels": {
         "dependency_update": "Update after an input change",
@@ -2331,6 +2332,7 @@
         "adopt": "Adopt as a base",
         "adoptConfirm": "Confirm adoption",
         "adoptExplanation": "The result of this execution becomes the approved base, in place of the base the follow-up started from, which stays recorded.",
+        "requestExecution": "Request an execution for this follow-up",
         "decline": "Decline follow-up",
         "declineExplanation": "The follow-up ends declined, with the reason chosen. An execution already requested stays recorded.",
         "decided": {
@@ -2369,6 +2371,12 @@
         "question": "Question",
         "objectives": "Objectives",
         "objectivesHelp": "One objective per line.",
+        "followup": {
+          "title": "Follow-up requested in the conversation",
+          "base": "Continues from {label}, revision {revision}.",
+          "help": "The first objective repeats the follow-up's text, and that is what links this execution to it. Keep that text and add other objectives on new lines if you need them.",
+          "unavailable": "The chosen follow-up no longer awaits an execution, so no objective was filled in."
+        },
         "asOf": "Reference date",
         "submit": "Request execution",
         "situations": "Decision situations",
@@ -5678,13 +5686,16 @@
       "pdf": "PDF"
     },
     "edit": "Review data and assumptions",
+    "openUpdate": "Open the update",
     "blockedHelp": "Review the configuration and indicated sources before calculating again. Missing values have not been assumed.",
     "status": {
       "notRunning": "No calculation is running for this configuration and the result was not produced. Review the data and assumptions to calculate again.",
       "queued": "Calculating the approved configuration. Results will appear here.",
       "completed": "Calculation completed. All four formats use the same approved configuration.",
       "blocked": "The calculation needs corrections or additional information.",
-      "stale": "Sources or assumptions changed. Review and recalculate to obtain updated materials."
+      "stale": "Sources or assumptions changed. Review and recalculate to obtain updated materials.",
+      "recalculationReady": "A result recalculated with the current inputs is ready and awaits your decision in Updates. It takes effect when you adopt the update.",
+      "recalculationWaiting": "A result recalculated with the current inputs is ready in Updates. The update still waits for another step before your decision, and the new result takes effect when it is adopted."
     }
   },
   "InstitutionalIssues": {

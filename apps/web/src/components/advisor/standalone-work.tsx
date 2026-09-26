@@ -38,7 +38,7 @@ export async function StandaloneWork({locale, project}: {
     {id: "vault", title: vaultCopy("title"), content: <WorkVaultPanel locale={locale} workId={project.id} />},
   ];
   // An update that awaits a decision comes first; otherwise the section waits at the end.
-  const updatesSection: AdvisorWorkSection = {id: "updates", title: updatesCopy("title"), content: <WorkUpdates locale={language} model={updates} />,
+  const updatesSection: AdvisorWorkSection = {id: "updates", title: updatesCopy("title"), content: <WorkUpdates locale={language} model={updates} workId={project.id} />,
     status: updates?.awaitingDecision ? updatesCopy("awaiting", {count: updates.awaitingDecision}) : undefined};
   if (updates?.awaitingDecision) sections.unshift(updatesSection); else sections.push(updatesSection);
   return <AdvisorProject

@@ -1,3 +1,5 @@
+import {executionRequestTextMaxLength} from "@/lib/execution/request-limits";
+
 import type {WorkUpdateNames} from "./work-update-names";
 import type {
   InstitutionalHoldKind, MethodRef, WorkFollowupRow, WorkMilestoneRow, WorkUpdateChangeRow, WorkUpdateHoldKind, WorkUpdateInstitutionalChangeRow, WorkUpdateRow,
@@ -69,14 +71,27 @@ export type WorkFollowupItem = Readonly<{
   open: boolean;
   canAdopt: boolean;
   canDecline: boolean;
+  /** The objective that fulfils the follow-up when an execution request carries it (see
+   * `followupObjective`); null when its text does not fit one objective. */
+  objective: string | null;
+  /** A person's execution request with that objective would fulfil the follow-up now: it waits for
+   * its first execution, or the one it led to ended without a result. */
+  canRequestExecution: boolean;
   declineReason: DeclineReasonCode | null;
   decidedAt: string | null;
 }>;
+
+/** A recalculated result of the financial model that waits for the adoption of an open update: its
+ * candidate settled with a completed result that is not the current one. `covers` lists the results
+ * the adoption would replace; `adoptable` says whether the update can be adopted now or still waits
+ * for another part of it. */
+export type InstitutionalRecalculationWait = Readonly<{updateId: string; adoptable: boolean; covers: readonly string[]}>;
 
 export type WorkUpdatesModel = Readonly<{
   open: readonly WorkUpdateItem[];
   closed: readonly WorkUpdateItem[];
   followups: readonly WorkFollowupItem[];
+  recalculations: readonly InstitutionalRecalculationWait[];
   awaitingDecision: number;
 }>;
 
@@ -266,10 +281,23 @@ function followupExecutionState(row: WorkFollowupRow): "running" | "result" | "e
   return row.execution.jobStatus && ["queued", "leased", "awaiting_approval"].includes(row.execution.jobStatus) ? "running" : "ended";
 }
 
+/**
+ * The objective that cites a follow-up. The database fulfils a follow-up with the next execution a
+ * person requests whose objectives carry its text, compared without case and with every run of
+ * whitespace as one space (`private.work_followup_citation_v1`). The request form reads one
+ * objective per line, so the text goes on one line, collapsing the same whitespace the database
+ * collapses; a text longer than one objective cannot be cited and gives null.
+ */
+export function followupObjective(text: string): string | null {
+  const line = text.replace(/[ \t\n\r\f\v]+/g, " ").trim();
+  return line && line.length <= executionRequestTextMaxLength ? line : null;
+}
+
 function followupOf(row: WorkFollowupRow, milestones: ReadonlyMap<string, WorkMilestoneRow>, names: WorkUpdateNames, label: (raw: string) => string): WorkFollowupItem {
   const open = openStatuses.has(row.status);
   const base = milestones.get(row.baseMilestoneId);
   const state = followupExecutionState(row);
+  const objective = followupObjective(row.request);
   return {
     requestId: row.requestId,
     status: row.status,
@@ -280,18 +308,52 @@ function followupOf(row: WorkFollowupRow, milestones: ReadonlyMap<string, WorkMi
     open,
     canAdopt: row.status === "ready",
     canDecline: open,
+    objective,
+    // The database links a new request only to an open follow-up, or to a scheduled one whose
+    // execution is no longer live; a ready one already has its result.
+    canRequestExecution: objective !== null && (row.status === "open" || (row.status === "scheduled" && state === "ended")),
     declineReason: declineReason(row.declineReason),
     decidedAt: row.decision?.occurredAt ?? null,
   };
+}
+
+/** The recalculated results of the financial model that wait in open updates for adoption, the ones
+ * the person can adopt now first. Only the adoption makes such a result current (5C). */
+function recalculationWaits(updates: readonly WorkUpdateRow[]): InstitutionalRecalculationWait[] {
+  const waits = updates.filter((update) => openStatuses.has(update.status)).flatMap((update) => update.institutionalCandidates
+    .filter((candidate) => candidate.state === "settled" && candidate.resultStatus === "completed" && !candidate.current)
+    .map((candidate) => ({updateId: update.requestId, adoptable: update.status === "ready", covers: [...candidate.resultIds]})));
+  return [...waits.filter((wait) => wait.adoptable), ...waits.filter((wait) => !wait.adoptable)];
+}
+
+/** The recalculation that waits for adoption and would replace the result the results panel shows:
+ * the first wait whose candidate covers that result. Null when none does, or when the updates could
+ * not be read. */
+export function recalculationAwaitingAdoption(model: WorkUpdatesModel | null, resultId: string): InstitutionalRecalculationWait | null {
+  return model?.recalculations.find((wait) => wait.covers.includes(resultId)) ?? null;
+}
+
+/** What the execution request shows when it starts from a follow-up: its text, the objective that
+ * cites it and the base it continues, or that it no longer waits for an execution. The request
+ * action validates everything as for any other request; this only fills the form. */
+export type ExecutionFollowup =
+  | Readonly<{state: "ready"; requestId: string; text: string; objective: string; base: Readonly<{label: string; revision: number}>}>
+  | Readonly<{state: "unavailable"}>;
+
+export function executionFollowup(model: WorkUpdatesModel | null, requestId: string): ExecutionFollowup {
+  const item = model?.followups.find((followup) => followup.requestId === requestId);
+  if (!item?.canRequestExecution || item.objective === null) return {state: "unavailable"};
+  return {state: "ready", requestId: item.requestId, text: item.text, objective: item.objective, base: item.base};
 }
 
 /**
  * The update section of a work: open updates first (the database already orders them), then the
  * recent closed ones, each with the later updates merged into it; then the follow-ups typed in the
  * conversation. An update awaits a decision when it is ready to adopt or a recomputation waits for
- * authorization; a follow-up when its execution's result is ready to adopt. `names` turns the view's
- * identifiers into display names on the server, and `label` a milestone label into the words a
- * person reads.
+ * authorization; a follow-up when its execution's result is ready to adopt. The recalculated results
+ * of the financial model that wait in open updates are listed for the results panel. `names` turns
+ * the view's identifiers into display names on the server, and `label` a milestone label into the
+ * words a person reads.
  */
 export function workUpdatesModel(view: Pick<WorkUpdateView, "updates"> & Partial<Pick<WorkUpdateView, "followups" | "milestones">>, names: WorkUpdateNames,
   label: (raw: string) => string = (raw) => raw): WorkUpdatesModel {
@@ -303,6 +365,7 @@ export function workUpdatesModel(view: Pick<WorkUpdateView, "updates"> & Partial
     open,
     closed: items.filter((item) => !item.open),
     followups,
+    recalculations: recalculationWaits(view.updates),
     awaitingDecision: open.filter((item) => item.canAdopt || item.awaitingAuthorization.length > 0).length + followups.filter((item) => item.canAdopt).length,
   };
 }

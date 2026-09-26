@@ -168,15 +168,20 @@ test("guided institutional setup calculates only after review and survives resum
  await review.getByRole("button",{name:"Aprovar e calcular",exact:true}).click();
  // The first result is current, so the newer configuration is recalculated through the dependency
  // graph as an update of the work (stage 18, 5C): the recalculation becomes the current result only
- // when the person adopts that update. Until then the first result stays, outdated and without downloads.
+ // when the person adopts that update. Until then the first result stays, without downloads, and the
+ // panel points to that update instead of asking for a new calculation (5D).
  const latestUpdate=()=>execFileSync("psql",[databaseUrl,"-qAt","-v","ON_ERROR_STOP=1","-c",`select status from public.work_continuation_requests where work_id='${projectId}' and kind='dependency_update' order by created_at desc limit 1;`],{encoding:"utf8"}).trim();
  await expect.poll(latestUpdate,{message:"the local worker recalculates the model in an update of the work",timeout:180_000,intervals:[2_000]}).toBe("ready");
- await resultLink.click();
- await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.stale);
  // The work is loaded again for the facts the database now holds, and the section is opened by its link:
  // a goto that only changes the fragment keeps the rendered document.
- await page.reload();await page.locator('.advisor-work-surface__navigation a[href="#work-updates"]').click();
+ await page.reload();await resultLink.click();
+ await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.recalculationReady);
+ await expect(xlsx).toHaveCount(0);
+ // Its link opens the Updates section on the update that waits for the person's decision.
+ await result.getByRole("link",{name:messages.InstitutionalModelResult.openUpdate,exact:true}).click();
  const update=page.locator('article.work-update[data-status="ready"]');
+ await expect(update).toHaveAttribute("data-targeted","true");
+ await expect(page.locator('.advisor-work-surface__navigation a[href="#work-updates"]')).toHaveAttribute("aria-current","true");
  await update.getByRole("button",{name:messages.App.workUpdates.adopt.action,exact:true}).click();
  await update.getByRole("button",{name:messages.App.workUpdates.adopt.confirm,exact:true}).click();
  await expect.poll(latestUpdate,{timeout:30_000}).toBe("adopted");

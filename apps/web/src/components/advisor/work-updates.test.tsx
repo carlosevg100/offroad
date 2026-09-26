@@ -16,11 +16,13 @@ const {WorkUpdates} = await import("./work-updates");
 const {ContinuationQuestion} = await import("./continuation-question");
 
 const id = (n: number) => `a4230000-0000-4000-9000-${String(n).padStart(12, "0")}`;
-const dashes = new RegExp(`[${String.fromCodePoint(0x2014)}${String.fromCodePoint(0x2013)}]`);
+const WORK = id(999);
+const dashes =new RegExp(`[${String.fromCodePoint(0x2014)}${String.fromCodePoint(0x2013)}]`);
 
 const model: WorkUpdatesModel = {
   awaitingDecision: 2,
   followups: [],
+  recalculations: [],
   open: [
     {
       updateId: id(1), status: "ready", revision: 5, updatedAt: "2026-09-25T12:09:00+00:00", open: true,
@@ -58,7 +60,7 @@ function render(locale: "pt-BR" | "en-US", node: React.ReactNode) {
 
 describe("the update section of a work", () => {
   it("shows what changed, what was redone, what stayed valid and what waits, with the decisions behind a confirmation", () => {
-    const html = render("pt-BR", <WorkUpdates locale="pt-BR" model={model} />);
+    const html = render("pt-BR", <WorkUpdates workId={WORK} locale="pt-BR" model={model} />);
     for (const text of [
       "Atualizações do trabalho", "Pronta para adoção", "Aguardando autorização",
       "Fonte balancete.xlsx: a versão 1 foi substituída pela versão 3", "Afeta: Estrutura de capital, Liquidez",
@@ -89,7 +91,7 @@ describe("the update section of a work", () => {
         "a newer version of the method was published", "This basis analysis", "(2 executions)"],
     } as const;
     for (const locale of ["pt-BR", "en-US"] as const) {
-      const html = render(locale, <WorkUpdates locale={locale} model={workUpdatesModel(view, namesFor(locale))} />);
+      const html = render(locale, <WorkUpdates workId={WORK} locale={locale} model={workUpdatesModel(view, namesFor(locale))} />);
       const text = html.replace(/<[^>]*>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
       for (const key of internal) {
         expect(html, `${locale}: ${key}`).not.toContain(key);
@@ -102,11 +104,11 @@ describe("the update section of a work", () => {
   });
 
   it("says when nothing changed and when the updates could not be read, in both languages", () => {
-    expect(render("pt-BR", <WorkUpdates locale="pt-BR" model={{open: [], closed: [], followups: [], awaitingDecision: 0}} />)).toContain("Nenhuma mudança de insumo afetou este trabalho até agora.");
-    const unavailable = render("en-US", <WorkUpdates locale="en-US" model={null} />);
+    expect(render("pt-BR", <WorkUpdates workId={WORK} locale="pt-BR" model={{open: [], closed: [], followups: [], recalculations: [], awaitingDecision: 0}} />)).toContain("Nenhuma mudança de insumo afetou este trabalho até agora.");
+    const unavailable = render("en-US", <WorkUpdates workId={WORK} locale="en-US" model={null} />);
     expect(unavailable).toContain("role=\"alert\"");
     expect(unavailable).toContain("The updates of this work could not be read right now.");
-    expect(render("en-US", <WorkUpdates locale="en-US" model={model} />)).toContain("Ready to adopt");
+    expect(render("en-US", <WorkUpdates workId={WORK} locale="en-US" model={model} />)).toContain("Ready to adopt");
   });
 });
 
@@ -126,7 +128,7 @@ describe("the update section with the financial model, merged updates and follow
         "Follow-ups requested in the conversation", "Continues from Alongamento com os bancos atuais, revision 3.", "Adopt as a base", "Decline follow-up"],
     } as const;
     for (const locale of ["pt-BR", "en-US"] as const) {
-      const html = render(locale, <WorkUpdates locale={locale} model={workUpdatesModel(view, namesFor(locale), (raw) => raw)} />);
+      const html = render(locale, <WorkUpdates workId={WORK} locale={locale} model={workUpdatesModel(view, namesFor(locale), (raw) => raw)} />);
       const text = html.replace(/<[^>]*>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ");
       for (const phrase of expected[locale]) expect(text, `${locale}: ${phrase}`).toContain(phrase);
       expect(text).not.toMatch(dashes);
@@ -135,8 +137,31 @@ describe("the update section with the financial model, merged updates and follow
       expect(html).not.toContain("institutional_configuration");
     }
     // The update merged into the older one is not a separate closed entry.
-    const html = render("pt-BR", <WorkUpdates locale="pt-BR" model={workUpdatesModel(view, namesFor("pt-BR"), (raw) => raw)} />);
+    const html = render("pt-BR", <WorkUpdates workId={WORK} locale="pt-BR" model={workUpdatesModel(view, namesFor("pt-BR"), (raw) => raw)} />);
     expect(html.match(/data-status="superseded"/g)?.length).toBe(1);
+  });
+});
+
+describe("the update section as a destination and a starting point (5D)", () => {
+  const view = workUpdateViewSchema.parse(rawIntegrationView);
+  const viewId = (n: number) => `a4210000-0000-4000-9000-${String(n).padStart(12, "0")}`;
+
+  it("offers an execution request only on a follow-up that waits for one, opening the request with that follow-up", () => {
+    for (const locale of ["pt-BR", "en-US"] as const) {
+      const html = render(locale, <WorkUpdates workId={WORK} locale={locale} model={workUpdatesModel(view, namesFor(locale), (raw) => raw)} />);
+      const links = [...html.matchAll(/href="([^"]*executions\?followup=[^"]*)"/g)].map((match) => match[1]);
+      // Only the open follow-up (94): the ready one has its result and the declined one is closed.
+      expect(links).toEqual([`/${locale}/app/projects/${WORK}/executions?followup=${viewId(94)}`]);
+      expect(html).toContain(locale === "pt-BR" ? "Pedir uma execução para esta continuação" : "Request an execution for this follow-up");
+    }
+  });
+
+  it("gives each update an anchor the results panel can open, and marks the one the address targets", () => {
+    const html = render("pt-BR", <WorkUpdates workId={WORK} locale="pt-BR" model={workUpdatesModel(view, namesFor("pt-BR"), (raw) => raw)} />);
+    expect(html).toContain(`id="work-update-${viewId(60)}"`);
+    expect(html).toContain(`id="work-update-${viewId(66)}"`);
+    // Rendered on the server, no address targets an update yet.
+    expect(html).not.toContain("data-targeted");
   });
 });
 

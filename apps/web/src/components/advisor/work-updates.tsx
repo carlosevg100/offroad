@@ -1,16 +1,41 @@
 "use client";
 
-import {Check, CircleAlert, LoaderCircle, RefreshCw, ShieldCheck, X} from "lucide-react";
+import {Check, CircleAlert, LoaderCircle, Play, RefreshCw, ShieldCheck, X} from "lucide-react";
+import Link from "next/link";
 import {useFormatter, useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState, useSyncExternalStore} from "react";
 
 import {adoptWorkUpdate, authorizeWorkUpdate, declineWorkUpdate, type WorkUpdateActionResult} from "@/app/[locale]/app/projects/[projectId]/work-update-actions";
 import {
   declineReasonCodes, type DeclineReasonCode, type WorkFollowupItem, type WorkUpdateChange, type WorkUpdateItem, type WorkUpdateRecomputation, type WorkUpdatesModel,
 } from "@/lib/advisor/work-updates";
 
+import {workSectionTargetFromHash} from "./advisor-work-links";
+
 import "@/app/work-updates.css";
+
+/** The element id of one update, which a link to this section may target. */
+const updateAnchor = (updateId: string) => `work-update-${updateId}`;
+
+function subscribeToHash(onChange: () => void) {
+  window.addEventListener("hashchange", onChange);
+  return () => window.removeEventListener("hashchange", onChange);
+}
+
+/** The update a link to this section targets (`#work-updates/<update>`, as the results panel links to
+ * an update whose recalculation waits for adoption): brought into view and focused once shown. */
+function useTargetedUpdate(): string | null {
+  const hash = useSyncExternalStore(subscribeToHash, () => window.location.hash, () => "");
+  const target = workSectionTargetFromHash(hash, "updates");
+  useEffect(() => {
+    if (!target) return;
+    const card = document.getElementById(updateAnchor(target));
+    card?.scrollIntoView({block: "start"});
+    card?.focus({preventScroll: true});
+  }, [target]);
+  return target;
+}
 
 type Pending =
   | {kind: "adopt"}
@@ -24,8 +49,9 @@ type Pending =
  * Adopting, authorizing and declining each need a second, explicit confirmation; the database
  * checks the revision the person saw.
  */
-export function WorkUpdates({locale, model}: {locale: "pt-BR" | "en-US"; model: WorkUpdatesModel | null}) {
+export function WorkUpdates({locale, model, workId}: {locale: "pt-BR" | "en-US"; model: WorkUpdatesModel | null; workId: string}) {
   const t = useTranslations("App.workUpdates");
+  const target = useTargetedUpdate();
   return <section aria-labelledby="work-updates-heading" className="work-updates">
     <header>
       <h2 id="work-updates-heading">{t("heading")}</h2>
@@ -35,15 +61,15 @@ export function WorkUpdates({locale, model}: {locale: "pt-BR" | "en-US"; model: 
       : model.open.length === 0 && model.closed.length === 0 && model.followups.length === 0 ? <p className="work-updates__empty">{t("empty")}</p> : null}
     {model?.open.length ? <div className="work-updates__group">
       <h3>{t("openHeading")}</h3>
-      {model.open.map((item) => <WorkUpdateCard item={item} key={item.updateId} locale={locale} />)}
+      {model.open.map((item) => <WorkUpdateCard item={item} key={item.updateId} locale={locale} targeted={item.updateId === target} />)}
     </div> : null}
     {model?.closed.length ? <details className="work-updates__group">
       <summary>{t("closedHeading")} <span>{model.closed.length}</span></summary>
-      {model.closed.map((item) => <WorkUpdateCard item={item} key={item.updateId} locale={locale} />)}
+      {model.closed.map((item) => <WorkUpdateCard item={item} key={item.updateId} locale={locale} targeted={false} />)}
     </details> : null}
     {model?.followups.length ? <div className="work-updates__group work-updates__followups">
       <h3>{t("followups.heading")}</h3>
-      {model.followups.map((item) => <WorkFollowupCard item={item} key={item.requestId} locale={locale} />)}
+      {model.followups.map((item) => <WorkFollowupCard item={item} key={item.requestId} locale={locale} workId={workId} />)}
     </div> : null}
   </section>;
 }
@@ -65,7 +91,7 @@ function useCommandIds() {
   };
 }
 
-function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" | "en-US"}) {
+function WorkUpdateCard({item, locale, targeted}: {item: WorkUpdateItem; locale: "pt-BR" | "en-US"; targeted: boolean}) {
   const t = useTranslations("App.workUpdates");
   const format = useFormatter();
   const router = useRouter();
@@ -110,7 +136,7 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
   }
 
   const statusLabel = t(`status.${item.status}`);
-  return <article aria-label={statusLabel} className="work-update" data-status={item.status}>
+  return <article aria-label={statusLabel} className="work-update" data-status={item.status} data-targeted={targeted ? "true" : undefined} id={updateAnchor(item.updateId)} tabIndex={-1}>
     <header>
       <span className="work-update__status">{item.status === "ready" ? <Check aria-hidden="true" size={13} /> : item.open ? <RefreshCw aria-hidden="true" size={13} /> : null}{statusLabel}</span>
       <small>{t("updatedAt", {date: date(item.updatedAt)})}</small>
@@ -182,8 +208,10 @@ function WorkUpdateCard({item, locale}: {item: WorkUpdateItem; locale: "pt-BR" |
 }
 
 /** A follow-up typed in the conversation, the base it continues, the execution it led to and the
- * person's decision: a ready one is adopted as the new base, an open one can be declined. */
-function WorkFollowupCard({item, locale}: {item: WorkFollowupItem; locale: "pt-BR" | "en-US"}) {
+ * person's decision: a ready one is adopted as the new base, an open one can be declined. One that
+ * waits for an execution opens the execution request with its text as the objective; the request is
+ * validated there as any other, and only its objective links it to the follow-up. */
+function WorkFollowupCard({item, locale, workId}: {item: WorkFollowupItem; locale: "pt-BR" | "en-US"; workId: string}) {
   const t = useTranslations("App.workUpdates");
   const format = useFormatter();
   const router = useRouter();
@@ -241,6 +269,8 @@ function WorkFollowupCard({item, locale}: {item: WorkFollowupItem; locale: "pt-B
       </div> : confirming === "decline" ? <DeclineConfirmation busy={busy} explanation={t("followups.declineExplanation")} onCancel={() => setConfirming(null)} onConfirm={() => void run("decline")} reason={reason} setReason={setReason} />
         : <>
           {item.canAdopt ? <button className="button button--small" disabled={busy} onClick={() => {setDone(""); setConfirming("adopt");}} type="button"><Check aria-hidden="true" size={14} />{t("followups.adopt")}</button> : null}
+          {item.canRequestExecution ? <Link className="button button--small button--outline work-update__request" href={`/${locale}/app/projects/${workId}/executions?followup=${item.requestId}`}>
+            <Play aria-hidden="true" size={14} />{t("followups.requestExecution")}</Link> : null}
           {item.canDecline ? <button className="button button--small button--outline" disabled={busy} onClick={() => {setDone(""); setConfirming("decline");}} type="button"><X aria-hidden="true" size={14} />{t("followups.decline")}</button> : null}
         </>}
     </footer> : <p className="work-update__decided">{item.status === "adopted" && item.decidedAt ? t("followups.decided.adopted", {date: date(item.decidedAt)})

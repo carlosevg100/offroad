@@ -10,17 +10,26 @@ import {institutionalResultIssues} from "@/lib/advisor/institutional-issue-prese
 import {InstitutionalIssues} from "./institutional-issues";
 import {InstitutionalScenarioComparison} from "./institutional-scenario-comparison";
 import styles from "./institutional-model-result-work.module.css";
+import {followWorkSectionLink, workSectionHref} from "./advisor-work-links";
 
 /** `calculating` is what the work activity says of the calculation of this result (see
  * `institutionalCalculationRuns`). A queued result that nothing calculates is a gap, not "calculating".
- * The page refreshes from the work activity; this view has no refresh of its own. */
-export function InstitutionalModelResultWork({projectId, result, calculating = false}: {projectId: string; result: InstitutionalModelResult; calculating?: boolean}) {
+ * The page refreshes from the work activity; this view has no refresh of its own.
+ *
+ * `recalculation` is the recalculated result that waits in the work's Updates to replace this one
+ * (see `recalculationAwaitingAdoption`): only its adoption makes it current, so the panel points to
+ * that update instead of asking for a new calculation; the link opens the Updates section on it. */
+export function InstitutionalModelResultWork({projectId, result, calculating = false, recalculation = null}: {
+  projectId: string; result: InstitutionalModelResult; calculating?: boolean; recalculation?: {updateId: string; adoptable: boolean} | null;
+}) {
   const t = useTranslations("InstitutionalModelResult");
   const locale = useLocale();
   const formatter = useFormatter();
   return <section className={styles.result} data-testid="institutional-model-result">
     <header><span>{t("kicker")}</span><h2>{t("title")}</h2>
-      <p role="status">{t(`status.${result.status === "queued" && !calculating ? "notRunning" : result.status}`)}</p>
+      <p role="status">{recalculation ? t(recalculation.adoptable ? "status.recalculationReady" : "status.recalculationWaiting")
+        : t(`status.${result.status === "queued" && !calculating ? "notRunning" : result.status}`)}</p>
+      {recalculation ? <p className={styles.recalculation}><a href={workSectionHref("updates", recalculation.updateId)} onClick={followWorkSectionLink}>{t("openUpdate")}</a></p> : null}
       <small>{t("prepared", {date: formatter.dateTime(new Date(result.createdAt), {dateStyle: "medium", timeZone: "UTC"})})}</small>
     </header>
     {result.status === "completed" && result.artifact ? <>
