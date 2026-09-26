@@ -102,9 +102,14 @@ export function workIsRunning(activity: WorkActivity): boolean {
   return activity.jobs.some(runs) || activity.scheduledRequests.length > 0 || activity.scheduledCandidates.some(awaitingWorker);
 }
 
-/** Something of this work waits for a person: held work or an open wait. Nothing refreshes for it. */
-export function workIsWaitingForPerson(activity: WorkActivity): boolean {
-  return activity.jobs.some((job) => job.status === "awaiting_approval") || activity.waits.length > 0;
+/**
+ * An open wait of the work waits for a person: it is shown as such and nothing refreshes for it.
+ * A job held for approval also waits for a person and never runs, but its surface is the plan's
+ * approval card, which names the exact version to approve; a held job the displayed plan does not
+ * own (the integration preview journey leaves one after a plan edit) has no action to show.
+ */
+export function workHasOpenWait(activity: WorkActivity): boolean {
+  return activity.waits.length > 0;
 }
 
 /** The refresh decision: poll only while a machine is on something of the work. A wait for a
@@ -145,9 +150,9 @@ export function executionsAreRunning(activity: WorkActivity): boolean {
 }
 
 /** What a client surface needs to show and poll, without ids: the refresh decision, whether the
- * conversation's own work runs, and whether something waits for a person. */
+ * conversation's own work runs, and whether an open wait waits for a person. */
 export type WorkActivitySummary = Readonly<{refresh: boolean; working: boolean; waitingForPerson: boolean}>;
 
 export function summarizeWorkActivity(activity: WorkActivity): WorkActivitySummary {
-  return {refresh: workShouldRefresh(activity), working: conversationIsWorking(activity), waitingForPerson: workIsWaitingForPerson(activity)};
+  return {refresh: workShouldRefresh(activity), working: conversationIsWorking(activity), waitingForPerson: workHasOpenWait(activity)};
 }

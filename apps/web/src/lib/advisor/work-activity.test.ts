@@ -13,7 +13,7 @@ import {
   summarizeWorkActivity,
   workActivity,
   workIsRunning,
-  workIsWaitingForPerson,
+  workHasOpenWait,
   workShouldRefresh,
   type WorkActivityRows,
 } from "./work-activity";
@@ -31,7 +31,7 @@ describe("work activity from persisted facts", () => {
     const activity = read({});
     expect(activity).toEqual(noWorkActivity);
     expect(workIsRunning(activity)).toBe(false);
-    expect(workIsWaitingForPerson(activity)).toBe(false);
+    expect(workHasOpenWait(activity)).toBe(false);
     expect(workShouldRefresh(activity)).toBe(false);
     expect(institutionalCalculationRuns(activity, id(60))).toBe(false);
     expect(summarizeWorkActivity(activity)).toEqual({refresh: false, working: false, waitingForPerson: false});
@@ -41,13 +41,15 @@ describe("work activity from persisted facts", () => {
     const activity = read({jobs: [job(status)]});
     expect(workIsRunning(activity)).toBe(true);
     expect(workShouldRefresh(activity)).toBe(true);
-    expect(workIsWaitingForPerson(activity)).toBe(false);
+    expect(workHasOpenWait(activity)).toBe(false);
     expect(jobStatusRuns(status)).toBe(true);
   });
 
-  it("a job held for approval waits for a person and is not polled", () => {
+  it("a job held for approval is neither running nor polled; its wait is the plan's approval card", () => {
     const activity = read({jobs: [job("awaiting_approval", "capital_project_analysis")]});
-    expect(workIsWaitingForPerson(activity)).toBe(true);
+    expect(activity.jobs.map((held) => held.status)).toEqual(["awaiting_approval"]);
+    expect(workHasOpenWait(activity)).toBe(false);
+    expect(summarizeWorkActivity(activity)).toEqual({refresh: false, working: false, waitingForPerson: false});
     expect(workIsRunning(activity)).toBe(false);
     expect(workShouldRefresh(activity)).toBe(false);
     expect(conversationIsWorking(activity)).toBe(false);
@@ -62,21 +64,21 @@ describe("work activity from persisted facts", () => {
   });
 
   it("an open wait is waiting for a person; a resolution or a newer wait closes it", () => {
-    expect(workIsWaitingForPerson(read({milestones: [wait()]}))).toBe(true);
+    expect(workHasOpenWait(read({milestones: [wait()]}))).toBe(true);
     expect(workShouldRefresh(read({milestones: [wait()]}))).toBe(false);
     const resolution = wait({id: id(12), kind: "human_resolved", resolves_milestone_id: id(10)});
-    expect(workIsWaitingForPerson(read({milestones: [wait(), resolution]}))).toBe(false);
+    expect(workHasOpenWait(read({milestones: [wait(), resolution]}))).toBe(false);
     const newer = wait({id: id(13), subject_id: id(14), supersedes_milestone_id: id(10)});
     expect(read({milestones: [wait(), newer]}).waits.map((open) => open.milestoneId)).toEqual([id(13)]);
   });
 
   it("the wait of a recompute candidate is open only while the candidate awaits authorization", () => {
     const candidateWait = wait({subject_kind: "work_recompute_candidate", subject_id: id(20), label: "dependency_recompute_authorization"});
-    expect(workIsWaitingForPerson(read({milestones: [candidateWait]}))).toBe(false);
-    expect(workIsWaitingForPerson(read({milestones: [candidateWait], recomputeCandidates: [{id: id(20), state: "awaiting_authorization", execution_id: null}]}))).toBe(true);
+    expect(workHasOpenWait(read({milestones: [candidateWait]}))).toBe(false);
+    expect(workHasOpenWait(read({milestones: [candidateWait], recomputeCandidates: [{id: id(20), state: "awaiting_authorization", execution_id: null}]}))).toBe(true);
     // Authorized: the candidate is scheduled for the worker; that is machine work, not a wait.
     const authorized = read({milestones: [candidateWait], recomputeCandidates: [{id: id(20), state: "scheduled", execution_id: null}]});
-    expect(workIsWaitingForPerson(authorized)).toBe(false);
+    expect(workHasOpenWait(authorized)).toBe(false);
     expect(workShouldRefresh(authorized)).toBe(true);
   });
 
@@ -165,7 +167,7 @@ describe("work activity reader", () => {
     });
     const activity = await loadWorkActivity(client, scope);
     expect(workShouldRefresh(activity)).toBe(true);
-    expect(workIsWaitingForPerson(activity)).toBe(true);
+    expect(workHasOpenWait(activity)).toBe(true);
     expect(activity.jobs.find((live) => live.kind === "agent_operation_brief")?.recompute).toBe(true);
     expect(calls.processing_jobs).toContainEqual(["select", "id, kind, status, processing_run_id"]);
     expect(calls.processing_jobs).toContainEqual(["in", "status", ["queued", "leased", "awaiting_approval"]]);

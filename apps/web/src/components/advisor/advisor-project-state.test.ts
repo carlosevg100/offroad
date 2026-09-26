@@ -145,9 +145,9 @@ describe("pending plan refresh", () => {
       expect(workShouldRefresh(activity)).toBe(true);
       expect(conversationIsWorking(activity)).toBe(false);
     }
-    // A plan awaiting approval waits for the person: it is shown as such and is not polled.
+    // A plan awaiting approval waits for the person on its approval card, and is not polled.
     const held = workActivity({...noRows, jobs: [liveJob("capital_project_analysis", "awaiting_approval")]});
-    expect(summarizeWorkActivity(held)).toEqual({refresh: false, working: false, waitingForPerson: true});
+    expect(summarizeWorkActivity(held)).toEqual({refresh: false, working: false, waitingForPerson: false});
     for (const status of ["succeeded", "failed", "cancelled"]) expect(workShouldRefresh(workActivity({...noRows, jobs: [liveJob("execution_brief_proposal", status)]}))).toBe(false);
   });
 });
