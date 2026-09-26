@@ -1,6 +1,6 @@
 # Etapa 18, incremento 6A: saúde da recomputação e seus alarmes como configuração revisada
 
-Migração `supabase/migrations/20260926180000_dependency_recompute_health.sql` (carimbo provisório; o lead renomeia o arquivo para o carimbo registrado na aplicação). Testes: `supabase/tests/dependency_recompute_health.sql`, a extensão de `supabase/tests/rls_non_interference.sql`, `apps/document-worker/src/dependency-recompute-health.test.ts`, `apps/document-worker/src/runtime-schema.test.ts`, `scripts/ci/test-event-outbox-alarms.py` e o passo de CI `Dependency recompute through the worker loop, once, against the local stack`, que agora também exige uma linha `recompute.health`.
+Migração `supabase/migrations/20260926024249_dependency_recompute_health.sql`, aplicada em staging (`20260926024214`) e em produção (`20260926024249`) em 26/09/2026, com o texto gravado igual ao arquivo nos dois bancos. Testes: `supabase/tests/dependency_recompute_health.sql`, a extensão de `supabase/tests/rls_non_interference.sql`, `apps/document-worker/src/dependency-recompute-health.test.ts`, `apps/document-worker/src/runtime-schema.test.ts`, `scripts/ci/test-event-outbox-alarms.py` e o passo de CI `Dependency recompute through the worker loop, once, against the local stack`, que agora também exige uma linha `recompute.health`.
 
 ## Por que
 
