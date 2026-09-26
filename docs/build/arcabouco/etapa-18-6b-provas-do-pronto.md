@@ -12,8 +12,8 @@ O pronto da etapa 18 (`docs/build/arcabouco/etapa-18-execucao.md`, seção "Pron
 2. o dono pede a execução raiz pelo caminho da web; uma nova revisão da base de trabalho muda uma decisão, e o efeito de dependência planeja a candidata da linhagem como espera: `await_authorization` com o marco `awaiting_human`, sem job e sem lease;
 3. o laço do robô roda até ficar ocioso;
 4. um cliente novo, com outra conta de robô e outro token (novo dono de lease), roda o laço até ficar ocioso;
-5. a candidata e o marco de espera são idênticos ao retrato tirado antes do reinício: sem lease, sem execução, sem resolução;
-6. o dono autoriza por `authorize_work_update_v1`, na revisão vista;
+5. a candidata e o marco de espera são idênticos ao retrato tirado antes do reinício: sem lease, sem execução, sem resolução; a saúde da recomputação que o robô lê (6A) conta a espera como aguardando uma pessoa;
+6. o dono autoriza por `authorize_work_update_v1`, na revisão vista, e a primeira leitura de saúde do robô reiniciado conta a candidata agendada;
 7. o laço reiniciado produz exatamente uma execução, para o solicitante original, com a revisão da cabeça fixada, o recibo de gates com as situações da raiz, o job na fila, a linhagem para a raiz, o lease com uma tentativa do token novo, uma espera, uma resolução e uma decisão aprovada.
 
 O reinício é um cliente novo com outro dono de lease no mesmo processo Node. O que a prova mostra é que a espera vive só no banco: nenhum estado do robô anterior é necessário para retomá-la.
@@ -57,18 +57,18 @@ WCD é `supabase/tests/work_continuity_dependencies.sql`, WCC é `supabase/tests
 
 | # | Critério | Prova (arquivo:linha) | Job do CI | Tipo |
 |---|---|---|---|---|
-| 1 | Reinício do robô | WCD:354 (outbox: reivindica, lease expira, reivindica de novo, completa; lease velho recusado); WCD:895 (candidata: lease expira, a segunda reivindicação produz uma execução); VR:197 (laço em execução e laço reiniciado com outro dono de lease, sem tocar a espera); CT:516 | Database; check | direta |
+| 1 | Reinício do robô | WCD:354 (outbox: reivindica, lease expira, reivindica de novo, completa; lease velho recusado); WCD:895 (candidata: lease expira, a segunda reivindicação produz uma execução); VR:199 (laço em execução e laço reiniciado com outro dono de lease, sem tocar a espera); CT:516 | Database; check | direta |
 | 2 | Entrega duplicada | WCD:229 (o mesmo evento aplicado duas vezes); WCD:858 (reentrega pela outbox não planeja nada novo); CT:417 | Database; check | direta |
 | 3 | Evento fora de ordem | WCD:270 (versão 5 antes da 4; nada regride); CT:446 | Database; check | direta |
 | 4 | Alterações concorrentes | `scripts/ci/test-dependency-update-concurrency.py`:104 (duas sessões, um pedido aberto); `scripts/ci/test-dependency-recompute-concurrency.py`:127 (dois robôs, um lease); WCD:166 (duas mudanças antes do consumidor); CT:476 | Database; check | direta |
 | 5 | Balancete novo | WCD:803 (nova versão de S: candidata só para a linhagem afetada); CT:169 | Database; check | direta |
-| 6 | Mudança de uma premissa | VR:165 (nova revisão da base muda uma decisão; depois da autorização o laço do robô produz a candidata, linha 243); WCD:166 (revisão com o slot B alterado); CT:220 | Database; check | direta |
+| 6 | Mudança de uma premissa | VR:167 (nova revisão da base muda uma decisão; depois da autorização o laço do robô produz a candidata, linha 262); WCD:166 (revisão com o slot B alterado); CT:220 | Database; check | direta |
 | 7 | Troca de método | WCD:323 (release mais nova: só as execuções na release antiga, `method_update`); WCD:1169 (cabeça sem perfil executável retida até a capacidade liberar); CT:256 | Database; check | direta |
 | 8 | Só descendentes afetados ficam desatualizados | WCD:803 (X3 reaproveitada, X2 retida até a fonte derivada ser refeita); WCD:323; CT:170 | Database; check | direta |
 | 9 | Decisão antiga permanece imutável | WCD:641 (marcos e recibos idênticos byte a byte); WCC:166 (`history_intact`, conferido por todos os comandos); CT:357 | Database; check | direta |
 | 10 | Retomar não repete efeito | WCD:833 (produzida uma vez; a mesma submissão só nomeia a execução); WCD:895; WCC:617 (submissão e autorização repetidas); CT:530 | Database; check | direta |
 | 11 | Retomar não repete custo confirmado | WCC:617 (autorizada, interrompida, reivindicada de novo e produzida uma vez; teto e autorização usados uma vez) e WCC:699 (reserva do teto recusada; reserva de custo zero uma vez, também após nova reivindicação do job); CT:542 | Database; check | direta para custo zero; a reserva acima de zero é recusada pelo produto (ver limites) |
-| 12 | Espera humana resiste a deploy | VR:197 (espera `awaiting_human` sem job e sem lease atravessa o laço e um robô reiniciado; autorização por `authorize_work_update_v1`; uma produção com linhagem, linha 243); WCD:1261 (espera persistida, nada a reivindicar); CT:385 | Database; check | direta |
+| 12 | Espera humana resiste a deploy | VR:199 (espera `awaiting_human` sem job e sem lease atravessa o laço e um robô reiniciado; autorização por `authorize_work_update_v1`; uma produção com linhagem, linha 262); WCD:1261 (espera persistida, nada a reivindicar); CT:385 | Database; check | direta |
 | 13 | Evento perdido pelo consumidor é recuperado pela outbox | WCD:519 (efeito falha, a entrega perdida é aplicada quando o lease expira, linha 571; bloqueio após cinco tentativas e recuperação do operador, linha 607; efeito cortado pelo tempo limite, linha 638) | Database | direta |
 | 14 | Grafo incompleto deixa a saída inteira desatualizada e reconstrói antes de reaproveitar | WCD:1406 (fato `graph_incomplete` com a lacuna, retenção com o sinal, nada planejado nem reaproveitado; a cabeça restaurada libera a retenção e produz uma candidata); WCD:244 (projeção reconstruída antes do julgamento); CT:312 | Database; check | direta |
 

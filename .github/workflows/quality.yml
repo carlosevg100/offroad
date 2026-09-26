@@ -224,6 +224,7 @@ jobs:
       # spend; a new revision of its working basis plans one candidate that waits for a person. The
       # running loop and a restarted worker with its own token leave it untouched; after the owner's
       # authorization the restarted loop produces it once for the original requester, with lineage.
+      # The recompute health (6A) counts the wait, then the scheduled candidate.
       # No model, no provider key, no network beyond the local stack, synthetic data only.
       - name: Dependency recompute through the worker loop, once, against the local stack
         env:

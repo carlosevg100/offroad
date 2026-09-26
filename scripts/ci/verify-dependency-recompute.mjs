@@ -21,8 +21,10 @@
 // scheduled without a person cannot share this database: the capital method has exactly one
 // executable profile (the producer refuses two, profiles are immutable, and the capital provenance
 // and manifest identity checks admit a single release), so the planner's zero-budget scheduling
-// stays proven by supabase/tests/work_continuity_dependencies.sql. Synthetic data only; no provider
-// key and no network beyond the local stack.
+// stays proven by supabase/tests/work_continuity_dependencies.sql. The recompute health the worker
+// reads (6A) counts the wait as awaiting a person before the loop and the scheduled candidate after
+// the authorization, each in one recompute.health line of four numbers. Synthetic data only; no
+// provider key and no network beyond the local stack.
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {createHash, randomUUID} from 'node:crypto';
@@ -72,7 +74,7 @@ try {
   // 1. The worker's own recompute module and the shared composition, bundled as the worker image
   // bundles them, plus the synthetic basis and the released method artifacts.
   const outfile = join(temporary, 'recompute.mjs');
-  const bundle = await build({stdin: {contents: `export {createDependencyRecomputeQueue, runDependencyRecomputeOnce} from './src/dependency-recompute.ts';
+  const bundle = await build({stdin: {contents: `export {createDependencyRecomputeQueue, createRecomputeHealthMonitor, runDependencyRecomputeOnce} from './src/dependency-recompute.ts';
 export {composeCapitalExecutionRequest, executionContractBasisSchema} from '@offroad/execution-request';
 export {adoptedCapitalPeriodFixture} from '@offroad/testing-fixtures/capital-structure-decision';
 export {deriveExecutionProfile, executionCanonicalText, executionInputFingerprint} from '@offroad/agent-contracts';
@@ -218,6 +220,17 @@ commit;`);
   const account = await session(workerEmail);
   const contract = await call(account, 'worker_runtime_schema_contract_v1', {});
   assert(contract.capabilities.includes('dependency-recompute.v1'), 'runtime_capability_missing');
+  assert(contract.capabilities.includes('dependency-recompute-health.v1'), 'runtime_health_capability_missing');
+  // The health the loop reads at most every 30 seconds (6A), through the worker entry point as the
+  // worker account: one recompute.health line of four numbers, no second read inside the throttle
+  // window, and the wait counted as awaiting a person.
+  const healthLines = [];
+  const health = m.createRecomputeHealthMonitor(account, workerToken, (event, detail) => healthLines.push({event, ...detail}));
+  const waiting = await health.maybeRead();
+  assert.equal(await health.maybeRead(), null, 'recompute_health_not_throttled');
+  assert.deepEqual(healthLines.filter(line => line.event !== 'recompute.backlog.failed').map(line => line.event), ['recompute.health'], `recompute_health_lines: ${JSON.stringify(healthLines)}`);
+  assert.deepEqual(Object.keys(healthLines[0]).sort(), ['awaitingAuthorizationCount', 'event', 'expiredLeaseCount', 'oldestScheduledSeconds', 'scheduledCount']);
+  assert(waiting && waiting.awaitingAuthorizationCount >= 1 && Object.values(waiting).every(value => Number.isInteger(value) && value >= 0), `recompute_health_reading: ${JSON.stringify(waiting)}`);
   assert.deepEqual(await untilIdle(m.createDependencyRecomputeQueue(account, workerToken)), [], 'the running worker worked a candidate that waits for a person');
   const held = waitState();
   assert(held.wait && held.wait.label === 'dependency_recompute_authorization' && held.candidate.state === 'awaiting_authorization' && held.candidate.execution_id === null
@@ -233,6 +246,12 @@ commit;`);
   // restarted loop then produces the candidate, and only it.
   const authorized = await call(human, 'authorize_work_update_v1', {p_command_id: randomUUID(), p_candidate_id: candidateId, p_expected_revision: held.candidate.revision});
   assert(authorized.state === 'scheduled' && authorized.replayed === false && authorized.candidateId === candidateId, `authorization not recorded: ${JSON.stringify(authorized)}`);
+  // After the authorization, the restarted worker's first health reading counts the scheduled candidate.
+  const restartedHealthLines = [];
+  const restartedHealth = m.createRecomputeHealthMonitor(restartedAccount, restartedToken, (event, detail) => restartedHealthLines.push({event, ...detail}));
+  const reading = await restartedHealth.maybeRead();
+  assert.deepEqual(restartedHealthLines.filter(line => line.event !== 'recompute.backlog.failed').map(line => line.event), ['recompute.health'], `recompute_health_lines: ${JSON.stringify(restartedHealthLines)}`);
+  assert(reading && reading.scheduledCount >= 1 && Object.values(reading).every(value => Number.isInteger(value) && value >= 0), `recompute_health_reading: ${JSON.stringify(reading)}`);
   const started = performance.now();
   const outcomes = await untilIdle(restartedQueue);
   const loopMs = Math.ceil(performance.now() - started);
@@ -276,6 +295,8 @@ commit;`);
     decisions: ['approved'],
   }, JSON.stringify(recorded));
   console.log(JSON.stringify({event: 'dependency_recompute_eval', pinnedHypotheses: governed.pins.length, outcomes: outcomes.map(outcome => outcome.status), loopMs}));
+  console.log(JSON.stringify(healthLines[0]));
+  console.log(JSON.stringify(restartedHealthLines[0]));
   console.log('dependency_recompute_wait_across_restart: PASS (a costed candidate waits as an awaiting_human milestone with no job and no lease through the running loop and a restarted worker with a new lease owner; nothing claimed; authorize_work_update_v1 by the owner; disposable local stack)');
-  console.log('dependency_recompute_worker_loop: PASS (worker module and RPC client, shared composition, one production for the original requester, head revision pinned, gate receipt, queued job, lineage; no model in the bundle; disposable local stack)');
+  console.log('dependency_recompute_worker_loop: PASS (worker module and RPC client, shared composition, one production for the original requester, head revision pinned, gate receipt, queued job, lineage, recompute.health lines of four numbers for the wait and for the scheduled candidate; no model in the bundle; disposable local stack)');
 } finally { rmSync(temporary, {recursive: true, force: true}); }

@@ -9840,6 +9840,60 @@
       ]
     },
     {
+      "id": "function:private.dependency_recompute_health_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.dependency_recompute_health_v1()",
+          "kind": "function",
+          "name": "dependency_recompute_health_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.dependency_recompute_health_v1()",
+          "kind": "function",
+          "name": "dependency_recompute_health_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Operação, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 6A",
+      "reason": "Saúde do recálculo de dependências para os alarmes do CloudWatch: contagens e idades das candidatas agendadas, leases vencidos e esperas por autorização, sem identificador nem dado de cliente, lidas pelo worker com a mesma vinculação do claim do 3B",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926024249_dependency_recompute_health.sql",
+          "line": 35,
+          "anchor": "create function private.dependency_recompute_health_v1() returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.dependency_recompute_key_v1(p_work uuid, p_base uuid, p_fingerprint text)",
       "kind": "function",
       "catalogues": {
@@ -44888,6 +44942,70 @@
       ]
     },
     {
+      "id": "function:private.worker_dependency_recompute_health_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_dependency_recompute_health_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_dependency_recompute_health_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_dependency_recompute_health_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_dependency_recompute_health_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Operação, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 6A",
+      "reason": "Saúde do recálculo de dependências para os alarmes do CloudWatch: contagens e idades das candidatas agendadas, leases vencidos e esperas por autorização, sem identificador nem dado de cliente, lidas pelo worker com a mesma vinculação do claim do 3B",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926024249_dependency_recompute_health.sql",
+          "line": 53,
+          "anchor": "create function private.worker_dependency_recompute_health_v1(p_worker_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.worker_document_advisor_authorization(p_job_id uuid, p_capability_token text, p_event_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -73078,6 +73196,70 @@
           "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
           "line": 1003,
           "anchor": "create function public.worker_dependency_recompute_basis_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_dependency_recompute_health_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_dependency_recompute_health_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_dependency_recompute_health_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_dependency_recompute_health_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_dependency_recompute_health_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Operação, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 6A",
+      "reason": "Saúde do recálculo de dependências para os alarmes do CloudWatch: contagens e idades das candidatas agendadas, leases vencidos e esperas por autorização, sem identificador nem dado de cliente, lidas pelo worker com a mesma vinculação do claim do 3B",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926024249_dependency_recompute_health.sql",
+          "line": 60,
+          "anchor": "create function public.worker_dependency_recompute_health_v1(p_worker_token text) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -179992,6 +180174,13 @@
       "decision": "preservar",
       "stage": "18 / 5A",
       "reason": "Migração do incremento 5A de work_dependencies_and_continuity: private.institutional_result_dependencies, private.institutional_result_invalidations, public.institutional_recompute_candidates e private.institutional_recompute_holds, o tipo de evento institutional_configuration, o planejador e a liquidação institucionais, o passo do grafo em aprovar e calcular com recuo para o cálculo antigo, a RPC de atualidade do worker e a retirada de propagate_project_canonical_revision_v1"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260926024249_dependency_recompute_health.sql",
+      "decision": "preservar",
+      "stage": "18 / 6A",
+      "reason": "Migração do incremento 6A da etapa 18: a leitura de saúde do recálculo, a entrada do worker com a vinculação do claim e a capacidade dependency-recompute-health.v1 no contrato de runtime do worker"
     }
   ],
   "staging_archive": [
