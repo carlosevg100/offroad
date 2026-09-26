@@ -309,10 +309,19 @@ select pg_temp.as_user('10000000-0000-4000-8000-000000000802');
 select set_config('request.headers','{}',true);
 
 -- Versions are immutable for everyone, including the database owner: no update, delete or truncate.
+-- A plain truncate is already refused by the foreign key from presentation_templates before any
+-- trigger fires; with cascade the foreign-key check passes and the guard is what refuses, before
+-- any row of the cascade set is removed.
 reset role;
 select pg_temp.expect_immutable($q$update public.presentation_template_versions set fingerprint=repeat('b',64)$q$);
 select pg_temp.expect_immutable($q$delete from public.presentation_template_versions$q$);
-select pg_temp.expect_immutable($q$truncate public.presentation_template_versions$q$);
+select pg_temp.expect_immutable($q$truncate public.presentation_template_versions cascade$q$);
+do $$ begin
+  -- Organization versions 1, 2 and 3 plus the project version 1; two template rows.
+  if (select count(*) from public.presentation_template_versions)<>4 or (select count(*) from public.presentation_templates)<>2 then
+    raise exception 'the refused truncate removed rows';
+  end if;
+end $$;
 set local role authenticated;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000802');
 
@@ -438,6 +447,9 @@ end $$;
 
 -- The worker reads the current version of the project its leased job belongs to (the project
 -- record wins), and reads the logo object of that organization only while it holds the lease.
+-- The job is seeded without a JWT, as the material storage contract seeds it: the synthetic lease
+-- trigger binds no account until the worker account is set explicitly below.
+select set_config('request.jwt.claims','{}',true);
 insert into public.processing_runs (id, organization_id, intake_session_id, run_no, trigger, status, pipeline_version, created_by)
 values ('70000000-0000-4000-8000-000000000801','20000000-0000-4000-8000-000000000801','40000000-0000-4000-8000-000000000801',1,'manual','running','template-version-test-v1','10000000-0000-4000-8000-000000000801');
 insert into public.processing_jobs (id, organization_id, processing_run_id, intake_session_id, kind, status, payload, attempts, lease_expires_at, capability_sha256)
