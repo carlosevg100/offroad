@@ -12605,6 +12605,60 @@
       ]
     },
     {
+      "id": "function:private.execution_hold_is_live_v1(p_job_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_hold_is_live_v1(p_job_id uuid)",
+          "kind": "function",
+          "name": "execution_hold_is_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_hold_is_live_v1(p_job_id uuid)",
+          "kind": "function",
+          "name": "execution_hold_is_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engineering",
+      "decision": "preservar",
+      "stage": "Correção do caminho da companhia",
+      "reason": "Correção da rota da companhia: diz se um job retido ainda pode ser aprovado (plano corrente, plano em preparo ou turno da conversa em curso), lido pelo replay e pela recusa de private.enqueue_incremental_deal_state_analysis e pela liquidação de jobs vencidos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926062533_deal_state_route.sql",
+          "line": 40,
+          "anchor": "create or replace function private.execution_hold_is_live_v1(p_job_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.execution_inputs_current_v1(p_org uuid, p_execution uuid, p_subject uuid)",
       "kind": "function",
       "catalogues": {
@@ -37714,6 +37768,12 @@
         {
           "path": "supabase/migrations/20260908035026_explicit_execution_brief_approval.sql",
           "line": 631,
+          "anchor": "create or replace function private.settle_stale_execution_jobs_v1()",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926062533_deal_state_route.sql",
+          "line": 170,
           "anchor": "create or replace function private.settle_stale_execution_jobs_v1()",
           "mechanism": "direct_ddl"
         }
@@ -181057,6 +181117,13 @@
       "decision": "preservar",
       "stage": "Correção do caminho da companhia",
       "reason": "Correção: private.enqueue_incremental_deal_state_analysis aceita o gatilho material_package_approved, mapeado para o package_review aprovado, para que a aprovação do pacote enfileire a análise que faz a triagem de financiadores"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260926062533_deal_state_route.sql",
+      "decision": "preservar",
+      "stage": "Correção do caminho da companhia",
+      "reason": "Correção: a análise incremental segue depois da primeira decisão (a aprovação do plano não reabre um caso confirmado), um job retido vivo é replay da mesma decisão e recusa outra, e a liquidação cancela o job retido que não pode mais ser aprovado"
     }
   ],
   "staging_archive": [

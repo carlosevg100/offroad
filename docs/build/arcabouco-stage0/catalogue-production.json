@@ -4042,6 +4042,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.execution_hold_is_live_v1(p_job_id uuid)",
+      "kind": "function",
+      "name": "execution_hold_is_live_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.execution_inputs_current_v1(p_org uuid, p_execution uuid, p_subject uuid)",
       "kind": "function",
       "name": "execution_inputs_current_v1",

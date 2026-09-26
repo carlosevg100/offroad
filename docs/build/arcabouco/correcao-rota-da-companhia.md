@@ -1,6 +1,6 @@
 # Correção da rota da companhia depois da primeira análise incremental
 
-Data: 26/09/2026. Branch `fix/deal-state-route`, sobre `main` depois da #797 (migração `20260926053701_material_package_approved_trigger`, aplicada em staging e produção) e do incremento 5C da etapa 18 (#796). Migração `20260926210000_deal_state_route.sql`, carimbo provisório: o líder aplica e renomeia pelo carimbo registrado.
+Data: 26/09/2026. Branch `fix/deal-state-route`, sobre `main` depois da #797 (migração `20260926053701_material_package_approved_trigger`, aplicada em staging e produção) e do incremento 5C da etapa 18 (#796). Migração `20260926062533_deal_state_route.sql`, aplicada em staging (`20260926062438`) e em produção (`20260926062533`) em 26/09/2026, com o texto gravado igual ao arquivo nos dois bancos (md5 `401eeb0e303a9af74e6c298305483a68`).
 
 ## 1. Os dois defeitos
 
@@ -51,7 +51,7 @@ Uma função nova, dois remendos de texto (cada trecho antigo presente exatament
 
 Uma checagem final lê de volta os corpos instalados: a liquidação usa o predicado, o predicado tem as três condições e nenhuma das duas funções é executável por `authenticated`.
 
-O snapshot `docs/build/schema-history/effective-function-bodies` foi regravado a partir da réplica depois da migração: o corpo do enqueue muda nos quatro trechos; a aprovação, a liquidação e o predicado entram no snapshot pela primeira vez (a migração os lê por assinatura literal); os outros 89 corpos continuam iguais byte a byte. Antes da migração, os corpos da réplica têm os mesmos hashes que o líder mediu em staging e em produção (iguais nos dois; sha256 de `pg_get_functiondef` e md5 do `prosrc`): aprovação `b11a6bfc...` e `dea74645...`, enqueue `c51fab36...` e `d02a5366...`, liquidação `0f02eb2d...` e `e8151062...`, `execution_dispatch_is_current` `74442692...` e `73236c24...`. Os trechos e o md5 fixado foram, portanto, provados contra os corpos reais. Os corpos de staging e produção devem ser recapturados depois da aplicação.
+O snapshot `docs/build/schema-history/effective-function-bodies` foi regravado a partir da réplica depois da migração: o corpo do enqueue muda nos quatro trechos; a aprovação, a liquidação e o predicado entram no snapshot pela primeira vez (a migração os lê por assinatura literal); os outros 89 corpos continuam iguais byte a byte. Antes da migração, os corpos da réplica têm os mesmos hashes que o líder mediu em staging e em produção (iguais nos dois; sha256 de `pg_get_functiondef` e md5 do `prosrc`): aprovação `b11a6bfc...` e `dea74645...`, enqueue `c51fab36...` e `d02a5366...`, liquidação `0f02eb2d...` e `e8151062...`, `execution_dispatch_is_current` `74442692...` e `73236c24...`. Os trechos e o md5 fixado foram, portanto, provados contra os corpos reais. Depois da aplicação, os quatro corpos lidos de staging e de produção são iguais ao snapshot (sha256 de `pg_get_functiondef`: enqueue `6fe530d5...`, aprovação `692d68dd...`, liquidação `0aae7d22...`, predicado `1276ac00...`), e o único job retido de produção, um `capital_project_analysis` com plano corrente, continua vivo.
 
 ## 4. Gates que continuam valendo
 
