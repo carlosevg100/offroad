@@ -94,6 +94,59 @@ export function createDependencyRecomputeQueue(client: SupabaseClient, workerTok
   };
 }
 
+/**
+ * The health of the recompute (stage 18, increment 6A): counts and ages across all organizations, never
+ * an identifier. The loop reads it at most every 30 seconds and logs `recompute.health` for the
+ * CloudWatch filters of monitoring/dependency-recompute-alarms.json; when the oldest scheduled wait
+ * passes 30 minutes or a lease expired, it also logs `recompute.backlog.failed` with the same numbers.
+ * A failed or malformed read logs `recompute.poll.failed` with reason `health_failed` and never stops
+ * the loop.
+ */
+export const recomputeHealthSchema = z.object({
+  scheduledCount: z.number().int().nonnegative(),
+  oldestScheduledSeconds: z.number().int().nonnegative(),
+  expiredLeaseCount: z.number().int().nonnegative(),
+  awaitingAuthorizationCount: z.number().int().nonnegative(),
+}).strict();
+export type RecomputeHealth = z.infer<typeof recomputeHealthSchema>;
+export const RECOMPUTE_HEALTH_INTERVAL_MS = 30_000;
+export const RECOMPUTE_BACKLOG_SECONDS = 1_800;
+
+type Log = (event: string, detail?: Record<string, unknown>) => void;
+export type RecomputeHealthMonitor = {maybeRead(): Promise<RecomputeHealth | null>};
+
+export function createRecomputeHealthMonitor(client: SupabaseClient, workerToken: string, log: Log,
+  options: {now?: () => number; intervalMs?: number} = {}): RecomputeHealthMonitor {
+  const now = options.now ?? Date.now;
+  const intervalMs = options.intervalMs ?? RECOMPUTE_HEALTH_INTERVAL_MS;
+  let lastReadAt: number | null = null;
+  return {
+    async maybeRead() {
+      const at = now();
+      // A failed read counts as a read: a broken endpoint is retried every 30 seconds, not every pass.
+      if (lastReadAt !== null && at - lastReadAt < intervalMs) return null;
+      lastReadAt = at;
+      try {
+        const {data, error} = await client.rpc("worker_dependency_recompute_health_v1", {p_worker_token: workerToken})
+          .abortSignal(AbortSignal.timeout(recomputeTransportTimeoutMs(0)));
+        const parsed = error ? null : recomputeHealthSchema.safeParse(data);
+        if (!parsed?.success) {
+          log("recompute.poll.failed", {reason: "health_failed"});
+          return null;
+        }
+        const {scheduledCount, oldestScheduledSeconds, expiredLeaseCount, awaitingAuthorizationCount} = parsed.data;
+        const numbers = {scheduledCount, oldestScheduledSeconds, expiredLeaseCount, awaitingAuthorizationCount};
+        log("recompute.health", numbers);
+        if (oldestScheduledSeconds > RECOMPUTE_BACKLOG_SECONDS || expiredLeaseCount > 0) log("recompute.backlog.failed", numbers);
+        return parsed.data;
+      } catch {
+        log("recompute.poll.failed", {reason: "health_failed"});
+        return null;
+      }
+    },
+  };
+}
+
 export type RecomputeOutcome =
   | {status: "idle"}
   | {status: "produced"; candidateId: string; executionId: string}
@@ -149,4 +202,26 @@ export async function runDependencyRecomputeOnce(queue: DependencyRecomputeQueue
   const submitted = await queue.submit(claim, composed.contractText, composed.snapshotText, composed.gatesText);
   if (submitted.produced) return {status: "produced", candidateId: claim.candidateId, executionId: submitted.executionId};
   return endedOutcome(claim.candidateId, submitted.state, submitted.reason);
+}
+
+/**
+ * One pass of the recompute loop, as the worker runs it every five seconds: up to `limit` candidates,
+ * with the health read, when due, before each claim, so a long pass still reports it. A transport
+ * failure ends the pass with `recompute.poll.failed`; the lease then expires and a later pass claims
+ * the candidate again.
+ */
+export async function runDependencyRecomputePass(queue: DependencyRecomputeQueue, health: RecomputeHealthMonitor, log: Log,
+  options: {stopping?: () => boolean; limit?: number} = {}): Promise<void> {
+  const stopping = options.stopping ?? (() => false);
+  const limit = options.limit ?? 10;
+  try {
+    for (let batch = 0; batch < limit && !stopping(); batch++) {
+      await health.maybeRead();
+      const outcome = await runDependencyRecomputeOnce(queue);
+      if (outcome.status === "idle") break;
+      log("recompute.finished", outcome.status === "produced"
+        ? {candidate: outcome.candidateId, execution: outcome.executionId, status: outcome.status}
+        : {candidate: outcome.candidateId, status: outcome.status, reason: outcome.reason});
+    }
+  } catch { log("recompute.poll.failed", {reason: "recompute_transport_failed"}); }
 }
