@@ -72,3 +72,13 @@ Leitura do executor:
 - "finish this": a inscrição de e-mail do fundador no tópico dos alarmes estava pendente. O executor confirmou a inscrição pela sessão do fundador (link de confirmação da AWS lido na caixa do fundador, verificado contra o tópico da Offroad e usado pela API da conta) e disparou um alarme de teste; a AWS registrou a notificação enviada e o e-mail chegou à caixa do fundador. Nenhuma permissão de segurança foi alterada.
 - "and 17": concluir os trabalhos abertos depois do fechamento da etapa 17 (correção do motor de preço, consistência dos parâmetros e guia de revisão, reserva de custo de produção, limpeza de ambientes de trabalho).
 
+
+## OK da etapa 19, 26/09/2026
+
+Registro verbatim da mensagem do fundador ao executor, depois da explicação detalhada do protocolo único de artefato, blocos e derivação e do fechamento da etapa 18 (`docs/build/arcabouco/etapa-18-6-fechamento.md`): "ok .. manda bala"
+
+Leitura do executor:
+
+- É o OK expresso da onda da etapa 19, pelo roteiro aprovado. As decisões técnicas da etapa seguem a autoridade permanente de execução de 21/09/2026; aprovar conteúdo profissional, gasto novo, efeito externo e liberação de execução para cliente real continuam atos do fundador e não decorrem deste OK.
+- A explicação que precedeu o OK registrou o alcance: um único protocolo para respostas e arquivos (artefato, revisão imutável, blocos com afirmações rastreadas, manifesto, derivação ancorada no grafo comum, audiência declarada), sem add-in de Office, sem mudança de método ou número, sem publicação externa. As quatro tabelas históricas ficam como origem; nenhum byte antigo é descartado; artefato sem linhagem completa recebe rótulo de legado com a evidência disponível.
+- A preparação técnica das etapas 20 e 21 (notas de desenho e contratos, sem migração) pode correr em paralelo, como o roteiro permite; a migração de cada uma delas só entra com o OK seguinte.
