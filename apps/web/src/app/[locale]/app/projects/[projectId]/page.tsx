@@ -679,6 +679,7 @@ async function ConversationalCapitalProject({
       structureConfirmed={privateWorkbench.structureDecision?.status === "confirmed" || privateWorkbench.structureDecision?.status === "approved"}
     /> : null}{privateWorkbench ? <PrivateMarketWork
       feedbackEvents={feedbackEvents ?? []}
+      gap={analysisGap}
       introductionPlan={introductionPlan}
       introductionRecipients={planRecipients}
       introductionTargets={planTargets}
