@@ -127,14 +127,18 @@ function evidenceLabel(state: DecisionArtifactContract["claims"][number]["eviden
 
 type BuiltSlides = {slides: SlideSpec[]; blocks: PresentationBlock[]; application: PresentationStructureApplication | null};
 
+// Executors carry amounts as decimal strings ("5670186", "4.7"); a numeric string is a number.
+const numericText = /^-?\d+(?:[.,]\d+)?$/;
+const isNumeric = (value: unknown): boolean => typeof value === "number" || (typeof value === "string" && numericText.test(value.trim()));
+
 /** What a governed block can offer to each structure field kind; nothing here invents content. */
 function blockContent(block: PresentationBlock, claims: Map<string, DecisionArtifactContract["claims"][number]>): PresentationBlockContent {
   const values = block.claimIds.map((id) => claims.get(id)?.value);
   return {
     id: block.id,
     content: {
-      number: values.some((value) => typeof value === "number"),
-      text: values.some((value) => typeof value === "string"),
+      number: values.some((value) => isNumeric(value)),
+      text: values.some((value) => typeof value === "string" && !isNumeric(value)),
       table: block.assumptionIds.length > 0 || block.gapIds.length > 0,
       chart: (block.seriesIds ?? []).length > 0,
       source_list: block.sourceIds.length > 0,

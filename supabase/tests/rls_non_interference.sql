@@ -6164,7 +6164,7 @@ do $$ declare f text; begin
  foreach f in array array['public.set_presentation_template_v1(uuid,uuid,jsonb,jsonb)','public.read_presentation_template_version_v1(uuid)','public.worker_read_presentation_template_version_v1(uuid,text)','private.set_presentation_template_v1(uuid,uuid,jsonb,jsonb)','private.read_presentation_template_version_v1(uuid)','private.worker_read_presentation_template_version_v1(uuid,text)'] loop
   if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') or not has_function_privilege('authenticated',f,'EXECUTE') then raise exception 'Template command authority wrong: %',f;end if;
  end loop;
- foreach f in array array['private.validate_presentation_template_structure_v1(jsonb)','private.presentation_template_house_structure_v1()','private.presentation_template_json_v1(public.presentation_templates)','private.presentation_template_version_guard()'] loop
+ foreach f in array array['private.validate_presentation_template_structure_v1(jsonb)','private.presentation_template_house_structure_v1()','private.presentation_template_json_v1(uuid,uuid)','private.presentation_template_version_guard()'] loop
   if has_function_privilege('anon',f,'EXECUTE') or has_function_privilege('authenticated',f,'EXECUTE') or has_function_privilege('service_role',f,'EXECUTE') then raise exception 'Template helper exposed: %',f;end if;
  end loop;
  if exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private') and p.proname='set_presentation_template_v1' and pg_get_function_identity_arguments(p.oid) not like '%p_structure jsonb%') then raise exception 'Three-argument template command still installed';end if;
