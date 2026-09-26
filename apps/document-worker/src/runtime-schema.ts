@@ -34,12 +34,43 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "dependency-recompute-health.v1",
 ] as const;
 
+/**
+ * Capabilities this image knows and no code path of it calls yet. An image that only knows a
+ * capability boots against a database that does not expose it, which is what lets this image be
+ * deployed before the migration that adds the capability (stage 19 orders the worker before
+ * migration A). The entry moves to REQUIRED_WORKER_RUNTIME_CAPABILITIES in the increment whose
+ * code calls the function behind it; from then on the image refuses to boot without it.
+ */
+export const ANNOUNCED_WORKER_RUNTIME_CAPABILITIES = [
+  // Stage 19, increment 2a: the common artifact revision command (worker_create_artifact_revision_v1)
+  // that migration A (2b) installs; increment 4 makes the worker write through it and requires it.
+  "artifact-revision.v1",
+] as const;
+
+export const ARTIFACT_REVISION_CAPABILITY = "artifact-revision.v1" satisfies
+  (typeof ANNOUNCED_WORKER_RUNTIME_CAPABILITIES)[number];
+
 const runtimeSchemaContract = z.object({
   schemaVersion: z.literal(WORKER_RUNTIME_SCHEMA_VERSION),
   capabilities: z.array(z.string().min(1)).min(1),
 });
 
 export type WorkerRuntimeSchemaContract = z.infer<typeof runtimeSchemaContract>;
+
+/** The required capabilities the database contract does not list, in the order the image requires them. */
+export function missingWorkerRuntimeCapabilities(
+  capabilities: readonly string[],
+  required: readonly string[] = REQUIRED_WORKER_RUNTIME_CAPABILITIES,
+): string[] {
+  return required.filter((capability) => !capabilities.includes(capability));
+}
+
+/** The announced capabilities the database contract already lists; the boot log reports them. */
+export function announcedWorkerRuntimeCapabilitiesPresent(
+  contract: Pick<WorkerRuntimeSchemaContract, "capabilities">,
+): string[] {
+  return ANNOUNCED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => contract.capabilities.includes(capability));
+}
 
 /**
  * Fail closed before queue construction. A new image that expects database functions which
@@ -63,9 +94,7 @@ export async function assertWorkerRuntimeSchema(
       `worker database schema contract mismatch: expected ${WORKER_RUNTIME_SCHEMA_VERSION}, received ${actual}`,
     );
   }
-  const missing = REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter(
-    (capability) => !parsed.data.capabilities.includes(capability),
-  );
+  const missing = missingWorkerRuntimeCapabilities(parsed.data.capabilities);
   if (missing.length > 0) {
     throw new Error(`worker database schema contract is missing capabilities: ${missing.join(", ")}`);
   }

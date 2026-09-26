@@ -3,7 +3,11 @@ import {fileURLToPath} from "node:url";
 import {describe, expect, it, vi} from "vitest";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {
+  ANNOUNCED_WORKER_RUNTIME_CAPABILITIES,
+  ARTIFACT_REVISION_CAPABILITY,
+  announcedWorkerRuntimeCapabilitiesPresent,
   assertWorkerRuntimeSchema,
+  missingWorkerRuntimeCapabilities,
   REQUIRED_WORKER_RUNTIME_CAPABILITIES,
   WORKER_RUNTIME_SCHEMA_VERSION,
 } from "./runtime-schema";
@@ -115,6 +119,46 @@ describe("worker runtime schema preflight", () => {
       error: null,
     }));
     expect(contract.capabilities).toContain("future-consumer.v9");
+  });
+
+  // Stage 19, increment 2a. The artifact revision command is announced, not required: this image is
+  // deployed before migration A, so it must boot against the database of today. The name is fixed
+  // here so that increment 4, which makes the worker write through the command, only moves it.
+  describe("artifact-revision.v1 is announced and not yet required", () => {
+    it("boots today against a database that does not expose the capability", async () => {
+      const contract = await assertWorkerRuntimeSchema(clientWith({
+        data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION, capabilities: [...REQUIRED_WORKER_RUNTIME_CAPABILITIES]},
+        error: null,
+      }));
+      expect(contract.capabilities).not.toContain(ARTIFACT_REVISION_CAPABILITY);
+      expect(announcedWorkerRuntimeCapabilitiesPresent(contract)).toEqual([]);
+    });
+
+    it("reports the capability once migration A has added it", async () => {
+      const contract = await assertWorkerRuntimeSchema(clientWith({
+        data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
+          capabilities: [...REQUIRED_WORKER_RUNTIME_CAPABILITIES, ARTIFACT_REVISION_CAPABILITY]},
+        error: null,
+      }));
+      expect(announcedWorkerRuntimeCapabilitiesPresent(contract)).toEqual([ARTIFACT_REVISION_CAPABILITY]);
+    });
+
+    it("refuses to boot without the capability once an image requires it", () => {
+      const requiredByIncrement4 = [...REQUIRED_WORKER_RUNTIME_CAPABILITIES, ...ANNOUNCED_WORKER_RUNTIME_CAPABILITIES];
+      expect(missingWorkerRuntimeCapabilities([...REQUIRED_WORKER_RUNTIME_CAPABILITIES], requiredByIncrement4))
+        .toEqual([ARTIFACT_REVISION_CAPABILITY]);
+      expect(missingWorkerRuntimeCapabilities(requiredByIncrement4, requiredByIncrement4)).toEqual([]);
+    });
+
+    it("keeps the announced names well formed and disjoint from the required ones", () => {
+      expect(ANNOUNCED_WORKER_RUNTIME_CAPABILITIES).toContain(ARTIFACT_REVISION_CAPABILITY);
+      for (const capability of ANNOUNCED_WORKER_RUNTIME_CAPABILITIES) {
+        expect(capability).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*\.v[1-9][0-9]*$/);
+        expect(REQUIRED_WORKER_RUNTIME_CAPABILITIES).not.toContain(capability);
+      }
+      // The boot gate keeps using the required list alone.
+      expect(missingWorkerRuntimeCapabilities([...REQUIRED_WORKER_RUNTIME_CAPABILITIES])).toEqual([]);
+    });
   });
 
   it("keeps the image constant aligned with the latest contract migration", () => {

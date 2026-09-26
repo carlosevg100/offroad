@@ -52,7 +52,7 @@ import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
 import {modelCallLogDetail, safeModelSpend} from "./model-call-log";
 import {jobModelBudget} from "./model-budgets";
-import {assertWorkerRuntimeSchema} from "./runtime-schema";
+import {announcedWorkerRuntimeCapabilitiesPresent, assertWorkerRuntimeSchema} from "./runtime-schema";
 import {createMaterialRenderInspector, materialRenderToolsAvailable} from "./material-render-inspection";
 
 /**
@@ -98,6 +98,8 @@ async function main(): Promise<void> {
   log("worker.schema_contract_verified", {
     schemaVersion: runtimeSchema.schemaVersion,
     capabilities: runtimeSchema.capabilities.length,
+    // Known and not yet required (stage 19, 2a): names only, so the lead sees the migration land.
+    announcedPresent: announcedWorkerRuntimeCapabilitiesPresent(runtimeSchema),
   });
 
   log("worker.pinned_executors_verified", {artifacts: verifyInstalledMethodArtifacts()});
