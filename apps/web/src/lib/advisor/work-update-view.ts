@@ -3,8 +3,8 @@ import {z} from "zod";
 
 /**
  * The shape `work_update_view_v1` returns (schema `work-update-view.v1`). Identifiers are checked
- * as any 8-4-4-4-12 hexadecimal id: the database derives some of them (the milestone a command
- * records, the synthetic execution ids of tests), so they carry no RFC version.
+ * as any 8-4-4-4-12 hexadecimal id: the ids the database derives are RFC 9562 version 5 UUIDs, but
+ * synthetic ids of tests and older derived ids carry no RFC version, and the read only relays them.
  */
 export const recordIdSchema = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 const json = z.record(z.string(), z.unknown());

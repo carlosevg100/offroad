@@ -1,6 +1,6 @@
 /** A view as `work_update_view_v1` returns it, shared by the model and component tests. Tests only. */
 export const id = (n: number) => `a4210000-0000-4000-9000-${String(n).padStart(12, "0")}`;
-// A command milestone id is derived by md5 in the database and carries no RFC version.
+// An id without RFC version bits, as synthetic and older derived ids are: the view accepts it.
 const derived = "a5ee8591-a849-a54e-9f9b-5663cc91bc07";
 export const at = (minute: number) => `2026-09-25T12:${String(minute).padStart(2, "0")}:00+00:00`;
 const source = (versionNo: number) => ({sourceId: id(500), versionNo, versionId: id(500 + versionNo)});
