@@ -45,6 +45,7 @@ describe("worker runtime schema preflight", () => {
   "provider-resource-retention.v2",
           "dependency-recompute.v1",
           "dependency-recompute-health.v1",
+          "artifact-revision.v1",
         ],
       },
       error: null,
@@ -74,7 +75,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: dependency-recompute-health.v1");
+    }))).rejects.toThrow("missing capabilities: artifact-revision.v1");
   });
 
   it("refuses to read the recompute health before its database migration", async () => {
@@ -121,42 +122,34 @@ describe("worker runtime schema preflight", () => {
     expect(contract.capabilities).toContain("future-consumer.v9");
   });
 
-  // Stage 19, increment 2a. The artifact revision command is announced, not required: this image is
-  // deployed before migration A, so it must boot against the database of today. The name is fixed
-  // here so that increment 4, which makes the worker write through the command, only moves it.
-  describe("artifact-revision.v1 is announced and not yet required", () => {
-    it("boots today against a database that does not expose the capability", async () => {
+  // Stage 19. Increment 2a announced the artifact revision command so the image could be deployed
+  // before migration A; increment 4 makes the preview material producer write through it, so the
+  // image now requires it and refuses a database that does not list it.
+  describe("artifact-revision.v1 is required since increment 4", () => {
+    it("refuses to boot against a database that does not expose the capability", async () => {
+      await expect(assertWorkerRuntimeSchema(clientWith({
+        data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
+          capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== ARTIFACT_REVISION_CAPABILITY)},
+        error: null,
+      }))).rejects.toThrow("missing capabilities: artifact-revision.v1");
+    });
+
+    it("boots once migration A has added it and announces nothing else", async () => {
       const contract = await assertWorkerRuntimeSchema(clientWith({
         data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION, capabilities: [...REQUIRED_WORKER_RUNTIME_CAPABILITIES]},
         error: null,
       }));
-      expect(contract.capabilities).not.toContain(ARTIFACT_REVISION_CAPABILITY);
+      expect(contract.capabilities).toContain(ARTIFACT_REVISION_CAPABILITY);
       expect(announcedWorkerRuntimeCapabilitiesPresent(contract)).toEqual([]);
     });
 
-    it("reports the capability once migration A has added it", async () => {
-      const contract = await assertWorkerRuntimeSchema(clientWith({
-        data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
-          capabilities: [...REQUIRED_WORKER_RUNTIME_CAPABILITIES, ARTIFACT_REVISION_CAPABILITY]},
-        error: null,
-      }));
-      expect(announcedWorkerRuntimeCapabilitiesPresent(contract)).toEqual([ARTIFACT_REVISION_CAPABILITY]);
-    });
-
-    it("refuses to boot without the capability once an image requires it", () => {
-      const requiredByIncrement4 = [...REQUIRED_WORKER_RUNTIME_CAPABILITIES, ...ANNOUNCED_WORKER_RUNTIME_CAPABILITIES];
-      expect(missingWorkerRuntimeCapabilities([...REQUIRED_WORKER_RUNTIME_CAPABILITIES], requiredByIncrement4))
-        .toEqual([ARTIFACT_REVISION_CAPABILITY]);
-      expect(missingWorkerRuntimeCapabilities(requiredByIncrement4, requiredByIncrement4)).toEqual([]);
-    });
-
-    it("keeps the announced names well formed and disjoint from the required ones", () => {
-      expect(ANNOUNCED_WORKER_RUNTIME_CAPABILITIES).toContain(ARTIFACT_REVISION_CAPABILITY);
-      for (const capability of ANNOUNCED_WORKER_RUNTIME_CAPABILITIES) {
+    it("keeps the required names well formed and the announced list empty and disjoint", () => {
+      expect(REQUIRED_WORKER_RUNTIME_CAPABILITIES).toContain(ARTIFACT_REVISION_CAPABILITY);
+      expect(ANNOUNCED_WORKER_RUNTIME_CAPABILITIES).toEqual([]);
+      for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES) {
         expect(capability).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*\.v[1-9][0-9]*$/);
-        expect(REQUIRED_WORKER_RUNTIME_CAPABILITIES).not.toContain(capability);
+        expect(ANNOUNCED_WORKER_RUNTIME_CAPABILITIES).not.toContain(capability);
       }
-      // The boot gate keeps using the required list alone.
       expect(missingWorkerRuntimeCapabilities([...REQUIRED_WORKER_RUNTIME_CAPABILITIES])).toEqual([]);
     });
   });
@@ -189,7 +182,7 @@ describe("worker runtime schema preflight", () => {
     const evaluationSql = readFileSync(`${migrationsDirectory}/${evaluationExtension}`, "utf8");
     expect(evaluationSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
     expect(evaluationSql).toContain(`replace(body,'pinned-execution-consumer.v1','pinned-execution-consumer.v1","governed-evaluation-consumer.v1')`);
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "governed-evaluation-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && capability !== "dependency-recompute.v1" && capability !== "dependency-recompute-health.v1" && !accessCapabilities.includes(capability))) {
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "governed-evaluation-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && capability !== "dependency-recompute.v1" && capability !== "dependency-recompute-health.v1" && capability !== ARTIFACT_REVISION_CAPABILITY && !accessCapabilities.includes(capability))) {
       expect(sql).toContain(`'${capability}'`);
     }
     const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);
@@ -208,14 +201,14 @@ describe("worker runtime schema preflight", () => {
     const healthSql = readFileSync(`${migrationsDirectory}/${health}`, "utf8");
     expect(healthSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
     expect(healthSql).toContain(`'"dependency-recompute.v1","dependency-recompute-health.v1"]''::jsonb'`);
-    // Stage 19, increment 2b: migration A adds the announced capability by the same text patch; the
-    // image keeps it announced (not required) until increment 4 calls the command.
+    // Stage 19, increment 2b: migration A added the capability by the same text patch; increment 4
+    // requires it, because the preview material producer calls the command.
     const artifact = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_artifact_revision_protocol.sql")).sort().at(-1);
     expect(artifact).toBeDefined();
     const artifactSql = readFileSync(`${migrationsDirectory}/${artifact}`, "utf8");
     expect(artifactSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
     expect(artifactSql).toContain(`'"dependency-recompute.v1","dependency-recompute-health.v1","artifact-revision.v1"]''::jsonb'`);
     expect(artifactSql).toContain("artifact_revision_capability_contract_changed");
-    expect(ANNOUNCED_WORKER_RUNTIME_CAPABILITIES).toContain(ARTIFACT_REVISION_CAPABILITY);
+    expect(REQUIRED_WORKER_RUNTIME_CAPABILITIES).toContain(ARTIFACT_REVISION_CAPABILITY);
   });
 });

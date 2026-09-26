@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {offroadHousePresentationTemplate} from "@offroad/case-export";
 import {decisionArtifactContractSchema, decisionArtifactIdentityReport, renderedMaterialManifestSchema} from "@offroad/case-understanding";
 import {case01, executors, preview} from "@offroad/credit-playbook";
+import {artifactBlockDraftSchema, artifactManifestSchema, blockDraftsClaimsSummary} from "@offroad/domain-contracts";
 import {describe, expect, it} from "vitest";
 
 import {buildPreviewInformationRequestProjection, parsePremises, processIntegrationPreviewRunJob, routeIntegrationPreviewTurn, type PreviewStepOutput} from "./integration-preview";
@@ -58,6 +59,8 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
   let failure: unknown = null;
   let questionProjection: Record<string, unknown> | null = null;
   const storedMaterials: Array<{bytes: Uint8Array; contentSha256: string; format: string; mimeType: string}> = [];
+  const revisions: Array<{workId: string; kind: string; subject: string; audience: string; manifest: unknown; blocks: unknown; contentSha256: string | null; byteLength: number | null}> = [];
+  const taskByRun = new Map<string, string>();
   const runsByTask = new Map<string, string>();
   const inputFingerprintByRun = new Map<string, string>();
   const queue = {
@@ -75,7 +78,8 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
     }),
     startCapitalTask: async (_job: unknown, task: {taskId: string; inputFingerprint: string}) => {
       started.push(task.taskId);
-      const id = `run-${task.taskId}`;
+      const id = `00000000-0000-4000-9000-${String(started.length).padStart(12, "0")}`;
+      taskByRun.set(id, task.taskId);
       runsByTask.set(task.taskId, id);
       inputFingerprintByRun.set(id, task.inputFingerprint);
       return id;
@@ -90,7 +94,7 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
       if (inputFingerprintByRun.get(artifact.taskRunId) !== artifact.inputFingerprint) {
         throw new Error("capital_task_run_not_available");
       }
-      const taskId = artifact.taskRunId.replace("run-", "");
+      const taskId = taskByRun.get(artifact.taskRunId)!;
       const artifactFingerprint = createHash("sha256").update(JSON.stringify(artifact.content)).digest("hex");
       const id = `00000000-0000-4000-8000-${String(recorded.length + 10).padStart(12, "0")}`;
       recorded.push({taskId, artifactType: artifact.artifactType, inputFingerprint: artifact.inputFingerprint, content: artifact.content as Record<string, unknown>, id, artifactFingerprint});
@@ -104,6 +108,18 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
         replayed: false,
       };
     },
+    // Mirrors the common command: a stored object named by path, sha256 and size, blocks whose claims
+    // are the manifest's summary; the database fills the job and capability of the provenance.
+    createArtifactRevision: async (_job: unknown, revision: {workId: string; kind: string; subject: string; audience: string; manifest: unknown; blocks: unknown; contentSha256: string | null; byteLength: number | null}) => {
+      const manifest = artifactManifestSchema.parse(revision.manifest);
+      const blocks = (revision.blocks as unknown[]).map((block) => artifactBlockDraftSchema.parse(block));
+      if (JSON.stringify(manifest.claims) !== JSON.stringify(blockDraftsClaimsSummary(blocks))) throw new Error("claims_summary_mismatch");
+      const stored = storedMaterials.find((item) => item.contentSha256 === revision.contentSha256 && item.bytes.byteLength === revision.byteLength);
+      if (!stored || manifest.bytes === null || !("storage" in manifest.bytes)
+        || manifest.bytes.storage.path !== `${ids.organization}/${ids.project}/materials/${stored.contentSha256}.${stored.format}`) throw new Error("artifact_stored_bytes_not_governed");
+      revisions.push(revision);
+      return {artifactId: "88888888-8888-4888-8888-888888888888", revisionId: `99999999-9999-4999-8999-${String(revisions.length).padStart(12, "0")}`, revisionNo: revisions.length, manifestFingerprint: "e".repeat(64), replayed: false};
+    },
     finishCapitalTask: async () => "finished",
     syncProjectInformationRequests: async (_job: unknown, projection: unknown) => {
       questionProjection = projection as Record<string, unknown>;
@@ -112,7 +128,7 @@ function fakeQueue(input: {composition: TestComposition; premises?: Record<strin
     completeIntegrationPreviewRun: async (_job: unknown, value: {content: string; artifactId: string; result: unknown}) => { completion = value; return {replayed: false}; },
     fail: async (_job: unknown, error: unknown) => { failure = error; },
   } as unknown as QueueClient;
-  return {queue, recorded, started, stages, storedMaterials, completion: () => completion, failure: () => failure, questionProjection: () => questionProjection};
+  return {queue, recorded, started, stages, storedMaterials, revisions, completion: () => completion, failure: () => failure, questionProjection: () => questionProjection};
 }
 
 describe("integration_preview governed questions", () => {
@@ -388,6 +404,23 @@ describe("integration_preview run processor", () => {
       expect(manifest.release.state).toBe("internal_only");
     }
     expect((workbookArtifact.content.rendererAudit as {decisionContractFingerprint: string}).decisionContractFingerprint).toBe(workbookManifest.decisionContractFingerprint);
+    // Each stored file is a revision of the work's material artifact with the stored object's bytes.
+    expect(material.revisions.map((revision) => [revision.kind, revision.subject, revision.audience])).toEqual([
+      ["presentation", "integration-preview:presentation", "internal"],
+      ["workbook", "integration-preview:workbook", "internal"],
+    ]);
+    for (const [revision, receipt] of [[material.revisions[0]!, presentationManifest], [material.revisions[1]!, workbookManifest]] as const) {
+      const written = artifactManifestSchema.parse(revision.manifest);
+      expect(revision.workId).toBe(ids.project);
+      expect([revision.contentSha256, revision.byteLength]).toEqual([receipt.contentSha256, receipt.byteLength]);
+      expect(written.bytes).toEqual({sha256: receipt.contentSha256, byteLength: receipt.byteLength, storage: {bucket: "case-artifacts", path: receipt.storage.objectPath}});
+      expect(written).toMatchObject({format: receipt.format, method: null, sources: [], inputSnapshot: {fingerprint: receipt.decisionContractFingerprint},
+        provenance: {producer: "document-worker:integration-preview", capability: "artifact-revision.v1"}});
+      const blocks = (revision.blocks as unknown[]).map((block) => artifactBlockDraftSchema.parse(block));
+      expect(blocks).toHaveLength(1);
+      expect(blocks[0]!.claims.map((claim) => claim.claimId)).toEqual(receipt.claimIds);
+      expect(receipt.claimIds.length).toBeGreaterThan(0);
+    }
     const contract = decisionArtifactContractSchema.parse(material.recorded.at(-1)!.content.contract);
     expect(contract.views.find((view) => view.surface === "presentation")).toMatchObject({
       artifactId: presentationManifest.id,

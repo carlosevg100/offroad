@@ -839,6 +839,23 @@ describe("governed capital-project material storage", () => {
   });
 });
 
+it("writes an artifact revision through the common command under the artifact-revision.v1 capability", async () => {
+  const written = {artifact_id: "80000000-0000-4000-8000-000000000011", revision_id: "80000000-0000-4000-8000-000000000012", revision_no: 2,
+    manifest_fingerprint: "b".repeat(64), replayed: false};
+  const rpc = vi.fn(async () => ({data: written, error: null}));
+  const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
+  const manifest = {schemaVersion: "artifact-manifest.2026.09.26-v1"};
+  await expect(queue.createArtifactRevision!(job, {workId: "80000000-0000-4000-8000-000000000013", kind: "workbook", subject: "integration-preview:workbook",
+    audience: "internal", manifest, blocks: [], contentSha256: "c".repeat(64), byteLength: 128}))
+    .resolves.toEqual({artifactId: written.artifact_id, revisionId: written.revision_id, revisionNo: 2, manifestFingerprint: "b".repeat(64), replayed: false});
+  expect(rpc.mock.calls).toEqual([["worker_create_artifact_revision_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token,
+    p_capability: "artifact-revision.v1", p_work: "80000000-0000-4000-8000-000000000013", p_kind: "workbook", p_subject: "integration-preview:workbook",
+    p_audience: "internal", p_manifest: manifest, p_blocks: [], p_links: [], p_content_sha256: "c".repeat(64), p_byte_length: 128}]]);
+  rpc.mockResolvedValueOnce({data: {...written, unexpected: true} as typeof written, error: null});
+  await expect(queue.createArtifactRevision!(job, {workId: "80000000-0000-4000-8000-000000000013", kind: "workbook", subject: "integration-preview:workbook",
+    audience: "internal", manifest, blocks: [], contentSha256: null, byteLength: null})).rejects.toThrow();
+});
+
 it("uses only capability-scoped proposal RPCs and forwards the loaded input fingerprint", async () => {
   const rpc = vi.fn(async () => ({data: {status: "proposed"}, error: null}));
   const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
