@@ -197,9 +197,10 @@ describe("a result read from its registered revision", () => {
     expect(fromBlocks.result.source).toBe("revision");
     expect(fromBlocks.result.revision).toEqual({revisionNo: 1, recordedAt: "2026-09-24T12:05:00.5+00:00", freshness: "current"});
     // What the screen lists is the same whether it came from the bytes or from the blocks.
-    const {fingerprint: _bytes, unresolved: _unresolved, ...packetFields} = fromBytes.result.packet!;
-    const {fingerprint: _blocks, unresolved, ...blockFields} = fromBlocks.result.packet!;
-    expect(blockFields).toEqual(packetFields); expect(unresolved).toEqual([]);
+    const listed = (packet: NonNullable<typeof fromBytes.result.packet>) => ({status: packet.status, question: packet.question, asOf: packet.asOf, alternatives: packet.alternatives,
+      informationGaps: packet.informationGaps, contractualGaps: packet.contractualGaps, nextRequirements: packet.nextRequirements, contributions: packet.contributions});
+    expect(listed(fromBlocks.result.packet!)).toEqual(listed(fromBytes.result.packet!));
+    expect(fromBlocks.result.packet!.unresolved).toEqual([]);
     expect(fromBlocks.result.decisiveNumbers).toEqual(fromBytes.result.decisiveNumbers);
     expect(fromBlocks.result.decisiveNumbers!.length).toBeGreaterThan(0);
     // The MD test is the same evaluation over the pinned packet and receipt.
