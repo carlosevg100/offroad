@@ -1,4 +1,5 @@
 import {createHash} from "node:crypto";
+import {materialClaimWithoutSupport} from "@offroad/case-understanding";
 import {materialTemplate, materialTemplateRegistryHash} from "@offroad/credit-playbook";
 import type {Material, MaterialBlock, MaterialKind} from "./compile";
 
@@ -120,7 +121,8 @@ export function buildMaterialTruthSet(input:{materials:readonly Material[];dataR
   for(const blocker of input.governanceBlockers??[])exceptions.push({id:`external-governance:${blocker}`,severity:"critical",message:"External release is blocked by governed case controls.",affectedProcedures:["MA-32"]});
   const artifacts=input.materials.map((material)=>{
     const rows=material.blocks.flatMap((block,index)=>claimRows(block,`${material.kind}:${index}`));
-    const unsupported=rows.filter((row)=>row.material&&row.supportIds.length===0).map((row)=>row.key);
+    // The evidence gate of case-understanding's audit, the same definition the brief passes.
+    const unsupported=rows.filter(materialClaimWithoutSupport).map((row)=>row.key);
     const templateCurrent=Boolean(material.template&&material.template.registryHash===materialTemplateRegistryHash&&materialTemplate(material.template.id).version===material.template.version);
     const hasDisclaimer=material.blocks.some((block)=>block.type==="disclaimer");
     const bilingualComplete=material.blocks.every(bilingual);

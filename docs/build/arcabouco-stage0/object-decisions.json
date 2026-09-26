@@ -181022,11 +181022,6 @@
           "path": "packages/matching-core/src/index.ts",
           "line": 3,
           "specifier": "@offroad/domain-contracts"
-        },
-        {
-          "path": "packages/evidence-compiler/src/index.ts",
-          "line": 1,
-          "specifier": "@offroad/domain-contracts"
         }
       ],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
@@ -181038,16 +181033,6 @@
       "decision": "preservar",
       "stage": "0–24",
       "reason": "ensaios técnicos e regressão separados de ensaios com usuários",
-      "direct_module_references": [],
-      "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
-    },
-    {
-      "kind": "package",
-      "path": "packages/evidence-compiler",
-      "name": "@offroad/evidence-compiler",
-      "decision": "consolidar",
-      "stage": "19",
-      "reason": "usar verificações de claims no gate único; eliminar pacote órfão após migração de API/testes",
       "direct_module_references": [],
       "consumer_scope": "Exact import/export/require module specifiers; type-only and script references may be included. No reachability or live traffic is inferred."
     },
@@ -186475,6 +186460,14 @@
       "stage": "10",
       "reason": "Formulário obrigatório de companhia retirado; link antigo redireciona à conversa e RPC compatível usa trabalho canônico.",
       "owner": "Codex, etapa 10"
+    },
+    {
+      "kind": "package",
+      "path": "packages/evidence-compiler",
+      "decision": "consolidar",
+      "stage": "19",
+      "reason": "Consolidado na etapa 19, incremento 6: as duas regras de afirmação vivem em packages/case-understanding/src/audit.ts (materialClaimWithoutSupport e materialJudgmentWithoutApproval), chamadas pela auditoria do brief e pela verdade dos materiais em case-materials; a identidade econômica bilíngue é LC-07 da conduta. Testes migrados; pacote, workspace e entrada do lockfile retirados.",
+      "owner": "Claude, etapa 19"
     }
   ],
   "stage_11_participation_revision": {

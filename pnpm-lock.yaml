@@ -833,12 +833,6 @@ importers:
         specifier: 4.23.15
         version: 4.23.15
 
-  packages/evidence-compiler:
-    dependencies:
-      '@offroad/domain-contracts':
-        specifier: workspace:*
-        version: link:../domain-contracts
-
   packages/execution-request:
     dependencies:
       '@offroad/agent-contracts':

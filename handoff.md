@@ -3673,7 +3673,6 @@ offroad/
 │   ├── model-gateway/                Only door to LLMs: Anthropic + OpenAI via API, no-Haiku policy, budgets, cassettes (P1 F0)
 │   ├── evals/                        Evaluation harness, metrics, baseline CLI (P1 F0)
 │   ├── domain-contracts/             Zod contracts and shared domain schemas
-│   ├── evidence-compiler/            Claim coverage and support rules
 │   ├── financial-core/               Decimal financial calculations
 │   ├── matching-core/                Deterministic mandate filters/ranking
 │   └── testing-fixtures/             Synthetic fixtures + assets/rede-horizonte (8 files) + gold/rede-horizonte (G1 expectations)
@@ -3945,14 +3944,13 @@ Uses Decimal.js with precision 40 and deterministic rounding. Current functions:
 The current core is deliberately small. Add calculations as pure functions with
 trace output, warnings, boundary tests, and no locale-specific parsing.
 
-### `@offroad/evidence-compiler`
+### Evidence gates (formerly `@offroad/evidence-compiler`)
 
-Current rules:
-
-- material claims without support are blocked;
-- material judgments without approval are blocked;
-- coverage is calculated over material claims;
-- localized outputs can be tested for exact economic identity.
+Retired in stage 19, increment 6. The two claim gates live once in
+`packages/case-understanding/src/audit.ts` (`materialClaimWithoutSupport`,
+`materialJudgmentWithoutApproval`) and are called by the brief audit and by the material truth of
+`case-materials`; coverage is reported by `auditClaims`; bilingual economic identity of compiled
+materials is the conduct rule LC-07.
 
 ### `@offroad/matching-core`
 
