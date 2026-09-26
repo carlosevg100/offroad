@@ -23029,6 +23029,10 @@ export const procedureBuildProvenance = [
               "hash": "d9455e3bfc96fc4a14ac45053466c46f46ab6044dbb42250794419b0e417c9d6"
             },
             {
+              "path": "packages/domain-contracts/src/artifact-protocol.ts",
+              "hash": "a74d1458d53232fa94269671b09c5d5d254977588ffe97e4356556020ca6eb0b"
+            },
+            {
               "path": "packages/domain-contracts/src/contextual-adoption.ts",
               "hash": "bbe50f847a84fdfce427e507836798df1ee0f8ccc7ec761d2d580ef3c58096b2"
             },
@@ -23050,7 +23054,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/domain-contracts/src/index.ts",
-              "hash": "281e9ce9b174e01dd88923208c9e850b1b3e8182d286ec680041c5cd60a4a1c0"
+              "hash": "37975df13a2eab452bc1889fcdfeeee42ff9f80d43ef8665fbcdedea2d03d353"
             },
             {
               "path": "packages/domain-contracts/src/observation.ts",
@@ -23633,7 +23637,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "9eff825a8dc2514d7e9f738109bb972f495814c5675223415adc9811693e1287"
+          "hash": "9a3858074284dc43585b8482ebded6c899a2b65e8cc1aa27ee846493a7784790"
         },
         "evidence": [
           {
@@ -23659,7 +23663,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "780a0767dcb89f2e570ee9ff76c51b32f36bf18fb905e76c2bbb35eb1f4d90f8"
+    "manifestHash": "b2b41e154552b13e74a43e70d061be25fc374b2c7185462b36c100f8fbbe5408"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
