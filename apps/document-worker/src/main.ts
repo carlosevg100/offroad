@@ -8,7 +8,7 @@ import {verifyInstalledMethodArtifacts} from "./released-method-executor";
 import {createProviderResearchTransport} from "./provider-research-transport";
 import {createProviderProcessingAuthorizer} from "./provider-processing";
 import {createEventOutboxConsumer} from "./event-outbox";
-import {createDependencyRecomputeQueue, runDependencyRecomputeOnce} from "./dependency-recompute";
+import {createDependencyRecomputeQueue, createRecomputeHealthMonitor, runDependencyRecomputePass} from "./dependency-recompute";
 import {processProviderResearchJob} from "./provider-research";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {readFile} from "node:fs/promises";
@@ -112,6 +112,7 @@ async function main(): Promise<void> {
 
   const eventOutbox = createEventOutboxConsumer(supabase, config.OFFROAD_WORKER_TOKEN, log);
   const dependencyRecompute = createDependencyRecomputeQueue(supabase, config.OFFROAD_WORKER_TOKEN);
+  const recomputeHealth = createRecomputeHealthMonitor(supabase, config.OFFROAD_WORKER_TOKEN, log);
 
   // External tools: report their versions once, so a run records exactly what read the file.
   const [sofficeVersion, tesseractVersion, pdfinfoVersion, pdftoppmVersion] = await Promise.all([
@@ -310,18 +311,11 @@ async function main(): Promise<void> {
   // The dependency recompute (stage 18, 3B) runs beside the job loop: a zero-budget candidate is
   // composed and submitted here and never calls a model, and each candidate is held by its own
   // lease, so a long document job cannot delay it. The executions it creates are ordinary pinned
-  // execution jobs, claimed by the job loop below.
+  // execution jobs, claimed by the job loop below. Each pass also reads the recompute health (6A)
+  // at most every 30 seconds, for the alarms of monitoring/dependency-recompute-alarms.json.
   const recomputeLoop = (async () => {
     while (!stopping) {
-      try {
-        for (let batch = 0; batch < 10 && !stopping; batch++) {
-          const outcome = await runDependencyRecomputeOnce(dependencyRecompute);
-          if (outcome.status === "idle") break;
-          log("recompute.finished", outcome.status === "produced"
-            ? {candidate: outcome.candidateId, execution: outcome.executionId, status: outcome.status}
-            : {candidate: outcome.candidateId, status: outcome.status, reason: outcome.reason});
-        }
-      } catch { log("recompute.poll.failed", {reason: "recompute_transport_failed"}); }
+      await runDependencyRecomputePass(dependencyRecompute, recomputeHealth, log, {stopping: () => stopping});
       await sleep(5000, shuttingDown.signal);
     }
   })();

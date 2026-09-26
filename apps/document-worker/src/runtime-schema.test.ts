@@ -40,6 +40,7 @@ describe("worker runtime schema preflight", () => {
   "atomic-documentary-commit.v1",
   "provider-resource-retention.v2",
           "dependency-recompute.v1",
+          "dependency-recompute-health.v1",
         ],
       },
       error: null,
@@ -69,7 +70,15 @@ describe("worker runtime schema preflight", () => {
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: dependency-recompute.v1");
+    }))).rejects.toThrow("missing capabilities: dependency-recompute-health.v1");
+  });
+
+  it("refuses to read the recompute health before its database migration", async () => {
+    await expect(assertWorkerRuntimeSchema(clientWith({
+      data: {schemaVersion: WORKER_RUNTIME_SCHEMA_VERSION,
+        capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "dependency-recompute-health.v1")},
+      error: null,
+    }))).rejects.toThrow("missing capabilities: dependency-recompute-health.v1");
   });
 
   it("refuses to start the dependency recompute before its database migration", async () => {
@@ -136,7 +145,7 @@ describe("worker runtime schema preflight", () => {
     const evaluationSql = readFileSync(`${migrationsDirectory}/${evaluationExtension}`, "utf8");
     expect(evaluationSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
     expect(evaluationSql).toContain(`replace(body,'pinned-execution-consumer.v1','pinned-execution-consumer.v1","governed-evaluation-consumer.v1')`);
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "governed-evaluation-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && capability !== "dependency-recompute.v1" && !accessCapabilities.includes(capability))) {
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "governed-evaluation-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && capability !== "dependency-recompute.v1" && capability !== "dependency-recompute-health.v1" && !accessCapabilities.includes(capability))) {
       expect(sql).toContain(`'${capability}'`);
     }
     const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);
@@ -150,5 +159,10 @@ describe("worker runtime schema preflight", () => {
     const recomputeSql = readFileSync(`${migrationsDirectory}/${recompute}`, "utf8");
     expect(recomputeSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
     expect(recomputeSql).toContain(`'"provider-resource-retention.v2","dependency-recompute.v1"]''::jsonb'`);
+    const health = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_dependency_recompute_health.sql")).sort().at(-1);
+    expect(health).toBeDefined();
+    const healthSql = readFileSync(`${migrationsDirectory}/${health}`, "utf8");
+    expect(healthSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
+    expect(healthSql).toContain(`'"dependency-recompute.v1","dependency-recompute-health.v1"]''::jsonb'`);
   });
 });

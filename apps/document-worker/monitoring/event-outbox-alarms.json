@@ -2,11 +2,16 @@
   "region": "sa-east-1",
   "logGroup": "/ecs/offroad-document-worker",
   "namespace": "Offroad/DocumentWorker",
+  "description": "Offroad stage 4 durable authority-event consumer",
   "filters": [
-    {"name": "offroad-outbox-heartbeat", "pattern": "{ $.event = \"outbox.health\" }", "metric": "OutboxHeartbeat", "value": "1"},
-    {"name": "offroad-outbox-pending-age", "pattern": "{ $.event = \"outbox.health\" }", "metric": "OutboxOldestPendingSeconds", "value": "$.oldestPendingSeconds"},
-    {"name": "offroad-outbox-blocked", "pattern": "{ $.event = \"outbox.health\" }", "metric": "OutboxBlockedCount", "value": "$.blockedCount"},
-    {"name": "offroad-outbox-errors", "pattern": "{ ($.event = \"outbox.poll.failed\") || ($.event = \"outbox.complete.failed\") }", "metric": "OutboxErrors", "value": "1"}
+    {"name": "offroad-outbox-heartbeat", "pattern": "{ $.event = \"outbox.health\" }", "metric": "OutboxHeartbeat", "value": "1",
+     "sample": {"event": "outbox.health", "blockedCount": 2, "oldestPendingSeconds": 360}},
+    {"name": "offroad-outbox-pending-age", "pattern": "{ $.event = \"outbox.health\" }", "metric": "OutboxOldestPendingSeconds", "value": "$.oldestPendingSeconds",
+     "sample": {"event": "outbox.health", "blockedCount": 2, "oldestPendingSeconds": 360}},
+    {"name": "offroad-outbox-blocked", "pattern": "{ $.event = \"outbox.health\" }", "metric": "OutboxBlockedCount", "value": "$.blockedCount",
+     "sample": {"event": "outbox.health", "blockedCount": 2, "oldestPendingSeconds": 360}},
+    {"name": "offroad-outbox-errors", "pattern": "{ ($.event = \"outbox.poll.failed\") || ($.event = \"outbox.complete.failed\") }", "metric": "OutboxErrors", "value": "1",
+     "sample": {"event": "outbox.poll.failed"}}
   ],
   "alarms": [
     {"name": "offroad-outbox-heartbeat-missing", "metric": "OutboxHeartbeat", "comparison": "LessThanThreshold", "threshold": 1, "statistic": "Sum", "periods": 3, "missing": "breaching"},
