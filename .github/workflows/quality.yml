@@ -278,6 +278,38 @@ jobs:
         if: ${{ !cancelled() && steps.db.outcome == 'success' }}
         run: supabase db lint --local --schema public,private --level warning --fail-on error
 
+      # Stage 18, increment 6B: a human wait survives a worker restart. The proof registers the capital
+      # method with a profile that can spend, and the capital method admits exactly one executable
+      # profile and one requestable release, so it cannot share the database with the zero-budget
+      # proof above: the local database is rebuilt from the migrations first (same registry mirror as
+      # the boot, so nothing is pulled), and the proof runs on it last.
+      - name: Rebuild the local database for the wait proof
+        id: wait_reset
+        if: ${{ !cancelled() && steps.db.outcome == 'success' }}
+        env:
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
+        run: |
+          set -euo pipefail
+          started=$SECONDS
+          supabase db reset --local
+          echo "wait_proof_reset_seconds=$((SECONDS - started))"
+
+      # A costed candidate waits for a person as an awaiting_human milestone, with no job and no lease,
+      # through the worker loop and a restarted worker with its own token; after the owner's
+      # authorization the restarted loop produces it once, with lineage. Synthetic data only, no
+      # model, no provider key, no network beyond the local stack.
+      - name: Dependency wait across a worker restart, against the rebuilt local stack
+        if: ${{ !cancelled() && steps.db.outcome == 'success' && steps.wait_reset.outcome == 'success' }}
+        env:
+          OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          started=$SECONDS
+          OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
+            node scripts/ci/verify-dependency-wait-restart.mjs
+          echo "wait_proof_script_seconds=$((SECONDS - started))"
+
       - name: Stop local Supabase
         if: always()
         run: supabase stop --no-backup

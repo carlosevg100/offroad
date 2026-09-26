@@ -614,6 +614,131 @@ do $$ declare r public.work_continuation_requests:=pg_temp.update_request();c pu
  raise notice 'PASS: decline of one waiting candidate and of a waiting update: each ends declined with the reason, every wait it closes gets its human_resolved, a rejected decision records it';
 end $$;
 
+-- 8b. Resuming never repeats a confirmed cost (stage 18, increment 6B). The person authorizes X1's
+-- costed candidate; the worker claims it and stops before submitting (a deploy), so its lease
+-- expires; the restarted worker claims it again and produces it. One execution, the stale lease
+-- refused, no new wait, the authorization and the candidate's ceiling used once. The produced
+-- execution has one budget account and a zero budget: the closed increment refuses a reservation of
+-- the authorized ceiling, and the one zero-cost reservation of its operation is recorded once, also
+-- after the execution's own lease expires and its job is claimed again.
+rollback to savepoint stage18_4_paid;
+-- The worker's submission of pg_temp.produce, for a claim and a basis already in hand.
+create function pg_temp.submit_candidate(p_claim jsonb,p_basis jsonb,p_sources text[]) returns jsonb language plpgsql as $$
+declare k jsonb;begin
+ select jsonb_build_object('schemaVersion','execution-contract.v1','executionId',gen_random_uuid(),'organizationId',x->>'organizationId','workId',x->>'workId',
+  'principalId',x->>'principalId','requestId',p_claim->>'candidateId','processingRunId',gen_random_uuid(),'purpose',x->>'purpose','method',x#>'{profile,method}',
+  'tools',x#>'{profile,tools}','allowedEffects',x#>'{profile,allowedEffects}',
+  'audience',jsonb_build_object('kind','work_participants','workId',x->>'workId','policyFingerprint',x->>'policyFingerprint'),
+  'policy',jsonb_build_object('version','execution-authority.v1','authorityRevision',x->>'authorityRevision','fingerprint',x->>'policyFingerprint'),
+  'inputs',jsonb_build_object('snapshotId',gen_random_uuid(),'fingerprint',encode(extensions.digest('{}','sha256'),'hex'),
+   'sources',coalesce((select jsonb_agg(jsonb_build_object('resourceId','a11b0000-0000-4000-9000-000000000003','sourceVersionId',v.id,'contentHash',v.declared_sha256,
+     'rightsRevision','1') order by v.id) from public.source_versions v join dep d on d.id=v.id where d.name=any(p_sources)),'[]'::jsonb),
+   'adoptions',x->'adoptions','hypotheses',x->'hypotheses'),
+  'budget',jsonb_build_object('maxCostMicrousd',0,'maxModelCalls',0,'maxDurationMs',31000,'expiresAt',clock_timestamp()+interval '1 hour'),'requestedAt',clock_timestamp())
+ into k from (select p_basis->'basis' as x) f;
+ return pg_temp.as_worker(format('select public.worker_submit_dependency_recompute_v1(''synthetic-dependency-outbox-token'',%s,%L,''{}'',%L)',pg_temp.lease_args(p_claim),k::text,
+  private.execution_gates_canonical_text_v1(jsonb_build_object('schemaVersion','execution-gates.v1','gatesVersion','2026.09.24-v1','blocked',false,
+   'companyRegistration',p_basis#>>'{basis,company,registration}','research',p_basis#>>'{basis,company,research}',
+   'methodSelection',jsonb_build_object('selectionVersion','2026.09.24-v1','situationIds',jsonb_build_array('refinancing'),
+    'methodId',p_basis#>>'{basis,profile,method,methodId}','methodVersion',p_basis#>>'{basis,profile,method,methodVersion}'),
+   'conventions','[]'::jsonb,'voice',jsonb_build_object('version','2026.09.24-v1','blockCount',0,'warnCount',0)))));
+end $$;
+do $$ declare c public.work_recompute_candidates;wait public.work_milestones;authorized integer;waits bigint;first_claim jsonb;second_claim jsonb;b jsonb;result jsonb;begin
+ c:=pg_temp.candidate('X1','awaiting_authorization');
+ authorized:=c.revision;
+ select * into strict wait from public.work_milestones where kind='awaiting_human' and subject_id=c.id;
+ perform public.authorize_work_update_v1('a4190000-0000-4000-8000-000000000404',c.id,authorized);
+ select count(*) into waits from public.work_milestones where kind='awaiting_human';
+ first_claim:=pg_temp.as_worker('select public.worker_claim_dependency_recompute_v1(''synthetic-dependency-outbox-token'',120)');
+ if first_claim->>'candidateId' is distinct from c.id::text or (first_claim->>'attempt')::integer<>1 then raise exception 'setup: first claim %',first_claim; end if;
+ -- The worker stops before it submits: its lease expires and the restarted worker claims again.
+ update private.work_recompute_leases set lease_expires_at=clock_timestamp()-interval '1 minute' where candidate_id=c.id;
+ second_claim:=pg_temp.as_worker('select public.worker_claim_dependency_recompute_v1(''synthetic-dependency-outbox-token'',120)');
+ if second_claim->>'candidateId' is distinct from c.id::text or (second_claim->>'attempt')::integer<>2 or second_claim->>'leaseId'=first_claim->>'leaseId' then
+  raise exception 'the interrupted claim of the authorized candidate was not taken again: %',second_claim;
+ end if;
+ b:=pg_temp.as_worker(format('select public.worker_dependency_recompute_basis_v1(''synthetic-dependency-outbox-token'',%s)',pg_temp.lease_args(second_claim)));
+ if not coalesce((b->>'available')::boolean,false) or b#>>'{basis,profile,method,platformReleaseId}' is distinct from 'synthetic-execution-test-v3' then
+  raise exception 'basis unavailable after the restart: %',b;
+ end if;
+ begin perform pg_temp.as_worker(format('select public.worker_dependency_recompute_basis_v1(''synthetic-dependency-outbox-token'',%s)',pg_temp.lease_args(first_claim)));
+  raise exception 'the stale lease assembled a basis';
+ exception when insufficient_privilege then if sqlerrm<>'recompute_lease_denied' then raise; end if;
+ end;
+ begin perform pg_temp.submit_candidate(first_claim,b,array['S1']); raise exception 'the stale lease submitted';
+ exception when insufficient_privilege then if sqlerrm<>'recompute_lease_denied' then raise; end if;
+ end;
+ result:=pg_temp.submit_candidate(second_claim,b,array['S1']);
+ select * into strict c from public.work_recompute_candidates where id=c.id;
+ if not coalesce((result->>'produced')::boolean,false) or coalesce((result->>'replayed')::boolean,false) or c.execution_id is distinct from (result->>'executionId')::uuid
+ or c.state<>'scheduled' or (select count(*) from public.work_executions where request_id=c.id)<>1
+ or not exists(select 1 from private.execution_lineage l where l.execution_id=c.execution_id and l.root_execution_id=pg_temp.id('X1') and l.candidate_id=c.id)
+ or (select platform_release_id from private.execution_manifests where execution_id=c.execution_id)<>'synthetic-execution-test-v3' then
+  raise exception 'the authorized candidate was not produced once after the restart: % %',result,to_jsonb(c);
+ end if;
+ -- No new wait and no second question: the wait is resolved once, the authorization is one decision
+ -- and the ceiling belongs to one candidate.
+ if (select count(*) from public.work_milestones where kind='awaiting_human')<>waits
+ or (select count(*) from public.work_milestones where kind='human_resolved' and resolves_milestone_id=wait.id)<>1
+ or (select count(*) from public.work_milestones where kind='decision' and subject_kind='work_recompute_candidate' and subject_id=c.id)<>1
+ or (select count(*) from public.work_recompute_candidates where idempotency_key=c.idempotency_key)<>1 or c.max_cost_microusd<>250000 or c.max_model_calls<>3 then
+  raise exception 'the restart asked the person again or planned the ceiling twice';
+ end if;
+ result:=pg_temp.submit_candidate(second_claim,b,array['S1']);
+ if not coalesce((result->>'replayed')::boolean,false) or result->>'executionId' is distinct from c.execution_id::text then raise exception 'the submission was not replayed: %',result; end if;
+ if not (public.authorize_work_update_v1('a4190000-0000-4000-8000-000000000404',c.id,authorized)->>'replayed')::boolean then raise exception 'authorization replay not recognised'; end if;
+ perform pg_temp.expect_error(format('select public.authorize_work_update_v1(%L,%L,%L)',gen_random_uuid(),c.id,c.revision),'work_update_candidate_not_waiting',
+  'a produced candidate is not put to the person again');
+ if coalesce((pg_temp.as_worker('select public.worker_claim_dependency_recompute_v1(''synthetic-dependency-outbox-token'',120)')->>'claimed')::boolean,false)
+ or (select count(*) from public.work_executions where request_id=c.id)<>1 then
+  raise exception 'the produced candidate can be claimed or produced again';
+ end if;
+ insert into dep values('X1p',c.execution_id);
+ raise notice 'PASS: an authorized costed candidate interrupted after its claim is claimed again by the restarted worker and produced once, with lineage; the stale lease is refused; no new wait, the authorization and the ceiling are used once';
+end $$;
+do $$ declare c public.work_recompute_candidates;job uuid;first_claim jsonb;second_claim jsonb;first jsonb;again jsonb;replay jsonb;begin
+ select * into strict c from public.work_recompute_candidates where execution_id=pg_temp.id('X1p');
+ select id into strict job from public.processing_jobs where execution_id=pg_temp.id('X1p') and kind='work_execution';
+ if (select count(*) from private.execution_budget_accounts where execution_id=pg_temp.id('X1p'))<>1
+ or (select x.payload#>'{budget,maxCostMicrousd}' from private.execution_manifests x where x.execution_id=pg_temp.id('X1p'))<>'0'::jsonb then
+  raise exception 'the produced execution does not have one zero budget';
+ end if;
+ first_claim:=private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1',job,60);
+ -- The ceiling the person authorized cannot be reserved: this closed increment spends nothing.
+ begin
+  perform private.reserve_execution_operation_v1(job,first_claim->>'capability',(first_claim->>'leaseId')::uuid,pg_temp.id('X1p'),first_claim->>'contractFingerprint',
+   'synthetic#calculate','test-v1','read_only',c.max_cost_microusd,c.max_model_calls);
+  raise exception 'a reservation of the authorized ceiling was accepted';
+ exception when insufficient_privilege then if sqlerrm<>'execution_operation_denied' then raise; end if;
+ end;
+ first:=private.reserve_execution_operation_v1(job,first_claim->>'capability',(first_claim->>'leaseId')::uuid,pg_temp.id('X1p'),first_claim->>'contractFingerprint',
+  'synthetic#calculate','test-v1','read_only',0,0);
+ again:=private.reserve_execution_operation_v1(job,first_claim->>'capability',(first_claim->>'leaseId')::uuid,pg_temp.id('X1p'),first_claim->>'contractFingerprint',
+  'synthetic#calculate','test-v1','read_only',0,0);
+ -- The execution's own worker stops too: its lease expires and the job is claimed again. The
+ -- reservation is kept (uncertain, never released) and its replay under the new lease adds nothing.
+ update public.processing_jobs set lease_expires_at=clock_timestamp()-interval '1 second' where id=job;
+ second_claim:=private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1',job,60);
+ begin
+  perform private.reserve_execution_operation_v1(job,first_claim->>'capability',(first_claim->>'leaseId')::uuid,pg_temp.id('X1p'),first_claim->>'contractFingerprint',
+   'synthetic#calculate','test-v1','read_only',0,0);
+  raise exception 'the stale execution lease reserved';
+ exception when insufficient_privilege then if sqlerrm<>'execution_lease_denied' then raise; end if;
+ end;
+ replay:=private.reserve_execution_operation_v1(job,second_claim->>'capability',(second_claim->>'leaseId')::uuid,pg_temp.id('X1p'),second_claim->>'contractFingerprint',
+  'synthetic#calculate','test-v1','read_only',0,0);
+ if first->>'state'<>'reserved' or (first->>'replayed')::boolean or not (first->>'mayExecute')::boolean
+ or not (again->>'replayed')::boolean or (again->>'mayExecute')::boolean
+ or not coalesce((second_claim->>'claimed')::boolean,false) or (second_claim->>'attempt')::integer<>2
+ or not (replay->>'replayed')::boolean or (replay->>'mayExecute')::boolean or replay->>'state'<>'uncertain'
+ or (select count(*) from private.execution_operation_receipts where execution_id=pg_temp.id('X1p'))<>1
+ or (select count(*) from private.execution_budget_accounts where execution_id=pg_temp.id('X1p'))<>1
+ or (select reserved_microusd+reserved_calls+spent_microusd+spent_calls from private.execution_budget_accounts where execution_id=pg_temp.id('X1p'))<>0 then
+  raise exception 'budget account mismatch: % % % % %',first,again,second_claim,replay,(select to_jsonb(a) from private.execution_budget_accounts a where a.execution_id=pg_temp.id('X1p'));
+ end if;
+ raise notice 'PASS: the produced execution has one budget account at zero: a reservation of the authorized ceiling is refused (execution_operation_denied), and its one zero-cost reservation replays without adding, also under the lease of a reclaimed job; the stale job lease is refused';
+end $$;
+
 -- 9. No authority, no command. The plain member and the owner once suspended are refused for every
 -- command, and the read of the work is refused to them.
 rollback to savepoint stage18_4_paid;
