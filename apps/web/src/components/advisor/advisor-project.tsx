@@ -1,6 +1,6 @@
 "use client";
 
-import {ArrowUp, Bot, Check, Circle, FileText, LoaderCircle, Paperclip, X} from "lucide-react";
+import {ArrowUp, Bot, Check, Circle, Clock3, FileText, LoaderCircle, Paperclip, X} from "lucide-react";
 import Link from "next/link";
 import {useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
@@ -37,7 +37,9 @@ import {workSectionHref} from "./advisor-work-links";
 import {useAdvisorWorkNavigation} from "./use-advisor-work-navigation";
 import {AdvisorWorkSurface, type AdvisorWorkSection} from "./advisor-work-surface";
 
-import {advisorShouldRefresh, advisorIsActive, advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import {advisorNeedsAttention, failureWasRecovered, latestSuccessfulOutcomeAt} from "./advisor-project-state";
+import type {WorkActivitySummary} from "@/lib/advisor/work-activity";
+import "@/app/work-activity.css";
 import {createAdvisorCommandRecovery, type AdvisorCommandResult} from "./advisor-command-recovery";
 import {ExecutionBriefActivity} from "./execution-brief-activity";
 import {createDocumentaryRequestBindings} from "./documentary-request-binding";
@@ -94,6 +96,7 @@ export type AdvisorProjectCopy = {
   working: string;
   ready: string;
   needsAttention: string;
+  waitingForPerson: string;
   messageFailed: string;
   informationRequest: InformationRequestCopy;
   errors: {invalid: string; denied: string; role: string; duplicate: string; not_found: string; save: string; processing: string; stale: string; upload: string};
@@ -111,7 +114,8 @@ type Props = {
   messages: AdvisorProjectMessage[];
   activityEvents: AdvisorProjectActivityEvent[];
   outcomeEvents?: AdvisorProjectActivityEvent[];
-  planPreparationStatus?: string | null;
+  /** What is in progress for the work, read on the server from persisted facts (`loadWorkActivity`). */
+  activity: WorkActivitySummary;
   coverage: {verified: number; total: number; openIssues: number; notExamined: number};
   openRequirements: Array<{id: string; label: string; status: string; materiality: string; reason: string | null}>;
   decisionRecords: Array<{id: string; question: string; recommendation: string | null; status: string}>;
@@ -158,11 +162,9 @@ export function AdvisorProject(props: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [optimistic, setOptimistic] = useState<AdvisorProjectMessage[]>([]);
-  const active = advisorIsActive({
-    sessionStatus: props.sessionStatus,
-    taskStatuses: props.tasks.map((task) => task.status),
-    messageStatuses: props.messages.map((message) => message.status),
-  });
+  // Only a live job the conversation waits on makes it busy; never a queued message or a missing result.
+  const active = props.activity.working;
+  const waiting = !active && props.activity.waitingForPerson;
   const outcomeEvents = props.outcomeEvents ?? props.activityEvents;
   const needsAttention = advisorNeedsAttention({
     active,
@@ -382,12 +384,12 @@ export function AdvisorProject(props: Props) {
         <button type="button" aria-pressed={mobileView === "conversation"} onClick={() => setMobileView("conversation")}>{workCopy("conversation")}</button>
         <button type="button" aria-pressed={mobileView === "work"} onClick={() => setMobileView("work")}>{workCopy("work")} <span>{sections.length}</span></button>
       </nav> : null}
-      <DealStateRefresh active={advisorShouldRefresh({active, interactionPending: pending || uploading, planPreparationStatus: props.planPreparationStatus})} />
+      <DealStateRefresh active={props.activity.refresh} />
       <section className="advisor-project__conversation">
         <header className="advisor-project__header">
           <Link href={`/${props.locale}/app/projects/${props.projectId}/basis`}>{basisCopy("title")}</Link>
           <div><span className="section-kicker">{props.copy.conversation}</span><h1>{props.projectName}</h1></div>
-          <span className={active ? "is-working" : needsAttention ? "is-failed" : undefined}>{active ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : needsAttention ? <X aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={13} />}{active ? props.copy.working : needsAttention ? props.copy.needsAttention : props.executionBrief?.approval?.status === "awaiting" ? approvalCopy("approval.awaiting.title") : props.copy.ready}</span>
+          <span className={active ? "is-working" : needsAttention ? "is-failed" : waiting ? "is-waiting" : undefined}>{active ? <LoaderCircle aria-hidden="true" className="spin" size={13} /> : needsAttention ? <X aria-hidden="true" size={13} /> : waiting ? <Clock3 aria-hidden="true" size={13} /> : <Circle aria-hidden="true" size={13} />}{active ? props.copy.working : needsAttention ? props.copy.needsAttention : props.executionBrief?.approval?.status === "awaiting" ? approvalCopy("approval.awaiting.title") : waiting ? props.copy.waitingForPerson : props.copy.ready}</span>
         </header>
 
         {props.contextPanel}

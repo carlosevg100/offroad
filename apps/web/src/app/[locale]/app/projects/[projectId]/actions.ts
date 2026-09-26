@@ -12,6 +12,7 @@ import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import {processIntakeSession} from "@/lib/intake/server";
 import {latestActiveDealState, parseCompiledStructure} from "@/lib/deal-state/workbench";
 import {governedMaterialPackageFromRows} from "@/lib/deal-state/materials";
+import {resumeDealStateAnalysis} from "@/lib/deal-state/resume-analysis";
 import {marketFeedbackInputSchema} from "@/lib/market-feedback/input";
 import type {Json} from "@/types/database";
 
@@ -53,6 +54,11 @@ export type AdvisorProposalDecisionState = {
   code?: "invalid" | "stale" | "save" | "processing";
 };
 
+export type PrivateAnalysisResumeState = {
+  ok: boolean;
+  code?: "invalid" | "stale" | "finished" | "current" | "processing";
+};
+
 export type MarketFeedbackState = {
   ok: boolean;
   code?: "invalid" | "stale" | "save";
@@ -83,6 +89,30 @@ async function privateProjectRuntime(locale: AppLocale, projectId: string, sessi
     .eq("intake_session_id", session.id)
     .order("object_version", {ascending: false});
   return {...workspace, session, rows: rows ?? [], latest: latestActiveDealState(rows ?? [])};
+}
+
+/** The next step of a missing case result: resume the analysis of the decision it depends on.
+ * The gap is decided from the stored rows; the database checks the decision again and never
+ * duplicates its work. */
+export async function resumePrivateProjectAnalysis(
+  _previous: PrivateAnalysisResumeState,
+  formData: FormData,
+): Promise<PrivateAnalysisResumeState> {
+  void _previous;
+  const rawLocale = value(formData, "locale");
+  const locale: AppLocale = routing.locales.includes(rawLocale as AppLocale)
+    ? rawLocale as AppLocale
+    : routing.defaultLocale;
+  const parsed = z.object({projectId: z.uuid(), sessionId: z.uuid()}).safeParse({
+    projectId: value(formData, "project_id"),
+    sessionId: value(formData, "session_id"),
+  });
+  if (!parsed.success) return {ok: false, code: "invalid"};
+  const runtime = await privateProjectRuntime(locale, parsed.data.projectId, parsed.data.sessionId);
+  if (!runtime) return {ok: false, code: "stale"};
+  const outcome = await resumeDealStateAnalysis(runtime.supabase, runtime.organization.id, runtime.session.id, runtime.rows);
+  revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
+  return outcome === "resumed" ? {ok: true} : {ok: false, code: outcome === "failed" ? "processing" : outcome};
 }
 
 /** Applies a conversational edit only after the user reviews its field-level preview. The

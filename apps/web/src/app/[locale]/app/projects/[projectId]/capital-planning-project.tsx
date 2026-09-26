@@ -6,6 +6,9 @@ import {notFound} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {jobKindRunning, workShouldRefresh} from "@/lib/advisor/work-activity";
+import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
+import "@/app/work-activity.css";
 
 import {OriginationDecision} from "./origination-decision";
 
@@ -13,15 +16,21 @@ type Props = {locale: string; projectId: string};
 
 export async function CapitalPlanningProject({locale, projectId}: Props) {
   const t = await getTranslations({locale, namespace: "App.capitalPlanning"});
+  const gap = await getTranslations({locale, namespace: "App.workActivity.analysisGap"});
   const {supabase, organization} = await requireWorkspace(locale);
   const {data: project} = await supabase.from("capital_projects")
     .select("id, project_name, entry_job, status")
     .eq("organization_id", organization.id).eq("id", projectId).maybeSingle();
   if (!project || project.entry_job !== "capital_planning") notFound();
 
-  const [{data: session}, {data: plan}, {data: artifacts}, {data: decisions}] = await Promise.all([
-    supabase.from("document_intake_sessions").select("id, company_profile, status")
-      .eq("organization_id", organization.id).eq("capital_project_id", project.id).maybeSingle(),
+  const {data: session} = await supabase.from("document_intake_sessions")
+    .select("id, company_profile, status")
+    .eq("organization_id", organization.id).eq("capital_project_id", project.id).maybeSingle();
+  if (!session) notFound();
+  // What is in progress is read before what it produces: a completion between the two reads
+  // costs one more refresh and never leaves a missing result without its refresh.
+  const activity = await loadWorkActivity(supabase, {organizationId: organization.id, workId: project.id, sessionId: session.id});
+  const [{data: plan}, {data: artifacts}, {data: decisions}] = await Promise.all([
     supabase.from("capital_project_plans").select("id, task_count")
       .eq("organization_id", organization.id).eq("capital_project_id", project.id).eq("status", "active").maybeSingle(),
     supabase.from("capital_project_artifacts")
@@ -30,7 +39,7 @@ export async function CapitalPlanningProject({locale, projectId}: Props) {
     supabase.from("capital_project_artifact_decisions").select("artifact_id, decision, decided_at")
       .eq("organization_id", organization.id).eq("capital_project_id", project.id).order("decided_at", {ascending: false}),
   ]);
-  if (!session || !plan) notFound();
+  if (!plan) notFound();
 
   const [{data: tasks}, {data: runs}] = await Promise.all([
     supabase.from("capital_project_plan_tasks").select("id, task_id, label, ordinal")
@@ -44,14 +53,15 @@ export async function CapitalPlanningProject({locale, projectId}: Props) {
   const artifact = artifacts?.find((item) => item.artifact_type === "alternative_map" && item.status !== "superseded");
   const parsed = artifact ? capitalPlanningMapArtifactSchema.safeParse(artifact.content) : null;
   const decision = artifact ? decisions?.find((item) => item.artifact_id === artifact.id) : null;
-  const active = session.status === "processing" || (runs ?? []).some((run) => run.status === "running") || (!artifact && session.status !== "failed");
+  // The analysis runs only while its job is queued or leased; a missing result is a gap, not work.
+  const analysisRunning = jobKindRunning(activity, ["capital_project_analysis"]);
   const profile = session.company_profile && typeof session.company_profile === "object" && !Array.isArray(session.company_profile) ? session.company_profile : {};
   const companyName = typeof profile.name === "string" ? profile.name : t("project.unknownCompany");
   const completedTasks = (tasks ?? []).filter((task) => latestRunByTask.get(task.id)?.status === "succeeded").length;
 
   return (
     <main className="app-canvas origination-project capital-planning-project">
-      <DealStateRefresh active={active} />
+      <DealStateRefresh active={workShouldRefresh(activity)} />
       <Link className="text-link origination-back" href={`/${locale}/app`}><ArrowLeft aria-hidden="true" size={14} />{t("back")}</Link>
       <header className="origination-project__header">
         <div><p className="section-kicker">{t("project.kicker")}</p><h1>{project.project_name}</h1><p>{t("project.subtitle", {company: companyName})}</p></div>
@@ -60,14 +70,22 @@ export async function CapitalPlanningProject({locale, projectId}: Props) {
 
       <div className="origination-project__layout">
         <section className="origination-project__work">
-          {!artifact ? (
+          {!artifact ? (analysisRunning || session.status === "failed" ? (
             <div className="origination-working">
               <Route aria-hidden="true" size={23} /><p className="section-kicker">{t("project.workingKicker")}</p>
-              <h2>{session.status === "failed" ? t("project.failedTitle") : t("project.workingTitle")}</h2>
-              <p>{session.status === "failed" ? t("project.failedBody") : t("project.workingBody")}</p>
+              <h2>{analysisRunning ? t("project.workingTitle") : t("project.failedTitle")}</h2>
+              <p>{analysisRunning ? t("project.workingBody") : t("project.failedBody")}</p>
               <div><span style={{width: `${Math.round((completedTasks / Math.max(tasks?.length ?? 1, 1)) * 100)}%`}} /></div>
               <small>{t("project.taskProgress", {complete: completedTasks, total: tasks?.length ?? plan.task_count})}</small>
             </div>
+          ) : (
+            <div className="origination-working origination-working--gap" data-testid="analysis-gap">
+              <Route aria-hidden="true" size={23} /><p className="section-kicker">{gap("kicker")}</p>
+              <h2>{gap("title")}</h2>
+              <p>{gap("body")}</p>
+              <Link className="text-link" href={`/${locale}/app/projects/${project.id}`}>{gap("action")}</Link>
+            </div>
+          )
           ) : parsed?.success ? (
             <article className="origination-brief capital-planning-map">
               <header><div><p className="section-kicker">{t("map.kicker")}</p><h2>{t("map.title")}</h2><p>{t("map.asOf", {date: parsed.data.asOfDate})}</p></div><span className={`origination-status origination-status--${artifact.status}`}><Check aria-hidden="true" size={12} />{t(`artifactStatus.${artifact.status}`)}</span></header>

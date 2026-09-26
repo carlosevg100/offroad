@@ -1,8 +1,8 @@
 import {describe, expect, it} from "vitest";
 
+import {conversationIsWorking, summarizeWorkActivity, workActivity, workShouldRefresh, type WorkActivityRows} from "@/lib/advisor/work-activity";
+
 import {
-  advisorShouldRefresh,
-  advisorIsActive,
   advisorNeedsAttention,
   canShowAdvisorInformationRequests,
   currentActivityCycle,
@@ -11,21 +11,17 @@ import {
   latestSuccessfulOutcomeAt,
 } from "./advisor-project-state";
 
+const noRows: WorkActivityRows = {jobs: [], milestones: [], requests: [], recomputeCandidates: [], institutionalCandidates: []};
+const liveJob = (kind: string, status: string) => ({id: "10000000-0000-4000-8000-000000000001", kind, status, execution_id: null, message_id: null, recompute_candidate_id: null});
+
 describe("advisor project current state", () => {
   const failed = {type: "quality_gate_failed", createdAt: "2026-09-03T10:00:00.000Z"};
   const recovered = {type: "work_completed", createdAt: "2026-09-03T10:05:00.000Z"};
 
-  it("does not treat planned work as running while the project awaits review", () => {
-    expect(advisorIsActive({
-      sessionStatus: "review_ready",
-      taskStatuses: ["queued", "pending"],
-      messageStatuses: ["completed"],
-    })).toBe(false);
-    expect(advisorIsActive({
-      sessionStatus: "processing",
-      taskStatuses: ["queued"],
-      messageStatuses: ["completed"],
-    })).toBe(true);
+  it("does not treat planned work as running while the project awaits review: only a live job is", () => {
+    // Planned tasks, a session status or a queued message are not jobs; with no live job nothing runs.
+    expect(conversationIsWorking(workActivity(noRows))).toBe(false);
+    expect(conversationIsWorking(workActivity({...noRows, jobs: [liveJob("capital_project_analysis", "leased")]}))).toBe(true);
   });
 
   it("holds the information request until the preliminary understanding is accepted", () => {
@@ -86,8 +82,9 @@ describe("advisor project current state", () => {
   it("prioritizes active execution without treating a queued retry as recovered", () => {
     const state = {sessionStatus: "review_ready", taskStatuses: [], messageStatuses: ["queued"]};
     const events = [failed, {type: "question_answered", createdAt: recovered.createdAt}];
-    expect(advisorIsActive(state)).toBe(true);
-    expect(advisorNeedsAttention({...state, active: advisorIsActive(state), events})).toBe(false);
+    const active = conversationIsWorking(workActivity({...noRows, jobs: [liveJob("agent_operation_brief", "queued")]}));
+    expect(active).toBe(true);
+    expect(advisorNeedsAttention({...state, active, events})).toBe(false);
     expect(failureWasRecovered(failed.createdAt, latestSuccessfulOutcomeAt(events))).toBe(false);
     // If processing stops without successful execution, the original failure still needs attention.
     expect(advisorNeedsAttention({...state, messageStatuses: [], active: false, events})).toBe(true);
@@ -142,11 +139,15 @@ describe("advisor project current state", () => {
 });
 
 describe("pending plan refresh", () => {
-  it("refreshes a collecting project while the plan is being prepared without declaring execution active", () => {
-    const active = advisorIsActive({sessionStatus: "collecting", taskStatuses: ["queued", "queued", "queued"], messageStatuses: ["completed", "completed"]});
-    expect(active).toBe(false);
-    for (const planPreparationStatus of ["queued", "leased"]) expect(advisorShouldRefresh({active, interactionPending: false, planPreparationStatus})).toBe(true);
-    for (const planPreparationStatus of [null, "succeeded", "failed", "awaiting_approval"]) expect(advisorShouldRefresh({active, interactionPending: false, planPreparationStatus})).toBe(false);
-    expect(advisorShouldRefresh({active: true, interactionPending: false, planPreparationStatus: "succeeded"})).toBe(true);
+  it("refreshes a project while the plan is being prepared without declaring the conversation busy", () => {
+    for (const status of ["queued", "leased"]) {
+      const activity = workActivity({...noRows, jobs: [liveJob("execution_brief_proposal", status)]});
+      expect(workShouldRefresh(activity)).toBe(true);
+      expect(conversationIsWorking(activity)).toBe(false);
+    }
+    // A plan awaiting approval waits for the person: it is shown as such and is not polled.
+    const held = workActivity({...noRows, jobs: [liveJob("capital_project_analysis", "awaiting_approval")]});
+    expect(summarizeWorkActivity(held)).toEqual({refresh: false, working: false, waitingForPerson: true});
+    for (const status of ["succeeded", "failed", "cancelled"]) expect(workShouldRefresh(workActivity({...noRows, jobs: [liveJob("execution_brief_proposal", status)]}))).toBe(false);
   });
 });
