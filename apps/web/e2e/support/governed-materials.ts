@@ -11,13 +11,27 @@ import {
 import {institutionalInputFixture} from "../../../../packages/financial-model/src/institutional-input.fixture";
 
 /**
+ * Object keys in the order Postgres jsonb returns them (shorter keys first, then bytewise). The
+ * worker builds the workbook from facts it reads back from the database, so their anchors arrive in
+ * this order; the workbook prints each anchor as JSON, and a producer that kept another key order
+ * would record bytes that no longer replay once the artifact is stored as jsonb.
+ */
+function asReadFromPostgres<T>(value: T): T {
+  const order = (inner: unknown): unknown => Array.isArray(inner) ? inner.map(order)
+    : inner && typeof inner === "object"
+      ? Object.fromEntries(Object.entries(inner).sort(([a], [b]) => a.length - b.length || (a < b ? -1 : a > b ? 1 : 0)).map(([key, item]) => [key, order(item)]))
+      : inner;
+  return order(value) as T;
+}
+
+/**
  * A fresh institutional workbook for the governed materials journey, built by the real reviewed
  * source, configuration and calculation producer (the same steps as the committed SQL fixture) and
  * bound to the synthetic source document of this run, so the model route replays it against the
  * approved hash of each locale.
  */
 export async function institutionalWorkbookFor(documentId: string, actorId: string) {
-  const fixture = JSON.parse(JSON.stringify(institutionalInputFixture()).replaceAll("synthetic-accounts", documentId)) as ReturnType<typeof institutionalInputFixture>;
+  const fixture = asReadFromPostgres(JSON.parse(JSON.stringify(institutionalInputFixture()).replaceAll("synthetic-accounts", documentId)) as ReturnType<typeof institutionalInputFixture>);
   const stamp = "2026-09-20T10:00:00Z";
   const sources = fixture.sources.map((source) => ({...source, metadataEvidence: {locator: "Financials", rationale: "Reviewed normalized base units"}, reviewedBy: actorId, reviewedAt: stamp}));
   const candidate = buildInitialInstitutionalConfigurationCandidate({
