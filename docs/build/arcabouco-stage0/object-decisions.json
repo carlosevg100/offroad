@@ -5568,6 +5568,24 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.can_read_presentation_template_v1(p_organization_id uuid, p_template_id uuid)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Regra de leitura de um template, usada pela política da tabela de versões sem aninhar RLS.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 105,
+          "anchor": "create or replace function private.can_read_presentation_template_v1(p_organization_id uuid, p_template_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "function:private.can_read_source_version_v1(p_organization_id uuid, p_version_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -23350,6 +23368,42 @@
       "consumer_status": "Consumido pela entrada de trabalho, navegação e upload; mutações somente por comandos autorizados."
     },
     {
+      "id": "function:private.presentation_template_house_structure_v1()",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "A estrutura da casa como dado, igual ao objeto exportado por packages/case-export/src/presentation-structure.ts (teste unitário compara os dois literais).",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 146,
+          "anchor": "create or replace function private.presentation_template_house_structure_v1()",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.presentation_template_json_v1(p_organization_id uuid, p_template_id uuid)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Projeção de um template para os leitores: versão corrente, estrutura, fingerprint e histórico de versões; nulo para template retirado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 444,
+          "anchor": "create or replace function private.presentation_template_json_v1(p_organization_id uuid, p_template_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "function:private.presentation_template_pdf_fonts()",
       "kind": "function",
       "catalogues": {
@@ -23409,6 +23463,24 @@
           "path": "supabase/migrations/20260911011934_client_presentation_templates.sql",
           "line": 87,
           "anchor": "create or replace function private.presentation_template_pdf_fonts()",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.presentation_template_version_guard()",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Gatilho que recusa update, delete e truncate em versões de template (presentation_template_version_immutable).",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 87,
+          "anchor": "create or replace function private.presentation_template_version_guard()",
           "mechanism": "direct_ddl"
         }
       ],
@@ -26765,10 +26837,34 @@
           "line": 237,
           "anchor": "create or replace function public.read_presentation_template_v1(p_project_id uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 470,
+          "anchor": "create or replace function private.read_presentation_template_v1(p_project_id uuid)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.read_presentation_template_version_v1(p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Leitura de uma versão exata sob a regra de acesso do template dela.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 498,
+          "anchor": "create function private.read_presentation_template_version_v1(p_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
       "id": "function:private.read_processing_model_lineage(p_organization_id uuid, p_session_id uuid, p_processing_run_id uuid)",
@@ -36986,9 +37082,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "0, 3, 23",
-      "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
+      "decision": "apagar",
+      "stage": "19 / 5",
+      "reason": "Retirada pela migração presentation_template_versions: substituída pela assinatura com p_structure jsonb (padrão: estrutura da casa), que mantém o chamador existente.",
       "sources": [
         {
           "path": "supabase/migrations/20260915204116_explicit_legacy_resource_access.sql",
@@ -37007,10 +37103,34 @@
           "line": 196,
           "anchor": "create or replace function public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 368,
+          "anchor": "drop function private.set_presentation_template_v1(uuid, uuid, jsonb);",
+          "mechanism": "direct_ddl"
         }
       ],
-      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller.",
+      "consumer_status": "Substituída nesta migração pela função de quatro argumentos; o chamador da web passa a enviar a estrutura.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Comando que valida definição e estrutura, grava uma versão imutável (ou reaproveita a de mesmo conteúdo), move o ponteiro e retira em vez de apagar; p_structure tem a estrutura da casa como padrão.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 369,
+          "anchor": "create function private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb default null)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
       "id": "function:private.set_resource_policy_grant_v1(p_resource_id uuid, p_user_id uuid, p_group_id uuid, p_action text, p_effect text, p_enabled boolean, p_expires_at timestamp with time zone)",
@@ -40770,6 +40890,12 @@
           "line": 263,
           "anchor": "create function private.submit_vault_entry_version_v1(p_entry_id uuid,p_version_id uuid,p_expected_version_id uuid,p_kind text,p_title text,p_directive_text text default null,p_reference_id uuid default null,p_source_version_ids uuid[] default '{}')",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 589,
+          "anchor": "create or replace function private.submit_vault_entry_version_v1(p_entry_id uuid,p_version_id uuid,p_expected_version_id uuid,p_kind text,p_title text,p_directive_text text default null,p_reference_id uuid default null,p_source_version_ids uuid[] default '{}')",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
@@ -42177,6 +42303,24 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.validate_presentation_template_structure_v1(p_structure jsonb)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Validação nomeada da estrutura semântica: seções vazias, chaves repetidas, tipos e audiências desconhecidos, campo obrigatório sem chave.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 290,
+          "anchor": "create or replace function private.validate_presentation_template_structure_v1(p_structure jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "function:private.validate_provider_case_criteria_v1(c jsonb)",
       "kind": "function",
       "catalogues": {
@@ -42444,6 +42588,12 @@
         {
           "path": "supabase/migrations/20260918105947_vault_export_authority.sql",
           "line": 2,
+          "anchor": "create or replace function private.vault_reference_allowed_v1(p_org uuid,p_version uuid,p_purpose text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 643,
           "anchor": "create or replace function private.vault_reference_allowed_v1(p_org uuid,p_version uuid,p_purpose text)",
           "mechanism": "direct_ddl"
         }
@@ -44248,6 +44398,24 @@
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
       "last_review_stage": "1B"
+    },
+    {
+      "id": "function:private.worker_can_read_brand_template_v1(p_object_path text)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Regra da política de Storage para o robô ler o logotipo: lease ativo de análise de projeto na organização do caminho.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 561,
+          "anchor": "create function private.worker_can_read_brand_template_v1(p_object_path text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
       "id": "function:private.worker_can_rotate_storage_v1(p_bucket text, p_path text)",
@@ -50379,6 +50547,24 @@
           "path": "supabase/migrations/20260903134819_public_company_source_memory.sql",
           "line": 34,
           "anchor": "create or replace function private.worker_public_company_memory_job(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Leitura do robô, pela capacidade do job: a versão corrente do template do projeto (o do projeto vence, depois o da organização; retirado é ausente).",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 530,
+          "anchor": "create function private.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -62214,6 +62400,24 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.read_presentation_template_version_v1(p_version_id uuid)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Invólucro público da leitura de uma versão exata.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 520,
+          "anchor": "create function public.read_presentation_template_version_v1(p_version_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "function:public.read_processing_model_lineage(p_organization_id uuid, p_session_id uuid, p_processing_run_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -68550,9 +68754,9 @@
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
-      "decision": "refatorar",
-      "stage": "0, 3, 23",
-      "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
+      "decision": "apagar",
+      "stage": "19 / 5",
+      "reason": "Retirada pela migração presentation_template_versions: substituída pela assinatura com p_structure jsonb (padrão: estrutura da casa), que mantém o chamador existente.",
       "sources": [
         {
           "path": "supabase/migrations/20260911011934_client_presentation_templates.sql",
@@ -68564,6 +68768,30 @@
           "path": "supabase/migrations/20260911011934_client_presentation_templates.sql",
           "line": 196,
           "anchor": "create or replace function public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 367,
+          "anchor": "drop function public.set_presentation_template_v1(uuid, uuid, jsonb);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Substituída nesta migração pela função de quatro argumentos; o chamador da web passa a enviar a estrutura."
+    },
+    {
+      "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Invólucro público do comando com a mesma assinatura e o mesmo padrão.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 436,
+          "anchor": "create function public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb default null)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -77536,6 +77764,24 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Invólucro público da leitura do robô.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 554,
+          "anchor": "create function public.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
       "id": "function:public.worker_read_public_entity_subject_v1(p_job_id uuid, p_capability_token text)",
@@ -101220,6 +101466,78 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_delete",
+      "kind": "policy",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Leitura pela regra do próprio template (membro da organização ou acesso ao projeto); nenhuma escrita direta de cliente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 124,
+          "anchor": "create policy presentation_template_versions_deny_delete on public.presentation_template_versions for delete to authenticated using (false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_insert",
+      "kind": "policy",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Leitura pela regra do próprio template (membro da organização ou acesso ao projeto); nenhuma escrita direta de cliente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 122,
+          "anchor": "create policy presentation_template_versions_deny_insert on public.presentation_template_versions for insert to authenticated with check (false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_update",
+      "kind": "policy",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Leitura pela regra do próprio template (membro da organização ou acesso ao projeto); nenhuma escrita direta de cliente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 123,
+          "anchor": "create policy presentation_template_versions_deny_update on public.presentation_template_versions for update to authenticated using (false) with check (false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.presentation_template_versions.presentation_template_versions_select",
+      "kind": "policy",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Leitura pela regra do próprio template (membro da organização ou acesso ao projeto); nenhuma escrita direta de cliente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 120,
+          "anchor": "create policy presentation_template_versions_select on public.presentation_template_versions for select to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "policy:public.presentation_templates.presentation_templates_deny_delete",
       "kind": "policy",
       "catalogues": {
@@ -107296,6 +107614,24 @@
           "path": "supabase/migrations/20260911011934_client_presentation_templates.sql",
           "line": 35,
           "anchor": "create policy brand_templates_objects_update on storage.objects for update to authenticated",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:storage.objects.brand_templates_worker_select",
+      "kind": "policy",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "O robô lê o logotipo de um template da organização somente enquanto detém um lease ativo de análise de projeto nessa organização; conferido por hash antes de embutir.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 574,
+          "anchor": "create policy brand_templates_worker_select on storage.objects for select to authenticated",
           "mechanism": "direct_ddl"
         }
       ],
@@ -142629,6 +142965,24 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:public.presentation_template_versions",
+      "kind": "table",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Versões imutáveis e numeradas do template de apresentação: definição visual, estrutura semântica e fingerprint das duas. Escrita só pelo comando set_presentation_template_v1; o cofre e cada arquivo renderizado fixam a versão, nunca a linha mutável.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 62,
+          "anchor": "create table public.presentation_template_versions (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "r:public.presentation_templates",
       "kind": "table",
       "catalogues": {
@@ -167883,6 +168237,78 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.presentation_template_versions.presentation_template_versions_audit",
+      "kind": "trigger",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Guarda de imutabilidade (update, delete e truncate), carimbo de updated_at e auditoria da tabela de versões.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 100,
+          "anchor": "create trigger presentation_template_versions_audit after insert or update or delete on public.presentation_template_versions",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.presentation_template_versions.presentation_template_versions_immutable",
+      "kind": "trigger",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Guarda de imutabilidade (update, delete e truncate), carimbo de updated_at e auditoria da tabela de versões.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 94,
+          "anchor": "create trigger presentation_template_versions_immutable before update or delete on public.presentation_template_versions",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.presentation_template_versions.presentation_template_versions_set_updated_at",
+      "kind": "trigger",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Guarda de imutabilidade (update, delete e truncate), carimbo de updated_at e auditoria da tabela de versões.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 98,
+          "anchor": "create trigger presentation_template_versions_set_updated_at before update on public.presentation_template_versions",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.presentation_template_versions.presentation_template_versions_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {},
+      "owner": "Engenharia de execução, etapa 19",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Guarda de imutabilidade (update, delete e truncate), carimbo de updated_at e auditoria da tabela de versões.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "line": 96,
+          "anchor": "create trigger presentation_template_versions_truncate_guard before truncate on public.presentation_template_versions",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
       "id": "trigger:public.presentation_templates.presentation_templates_audit",
       "kind": "trigger",
       "catalogues": {
@@ -181124,6 +181550,13 @@
       "decision": "preservar",
       "stage": "Correção do caminho da companhia",
       "reason": "Correção: a análise incremental segue depois da primeira decisão (a aprovação do plano não reabre um caso confirmado), um job retido vivo é replay da mesma decisão e recusa outra, e a liquidação cancela o job retido que não pode mais ser aprovado"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+      "decision": "preservar",
+      "stage": "19 / 5",
+      "reason": "Etapa 19, incremento 5: templates de apresentação com estrutura semântica versionada, versões imutáveis, retirada em vez de exclusão, cofre e robô fixados na versão exata."
     }
   ],
   "staging_archive": [
@@ -181743,5 +182176,11 @@
     ],
     "new_objects": 13,
     "review": "docs/build/arcabouco/etapa-17-3b-consumidor.md"
+  },
+  "stage_19_template_versions_revision": {
+    "production_migrations": [],
+    "new_objects": 22,
+    "review": "docs/build/arcabouco/etapa-19-5-templates-versionados.md",
+    "note": "Catálogos das 22 novas entradas vazios até a captura do líder (reconcile-stage0-inventory.py); o carimbo de produção substitui 20260927130000."
   }
 }

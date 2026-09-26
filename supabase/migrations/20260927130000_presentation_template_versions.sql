@@ -441,10 +441,12 @@ revoke all on function private.set_presentation_template_v1(uuid, uuid, jsonb, j
 grant execute on function private.set_presentation_template_v1(uuid, uuid, jsonb, jsonb), public.set_presentation_template_v1(uuid, uuid, jsonb, jsonb) to authenticated;
 
 -- 5. Readers. One template row becomes one object: its current version and its history.
-create or replace function private.presentation_template_json_v1(p_template public.presentation_templates)
+create or replace function private.presentation_template_json_v1(p_organization_id uuid, p_template_id uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
-declare current_row public.presentation_template_versions; history jsonb;
+declare p_template public.presentation_templates; current_row public.presentation_template_versions; history jsonb;
 begin
+  if p_template_id is null then return null; end if;
+  select * into p_template from public.presentation_templates t where t.organization_id = p_organization_id and t.id = p_template_id;
   if p_template.id is null or p_template.retired_at is not null or p_template.current_version_id is null then return null; end if;
   select * into current_row from public.presentation_template_versions v where v.organization_id = p_template.organization_id and v.id = p_template.current_version_id;
   select coalesce(jsonb_agg(jsonb_build_object(
@@ -463,7 +465,7 @@ begin
     'updated_at', p_template.updated_at, 'versions', history);
 end;
 $$;
-revoke all on function private.presentation_template_json_v1(public.presentation_templates) from public, anon, authenticated, service_role;
+revoke all on function private.presentation_template_json_v1(uuid, uuid) from public, anon, authenticated, service_role;
 
 create or replace function private.read_presentation_template_v1(p_project_id uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
@@ -483,9 +485,9 @@ begin
     'project_id', project.id,
     'organization_id', project.organization_id,
     'can_manage', private.can_manage_organization(project.organization_id),
-    'effective', private.presentation_template_json_v1(effective),
-    'organization', private.presentation_template_json_v1(organization_row),
-    'project', private.presentation_template_json_v1(project_row),
+    'effective', private.presentation_template_json_v1(effective.organization_id, effective.id),
+    'organization', private.presentation_template_json_v1(organization_row.organization_id, organization_row.id),
+    'project', private.presentation_template_json_v1(project_row.organization_id, project_row.id),
     'house_structure', private.presentation_template_house_structure_v1(),
     'pdf_fonts', to_jsonb(private.presentation_template_pdf_fonts()));
 end;
