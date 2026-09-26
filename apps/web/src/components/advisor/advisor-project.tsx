@@ -21,6 +21,7 @@ import {
 } from "@/app/[locale]/app/advisor-actions";
 import {milestoneLabelText, type MilestoneLabelKey} from "@/lib/advisor/work-update-view";
 import {ContinuationQuestion, type ContinuationQuestionState} from "./continuation-question";
+import {CitedResultLinks} from "./cited-result-links";
 import {requestProjectWork} from "@/app/[locale]/app/projects/[projectId]/work-request-actions";
 import type {ProjectWorkRequestRecord} from "@/lib/advisor/project-work-requests";
 import {
@@ -61,6 +62,8 @@ export type AdvisorProjectMessage = {
   proposalId?: string | null;
   /** The approved base a recorded follow-up continued from, as its turn recorded it. */
   continuation?: {label: string; revision: number} | null;
+  /** The execution results an answer cites, each linking to the exact revision it read. */
+  citedResults?: ReadonlyArray<{href: string}>;
 };
 export type AdvisorProjectDocument = {id: string; name: string; size: number | null; status: string; version?: number};
 export type AdvisorProjectTask = {id: string; label: string; status: string};
@@ -436,6 +439,7 @@ export function AdvisorProject(props: Props) {
                 {message.continuation ? <p className="advisor-thread__continuation">{continuationCopy("note", {label: baseLabel(message.continuation.label), revision: message.continuation.revision})}</p> : null}
                 {message.status === "failed" && !failureWasRecovered(message.createdAt, successfulOutcomeAt) ? <p className="advisor-thread__message-error" role="alert">{props.copy.messageFailed}</p> : null}
                 {message.artifactHref ? <Link className="advisor-thread__artifact-link" href={message.artifactHref}><FileText aria-hidden="true" size={13} />{props.copy.openWork}</Link> : null}
+                <CitedResultLinks citedResults={message.citedResults} />
                 {proposal && props.sessionId ? <AdvisorChangeProposalCard copy={props.copy.proposal} locale={props.locale} projectId={props.projectId} proposal={proposal} sessionId={props.sessionId} /> : null}
               </div>
             </article>;

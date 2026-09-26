@@ -13,7 +13,7 @@ const requestErrors: Record<ExecutionRequestError, true> = {
   gates_invalid: true, gates_blocked: true, gates_mismatch: true,
   company_unregistered: true, situation_required: true, situation_unknown: true, method_not_applicable: true, selection_invalid: true, voice_blocked: true,
 };
-const notEvaluated: Record<Extract<WorkExecutionMdTest, {evaluated: false}>["reason"], true> = {gates_not_recorded: true, gates_unverified: true, evaluation_failed: true};
+const notEvaluated: Record<Extract<WorkExecutionMdTest, {evaluated: false}>["reason"], true> = {gates_not_recorded: true, gates_unverified: true, evaluation_failed: true, pins_mismatch: true};
 const keys = (node: object) => Object.keys(node).sort();
 
 describe("work executions catalogue", () => {
@@ -36,6 +36,8 @@ describe("work executions catalogue", () => {
     expect(keys(w.gates.conventionStatuses)).toEqual([...referenceDataStatusSchema.options].sort());
     expect(keys(w.gates.registrationStates)).toEqual(["missing", "registered"]);
     expect(keys(w.gates.researchStates)).toEqual(["abstained", "missing", "recorded"]);
+    // Every freshness the artifact reader returns has its sentence on the screen of a registered result.
+    expect(keys(w.detail.freshness)).toEqual(["current", "stale", "unknown"]);
   });
   it("hands the situation labels and the new refusals to the request form on the client", () => {
     for (const catalogue of [ptBR, enUS]) {

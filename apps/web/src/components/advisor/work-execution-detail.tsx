@@ -13,9 +13,11 @@ export function splitOperandGap(gap: {code: string; reason: string}): {operand: 
 }
 
 /** Shows what the database returned and nothing more: state, outcome and reason always; the
- * published packet only when the bytes came back and parse as the released output; the gate
- * receipt only when its bytes match the stored fingerprint; the MD test question by question,
- * with no overall verdict; and each chart piece's decisive number as text, without a chart. */
+ * result only when the bytes came back under current inputs, taken from the blocks of its registered
+ * revision when there is one (with no identifier or fingerprint in the text) and from the published
+ * packet otherwise; the gate receipt only when its bytes match the stored fingerprint; the MD test
+ * question by question, with no overall verdict, over the packet and receipt the revision pinned;
+ * and each chart piece's decisive number as text, without a chart. */
 export async function WorkExecutionDetail({locale, projectId, view}: {locale: string; projectId: string; view: WorkExecutionView}) {
   const t = await getTranslations({locale, namespace: "App.workExecutions"});
   const when = new Intl.DateTimeFormat(locale, {dateStyle: "medium", timeStyle: "short"});
@@ -53,9 +55,15 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
           <dt>{t("gates.fingerprint")}</dt><dd><code>{gates.fingerprint}</code></dd>
         </dl>}
     </section>
-    {result?.withheld ? <section><h2>{t("detail.withheldTitle")}</h2><p role="status">{t("detail.withheldBody")}</p><p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p></section> : null}
-    {result && !result.withheld ? <section><h2>{t("detail.resultTitle")}</h2>
-      <p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p>
+    {result?.withheld ? <section><h2>{t("detail.withheldTitle")}</h2>
+      {result.reason === "revision_restricted"
+        ? <><p role="status">{t("detail.revisionWithheldBody")}</p><p>{t("detail.committedAt")}: {date(result.committedAt)}</p></>
+        : <><p role="status">{t("detail.withheldBody")}</p><p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p></>}
+    </section> : null}
+    {result && !result.withheld ? <section className={result.revision ? "execution-result execution-result--recorded" : "execution-result"}><h2>{t("detail.resultTitle")}</h2>
+      {result.revision
+        ? <><p>{t("detail.recorded", {revision: result.revision.revisionNo, date: date(result.revision.recordedAt)})}</p><p role="status">{t(`detail.freshness.${result.revision.freshness}`)}</p></>
+        : <p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p>}
       {marker ? <p role="status">{t("detail.markerTitle")}: {known("reasons", marker.reason)}</p> : null}
       {!packet && !marker ? <p role="status">{t("detail.unreadable")}</p> : null}
       {packet ? <>
@@ -75,7 +83,7 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
         {packet.contractualGaps.length ? <><h3>{t("detail.contractualGaps")}</h3><ul>{packet.contractualGaps.map((g, n) => <li key={n}>{g.subjectId}: <code>{g.code}</code></li>)}</ul></> : null}
         <h3>{t("detail.requirements")}</h3>
         {!packet.nextRequirements.length ? <p>{t("detail.noRequirements")}</p> : <ul>{packet.nextRequirements.map(r => <li key={r}>{known("requirements", r)}</li>)}</ul>}
-        <p>{t("detail.packetFingerprint")}: <code>{packet.fingerprint}</code></p>
+        {result.source === "packet" ? <p>{t("detail.packetFingerprint")}: <code>{packet.fingerprint}</code></p> : null}
       </> : null}
     </section> : null}
     {packet && mdTest ? <section><h2>{t("mdTest.title")}</h2><p>{t("mdTest.note")}</p>

@@ -2,6 +2,7 @@ import {createHash} from "node:crypto";
 import {z} from "zod";
 import {executionCanonicalText, executionGatesSchema, type ExecutionGates} from "@offroad/agent-contracts";
 import {capitalProcedurePacketV2OutputSchema, deriveCapitalChartSeries, evaluateMdTest, type CapitalMdTestGates} from "@offroad/financial-model";
+import type {ExecutionRevision, ExecutionRevisionState} from "./revision";
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const outcome = z.enum(["succeeded", "partial"]);
@@ -44,7 +45,7 @@ export type WorkExecutionGates = {verified: false; fingerprint: string; createdA
 export type WorkExecutionMdQuestion = {id: string; status: "pass"} | {id: string; status: "fail"; reasonCodes: string[]}
   | {id: string; status: "not_applicable"; scopeCode: string} | {id: string; status: "human_required"; reasonCode: string};
 export type WorkExecutionMdTest = {evaluated: true; questions: WorkExecutionMdQuestion[]}
-  | {evaluated: false; reason: "gates_not_recorded" | "gates_unverified" | "evaluation_failed"};
+  | {evaluated: false; reason: "gates_not_recorded" | "gates_unverified" | "evaluation_failed" | "pins_mismatch"};
 /** The decisive number of one chart piece and its period, to be read as text. */
 export type WorkExecutionDecisiveNumber = {pieceId: string; questionCode: string; alternativeId: string; unit: string; value: string; periodLabel: string};
 export type WorkExecutionView = {
@@ -53,9 +54,16 @@ export type WorkExecutionView = {
   job: {status: string; attempts: number; lastErrorCode: string | null; updatedAt: string} | null;
   manifest: {purpose: string | null; methodId: string | null; methodVersion: string | null; requestedAt: string | null; contractFingerprint: string; inputFingerprint: string} | null;
   gates: WorkExecutionGates | null;
-  result: null | {withheld: true; resultFingerprint: string; committedAt: string}
-    | {withheld: false; resultFingerprint: string; committedAt: string; packet: WorkExecutionPacket | null; marker: {status: string; reason: string} | null;
-      mdTest: WorkExecutionMdTest | null; decisiveNumbers: WorkExecutionDecisiveNumber[] | null};
+  /**
+   * `inputs_not_current`: the execution's reader withheld the bytes. `revision_restricted`: the bytes
+   * came back but the database withheld the registered revision from this reader, so nothing of the
+   * result is shown. With a result, `source` says where the screen took it from: the blocks of the
+   * registered revision, or the committed packet of an execution that has no revision.
+   */
+  result: null | {withheld: true; reason: "inputs_not_current" | "revision_restricted"; resultFingerprint: string; committedAt: string}
+    | {withheld: false; source: "packet" | "revision"; resultFingerprint: string; committedAt: string; packet: WorkExecutionPacket | null; marker: {status: string; reason: string} | null;
+      mdTest: WorkExecutionMdTest | null; decisiveNumbers: WorkExecutionDecisiveNumber[] | null;
+      revision: {revisionNo: number; recordedAt: string; freshness: "current" | "stale" | "unknown"} | null};
 };
 export type WorkExecutionListItem = {executionId: string; createdAt: string; state: WorkExecutionState; outcome: string | null; reason: string | null; purpose: string | null};
 
@@ -143,15 +151,44 @@ function decisiveNumbersOf(data: PacketOutput): WorkExecutionDecisiveNumber[] | 
   } catch { return null; }
 }
 
-export function projectWorkExecution(raw: unknown): WorkExecutionView {
+/** The packet as the screen shows it, taken from the blocks of the registered revision instead of the bytes. */
+function blocksPacketView(revision: ExecutionRevision): WorkExecutionPacket {
+  const {framing, alternatives, informationGaps, contractualGaps, nextRequirements} = revision.blocks;
+  return {status: framing.status, question: framing.question, asOf: framing.asOf,
+    alternatives: alternatives.map(a => ({id: a.id, label: a.label, kind: a.kind, calculated: a.calculated})),
+    informationGaps: informationGaps.map(g => ({subjectId: g.subjectId, code: g.code, reason: g.reason})),
+    contractualGaps: contractualGaps.map(g => ({subjectId: g.subjectId, code: g.code})), nextRequirements: [...nextRequirements], unresolved: [],
+    contributions: framing.contributionCount, fingerprint: revision.pins.packetFingerprint ?? ""};
+}
+
+/** The MD test of a registered result: the one evaluator, over the committed packet and the gate
+ * receipt the revision pinned. A packet or a receipt read now that is not the pinned one is not
+ * evaluated; a receipt whose bytes do not match its fingerprint stays unverified, as before. */
+function pinnedMdTestOf(data: PacketOutput | null, gates: WorkExecutionGates | null, resultFingerprint: string, revision: ExecutionRevision): WorkExecutionMdTest {
+  const {pins} = revision;
+  if (!data || resultFingerprint !== pins.resultFingerprint || data.fingerprint !== pins.packetFingerprint || (gates?.fingerprint ?? null) !== pins.gatesFingerprint) {
+    return {evaluated: false, reason: "pins_mismatch"};
+  }
+  return mdTestOf(data, gates);
+}
+
+/** The view of one read of `read_work_execution_v2`, with the registered revision when the page read it. */
+export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisionState): WorkExecutionView {
   const r = workExecutionReadSchema.parse(raw);
   const gates = r.gates === null ? null : projectExecutionGates(r.gates);
   let result: WorkExecutionView["result"] = null;
-  if (r.result !== null && "withheld" in r.result) result = {withheld: true, resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt};
-  else if (r.result !== null) {
+  if (r.result !== null && "withheld" in r.result) result = {withheld: true, reason: "inputs_not_current", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt};
+  else if (r.result !== null && registered?.state === "withheld") result = {withheld: true, reason: "revision_restricted", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt};
+  else if (r.result !== null && registered?.state === "ready") {
+    const {data} = parseCommittedResult(r.result.canonicalResult);
+    const {revision} = registered;
+    result = {withheld: false, source: "revision", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: blocksPacketView(revision), marker: null,
+      mdTest: pinnedMdTestOf(data, gates, r.result.resultFingerprint, revision), decisiveNumbers: revision.blocks.decisiveNumbers.map(n => ({...n})),
+      revision: {revisionNo: revision.revisionNo, recordedAt: revision.recordedAt, freshness: revision.freshness}};
+  } else if (r.result !== null) {
     const {data, marker} = parseCommittedResult(r.result.canonicalResult);
-    result = {withheld: false, resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: data ? packetView(data) : null, marker,
-      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null};
+    result = {withheld: false, source: "packet", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt, packet: data ? packetView(data) : null, marker,
+      mdTest: data ? mdTestOf(data, gates) : null, decisiveNumbers: data ? decisiveNumbersOf(data) : null, revision: null};
   }
   return {executionId: r.executionId, workId: r.workId, requestId: r.requestId, processingRunId: r.processingRunId, createdAt: r.createdAt,
     state: workExecutionState({withheld: result?.withheld, outcome: r.result?.outcome ?? null, jobStatus: r.job?.status ?? null}),

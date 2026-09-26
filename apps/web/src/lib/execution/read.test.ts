@@ -9,7 +9,9 @@ import {readContextualBasis} from "@offroad/reconciliation";
 import {adoptedCapitalPeriodFixture, capitalStructureDecisionFixture} from "@offroad/testing-fixtures/capital-structure-decision";
 import {formatDecimal} from "./format";
 import {buildExecutionGates} from "@offroad/execution-request";
+import {capitalProcedurePacketBlocks, readCapitalProcedurePacketBlocks, type CapitalProcedurePacketLike} from "@offroad/domain-contracts";
 import {mdTestGatesOf, projectWorkExecution, projectWorkExecutionList, readCommittedResult, workExecutionState} from "./read";
+import type {ExecutionRevisionState} from "./revision";
 
 const id = (n: number) => `a4180000-0000-4000-9000-${String(n).padStart(12, "0")}`;
 const hex = (c: string) => c.repeat(64);
@@ -68,7 +70,7 @@ describe("work execution read projection", () => {
   it("withholds bytes the database withheld and says why", () => {
     const view = projectWorkExecution({...base, inputsCurrent: false, gates: receipt(), result: {withheld: "inputs_not_current", outcome: "succeeded", reason: "calculated", resultFingerprint: hex("d"), committedAt: "2026-09-24T12:05:00+00:00"}});
     expect(view.state).toBe("withheld"); expect(view.inputsCurrent).toBe(false);
-    expect(view.result).toEqual({withheld: true, resultFingerprint: hex("d"), committedAt: "2026-09-24T12:05:00+00:00"});
+    expect(view.result).toEqual({withheld: true, reason: "inputs_not_current", resultFingerprint: hex("d"), committedAt: "2026-09-24T12:05:00+00:00"});
     expect(JSON.stringify(view)).not.toContain("canonicalResult");
   });
   it("fails closed on a shape it does not recognize", () => {
@@ -171,5 +173,71 @@ describe("gate receipt, MD test and decisive numbers in the detail", () => {
     expect(formatDecimal("-1000", "en-US")).toBe("-1,000");
     expect(formatDecimal("0.5", "pt-BR")).toBe("0,5");
     expect(formatDecimal("not a number", "pt-BR")).toBe("not a number");
+  });
+});
+
+/** The registered revision of a committed packet, as the page hands it over: the contract's blocks of
+ * that packet and the pins the commit writes (the receipt's result fingerprint, the packet's own
+ * fingerprint and the gate receipt). */
+function registered(text: string, overrides: {pins?: Partial<{resultFingerprint: string; packetFingerprint: string | null; gatesFingerprint: string | null}>; freshness?: "current" | "stale" | "unknown"} = {}): ExecutionRevisionState {
+  const packet = JSON.parse(text) as CapitalProcedurePacketLike;
+  const blocks = readCapitalProcedurePacketBlocks(capitalProcedurePacketBlocks(packet));
+  if (!blocks) throw new Error("blocks expected");
+  return {state: "ready", revision: {revisionNo: 1, recordedAt: "2026-09-24T12:05:00.5+00:00", freshness: overrides.freshness ?? "current", blocks,
+    pins: {resultFingerprint: hex("d"), packetFingerprint: packet.fingerprint, gatesFingerprint: receipt().fingerprint, ...overrides.pins}}};
+}
+
+describe("a result read from its registered revision", () => {
+  it("shows the alternatives, gaps and requirements of the blocks and the same decisive numbers as the series", () => {
+    const text = calculatedText();
+    const fromBytes = projectWorkExecution({...base, gates: receipt(), result: committedResult(text)});
+    const fromBlocks = projectWorkExecution({...base, gates: receipt(), result: committedResult(text)}, registered(text));
+    if (!fromBytes.result || fromBytes.result.withheld || !fromBlocks.result || fromBlocks.result.withheld) throw new Error("results expected");
+    expect(fromBytes.result.source).toBe("packet"); expect(fromBytes.result.revision).toBeNull();
+    expect(fromBlocks.result.source).toBe("revision");
+    expect(fromBlocks.result.revision).toEqual({revisionNo: 1, recordedAt: "2026-09-24T12:05:00.5+00:00", freshness: "current"});
+    // What the screen lists is the same whether it came from the bytes or from the blocks.
+    const {fingerprint: _bytes, unresolved: _unresolved, ...packetFields} = fromBytes.result.packet!;
+    const {fingerprint: _blocks, unresolved, ...blockFields} = fromBlocks.result.packet!;
+    expect(blockFields).toEqual(packetFields); expect(unresolved).toEqual([]);
+    expect(fromBlocks.result.decisiveNumbers).toEqual(fromBytes.result.decisiveNumbers);
+    expect(fromBlocks.result.decisiveNumbers!.length).toBeGreaterThan(0);
+    // The MD test is the same evaluation over the pinned packet and receipt.
+    expect(fromBlocks.result.mdTest).toEqual(fromBytes.result.mdTest);
+    expect(fromBlocks.result.mdTest?.evaluated).toBe(true);
+  });
+  it("does not evaluate the MD test over a packet or a receipt the revision did not pin", () => {
+    const text = packetText();
+    const read = {...base, gates: receipt(), result: committedResult(text)};
+    for (const pins of [{resultFingerprint: hex("e")}, {packetFingerprint: hex("f")}, {gatesFingerprint: hex("0")}, {gatesFingerprint: null}]) {
+      const view = projectWorkExecution(read, registered(text, {pins}));
+      expect(view.result && !view.result.withheld && view.result.mdTest).toEqual({evaluated: false, reason: "pins_mismatch"});
+    }
+    // A receipt the revision pinned whose bytes no longer match it stays unverified, as before.
+    const tampered = {...receipt(), canonical: {...receipt().canonical, research: "missing"}};
+    const view = projectWorkExecution({...read, gates: tampered}, registered(text));
+    expect(view.result && !view.result.withheld && view.result.mdTest).toEqual({evaluated: false, reason: "gates_unverified"});
+  });
+  it("keeps the rule of current inputs and shows nothing of a revision the database withheld", () => {
+    const text = packetText();
+    const withheldBytes = projectWorkExecution({...base, inputsCurrent: false, gates: receipt(), result: {withheld: "inputs_not_current", outcome: "succeeded", reason: "calculated",
+      resultFingerprint: hex("d"), committedAt: "2026-09-24T12:05:00+00:00"}}, registered(text));
+    expect(withheldBytes.result).toEqual({withheld: true, reason: "inputs_not_current", resultFingerprint: hex("d"), committedAt: "2026-09-24T12:05:00+00:00"});
+    const restricted = projectWorkExecution({...base, gates: receipt(), result: committedResult(text)}, {state: "withheld"});
+    expect(restricted.result).toEqual({withheld: true, reason: "revision_restricted", resultFingerprint: hex("d"), committedAt: "2026-09-24T12:05:00+00:00"});
+    expect(restricted.state).toBe("withheld");
+    expect(JSON.stringify(restricted)).not.toContain("canonicalResult");
+  });
+  it("shows what it showed before when the execution has no revision or it could not be read", () => {
+    const text = packetText();
+    const before = projectWorkExecution({...base, gates: receipt(), result: committedResult(text)});
+    for (const state of ["absent", "unavailable"] as const) {
+      expect(projectWorkExecution({...base, gates: receipt(), result: committedResult(text)}, {state})).toEqual(before);
+    }
+  });
+  it("carries the freshness of the revision", () => {
+    const text = packetText();
+    const view = projectWorkExecution({...base, gates: receipt(), result: committedResult(text)}, registered(text, {freshness: "stale"}));
+    expect(view.result && !view.result.withheld && view.result.revision?.freshness).toBe("stale");
   });
 });
