@@ -29,6 +29,10 @@ begin
   and r.work_id=e.work_id and r.pipeline_version='pinned-work-execution-v1'
   and m.payload->>'principalId'=p.id::text and m.payload->>'workId'=e.work_id::text;
   if subject_id is null then raise exception 'job_authorization_denied' using errcode='42501';end if;
+ elsif new.kind='agent_operation_brief' and new.payload ? 'institutional_recompute_candidate_id' then
+  subject_id:=private.institutional_recompute_job_subject_v1(new.organization_id,(new.payload->>'institutional_recompute_candidate_id')::uuid,nullif(new.payload->>'message_id','')::uuid,new.intake_session_id,new.processing_run_id,root_id);
+  if subject_id is null then raise exception 'job_authorization_denied' using errcode='42501';end if;
+  new.review_execution_authorization_id:=(new.payload->>'message_id')::uuid;
  elsif new.kind='agent_operation_brief' and private.review_execution_authority_current_v1(nullif(new.payload->>'message_id','')::uuid,root_id,subject_id) then
  new.review_execution_authorization_id:=(new.payload->>'message_id')::uuid;
  elsif subject_id is null then

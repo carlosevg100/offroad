@@ -4,9 +4,8 @@
 -- What must hold: a revision is recorded from approved records only, is idempotent for the same
 -- approved input set, is immutable, and carries the approver of the component that changed. Every
 -- result declares the revision that produced it. A completed result is never rewritten; when a
--- later revision completes, the earlier one is marked as previous exactly once. Propagating the
--- same revision twice never produces a second output, and it needs the preparer role once the
--- project has review assignments.
+-- later revision completes, the earlier one is marked as previous exactly once. The propagation
+-- command is retired: it refuses by name and no API role may execute it.
 begin;
 \ir support/legacy_workspace_capabilities.sql
 set local lock_timeout = '5s';
@@ -163,38 +162,38 @@ do $$ declare body jsonb; current_result jsonb; previous_result jsonb; begin
   end if;
 end $$;
 
--- 8. Propagating the current revision again returns the output that already exists.
-create temp table revision_probe(label text primary key, body jsonb);
-do $$ declare body jsonb; begin
-  body := public.propagate_project_canonical_revision_v1('30000000-0000-4000-8000-000000000a01','62000000-0000-4000-8000-000000000a01','pt-BR');
-  insert into revision_probe values ('propagation',body);
-  if body->>'status'<>'completed' or body->>'resultId'<>'61000000-0000-4000-8000-000000000a02'
-     or not (body->>'replayed')::boolean then
-    raise exception 'a repeated propagation did not return the output that already exists: %',body;
-  end if;
-end $$;
-
--- 9. Once the project has review roles, propagation needs the preparer role.
-reset role;
-do $$ begin
-  if (select count(*) from private.institutional_model_results where capital_project_id='30000000-0000-4000-8000-000000000a01')<>2
-     or (select count(*) from private.project_canonical_revisions where capital_project_id='30000000-0000-4000-8000-000000000a01')<>2 then
-    raise exception 'a repeated propagation created a second output or a second revision';
-  end if;
-end $$;
-insert into public.capital_project_review_assignments (organization_id,capital_project_id,user_id,review_role,assigned_by) values
-  ('20000000-0000-4000-8000-000000000a01','30000000-0000-4000-8000-000000000a01','10000000-0000-4000-8000-000000000a01','preparer','10000000-0000-4000-8000-000000000a01');
-set local role authenticated;
-select pg_temp.as_user('10000000-0000-4000-8000-000000000a04');
+-- 8. The propagation command is retired (stage 18, increment 5A): the approval of a configuration emits
+--    a dependency event and the graph recomputes only the dependent results. No API role may execute
+--    it, and the command itself refuses by name even to its owner. Nothing is recorded by a refusal.
 do $$ declare rejected boolean:=false; begin
-  begin perform public.propagate_project_canonical_revision_v1('30000000-0000-4000-8000-000000000a01','62000000-0000-4000-8000-000000000a02','pt-BR');
+  begin perform public.propagate_project_canonical_revision_v1('30000000-0000-4000-8000-000000000a01','62000000-0000-4000-8000-000000000a01','pt-BR');
   exception when insufficient_privilege then
-    if sqlerrm<>'capital_project_review_role_required' then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true;
+    if sqlerrm not like 'permission denied for function%' then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true;
   end;
-  if not rejected then raise exception 'a member without the preparer role propagated an approved change'; end if;
+  if not rejected then raise exception 'the retired propagation is still executable by the project owner'; end if;
+end $$;
+reset role;
+do $$ declare rejected boolean:=false; begin
+  begin perform private.propagate_project_canonical_revision_v1('30000000-0000-4000-8000-000000000a01','62000000-0000-4000-8000-000000000a01','pt-BR');
+  exception when insufficient_privilege then
+    if sqlerrm<>'project_revision_propagation_retired' then raise exception 'unexpected refusal: %',sqlerrm; end if; rejected:=true;
+  end;
+  if not rejected then raise exception 'the retired propagation ran for its owner'; end if;
+  if has_function_privilege('authenticated','public.propagate_project_canonical_revision_v1(uuid,uuid,text)','execute')
+     or has_function_privilege('authenticated','private.propagate_project_canonical_revision_v1(uuid,uuid,text)','execute')
+     or has_function_privilege('anon','public.propagate_project_canonical_revision_v1(uuid,uuid,text)','execute')
+     or has_function_privilege('service_role','public.propagate_project_canonical_revision_v1(uuid,uuid,text)','execute') then
+    raise exception 'the retired propagation keeps an API grant';
+  end if;
+  if (select count(*) from private.institutional_model_results where capital_project_id='30000000-0000-4000-8000-000000000a01')<>2
+     or (select count(*) from private.project_canonical_revisions where capital_project_id='30000000-0000-4000-8000-000000000a01')<>2
+     or exists(select 1 from public.agent_messages where id='62000000-0000-4000-8000-000000000a01') then
+    raise exception 'a refused propagation created an output, a revision or a message';
+  end if;
 end $$;
 
--- 10. Another tenant reads nothing and propagates nothing.
+-- 9. Another tenant reads nothing.
+set local role authenticated;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000a03');
 do $$ declare rejected boolean:=false; begin
   begin perform public.read_project_revision_history_v1('30000000-0000-4000-8000-000000000a01');
@@ -202,12 +201,6 @@ do $$ declare rejected boolean:=false; begin
     if sqlerrm not in ('project_revision_forbidden','resource_access_denied') then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true;
   end;
   if not rejected then raise exception 'a foreign tenant read the revision history'; end if;
-  rejected:=false;
-  begin perform public.propagate_project_canonical_revision_v1('30000000-0000-4000-8000-000000000a01','62000000-0000-4000-8000-000000000a03','pt-BR');
-  exception when insufficient_privilege then
-    if sqlerrm not in ('project_revision_forbidden','resource_access_denied') then raise exception 'unexpected denial: %',sqlerrm; end if; rejected:=true;
-  end;
-  if not rejected then raise exception 'a foreign tenant propagated a revision'; end if;
   rejected:=false;
   begin perform 1 from private.project_canonical_revisions;
   exception when insufficient_privilege then rejected:=true; end;

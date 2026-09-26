@@ -12,6 +12,24 @@ type RuntimeSecurityEvidence = {
 };
 
 /**
+ * Stale dependents of the case's work, as the database counts them from the recorded invalidation
+ * facts and the update requests that are neither adopted nor declined (worker_load_work_freshness_v1).
+ * Null when the count could not be read: the control then fails, it is never assumed fresh.
+ */
+type WorkFreshnessEvidence = {staleDependents: number} | null;
+
+function freshnessControl(freshness: WorkFreshnessEvidence) {
+  if (freshness === null || !Number.isSafeInteger(freshness.staleDependents) || freshness.staleDependents < 0) {
+    return {status: "failed" as const, transitiveInvalidationEnabled: false, staleDependents: 0};
+  }
+  return {
+    status: freshness.staleDependents === 0 ? "satisfied" as const : "failed" as const,
+    transitiveInvalidationEnabled: true,
+    staleDependents: freshness.staleDependents,
+  };
+}
+
+/**
  * Compile what this exact execution proved into the persisted operating-control contract.
  * Every inference here is conservative: an absent proof becomes a failed control, never a
  * guessed success. The database independently evaluates the resulting snapshot and owns the
@@ -24,6 +42,7 @@ export function buildCaseOperatingControlSnapshot(input: {
   costUsd: number;
   maxCostUsd: number | null;
   security: RuntimeSecurityEvidence;
+  freshness: WorkFreshnessEvidence;
 }): CaseControlSnapshot {
   const materialClaims = input.state.claimRegistry?.claims.filter((claim) => claim.material) ?? [];
   const sourceBoundClaims = materialClaims.filter((claim) => claim.supportIds.length > 0);
@@ -149,11 +168,7 @@ export function buildCaseOperatingControlSnapshot(input: {
       exactAuthorizationCaptured: false,
       authorizedTargetsFingerprint: null,
     },
-    freshness: {
-      status: "satisfied",
-      transitiveInvalidationEnabled: true,
-      staleDependents: 0,
-    },
+    freshness: freshnessControl(input.freshness),
     economics: {
       status: costWithinBudget ? "satisfied" : "failed",
       costWithinBudget,
