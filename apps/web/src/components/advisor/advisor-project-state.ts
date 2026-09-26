@@ -8,17 +8,6 @@ export type AdvisorCycleEvent = AdvisorOutcomeEvent & {
   detail?: unknown;
 };
 
-/** Planned tasks may be ready before the user confirms the next stage. They are not active work. */
-export function advisorIsActive(input: {
-  sessionStatus: string;
-  taskStatuses: readonly string[];
-  messageStatuses: readonly string[];
-}): boolean {
-  return input.sessionStatus === "processing"
-    || input.taskStatuses.includes("running")
-    || input.messageStatuses.some((status) => status === "queued" || status === "processing");
-}
-
 /** Preliminary gaps become active requests only after the user accepts the initial understanding. */
 export function canShowAdvisorInformationRequests(preliminaryStatus: string | null): boolean {
   return preliminaryStatus !== "pending_confirmation";
@@ -114,10 +103,4 @@ export function advisorNeedsAttention(input: {
 
 export function failureWasRecovered(createdAt: string, successfulOutcomeAt: number | null): boolean {
   return successfulOutcomeAt !== null && timestamp(createdAt) < successfulOutcomeAt;
-}
-
-/** Queueing a plan is separate from authorizing its execution. Refresh while the
- * plan producer is active, and stop once the persisted plan awaits the user. */
-export function advisorShouldRefresh(input: {active: boolean; interactionPending: boolean; planPreparationStatus?: string | null}): boolean {
-  return input.active || input.interactionPending || input.planPreparationStatus === "queued" || input.planPreparationStatus === "leased";
 }
