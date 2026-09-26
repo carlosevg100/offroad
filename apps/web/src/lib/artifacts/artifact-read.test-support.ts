@@ -34,6 +34,8 @@ export type ReadFixtureInput = {
   blocks?: Array<{blockKey: string; kind: string; content: Record<string, unknown>; claims: Array<Record<string, unknown>>}>;
   sources?: Array<{sourceVersionId: string; rightsVersionId: string | null}>;
   traces?: string[];
+  /** The execution an execution_result revision names, as the commit writes it. */
+  execution?: {executionId: string; resultFingerprint: string; inputFingerprint: string};
   restriction?: {kind: "source_rights"; linkIds: string[]; unresolvedRevisionIds: string[]} | {kind: "release"; release: "blocked"} | null;
 };
 
@@ -55,7 +57,7 @@ export function artifactReadFixture(input: ReadFixtureInput) {
     format: input.format === undefined ? (bytes ? "docx" : "json") : input.format,
     bytes,
     method: null,
-    execution: null,
+    execution: input.execution ?? null,
     inputSnapshot: null,
     institutionalResult: input.institutionalResult ?? null,
     sources: input.sources ?? [],

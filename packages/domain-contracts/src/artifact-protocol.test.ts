@@ -7,6 +7,8 @@ import {
   blockDraftsClaimsSummary,
   capitalProcedurePacketBlocks,
   compareDecimalText,
+  executionResultCitations,
+  readCapitalProcedurePacketBlocks,
   renderedMaterialBlocks,
   type CapitalProcedurePacketLike,
   artifactClaimSchema,
@@ -576,6 +578,47 @@ describe("execution result blocks", () => {
     expect(() => capitalProcedurePacketBlocks(long)).toThrow();
   });
 
+  it("read back into the fields they carry, and refuse blocks that do not tell the same story as their claims", () => {
+    const packet = executionResultPacket();
+    const blocks = capitalProcedurePacketBlocks(packet);
+    const view = readCapitalProcedurePacketBlocks(blocks);
+    expect(view).toEqual({
+      framing: {status: "partial", question: packet.decision.question, asOf: "2026-12-31", contributionCount: 1},
+      alternatives: [
+        {id: "alt-maintain", label: "Manter a estrutura atual", kind: "maintain", calculated: true},
+        {id: "alt-extend", label: "Alongar a dívida bancária", kind: "change", calculated: true},
+        {id: "alt-defer", label: "Adiar a decisão", kind: "defer", calculated: false},
+      ],
+      ratios: [
+        {id: "ratio-leverage", alternativeId: "alt-extend", ratioId: "net_debt_to_ebitda", definitionKind: "managerial", measurementDate: "2026-12-31", displayedRatio: "2.1"},
+        {id: "ratio-coverage", alternativeId: "alt-maintain", ratioId: "interest_coverage", definitionKind: "contractual", measurementDate: "2026-12-31", displayedRatio: null},
+      ],
+      recommendation: {alternativeId: "alt-extend"},
+      informationGaps: packet.decision.informationGaps,
+      contractualGaps: packet.contractualGaps,
+      nextRequirements: ["source", "market"],
+      decisiveNumbers: [
+        {pieceId: "lowest_available_cash_by_period:alt-maintain", questionCode: "lowest_available_cash_by_period", alternativeId: "alt-maintain", unit: "BRL", value: "-35.25", periodLabel: "2026-Q2"},
+        {pieceId: "largest_net_financing_outflow_by_period:alt-maintain", questionCode: "largest_net_financing_outflow_by_period", alternativeId: "alt-maintain", unit: "BRL", value: "-40.5", periodLabel: "2026-Q2"},
+        {pieceId: "lowest_available_cash_by_period:alt-extend", questionCode: "lowest_available_cash_by_period", alternativeId: "alt-extend", unit: "BRL", value: "9.9", periodLabel: "2026-Q2"},
+        {pieceId: "largest_net_financing_outflow_by_period:alt-extend", questionCode: "largest_net_financing_outflow_by_period", alternativeId: "alt-extend", unit: "BRL", value: "-2.75", periodLabel: "2026-Q2"},
+      ],
+    });
+    // Without ratios and recommendation the two optional blocks are absent, not empty.
+    const plain = readCapitalProcedurePacketBlocks(capitalProcedurePacketBlocks({...packet, decision: {...packet.decision, ratios: [], recommendation: null}}));
+    expect(plain).toMatchObject({ratios: [], recommendation: null});
+    const edit = (key: string, change: (block: Record<string, unknown>) => Record<string, unknown>) => structuredClone(blocks as unknown as Array<Record<string, unknown>>)
+      .map((block) => (block.blockKey === key ? change(block) : block));
+    expect(readCapitalProcedurePacketBlocks(blocks.filter((block) => block.blockKey !== "framing"))).toBeNull();
+    expect(readCapitalProcedurePacketBlocks([...blocks, {blockKey: "narrative", kind: "paragraph", content: {text: "x"}, claims: []}])).toBeNull();
+    expect(readCapitalProcedurePacketBlocks([...blocks, blocks[0]!])).toBeNull();
+    const numberKey = "decisive:lowest_available_cash_by_period:0";
+    expect(readCapitalProcedurePacketBlocks(edit(numberKey, (block) => ({...block, content: {...(block.content as object), value: "-35.24"}})) as never)).toBeNull();
+    expect(readCapitalProcedurePacketBlocks(edit(numberKey, (block) => ({...block, content: {...(block.content as object), value: "1e3"}})) as never)).toBeNull();
+    expect(readCapitalProcedurePacketBlocks(edit("alternatives", (block) => ({...block, claims: (block.claims as unknown[]).slice(1)})) as never)).toBeNull();
+    expect(readCapitalProcedurePacketBlocks(edit("recommendation", (block) => ({...block, content: {alternativeId: "alt-defer"}})) as never)).toBeNull();
+  });
+
   it("compare decimal texts exactly", () => {
     expect(compareDecimalText("9.9", "10")).toBe(-1);
     expect(compareDecimalText("-35.25", "-35.250")).toBe(0);
@@ -585,5 +628,18 @@ describe("execution result blocks", () => {
     expect(compareDecimalText("007.50", "7.5")).toBe(0);
     expect(compareDecimalText("123456789012345678901234567890.1", "123456789012345678901234567890.09")).toBe(1);
     expect(() => compareDecimalText("1,5", "1")).toThrow("artifact_adapter_decimal_invalid");
+  });
+});
+
+describe("conversation citations", () => {
+  it("name the execution and the exact revision, and cite nothing when the list is malformed", () => {
+    const citation = {kind: "execution_result", executionId: id(50), revisionId: id(51)} as const;
+    expect(executionResultCitations({kind: "answer", citations: [citation]})).toEqual([citation]);
+    expect(executionResultCitations({kind: "answer"})).toEqual([]);
+    expect(executionResultCitations(null)).toEqual([]);
+    expect(executionResultCitations([citation])).toEqual([]);
+    expect(executionResultCitations({citations: [{...citation, text: "Caixa mínimo de 9,9"}]})).toEqual([]);
+    expect(executionResultCitations({citations: [{...citation, revisionId: "not-a-uuid"}]})).toEqual([]);
+    expect(executionResultCitations({citations: [citation, citation]})).toEqual([]);
   });
 });

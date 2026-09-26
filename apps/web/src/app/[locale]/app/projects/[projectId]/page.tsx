@@ -23,7 +23,8 @@ import {loadReceivablesReleasedResult} from "@/lib/receivables/released-result";
 import {ReceivablesScopeCard, type ReceivablesScopeCopy} from "@/components/advisor/receivables-scope-card";
 import {compiledSpecializationProfileSchema} from "@offroad/agent-contracts";
 import {decisionArtifactContractSchema} from "@offroad/case-understanding";
-import {originationConversationArtifactSchema} from "@offroad/domain-contracts";
+import {executionResultCitations, originationConversationArtifactSchema} from "@offroad/domain-contracts";
+import {executionResultHref} from "@/lib/execution/revision";
 import {executionBriefChangeSchema, executionBriefNarrativeSchema, executionBriefProgressSchema, localizedOffroadTaskLabel, visibleExecutionBriefSchema} from "@offroad/work-plan";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
@@ -393,6 +394,7 @@ async function ConversationalCapitalProject({
             : undefined,
           proposalId: message.proposal_id,
           continuation: continuationNote(message.metadata),
+          citedResults: message.role === "assistant" ? executionResultCitations(message.metadata).map((citation) => ({href: executionResultHref(locale, project.id, citation)})) : [],
         };
       })
     : [{id: `project-${project.id}`, role: "assistant", content: t(emptyConversationCopy), status: "completed", createdAt: new Date().toISOString()}];

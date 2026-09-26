@@ -2445,7 +2445,14 @@
         "noRequirements": "Nenhum requisito pendente.",
         "originalReason": "Motivo registrado pelo método",
         "decision": "a decisão",
-        "packetFingerprint": "Impressão do pacote"
+        "packetFingerprint": "Impressão do pacote",
+        "recorded": "Resultado registrado na revisão {revision}, em {date}.",
+        "freshness": {
+          "current": "Nenhum recálculo nem versão mais nova de fonte substituiu este resultado.",
+          "stale": "Um recálculo ou uma versão mais nova de fonte substituiu este resultado. Ele continua disponível como foi registrado.",
+          "unknown": "Não foi possível confirmar se este resultado ainda é o mais recente."
+        },
+        "revisionWithheldBody": "O resultado registrado não pode ser mostrado a você, porque usa uma fonte que não está disponível para a sua leitura."
       },
       "decisionStatus": {
         "framed": "Enquadrada, sem comparação numérica",
@@ -2555,7 +2562,8 @@
         "notEvaluated": {
           "gates_not_recorded": "Sem verificações registradas, o teste do MD não foi avaliado.",
           "gates_unverified": "As verificações não conferem com a impressão guardada; o teste do MD não foi avaliado.",
-          "evaluation_failed": "O teste do MD não pôde ser avaliado sobre este pacote."
+          "evaluation_failed": "O teste do MD não pôde ser avaliado sobre este pacote.",
+          "pins_mismatch": "O pacote ou as verificações lidos agora não são os que o resultado registrado fixou; o teste do MD não foi avaliado."
         },
         "questions": {
           "q1": "Entendemos o problema real ou apenas respondemos ao pedido literal?",
@@ -2729,6 +2737,7 @@
       "awaitingAnswer": "Aguardando sua resposta",
       "noArtifacts": "Os resultados aparecerão aqui à medida que forem concluídos.",
       "openWork": "Abrir trabalho",
+      "openExecutionResult": "Abrir o resultado da execução",
       "existingProject": "O trabalho já realizado neste projeto está preservado. Abra a análise no painel ao lado ou continue a conversa para acrescentar contexto, pedir uma revisão ou avançar o próximo passo.",
       "placeholder": "Continue o trabalho, responda uma pergunta ou peça uma alteração...",
       "attach": "Anexar documentos",
