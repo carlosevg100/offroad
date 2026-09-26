@@ -3,7 +3,8 @@
  * credit materials. The facts and the parameters are the ones the case-materials, case-render and
  * case-export tests already used for Aurora, gathered in one place and extended just enough to
  * reach every compiled section: seven lenders with two covenants, three audited years, an interim
- * position, six ranked customers with a tie for the largest share, an adjusted EBITDA, projections
+ * position with its last-twelve-months EBITDA (which anchors the headline metrics), six ranked
+ * customers with a tie for the largest share, an adjusted EBITDA, projections
  * with a minimum DSCR, a project cost and the ownership of the company. Nothing here is a real
  * company, a real lender relationship or a real number, and no production path may read it.
  */
@@ -61,6 +62,8 @@ const facts: readonly SyntheticFact[] = [
   {fieldPath: "interim_financials.2026_07.revenue_7m", value: "121640000"},
   {fieldPath: "interim_financials.2026_07.cash", value: "7960000"},
   {fieldPath: "interim_financials.2026_07.receivables", value: "51940000"},
+  {fieldPath: "interim_financials.2026_07.ebitda_ltm", value: "17380000"},
+  {fieldPath: "debt.total_gross", value: "45320000"},
   ...lenders.flatMap(([lender, balance, rate, maturity, amortization, collateral, covenant], index) => {
     const n = index + 1;
     return [
