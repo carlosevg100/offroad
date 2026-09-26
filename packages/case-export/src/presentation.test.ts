@@ -113,3 +113,60 @@ it.each(["column", "bar", "line"] as const)("keeps native %s charts editable and
   expect(slide).toContain("Caixa e equivalentes");
   if (process.env.OFFROAD_FORMAT_QA_DIR) {await mkdir(process.env.OFFROAD_FORMAT_QA_DIR, {recursive: true}); await writeFile(`${process.env.OFFROAD_FORMAT_QA_DIR}/chart-${chartKind}.pptx`, result.bytes);}
 });
+
+describe("institutional presentation with a versioned client structure", () => {
+  it("orders by the structure, leaves out unnamed blocks, names missing required fields and binds the exact version", async () => {
+    const contract = buildDecisionArtifactContract(fixture());
+    const versionId = "50000000-0000-4000-8000-000000000001";
+    const fingerprint = "e".repeat(64);
+    const template = {
+      ...offroadHousePresentationTemplate, id: "synthetic-client", version: "2026.09.27-v1", origin: "client_supplied" as const, versionId, fingerprint,
+      structure: {
+        schemaVersion: "2026.09.27-structure-v1",
+        sections: [
+          {key: "sources", title: {"pt-BR": "Fontes", "en-US": "Sources"}, audiences: ["external" as const], fields: [{key: "sources", kind: "source_list" as const, required: true, title: {"pt-BR": "Fontes citadas", "en-US": "Cited sources"}}]},
+          {key: "situation", title: {"pt-BR": "Situação", "en-US": "Situation"}, audiences: ["internal" as const], fields: [
+            {key: "metrics", kind: "number" as const, required: true, title: {"pt-BR": "Indicadores", "en-US": "Indicators"}},
+            {key: "maturities", kind: "chart" as const, required: true, title: {"pt-BR": "Gráfico de vencimentos", "en-US": "Maturity chart"}},
+          ]},
+          {key: "board-letter", title: {"pt-BR": "Carta ao conselho", "en-US": "Board letter"}, audiences: ["external" as const], fields: [{key: "letter", kind: "text" as const, required: true, title: {"pt-BR": "Carta", "en-US": "Letter"}}]},
+        ],
+      },
+    };
+    const result = await renderInstitutionalPresentation({contract, title: "Camil · Estrutura de capital", locale: "pt-BR", template});
+    expect(result.audit.renderedBlockIds).toEqual(["sources", "situation"]);
+    expect(result.audit.template).toEqual({id: "synthetic-client", version: "2026.09.27-v1", origin: "client_supplied", versionId, fingerprint});
+    expect(result.audit.structure).toEqual({
+      schemaVersion: "2026.09.27-structure-v1",
+      order: ["sources", "situation"],
+      sectionsWithoutBlock: ["board-letter"],
+      omittedBlockIds: ["direction", "gaps"],
+      gaps: [
+        {sectionKey: "situation", fieldKey: "maturities", kind: "chart", blockId: "situation"},
+        {sectionKey: "board-letter", fieldKey: "letter", kind: "text", blockId: null},
+      ],
+    });
+    // Cover, sources, situation (with its named gap) and the board letter that has nothing but its gap.
+    expect(result.audit.slideCount).toBe(4);
+    expect(result.audit.renderedClaimIds).toEqual(["claim-cash", "claim-leverage"]);
+    const archive = await JSZip.loadAsync(result.bytes);
+    const slides = await Promise.all([2, 3, 4].map((index) => archive.file(`ppt/slides/slide${index}.xml`)!.async("string")));
+    expect(slides[0]).toContain("Release de resultados 2T26");
+    expect(slides[1]).toContain("Gráfico de vencimentos");
+    expect(slides[1]).toContain("Campo exigido pelo template sem conteúdo governado");
+    expect(slides[2]).toContain("Carta ao conselho");
+    expect(slides[2]).toContain("Carta");
+    expect(slides.join("\n")).not.toContain("Direção analítica preliminar");
+    const custom = await archive.file("docProps/custom.xml")!.async("string");
+    expect(custom).toContain(`<vt:lpwstr>${versionId}</vt:lpwstr>`);
+    expect(custom).toContain(`<vt:lpwstr>${fingerprint}</vt:lpwstr>`);
+  });
+
+  it("renders the house template as before: no structure applied and no version to name", async () => {
+    const result = await renderInstitutionalPresentation({contract: buildDecisionArtifactContract(fixture()), title: "Camil", locale: "pt-BR"});
+    expect(result.audit.structure).toBeNull();
+    expect(result.audit.template).toEqual({id: "offroad-house", version: "2026.09.07-v1", origin: "offroad_house", versionId: null, fingerprint: null});
+    expect(result.audit.renderedBlockIds).toEqual(["situation", "direction", "gaps", "sources"]);
+    expect(await (await JSZip.loadAsync(result.bytes)).file("docProps/custom.xml")!.async("string")).toContain("<vt:lpwstr>house</vt:lpwstr>");
+  });
+});

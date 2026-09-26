@@ -123,7 +123,19 @@ describe("client presentation template", () => {
     ]);
     expect(Buffer.compare(withNothing, withHouse)).toBe(0);
     expect(presentationTemplateManifest(house, fingerprint).map(entry => entry.name)).toEqual([
-      "OffroadTemplateId", "OffroadTemplateVersion", "OffroadTemplateOrigin", "OffroadTemplateFingerprint", "OffroadTemplateFonts", "OffroadTemplateLogo",
+      "OffroadTemplateId", "OffroadTemplateVersion", "OffroadTemplateOrigin", "OffroadTemplateVersionId", "OffroadTemplateFingerprint", "OffroadTemplateFonts", "OffroadTemplateLogo",
     ]);
+    // The house template is not a stored version; a client version names the exact one it used.
+    expect(presentationTemplateManifest(house, fingerprint).find(entry => entry.name === "OffroadTemplateVersionId")?.value).toBe("house");
+    const versionId = "50000000-0000-4000-8000-000000000001";
+    expect(presentationTemplateManifest({...templateOf(client), versionId}, fingerprint).find(entry => entry.name === "OffroadTemplateVersionId")?.value).toBe(versionId);
+  });
+
+  it("writes the exact version identity into the Word keywords when the identity came from a stored version", async () => {
+    const versionId = "50000000-0000-4000-8000-000000000001";
+    const bytes = materialToDocx({material, lang: "pt", meta: {issuedOn: "2026-09-11", template: {...templateOf(client), versionId}}});
+    const core = await (await JSZip.loadAsync(bytes)).file("docProps/core.xml")!.async("string");
+    expect(core).toContain(`OffroadTemplateVersionId=${versionId}`);
+    expect(core).toContain(`OffroadTemplateFingerprint=${fingerprint}`);
   });
 });
