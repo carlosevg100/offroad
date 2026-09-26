@@ -1,26 +1,28 @@
-// Disposable localhost stack only. Stage 18, increment 3B: the worker's dependency recompute loop,
-// through its own module and RPC client, against the migrations of this commit. A synthetic capital
-// work carries a governed working basis; the released capital method is installed with the profile
-// its manifest derives, released and universal; the founder grants the organization's producer. The
-// owner, signed in, reads the v2 basis, composes the request with the composition the web action
-// uses and requests the root execution through request_work_execution_v2. A new revision of the
-// working basis then changes one decision, and the dependency effect of its events plans one
-// zero-budget candidate. The worker account, signed in and bound to its worker token, runs the
-// recompute loop: it claims the candidate, reads the requester's basis at the head revision,
-// composes what the root execution was asked and submits. The proof checks that exactly that
-// candidate was produced, for the original requester, pinning the head revision, with a gate
-// receipt carrying the root's situations, a queued pinned job and lineage naming the root; and
-// that the bundle the loop ran from contains no model gateway.
-//
-// Stage 18, increment 6B: a human wait survives a restart. A newer release of the same procedure
-// and version is registered with a profile whose ceiling is above zero (the storage check holds every
-// stored profile at zero, so this ceiling exists only on this disposable database) and the pinned
-// release's capability is closed. The dependency effect plans the lineage's candidate as a wait for
-// a person. The worker loop runs until idle; a fresh client with its own worker account and token (a
-// new lease owner) runs it again; the wait and the candidate are unchanged and nothing was claimed.
-// The owner authorizes through authorize_work_update_v1, and the restarted loop produces exactly one
-// execution, with its lineage. Every write here commits on the throwaway CI database, as before.
-// Synthetic data only; no provider key and no network beyond the local stack.
+// Disposable localhost stack only; every write commits on the throwaway CI database. Stage 18,
+// increments 3B and 6B: the worker's dependency recompute loop, through its own module and RPC
+// client, against the migrations of this commit, and a human wait that survives a restart of the
+// worker. A synthetic capital work carries a governed working basis; the released capital method is
+// installed with the profile its manifest derives, released and universal, except that this profile
+// can spend: a ceiling above zero, which the storage check refuses for every stored profile, so it
+// exists only here, inserted with that check off for this one row. The founder grants the
+// organization's producer. The owner, signed in, reads the v2 basis, composes the request with the
+// composition the web action uses and requests the root execution through request_work_execution_v2.
+// A new revision of the working basis then changes one decision, and the dependency effect of its
+// events plans one candidate that, under the costed profile, waits for a person: an awaiting_human
+// milestone, no job, no lease. The worker account, signed in and bound to its worker token, runs the
+// recompute loop until idle; a fresh client for another worker account bound to its own token (the
+// restarted worker, a new lease owner) does too; the wait and the candidate are unchanged and
+// nothing was claimed. The owner authorizes through authorize_work_update_v1, and the restarted loop
+// claims the candidate, reads the requester's basis at the head revision, composes what the root
+// execution was asked and submits. The proof checks that exactly that candidate was produced, once,
+// for the original requester, pinning the head revision, with a gate receipt carrying the root's
+// situations, a queued pinned job, lineage naming the root and the wait resolved once by an approved
+// decision; and that the bundle the loop ran from contains no model gateway. A zero-budget candidate
+// scheduled without a person cannot share this database: the capital method has exactly one
+// executable profile (the producer refuses two, profiles are immutable, and the capital provenance
+// and manifest identity checks admit a single release), so the planner's zero-budget scheduling
+// stays proven by supabase/tests/work_continuity_dependencies.sql. Synthetic data only; no provider
+// key and no network beyond the local stack.
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {createHash, randomUUID} from 'node:crypto';
@@ -49,15 +51,18 @@ const expand = path => readFileSync(path, 'utf8').replace(/^\\ir (.+)$/gm, (_lin
 const sha = text => createHash('sha256').update(text, 'utf8').digest('hex');
 
 // Synthetic scope, apart from every other committed fixture of the job: the execution fixture's
-// organization, people and work under their own prefix, and a worker account of this proof.
+// organization, people and work under their own prefix, and two worker accounts of this proof, the
+// running one and the restarted one.
 const prefix = 'a4197000';
 const id = (group, n) => `${prefix}-0000-4000-${group}-${String(n).padStart(12, '0')}`;
-const organization = id('9000', 1), work = id('9000', 2), owner = id('8000', 1), worker = id('8000', 7);
-const ownerEmail = 'a4197-a@example.invalid', workerEmail = 'a4197-worker@example.invalid';
+const organization = id('9000', 1), work = id('9000', 2), owner = id('8000', 1), worker = id('8000', 7), restarted = id('8000', 8);
+const ownerEmail = 'a4197-a@example.invalid', workerEmail = 'a4197-worker@example.invalid', restartedEmail = 'a4197-restarted-worker@example.invalid';
 const workerToken = `synthetic-dependency-recompute-proof-worker-token-${prefix}`;
+const restartedTokenId = id('9000', 23), restartedToken = `synthetic-dependency-recompute-restarted-worker-token-${prefix}`;
 const password = 'Synthetic-Recompute!2026';
 const purpose = 'prepare-capital-structure-decision';
 const capability = 'synthetic-dependency-recompute-proof';
+const ceiling = {maxCostMicrousd: 250000, maxModelCalls: 3};
 
 const workerRequire = createRequire(join(root, 'apps/document-worker/package.json'));
 const {build} = workerRequire('esbuild');
@@ -81,14 +86,17 @@ export {releasedMethodArtifacts} from './src/released-methods.generated.ts';`, r
   const release = m.releasedMethodArtifacts.find(r => r.methodId === purpose);
   assert(release, 'released_capital_method_missing');
   const manifest = JSON.parse(readFileSync(join(root, 'apps/document-worker/released-methods', release.artifactHash + '.manifest.json'), 'utf8'));
-  const profile = m.deriveExecutionProfile(manifest, {id: release.platformReleaseId, manifestHash: release.manifestHash});
-  const profileText = m.executionCanonicalText(profile);
+  // The derived profile with a ceiling above zero and its fingerprint recomputed by the same rule.
+  const {fingerprint: derivedFingerprint, ...unsigned} = m.deriveExecutionProfile(manifest, {id: release.platformReleaseId, manifestHash: release.manifestHash});
+  assert.equal(m.executionInputFingerprint(unsigned), derivedFingerprint, 'profile_fingerprint_rule_changed');
+  const costed = {...unsigned, limits: {...unsigned.limits, ...ceiling}};
+  const profileText = m.executionCanonicalText({...costed, fingerprint: m.executionInputFingerprint(costed)});
   const original = {...m.adoptedCapitalPeriodFixture().snapshot, purpose};
 
   // 2. As the database owner: the execution fixture under this prefix, the governed capital basis of
   // the pinned consumer proof over the synthetic adopted period, the released capital method with
-  // its profile, the founder's producer grant, and sign-in for the owner and the worker account,
-  // whose worker token is bound to it.
+  // its costed profile, the founder's producer grant, and sign-in for the owner and the two worker
+  // accounts, each bound to its own worker token.
   const replace = text => text.replaceAll('a11b0000', prefix).replaceAll('a4171000', 'a4198000').replaceAll('a11b-', 'a4197-').replaceAll('synthetic-execution', 'synthetic-execution-recompute-proof');
   const setup = sql(`begin;
 ${replace(expand(join(root, 'supabase/tests/support/execution_commands_fixture.sql')))}
@@ -98,19 +106,23 @@ insert into private.platform_capability_releases(capability_key,released,exposur
 values('${capability}',true,'universal',${literal(release.methodId)},${literal(release.methodVersion)},'tested','Synthetic CI',current_date,'Disposable CI only');
 insert into private.platform_method_releases(id,method_id,version,manifest_hash,manifest,components,evidence,approval,capability_key)
 values(${literal(release.platformReleaseId)},${literal(release.methodId)},${literal(release.methodVersion)},${literal(release.manifestHash)},${literal(JSON.stringify(manifest))}::jsonb,'[]','["Synthetic CI only"]','{}','${capability}');
+alter table private.execution_method_profiles disable trigger execution_method_profiles_validate;
 insert into private.execution_method_profiles(id,platform_release_id,serialization_version,canonical_payload,payload_fingerprint,adapter_source_commit,review_evidence)
 values('a4198000-0000-4000-9000-000000000099',${literal(release.platformReleaseId)},'offroad-execution-json-utf16-v1',${literal(profileText)},${literal(sha(profileText))},repeat('c',40),'{"result":"approved","subjectCommit":"cccccccccccccccccccccccccccccccccccccccc","reviewer":"Synthetic CI","sourceHash":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}');
+alter table private.execution_method_profiles enable trigger execution_method_profiles_validate;
 insert into private.platform_principals(user_id,role,label) values('${owner}','founder','Synthetic founder of the recompute proof') on conflict (user_id) do nothing;
 select private.grant_execution_producer_v1('${id('9000', 21)}','${organization}',true,'Synthetic producer grant for the dependency recompute proof','${owner}');
 insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous)
-values('${worker}','authenticated','authenticated','${workerEmail}','{}','{}',now(),now(),false,false);
+values('${worker}','authenticated','authenticated','${workerEmail}','{}','{}',now(),now(),false,false),
+ ('${restarted}','authenticated','authenticated','${restartedEmail}','{}','{}',now(),now(),false,false);
 insert into private.worker_tokens(id,label,token_sha256,execution_account_user_id)
-values('${id('9000', 22)}','Synthetic dependency recompute proof worker',extensions.digest('${workerToken}','sha256'),'${worker}');
+values('${id('9000', 22)}','Synthetic dependency recompute proof worker',extensions.digest('${workerToken}','sha256'),'${worker}'),
+ ('${restartedTokenId}','Synthetic restarted dependency recompute worker',extensions.digest('${restartedToken}','sha256'),'${restarted}');
 update auth.users set instance_id='00000000-0000-0000-0000-000000000000',email_confirmed_at=now(),confirmation_token='',recovery_token='',email_change_token_new='',email_change='',
  encrypted_password=extensions.crypt(${literal(password)},extensions.gen_salt('bf')),raw_app_meta_data='{"provider":"email","providers":["email"]}'
- where id in ('${owner}','${worker}');
+ where id in ('${owner}','${worker}','${restarted}');
 insert into auth.identities(id,user_id,provider_id,provider,identity_data,created_at,updated_at)
-select gen_random_uuid(),id,id::text,'email',jsonb_build_object('sub',id::text,'email',email),now(),now() from auth.users where id in ('${owner}','${worker}');
+select gen_random_uuid(),id,id::text,'email',jsonb_build_object('sub',id::text,'email',email),now(),now() from auth.users where id in ('${owner}','${worker}','${restarted}');
 select 'BASIS:'||receipt::text from capital_consumer_basis_receipt;
 drop trigger zzz_fixture_source_rights on public.source_versions;
 drop trigger zz_synthetic_legacy_workspace_capabilities on public.organizations;
@@ -151,7 +163,8 @@ commit;`);
   assert.equal(requested.executionId, rootId, 'root_execution_not_created');
 
   // 4. A new revision of the working basis changes one decision (same slot, a new adoption), and the
-  // dependency effect of its events plans the candidate, as the outbox consumer applies it.
+  // dependency effect of its events plans the candidate, as the outbox consumer applies it. The
+  // pinned profile can spend, so the candidate waits for a person.
   const headVersion = randomUUID();
   sql(`begin;
 select set_config('request.jwt.claim.sub','${owner}',true);
@@ -177,26 +190,55 @@ commit;`);
   sql(`select count(*) from (select private.apply_dependency_event_v1(e.organization_id,e.id) from private.domain_events e
  where e.organization_id='${organization}' and e.effect='propagate_dependencies' and e.created_at>=(select v.created_at from public.assumption_versions v where v.id='${headVersion}') order by e.created_at,e.id) applied;`);
   const {id: candidateId, ...planned} = JSON.parse(sql(`select jsonb_build_object('count',count(*),'id',min(c.id::text),'state',min(c.state),'action',min(c.action),
- 'base',min(c.base_execution_id::text),'budget',max(c.max_cost_microusd)+max(c.max_model_calls)) from public.work_recompute_candidates c where c.organization_id='${organization}';`));
-  assert.deepEqual(planned, {count: 1, state: 'scheduled', action: 'recompute', base: rootId, budget: 0}, `candidate_not_planned: ${JSON.stringify(planned)}`);
+ 'base',min(c.base_execution_id::text),'cost',max(c.max_cost_microusd),'calls',max(c.max_model_calls)) from public.work_recompute_candidates c where c.organization_id='${organization}';`));
+  assert.deepEqual(planned, {count: 1, state: 'awaiting_authorization', action: 'await_authorization', base: rootId, cost: ceiling.maxCostMicrousd, calls: ceiling.maxModelCalls},
+    `candidate_not_planned: ${JSON.stringify(planned)}`);
 
   // 5. The worker loop, as the worker image runs it: preflight of the runtime contract, then the
   // recompute until nothing is schedulable. It claims candidates of every organization, so the
-  // outcome that matters is the one of this candidate.
+  // outcome that matters is the one of this candidate. A candidate that waits for a person is never
+  // claimed: the running worker reaches idle, and so does the restarted one, a fresh client for the
+  // other worker account whose leases name the other token; the candidate and its wait are exactly
+  // as they were, with no lease and no execution.
+  const untilIdle = async queue => {
+    const worked = [];
+    for (let n = 0; n < 20; n++) {
+      const outcome = await m.runDependencyRecomputeOnce(queue);
+      if (outcome.status === 'idle') return worked;
+      worked.push(outcome);
+    }
+    throw new Error('dependency_recompute_loop_never_idle');
+  };
+  const waitState = () => JSON.parse(sql(`select jsonb_build_object('candidate',to_jsonb(c),
+ 'wait',(select to_jsonb(m) from public.work_milestones m where m.organization_id=c.organization_id and m.kind='awaiting_human' and m.subject_kind='work_recompute_candidate' and m.subject_id=c.id),
+ 'leases',(select count(*) from private.work_recompute_leases l where l.organization_id=c.organization_id and l.candidate_id=c.id),
+ 'executions',(select count(*) from public.work_executions e where e.organization_id=c.organization_id and e.request_id=c.id),
+ 'resolutions',(select count(*) from public.work_milestones m where m.organization_id=c.organization_id and m.kind='human_resolved' and m.subject_id=c.id))
+ from public.work_recompute_candidates c where c.id='${candidateId}';`));
   const account = await session(workerEmail);
   const contract = await call(account, 'worker_runtime_schema_contract_v1', {});
   assert(contract.capabilities.includes('dependency-recompute.v1'), 'runtime_capability_missing');
-  const queue = m.createDependencyRecomputeQueue(account, workerToken);
+  assert.deepEqual(await untilIdle(m.createDependencyRecomputeQueue(account, workerToken)), [], 'the running worker worked a candidate that waits for a person');
+  const held = waitState();
+  assert(held.wait && held.wait.label === 'dependency_recompute_authorization' && held.candidate.state === 'awaiting_authorization' && held.candidate.execution_id === null
+    && held.leases === 0 && held.executions === 0 && held.resolutions === 0, `the wait is not persisted as a wait: ${JSON.stringify(held)}`);
+  const restartedAccount = await session(restartedEmail);
+  const restartedContract = await call(restartedAccount, 'worker_runtime_schema_contract_v1', {});
+  assert(restartedContract.capabilities.includes('dependency-recompute.v1'), 'runtime_capability_missing_after_restart');
+  const restartedQueue = m.createDependencyRecomputeQueue(restartedAccount, restartedToken);
+  assert.deepEqual(await untilIdle(restartedQueue), [], 'the restarted worker worked a candidate that waits for a person');
+  assert.deepEqual(waitState(), held, 'the restart changed the wait or the candidate');
+
+  // The owner resolves the wait through the command of increment 4, at the revision they saw; the
+  // restarted loop then produces the candidate, and only it.
+  const authorized = await call(human, 'authorize_work_update_v1', {p_command_id: randomUUID(), p_candidate_id: candidateId, p_expected_revision: held.candidate.revision});
+  assert(authorized.state === 'scheduled' && authorized.replayed === false && authorized.candidateId === candidateId, `authorization not recorded: ${JSON.stringify(authorized)}`);
   const started = performance.now();
-  const outcomes = [];
-  for (let n = 0; n < 20; n++) {
-    const outcome = await m.runDependencyRecomputeOnce(queue);
-    if (outcome.status === 'idle') break;
-    outcomes.push(outcome);
-  }
+  const outcomes = await untilIdle(restartedQueue);
   const loopMs = Math.ceil(performance.now() - started);
-  const produced = outcomes.find(outcome => outcome.candidateId === candidateId);
-  assert.equal(produced?.status, 'produced', `candidate_not_produced: ${JSON.stringify(outcomes)}`);
+  const productions = outcomes.filter(outcome => outcome.candidateId === candidateId);
+  assert(productions.length === 1 && productions[0].status === 'produced', `candidate_not_produced_once: ${JSON.stringify(outcomes)}`);
+  const produced = productions[0];
 
   // 6. What the database recorded, read as its owner. With no hold and its only candidate scheduled,
   // the request is scheduled; it becomes ready when the produced execution settles the candidate.
@@ -212,7 +254,12 @@ commit;`);
   where g.execution_id='${produced.executionId}'),
  'jobs',(select count(*) from public.processing_jobs j where j.execution_id='${produced.executionId}' and j.kind='work_execution' and j.status='queued'),
  'request',(select r.status from public.work_continuation_requests r join public.work_recompute_candidates c on c.request_id=r.id where c.id='${candidateId}'),
- 'executions',(select count(*) from public.work_executions e where e.organization_id='${organization}'));`));
+ 'executions',(select count(*) from public.work_executions e where e.organization_id='${organization}'),
+ 'produced',(select count(*) from public.work_executions e where e.organization_id='${organization}' and e.request_id='${candidateId}'),
+ 'lease',(select jsonb_build_object('attempts',l.attempts,'worker',l.leased_by) from private.work_recompute_leases l where l.candidate_id='${candidateId}'),
+ 'waits',(select count(*) from public.work_milestones m where m.kind='awaiting_human' and m.subject_id='${candidateId}'),
+ 'resolved',(select count(*) from public.work_milestones m where m.kind='human_resolved' and m.resolves_milestone_id='${held.wait.id}'),
+ 'decisions',(select jsonb_agg(m.outcome) from public.work_milestones m where m.kind='decision' and m.subject_kind='work_recompute_candidate' and m.subject_id='${candidateId}'));`));
   assert.deepEqual(recorded, {
     candidate: {state: 'scheduled', execution: produced.executionId, reason: null, realizes: true},
     lineage: {root: rootId, candidate: candidateId},
@@ -222,125 +269,13 @@ commit;`);
     jobs: 1,
     request: 'scheduled',
     executions: 2,
-  }, JSON.stringify(recorded));
-  console.log(JSON.stringify({event: 'dependency_recompute_eval', pinnedHypotheses: governed.pins.length, outcomes: outcomes.map(outcome => outcome.status), loopMs}));
-  console.log('dependency_recompute_worker_loop: PASS (worker module and RPC client, shared composition, original requester, head revision pinned, gate receipt, queued job, lineage; no model in the bundle; disposable local stack)');
-
-  // 7. A human wait survives a restart. As the database owner: a second worker account bound to its
-  // own token (the restarted worker, a new lease owner), the pinned release's capability closed, and
-  // a newer release of the same procedure and version with its capability released and universal and
-  // a profile whose ceiling is above zero, so it is the one executable profile of the procedure. The
-  // profile names the published manifest, the only one the capital provenance check accepts; the
-  // release row carries its own hash, since a release is unique by procedure, version and hash.
-  const restarted = id('8000', 8), restartedEmail = 'a4197-restarted-worker@example.invalid';
-  const restartedTokenId = id('9000', 23), restartedToken = `synthetic-dependency-recompute-restarted-worker-token-${prefix}`;
-  const paidRelease = `${release.platformReleaseId}-paid-ci`, paidHash = sha(`synthetic paid ceiling over ${release.manifestHash}`);
-  const {fingerprint: derivedFingerprint, ...unsigned} = profile;
-  assert.equal(m.executionInputFingerprint(unsigned), derivedFingerprint, 'profile_fingerprint_rule_changed');
-  const paidUnsigned = {...unsigned, method: {...unsigned.method, platformReleaseId: paidRelease},
-    limits: {...unsigned.limits, maxCostMicrousd: 250000, maxModelCalls: 3}};
-  const paidText = m.executionCanonicalText({...paidUnsigned, fingerprint: m.executionInputFingerprint(paidUnsigned)});
-  sql(`begin;
-insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous)
-values('${restarted}','authenticated','authenticated','${restartedEmail}','{}','{}',now(),now(),false,false);
-insert into private.worker_tokens(id,label,token_sha256,execution_account_user_id)
-values('${restartedTokenId}','Synthetic restarted dependency recompute worker',extensions.digest('${restartedToken}','sha256'),'${restarted}');
-update auth.users set instance_id='00000000-0000-0000-0000-000000000000',email_confirmed_at=now(),confirmation_token='',recovery_token='',email_change_token_new='',email_change='',
- encrypted_password=extensions.crypt(${literal(password)},extensions.gen_salt('bf')),raw_app_meta_data='{"provider":"email","providers":["email"]}'
- where id='${restarted}';
-insert into auth.identities(id,user_id,provider_id,provider,identity_data,created_at,updated_at)
-select gen_random_uuid(),id,id::text,'email',jsonb_build_object('sub',id::text,'email',email),now(),now() from auth.users where id='${restarted}';
-update private.platform_capability_releases set released=false where capability_key='${capability}';
-insert into private.platform_capability_releases(capability_key,released,exposure,method_id,method_version,method_maturity,approved_by,approved_at,approval_source)
-values('${capability}-paid',true,'universal',${literal(release.methodId)},${literal(release.methodVersion)},'tested','Synthetic CI',current_date,'Disposable CI only');
-insert into private.platform_method_releases(id,method_id,version,manifest_hash,manifest,components,evidence,approval,capability_key)
-values(${literal(paidRelease)},${literal(release.methodId)},${literal(release.methodVersion)},'${paidHash}',${literal(JSON.stringify(manifest))}::jsonb,'[]','["Synthetic CI only"]','{}','${capability}-paid');
-alter table private.execution_method_profiles disable trigger execution_method_profiles_validate;
-insert into private.execution_method_profiles(id,platform_release_id,serialization_version,canonical_payload,payload_fingerprint,adapter_source_commit,review_evidence)
-values('a4198000-0000-4000-9000-000000000098',${literal(paidRelease)},'offroad-execution-json-utf16-v1',${literal(paidText)},'${sha(paidText)}',repeat('c',40),'{"result":"approved","subjectCommit":"cccccccccccccccccccccccccccccccccccccccc","reviewer":"Synthetic CI","sourceHash":"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}');
-alter table private.execution_method_profiles enable trigger execution_method_profiles_validate;
-commit;`);
-  // The dependency effect of those events, as the outbox consumer applies it, plans the lineage of the
-  // root against the new head: its representative is the execution the loop produced above, and the
-  // head profile can spend, so the candidate waits for a person. The earlier candidate, keyed on the
-  // old release, is superseded by the new heads.
-  sql(`select count(*) from (select private.apply_dependency_event_v1(e.organization_id,e.id) from private.domain_events e
- where e.organization_id='${organization}' and e.effect='propagate_dependencies' and e.created_at>=(select r.created_at from private.platform_method_releases r where r.id=${literal(paidRelease)})
- order by e.created_at,e.id) applied;`);
-  const {id: paidId, ...paidPlan} = JSON.parse(sql(`with c as (select * from public.work_recompute_candidates where organization_id='${organization}' and state='awaiting_authorization')
-select jsonb_build_object('count',(select count(*) from c),'id',(select min(id::text) from c),'action',(select min(action) from c),'base',(select min(base_execution_id::text) from c),
- 'cost',(select max(max_cost_microusd) from c),'calls',(select max(max_model_calls) from c),
- 'waits',(select count(*) from public.work_milestones m join c on m.organization_id=c.organization_id and m.subject_id=c.id where m.kind='awaiting_human' and m.subject_kind='work_recompute_candidate'),
- 'earlier',(select x.state||':'||coalesce(x.reason,'') from public.work_recompute_candidates x where x.id='${candidateId}'));`));
-  assert.deepEqual(paidPlan, {count: 1, action: 'await_authorization', base: rootId, cost: 250000, calls: 3, waits: 1, earlier: 'declined:superseded'}, `costed candidate not waiting: ${JSON.stringify(paidPlan)}`);
-  const waitState = () => JSON.parse(sql(`select jsonb_build_object('candidate',to_jsonb(c),
- 'wait',(select to_jsonb(m) from public.work_milestones m where m.organization_id=c.organization_id and m.kind='awaiting_human' and m.subject_kind='work_recompute_candidate' and m.subject_id=c.id),
- 'leases',(select count(*) from private.work_recompute_leases l where l.organization_id=c.organization_id and l.candidate_id=c.id),
- 'executions',(select count(*) from public.work_executions e where e.organization_id=c.organization_id and e.request_id=c.id),
- 'resolutions',(select count(*) from public.work_milestones m where m.organization_id=c.organization_id and m.kind='human_resolved' and m.subject_id=c.id))
- from public.work_recompute_candidates c where c.id='${paidId}';`));
-  const untilIdle = async worker => {
-    const worked = [];
-    for (let n = 0; n < 20; n++) {
-      const outcome = await m.runDependencyRecomputeOnce(worker);
-      if (outcome.status === 'idle') return worked;
-      worked.push(outcome);
-    }
-    throw new Error('dependency_recompute_loop_never_idle');
-  };
-  // The running worker reaches idle without touching the wait. The trigger DDL above reloads the
-  // schema cache, and the worker's own queue does not retry a request that lands during the reload:
-  // three spaced calls that tolerate it come first.
-  for (let n = 0; n < 3; n++) {
-    await call(account, 'worker_runtime_schema_contract_v1', {});
-    await new Promise(done => setTimeout(done, 1500));
-  }
-  assert.deepEqual(await untilIdle(queue), [], 'the running worker worked a candidate that waits for a person');
-  const held = waitState();
-  assert(held.wait && held.candidate.state === 'awaiting_authorization' && held.candidate.execution_id === null && held.leases === 0 && held.executions === 0
-    && held.resolutions === 0, `the wait is not persisted as a wait: ${JSON.stringify(held)}`);
-
-  // The restart: a fresh client for another worker account, a new queue whose leases name another
-  // token. It runs until idle and claims nothing; the wait and the candidate are exactly as they were.
-  const restartedAccount = await session(restartedEmail);
-  const restartedContract = await call(restartedAccount, 'worker_runtime_schema_contract_v1', {});
-  assert(restartedContract.capabilities.includes('dependency-recompute.v1'), 'runtime_capability_missing_after_restart');
-  const restartedQueue = m.createDependencyRecomputeQueue(restartedAccount, restartedToken);
-  assert.deepEqual(await untilIdle(restartedQueue), [], 'the restarted worker worked a candidate that waits for a person');
-  assert.deepEqual(waitState(), held, 'the restart changed the wait or the candidate');
-
-  // The person resolves the wait through the command of increment 4, at the revision they saw; the
-  // restarted loop then produces exactly one execution, with its lineage.
-  const authorized = await call(human, 'authorize_work_update_v1', {p_command_id: randomUUID(), p_candidate_id: paidId, p_expected_revision: held.candidate.revision});
-  assert(authorized.state === 'scheduled' && authorized.replayed === false && authorized.candidateId === paidId, `authorization not recorded: ${JSON.stringify(authorized)}`);
-  const resumed = await untilIdle(restartedQueue);
-  const productions = resumed.filter(outcome => outcome.candidateId === paidId);
-  assert(productions.length === 1 && productions[0].status === 'produced', `the authorized candidate was not produced once: ${JSON.stringify(resumed)}`);
-  const resumedExecution = productions[0].executionId;
-  const resumedRecord = JSON.parse(sql(`select jsonb_build_object(
- 'candidate',(select jsonb_build_object('state',c.state,'execution',c.execution_id,'realizes',private.execution_realizes_inputs_v1(c.organization_id,c.execution_id,c.head_inputs))
-  from public.work_recompute_candidates c where c.id='${paidId}'),
- 'lineage',(select jsonb_build_object('root',l.root_execution_id,'candidate',l.candidate_id) from private.execution_lineage l where l.execution_id='${resumedExecution}'),
- 'executions',(select count(*) from public.work_executions e where e.organization_id='${organization}' and e.request_id='${paidId}'),
- 'requester',(select p.user_id from public.work_executions e join private.principals p on p.organization_id=e.organization_id and p.id=e.principal_id where e.id='${resumedExecution}'),
- 'release',(select x.platform_release_id from private.execution_manifests x where x.execution_id='${resumedExecution}'),
- 'lease',(select jsonb_build_object('attempts',l.attempts,'worker',l.leased_by) from private.work_recompute_leases l where l.candidate_id='${paidId}'),
- 'waits',(select count(*) from public.work_milestones m where m.kind='awaiting_human' and m.subject_id='${paidId}'),
- 'resolved',(select count(*) from public.work_milestones m where m.kind='human_resolved' and m.resolves_milestone_id='${held.wait.id}'),
- 'decisions',(select jsonb_agg(m.outcome) from public.work_milestones m where m.kind='decision' and m.subject_kind='work_recompute_candidate' and m.subject_id='${paidId}'),
- 'jobs',(select count(*) from public.processing_jobs j where j.execution_id='${resumedExecution}' and j.kind='work_execution' and j.status='queued'));`));
-  assert.deepEqual(resumedRecord, {
-    candidate: {state: 'scheduled', execution: resumedExecution, realizes: true},
-    lineage: {root: rootId, candidate: paidId},
-    executions: 1,
-    requester: owner,
-    release: paidRelease,
+    produced: 1,
     lease: {attempts: 1, worker: restartedTokenId},
     waits: 1,
     resolved: 1,
     decisions: ['approved'],
-    jobs: 1,
-  }, JSON.stringify(resumedRecord));
-  console.log(JSON.stringify({event: 'dependency_recompute_wait_eval', waitedCandidate: paidId, resumed: resumed.map(outcome => outcome.status)}));
-  console.log('dependency_recompute_wait_across_restart: PASS (a costed candidate waits as an awaiting_human milestone with no job and no lease through the running loop and a restarted worker with a new lease owner; nothing claimed; authorize_work_update_v1 by the owner; one production by the restarted worker, with lineage; disposable local stack)');
+  }, JSON.stringify(recorded));
+  console.log(JSON.stringify({event: 'dependency_recompute_eval', pinnedHypotheses: governed.pins.length, outcomes: outcomes.map(outcome => outcome.status), loopMs}));
+  console.log('dependency_recompute_wait_across_restart: PASS (a costed candidate waits as an awaiting_human milestone with no job and no lease through the running loop and a restarted worker with a new lease owner; nothing claimed; authorize_work_update_v1 by the owner; disposable local stack)');
+  console.log('dependency_recompute_worker_loop: PASS (worker module and RPC client, shared composition, one production for the original requester, head revision pinned, gate receipt, queued job, lineage; no model in the bundle; disposable local stack)');
 } finally { rmSync(temporary, {recursive: true, force: true}); }
