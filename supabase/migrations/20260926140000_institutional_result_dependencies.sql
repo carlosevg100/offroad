@@ -50,13 +50,16 @@ set local lock_timeout = '5s';
 
 -- The three functions restated in full below are pinned to the bodies they replace (md5 of
 -- pg_proc.prosrc, as 20260925232939_rfc_uuid_domain_event_identifiers.sql pins its own): a parallel
--- change stops this migration instead of being overwritten.
+-- change stops this migration instead of being overwritten. Staging holds the retired propagation with
+-- the same code as production and without its two comment lines (e7d1df25...): both are the published
+-- function, and the stub below replaces either.
 do $$begin
  if (select md5(prosrc) from pg_proc where oid='private.domain_event_effect_v1(text)'::regprocedure)<>'6929d7a89e023478462791cd746eb107'
  then raise exception 'domain_event_effect_contract_changed';end if;
  if (select md5(prosrc) from pg_proc where oid='private.guard_institutional_result_body()'::regprocedure)<>'b145182fba0466c4f73400f1b2b655da'
  then raise exception 'institutional_result_guard_contract_changed';end if;
- if (select md5(prosrc) from pg_proc where oid='private.propagate_project_canonical_revision_v1(uuid,uuid,text)'::regprocedure)<>'4312e8cf41d1f9942dc8ca98dad3111f'
+ if (select md5(prosrc) from pg_proc where oid='private.propagate_project_canonical_revision_v1(uuid,uuid,text)'::regprocedure)
+  not in ('4312e8cf41d1f9942dc8ca98dad3111f','e7d1df257ddbf6460c2f14adf3eb66ab')
  then raise exception 'project_revision_propagation_contract_changed';end if;
 end $$;
 
