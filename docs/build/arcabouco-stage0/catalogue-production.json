@@ -624,6 +624,232 @@
       "security_definer": true
     },
     {
+      "id": "function:private.artifact_content_carries_number_v1(p_content jsonb)",
+      "kind": "function",
+      "name": "artifact_content_carries_number_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_content jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.artifact_evidence_v1(p_key text, p_value text)",
+      "kind": "function",
+      "name": "artifact_evidence_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_key text, p_value text",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.artifact_execution_freshness_v1(p_org uuid, p_execution uuid)",
+      "kind": "function",
+      "name": "artifact_execution_freshness_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_projection_origin_v1(p_created_by_kind text, p_created_by uuid)",
+      "kind": "function",
+      "name": "artifact_projection_origin_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_created_by_kind text, p_created_by uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_projection_revision_id_v1(p_table text, p_row uuid)",
+      "kind": "function",
+      "name": "artifact_projection_revision_id_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_table text, p_row uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.artifact_readable_v1(p_org uuid, p_artifact uuid)",
+      "kind": "function",
+      "name": "artifact_readable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_artifact uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_result_freshness_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "name": "artifact_result_freshness_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_result uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_revision_freshness_v1(r artifact_revisions)",
+      "kind": "function",
+      "name": "artifact_revision_freshness_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "r artifact_revisions",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_revision_readable_v1(p_org uuid, p_revision uuid)",
+      "kind": "function",
+      "name": "artifact_revision_readable_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_revision_release_v1(r artifact_revisions)",
+      "kind": "function",
+      "name": "artifact_revision_release_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "r artifact_revisions",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_source_freshness_v1(p_org uuid, p_version uuid)",
+      "kind": "function",
+      "name": "artifact_source_freshness_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_source_rights_pin_v1(p_org uuid, p_version uuid, p_execution uuid)",
+      "kind": "function",
+      "name": "artifact_source_rights_pin_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_version uuid, p_execution uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.assert_capital_project_review_action(p_organization_id uuid, p_project_id uuid, p_action text, p_preparer uuid)",
       "kind": "function",
       "name": "assert_capital_project_review_action",
@@ -921,6 +1147,24 @@
         "search_path=\"\""
       ],
       "signature": "p_command_id uuid, p_candidate_id uuid, p_expected_revision integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.backfill_artifact_revisions_v1()",
+      "kind": "function",
+      "name": "backfill_artifact_revisions_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
       "security_definer": true
     },
     {
@@ -2869,6 +3113,47 @@
       "security_definer": true
     },
     {
+      "id": "function:private.create_artifact_revision_as_person_v1(p_work uuid, p_kind text, p_subject text, p_audience text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint)",
+      "kind": "function",
+      "name": "create_artifact_revision_as_person_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work uuid, p_kind text, p_subject text, p_audience text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.create_artifact_revision_v1(p_org uuid, p_work uuid, p_kind text, p_subject text, p_audience text, p_origin text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint, p_legacy_ref jsonb, p_actor uuid, p_rights_subject uuid, p_revision_id uuid, p_lock_work boolean)",
+      "kind": "function",
+      "name": "create_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_kind text, p_subject text, p_audience text, p_origin text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint, p_legacy_ref jsonb, p_actor uuid, p_rights_subject uuid, p_revision_id uuid, p_lock_work boolean",
+      "security_definer": true
+    },
+    {
       "id": "function:private.create_legacy_adoption_basis_v1(p_org uuid, p_work uuid, p_table text, p_record jsonb)",
       "kind": "function",
       "name": "create_legacy_adoption_basis_v1",
@@ -3186,6 +3471,24 @@
         "search_path=\"\""
       ],
       "signature": "p_org uuid, p_source uuid, p_set uuid, p_slot text, p_method text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.dependency_event_pending_v1(p_org uuid, p_work uuid, p_event uuid)",
+      "kind": "function",
+      "name": "dependency_event_pending_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_event uuid",
       "security_definer": true
     },
     {
@@ -4566,6 +4869,24 @@
       ],
       "signature": "p_resource_id uuid, p_subject_user_id uuid, p_action text, p_expires_at timestamp with time zone",
       "security_definer": true
+    },
+    {
+      "id": "function:private.guard_artifact_identity_v1()",
+      "kind": "function",
+      "name": "guard_artifact_identity_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
     },
     {
       "id": "function:private.guard_contribution_immutable_v1()",
@@ -6192,6 +6513,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.jsonb_array_or_empty_v1(p jsonb)",
+      "kind": "function",
+      "name": "jsonb_array_or_empty_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p jsonb",
+      "security_definer": false
+    },
+    {
       "id": "function:private.jsonb_merge_numeric(p_left jsonb, p_right jsonb)",
       "kind": "function",
       "name": "jsonb_merge_numeric",
@@ -7508,6 +7847,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.project_artifact_revision_trigger_v1()",
+      "kind": "function",
+      "name": "project_artifact_revision_trigger_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.project_canonical_inputs(p_organization_id uuid, p_project_id uuid)",
       "kind": "function",
       "name": "project_canonical_inputs",
@@ -7631,6 +7988,24 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.project_legacy_artifact_revision_v1(p_table text, p_org uuid, p_row uuid)",
+      "kind": "function",
+      "name": "project_legacy_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_table text, p_org uuid, p_row uuid",
       "security_definer": true
     },
     {
@@ -8280,6 +8655,52 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_execution_brief_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_artifact_head_v1(p_work uuid, p_kind text, p_subject text)",
+      "kind": "function",
+      "name": "read_artifact_head_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work uuid, p_kind text, p_subject text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_artifact_revision_v1(p_revision uuid)",
+      "kind": "function",
+      "name": "read_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision uuid",
       "security_definer": true
     },
     {
@@ -9837,6 +10258,24 @@
       ],
       "signature": "",
       "security_definer": true
+    },
+    {
+      "id": "function:private.reject_artifact_history_mutation_v1()",
+      "kind": "function",
+      "name": "reject_artifact_history_mutation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
     },
     {
       "id": "function:private.reject_assumption_mutation_v1()",
@@ -13218,6 +13657,42 @@
       "security_definer": false
     },
     {
+      "id": "function:private.validate_artifact_claims_v1(p_claims jsonb)",
+      "kind": "function",
+      "name": "validate_artifact_claims_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_claims jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.validate_artifact_manifest_v1(p_manifest jsonb)",
+      "kind": "function",
+      "name": "validate_artifact_manifest_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_manifest jsonb",
+      "security_definer": false
+    },
+    {
       "id": "function:private.validate_bound_receivables_information_response_v1()",
       "kind": "function",
       "name": "validate_bound_receivables_information_response_v1",
@@ -14442,6 +14917,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_result jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_create_artifact_revision_v1(p_job_id uuid, p_capability_token text, p_capability text, p_work uuid, p_kind text, p_subject text, p_audience text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint)",
+      "kind": "function",
+      "name": "worker_create_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_capability text, p_work uuid, p_kind text, p_subject text, p_audience text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint",
       "security_definer": true
     },
     {
@@ -18353,6 +18851,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.create_artifact_revision_v1(p_work uuid, p_kind text, p_subject text, p_audience text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint)",
+      "kind": "function",
+      "name": "create_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work uuid, p_kind text, p_subject text, p_audience text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint",
+      "security_definer": false
+    },
+    {
       "id": "function:public.create_opportunity_intake(p_organization_id uuid, p_legal_name text, p_sector text, p_purpose text, p_requested_amount numeric, p_currency text, p_desired_term_months integer, p_output_locale text)",
       "kind": "function",
       "name": "create_opportunity_intake",
@@ -19692,6 +20213,52 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_execution_brief_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.read_artifact_head_v1(p_work_id uuid, p_kind text, p_subject text)",
+      "kind": "function",
+      "name": "read_artifact_head_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_kind text, p_subject text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.read_artifact_revision_v1(p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid",
       "security_definer": false
     },
     {
@@ -23778,6 +24345,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_create_artifact_revision_v1(p_job_id uuid, p_capability_token text, p_capability text, p_work uuid, p_kind text, p_subject text, p_audience text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint)",
+      "kind": "function",
+      "name": "worker_create_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_capability text, p_work uuid, p_kind text, p_subject text, p_audience text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_dependency_recompute_basis_v1(p_worker_token text, p_candidate uuid, p_lease uuid, p_capability text)",
       "kind": "function",
       "name": "worker_dependency_recompute_basis_v1",
@@ -26789,6 +27379,21 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.artifact_dependency_links.artifact_dependency_links_deny_clients",
+      "kind": "policy",
+      "name": "artifact_dependency_links_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "artifact_dependency_links",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.assumption_version_items.assumption_version_items_deny",
       "kind": "policy",
       "name": "assumption_version_items_deny",
@@ -28999,6 +29604,174 @@
         "authenticated"
       ],
       "table": "agent_messages",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.artifact_blocks.artifact_blocks_deny_delete",
+      "kind": "policy",
+      "name": "artifact_blocks_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_blocks",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.artifact_blocks.artifact_blocks_deny_insert",
+      "kind": "policy",
+      "name": "artifact_blocks_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_blocks",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.artifact_blocks.artifact_blocks_deny_update",
+      "kind": "policy",
+      "name": "artifact_blocks_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_blocks",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.artifact_blocks.artifact_blocks_select_authorized",
+      "kind": "policy",
+      "name": "artifact_blocks_select_authorized",
+      "qual": "( SELECT private.artifact_revision_readable_v1(artifact_blocks.organization_id, artifact_blocks.revision_id) AS artifact_revision_readable_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_blocks",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.artifact_revisions.artifact_revisions_deny_delete",
+      "kind": "policy",
+      "name": "artifact_revisions_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_revisions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.artifact_revisions.artifact_revisions_deny_insert",
+      "kind": "policy",
+      "name": "artifact_revisions_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_revisions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.artifact_revisions.artifact_revisions_deny_update",
+      "kind": "policy",
+      "name": "artifact_revisions_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_revisions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.artifact_revisions.artifact_revisions_select_authorized",
+      "kind": "policy",
+      "name": "artifact_revisions_select_authorized",
+      "qual": "( SELECT private.artifact_readable_v1(artifact_revisions.organization_id, artifact_revisions.artifact_id) AS artifact_readable_v1)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_revisions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.artifacts.artifacts_deny_delete",
+      "kind": "policy",
+      "name": "artifacts_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifacts",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.artifacts.artifacts_deny_insert",
+      "kind": "policy",
+      "name": "artifacts_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifacts",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.artifacts.artifacts_deny_update",
+      "kind": "policy",
+      "name": "artifacts_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifacts",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.artifacts.artifacts_select_authorized",
+      "kind": "policy",
+      "name": "artifacts_select_authorized",
+      "qual": "( SELECT private.can_access_capital_project(artifacts.organization_id, artifacts.work_id) AS can_access_capital_project)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifacts",
       "schema": "public",
       "command": "SELECT",
       "permissive": "PERMISSIVE",
@@ -34440,6 +35213,56 @@
       "force_rls": true
     },
     {
+      "id": "r:private.artifact_dependency_links",
+      "rls": true,
+      "kind": "table",
+      "name": "artifact_dependency_links",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
       "id": "r:private.assumption_version_items",
       "rls": true,
       "kind": "table",
@@ -39578,6 +40401,171 @@
         [
           "service_role",
           "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.artifact_blocks",
+      "rls": true,
+      "kind": "table",
+      "name": "artifact_blocks",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.artifact_revisions",
+      "rls": true,
+      "kind": "table",
+      "name": "artifact_revisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.artifacts",
+      "rls": true,
+      "kind": "table",
+      "name": "artifacts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
           false
         ]
       ],
@@ -52825,6 +53813,26 @@
       "definition": "CREATE TRIGGER commercial_account_link_domain_event AFTER INSERT OR DELETE OR UPDATE ON private.account_organizations FOR EACH ROW EXECUTE FUNCTION private.capture_authority_domain_event_v1('commercial_account_link')"
     },
     {
+      "id": "trigger:private.artifact_dependency_links.artifact_dependency_links_immutable",
+      "kind": "trigger",
+      "name": "artifact_dependency_links_immutable",
+      "table": "artifact_dependency_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_artifact_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_dependency_links_immutable BEFORE DELETE OR UPDATE ON private.artifact_dependency_links FOR EACH ROW EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.artifact_dependency_links.artifact_dependency_links_truncate_guard",
+      "kind": "trigger",
+      "name": "artifact_dependency_links_truncate_guard",
+      "table": "artifact_dependency_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_artifact_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_dependency_links_truncate_guard BEFORE TRUNCATE ON private.artifact_dependency_links FOR EACH STATEMENT EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
+    },
+    {
       "id": "trigger:private.assumption_version_items.assumption_version_items_immutable",
       "kind": "trigger",
       "name": "assumption_version_items_immutable",
@@ -53773,6 +54781,16 @@
       "enabled": "O",
       "function": "private.project_decision_milestone_v1()",
       "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT OR UPDATE OF status ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_model_results.artifact_revision_projection",
+      "kind": "trigger",
+      "name": "artifact_revision_projection",
+      "table": "institutional_model_results",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.project_artifact_revision_trigger_v1()",
+      "definition": "CREATE TRIGGER artifact_revision_projection AFTER INSERT OR UPDATE OF status ON private.institutional_model_results FOR EACH ROW EXECUTE FUNCTION private.project_artifact_revision_trigger_v1()"
     },
     {
       "id": "trigger:private.institutional_model_results.institutional_result_body",
@@ -54895,6 +55913,106 @@
       "definition": "CREATE TRIGGER execution_approval_message_lock BEFORE INSERT OR DELETE OR UPDATE OF content, metadata ON public.agent_messages FOR EACH ROW EXECUTE FUNCTION private.lock_execution_approval_context()"
     },
     {
+      "id": "trigger:public.artifact_blocks.artifact_blocks_audit",
+      "kind": "trigger",
+      "name": "artifact_blocks_audit",
+      "table": "artifact_blocks",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER artifact_blocks_audit AFTER INSERT OR DELETE OR UPDATE ON public.artifact_blocks FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_blocks.artifact_blocks_immutable",
+      "kind": "trigger",
+      "name": "artifact_blocks_immutable",
+      "table": "artifact_blocks",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_artifact_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_blocks_immutable BEFORE DELETE OR UPDATE ON public.artifact_blocks FOR EACH ROW EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_blocks.artifact_blocks_truncate_guard",
+      "kind": "trigger",
+      "name": "artifact_blocks_truncate_guard",
+      "table": "artifact_blocks",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_artifact_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_blocks_truncate_guard BEFORE TRUNCATE ON public.artifact_blocks FOR EACH STATEMENT EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_revisions.artifact_revisions_audit",
+      "kind": "trigger",
+      "name": "artifact_revisions_audit",
+      "table": "artifact_revisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER artifact_revisions_audit AFTER INSERT OR DELETE OR UPDATE ON public.artifact_revisions FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_revisions.artifact_revisions_immutable",
+      "kind": "trigger",
+      "name": "artifact_revisions_immutable",
+      "table": "artifact_revisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_artifact_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_revisions_immutable BEFORE DELETE OR UPDATE ON public.artifact_revisions FOR EACH ROW EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_revisions.artifact_revisions_truncate_guard",
+      "kind": "trigger",
+      "name": "artifact_revisions_truncate_guard",
+      "table": "artifact_revisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_artifact_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_revisions_truncate_guard BEFORE TRUNCATE ON public.artifact_revisions FOR EACH STATEMENT EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.artifacts.artifacts_audit",
+      "kind": "trigger",
+      "name": "artifacts_audit",
+      "table": "artifacts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER artifacts_audit AFTER INSERT OR DELETE OR UPDATE ON public.artifacts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.artifacts.artifacts_identity",
+      "kind": "trigger",
+      "name": "artifacts_identity",
+      "table": "artifacts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_artifact_identity_v1()",
+      "definition": "CREATE TRIGGER artifacts_identity BEFORE DELETE OR UPDATE ON public.artifacts FOR EACH ROW EXECUTE FUNCTION private.guard_artifact_identity_v1()"
+    },
+    {
+      "id": "trigger:public.artifacts.artifacts_truncate_guard",
+      "kind": "trigger",
+      "name": "artifacts_truncate_guard",
+      "table": "artifacts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_artifact_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifacts_truncate_guard BEFORE TRUNCATE ON public.artifacts FOR EACH STATEMENT EXECUTE FUNCTION private.reject_artifact_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.artifacts.artifacts_updated",
+      "kind": "trigger",
+      "name": "artifacts_updated",
+      "table": "artifacts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER artifacts_updated BEFORE UPDATE ON public.artifacts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.assumption_sets.assumption_sets_audit",
       "kind": "trigger",
       "name": "assumption_sets_audit",
@@ -55043,6 +56161,16 @@
       "enabled": "O",
       "function": "private.project_decision_milestone_v1()",
       "definition": "CREATE TRIGGER work_milestone_decision AFTER INSERT ON public.capital_project_artifact_decisions FOR EACH ROW EXECUTE FUNCTION private.project_decision_milestone_v1()"
+    },
+    {
+      "id": "trigger:public.capital_project_artifacts.artifact_revision_projection",
+      "kind": "trigger",
+      "name": "artifact_revision_projection",
+      "table": "capital_project_artifacts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.project_artifact_revision_trigger_v1()",
+      "definition": "CREATE TRIGGER artifact_revision_projection AFTER INSERT ON public.capital_project_artifacts FOR EACH ROW EXECUTE FUNCTION private.project_artifact_revision_trigger_v1()"
     },
     {
       "id": "trigger:public.capital_project_artifacts.capital_project_artifacts_audit",
@@ -55495,6 +56623,16 @@
       "definition": "CREATE TRIGGER capital_requests_set_updated_at BEFORE UPDATE ON public.capital_requests FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.case_artifact_manifests.artifact_revision_projection",
+      "kind": "trigger",
+      "name": "artifact_revision_projection",
+      "table": "case_artifact_manifests",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.project_artifact_revision_trigger_v1()",
+      "definition": "CREATE TRIGGER artifact_revision_projection AFTER INSERT ON public.case_artifact_manifests FOR EACH ROW EXECUTE FUNCTION private.project_artifact_revision_trigger_v1()"
+    },
+    {
       "id": "trigger:public.case_artifact_manifests.case_artifact_manifests_audit",
       "kind": "trigger",
       "name": "case_artifact_manifests_audit",
@@ -55683,6 +56821,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER controlled_case_executions_set_updated_at BEFORE UPDATE ON public.controlled_case_executions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.deal_state_objects.artifact_revision_projection",
+      "kind": "trigger",
+      "name": "artifact_revision_projection",
+      "table": "deal_state_objects",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.project_artifact_revision_trigger_v1()",
+      "definition": "CREATE TRIGGER artifact_revision_projection AFTER INSERT ON public.deal_state_objects FOR EACH ROW EXECUTE FUNCTION private.project_artifact_revision_trigger_v1()"
     },
     {
       "id": "trigger:public.deal_state_objects.deal_state_external_material_operating_controls",
@@ -58770,5 +59918,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-24T02:25:09.113054+00:00"
+  "captured_at": "2026-09-26T18:41:01.307272+00:00"
 }
