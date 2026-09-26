@@ -181050,6 +181050,13 @@
       "decision": "preservar",
       "stage": "18 / 5C",
       "reason": "Migração do incremento 5C de work_dependencies_and_continuity: private.work_followup_executions, oito funções, seis gatilhos e o gatilho de substituição recriado, a visão de marcos com o resultado institucional, as redefinições de adoção, recusa, leitura das atualizações e passo do grafo, e os remendos de leitura e de travas do fluxo institucional"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260926053701_material_package_approved_trigger.sql",
+      "decision": "preservar",
+      "stage": "Correção do caminho da companhia",
+      "reason": "Correção: private.enqueue_incremental_deal_state_analysis aceita o gatilho material_package_approved, mapeado para o package_review aprovado, para que a aprovação do pacote enfileire a análise que faz a triagem de financiadores"
     }
   ],
   "staging_archive": [

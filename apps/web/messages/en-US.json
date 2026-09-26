@@ -2852,6 +2852,10 @@
           "title": "The materials were not compiled",
           "body": "The preparation plan was approved, but no analysis is running to compile the materials."
         },
+        "match_screen": {
+          "title": "The financier screening was not produced",
+          "body": "The materials package was approved, but no analysis is running to compare the case with the financiers' mandates."
+        },
         "nextStepTitle": "Next step",
         "nextStepBody": "The analysis restarts from the recorded decision. An analysis already running or finished for the same decision is not repeated.",
         "resume": "Resume the analysis",
@@ -3038,8 +3042,6 @@
       "marketBoundary": "Matching is explainable direction, not a credit approval. No contact is executed automatically.",
       "marketProcessingTitle": "Mandates are being compared",
       "marketProcessingBody": "The analysis reuses the approved structure and materials and applies current size, tenor, instrument, sector, and security criteria.",
-      "marketUnavailableTitle": "There is no governed shortlist yet",
-      "marketUnavailableBody": "The package is preserved. A list will appear only when verifiable, current mandates are available.",
       "marketEmpty": {
         "not_screened": "There are not yet enough governed mandates for a shortlist.",
         "needs_mandate_refresh": "Potential fits exist, but material mandate information requires an update.",
@@ -3694,11 +3696,6 @@
         "incompleteTitle": "The package is not complete yet",
         "incompleteBody": "Approval is blocked while any planned artifact is missing. The blockers remain internal and must be resolved before the next stage.",
         "boundary": "Package approval does not authorise lender contact, distribution or delivery. Market selection and any introduction have separate gates."
-      },
-      "materialsApproved": {
-        "kicker": "PACKAGE APPROVED",
-        "title": "The approved version is preserved.",
-        "body": "The structure and materials remain linked to their originating evidence. The next block will be explainable selection of aligned lenders, with no automatic contact."
       },
       "matching": {
         "kicker": "MARKET DIRECTION",

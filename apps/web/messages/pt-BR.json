@@ -2852,6 +2852,10 @@
           "title": "Os materiais não foram compilados",
           "body": "O plano de preparação foi aprovado, mas nenhuma análise está em andamento para compilar os materiais."
         },
+        "match_screen": {
+          "title": "A triagem de financiadores não foi gerada",
+          "body": "O pacote de materiais foi aprovado, mas nenhuma análise está em andamento para comparar o caso com os mandatos dos financiadores."
+        },
         "nextStepTitle": "Próximo passo",
         "nextStepBody": "A análise recomeça a partir da decisão registrada. Uma análise em andamento ou já concluída para a mesma decisão não é repetida.",
         "resume": "Retomar a análise",
@@ -3038,8 +3042,6 @@
       "marketBoundary": "Matching é direcionamento explicável, não aprovação de crédito. Nenhum contato é executado automaticamente.",
       "marketProcessingTitle": "Os mandatos estão sendo comparados",
       "marketProcessingBody": "A análise reutiliza a estrutura e os materiais aprovados e aplica critérios atuais de tamanho, prazo, instrumento, setor e garantias.",
-      "marketUnavailableTitle": "Ainda não há uma shortlist governada",
-      "marketUnavailableBody": "O pacote está preservado. Uma lista só será exibida quando houver mandatos verificáveis e atuais.",
       "marketEmpty": {
         "not_screened": "Ainda não há mandatos governados suficientes para uma shortlist.",
         "needs_mandate_refresh": "Há possíveis aderências, mas informações materiais de mandato precisam ser atualizadas.",
@@ -3694,11 +3696,6 @@
         "incompleteTitle": "O pacote ainda não está completo",
         "incompleteBody": "Nenhuma aprovação é permitida enquanto um artefato previsto estiver ausente. Os bloqueios permanecem internos e precisam ser resolvidos antes da próxima etapa.",
         "boundary": "A aprovação do pacote não autoriza contato, distribuição ou envio a financiadores. A seleção de mercado e qualquer introdução possuem gates próprios."
-      },
-      "materialsApproved": {
-        "kicker": "PACOTE APROVADO",
-        "title": "A versão aprovada está preservada.",
-        "body": "A estrutura e os materiais permanecem ligados às evidências que os originaram. O próximo bloco será a seleção explicável dos financiadores aderentes, sem contato automático."
       },
       "matching": {
         "kicker": "DIRECIONAMENTO DE MERCADO",

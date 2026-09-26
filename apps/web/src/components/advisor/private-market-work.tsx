@@ -14,8 +14,11 @@ import {
   type PrivateGovernedDecisionState,
   type PrivateMatchDecisionState,
 } from "@/app/[locale]/app/projects/[projectId]/actions";
+import type {DealStateGap} from "@/lib/deal-state/analysis-gap";
 import type {DealStateWorkbench} from "@/lib/deal-state/workbench";
 import type {Database} from "@/types/database";
+
+import {PrivateAnalysisGap} from "./private-analysis-gap";
 
 type IntroductionPlan = Database["public"]["Tables"]["qualified_introduction_plans"]["Row"];
 type IntroductionTarget = Database["public"]["Tables"]["qualified_introduction_targets"]["Row"];
@@ -24,6 +27,8 @@ type QualifiedIntroduction = Database["public"]["Tables"]["qualified_introductio
 type FeedbackEvent = Database["public"]["Tables"]["qualified_introduction_feedback_events"]["Row"];
 
 type Props = {
+  /** The case result missing while no analysis runs, if any; here only the financier screening. */
+  gap: DealStateGap | null;
   introductionPlan: IntroductionPlan | null;
   introductionRecipients: IntroductionRecipient[];
   introductionTargets: IntroductionTarget[];
@@ -45,7 +50,12 @@ const feedbackInitial: MarketFeedbackState = {ok: false};
 export function PrivateMarketWork(props: Props) {
   if (!props.packageApproved) return null;
   if (!props.matchScreen) {
-    return props.isProcessing ? <MarketProcessing /> : <MarketUnavailable />;
+    if (props.isProcessing) return <MarketProcessing />;
+    // An approved package without its financier screening, with no analysis running, is a gap
+    // with its next step, not a list still to come.
+    return props.gap === "match_screen"
+      ? <PrivateAnalysisGap gap={props.gap} locale={props.locale} projectId={props.projectId} sessionId={props.sessionId} />
+      : null;
   }
   return <MatchScreen {...props} matchScreen={props.matchScreen} />;
 }
@@ -225,11 +235,6 @@ function IntroductionPlan({locale, plan, projectId, recipients, representationSt
 function MarketProcessing() {
   const t = useTranslations("App.privateCase");
   return <section className="advisor-private-market advisor-private-market--processing" aria-live="polite"><LoaderCircle aria-hidden="true" className="spin" size={18} /><div><span>{t("marketKicker")}</span><strong>{t("marketProcessingTitle")}</strong><p>{t("marketProcessingBody")}</p></div></section>;
-}
-
-function MarketUnavailable() {
-  const t = useTranslations("App.privateCase");
-  return <section className="advisor-private-market advisor-private-market--processing"><Clock3 aria-hidden="true" size={18} /><div><span>{t("marketKicker")}</span><strong>{t("marketUnavailableTitle")}</strong><p>{t("marketUnavailableBody")}</p></div></section>;
 }
 
 function Submit({disabled = false, idle, pending}: {disabled?: boolean; idle: string; pending: string}) {
