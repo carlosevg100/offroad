@@ -452,6 +452,191 @@ export type Database = {
           },
         ]
       }
+      artifact_blocks: {
+        Row: {
+          block_key: string
+          block_no: number
+          claims: Json
+          content: Json
+          content_fingerprint: string
+          created_at: string
+          id: string
+          kind: string
+          organization_id: string
+          revision_id: string
+        }
+        Insert: {
+          block_key: string
+          block_no: number
+          claims?: Json
+          content: Json
+          content_fingerprint: string
+          created_at?: string
+          id?: string
+          kind: string
+          organization_id: string
+          revision_id: string
+        }
+        Update: {
+          block_key?: string
+          block_no?: number
+          claims?: Json
+          content?: Json
+          content_fingerprint?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          organization_id?: string
+          revision_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artifact_blocks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifact_blocks_organization_id_revision_id_fkey"
+            columns: ["organization_id", "revision_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      artifact_revisions: {
+        Row: {
+          artifact_id: string
+          audience: string
+          byte_length: number | null
+          content_sha256: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          legacy_ref: Json | null
+          manifest: Json
+          manifest_fingerprint: string
+          organization_id: string
+          origin: string
+          previous_revision_id: string | null
+          revision_no: number
+        }
+        Insert: {
+          artifact_id: string
+          audience: string
+          byte_length?: number | null
+          content_sha256?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          legacy_ref?: Json | null
+          manifest: Json
+          manifest_fingerprint: string
+          organization_id: string
+          origin: string
+          previous_revision_id?: string | null
+          revision_no: number
+        }
+        Update: {
+          artifact_id?: string
+          audience?: string
+          byte_length?: number | null
+          content_sha256?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          legacy_ref?: Json | null
+          manifest?: Json
+          manifest_fingerprint?: string
+          organization_id?: string
+          origin?: string
+          previous_revision_id?: string | null
+          revision_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artifact_revisions_organization_id_artifact_id_fkey"
+            columns: ["organization_id", "artifact_id"]
+            isOneToOne: false
+            referencedRelation: "artifacts"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_revisions_organization_id_artifact_id_previous_re_fkey"
+            columns: ["organization_id", "artifact_id", "previous_revision_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "artifact_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_revisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artifacts: {
+        Row: {
+          created_at: string
+          head_revision_id: string | null
+          id: string
+          kind: string
+          legacy_origin: Json | null
+          organization_id: string
+          subject: string
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          created_at?: string
+          head_revision_id?: string | null
+          id?: string
+          kind: string
+          legacy_origin?: Json | null
+          organization_id: string
+          subject: string
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          created_at?: string
+          head_revision_id?: string | null
+          id?: string
+          kind?: string
+          legacy_origin?: Json | null
+          organization_id?: string
+          subject?: string
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artifacts_head_revision_fk"
+            columns: ["organization_id", "id", "head_revision_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "artifact_id", "id"]
+          },
+          {
+            foreignKeyName: "artifacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifacts_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       assumption_sets: {
         Row: {
           context_key: string
@@ -11141,6 +11326,20 @@ export type Database = {
         }
         Returns: Json
       }
+      create_artifact_revision_v1: {
+        Args: {
+          p_audience: string
+          p_blocks: Json
+          p_byte_length: number
+          p_content_sha256: string
+          p_kind: string
+          p_links: Json
+          p_manifest: Json
+          p_subject: string
+          p_work: string
+        }
+        Returns: Json
+      }
       create_opportunity_intake: {
         Args: {
           p_currency: string
@@ -11456,6 +11655,14 @@ export type Database = {
       }
       read_advisor_execution_brief_approval_v1: {
         Args: { p_execution_brief_id: string; p_project_id: string }
+        Returns: Json
+      }
+      read_artifact_head_v1: {
+        Args: { p_kind: string; p_subject: string; p_work_id: string }
+        Returns: Json
+      }
+      read_artifact_revision_v1: {
+        Args: { p_revision_id: string }
         Returns: Json
       }
       read_capital_project_execution_brief_narrative_v1: {
@@ -12789,6 +12996,23 @@ export type Database = {
       }
       worker_complete_job: {
         Args: { p_capability_token: string; p_job_id: string; p_result?: Json }
+        Returns: Json
+      }
+      worker_create_artifact_revision_v1: {
+        Args: {
+          p_audience: string
+          p_blocks: Json
+          p_byte_length: number
+          p_capability: string
+          p_capability_token: string
+          p_content_sha256: string
+          p_job_id: string
+          p_kind: string
+          p_links: Json
+          p_manifest: Json
+          p_subject: string
+          p_work: string
+        }
         Returns: Json
       }
       worker_dependency_recompute_basis_v1: {
