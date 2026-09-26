@@ -160,8 +160,11 @@ test("guided institutional setup calculates only after review and survives resum
  await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed);
  await expect(xlsx).toHaveAttribute("href",resultUrl!);
  // A second explicitly reviewed calculation is a comparison reference, not an implicit
- // recommendation. The browser must keep downloads bound to the current result.
- await page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup"]').click();
+ // recommendation. The browser must keep downloads bound to the current result. The panel's footer
+ // opens the setup section through the section navigation the router follows, not a bare fragment.
+ await result.getByRole("link",{name:messages.InstitutionalModelResult.edit,exact:true}).click();
+ await expect(page).toHaveURL(/#work-institutional-setup$/);
+ await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup"]')).toHaveAttribute("aria-current","true");
  await submitScenario("40");
  await reviewLink.click();
  await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled({timeout:120_000});
