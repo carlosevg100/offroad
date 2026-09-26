@@ -222,7 +222,9 @@ jobs:
       # and RPC client, signed in as a synthetic worker account bound to its token. A root capital
       # execution is requested through the web path's composition, a new revision of its working
       # basis plans one zero-budget candidate, and the loop produces it once for the original
-      # requester. No model, no provider key, no network beyond the local stack, synthetic data only.
+      # requester. Then (6B) a costed candidate waits for a person through the loop and a restarted
+      # worker with its own token, and after the owner's authorization it is produced once, with
+      # lineage. No model, no provider key, no network beyond the local stack, synthetic data only.
       - name: Dependency recompute through the worker loop, once, against the local stack
         env:
           OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
