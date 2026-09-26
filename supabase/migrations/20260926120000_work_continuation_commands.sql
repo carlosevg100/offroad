@@ -15,8 +15,13 @@
 -- against, so the conversation and the database apply the same rule to the same log.
 --
 -- public.work_continuation_requests gains the shape of user_followup and the reason a person gives
--- when declining an update. No function is changed by text.
+-- when declining an update. No function is changed by text. One function of increment 3B,
+-- private.lock_recompute_lease_v1, is redefined to take the locks in the global order of the writers
+-- of a work (section 3): the project row, then the work lock, then the conversation.
 set search_path='';
+-- The new checks validate every row of public.work_milestones and public.work_continuation_requests:
+-- fail fast instead of queueing behind a long transaction, as 3A did.
+set local lock_timeout = '5s';
 
 -- 1. Milestones: explicit references and the outcome of a decision.
 alter table public.work_milestones add column reference_milestone_ids uuid[] not null default '{}'::uuid[];
@@ -150,22 +155,32 @@ begin
  end if;
 end $$;
 
--- A command takes the lock the planner, the settlement and the worker take for the work, then checks
--- the authority again under it. The first check, without any lock, keeps a person without authority
--- from ever waiting on the work.
+-- The global order of the writers of a work: the project row, then the work lock, then the
+-- conversation. submit_advisor_turn_v1 and append_work_turn_v1 lock the project row and then the
+-- conversation; the approval of an institutional model configuration holds the project row and then
+-- takes the work lock; the recompute worker (section 9) and every command here take the project row
+-- and then the work lock. The project row is taken for no key update: it conflicts with the for update
+-- of the turns and of the execution request, so the order holds, and it lets through the foreign key
+-- checks (key share) of the planner and the settlement, which hold the work lock. The first authority
+-- check, without any lock, keeps a person without authority from ever waiting on the work; the
+-- authority is checked again under the locks.
 create function private.lock_work_for_continuation_v1(p_org uuid,p_work uuid) returns void
 language plpgsql volatile security definer set search_path='' as $$
 begin
  if auth.uid() is null or not private.evaluate_resource_policy_v1(p_org,p_work,auth.uid(),'work','analysis') then
   raise exception 'work_continuation_access_denied' using errcode='42501';
  end if;
+ perform 1 from public.capital_projects where organization_id=p_org and id=p_work for no key update;
  perform pg_advisory_xact_lock(hashtextextended('work-continuation:'||p_org::text||':'||p_work::text,0));
  perform private.require_work_continuation_authority_v1(p_org,p_work);
 end $$;
 
--- The milestone a command records under the id its caller chose, stable per organization.
+-- The milestone a command records under the id its caller chose, stable per organization: an RFC 9562
+-- version 5 UUID, as every identifier the database derives.
 create function private.work_command_milestone_id_v1(p_org uuid,p_command uuid) returns uuid
-language sql immutable set search_path='' as $$ select md5('work-continuation-command:'||p_org::text||':'||p_command::text)::uuid; $$;
+language sql immutable set search_path='' as $$
+ select extensions.uuid_generate_v5(extensions.uuid_ns_url(),'offroad:work-command-milestone:'||p_org::text||':'||p_command::text);
+$$;
 
 -- The conversation append_work_turn_v1 writes to: the one of the work's document intake session when
 -- the work has one, otherwise the work's own. With create, a missing intake conversation is opened
@@ -242,7 +257,8 @@ begin
  end if;
  base:=jsonb_build_object('milestoneId',base_row.id,'decisionId',base_row.subject_id,'revision',base_row.revision,'kind',base_row.kind,'label',base_row.label);
 
- -- The turn, in the conversation append_work_turn_v1 uses.
+ -- The turn, in the conversation append_work_turn_v1 uses, locked after the project row and the work
+ -- lock (the global order of section 3).
  c:=private.work_turn_conversation_v1(w.organization_id,w.id,true);
  if c.id is null then raise exception 'work_conversation_unavailable' using errcode='55000'; end if;
  perform 1 from public.agent_conversations where organization_id=c.organization_id and id=c.id for update;
@@ -557,7 +573,30 @@ begin
   'updates',updates,'followups',followups);
 end $$;
 
--- 9. The public entries: security invoker wrappers over the private cores.
+-- 9. The recompute worker in the same order. private.lock_recompute_lease_v1 (increment 3B) took the
+-- work lock and then, through the execution request it submits, the project row for update: the
+-- reverse of the global order, so a person's command and the worker's submission on the same work
+-- could each wait for the other. It now takes the project row first, for no key update, as the
+-- commands above do; the rest of the body is the one 3B published.
+create or replace function private.lock_recompute_lease_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text) returns public.work_recompute_candidates
+language plpgsql security definer set search_path='' as $$
+declare worker uuid;c public.work_recompute_candidates;l private.work_recompute_leases;begin
+ worker:=private.require_recompute_worker_v1(p_worker_token);
+ select * into c from public.work_recompute_candidates where id=p_candidate;
+ if c.id is null then raise exception 'recompute_lease_denied' using errcode='42501';end if;
+ perform 1 from public.capital_projects where organization_id=c.organization_id and id=c.work_id for no key update;
+ perform pg_advisory_xact_lock(hashtextextended('work-continuation:'||c.organization_id::text||':'||c.work_id::text,0));
+ select * into strict c from public.work_recompute_candidates where organization_id=c.organization_id and id=p_candidate for update;
+ select * into l from private.work_recompute_leases where organization_id=c.organization_id and candidate_id=c.id for update;
+ if l.lease_id is null or p_lease is null or p_capability is null or length(p_capability)<32 or l.lease_id<>p_lease
+ or l.capability_sha256 is distinct from extensions.digest(p_capability,'sha256') or l.leased_by is distinct from worker
+ or l.leased_account_user_id is distinct from auth.uid() or l.lease_expires_at<=clock_timestamp() then
+  raise exception 'recompute_lease_denied' using errcode='42501';
+ end if;
+ return c;
+end $$;
+
+-- 10. The public entries: security invoker wrappers over the private cores.
 create function public.request_work_continuation_v1(p_request_id uuid,p_work_id uuid,p_locale text,p_content text,
  p_base_milestone_id uuid,p_base_decision_id uuid,p_base_revision integer) returns jsonb
 language sql security invoker set search_path='' as $$
@@ -572,7 +611,7 @@ language sql security invoker set search_path='' as $$ select private.decline_wo
 create function public.work_update_view_v1(p_work_id uuid) returns jsonb
 language sql stable security invoker set search_path='' as $$ select private.work_update_view_v1(p_work_id); $$;
 
--- 10. Grants: the five entries and their cores to authenticated only; every helper closed to every
+-- 11. Grants: the five entries and their cores to authenticated only; every helper closed to every
 -- API role.
 do $$ declare f record;begin
  for f in select p.oid::regprocedure as signature,p.proname from pg_proc p join pg_namespace n on n.oid=p.pronamespace

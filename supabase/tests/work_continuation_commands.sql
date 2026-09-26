@@ -714,6 +714,36 @@ do $$begin
  raise notice 'PASS: milestone references, outcomes and revisions follow the contract; a decline reason is written only by the decline';
 end $$;
 
+-- 10b. The milestone of a command is an RFC 9562 version 5 UUID of the organization and the command
+-- (the rule 3A's correction set for every identifier the database derives), equal to one literal
+-- vector; every command milestone this test recorded is one. The lock helpers take the project row
+-- before the work lock, the global order of the writers of a work.
+do $$ declare v uuid:=private.work_command_milestone_id_v1('a11b0000-0000-4000-9000-000000000001','a4200000-0000-4000-8000-000000000001');f record;begin
+ if v<>'afd3f2e3-0f7c-5192-828b-0fbc3a8bbfde'::uuid or substring(v::text,15,1)<>'5' or substring(v::text,20,1) not in ('8','9','a','b') then
+  raise exception 'a command milestone id is not the version 5 vector: %',v;
+ end if;
+ if private.work_command_milestone_id_v1('a11b0000-0000-4000-9000-000000000002','a4200000-0000-4000-8000-000000000001')=v
+ or private.work_command_milestone_id_v1('a11b0000-0000-4000-9000-000000000001','a4200000-0000-4000-8000-000000000002')=v
+ or private.work_command_milestone_id_v1('a11b0000-0000-4000-9000-000000000001','a4200000-0000-4000-8000-000000000001')<>v then
+  raise exception 'command milestone ids are not a deterministic function of the organization and the command';
+ end if;
+ if not exists(select 1 from public.work_milestones m where m.kind='update_adopted')
+ or exists(select 1 from public.work_milestones m where (m.kind='update_adopted' or (m.kind='decision' and m.subject_kind in ('work_continuation_request','work_recompute_candidate')))
+  and (substring(m.id::text,15,1)<>'5' or substring(m.id::text,20,1) not in ('8','9','a','b'))) then
+  raise exception 'a command milestone is not a version 5 UUID';
+ end if;
+ if exists(select 1 from pg_proc where prosrc ~* 'md5\([^;]*\)::uuid' and oid='private.work_command_milestone_id_v1(uuid,uuid)'::regprocedure) then
+  raise exception 'an md5 digest still becomes a command milestone id';
+ end if;
+ for f in select p.proname,p.prosrc from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+  where n.nspname='private' and p.proname in ('lock_work_for_continuation_v1','lock_recompute_lease_v1') loop
+  if position('for no key update' in f.prosrc)=0 or position('for no key update' in f.prosrc)>position('pg_advisory_xact_lock' in f.prosrc) then
+   raise exception '% does not take the project row before the work lock',f.proname;
+  end if;
+ end loop;
+ raise notice 'PASS: a command milestone id is an RFC 9562 version 5 UUID equal to the literal vector, and the lock helpers take the project row before the work lock';
+end $$;
+
 -- 11. Parity with approvedBases of continuation.ts: the vector of
 -- packages/work-plan/src/continuation-sql-parity.test.ts ("approved bases parity with the SQL rule").
 -- d0 is an approval about a subject outside the log (no reference); d1 and d2 approve results r1 and
