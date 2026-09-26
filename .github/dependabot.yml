@@ -25,6 +25,14 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: react-dom
         update-types: ["version-update:semver-major"]
+      # vitest 5 changes the runner and its defaults; @types/node tracks the Node major in .nvmrc (24).
+      - dependency-name: vitest
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # zod's JSON Schema output is part of the published method executor contracts, which are
+      # immutable; a zod update is a deliberate migration published with a new method version.
+      - dependency-name: zod
   - package-ecosystem: github-actions
     directory: /
     schedule:

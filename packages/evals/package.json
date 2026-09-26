@@ -63,12 +63,12 @@
     "@offroad/receivables-analysis": "workspace:*",
     "@offroad/reconciliation": "workspace:*",
     "@offroad/testing-fixtures": "workspace:*",
-    "@supabase/supabase-js": "2.112.3",
+    "@supabase/supabase-js": "2.116.0",
     "decimal.js": "10.6.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
-    "tsx": "4.23.12"
+    "tsx": "4.23.15"
   }
 }

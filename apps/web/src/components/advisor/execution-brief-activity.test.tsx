@@ -21,7 +21,8 @@ describe("ExecutionBriefActivity", () => {
     expect(html).toContain("Trabalho iniciado");
     expect(html).toContain("Comecei “Entender a companhia e o contexto”");
     expect(html).toContain("Ler fontes públicas, separar fatos e registrar lacunas.");
-    expect(html).toContain("class=\"lucide lucide-loader-circle spin\"");
+    // The icon library also emits alias classes (lucide-loader-2 since 1.48); the icon and the spin are what matter.
+    expect(html).toMatch(/class="lucide lucide-loader-circle[^"]* spin"/);
     expect(html).not.toMatch(/TaskSpec|taskId|executor|provider|processing_job/);
   });
 
