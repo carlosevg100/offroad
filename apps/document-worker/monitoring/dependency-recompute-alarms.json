@@ -1,0 +1,22 @@
+{
+  "region": "sa-east-1",
+  "logGroup": "/ecs/offroad-document-worker",
+  "namespace": "Offroad/DocumentWorker",
+  "description": "Offroad stage 18 dependency recompute: health, backlog, expired leases and loop errors",
+  "filters": [
+    {"name": "offroad-recompute-heartbeat", "pattern": "{ $.event = \"recompute.health\" }", "metric": "RecomputeHeartbeat", "value": "1",
+     "sample": {"at": "2026-09-26T12:00:00.000Z", "event": "recompute.health", "scheduledCount": 3, "oldestScheduledSeconds": 2400, "expiredLeaseCount": 1, "awaitingAuthorizationCount": 2}},
+    {"name": "offroad-recompute-oldest-scheduled", "pattern": "{ $.event = \"recompute.health\" }", "metric": "RecomputeOldestScheduledSeconds", "value": "$.oldestScheduledSeconds",
+     "sample": {"at": "2026-09-26T12:00:00.000Z", "event": "recompute.health", "scheduledCount": 3, "oldestScheduledSeconds": 2400, "expiredLeaseCount": 1, "awaitingAuthorizationCount": 2}},
+    {"name": "offroad-recompute-expired-leases", "pattern": "{ $.event = \"recompute.health\" }", "metric": "RecomputeExpiredLeaseCount", "value": "$.expiredLeaseCount",
+     "sample": {"at": "2026-09-26T12:00:00.000Z", "event": "recompute.health", "scheduledCount": 3, "oldestScheduledSeconds": 2400, "expiredLeaseCount": 1, "awaitingAuthorizationCount": 2}},
+    {"name": "offroad-recompute-errors", "pattern": "{ $.event = \"recompute.poll.failed\" }", "metric": "RecomputeErrors", "value": "1",
+     "sample": {"at": "2026-09-26T12:00:00.000Z", "event": "recompute.poll.failed", "reason": "health_failed"}}
+  ],
+  "alarms": [
+    {"name": "offroad-recompute-heartbeat-missing", "metric": "RecomputeHeartbeat", "comparison": "LessThanThreshold", "threshold": 1, "statistic": "Sum", "periods": 3, "missing": "breaching"},
+    {"name": "offroad-recompute-backlog", "metric": "RecomputeOldestScheduledSeconds", "comparison": "GreaterThanThreshold", "threshold": 1800, "statistic": "Maximum", "periods": 2, "missing": "missing"},
+    {"name": "offroad-recompute-expired-leases", "metric": "RecomputeExpiredLeaseCount", "comparison": "GreaterThanThreshold", "threshold": 0, "statistic": "Maximum", "periods": 1, "missing": "missing"},
+    {"name": "offroad-recompute-errors", "metric": "RecomputeErrors", "comparison": "GreaterThanThreshold", "threshold": 0, "statistic": "Sum", "periods": 1, "missing": "notBreaching"}
+  ]
+}

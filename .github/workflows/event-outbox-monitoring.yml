@@ -6,6 +6,13 @@ on:
         description: Install the reviewed alarms before verifying them
         type: boolean
         default: false
+      configuration:
+        description: Reviewed alarm file to verify or install
+        type: choice
+        options:
+          - apps/document-worker/monitoring/event-outbox-alarms.json
+          - apps/document-worker/monitoring/dependency-recompute-alarms.json
+        default: apps/document-worker/monitoring/event-outbox-alarms.json
 permissions:
   contents: read
   id-token: write
@@ -29,10 +36,11 @@ jobs:
       - name: Validate filters and verify or install the reviewed alarms
         env:
           APPLY_CONFIGURATION: ${{ inputs.apply }}
+          ALARM_CONFIGURATION: ${{ inputs.configuration || 'apps/document-worker/monitoring/event-outbox-alarms.json' }}
         run: |
           set -euo pipefail
           if [ "$APPLY_CONFIGURATION" = "true" ]; then
-            python3 scripts/ci/configure-event-outbox-alarms.py --apply
+            python3 scripts/ci/configure-event-outbox-alarms.py "$ALARM_CONFIGURATION" --apply
           else
-            python3 scripts/ci/configure-event-outbox-alarms.py
+            python3 scripts/ci/configure-event-outbox-alarms.py "$ALARM_CONFIGURATION"
           fi

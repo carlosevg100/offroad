@@ -10,8 +10,9 @@
 // composes what the root execution was asked and submits. The proof checks that exactly that
 // candidate was produced, for the original requester, pinning the head revision, with a gate
 // receipt carrying the root's situations, a queued pinned job and lineage naming the root; and
-// that the bundle the loop ran from contains no model gateway. Synthetic data only; no provider
-// key and no network beyond the local stack.
+// that the bundle the loop ran from contains no model gateway. Before the loop, the recompute health
+// the worker reads (6A) counts the candidate in one recompute.health line of four numbers. Synthetic
+// data only; no provider key and no network beyond the local stack.
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {createHash, randomUUID} from 'node:crypto';
@@ -58,7 +59,7 @@ try {
   // 1. The worker's own recompute module and the shared composition, bundled as the worker image
   // bundles them, plus the synthetic basis and the released method artifacts.
   const outfile = join(temporary, 'recompute.mjs');
-  const bundle = await build({stdin: {contents: `export {createDependencyRecomputeQueue, runDependencyRecomputeOnce} from './src/dependency-recompute.ts';
+  const bundle = await build({stdin: {contents: `export {createDependencyRecomputeQueue, createRecomputeHealthMonitor, runDependencyRecomputeOnce} from './src/dependency-recompute.ts';
 export {composeCapitalExecutionRequest, executionContractBasisSchema} from '@offroad/execution-request';
 export {adoptedCapitalPeriodFixture} from '@offroad/testing-fixtures/capital-structure-decision';
 export {deriveExecutionProfile, executionCanonicalText} from '@offroad/agent-contracts';
@@ -177,6 +178,17 @@ commit;`);
   const account = await session(workerEmail);
   const contract = await call(account, 'worker_runtime_schema_contract_v1', {});
   assert(contract.capabilities.includes('dependency-recompute.v1'), 'runtime_capability_missing');
+  assert(contract.capabilities.includes('dependency-recompute-health.v1'), 'runtime_health_capability_missing');
+  // The health the loop reads at most every 30 seconds (6A), through the worker entry point as the
+  // worker account: one recompute.health line of four numbers that counts the scheduled candidate,
+  // and no second read inside the throttle window.
+  const healthLines = [];
+  const health = m.createRecomputeHealthMonitor(account, workerToken, (event, detail) => healthLines.push({event, ...detail}));
+  const reading = await health.maybeRead();
+  assert.equal(await health.maybeRead(), null, 'recompute_health_not_throttled');
+  assert.deepEqual(healthLines.filter(line => line.event !== 'recompute.backlog.failed').map(line => line.event), ['recompute.health'], `recompute_health_lines: ${JSON.stringify(healthLines)}`);
+  assert.deepEqual(Object.keys(healthLines[0]).sort(), ['awaitingAuthorizationCount', 'event', 'expiredLeaseCount', 'oldestScheduledSeconds', 'scheduledCount']);
+  assert(reading && reading.scheduledCount >= 1 && Object.values(reading).every(value => Number.isInteger(value) && value >= 0), `recompute_health_reading: ${JSON.stringify(reading)}`);
   const queue = m.createDependencyRecomputeQueue(account, workerToken);
   const started = performance.now();
   const outcomes = [];
@@ -215,5 +227,6 @@ commit;`);
     executions: 2,
   }, JSON.stringify(recorded));
   console.log(JSON.stringify({event: 'dependency_recompute_eval', pinnedHypotheses: governed.pins.length, outcomes: outcomes.map(outcome => outcome.status), loopMs}));
-  console.log('dependency_recompute_worker_loop: PASS (worker module and RPC client, shared composition, original requester, head revision pinned, gate receipt, queued job, lineage; no model in the bundle; disposable local stack)');
+  console.log(JSON.stringify(healthLines[0]));
+  console.log('dependency_recompute_worker_loop: PASS (worker module and RPC client, shared composition, original requester, head revision pinned, gate receipt, queued job, lineage, one recompute.health line of four numbers; no model in the bundle; disposable local stack)');
 } finally { rmSync(temporary, {recursive: true, force: true}); }

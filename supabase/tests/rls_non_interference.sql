@@ -6048,6 +6048,25 @@ do $$ declare role_name text;relation text;f text; begin
  then raise exception 'Stage 18 5A policies missing';end if;
 end $$;
 
+-- Stage 18, increment 6A: the recompute health. One new public entry, security invoker and executable
+-- by authenticated only, over a security definer core in private with an empty search path behind the
+-- recompute worker binding; the reader it calls is closed to every API role and returns counts and
+-- ages only. The behaviour is proven in dependency_recompute_health.sql.
+do $$ declare role_name text; begin
+ if not has_function_privilege('authenticated','public.worker_dependency_recompute_health_v1(text)','EXECUTE')
+ or has_function_privilege('anon','public.worker_dependency_recompute_health_v1(text)','EXECUTE')
+ or has_function_privilege('service_role','public.worker_dependency_recompute_health_v1(text)','EXECUTE')
+ or (select prosecdef from pg_proc where oid='public.worker_dependency_recompute_health_v1(text)'::regprocedure)
+ then raise exception 'Recompute health entry grant or security mismatch';end if;
+ if has_function_privilege('anon','private.worker_dependency_recompute_health_v1(text)','EXECUTE')
+ or has_function_privilege('service_role','private.worker_dependency_recompute_health_v1(text)','EXECUTE')
+ or not (select prosecdef and proconfig @> array['search_path=""'] from pg_proc where oid='private.worker_dependency_recompute_health_v1(text)'::regprocedure)
+ then raise exception 'Recompute health core grant or security mismatch';end if;
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+  if has_function_privilege(role_name,'private.dependency_recompute_health_v1()','EXECUTE') then raise exception 'Recompute health reader exposed to %',role_name;end if;
+ end loop;
+end $$;
+
 select 'rls_non_interference_passed' as result;
 
 -- Internal explicit-subject core is never an API impersonation surface.
