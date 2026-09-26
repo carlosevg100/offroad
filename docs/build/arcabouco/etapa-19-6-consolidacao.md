@@ -86,7 +86,7 @@ Uma PR (`fix/19-6b-materials-fixes`) sobre `main` `a795f3b8`, que já tem o incr
 
 **Causa.** A pergunta sobre itens não recorrentes do EBITDA achava o EBITDA ajustado mais recente e montava a busca do reportado com `new RegExp(...)` sobre o caminho do fato, trocando cada ponto por `"\\\\."`. Esse texto de substituição são duas barras invertidas e um ponto, então a expressão pedia uma barra invertida literal antes de cada ponto: nenhum caminho de fato tem barra invertida, o EBITDA reportado nunca era encontrado e a pergunta ficava em aberto em todo caso, mesmo com os dois números na sala.
 
-**Correção.** `packages/case-materials/src/diligence.ts` ganha `at(fatos, caminho)`, que compara o caminho como texto (não há padrão a escapar) e, como `find`, fica com o período mais recente. A pergunta lê o EBITDA ajustado mais recente e o EBITDA reportado do mesmo exercício, no caminho exato, e responde pelo núcleo `calculateEbitdaAdjustments`:
+**Correção.** `packages/case-materials/src/diligence.ts` ganha `at(facts, path)`, que compara o caminho como texto (não há padrão a escapar) e, como `find`, fica com o período mais recente. A pergunta lê o EBITDA ajustado mais recente e o EBITDA reportado do mesmo exercício, no caminho exato, e responde pelo núcleo `calculateEbitdaAdjustments`:
 
 - com os dois números: "EBITDA ajustado de R$ 17,4M contra reportado de R$ 16,8M: R$ 0,6M de ajustes, a detalhar item a item." (a magnitude vem do núcleo; os dois números mostram a direção, inclusive quando o ajuste reduz o EBITDA);
 - com o ajustado igual ao reportado: "EBITDA ajustado igual ao reportado, de R$ 16,8M: a companhia não declara ajustes." (a frase anterior pediria o detalhe de R$ 0,0M de ajustes);
