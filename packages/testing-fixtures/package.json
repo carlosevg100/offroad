@@ -27,6 +27,10 @@
     "./capital-structure-decision": {
       "types": "./src/capital-structure-decision.ts",
       "default": "./src/capital-structure-decision.ts"
+    },
+    "./credit-materials-case": {
+      "types": "./src/credit-materials-case.ts",
+      "default": "./src/credit-materials-case.ts"
     }
   },
   "scripts": {

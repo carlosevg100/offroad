@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+import {calculateNewInstrumentAmount, presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
 
 import type {MaterialBlock} from "./compile";
 
@@ -13,15 +14,16 @@ import type {MaterialBlock} from "./compile";
  * structural answer beside it rather than a paragraph of comfort.
  *
  * Everything here is assembled from computed values carrying their citable ids, so the same
- * staleness and audit machinery that guards the prose guards these tables.
+ * staleness and audit machinery that guards the prose guards these tables. Every sum and every
+ * conversion of a figure is a financial-core kernel; this file only lays the figures out.
  */
 
-const money = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
-  `R$ ${new Decimal(value).toNumber().toLocaleString(locale, {maximumFractionDigits: 0})}`;
-const pct = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
-  `${new Decimal(value).times(100).toNumber().toLocaleString(locale, {minimumFractionDigits: 1, maximumFractionDigits: 2})}%`;
-const turns = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
-  `${new Decimal(value).toNumber().toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
+const money = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+  `R$ ${presentationNumber(value).value.toLocaleString(locale, {maximumFractionDigits: 0})}`;
+const pct = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+  `${presentationNumber(presentationFigure({value, scale: "percent"}).value).value.toLocaleString(locale, {minimumFractionDigits: 1, maximumFractionDigits: 2})}%`;
+const turns = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+  `${presentationNumber(value).value.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
 
 /** Preserve the exact threshold: only Decimal normalizes insignificant fractional zeroes. */
 function covenantTurns(value: string): string {
@@ -42,7 +44,7 @@ function covenantTurns(value: string): string {
 export function sourcesAndUses(desk: DeskAnalysis, trajectory: Trajectory): MaterialBlock | null {
   const lm = trajectory.liabilityManagement;
   if (!lm) return null;
-  const amount = trajectory.years.length > 0 ? new Decimal(lm.covenantedBalance).plus(lm.netNewMoney) : null;
+  const amount = trajectory.years.length > 0 ? calculateNewInstrumentAmount({covenantedBalance: lm.covenantedBalance, netNewMoney: lm.netNewMoney}).value : null;
   if (!amount) return null;
 
   return {
@@ -65,7 +67,7 @@ export function sourcesAndUses(desk: DeskAnalysis, trajectory: Trajectory): Mate
 export function runwayAndRecurring(desk: DeskAnalysis): MaterialBlock | null {
   const runway = desk.runway;
   if (!runway) return null;
-  const months = (value: string, locale: "pt-BR" | "en-US") => `${new Decimal(value).toFixed(1).replace(".", locale === "pt-BR" ? "," : ".")} ${locale === "pt-BR" ? "meses" : "months"}`;
+  const months = (value: string, locale: "pt-BR" | "en-US") => `${presentationFigure({value, decimals: 1}).value.replace(".", locale === "pt-BR" ? "," : ".")} ${locale === "pt-BR" ? "meses" : "months"}`;
   const rows: Array<{label: {pt: string; en: string}; value: {pt: string; en: string}; supportIds?: string[]}> = [
     {label: {pt: "Queima de caixa mensal", en: "Monthly cash burn"}, value: {pt: money(runway.monthlyBurn, "pt-BR"), en: money(runway.monthlyBurn, "en-US")}, supportIds: ["desk.queima_mensal"]},
     {label: {pt: "Runway antes da operação", en: "Runway before the deal"}, value: {pt: months(runway.monthsPre, "pt-BR"), en: months(runway.monthsPre, "en-US")}, supportIds: ["desk.runway_pre_meses"]},

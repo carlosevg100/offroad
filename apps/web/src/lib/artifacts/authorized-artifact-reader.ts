@@ -301,6 +301,74 @@ export function artifactResponseHeaders(read: ArtifactRead & {withheld: false}, 
   };
 }
 
+// Stored bytes -------------------------------------------------------------------------------
+//
+// Stored bytes exist only for the integration preview. The governed upload writes each file under
+// one address, `<organization>/<work>/materials/<sha256>.<format>` in `case-artifacts`, and records it
+// in an upload grant (`private.capital_project_material_upload_grants`, closed to clients); the core of
+// increment 4 accepts `bytes.storage` only for the path, sha256, size and format of a stored grant of
+// the same work. The reader therefore serves the object at the grant's address and nothing else, and
+// it reaches that address only through the grant: storage lets a person read a `materials/` path only
+// when a stored grant names exactly that path. A moved object (the storage rotation of 1B renamed
+// objects to `revocable-<uuid>` without updating grants or manifests) is not at the grant's address,
+// so it is reported missing, never looked for elsewhere.
+
+export const governedMaterialBucket = "case-artifacts";
+const governedFormats: readonly string[] = ["xlsx", "pptx", "docx"];
+
+/** The object path the upload grant command writes for a work, a content hash and a format. */
+export function uploadGrantObjectPath(input: {organizationId: string; workId: string; sha256: string; format: string}): string {
+  return `${input.organizationId}/${input.workId}/materials/${input.sha256}.${input.format}`;
+}
+
+export type GovernedObject = {
+  readonly organizationId: string;
+  readonly workId: string;
+  readonly bucket: string;
+  readonly path: string;
+  readonly sha256: string;
+  readonly byteLength: number;
+  readonly format: string;
+};
+export type StoredObjectFailure = "artifact_object_missing" | "artifact_bytes_mismatch" | "artifact_object_unavailable";
+export type StoredObjectRead =
+  | {readonly ok: true; readonly bytes: Uint8Array<ArrayBuffer>; readonly sha256: string; readonly byteLength: number}
+  | {readonly ok: false; readonly error: StoredObjectFailure};
+
+/** The governed object a revision's manifest names, for the work it belongs to; null when the manifest pins no stored bytes. */
+export function storedRevisionObject(revision: ArtifactRevision, scope: {organizationId: string; workId: string}): GovernedObject | null {
+  const {bytes, format} = revision.manifest;
+  if (bytes === null || !("storage" in bytes) || format === null) return null;
+  return {...scope, bucket: bytes.storage.bucket, path: bytes.storage.path, sha256: bytes.sha256, byteLength: bytes.byteLength, format};
+}
+
+function storageSaysMissing(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const {status, statusCode, code, message} = error as {status?: unknown; statusCode?: unknown; code?: unknown; message?: unknown};
+  return status === 404 || statusCode === "404" || code === "NoSuchKey" || (typeof message === "string" && /not[ _]found/i.test(message));
+}
+
+/**
+ * Reads a stored object through its upload grant: the address must be the one the grant command
+ * writes for this work, hash and format; the object must exist there; its size and then its sha256
+ * must match before a byte is served. Each refusal is typed: `artifact_object_missing` (no object at
+ * the grant's address, or one this person cannot read, which storage does not distinguish),
+ * `artifact_bytes_mismatch` (another size or hash), `artifact_object_unavailable` (storage failed).
+ */
+export async function readGovernedObject(supabase: SupabaseClient<Database>, object: GovernedObject): Promise<StoredObjectRead> {
+  const address = uploadGrantObjectPath(object);
+  if (!governedFormats.includes(object.format) || !/^[a-f0-9]{64}$/.test(object.sha256)
+    || object.bucket !== governedMaterialBucket || object.path !== address) return {ok: false, error: "artifact_object_missing"};
+  const {data, error} = await supabase.storage.from(governedMaterialBucket).download(address);
+  if (error) return {ok: false, error: storageSaysMissing(error) ? "artifact_object_missing" : "artifact_object_unavailable"};
+  if (!data) return {ok: false, error: "artifact_object_missing"};
+  const bytes = new Uint8Array(await data.arrayBuffer());
+  if (bytes.byteLength !== object.byteLength) return {ok: false, error: "artifact_bytes_mismatch"};
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  if (sha256 !== object.sha256) return {ok: false, error: "artifact_bytes_mismatch"};
+  return {ok: true, bytes, sha256, byteLength: bytes.byteLength};
+}
+
 /** The date a version was issued: pinned by the renderer inputs, else the historical row's own date for a legacy revision, else the revision's. */
 export function revisionIssuedOn(revision: ArtifactRevision, legacyRowCreatedAt?: string | null): string {
   const pinned = revision.manifest.bytes && "rendered" in revision.manifest.bytes ? revision.manifest.bytes.rendered.deterministicInputs.issuedOn : undefined;

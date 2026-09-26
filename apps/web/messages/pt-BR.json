@@ -6774,6 +6774,7 @@
       "workbookNotReady": "A planilha ainda não está pronta.",
       "storageUnavailable": "Não foi possível recuperar o arquivo guardado.",
       "storageMismatch": "O arquivo guardado não confere com o registro desta versão, então nada foi entregue.",
+      "storageMissing": "O arquivo guardado desta versão não foi encontrado onde foi registrado, então nada foi entregue. Peça uma nova versão antes de baixar.",
       "synthesisMissing": "A síntese ainda não foi produzida."
     }
   }

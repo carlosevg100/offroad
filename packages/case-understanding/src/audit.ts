@@ -150,6 +150,19 @@ function numericSupport(value: string): string | null {
   }
 }
 
+/**
+ * The two evidence gates every publishing path shares, one definition each (stage 19 consolidated
+ * the former evidence-compiler here): a material claim needs at least one fact or calculation id,
+ * and a material judgment needs a human approval before anything carries it outside.
+ */
+export function materialClaimWithoutSupport(claim: {readonly material: boolean; readonly supportIds: readonly string[]}): boolean {
+  return claim.material && claim.supportIds.length === 0;
+}
+
+export function materialJudgmentWithoutApproval(claim: {readonly material: boolean; readonly kind: string; readonly approved?: boolean}): boolean {
+  return claim.material && claim.kind === "judgment" && claim.approved !== true;
+}
+
 export function auditClaims(input: {
   claims: readonly AuditableClaim[];
   facts: BriefEvidenceInput["facts"];
@@ -180,7 +193,7 @@ export function auditClaims(input: {
       continue;
     }
 
-    if (claim.supportIds.length === 0) {
+    if (materialClaimWithoutSupport(claim)) {
       findings.push({claimId: claim.id, reason: "material_claim_without_support", detail: "nenhum id de suporte"});
       continue;
     }
@@ -197,7 +210,7 @@ export function auditClaims(input: {
       continue;
     }
 
-    if (claim.kind === "judgment" && input.requireJudgmentApproval !== false && !claim.approved) {
+    if (input.requireJudgmentApproval !== false && materialJudgmentWithoutApproval(claim)) {
       findings.push({claimId: claim.id, reason: "material_judgment_without_approval", detail: "julgamento material sem aprovação"});
       continue;
     }

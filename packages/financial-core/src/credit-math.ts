@@ -237,6 +237,10 @@ export const financialCalculationRegistry = {
   "receivables.pool_performance": "calculateReceivablesPoolPerformance",
   "receivables.pool_evidence_coverage": "calculateReceivablesPoolEvidenceCoverage",
   "receivables.pool_trigger": "compareReceivablesPoolTrigger",
+  "material.new_instrument_amount": "calculateNewInstrumentAmount",
+  "material.customer_concentration": "calculateCustomerConcentration",
+  "material.ebitda_adjustments": "calculateEbitdaAdjustments",
+  "material.schedule_tie_out": "testScheduleTieOut",
 } as const;
 
 export type FinancialCalculationId = keyof typeof financialCalculationRegistry;

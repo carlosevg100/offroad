@@ -10,12 +10,21 @@ import {
   resolveRouteRevision,
   revisionRendererAllowed,
 } from "@/lib/artifacts/artifact-route";
-import {artifactResponseHeaders, resolveRenderer, revisionIssuedOn, verifyRenderedBytes, type BytesVerification} from "@/lib/artifacts/authorized-artifact-reader";
+import {
+  artifactResponseHeaders,
+  readGovernedObject,
+  resolveRenderer,
+  revisionIssuedOn,
+  storedRevisionObject,
+  verifyRenderedBytes,
+  type BytesVerification,
+  type GovernedObject,
+} from "@/lib/artifacts/authorized-artifact-reader";
 import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
 import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
-import {resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "@/lib/integration-preview/governed-material-download";
+import {resolveGovernedMaterialDownload} from "@/lib/integration-preview/governed-material-download";
 
 /**
  * Authenticated retrieval for governed presentation/workbook bytes plus the basic internal Word
@@ -27,6 +36,8 @@ import {resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "@
  * through the authorized reader with the same release evaluation as every download: a version for
  * an external audience is never served before it is released. The Word preview is issued on the
  * date of its version and composed of the tables that existed when that version was created.
+ * Stored bytes are read at the address of their upload grant, and a missing object or other bytes
+ * are refused with a reason, never served and never answered as a server failure.
  */
 type Params = {params: Promise<{locale: string; projectId: string}>};
 
@@ -101,7 +112,8 @@ export async function GET(request: Request, {params}: Params) {
   const current = latestByType.get(artifactType);
   const rowId = legacyRowId(revision, "capital_project_artifacts");
   const renderer = resolveRenderer(revision);
-  const stored = renderer.ok && renderer.source === "storage" ? renderer : null;
+  const stored = renderer.ok && renderer.source === "storage" ? storedRevisionObject(revision, {organizationId: organization.id, workId: projectId}) : null;
+  if (stored && stored.format !== format) return artifactUnavailable(copy.rendererUnavailable);
   // A legacy revision is served only while its row is the one this preview serves; a stored revision
   // carries its own object; anything else has no content this route can produce.
   if (!stored) {
@@ -111,13 +123,13 @@ export async function GET(request: Request, {params}: Params) {
   }
 
   if (format === "pptx" || format === "xlsx") {
-    let object: {bucket: string; path: string};
+    let object: GovernedObject;
     let legacyHeaders: Record<string, string> = {};
     let mimeType: string;
     let fileName: string;
     let manifest: ReturnType<typeof resolveGovernedMaterialDownload> | null = null;
     if (stored) {
-      object = {bucket: stored.bucket, path: stored.path};
+      object = stored;
       mimeType = format === "pptx" ? "application/vnd.openxmlformats-officedocument.presentationml.presentation" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
       fileName = `material-preview-${projectId.slice(0, 8)}-r${revision.revisionNo}.${format}`;
     } else {
@@ -132,21 +144,18 @@ export async function GET(request: Request, {params}: Params) {
       } catch {
         return artifactUnavailable(notReady);
       }
-      object = {bucket: manifest.storage.bucket, path: manifest.storage.objectPath};
+      object = {organizationId: organization.id, workId: projectId, bucket: manifest.storage.bucket, path: manifest.storage.objectPath,
+        sha256: manifest.contentSha256, byteLength: manifest.byteLength, format: manifest.format};
       mimeType = manifest.mimeType;
       fileName = manifest.fileName;
       legacyHeaders = {"x-material-sha256": manifest.contentSha256, "x-material-manifest-fingerprint": manifest.manifestFingerprint, "x-material-release-state": manifest.release.state};
     }
-    const download = await supabase.storage.from(object.bucket).download(object.path);
-    if (download.error || !download.data) return artifactUnavailable(copy.preview.storageUnavailable, 502);
-    const bytes = new Uint8Array(await download.data.arrayBuffer());
-    if (manifest) {
-      try {
-        verifyGovernedMaterialDownload(manifest, bytes);
-      } catch {
-        return artifactUnavailable(copy.preview.storageMismatch);
-      }
+    const storedObject = await readGovernedObject(supabase, object);
+    if (!storedObject.ok) {
+      if (storedObject.error === "artifact_object_unavailable") return artifactUnavailable(copy.preview.storageUnavailable, 502);
+      return artifactUnavailable(storedObject.error === "artifact_object_missing" ? copy.preview.storageMissing : copy.preview.storageMismatch);
     }
+    const bytes = storedObject.bytes;
     const verification: BytesVerification = verifyRenderedBytes(revision, bytes, {format});
     if (verification.status === "mismatch") return artifactUnavailable(copy.preview.storageMismatch);
     if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();

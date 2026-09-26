@@ -31,7 +31,7 @@ Este mapa registra destinos, não entrega das etapas futuras. Catálogos coletad
 | `packages/document-parsers` | preservar | 6 | reaproveitar parsers e suas âncoras | 12 |
 | `packages/domain-contracts` | consolidar | 5–9, 19 | objetos de domínio com versão e escopo explícitos | 26 |
 | `packages/evals` | preservar | 0–24 | ensaios técnicos e regressão separados de ensaios com usuários | 0 |
-| `packages/evidence-compiler` | consolidar | 19 | usar verificações de claims no gate único; eliminar pacote órfão após migração de API/testes | 0 |
+| `packages/evidence-compiler` | retirado | 19 | consolidado: as duas regras vivem em `case-understanding/src/audit.ts` e `case-materials` as chama; testes migrados, pacote e lockfile retirados | 0 |
 | `packages/extraction-learning` | refatorar | 8, 9 | feedback propõe; confiança não publica nem adota dado | 1 |
 | `packages/financial-core` | preservar | 15, 17 | precisão decimal, fórmulas e traces são núcleo reutilizável | 38 |
 | `packages/financial-model` | refatorar | 15, 21 | preservar modelos/formulas; fixar entradas e diffs de reimportação | 17 |
@@ -2961,3 +2961,7 @@ Mais 17 objetos criados em laço pela mesma migração (políticas de negação,
 
 1 objetos novos e 0 atualizados. Identificadores dos eventos de release de método derivados como UUID versão 5, aceitos pelo contrato de evento do worker
 - `function:private.platform_method_release_event_id_v1(p_release text, p_org uuid)`
+
+## Atualização da etapa 19, incremento 6, 26/09/2026
+
+Nenhum objeto SQL novo ou alterado. `packages/evidence-compiler` saiu do repositório depois da migração das duas regras de afirmação (`materialClaimWithoutSupport` e `materialJudgmentWithoutApproval`, em `packages/case-understanding/src/audit.ts`) e dos testes; a entrada foi para `retired_repository_items` de `object-decisions.json` e a referência dele a `@offroad/domain-contracts` saiu da lista de consumidores, que passa de 26 para 25 referências diretas. As contas de `packages/case-materials` passaram para os núcleos de `packages/financial-core/src/material-arithmetic.ts`.

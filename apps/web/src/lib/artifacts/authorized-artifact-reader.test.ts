@@ -14,12 +14,17 @@ import {
   parseArtifactRead,
   readArtifactHead,
   readArtifactRevision,
+  readGovernedObject,
   resolveRenderer,
   revisionBelongsTo,
   revisionIssuedOn,
+  storedRevisionObject,
+  uploadGrantObjectPath,
   verifyRenderedBytes,
   type ArtifactRead,
+  type GovernedObject,
 } from "./authorized-artifact-reader";
+import {supabaseDouble} from "./supabase-double.test-support";
 
 const workId = "10000000-0000-4000-8000-000000000001";
 const revisionId = "20000000-0000-4000-8000-000000000001";
@@ -192,5 +197,66 @@ describe("renderer, bytes and headers", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("stored bytes through the upload grant", () => {
+  const organizationId = "40000000-0000-4000-8000-000000000001";
+  const grantPath = uploadGrantObjectPath({organizationId, workId, sha256: bytesSha, format: "xlsx"});
+  const rotatedPath = `${organizationId}/${workId}/revocable-6a1e8f7c-2b3d-4e5f-8a9b-0c1d2e3f4a5b/${bytesSha}.xlsx`;
+  const object = (overrides: Partial<GovernedObject> = {}): GovernedObject => ({
+    organizationId, workId, bucket: "case-artifacts", path: grantPath, sha256: bytesSha, byteLength: bytes.byteLength, format: "xlsx", ...overrides,
+  });
+  const storage = (answer: (path: string) => {data: unknown; error: unknown}) => {
+    const paths: string[] = [];
+    const double = supabaseDouble({storage: {"case-artifacts": (path) => {paths.push(path); return answer(path);}}});
+    return {client: double.client as never, paths};
+  };
+  const found = (objects: Record<string, Uint8Array>) => (path: string) => objects[path]
+    ? {data: new Blob([new Uint8Array(objects[path]!)]), error: null}
+    : {data: null, error: {message: "Object not found", statusCode: "404"}};
+
+  it("addresses the object exactly as the grant command writes it", () => {
+    expect(grantPath).toBe(`${organizationId}/${workId}/materials/${bytesSha}.xlsx`);
+    const revision = served(pinned({rendered: undefined, format: "xlsx", stored: {sha256: bytesSha, byteLength: bytes.byteLength, bucket: "case-artifacts", path: grantPath}})).revision;
+    expect(storedRevisionObject(revision, {organizationId, workId})).toEqual(object());
+    expect(storedRevisionObject(served(pinned()).revision, {organizationId, workId})).toBeNull();
+  });
+
+  it("serves the object at the grant's address only when its size and sha256 match", async () => {
+    const {client, paths} = storage(found({[grantPath]: bytes}));
+    expect(await readGovernedObject(client, object())).toEqual({ok: true, bytes, sha256: bytesSha, byteLength: bytes.byteLength});
+    expect(paths).toEqual([grantPath]);
+  });
+
+  it("reports a rotated or missing object as missing, and never looks for it elsewhere", async () => {
+    const rotated = storage(found({[rotatedPath]: bytes}));
+    expect(await readGovernedObject(rotated.client, object())).toEqual({ok: false, error: "artifact_object_missing"});
+    expect(rotated.paths).toEqual([grantPath]);
+    const named = storage(found({[rotatedPath]: bytes}));
+    expect(await readGovernedObject(named.client, object({path: rotatedPath}))).toEqual({ok: false, error: "artifact_object_missing"});
+    expect(named.paths).toEqual([]);
+    for (const error of [{message: "Object not found"}, {message: "not_found", status: 404}, {message: "The specified key does not exist.", code: "NoSuchKey"}]) {
+      const {client} = storage(() => ({data: null, error}));
+      expect(await readGovernedObject(client, object()), JSON.stringify(error)).toEqual({ok: false, error: "artifact_object_missing"});
+    }
+  });
+
+  it("refuses another size or another hash as a bytes mismatch, and a storage failure as unavailable", async () => {
+    const longer = storage(found({[grantPath]: new Uint8Array([...bytes, 0])}));
+    expect(await readGovernedObject(longer.client, object())).toEqual({ok: false, error: "artifact_bytes_mismatch"});
+    const altered = new Uint8Array(bytes); altered[0] = 0;
+    const sameSize = storage(found({[grantPath]: altered}));
+    expect(await readGovernedObject(sameSize.client, object())).toEqual({ok: false, error: "artifact_bytes_mismatch"});
+    const down = storage(() => ({data: null, error: {message: "upstream timeout", statusCode: "503"}}));
+    expect(await readGovernedObject(down.client, object())).toEqual({ok: false, error: "artifact_object_unavailable"});
+  });
+
+  it("does not read an address the grant command never writes", async () => {
+    const {client, paths} = storage(found({[grantPath]: bytes}));
+    for (const overrides of [{bucket: "document-layers"}, {format: "pdf"}, {sha256: "A".repeat(64)}, {workId: "10000000-0000-4000-8000-000000000999"}, {organizationId: "40000000-0000-4000-8000-000000000999"}]) {
+      expect(await readGovernedObject(client, object(overrides)), JSON.stringify(overrides)).toEqual({ok: false, error: "artifact_object_missing"});
+    }
+    expect(paths).toEqual([]);
   });
 });

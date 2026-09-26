@@ -429,6 +429,9 @@ importers:
       '@offroad/deal-structure':
         specifier: workspace:*
         version: link:../deal-structure
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       '@offroad/market-reference':
         specifier: workspace:*
         version: link:../market-reference
@@ -439,6 +442,9 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
     devDependencies:
+      '@offroad/testing-fixtures':
+        specifier: workspace:*
+        version: link:../testing-fixtures
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43
@@ -826,12 +832,6 @@ importers:
       tsx:
         specifier: 4.23.15
         version: 4.23.15
-
-  packages/evidence-compiler:
-    dependencies:
-      '@offroad/domain-contracts':
-        specifier: workspace:*
-        version: link:../domain-contracts
 
   packages/execution-request:
     dependencies:

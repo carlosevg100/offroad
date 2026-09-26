@@ -6,6 +6,7 @@ import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, traject
 import type {InternalRating, StressScenario} from "@offroad/credit-analysis";
 import {materialTemplateReference, type InstrumentVerdict, type MaterialTemplateReference} from "@offroad/credit-playbook";
 import type {CollateralPackage} from "@offroad/deal-structure";
+import {tryPresentationNumber} from "@offroad/financial-core";
 import type {IndicativePrice} from "@offroad/market-reference";
 
 import {diligenceQa} from "./diligence";
@@ -108,15 +109,16 @@ export type CompileOutcome =
   | {ok: true; materials: Material[]}
   | {ok: false; reason: "blocked_by_exception" | "audit_failed" | "not_ready"; detail: string[]};
 
+// A value that is not a decimal number is printed as written, never as zero.
 const formatMoney = (value: string, currency: string, locale: "pt-BR" | "en-US") => {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return value;
-  return `${currency} ${parsed.toLocaleString(locale, {maximumFractionDigits: 0})}`;
+  const parsed = tryPresentationNumber(value);
+  if (!parsed) return value;
+  return `${currency} ${parsed.value.toLocaleString(locale, {maximumFractionDigits: 0})}`;
 };
 
 const formatMultiple = (value: string, locale: "pt-BR" | "en-US") => {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? `${parsed.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x` : value;
+  const parsed = tryPresentationNumber(value);
+  return parsed ? `${parsed.value.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x` : value;
 };
 
 /** Calculations that read as multiples rather than money. */
