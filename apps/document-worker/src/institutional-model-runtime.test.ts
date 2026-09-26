@@ -24,5 +24,33 @@ describe("real institutional setup and result worker adapter",()=>{
   expect(gateway.complete).not.toHaveBeenCalled();expect(queue.recordInstitutionalModelResult).toHaveBeenCalledOnce();expect(queue.complete).toHaveBeenCalledWith(job,expect.objectContaining({mode:"institutional_model_refresh",state:"completed",modelCalls:0}));
  });
  it("records a blocker for changed sources instead of reusing approved economics",async()=>{const f=fixture();f.context.sourceManifestFingerprint="b".repeat(64);const save=vi.fn(async(_job:unknown,payload:unknown)=>({id,status:"blocked",replayed:false,payload}));await processInstitutionalModelResult({job,queue:{loadInstitutionalModelContext:async()=>f.context,recordInstitutionalModelResult:save}});expect(save).toHaveBeenCalledWith(job,{status:"blocked",blockers:["institutional_result_approval_or_sources_changed"]});});
+ it("recomputes a result the dependency graph scheduled through the same job, with no message and no model call",async()=>{
+  const f=fixture();const gateway={complete:vi.fn(async()=>{throw new Error("No model call authorized");}),spent:()=>({costUsd:0,calls:0})} as unknown as ModelGateway;
+  const recompute=agentOperationBriefJobSchema.parse({...job,payload:{...job.payload,surface:"dependency_recompute",institutional_recompute_candidate_id:"95000000-0000-4000-8000-000000000881"}});
+  expect(recompute.payload).toEqual({message_id:id,locale:job.payload.locale,institutional_recompute_candidate_id:"95000000-0000-4000-8000-000000000881"});
+  const queue={loadAgentContext:vi.fn(async()=>{throw new Error("a recompute has no conversation");}),loadInstitutionalModelContext:vi.fn(async()=>f.context),
+   recordInstitutionalModelResult:vi.fn(async()=>({id,status:"completed",replayed:false})),writeStage:vi.fn(async()=>{}),recordAgentResponse:vi.fn(async()=>({})),
+   complete:vi.fn(async()=>{}),recordAgentFailure:vi.fn(async()=>{}),fail:vi.fn(async()=>{})} as unknown as QueueClient;
+  expect(await processAgentOperationBriefJob(recompute,{queue,gateway,log:()=>{},shadowRouting:false})).toEqual({status:"succeeded"});
+  expect(queue.loadAgentContext).not.toHaveBeenCalled();expect(queue.recordAgentResponse).not.toHaveBeenCalled();expect(queue.recordAgentFailure).not.toHaveBeenCalled();
+  expect(gateway.complete).not.toHaveBeenCalled();expect(queue.recordInstitutionalModelResult).toHaveBeenCalledOnce();
+  expect(queue.recordInstitutionalModelResult).toHaveBeenCalledWith(recompute,expect.objectContaining({status:"completed"}));
+  expect(queue.writeStage).toHaveBeenNthCalledWith(1,recompute,"institutional_model_recompute","started",{resultId:id,candidateId:"95000000-0000-4000-8000-000000000881"});
+  expect(queue.writeStage).toHaveBeenNthCalledWith(2,recompute,"institutional_model_recompute","succeeded",expect.objectContaining({resultId:id,state:"completed",modelCalls:0}));
+  expect(queue.complete).toHaveBeenCalledWith(recompute,{mode:"institutional_model_recompute",resultId:id,candidateId:"95000000-0000-4000-8000-000000000881",state:"completed",modelCalls:0});
+ });
+ it("fails a recompute job without answering a message when its result cannot be recorded",async()=>{
+  const f=fixture();const gateway={complete:vi.fn(),spent:()=>({costUsd:0,calls:0})} as unknown as ModelGateway;
+  const recompute=agentOperationBriefJobSchema.parse({...job,payload:{...job.payload,institutional_recompute_candidate_id:"95000000-0000-4000-8000-000000000882"}});
+  const queue={loadAgentContext:vi.fn(),loadInstitutionalModelContext:vi.fn(async()=>f.context),
+   recordInstitutionalModelResult:vi.fn(async()=>{throw new Error("institutional_result_stale_or_invalid");}),writeStage:vi.fn(async()=>{}),recordAgentResponse:vi.fn(),
+   complete:vi.fn(),recordAgentFailure:vi.fn(),fail:vi.fn(async()=>{})} as unknown as QueueClient;
+  const log=vi.fn();
+  expect(await processAgentOperationBriefJob(recompute,{queue,gateway,log,shadowRouting:false})).toEqual({status:"failed"});
+  expect(queue.fail).toHaveBeenCalledWith(recompute,expect.objectContaining({code:"institutional_recompute_failed",stage:"institutional_model_recompute"}),{retryable:false});
+  expect(queue.complete).not.toHaveBeenCalled();expect(queue.recordAgentFailure).not.toHaveBeenCalled();expect(queue.loadAgentContext).not.toHaveBeenCalled();
+  expect(log).toHaveBeenCalledWith("institutional_model_recompute.failed",expect.objectContaining({job:recompute.job_id}));
+  expect(agentOperationBriefJobSchema.safeParse({...job,payload:{...job.payload,institutional_recompute_candidate_id:"not-a-candidate"}}).success).toBe(false);
+ });
  it("replays completed requests without replacing their immutable output",async()=>{const f=fixture();f.context.modelResultRequest!.status="completed";f.context.modelResultRequest!.artifact=f.artifact;const save=vi.fn();expect(await processInstitutionalModelResult({job,queue:{loadInstitutionalModelContext:async()=>f.context,recordInstitutionalModelResult:save}})).toEqual({id,status:"completed",replayed:true});expect(save).not.toHaveBeenCalled();});
 });

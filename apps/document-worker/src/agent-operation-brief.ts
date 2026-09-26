@@ -266,11 +266,45 @@ function openQuestionsOf(brief: PreviewStepOutput | undefined): Array<{id: strin
   return questions.flatMap((question) => typeof question.id === "string" && typeof question.text === "string" ? [{id: question.id, text: question.text}] : []);
 }
 
+/**
+ * The recomputation of an institutional model result that the dependency graph scheduled (stage 18,
+ * increment 5A). It runs the same deterministic calculation as a person's calculation request, for
+ * the queued result the job names, through the job's capability. There is no message: it never
+ * loads the conversation, never records an assistant reply or an agent failure, and never calls a
+ * model. The database settles the candidate from the result this job records.
+ */
+export async function processInstitutionalRecomputeJob(
+  job: AgentOperationBriefJob,
+  dependencies: {
+    queue: Pick<QueueClient, "writeStage" | "complete" | "fail" | "loadInstitutionalModelContext" | "recordInstitutionalModelResult">;
+    log: (event: string, detail?: Record<string, unknown>) => void;
+  },
+): Promise<{status: "succeeded" | "failed"}> {
+  const {queue, log} = dependencies;
+  const candidateId = job.payload.institutional_recompute_candidate_id;
+  try {
+    if (!candidateId) throw new Error("institutional_recompute_candidate_required");
+    if (!queue.loadInstitutionalModelContext || !queue.recordInstitutionalModelResult) throw new Error("institutional_result_store_unavailable");
+    await queue.writeStage(job, "institutional_model_recompute", "started", {resultId: job.payload.message_id, candidateId});
+    const result = await processInstitutionalModelResult({job, queue: {loadInstitutionalModelContext: queue.loadInstitutionalModelContext, recordInstitutionalModelResult: queue.recordInstitutionalModelResult}});
+    await queue.writeStage(job, "institutional_model_recompute", "succeeded", {resultId: result.id, candidateId, state: result.status, modelCalls: 0});
+    await queue.complete(job, {mode: "institutional_model_recompute", resultId: result.id, candidateId, state: result.status, modelCalls: 0});
+    return {status: "succeeded"};
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown recompute failure";
+    log("institutional_model_recompute.failed", {job: job.job_id, message: message.slice(0, 300)});
+    await queue.fail(job, describeJobFailure(error, {code: "institutional_recompute_failed", stage: "institutional_model_recompute", retryable: false}), {retryable: false});
+    return {status: "failed"};
+  }
+}
+
 export async function processAgentOperationBriefJob(
   job: AgentOperationBriefJob,
   dependencies: AgentOperationBriefDependencies,
 ): Promise<{status: "succeeded" | "failed"; proposalId?: string}> {
   const {queue, gateway, log} = dependencies;
+  // A recomputation the dependency graph scheduled has no message to answer.
+  if (job.payload.institutional_recompute_candidate_id) return processInstitutionalRecomputeJob(job, {queue, log});
   try {
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));

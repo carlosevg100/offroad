@@ -15,7 +15,7 @@ describe("durable event outbox consumer",()=>{
   expect(rpc).toHaveBeenNthCalledWith(2,"complete_event_outbox_v1",{p_worker_token:"private-worker-token",p_outbox_id:id,p_capability:"a".repeat(64)});
   expect(JSON.stringify(log.mock.calls)).not.toMatch(/private-worker-token|aaaaaaaa|protected_state/);
  });
- it.each(["source_version","method_release","assumption_version"])("acknowledges a %s change whose dependency effect the database applies in the same completion",async(aggregateKind)=>{
+ it.each(["source_version","method_release","assumption_version","institutional_configuration"])("acknowledges a %s change whose dependency effect the database applies in the same completion",async(aggregateKind)=>{
   const change={...event,aggregateKind,reason:"created",effect:"propagate_dependencies"};
   const {consumer,rpc,log}=setup([{data:{...claim,event:change},error:null},{data:{completed:true,replayed:false,appliedCount:0},error:null}]);
   expect(await consumer.poll()).toBe(true);

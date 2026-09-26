@@ -20,7 +20,7 @@ describe("domain event envelope",()=>{
 });
 describe("dependency propagation (stage 18)",()=>{
  const change={...event,reason:"created",effect:"propagate_dependencies"};
- it.each(["source_version","method_release"])("accepts a %s change only with the dependency effect",(aggregateKind)=>{
+ it.each(["source_version","method_release","institutional_configuration"])("accepts a %s change only with the dependency effect",(aggregateKind)=>{
   expect(domainEventSchema.parse({...change,aggregateKind})).toEqual({...change,aggregateKind});
   expect(domainEventSchema.safeParse({...change,aggregateKind,effect:"revalidate_authority"}).success).toBe(false);
   expect(domainEventSchema.safeParse({...change,aggregateKind,versionNo:2}).success).toBe(false);

@@ -1,7 +1,11 @@
 import {z} from "zod";
 
-/** Changes of an input that executions depend on: the consumer also propagates dependencies. */
-export const dependencyChangeAggregateKinds = ["source_version", "method_release"] as const;
+/**
+ * Changes of an input that executions or institutional model results depend on: the consumer also
+ * propagates dependencies. institutional_configuration is a newer approved configuration of a work
+ * (stage 18, increment 5A).
+ */
+export const dependencyChangeAggregateKinds = ["source_version", "method_release", "institutional_configuration"] as const;
 /** Kinds recorded before stage 18 with revalidate_authority and propagating dependencies after it. */
 const adoptionAggregateKinds: readonly string[] = ["adoption_decision", "assumption_version"];
 
