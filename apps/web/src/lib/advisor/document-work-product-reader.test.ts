@@ -42,7 +42,7 @@ const load = (client: SupabaseClient<Database>) => loadDocumentWorkProduct(clien
 describe("document work product reader", () => {
   it("scopes every query to the organization and exact project/session/run and checks binding twice", async () => {
     const mock = db();
-    expect(await load(mock.client)).toEqual({product, binding, publishedAt: manifest.created_at});
+    expect(await load(mock.client)).toEqual({product, binding, publishedAt: manifest.created_at, manifestId: reference.id, sessionId});
     for (const query of mock.queries) expect(query.calls).toContainEqual(["eq", "organization_id", organizationId]);
     expect(mock.queries[0].calls).toContainEqual(["eq", "capital_project_id", projectId]);
     for (const query of mock.queries.filter(q => ["case_artifact_manifests", "processing_jobs", "source_documents"].includes(q.table))) expect(query.calls).toContainEqual(["eq", "intake_session_id", sessionId]);

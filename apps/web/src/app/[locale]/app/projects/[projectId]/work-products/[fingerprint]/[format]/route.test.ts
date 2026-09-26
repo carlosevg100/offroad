@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from "vitest";
+import {offroadHousePresentationStructure} from "@offroad/case-export/presentation-structure";
 import {syntheticDocumentWorkProduct} from "@offroad/testing-fixtures/document-work-product";
 import {documentWorkProductSchema} from "@offroad/domain-contracts";
 
@@ -27,6 +28,7 @@ const revisionId = "10000000-0000-4000-8000-000000000004";
 const product = documentWorkProductSchema.parse(syntheticDocumentWorkProduct);
 const labels = messages.App.documentWorkProduct;
 const supabase = {rpc: mocks.rpc, storage: {from: () => ({download: mocks.download})}};
+const versionId = "50000000-0000-4000-8000-000000000001";
 const clientTemplate = {
   template_id: "30000000-0000-4000-8000-000000000001", template_key: "synthetic-client", template_version: "2026.09.11-v1",
   origin: "client_supplied", fingerprint: "c".repeat(64), scope: "organization",
@@ -36,6 +38,9 @@ const clientTemplate = {
     fonts: {display: "Founders Grotesk", body: "Founders Grotesk", pdf_display: "Helvetica", pdf_body: "Helvetica"},
     logo: null, confidentiality_label: "CONFIDENCIAL",
   },
+  // The exact stored version the reader returns since stage 19, increment 5.
+  structure: offroadHousePresentationStructure, version_id: versionId, version_no: 1, version_created_at: "2026-09-27T13:00:00Z",
+  versions: [{version_id: versionId, version_no: 1, created_at: "2026-09-27T13:00:00Z", author_name: null, is_current: true}],
 };
 const templateContext = (effective: unknown) => ({
   project_id: projectId, organization_id: "20000000-0000-4000-8000-000000000001", can_manage: false,
@@ -48,18 +53,21 @@ const readingRevision = (overrides: Partial<ReadFixtureInput> = {}) => artifactR
 });
 let reads: ReturnType<typeof artifactReadFixture>[];
 let template: unknown;
+let pinnedVersion: {data: unknown; error: unknown};
 const params = {locale: "en-US", projectId, fingerprint: product.fingerprint, format: "docx"};
 const request = (overrides = {}, query = "") => GET(new Request(`https://offroad.test/material${query}`), {params: Promise.resolve({...params, ...overrides})});
 beforeEach(() => {
   vi.clearAllMocks();
   reads = [readingRevision()];
   template = templateContext(null);
+  pinnedVersion = {data: null, error: {code: "P0002", message: "presentation_template_version_not_found"}};
   mocks.readable.mockResolvedValue(true);
   mocks.workspace.mockResolvedValue({supabase, organization: {id: "authenticated-organization"}});
   mocks.read.mockResolvedValue({product, publishedAt: "2026-09-08T12:05:00Z", manifestId, sessionId});
   mocks.labels.mockResolvedValue(labels);
   mocks.rpc.mockImplementation((name: string, args: Record<string, unknown>) => artifactRpc(reads, async (other) => (
-    other === "read_presentation_template_v1" ? {data: template, error: null} : {data: null, error: {code: "42883", message: "not in this test"}}
+    other === "read_presentation_template_v1" ? {data: template, error: null}
+      : other === "read_presentation_template_version_v1" ? pinnedVersion : {data: null, error: {code: "42883", message: "not in this test"}}
   ))(name, args));
 });
 describe("document work product download route", () => {
@@ -108,6 +116,8 @@ describe("document work product download route", () => {
     expect(render).toHaveBeenCalledWith(expect.objectContaining({revision: expect.objectContaining({template: expect.objectContaining({
       id: "synthetic-client", version: "2026.09.11-v1", origin: "client_supplied", fingerprint: "c".repeat(64),
       fonts: {display: "Founders Grotesk", body: "Founders Grotesk"}, pdfFonts: {display: "Helvetica", body: "Helvetica"},
+      // The exact stored version travels with the identity, so the file names it.
+      versionId, structure: offroadHousePresentationStructure,
     })})}));
   });
   it("falls back to the Offroad identity when the stored record is not renderable", async () => {
@@ -115,19 +125,27 @@ describe("document work product download route", () => {
     expect((await request()).status).toBe(200);
     expect(render).toHaveBeenCalledWith(expect.objectContaining({revision: expect.objectContaining({template: expect.objectContaining({origin: "offroad_house"})})}));
   });
-  it("refuses a revision whose pinned identity is no longer the project's, and uses it while it is", async () => {
+  it("renders with the exact template version the revision pins, and refuses one it cannot reproduce", async () => {
     reads = [readingRevision({legacy: undefined, traces: [`document-work-product:${product.fingerprint}`],
       sources: [{sourceVersionId: "10000000-0000-4000-8000-000000000006", rightsVersionId: null}],
-      template: {templateVersionId: "synthetic-client@2026.09.11-v1", fingerprint: "c".repeat(64)}})];
-    template = templateContext(clientTemplate);
+      template: {templateVersionId: versionId, fingerprint: "c".repeat(64)}})];
+    // The project now uses another identity: the pinned version is read by its id, not the current one.
+    template = templateContext({...clientTemplate, fingerprint: "9".repeat(64), version_id: "50000000-0000-4000-8000-000000000002"});
+    const version = {version_id: versionId, template_id: clientTemplate.template_id, scope: "organization", version_no: 1,
+      definition: clientTemplate.definition, structure: offroadHousePresentationStructure, fingerprint: "c".repeat(64), created_at: "2026-09-27T13:00:00Z"};
+    pinnedVersion = {data: version, error: null};
     const pinned = await request();
     expect(pinned.status).toBe(200);
     expect(pinned.headers.get("x-artifact-legacy")).toBeNull();
-    expect(render).toHaveBeenLastCalledWith(expect.objectContaining({revision: expect.objectContaining({template: expect.objectContaining({origin: "client_supplied"})})}));
-    template = templateContext({...clientTemplate, fingerprint: "9".repeat(64)});
+    expect(mocks.rpc).toHaveBeenCalledWith("read_presentation_template_version_v1", {p_version_id: versionId});
+    expect(render).toHaveBeenLastCalledWith(expect.objectContaining({revision: expect.objectContaining({template: expect.objectContaining({
+      origin: "client_supplied", versionId, fingerprint: "c".repeat(64)})})}));
+    pinnedVersion = {data: {...version, fingerprint: "9".repeat(64)}, error: null};
     const changed = await request();
     expect(changed.status).toBe(409);
     expect(await changed.text()).toContain("visual identity recorded with this version");
+    pinnedVersion = {data: null, error: {code: "P0002", message: "presentation_template_version_not_found"}};
+    expect((await request()).status).toBe(409);
   });
   it.each(["xlsx", "pptx", "html"])("refuses %s, which the format policy never declares for a documentary reading", async format => {
     const response = await request({format});

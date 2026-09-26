@@ -3,6 +3,10 @@
 import {createHash} from "node:crypto";
 
 import {
+  presentationStructureFromStored,
+  presentationStructureToStored,
+} from "@offroad/case-export/presentation-structure";
+import {
   isPdfRenderableFont,
   presentationTemplateColorKeys,
   presentationTemplateIssues,
@@ -16,8 +20,9 @@ import {requireWorkspace} from "@/lib/auth/workspace";
 import {loadPresentationTemplateContext} from "@/lib/advisor/presentation-template";
 
 export type PresentationTemplateResult =
-  | {ok: true; status: "stored" | "cleared"}
-  | {ok: false; error: "invalid" | "unsupported_font" | "logo" | "denied" | "not_found" | "save"};
+  | {ok: true; status: "stored"; versionNo: number; replayed: boolean}
+  | {ok: true; status: "cleared"}
+  | {ok: false; error: "invalid" | "structure" | "unsupported_font" | "logo" | "denied" | "not_found" | "save"};
 
 const localeSchema = z.enum(["pt-BR", "en-US"]);
 const scopeSchema = z.enum(["organization", "project"]);
@@ -25,6 +30,7 @@ const fontSchema = z.string().trim().regex(/^[A-Za-z0-9 ()+.-]{2,64}$/);
 const colorSchema = z.string().trim().transform(value => value.replace(/^#/, "").toUpperCase()).pipe(z.string().regex(/^[0-9A-F]{6}$/));
 const logoTypes = ["image/png", "image/jpeg"] as const;
 const maxLogoBytes = 2_097_152;
+const maxStructureBytes = 65_536;
 
 const formSchema = z.object({
   locale: localeSchema,
@@ -40,22 +46,29 @@ const formSchema = z.object({
   confidentialityLabel: z.string().trim().max(80).optional(),
   removeLogo: z.boolean(),
   colors: z.record(z.string(), colorSchema),
+  /** The semantic structure as the settings surface serialised it; validated by the same rules the database applies. */
+  structure: z.string().max(maxStructureBytes).optional(),
 }).strict();
+
+const resultSchema = z.object({status: z.enum(["stored", "cleared"]), replayed: z.boolean(), version_no: z.number().int().positive().optional()});
 
 function commandError(error: {code?: string; message?: string} | null): PresentationTemplateResult {
   if (error?.code === "P0002") return {ok: false, error: "not_found"};
   if (error?.code === "42501") return {ok: false, error: "denied"};
   if (error?.message?.includes("unsupported_presentation_template_font")) return {ok: false, error: "unsupported_font"};
   if (error?.message?.includes("presentation_template_logo")) return {ok: false, error: "logo"};
+  if (error?.message?.includes("presentation_template_structure")) return {ok: false, error: "structure"};
   if (error?.code === "22023") return {ok: false, error: "invalid"};
   return {ok: false, error: "save"};
 }
 
 /**
- * Record the visual identity a delivery is rendered with. The database decides who may write
- * (organization owners and administrators) and refuses anything the renderers cannot honour; this
- * action derives the workspace from the session, never from the form, and refuses a font outside
- * the embeddable set here as well, so the person sees the reason before a write is attempted.
+ * Record the visual identity and the semantic structure a delivery is rendered with, as a new
+ * immutable version. The database decides who may write (organization owners and administrators),
+ * refuses anything the renderers cannot honour and numbers the version; this action derives the
+ * workspace from the session, never from the form, and refuses a font outside the embeddable set
+ * or a structure outside the rules here as well, so the person sees the reason before a write is
+ * attempted.
  */
 export async function savePresentationTemplate(formData: FormData): Promise<PresentationTemplateResult> {
   const raw = {
@@ -72,6 +85,7 @@ export async function savePresentationTemplate(formData: FormData): Promise<Pres
     confidentialityLabel: formData.get("confidentialityLabel") ?? undefined,
     removeLogo: formData.get("removeLogo") === "on",
     colors: Object.fromEntries(presentationTemplateColorKeys.map(key => [key, formData.get(`color.${key}`) ?? ""])),
+    structure: formData.get("structure") ?? undefined,
   };
   const parsed = formSchema.safeParse(raw);
   if (!parsed.success) return {ok: false, error: "invalid"};
@@ -94,6 +108,16 @@ export async function savePresentationTemplate(formData: FormData): Promise<Pres
   // The PDF family is always an explicit decision; an unrecorded or unknown one stops here.
   if (!input.pdfDisplay || !input.pdfBody || !isPdfRenderableFont(input.pdfDisplay) || !isPdfRenderableFont(input.pdfBody)) {
     return {ok: false, error: "unsupported_font"};
+  }
+  // The structure is optional on the wire (the database defaults it to the house structure) but
+  // never partially valid: what arrives is checked by the same rules before the write.
+  let structure: Record<string, unknown> | undefined;
+  if (input.structure !== undefined) {
+    let candidate: unknown;
+    try { candidate = JSON.parse(input.structure); } catch { return {ok: false, error: "structure"}; }
+    const typed = presentationStructureFromStored(candidate);
+    if (!typed) return {ok: false, error: "structure"};
+    structure = presentationStructureToStored(typed);
   }
 
   const current = await loadPresentationTemplateContext(supabase, input.projectId);
@@ -122,8 +146,14 @@ export async function savePresentationTemplate(formData: FormData): Promise<Pres
   const issues = presentationTemplateIssues(definition);
   if (issues.length > 0) return {ok: false, error: issues.some(issue => issue.code === "unsupported_font") ? "unsupported_font" : issues.some(issue => issue.code === "invalid_logo") ? "logo" : "invalid"};
 
-  const {error} = await supabase.rpc("set_presentation_template_v1", {...target, p_definition: presentationTemplateToStored(definition) as never});
+  const {data, error} = await supabase.rpc("set_presentation_template_v1", {
+    ...target,
+    p_definition: presentationTemplateToStored(definition) as never,
+    ...(structure ? {p_structure: structure as never} : {}),
+  });
   if (error) return commandError(error);
+  const result = resultSchema.safeParse(data);
+  if (!result.success || result.data.status !== "stored" || result.data.version_no === undefined) return {ok: false, error: "save"};
   revalidatePath(`/${input.locale}/app/projects/${input.projectId}`);
-  return {ok: true, status: "stored"};
+  return {ok: true, status: "stored", versionNo: result.data.version_no, replayed: result.data.replayed};
 }

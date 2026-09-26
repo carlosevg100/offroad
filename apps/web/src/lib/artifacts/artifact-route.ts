@@ -1,14 +1,15 @@
 import "server-only";
 
 import {houseDocumentTemplate} from "@offroad/case-export";
-import type {InstitutionalPresentationTemplate} from "@offroad/case-export/presentation-template";
+import {presentationStructureFromStored} from "@offroad/case-export/presentation-structure";
+import {presentationTemplateFromStored, type InstitutionalPresentationTemplate} from "@offroad/case-export/presentation-template";
 import type {ArtifactKind, ArtifactRevision} from "@offroad/domain-contracts";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
 
 import enMessages from "../../../messages/en-US.json";
 import ptMessages from "../../../messages/pt-BR.json";
-import {loadPresentationTemplateContext, presentationTemplateForProject, resolvePresentationTemplate} from "@/lib/advisor/presentation-template";
+import {presentationTemplateForProject, resolvePresentationTemplate} from "@/lib/advisor/presentation-template";
 import type {Database} from "@/types/database";
 
 import {artifactRenderers, type ArtifactRendererEntry} from "./artifact-renderers";
@@ -108,11 +109,24 @@ export type RevisionTemplate =
   | {ok: true; template: InstitutionalPresentationTemplate | undefined; pinned: boolean}
   | {ok: false};
 
+const templateVersionSchema = z.object({
+  version_id: z.uuid(),
+  template_id: z.uuid(),
+  scope: z.enum(["organization", "project"]),
+  version_no: z.number().int().positive(),
+  definition: z.unknown(),
+  structure: z.unknown(),
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  created_at: z.string(),
+});
+
 /**
- * The identity a revision renders with. A pinned template must still be the one the project
- * resolves to (or the Offroad house template); until versioned templates exist a changed record
- * cannot reproduce the pinned file and is refused. A revision that pins none keeps what the route
- * used before: the project's current identity, or the house template for the materials.
+ * The identity a revision renders with. A pinned template is the exact stored version the manifest
+ * names (`read_presentation_template_version_v1`, readable even after a newer version or a
+ * retirement), with its fingerprint and its logo verified; a version that cannot be read, has
+ * another fingerprint or lost its logo cannot reproduce the pinned file and is refused. The house
+ * template is pinned by its own name. A revision that pins none keeps what the route used before:
+ * the project's current identity, or the house template for the materials.
  */
 export async function templateForRevision(
   supabase: SupabaseClient<Database>,
@@ -126,9 +140,16 @@ export async function templateForRevision(
       : {ok: true, template: (await presentationTemplateForProject(supabase, projectId)).template, pinned: false};
   }
   if (pin.templateVersionId === `${houseDocumentTemplate.id}@${houseDocumentTemplate.version}`) return {ok: true, template: undefined, pinned: true};
-  const context = await loadPresentationTemplateContext(supabase, projectId);
-  const effective = context?.effective ?? null;
-  if (!effective || effective.fingerprint !== pin.fingerprint) return {ok: false};
-  const resolved = await resolvePresentationTemplate(supabase, effective);
+  if (!z.uuid().safeParse(pin.templateVersionId).success) return {ok: false};
+  const {data, error} = await supabase.rpc("read_presentation_template_version_v1", {p_version_id: pin.templateVersionId});
+  const version = templateVersionSchema.safeParse(data);
+  if (error || !version.success || version.data.version_id !== pin.templateVersionId || version.data.fingerprint !== pin.fingerprint) return {ok: false};
+  const definition = presentationTemplateFromStored(version.data.definition);
+  const structure = presentationStructureFromStored(version.data.structure);
+  if (!definition || !structure) return {ok: false};
+  const resolved = await resolvePresentationTemplate(supabase, {
+    templateId: version.data.template_id, scope: version.data.scope, fingerprint: version.data.fingerprint, definition, structure,
+    versionId: version.data.version_id, versionNo: version.data.version_no, versionCreatedAt: version.data.created_at, versions: [],
+  });
   return resolved.logoOmitted ? {ok: false} : {ok: true, template: resolved.template, pinned: true};
 }

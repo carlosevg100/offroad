@@ -63,7 +63,7 @@ function client() {
     tables: {capital_project_artifacts: (filters) => ({data: [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at))
       .filter(candidate => !filters.some(([method, args]) => method === "neq" && args[0] === "status" && candidate.status === args[1])), error: null})},
     rpc: artifactRpc(reads),
-    storage: {"case-artifacts": (path) => stored[path] ? {data: new Blob([stored[path]!]), error: null} : {data: null, error: {message: "missing"}}},
+    storage: {"case-artifacts": (path) => stored[path] ? {data: new Blob([new Uint8Array(stored[path]!)]), error: null} : {data: null, error: {message: "missing"}}},
   }).client;
 }
 const request = (format = "docx", query = "") => GET(new Request(`https://offroad.test/preview?format=${format}${query}`), {params: Promise.resolve({locale: "pt-BR", projectId})});

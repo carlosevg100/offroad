@@ -93,7 +93,7 @@ export function artifactReadFixture(input: ReadFixtureInput) {
   };
 }
 
-type RpcAnswer = {data: unknown; error: {code?: string; message?: string} | null};
+type RpcAnswer = {data: unknown; error: unknown};
 const notFound: RpcAnswer = {data: null, error: {code: "P0002", message: "artifact_revision_not_found"}};
 
 /**
