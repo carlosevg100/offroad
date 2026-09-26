@@ -156,9 +156,10 @@ describe("question 10: non-recurring items in EBITDA", () => {
     // twice, so the pattern demanded a backslash before every dot and no field path matched it:
     // the question stayed open even with both figures in the case.
     const path = "historical_financials.2025.ebitda";
-    const doubleEscaped = new RegExp(`^${path.replace(/\./g, "\\\\.")}$`);
+    // The pattern the old lookup built for this path: each `\\.` is a literal backslash followed by any character.
+    const doubleEscaped = /^historical_financials\\.2025\\.ebitda$/;
     expect(doubleEscaped.test(path)).toBe(false);
-    expect(doubleEscaped.test(path.replace(/\./g, "\\."))).toBe(true);
+    expect(doubleEscaped.test(String.raw`historical_financials\.2025\.ebitda`)).toBe(true);
     expect(q10(aurora).answer).not.toBeNull();
     expect(q10Row(aurora)).toMatchObject({material: true, claimKind: "fact", supportIds: ["historical_financials.2025.adjusted_ebitda", path]});
   });
