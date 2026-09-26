@@ -48,5 +48,6 @@ export async function loadDocumentWorkProduct(supabase:SupabaseClient<Database>,
   const fresh=bindingSchema.safeParse(freshBinding);
   if(freshError||freshBindingError||!fresh.success||fingerprintJson(fresh.data)!==fingerprintJson(binding)
     ||freshSession?.current_run_id!==session.current_run_id||freshSession.updated_at!==session.updated_at)return null;
-  return {product,binding,publishedAt:manifest.created_at};
+  // The case manifest row is what the legacy artifact revision of this reading names (`case-snapshot:<session>`).
+  return {product,binding,publishedAt:manifest.created_at,manifestId:reference.id,sessionId:session.id};
 }

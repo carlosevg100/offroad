@@ -6,7 +6,8 @@ import {describe, expect, it} from "vitest";
 import {materialDocumentXml} from "@offroad/case-export";
 import type {DocumentWorkProduct} from "@offroad/domain-contracts";
 import messages from "../../../messages/pt-BR.json";
-import {documentWorkProductMaterial, documentWorkProductToDocx} from "./document-work-product-material";
+import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
+import {documentWorkProductDocument, documentWorkProductMaterial, type DocumentWorkProductLabels} from "./document-work-product-material";
 
 import {syntheticDocumentWorkProduct} from "@offroad/testing-fixtures/document-work-product";
 import {documentWorkProductSchema} from "@offroad/domain-contracts";
@@ -14,9 +15,17 @@ const documentWorkProductFixture = documentWorkProductSchema.parse(syntheticDocu
 
 const labels = messages.App.documentWorkProduct;
 
+/** The Word file of a reading through the single serializer, as the download route produces it. */
+async function documentWorkProductToDocx(input: {product: DocumentWorkProduct; labels: DocumentWorkProductLabels; issuedOn: string}) {
+  const document = documentWorkProductDocument(input.product, input.labels);
+  const rendered = await renderArtifactRevision({revision: {issuedOn: input.issuedOn}, format: "docx", lang: document.lang, material: () => document.material, meta: {referenceTargets: document.referenceTargets}});
+  if (!rendered.ok) throw new Error(rendered.block);
+  return rendered.bytes;
+}
+
 
 describe("document work product material", () => {
-  it("preserves every observation, exact quote, hypothesis, question, gap and scope in editable Word", () => {
+  it("preserves every observation, exact quote, hypothesis, question, gap and scope in editable Word", async () => {
     const material = documentWorkProductMaterial(documentWorkProductFixture, labels);
     const xml = materialDocumentXml({material, lang: "pt", meta: {issuedOn: "2026-09-08"}});
     for (const section of documentWorkProductFixture.sections) expect(xml).toContain(section.title);
@@ -26,7 +35,7 @@ describe("document work product material", () => {
     expect(xml).not.toContain("source-1");
     expect(material.dependsOn).toEqual([documentWorkProductFixture.fingerprint]);
     expect(xml).not.toContain("provider");
-    expect(documentWorkProductToDocx({product: documentWorkProductFixture, labels, issuedOn: "2026-09-08"}).slice(0, 2)).toEqual(new Uint8Array([80, 75]));
+    expect((await documentWorkProductToDocx({product: documentWorkProductFixture, labels, issuedOn: "2026-09-08"})).slice(0, 2)).toEqual(new Uint8Array([80, 75]));
   });
   it("keeps insufficient evidence explicit in the exported material", () => {
     const material = documentWorkProductMaterial({...documentWorkProductFixture, status: "insufficient_evidence"}, labels);
@@ -51,20 +60,20 @@ describe("document work product material", () => {
     expect(xml).toContain("Uma segunda passagem.");
     expect(xml).toContain("Outro documento com o mesmo nome.");
   });
-  it("is deterministic for the persisted result and rejects invented assessment states", () => {
+  it("is deterministic for the persisted result and rejects invented assessment states", async () => {
     const input = {product: documentWorkProductFixture, labels, issuedOn: "2026-09-08"};
-    expect(documentWorkProductToDocx(input)).toEqual(documentWorkProductToDocx(input));
+    expect(await documentWorkProductToDocx(input)).toEqual(await documentWorkProductToDocx(input));
     expect(() => documentWorkProductMaterial({...documentWorkProductFixture, assessmentStatus: "approved"} as unknown as DocumentWorkProduct, labels)).toThrow();
-    expect(() => documentWorkProductToDocx({...input, issuedOn: "today"})).toThrow();
+    await expect(documentWorkProductToDocx({...input, issuedOn: "today"})).rejects.toThrow();
   });
 });
 
 
-it("uses the source-table numbering in the actual downloadable Word",()=>{
+it("uses the source-table numbering in the actual downloadable Word",async()=>{
   const first=documentWorkProductFixture.sources[0];
   const product=documentWorkProductSchema.parse({...documentWorkProductFixture,sources:[{...first,id:"unquoted-first",anchor:"Page 1"},first]});
   const file=join(mkdtempSync(join(tmpdir(),"offroad-word-references-")),"meeting.docx");
-  writeFileSync(file,documentWorkProductToDocx({product,labels,issuedOn:"2026-09-09"}));
+  writeFileSync(file,await documentWorkProductToDocx({product,labels,issuedOn:"2026-09-09"}));
   const xml=execFileSync("unzip",["-p",file,"word/document.xml"]).toString();
   expect(xml).toContain('w:anchor="offroad_ref_2"');
   expect(xml).toContain('w:name="offroad_ref_2"');

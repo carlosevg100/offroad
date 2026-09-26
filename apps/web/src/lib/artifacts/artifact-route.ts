@@ -11,10 +11,12 @@ import ptMessages from "../../../messages/pt-BR.json";
 import {loadPresentationTemplateContext, presentationTemplateForProject, resolvePresentationTemplate} from "@/lib/advisor/presentation-template";
 import type {Database} from "@/types/database";
 
+import {artifactRenderers, type ArtifactRendererEntry} from "./artifact-renderers";
 import {
   artifactServing,
   readArtifactHead,
   readArtifactRevision,
+  resolveRenderer,
   revisionBelongsTo,
   type ArtifactRead,
   type ArtifactRefusal,
@@ -79,6 +81,22 @@ export async function resolveRouteRevision(
 
 export function refusalText(copy: ArtifactDownloadCopy, refusal: ArtifactRefusal): string {
   return refusal === "artifact_source_restricted" ? copy.sourceRestricted : copy.releaseBlocked;
+}
+
+/**
+ * Whether this route can produce what the revision's manifest names: no pinned bytes (the route's
+ * own serializer, nothing verified), a stored object where the route serves stored bytes, or a
+ * registered renderer of a family the route uses. Anything else cannot be reproduced here.
+ */
+export function revisionRendererAllowed(
+  revision: ArtifactRevision,
+  allowed: {storage?: boolean; families: readonly ArtifactRendererEntry["family"][]},
+): boolean {
+  const renderer = resolveRenderer(revision);
+  if (!renderer.ok) return false;
+  if (renderer.source === "unpinned") return true;
+  if (renderer.source === "storage") return allowed.storage === true;
+  return allowed.families.includes(artifactRenderers[renderer.renderer].family);
 }
 
 /** The historical row a legacy revision names, when it is a row of this store. */

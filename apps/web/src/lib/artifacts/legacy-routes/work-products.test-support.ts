@@ -1,0 +1,57 @@
+/**
+ * The resolution this download route used before stage 19, increment 3, kept verbatim as a pure
+ * function for the "old and new decide equal" tests only. Nothing in the product imports it; the
+ * route itself resolves the exact revision through the authorized artifact reader.
+ */
+import {resourceStillReadable} from "@/lib/auth/resource-download";
+import {deliverableFormatAllowed, deliverableFormatBlockCopy} from "@offroad/case-export/deliverable-formats";
+import {z} from "zod";
+import {requireWorkspace} from "@/lib/auth/workspace";
+import {loadDocumentWorkProduct} from "@/lib/advisor/document-work-product-reader";
+import {documentWorkProductLabels} from "@/lib/advisor/document-work-product-labels";
+import {materialToDocx, materialToPdf} from "@offroad/case-export";
+import type {InstitutionalPresentationTemplate} from "@offroad/case-export/presentation-template";
+import type {DocumentWorkProduct} from "@offroad/domain-contracts";
+import {documentWorkProductDocument, type DocumentWorkProductLabels} from "@/lib/advisor/document-work-product-material";
+
+import {documentaryReadingDeliverableContext, documentaryReadingDeliverableTypes} from "@/lib/advisor/documentary-reading-formats";
+import {presentationTemplateForProject} from "@/lib/advisor/presentation-template";
+
+// The two entry points this route called before the serializers converged, with their exact composition.
+type LegacyRenderInput = {product: DocumentWorkProduct; labels: DocumentWorkProductLabels; issuedOn: string; template?: InstitutionalPresentationTemplate};
+function legacyRenderInput(input: LegacyRenderInput) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.issuedOn)) throw new Error("Invalid document issue date");
+  const {material, lang, referenceTargets} = documentWorkProductDocument(input.product, input.labels);
+  return {material, lang, meta: {issuedOn: input.issuedOn, referenceTargets, ...(input.template ? {template: input.template} : {})}} as const;
+}
+const documentWorkProductToDocx = (input: LegacyRenderInput): Uint8Array => materialToDocx(legacyRenderInput(input));
+const documentWorkProductToPdf = (input: LegacyRenderInput): Promise<Uint8Array> => materialToPdf(legacyRenderInput(input));
+
+const media = {
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  pdf: "application/pdf",
+} as const;
+
+export async function legacyGET(_request:Request,{params}:{params:Promise<{locale:string;projectId:string;fingerprint:string;format:string}>}) {
+  const {locale,projectId,fingerprint,format}=await params;
+  if(!["pt-BR","en-US"].includes(locale)||!z.uuid().safeParse(projectId).success||!/^[a-f0-9]{64}$/.test(fingerprint))return new Response(null,{status:404});
+  // The delivery policy, not the route, decides which files a documentary reading may produce.
+  const policy=deliverableFormatAllowed(documentaryReadingDeliverableTypes,format,documentaryReadingDeliverableContext());
+  if(!policy.allowed)return new Response(policy.block==="format_not_in_policy"?null:deliverableFormatBlockCopy[policy.block][locale==="en-US"?"en":"pt"],{status:policy.block==="format_not_in_policy"?404:409});
+  const {supabase,organization}=await requireWorkspace(locale);
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
+  const result=await loadDocumentWorkProduct(supabase,organization.id,projectId);
+  if(!result||result.product.fingerprint!==fingerprint)return new Response(null,{status:404});
+  const labels=await documentWorkProductLabels(result.product.locale);
+  // The visual identity selected for this project, with its fingerprint bound into the file.
+  const {template}=await presentationTemplateForProject(supabase,projectId);
+  const input={product:result.product,labels,issuedOn:result.publishedAt.slice(0,10),template};
+  const bytes=format==="pdf"?await documentWorkProductToPdf(input):documentWorkProductToDocx(input);
+  if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
+  return new Response(new Uint8Array(bytes),{headers:{
+    "content-type":media[format as keyof typeof media],
+    "content-disposition":`attachment; filename="offroad-${result.product.job}-${fingerprint.slice(0,12)}.${format}"`,
+    "cache-control":"private, no-store", "x-content-type-options":"nosniff",
+    "x-work-product-fingerprint":fingerprint,
+  }});
+}

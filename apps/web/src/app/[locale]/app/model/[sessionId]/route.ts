@@ -1,10 +1,13 @@
-import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {deskEvidence} from "@offroad/case-understanding";
-import {buildFinancialModel, renderApprovedFinancialWorkbook, renderApprovedInstitutionalFinancialWorkbook} from "@offroad/financial-model";
 import type {ArchetypeId} from "@offroad/credit-playbook";
+import {buildFinancialModel, renderApprovedFinancialWorkbook} from "@offroad/financial-model";
 
-import {requireWorkspace} from "@/lib/auth/workspace";
-import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
+import {artifactRenderers} from "@/lib/artifacts/artifact-renderers";
+import {artifactNotFound, artifactUnavailable} from "@/lib/artifacts/artifact-route";
+import {artifactResponseHeaders, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
+import {resolveGovernedMaterialRevision} from "@/lib/artifacts/material-download";
+import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
+import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {resolveCaseState} from "@/lib/intake/case-pipeline";
 
 /**
@@ -15,82 +18,78 @@ import {resolveCaseState} from "@/lib/intake/case-pipeline";
  * we need. Sending back a PDF would be the same failure in the other direction, so this is a
  * real .xlsx: formulas, not results.
  *
- * Built on demand rather than stored. The case state it reads is already cached, so the cost
- * here is arithmetic and a zip — and a stored workbook would go stale the moment a candidate
- * is reviewed, which is the sort of quiet staleness a credit file cannot carry.
+ * The workbook belongs to one exact artifact revision of the case's materials (`?revision=`, or
+ * the head), read through the authorized reader. It is rebuilt on demand and replayed against the
+ * approved hashes: bytes that no longer match the approved model are never served.
  */
 
 type Params = {params: Promise<{locale: string; sessionId: string}>};
 
-export async function GET(_request: Request, {params}: Params) {
+export async function GET(request: Request, {params}: Params) {
   const {locale, sessionId} = await params;
-  const {supabase, organization} = await requireWorkspace(locale);
-  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
-  const lang = locale === "en-US" ? "en" : "pt";
+  const resolved = await resolveGovernedMaterialRevision(request, {locale, sessionId}, (copy) => copy.model.unavailable);
+  if (!resolved.ok) return resolved.response;
+  const {supabase, organization, lang, copy, governed, revision, read, issuedOn} = resolved.value;
+  const artifact = governed.plannedArtifacts.includes("financial_model") ? governed.financialModel : null;
+  if (!artifact) return artifactUnavailable(copy.model.unavailable);
 
-  const governed = await loadGovernedMaterialPackage(supabase, organization.id, sessionId);
-  const artifact = governed?.plannedArtifacts.includes("financial_model") ? governed.financialModel : null;
-  if (!artifact) return new Response(lang === "pt" ? "O modelo aprovado ainda não está disponível." : "The approved model is not available yet.", {status: 409});
-
+  let reproduce: () => Promise<Uint8Array | null>;
+  let unavailable: string;
+  let filename: string;
   if (artifact.modelKind === "institutional") {
     const bindings = artifact.institutional.scenarios.flatMap(scenario => scenario.sourceBindings);
     const documentIds = [...new Set(bindings.map(source => source.sourceDocument))];
     const {data: documents, error} = await supabase.from("source_documents").select("id, document_version, sha256, sha256_verified_at").eq("organization_id", organization.id).eq("intake_session_id", sessionId).in("id", documentIds);
     if (error || bindings.some(source => !documents?.some(document => document.id === source.sourceDocument && String(document.document_version) === source.version && document.sha256 === source.hash && document.sha256_verified_at))) {
-      return new Response(lang === "pt" ? "As fontes mudaram; revise o modelo antes de gerar uma nova entrega." : "Sources changed; review the model before preparing a new delivery.", {status: 409});
+      return artifactUnavailable(copy.model.sourcesChanged);
     }
-    const bytes = await renderApprovedInstitutionalFinancialWorkbook(artifact, lang);
-    if (!bytes) return new Response(lang === "pt" ? "O modelo precisa ser preparado novamente." : "The model must be prepared again.", {status: 409});
-    if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
-    return new Response(Buffer.from(bytes), {headers: {
-      "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "content-disposition": `attachment; filename="${lang === "pt" ? "Cenarios_aprovados" : "Approved_scenarios"}_${governed!.issuedOn.slice(0,10)}.xlsx"`,
-      "cache-control": "private, no-store",
-    }});
+    reproduce = () => artifactRenderers[artifact.version].produce(artifact, lang);
+    unavailable = copy.model.prepareAgain;
+    filename = `${lang === "pt" ? "Cenarios_aprovados" : "Approved_scenarios"}_${issuedOn}.xlsx`;
+  } else {
+    const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
+    const {data: session} = await supabase
+      .from("document_intake_sessions")
+      .select("archetype")
+      .eq("organization_id", organization.id)
+      .eq("id", sessionId)
+      .maybeSingle();
+    const documentIds = [...new Set(state.reconciliation.facts.map((fact) => fact.accepted.sourceDocument).filter(Boolean))];
+    const {data: documents} = documentIds.length
+      ? await supabase.from("source_documents").select("id, original_name").eq("organization_id", organization.id).in("id", documentIds)
+      : {data: []};
+    const evidence = deskEvidence(state.desk, state.trajectory);
+    const model = buildFinancialModel({
+      archetypeId: ((session?.archetype as ArchetypeId | null) ?? "other"),
+      facts: state.reconciliation.facts,
+      calculations: [...state.reconciliation.calculations, ...evidence.calculations],
+      filenames: new Map((documents ?? []).map((document) => [document.id, document.original_name])),
+      lang,
+      requestedAmount: artifact.inputs.amount,
+      requestedTermMonths: artifact.inputs.termMonths,
+      requestedGraceMonths: artifact.inputs.graceMonths,
+      amortizationFormat: artifact.inputs.amortization,
+      ...(artifact.inputs.annualInterestRate ? {annualInterestRate: artifact.inputs.annualInterestRate} : {}),
+    });
+    reproduce = () => renderApprovedFinancialWorkbook(model, lang, artifact);
+    unavailable = copy.model.changed;
+    filename = `${lang === "pt" ? "Modelo_de_credito" : "Credit_model"}_${issuedOn}.xlsx`;
   }
 
-  const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
+  // The workbook is the replay itself: the approved hash of this locale decides, never new bytes.
+  const rendered = await renderArtifactRevision({revision: {issuedOn}, format: "xlsx", lang, reproduce});
+  if (!rendered.ok) return artifactUnavailable(unavailable);
+  const verification = verifyRenderedBytes(revision, rendered.bytes, {format: "xlsx", selectors: {locale: lang, materialKind: "financial_model"}});
+  if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
 
-  const {data: session} = await supabase
-    .from("document_intake_sessions")
-    .select("archetype")
-    .eq("organization_id", organization.id)
-    .eq("id", sessionId)
-    .maybeSingle();
+  if (!await resourceStillReadable(supabase, organization.id, sessionId, "session")) return artifactNotFound();
 
-  const documentIds = [...new Set(state.reconciliation.facts.map((fact) => fact.accepted.sourceDocument).filter(Boolean))];
-  const {data: documents} = documentIds.length
-    ? await supabase.from("source_documents").select("id, original_name").eq("organization_id", organization.id).in("id", documentIds)
-    : {data: []};
-
-  const evidence = deskEvidence(state.desk, state.trajectory);
-  const model = buildFinancialModel({
-    archetypeId: ((session?.archetype as ArchetypeId | null) ?? "other"),
-    facts: state.reconciliation.facts,
-    calculations: [...state.reconciliation.calculations, ...evidence.calculations],
-    filenames: new Map((documents ?? []).map((document) => [document.id, document.original_name])),
-    lang,
-    requestedAmount: artifact.inputs.amount,
-    requestedTermMonths: artifact.inputs.termMonths,
-    requestedGraceMonths: artifact.inputs.graceMonths,
-    amortizationFormat: artifact.inputs.amortization,
-    ...(artifact.inputs.annualInterestRate ? {annualInterestRate: artifact.inputs.annualInterestRate} : {}),
-  });
-
-  const bytes = await renderApprovedFinancialWorkbook(model, lang, artifact);
-  if (!bytes) {
-    return new Response(lang === "pt" ? "O modelo mudou desde a compilação e precisa ser preparado novamente." : "The model changed since compilation and must be prepared again.", {status: 409});
-  }
-  const stamp = governed!.issuedOn.slice(0, 10);
-  const filename = `${lang === "pt" ? "Modelo_de_credito" : "Credit_model"}_${stamp}.xlsx`;
-
-  if (!await resourceStillReadable(supabase,organization.id,sessionId,"session")) return new Response(null,{status:404,headers:{"cache-control":"private, no-store"}});
-
-  return new Response(bytes as unknown as BodyInit, {
+  return new Response(Buffer.from(rendered.bytes), {
     headers: {
       "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "content-disposition": `attachment; filename="${filename}"`,
       "cache-control": "private, no-store",
+      ...artifactResponseHeaders(read, verification),
     },
   });
 }

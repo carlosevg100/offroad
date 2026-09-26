@@ -106,6 +106,8 @@ function dependsOn(row: {dependencies: unknown}, objectType: string, objectFinge
 }
 
 export type GovernedMaterialPackage = {
+  /** The `material_artifact` row this package is, which a legacy artifact revision names. */
+  artifactId: string;
   artifactFingerprint: string;
   /** Creation date of this persisted material version, never the download date. */
   issuedOn: string;
@@ -136,6 +138,7 @@ export function governedMaterialPackageFromRows(rows: readonly DealStateRow[]): 
   const createdAt = new Date(artifact.created_at);
   if (!Number.isFinite(createdAt.getTime())) return null;
   return {
+    artifactId: artifact.id,
     artifactFingerprint: artifact.object_fingerprint,
     issuedOn: createdAt.toISOString().slice(0, 10),
     materials: parsedArtifact.data.materials as Material[],
