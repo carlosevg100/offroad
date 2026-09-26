@@ -9,32 +9,26 @@ const queued: InstitutionalModelResult = {id: "result-test", status: "queued", c
   sourceManifestFingerprint: "b".repeat(64), artifact: null, blockers: [], createdAt: "2026-09-10T00:00:00Z"};
 const status = messages.InstitutionalModelResult.status;
 
-function render(calculation: "running" | "waiting" | null, result: InstitutionalModelResult = queued) {
+function render(calculating: boolean, result: InstitutionalModelResult = queued) {
   return renderToStaticMarkup(<NextIntlClientProvider locale="pt-BR" timeZone="UTC" messages={messages}>
-    <InstitutionalModelResultWork projectId="project-test" result={result} calculation={calculation} />
+    <InstitutionalModelResultWork projectId="project-test" result={result} calculating={calculating} />
   </NextIntlClientProvider>);
 }
 
 describe("institutional result status from the work activity", () => {
-  it("says the result is being calculated only while its job runs", () => {
-    expect(render("running")).toContain(status.queued);
+  it("says the result is being calculated only while its calculation runs", () => {
+    expect(render(true)).toContain(status.queued);
   });
 
-  it("says a held calculation waits for a person, not that it is being calculated", () => {
-    const html = render("waiting");
-    expect(html).toContain(status.waiting);
-    expect(html).not.toContain(status.queued);
-  });
-
-  it("shows a queued result without a live job as a gap with its next step", () => {
-    const html = render(null);
+  it("shows a queued result that nothing calculates as a gap with its next step", () => {
+    const html = render(false);
     expect(html).toContain(status.notRunning);
     expect(html).not.toContain(status.queued);
     expect(html).toContain("#work-institutional-setup");
   });
 
   it("leaves finished statuses as they are", () => {
-    expect(render(null, {...queued, status: "blocked"})).toContain(status.blocked);
-    expect(render(null, {...queued, status: "stale"})).toContain(status.stale);
+    expect(render(false, {...queued, status: "blocked"})).toContain(status.blocked);
+    expect(render(false, {...queued, status: "stale"})).toContain(status.stale);
   });
 });

@@ -5626,7 +5626,6 @@
     "edit": "Review data and assumptions",
     "blockedHelp": "Review the configuration and indicated sources before calculating again. Missing values have not been assumed.",
     "status": {
-      "waiting": "The calculation of this configuration is waiting for a person's approval.",
       "notRunning": "No calculation is running for this configuration and the result was not produced. Review the data and assumptions to calculate again.",
       "queued": "Calculating the approved configuration. Results will appear here.",
       "completed": "Calculation completed. All four formats use the same approved configuration.",

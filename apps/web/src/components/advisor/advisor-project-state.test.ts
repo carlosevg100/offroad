@@ -11,8 +11,8 @@ import {
   latestSuccessfulOutcomeAt,
 } from "./advisor-project-state";
 
-const noRows: WorkActivityRows = {jobs: [], milestones: [], requests: [], recomputeCandidates: [], institutionalCandidates: []};
-const liveJob = (kind: string, status: string) => ({id: "10000000-0000-4000-8000-000000000001", kind, status, execution_id: null, message_id: null, recompute_candidate_id: null});
+const noRows: WorkActivityRows = {jobs: [], runs: [], milestones: [], requests: [], recomputeCandidates: [], institutionalCandidates: []};
+const liveJob = (kind: string, status: string) => ({id: "10000000-0000-4000-8000-000000000001", kind, status, processing_run_id: "10000000-0000-4000-8000-000000000002"});
 
 describe("advisor project current state", () => {
   const failed = {type: "quality_gate_failed", createdAt: "2026-09-03T10:00:00.000Z"};

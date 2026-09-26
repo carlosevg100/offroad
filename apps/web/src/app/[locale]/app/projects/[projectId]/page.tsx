@@ -9,7 +9,7 @@ import {StandaloneWork} from "@/components/advisor/standalone-work";
 import {ReceivablesCurrentResult} from "@/components/advisor/receivables-current-result";
 import {InstitutionalModelResultWork} from "@/components/advisor/institutional-model-result-work";
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
-import {institutionalCalculation, jobKindRunning, summarizeWorkActivity} from "@/lib/advisor/work-activity";
+import {institutionalCalculationRuns, jobKindRunning, summarizeWorkActivity} from "@/lib/advisor/work-activity";
 import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
 import {workbenchAnalysisGap} from "@/lib/deal-state/analysis-gap";
 import {loadProviderWorkHistory} from "@/lib/advisor/provider-work-history";
@@ -506,7 +506,7 @@ async function ConversationalCapitalProject({
   if (institutionalResult) {
     const resultCopy = await getTranslations({locale, namespace: "InstitutionalModelResult"});
     workSections.push({id: "institutional-model-result", title: resultCopy("title"), content: <InstitutionalModelResultWork projectId={project.id} result={institutionalResult}
-      calculation={institutionalCalculation(activity, institutionalResult.id)} />});
+      calculating={institutionalCalculationRuns(activity, institutionalResult.id)} />});
   }
   const providerHistory = plan ? await loadProviderWorkHistory(supabase, artifacts ?? [], {organizationId: organization.id, projectId: project.id, currentPlanId: plan.id}) : [];
 

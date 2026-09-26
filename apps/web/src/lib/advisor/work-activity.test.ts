@@ -4,10 +4,11 @@ vi.mock("server-only", () => ({}));
 
 import {
   conversationIsWorking,
-  executionIsRunning,
   executionsAreRunning,
-  institutionalCalculation,
+  institutionalCalculationRuns,
+  institutionalRecomputePipeline,
   jobKindRunning,
+  jobStatusRuns,
   noWorkActivity,
   summarizeWorkActivity,
   workActivity,
@@ -19,9 +20,8 @@ import {
 import {loadWorkActivity} from "./work-activity-reader";
 
 const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
-const empty: WorkActivityRows = {jobs: [], milestones: [], requests: [], recomputeCandidates: [], institutionalCandidates: []};
-const job = (status: string, kind = "work_conversation", extra: Partial<WorkActivityRows["jobs"][number]> = {}) =>
-  ({id: id(1), kind, status, execution_id: null, message_id: null, recompute_candidate_id: null, ...extra});
+const empty: WorkActivityRows = {jobs: [], runs: [], milestones: [], requests: [], recomputeCandidates: [], institutionalCandidates: []};
+const job = (status: string, kind = "work_conversation", run = id(2)) => ({id: id(1), kind, status, processing_run_id: run});
 const wait = (extra: Partial<WorkActivityRows["milestones"][number]> = {}) => ({id: id(10), kind: "awaiting_human", subject_kind: "work_review",
   subject_id: id(11), label: "person_review", resolves_milestone_id: null, supersedes_milestone_id: null, occurred_at: "2026-09-26T10:00:00Z", ...extra});
 const read = (rows: Partial<WorkActivityRows>) => workActivity({...empty, ...rows});
@@ -33,6 +33,7 @@ describe("work activity from persisted facts", () => {
     expect(workIsRunning(activity)).toBe(false);
     expect(workIsWaitingForPerson(activity)).toBe(false);
     expect(workShouldRefresh(activity)).toBe(false);
+    expect(institutionalCalculationRuns(activity, id(60))).toBe(false);
     expect(summarizeWorkActivity(activity)).toEqual({refresh: false, working: false, waitingForPerson: false});
   });
 
@@ -41,6 +42,7 @@ describe("work activity from persisted facts", () => {
     expect(workIsRunning(activity)).toBe(true);
     expect(workShouldRefresh(activity)).toBe(true);
     expect(workIsWaitingForPerson(activity)).toBe(false);
+    expect(jobStatusRuns(status)).toBe(true);
   });
 
   it("a job held for approval waits for a person and is not polled", () => {
@@ -49,12 +51,14 @@ describe("work activity from persisted facts", () => {
     expect(workIsRunning(activity)).toBe(false);
     expect(workShouldRefresh(activity)).toBe(false);
     expect(conversationIsWorking(activity)).toBe(false);
+    expect(jobStatusRuns("awaiting_approval")).toBe(false);
   });
 
   it.each(["succeeded", "failed", "poison", "cancelled"])("a %s job is not activity", (status) => {
     const activity = read({jobs: [job(status)]});
     expect(activity.jobs).toEqual([]);
     expect(workShouldRefresh(activity)).toBe(false);
+    expect(jobStatusRuns(status)).toBe(false);
   });
 
   it("an open wait is waiting for a person; a resolution or a newer wait closes it", () => {
@@ -101,26 +105,30 @@ describe("work activity from persisted facts", () => {
       expect(conversationIsWorking(activity)).toBe(false);
       expect(workShouldRefresh(activity)).toBe(true);
     }
-    const recompute = read({jobs: [job("queued", "agent_operation_brief", {recompute_candidate_id: id(50)})]});
+    // The dependency graph's recomputation of an institutional result runs in the background: its run says so.
+    const recompute = read({jobs: [job("queued", "agent_operation_brief", id(50))], runs: [{id: id(50), pipeline_version: institutionalRecomputePipeline}]});
     expect(conversationIsWorking(recompute)).toBe(false);
     expect(summarizeWorkActivity(recompute)).toEqual({refresh: true, working: false, waitingForPerson: false});
+    const turn = read({jobs: [job("queued", "agent_operation_brief", id(51))], runs: [{id: id(51), pipeline_version: "advisor-conversation-2026.09.01-v1"}]});
+    expect(conversationIsWorking(turn)).toBe(true);
   });
 
-  it("names the calculation of an institutional result by the result it writes", () => {
+  it("calculates an institutional result only while its candidate is scheduled or a calculating turn runs", () => {
     const result = id(60);
-    expect(institutionalCalculation(read({}), result)).toBeNull();
-    expect(institutionalCalculation(read({jobs: [job("queued", "agent_operation_brief", {message_id: result})]}), result)).toBe("running");
-    expect(institutionalCalculation(read({jobs: [job("awaiting_approval", "agent_operation_brief", {message_id: result})]}), result)).toBe("waiting");
-    expect(institutionalCalculation(read({jobs: [job("queued", "agent_operation_brief", {message_id: id(61)})]}), result)).toBeNull();
-    expect(institutionalCalculation(read({jobs: [job("failed", "agent_operation_brief", {message_id: result})]}), result)).toBeNull();
+    expect(institutionalCalculationRuns(read({institutionalCandidates: [{id: id(61), state: "scheduled", result_id: result}]}), result)).toBe(true);
+    expect(institutionalCalculationRuns(read({institutionalCandidates: [{id: id(61), state: "scheduled", result_id: id(62)}]}), result)).toBe(false);
+    expect(institutionalCalculationRuns(read({institutionalCandidates: [{id: id(61), state: "settled", result_id: result}]}), result)).toBe(false);
+    expect(institutionalCalculationRuns(read({jobs: [job("leased", "agent_operation_brief")]}), result)).toBe(true);
+    expect(institutionalCalculationRuns(read({jobs: [job("failed", "agent_operation_brief")]}), result)).toBe(false);
+    expect(institutionalCalculationRuns(read({jobs: [job("queued", "work_conversation")]}), result)).toBe(false);
+    // Another result's background recomputation does not calculate this one.
+    expect(institutionalCalculationRuns(read({jobs: [job("queued", "agent_operation_brief", id(63))],
+      runs: [{id: id(63), pipeline_version: institutionalRecomputePipeline}]}), result)).toBe(false);
   });
 
-  it("follows an execution by its own job and the executions by theirs and their candidates", () => {
-    const execution = id(70);
-    const running = read({jobs: [job("leased", "work_execution", {execution_id: execution})]});
-    expect(executionIsRunning(running, execution)).toBe(true);
-    expect(executionIsRunning(running, id(71))).toBe(false);
-    expect(executionsAreRunning(running)).toBe(true);
+  it("follows the executions by their jobs and the candidates the worker still has to take", () => {
+    expect(executionsAreRunning(read({jobs: [job("leased", "work_execution")]}))).toBe(true);
+    expect(executionsAreRunning(read({jobs: [job("awaiting_approval", "work_execution")]}))).toBe(false);
     expect(executionsAreRunning(read({jobs: [job("queued", "work_conversation")]}))).toBe(false);
     expect(executionsAreRunning(read({recomputeCandidates: [{id: id(72), state: "scheduled", execution_id: null}]}))).toBe(true);
     expect(executionsAreRunning(read({institutionalCandidates: [{id: id(73), state: "scheduled", result_id: null}]}))).toBe(false);
@@ -134,11 +142,13 @@ function fakeClient(results: Record<string, {data: unknown[] | null; error: unkn
   const calls: Record<string, Call[]> = {};
   const from = (table: string) => {
     calls[table] = [];
-    const query: Record<string, unknown> = {};
-    for (const method of ["select", "eq", "in", "or", "order"]) {
+    const result = () => results[table] ?? {data: [], error: null};
+    const query: Record<string, unknown> = {
+      then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => Promise.resolve(result()).then(resolve, reject),
+    };
+    for (const method of ["select", "eq", "in", "or", "order", "limit"]) {
       query[method] = (...args: unknown[]) => { calls[table]!.push([method, ...args]); return query; };
     }
-    query.limit = (...args: unknown[]) => { calls[table]!.push(["limit", ...args]); return Promise.resolve(results[table] ?? {data: [], error: null}); };
     return query;
   };
   return {client: {from} as never, calls};
@@ -147,23 +157,27 @@ function fakeClient(results: Record<string, {data: unknown[] | null; error: unkn
 describe("work activity reader", () => {
   const scope = {organizationId: id(1), workId: id(2), sessionId: id(3)};
 
-  it("reads the jobs of the work and of its intake session, and the work's waits, requests and candidates", async () => {
+  it("reads only the status columns of the jobs of the work and of its intake session, and the work's waits, requests and candidates", async () => {
     const {client, calls} = fakeClient({
-      processing_jobs: {data: [job("queued", "case_analysis")], error: null},
+      processing_jobs: {data: [job("queued", "case_analysis"), {...job("leased", "agent_operation_brief", id(9)), id: id(8)}], error: null},
+      processing_runs: {data: [{id: id(9), pipeline_version: institutionalRecomputePipeline}], error: null},
       work_milestones: {data: [wait()], error: null},
     });
     const activity = await loadWorkActivity(client, scope);
     expect(workShouldRefresh(activity)).toBe(true);
     expect(workIsWaitingForPerson(activity)).toBe(true);
+    expect(activity.jobs.find((live) => live.kind === "agent_operation_brief")?.recompute).toBe(true);
+    expect(calls.processing_jobs).toContainEqual(["select", "id, kind, status, processing_run_id"]);
     expect(calls.processing_jobs).toContainEqual(["in", "status", ["queued", "leased", "awaiting_approval"]]);
     expect(calls.processing_jobs).toContainEqual(["or", `work_id.eq.${scope.workId},intake_session_id.eq.${scope.sessionId}`]);
+    expect(calls.processing_runs).toContainEqual(["in", "id", [id(9)]]);
     expect(calls.work_milestones).toContainEqual(["eq", "work_id", scope.workId]);
     expect(calls.work_continuation_requests).toContainEqual(["eq", "status", "scheduled"]);
     expect(calls.work_recompute_candidates).toContainEqual(["in", "state", ["scheduled", "awaiting_authorization"]]);
     expect(calls.institutional_recompute_candidates).toContainEqual(["eq", "state", "scheduled"]);
   });
 
-  it("reads only the session's jobs for an intake session without a work", async () => {
+  it("reads only the session's jobs for an intake session without a work, and no run when no calculation is live", async () => {
     const {client, calls} = fakeClient({});
     const activity = await loadWorkActivity(client, {...scope, workId: null});
     expect(activity).toEqual(noWorkActivity);
@@ -173,6 +187,8 @@ describe("work activity reader", () => {
 
   it("fails instead of guessing when a fact cannot be read, and refuses an unscoped or malformed read", async () => {
     await expect(loadWorkActivity(fakeClient({work_milestones: {data: null, error: {code: "42501"}}}).client, scope)).rejects.toThrow("work_activity_unavailable");
+    await expect(loadWorkActivity(fakeClient({processing_jobs: {data: [job("queued", "agent_operation_brief")], error: null},
+      processing_runs: {data: null, error: {code: "42501"}}}).client, scope)).rejects.toThrow("work_activity_unavailable");
     await expect(loadWorkActivity(fakeClient({}).client, {...scope, workId: null, sessionId: null})).rejects.toThrow("work_activity_scope_required");
     await expect(loadWorkActivity(fakeClient({}).client, {...scope, workId: "x),status.eq.failed"})).rejects.toThrow();
   });

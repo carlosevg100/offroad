@@ -5626,7 +5626,6 @@
     "edit": "Revisar dados e premissas",
     "blockedHelp": "Revise a configuração e as fontes indicadas antes de calcular novamente. Nenhum valor ausente foi presumido.",
     "status": {
-      "waiting": "O cálculo desta configuração aguarda a aprovação de uma pessoa.",
       "notRunning": "Nenhum cálculo está em andamento para esta configuração e o resultado não foi gerado. Revise os dados e as premissas para calcular de novo.",
       "queued": "Calculando a configuração aprovada. O resultado aparecerá aqui.",
       "completed": "Cálculo concluído. Os quatro formatos usam a mesma configuração aprovada.",

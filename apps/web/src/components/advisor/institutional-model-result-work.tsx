@@ -11,16 +11,16 @@ import {InstitutionalIssues} from "./institutional-issues";
 import {InstitutionalScenarioComparison} from "./institutional-scenario-comparison";
 import styles from "./institutional-model-result-work.module.css";
 
-/** `calculation` is what the work activity says of the job that writes this result: running, held
- * for a person, or absent. A queued result without a live job is not being calculated. The page
- * refreshes from the work activity; this view has no refresh of its own. */
-export function InstitutionalModelResultWork({projectId, result, calculation = null}: {projectId: string; result: InstitutionalModelResult; calculation?: "running" | "waiting" | null}) {
+/** `calculating` is what the work activity says of the calculation of this result (see
+ * `institutionalCalculationRuns`). A queued result that nothing calculates is a gap, not "calculating".
+ * The page refreshes from the work activity; this view has no refresh of its own. */
+export function InstitutionalModelResultWork({projectId, result, calculating = false}: {projectId: string; result: InstitutionalModelResult; calculating?: boolean}) {
   const t = useTranslations("InstitutionalModelResult");
   const locale = useLocale();
   const formatter = useFormatter();
   return <section className={styles.result} data-testid="institutional-model-result">
     <header><span>{t("kicker")}</span><h2>{t("title")}</h2>
-      <p role="status">{t(`status.${result.status === "queued" && calculation !== "running" ? (calculation === "waiting" ? "waiting" : "notRunning") : result.status}`)}</p>
+      <p role="status">{t(`status.${result.status === "queued" && !calculating ? "notRunning" : result.status}`)}</p>
       <small>{t("prepared", {date: formatter.dateTime(new Date(result.createdAt), {dateStyle: "medium", timeZone: "UTC"})})}</small>
     </header>
     {result.status === "completed" && result.artifact ? <>
