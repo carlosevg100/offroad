@@ -102,3 +102,13 @@ As checagens não são vazias: nove mutantes do texto, cada um quebrando uma pro
 
 1. Rodar o arquivo no console de staging e guardar a mensagem devolvida.
 2. Anotar o resultado no fechamento da etapa (`etapa-19-7-fechamento.md`).
+
+## Resultado em staging, 26/09/2026
+
+O lead rodou o arquivo no console de staging, como um texto só, depois da aplicação das migrações A (`20260926183532`) e dos templates versionados (`20260926190646`). A mensagem devolvida foi a de aprovação, com as mesmas contagens da réplica local:
+
+```
+artifact_backfill_rehearsal_passed: first run {"dealStateMaterials": 1, "caseArtifactManifests": 1, "capitalProjectArtifacts": 3, "institutionalModelResults": 1}, second run {"dealStateMaterials": 0, "caseArtifactManifests": 0, "capitalProjectArtifacts": 0, "institutionalModelResults": 0}
+```
+
+Conferido logo depois: staging continua com zero revisões, zero artefatos, nenhuma linha do tenant sintético (nem a organização, nem o usuário) e os quatro gatilhos de projeção ligados.
