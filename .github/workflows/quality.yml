@@ -218,6 +218,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
+        id: database_deps
         run: pnpm install --frozen-lockfile
 
       - name: Governed evaluation through the worker consumer and the baseline script, with a cassette provider
@@ -294,9 +295,11 @@ jobs:
       # profile and one requestable release, so it cannot share the database with the zero-budget
       # proof above: the local database is rebuilt from the migrations first (same registry mirror as
       # the boot, so nothing is pulled), and the proof runs on it last.
+      # Both steps need the workspace dependencies: after a failed contract test the install above is
+      # skipped, and the proof would fail with a missing module instead of being skipped.
       - name: Rebuild the local database for the wait proof
         id: wait_reset
-        if: ${{ !cancelled() && steps.db.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.db.outcome == 'success' && steps.database_deps.outcome == 'success' }}
         # No step env here: the registry the boot used comes from GITHUB_ENV, and a step env would
         # override it.
         run: |
@@ -310,7 +313,7 @@ jobs:
       # authorization the restarted loop produces it once, with lineage. Synthetic data only, no
       # model, no provider key, no network beyond the local stack.
       - name: Dependency wait across a worker restart, against the rebuilt local stack
-        if: ${{ !cancelled() && steps.db.outcome == 'success' && steps.wait_reset.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.db.outcome == 'success' && steps.database_deps.outcome == 'success' && steps.wait_reset.outcome == 'success' }}
         env:
           OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
         run: |
