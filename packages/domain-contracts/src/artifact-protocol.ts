@@ -649,7 +649,8 @@ export type RenderedMaterialManifestLike = {
   readonly byteLength: number;
   readonly contentSha256: string;
   readonly renderer: {readonly id: string; readonly version: string};
-  readonly template: {readonly id: string; readonly version: string; readonly fingerprint: string; readonly origin: "offroad_house" | "client_supplied"};
+  /** versionId names the stored template version the file was rendered with; absent or null for the house template. */
+  readonly template: {readonly id: string; readonly version: string; readonly fingerprint: string; readonly origin: "offroad_house" | "client_supplied"; readonly versionId?: string | null | undefined};
   readonly storage: {readonly bucket: string; readonly objectPath: string; readonly state: "pending_upload" | "stored"; readonly etag: string | null};
   readonly claimIds: readonly string[];
   readonly manifestFingerprint: string;
@@ -671,8 +672,9 @@ export function manifestFromRenderedMaterialManifest(material: RenderedMaterialM
     sources: mergedSources(context),
     claims: material.claimIds.length > 0 ? [{blockKey: material.surface, claimIds: [...material.claimIds]}] : [],
     traces: unique([`rendered-material:${material.manifestFingerprint}`, `renderer:${material.renderer.id}@${material.renderer.version}`]),
-    // The versioned template table arrives in a later increment; until then the receipt's id and version name the template version.
-    template: {templateVersionId: `${material.template.id}@${material.template.version}`, fingerprint: material.template.fingerprint},
+    // The stored template version when the file was rendered with one; the house template, which is
+    // not stored, is named by the receipt's id and version.
+    template: {templateVersionId: material.template.versionId ?? `${material.template.id}@${material.template.version}`, fingerprint: material.template.fingerprint},
     provenance: context.provenance,
   });
 }

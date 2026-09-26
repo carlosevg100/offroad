@@ -484,6 +484,8 @@ describe("integration_preview run processor", () => {
     expect(manifest.template).toEqual({id: "synthetic-client", version: "2026.09.27-v1", origin: "client_supplied", fingerprint, versionId});
     const audit = presentationArtifact.content.rendererAudit as {template: {versionId: string | null; fingerprint: string | null}; renderedBlockIds: string[]; structure: {gaps: Array<{sectionKey: string; fieldKey: string}>; omittedBlockIds: string[]}};
     expect(audit.template).toMatchObject({versionId, fingerprint});
+    // The revision of the deck pins the stored template version, not the mutable template row.
+    expect(artifactManifestSchema.parse(material.revisions.find((revision) => revision.kind === "presentation")!.manifest).template).toEqual({templateVersionId: versionId, fingerprint});
     expect(audit.renderedBlockIds).toEqual(["source-register", "decision-headline"]);
     expect(audit.structure.gaps).toEqual([{sectionKey: "decision-headline", fieldKey: "headline-chart", kind: "chart", blockId: "decision-headline"}]);
     expect(audit.structure.omittedBlockIds.length).toBeGreaterThan(0);

@@ -427,6 +427,10 @@ describe("adapters", () => {
       template: {templateVersionId: "offroad-house-credit@1.0.0", fingerprint: hex("1a")},
     });
     expect(manifestFromRenderedMaterialManifest({...receipt, surface: "supporting_document", format: "docx"}, context).kind).toBe("document");
+    // A client template renders from a stored version: the manifest pins that version, not the mutable template row.
+    const clientTemplate = {id: "client-deck", version: "3", fingerprint: hex("1b"), origin: "client_supplied", versionId: id(77)} as const;
+    expect(manifestFromRenderedMaterialManifest({...receipt, template: clientTemplate}, context).template).toEqual({templateVersionId: id(77), fingerprint: hex("1b")});
+    expect(manifestFromRenderedMaterialManifest({...receipt, template: {...receipt.template, versionId: null}}, context).template?.templateVersionId).toBe("offroad-house-credit@1.0.0");
     expect(() => manifestFromRenderedMaterialManifest({...receipt, storage: {...receipt.storage, state: "pending_upload", etag: null}}, context)).toThrow("artifact_adapter_material_not_stored");
   });
 
