@@ -706,6 +706,70 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.adopt_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.adopt_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer)",
+          "kind": "function",
+          "name": "adopt_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.adopt_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer)",
+          "kind": "function",
+          "name": "adopt_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 288,
+          "anchor": "create function private.adopt_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.adoption_dependency_allowed_v1(p_org uuid, p_source uuid, p_rights uuid)",
       "kind": "function",
       "catalogues": {
@@ -2714,6 +2778,70 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:private.authorize_work_update_v1(p_command_id uuid, p_candidate_id uuid, p_expected_revision integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.authorize_work_update_v1(p_command_id uuid, p_candidate_id uuid, p_expected_revision integer)",
+          "kind": "function",
+          "name": "authorize_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_candidate_id uuid, p_expected_revision integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.authorize_work_update_v1(p_command_id uuid, p_candidate_id uuid, p_expected_revision integer)",
+          "kind": "function",
+          "name": "authorize_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_candidate_id uuid, p_expected_revision integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 336,
+          "anchor": "create function private.authorize_work_update_v1(p_command_id uuid,p_candidate_id uuid,p_expected_revision integer) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.backfill_dossiers_v1()",
@@ -9268,6 +9396,70 @@
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
     },
     {
+      "id": "function:private.decline_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.decline_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid)",
+          "kind": "function",
+          "name": "decline_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.decline_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid)",
+          "kind": "function",
+          "name": "decline_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 383,
+          "anchor": "create function private.decline_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer,p_reason text,p_candidate_id uuid default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.delegated_policy_access_v1(p_principal_id uuid, p_resource_id uuid, p_action text)",
       "kind": "function",
       "catalogues": {
@@ -15098,6 +15290,60 @@
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.guard_work_continuation_decline_reason_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_work_continuation_decline_reason_v1()",
+          "kind": "function",
+          "name": "guard_work_continuation_decline_reason_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_work_continuation_decline_reason_v1()",
+          "kind": "function",
+          "name": "guard_work_continuation_decline_reason_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 130,
+          "anchor": "create function private.guard_work_continuation_decline_reason_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.guard_work_continuation_request_v1()",
       "kind": "function",
       "catalogues": {
@@ -19262,6 +19508,66 @@
           "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
           "line": 839,
           "anchor": "create function private.lock_recompute_lease_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text) returns public.work_recompute_candidates",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 585,
+          "anchor": "create or replace function private.lock_recompute_lease_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text) returns public.work_recompute_candidates",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.lock_work_for_continuation_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_work_for_continuation_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "lock_work_for_continuation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_work_for_continuation_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "lock_work_for_continuation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 167,
+          "anchor": "create function private.lock_work_for_continuation_v1(p_org uuid,p_work uuid) returns void",
           "mechanism": "direct_ddl"
         }
       ]
@@ -30185,6 +30491,70 @@
       "last_review_stage": "1B"
     },
     {
+      "id": "function:private.request_work_continuation_v1(p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.request_work_continuation_v1(p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+          "kind": "function",
+          "name": "request_work_continuation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.request_work_continuation_v1(p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+          "kind": "function",
+          "name": "request_work_continuation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 210,
+          "anchor": "create function private.request_work_continuation_v1(p_request_id uuid,p_work_id uuid,p_locale text,p_content text,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.request_work_execution_as_subject_v1(p_subject uuid, p_profile_id uuid, p_contract_text text, p_snapshot_text text)",
       "kind": "function",
       "catalogues": {
@@ -31438,6 +31808,60 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.require_work_continuation_authority_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.require_work_continuation_authority_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "require_work_continuation_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.require_work_continuation_authority_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "require_work_continuation_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 144,
+          "anchor": "create function private.require_work_continuation_authority_v1(p_org uuid,p_work uuid) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.require_workspace_capability(p_organization_id uuid, p_capability text)",
@@ -40151,6 +40575,60 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.validate_work_milestone_references_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.validate_work_milestone_references_v1()",
+          "kind": "function",
+          "name": "validate_work_milestone_references_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.validate_work_milestone_references_v1()",
+          "kind": "function",
+          "name": "validate_work_milestone_references_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 53,
+          "anchor": "create function private.validate_work_milestone_references_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.vault_reader_org_v1()",
       "kind": "function",
       "catalogues": {
@@ -40605,6 +41083,114 @@
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.work_command_milestone_id_v1(p_org uuid, p_command uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_command_milestone_id_v1(p_org uuid, p_command uuid)",
+          "kind": "function",
+          "name": "work_command_milestone_id_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_command uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.work_command_milestone_id_v1(p_org uuid, p_command uuid)",
+          "kind": "function",
+          "name": "work_command_milestone_id_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_command uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 180,
+          "anchor": "create function private.work_command_milestone_id_v1(p_org uuid,p_command uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.work_continuation_bases_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_continuation_bases_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "work_continuation_bases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_continuation_bases_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "work_continuation_bases_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 102,
+          "anchor": "create function private.work_continuation_bases_v1(p_org uuid,p_work uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.work_continuation_transition_allowed_v1(p_from text, p_to text)",
       "kind": "function",
       "catalogues": {
@@ -40708,6 +41294,114 @@
           "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
           "line": 215,
           "anchor": "create function private.work_milestone_label_v1(p_text text,p_fallback text) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.work_milestone_log_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_milestone_log_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "work_milestone_log_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_milestone_log_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "work_milestone_log_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 79,
+          "anchor": "create function private.work_milestone_log_v1(p_org uuid,p_work uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.work_milestone_references_v1(p_references uuid[], p_resolves uuid, p_supersedes uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_milestone_references_v1(p_references uuid[], p_resolves uuid, p_supersedes uuid)",
+          "kind": "function",
+          "name": "work_milestone_references_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_references uuid[], p_resolves uuid, p_supersedes uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.work_milestone_references_v1(p_references uuid[], p_resolves uuid, p_supersedes uuid)",
+          "kind": "function",
+          "name": "work_milestone_references_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_references uuid[], p_resolves uuid, p_supersedes uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 68,
+          "anchor": "create function private.work_milestone_references_v1(p_references uuid[],p_resolves uuid,p_supersedes uuid) returns uuid[]",
           "mechanism": "direct_ddl"
         }
       ]
@@ -40820,6 +41514,124 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:private.work_turn_conversation_v1(p_org uuid, p_work uuid, p_create boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_turn_conversation_v1(p_org uuid, p_work uuid, p_create boolean)",
+          "kind": "function",
+          "name": "work_turn_conversation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_create boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_turn_conversation_v1(p_org uuid, p_work uuid, p_create boolean)",
+          "kind": "function",
+          "name": "work_turn_conversation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_create boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 188,
+          "anchor": "create function private.work_turn_conversation_v1(p_org uuid,p_work uuid,p_create boolean) returns public.agent_conversations",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.work_update_view_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_update_view_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "work_update_view_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_update_view_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "work_update_view_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 477,
+          "anchor": "create function private.work_update_view_v1(p_work_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_activate_advisor_specialized_job_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
@@ -52398,6 +53210,70 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:public.adopt_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.adopt_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer)",
+          "kind": "function",
+          "name": "adopt_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.adopt_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer)",
+          "kind": "function",
+          "name": "adopt_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 609,
+          "anchor": "create function public.adopt_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.append_advisor_message_v1(p_project_id uuid, p_message_id uuid, p_locale text, p_content text)",
       "kind": "function",
       "catalogues": {
@@ -53227,6 +54103,70 @@
         }
       ],
       "consumer_status": "Consumido pelo upload, leitura autorizada, extração ou Storage; escrita canônica apenas pelo comando/worker delegado."
+    },
+    {
+      "id": "function:public.authorize_work_update_v1(p_command_id uuid, p_candidate_id uuid, p_expected_revision integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.authorize_work_update_v1(p_command_id uuid, p_candidate_id uuid, p_expected_revision integer)",
+          "kind": "function",
+          "name": "authorize_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_candidate_id uuid, p_expected_revision integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.authorize_work_update_v1(p_command_id uuid, p_candidate_id uuid, p_expected_revision integer)",
+          "kind": "function",
+          "name": "authorize_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_candidate_id uuid, p_expected_revision integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 611,
+          "anchor": "create function public.authorize_work_update_v1(p_command_id uuid,p_candidate_id uuid,p_expected_revision integer) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.begin_intake_processing(p_organization_id uuid, p_session_id uuid)",
@@ -55117,6 +56057,70 @@
         }
       ],
       "consumer_status": "Consumido pela recuperação real, RLS, Storage, job ou cache; clientes não escrevem diretamente nas tabelas privadas."
+    },
+    {
+      "id": "function:public.decline_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.decline_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid)",
+          "kind": "function",
+          "name": "decline_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.decline_work_update_v1(p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid)",
+          "kind": "function",
+          "name": "decline_work_update_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_command_id uuid, p_update_id uuid, p_expected_revision integer, p_reason text, p_candidate_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 613,
+          "anchor": "create function public.decline_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer,p_reason text,p_candidate_id uuid default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.enqueue_deal_state_analysis(p_organization_id uuid, p_session_id uuid, p_trigger_source text)",
@@ -62591,6 +63595,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.request_work_continuation_v1(p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.request_work_continuation_v1(p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+          "kind": "function",
+          "name": "request_work_continuation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.request_work_continuation_v1(p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+          "kind": "function",
+          "name": "request_work_continuation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_request_id uuid, p_work_id uuid, p_locale text, p_content text, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 604,
+          "anchor": "create function public.request_work_continuation_v1(p_request_id uuid,p_work_id uuid,p_locale text,p_content text,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.request_work_execution_v1(p_contract_text text, p_snapshot_text text)",
       "kind": "function",
       "catalogues": {
@@ -68866,6 +69934,70 @@
         }
       ],
       "consumer_status": "Consumido pelos comandos do cofre, recuperação autorizada, revisão humana e auditoria; cliente sem escrita direta."
+    },
+    {
+      "id": "function:public.work_update_view_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.work_update_view_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "work_update_view_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.work_update_view_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "work_update_view_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 615,
+          "anchor": "create function public.work_update_view_v1(p_work_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:public.worker_apply_institutional_assumption_answer_v1(p_job_id uuid, p_capability_token text, p_application jsonb)",
@@ -166718,6 +167850,44 @@
       ]
     },
     {
+      "id": "trigger:public.work_continuation_requests.work_continuation_requests_decline_reason",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_decline_reason",
+          "kind": "trigger",
+          "name": "work_continuation_requests_decline_reason",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_work_continuation_decline_reason_v1()",
+          "definition": "CREATE TRIGGER work_continuation_requests_decline_reason BEFORE UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.guard_work_continuation_decline_reason_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_continuation_requests.work_continuation_requests_decline_reason",
+          "kind": "trigger",
+          "name": "work_continuation_requests_decline_reason",
+          "table": "work_continuation_requests",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_work_continuation_decline_reason_v1()",
+          "definition": "CREATE TRIGGER work_continuation_requests_decline_reason BEFORE UPDATE ON public.work_continuation_requests FOR EACH ROW EXECUTE FUNCTION private.guard_work_continuation_decline_reason_v1()"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 138,
+          "anchor": "create trigger work_continuation_requests_decline_reason before update on public.work_continuation_requests for each row execute function private.guard_work_continuation_decline_reason_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:public.work_continuation_requests.work_continuation_requests_guard",
       "kind": "trigger",
       "catalogues": {
@@ -167254,6 +168424,44 @@
           "path": "supabase/migrations/20260925155334_work_dependencies_and_continuity.sql",
           "line": 207,
           "anchor": "create trigger work_milestones_immutable before update or delete on public.work_milestones for each row execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_milestones.work_milestones_references",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_milestones.work_milestones_references",
+          "kind": "trigger",
+          "name": "work_milestones_references",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.validate_work_milestone_references_v1()",
+          "definition": "CREATE TRIGGER work_milestones_references BEFORE INSERT ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.validate_work_milestone_references_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_milestones.work_milestones_references",
+          "kind": "trigger",
+          "name": "work_milestones_references",
+          "table": "work_milestones",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.validate_work_milestone_references_v1()",
+          "definition": "CREATE TRIGGER work_milestones_references BEFORE INSERT ON public.work_milestones FOR EACH ROW EXECUTE FUNCTION private.validate_work_milestone_references_v1()"
+        }
+      },
+      "owner": "Engenharia de produto, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Continuidade a partir de base explícita e decisões sobre atualizações de dependência: pedido de continuação na conversa, adoção, autorização de custo e recusa com motivo, leitura das atualizações do trabalho, referências explícitas entre marcos e a ordem global de travas (linha do projeto, trava do trabalho, conversa)",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+          "line": 64,
+          "anchor": "create trigger work_milestones_references before insert on public.work_milestones for each row execute function private.validate_work_milestone_references_v1();",
           "mechanism": "direct_ddl"
         }
       ]
@@ -175803,6 +177011,13 @@
       "decision": "preservar",
       "stage": "18 / 3A",
       "reason": "Correção do 3A: o agregado do procedimento e o evento de release de plataforma passam de md5 convertido em uuid para UUID versão 5, que o contrato do worker aceita"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260926011438_work_continuation_commands.sql",
+      "decision": "preservar",
+      "stage": "18 / 4",
+      "reason": "Migração do incremento 4 de work_dependencies_and_continuity: referências e desfecho nos marcos, formato do follow-up e motivo de recusa nos pedidos, quatro comandos com núcleo privado e wrapper público, a leitura das atualizações e a trava do lease do worker na ordem global"
     }
   ],
   "staging_archive": [
