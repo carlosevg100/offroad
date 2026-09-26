@@ -109,6 +109,23 @@ export const artifactBlockSchema = z.strictObject({
 export type ArtifactClaim = DeepReadonly<z.infer<typeof artifactClaimSchema>>;
 export type ArtifactBlock = DeepReadonly<z.infer<typeof artifactBlockSchema>>;
 
+/** A block as a producer sends it to the command: the writer assigns identity, number and fingerprint. */
+export const artifactBlockDraftSchema = z.strictObject({
+  blockKey: blockKeySchema,
+  kind: blockKindSchema,
+  content: z.record(z.string(), jsonValueSchema),
+  claims: z.array(artifactClaimSchema).max(500),
+}).superRefine((block, context) => {
+  if (duplicates(block.claims.map((claim) => claim.claimId))) issue(context, "duplicate_claim_id", ["claims"]);
+});
+export type ArtifactBlockDraft = DeepReadonly<z.infer<typeof artifactBlockDraftSchema>>;
+
+/** The claims summary a manifest carries for drafts sent in this order (the order is the block number). */
+export function blockDraftsClaimsSummary(blocks: readonly ArtifactBlockDraft[]): ReadonlyArray<{readonly blockKey: string; readonly claimIds: readonly string[]}> {
+  return freezeArtifactValue(blocks.filter((block) => block.claims.length > 0)
+    .map((block) => ({blockKey: block.blockKey, claimIds: block.claims.map((claim) => claim.claimId)})));
+}
+
 // Manifest v1 --------------------------------------------------------------------------------
 
 const scalarSchema = z.union([z.string().max(2000), z.number().finite(), z.boolean(), z.null()]);
@@ -660,6 +677,43 @@ export function manifestFromRenderedMaterialManifest(material: RenderedMaterialM
   });
 }
 
+/** The fields of a decision contract claim the material block reads. */
+export type DecisionClaimLike = {
+  readonly id: string;
+  readonly value: string | number | boolean | null;
+  readonly unit: string | null;
+  readonly evidenceState: "observed_public" | "observed_private" | "calculated" | "assumption" | "mixed" | "not_computable";
+  readonly sourceIds: readonly string[];
+  readonly assumptionIds: readonly string[];
+  readonly gapIds: readonly string[];
+};
+
+/** A value computed from observed and assumed inputs is still a calculation; its assumptions stay in supportIds. */
+const decisionClaimKind = {
+  observed_public: "public_source", observed_private: "fact", calculated: "calculation", mixed: "calculation", not_computable: "calculation", assumption: "judgment",
+} as const satisfies Record<DecisionClaimLike["evidenceState"], ArtifactClaim["kind"]>;
+
+/**
+ * The one block of a stored file, keyed by its surface as the manifest summary is: every claim the
+ * renderer placed in the file, in the receipt's order, with the value, unit and support the
+ * decision contract gives it. A claim the contract does not carry is refused, never invented.
+ */
+export function renderedMaterialBlocks(material: RenderedMaterialManifestLike, claims: readonly DecisionClaimLike[]): readonly ArtifactBlockDraft[] {
+  const byId = new Map(claims.map((claim) => [claim.id, claim]));
+  const draft = {
+    blockKey: material.surface,
+    kind: "section",
+    content: {surface: material.surface, format: material.format, renderer: `${material.renderer.id}@${material.renderer.version}`},
+    claims: material.claimIds.map((claimId) => {
+      const claim = byId.get(claimId);
+      if (!claim) throw new Error("artifact_adapter_claim_missing");
+      return {claimId, kind: decisionClaimKind[claim.evidenceState], value: claim.value, unit: claim.unit, period: null,
+        supportIds: unique([...claim.sourceIds, ...claim.assumptionIds, ...claim.gapIds])};
+    }),
+  };
+  return freezeArtifactValue([artifactBlockDraftSchema.parse(draft)]);
+}
+
 export type InstitutionalWorkbookArtifactLike = {
   readonly modelKind: "institutional";
   readonly version: string;
@@ -731,55 +785,180 @@ export function manifestFromDocumentWorkProduct(product: DocumentWorkProduct, co
   });
 }
 
+// The execution result ------------------------------------------------------------------------
+//
+// One mapping of the `capital-procedure-packet.v2` result into blocks, mirrored key for key by the
+// SQL producer the execution commit calls (`private.execution_result_blocks_v1`): the same block
+// keys, kinds, content and claims, in the same order. Nothing here computes a number the packet
+// does not carry. The decisive number of each chart piece is selected with the rule of
+// `deriveCapitalChartSeries` (per alternative with calculated rows and per question, the first row
+// with the lowest value, so a tie resolves to the earliest period) and copied verbatim. The MD test
+// is not a block: it is evaluated by the one TypeScript evaluator over the committed packet and the
+// gate receipt, and the manifest pins that receipt among its traces.
+
+type PacketProjectionLike = {
+  readonly currency: string;
+  readonly basisFingerprint: string;
+  readonly calculationFingerprint: string;
+  readonly rows: ReadonlyArray<{readonly periodId: string; readonly closingAvailable: string; readonly netFinancingAvailable: string}> | null;
+  readonly summary: unknown;
+};
+
 export type CapitalProcedurePacketLike = {
   readonly schemaVersion: "capital-procedure-packet.v2";
   readonly status: "framed" | "partial" | "prepared_for_human_review";
   readonly decision: {
     readonly procedureId: string;
     readonly workId: string;
+    readonly question: string;
+    readonly asOf: string;
     readonly fingerprint: string;
-    readonly alternatives: ReadonlyArray<{readonly id: string}>;
-    readonly ratios: ReadonlyArray<{readonly id: string; readonly fingerprint: string}>;
-    readonly recommendation: {readonly alternativeId: string} | null;
-    readonly provenance: {readonly financialCoreVersion: string};
+    readonly alternatives: ReadonlyArray<{readonly id: string; readonly label: string; readonly kind: string; readonly projection: PacketProjectionLike}>;
+    readonly ratios: ReadonlyArray<{
+      readonly id: string; readonly alternativeId: string; readonly ratioId: string; readonly definitionKind: string;
+      readonly measurementDate: string; readonly displayedRatio: string | null; readonly fingerprint: string;
+    }>;
+    readonly recommendation: {readonly alternativeId: string; readonly basisDecisionIds: readonly string[]} | null;
+    readonly informationGaps: ReadonlyArray<{readonly subjectId: string | null; readonly code: string; readonly reason: string}>;
+    readonly nextRequirements: readonly string[];
+    readonly provenance: {readonly financialCoreVersion: string; readonly contributionIds: readonly string[]};
   };
+  readonly contractualGaps: ReadonlyArray<{readonly subjectId: string; readonly code: string}>;
   readonly contractSourceVersionIds: readonly string[];
   readonly inputFingerprint: string;
   readonly fingerprint: string;
 };
+
+/** The questions of the chart series, in its order, with the row field each one reads. */
+export const executionResultDecisiveQuestions = [
+  {questionCode: "lowest_available_cash_by_period", field: "closingAvailable"},
+  {questionCode: "largest_net_financing_outflow_by_period", field: "netFinancingAvailable"},
+] as const;
+
+const decimalText = /^-?\d+(?:\.\d+)?$/;
+
+/** Exact order of two decimal texts (-1, 0 or 1), without floating point. */
+export function compareDecimalText(a: string, b: string): number {
+  const parse = (value: string) => {
+    if (typeof value !== "string" || !decimalText.test(value)) throw new Error("artifact_adapter_decimal_invalid");
+    const negative = value.startsWith("-");
+    const [whole = "", fraction = ""] = (negative ? value.slice(1) : value).split(".");
+    const integer = whole.replace(/^0+(?=\d)/, "");
+    const decimals = fraction.replace(/0+$/, "");
+    return {sign: integer === "0" && decimals === "" ? 0 : negative ? -1 : 1, integer, decimals};
+  };
+  const x = parse(a);
+  const y = parse(b);
+  if (x.sign !== y.sign) return x.sign < y.sign ? -1 : 1;
+  if (x.sign === 0) return 0;
+  const width = Math.max(x.decimals.length, y.decimals.length);
+  const left = x.integer.padStart(y.integer.length, "0") + x.decimals.padEnd(width, "0");
+  const right = y.integer.padStart(x.integer.length, "0") + y.decimals.padEnd(width, "0");
+  if (left === right) return 0;
+  return (left < right ? -1 : 1) * x.sign;
+}
+
+/**
+ * The blocks of an execution result: the framing, the alternatives (a claim each), the ratios (a
+ * claim each, when there are ratios), the recommendation (one claim, when there is one), the
+ * information and contractual gaps, the next requirements, and one number block per decisive number
+ * with its claim and supportIds. Throws when the packet cannot be mapped; the SQL producer then
+ * records no revision and the commit goes on.
+ */
+export function capitalProcedurePacketBlocks(packet: CapitalProcedurePacketLike): readonly ArtifactBlockDraft[] {
+  const decision = packet.decision;
+  const drafts: unknown[] = [
+    {blockKey: "framing", kind: "section", claims: [],
+      content: {status: packet.status, question: decision.question, asOf: decision.asOf, contributionCount: decision.provenance.contributionIds.length}},
+    {blockKey: "alternatives", kind: "table",
+      content: {rows: decision.alternatives.map((alternative) => ({
+        id: alternative.id, label: alternative.label, kind: alternative.kind, calculated: alternative.projection.summary !== null,
+      }))},
+      claims: decision.alternatives.map((alternative) => ({
+        claimId: alternative.id, kind: "judgment", value: alternative.label, unit: null, period: null,
+        supportIds: [alternative.projection.basisFingerprint, alternative.projection.calculationFingerprint],
+      }))},
+  ];
+  if (decision.ratios.length > 0) {
+    drafts.push({blockKey: "ratios", kind: "table",
+      content: {rows: decision.ratios.map((ratio) => ({
+        id: ratio.id, alternativeId: ratio.alternativeId, ratioId: ratio.ratioId, definitionKind: ratio.definitionKind,
+        measurementDate: ratio.measurementDate, displayedRatio: ratio.displayedRatio,
+      }))},
+      claims: decision.ratios.map((ratio) => ({
+        claimId: ratio.id, kind: "calculation", value: ratio.displayedRatio, unit: "ratio", period: ratio.measurementDate, supportIds: [ratio.fingerprint],
+      }))});
+  }
+  if (decision.recommendation) {
+    drafts.push({blockKey: "recommendation", kind: "section", content: {alternativeId: decision.recommendation.alternativeId},
+      claims: [{claimId: "recommendation", kind: "judgment", value: decision.recommendation.alternativeId, unit: null, period: null,
+        supportIds: [...decision.recommendation.basisDecisionIds]}]});
+  }
+  drafts.push(
+    {blockKey: "information-gaps", kind: "table", claims: [],
+      content: {rows: decision.informationGaps.map((gap) => ({subjectId: gap.subjectId, code: gap.code, reason: gap.reason}))}},
+    {blockKey: "contractual-gaps", kind: "table", claims: [],
+      content: {rows: packet.contractualGaps.map((gap) => ({subjectId: gap.subjectId, code: gap.code}))}},
+    {blockKey: "next-requirements", kind: "section", claims: [], content: {items: [...decision.nextRequirements]}},
+  );
+  decision.alternatives.forEach((alternative, index) => {
+    const projection = alternative.projection;
+    const rows = projection.rows;
+    if (rows === null || rows.length === 0) return;
+    for (const {questionCode, field} of executionResultDecisiveQuestions) {
+      let lowest = 0;
+      rows.forEach((row, rowIndex) => {
+        if (compareDecimalText(row[field], rows[lowest]![field]) < 0) lowest = rowIndex;
+      });
+      const row = rows[lowest]!;
+      drafts.push({blockKey: `decisive:${questionCode}:${index}`, kind: "number",
+        content: {questionCode, alternativeId: alternative.id, unit: projection.currency, value: row[field], periodLabel: row.periodId,
+          path: `decision.alternatives[${index}].projection.rows[${lowest}].${field}`},
+        claims: [{claimId: `${questionCode}:${alternative.id}`, kind: "calculation", value: row[field], unit: projection.currency, period: row.periodId,
+          supportIds: [projection.basisFingerprint, projection.calculationFingerprint]}]});
+    }
+  });
+  const blocks = drafts.map((draft) => artifactBlockDraftSchema.parse(draft));
+  if (duplicates(blocks.map((block) => block.blockKey))) throw new Error("duplicate_block_key");
+  if (duplicates(blocks.flatMap((block) => block.claims.map((claim) => claim.claimId)))) throw new Error("duplicate_claim_id");
+  return freezeArtifactValue(blocks);
+}
 
 export type PacketManifestContext = ManifestContext & {
   /** From the execution result receipt: its canonical result fingerprint is not the packet's own JSON fingerprint. */
   readonly execution: {readonly executionId: string; readonly resultFingerprint: string; readonly inputFingerprint: string};
   /** From the execution input snapshot, when the producer has it. */
   readonly inputSnapshot?: {readonly fingerprint: string} | null;
-  /** From the execution manifest, when the producer has it; the packet only names the procedure. */
-  readonly method?: {readonly platformReleaseId: string; readonly houseReleaseId: string | null; readonly version: string} | null;
+  /**
+   * The release the execution ran, when the producer has it. The procedure defaults to the one the
+   * packet names; the SQL producer takes it from the pinned release, which is the same procedure.
+   */
+  readonly method?: {readonly procedureId?: string; readonly platformReleaseId: string; readonly houseReleaseId: string | null; readonly version: string} | null;
+  /** The gate receipt the MD test is evaluated over, when the execution carried one. */
+  readonly gatesFingerprint?: string | null;
 };
 
-/** The execution result as an artifact: alternatives, ratios and the recommendation are the claims of its blocks. */
+/** The execution result as an artifact: the claims summary is the one of `capitalProcedurePacketBlocks`. */
 export function manifestFromCapitalProcedurePacket(packet: CapitalProcedurePacketLike, context: PacketManifestContext): ArtifactManifest {
-  const claims = [
-    {blockKey: "alternatives", claimIds: packet.decision.alternatives.map((alternative) => alternative.id)},
-    {blockKey: "ratios", claimIds: packet.decision.ratios.map((ratio) => ratio.id)},
-    {blockKey: "recommendation", claimIds: packet.decision.recommendation ? [packet.decision.recommendation.alternativeId] : []},
-  ].filter((entry) => entry.claimIds.length > 0);
+  const method = context.method;
   return finish({
     ...emptyManifestParts,
     schemaVersion: artifactManifestSchemaVersion,
     kind: "execution_result",
     audience: context.audience,
     format: "json",
-    method: context.method ? {procedureId: packet.decision.procedureId, ...context.method} : null,
+    method: method ? {procedureId: method.procedureId ?? packet.decision.procedureId, platformReleaseId: method.platformReleaseId,
+      houseReleaseId: method.houseReleaseId, version: method.version} : null,
     execution: context.execution,
     inputSnapshot: context.inputSnapshot ?? null,
     sources: mergedSources(context, packet.contractSourceVersionIds.map((sourceVersionId) => ({sourceVersionId, rightsVersionId: null}))),
-    claims,
+    claims: blockDraftsClaimsSummary(capitalProcedurePacketBlocks(packet)),
     traces: unique([
       `capital-procedure-packet:${packet.fingerprint}`,
       `capital-decision-delivery:${packet.decision.fingerprint}`,
       `financial-core:${packet.decision.provenance.financialCoreVersion}`,
       ...packet.decision.ratios.map((ratio) => `ratio:${ratio.id}:${ratio.fingerprint}`),
+      ...(context.gatesFingerprint ? [`execution-gates:${context.gatesFingerprint}`] : []),
     ]),
     provenance: context.provenance,
   });
