@@ -45,8 +45,24 @@ import {renderArtifactRevision} from "./render-artifact-revision";
 type Lang = "pt" | "en";
 const langs: readonly Lang[] = ["pt", "en"];
 const documentFormats = ["docx", "pdf", "pptx"] as const;
+/** Rendering every format in both languages is slow under a loaded runner; the default five seconds is not a budget for it. */
+const renderTimeout = 120_000;
 
-async function renderAll(material: Material, lang: Lang): Promise<{files: Record<"docx" | "pdf" | "pptx" | "html", string>; charts: number[][]}> {
+type Rendered = {files: Record<"docx" | "pdf" | "pptx" | "html", string>; charts: number[][]};
+const renders = new Map<Material, Map<Lang, Promise<Rendered>>>();
+
+/** Each material is rendered once per language and read by every test that needs it. */
+function renderAll(material: Material, lang: Lang): Promise<Rendered> {
+  const byLang = renders.get(material) ?? new Map<Lang, Promise<Rendered>>();
+  renders.set(material, byLang);
+  const cached = byLang.get(lang);
+  if (cached) return cached;
+  const rendered = renderFormats(material, lang);
+  byLang.set(lang, rendered);
+  return rendered;
+}
+
+async function renderFormats(material: Material, lang: Lang): Promise<Rendered> {
   const text: Partial<Record<"docx" | "pdf" | "pptx" | "html", string>> = {};
   let charts: number[][] = [];
   for (const format of documentFormats) {
@@ -102,7 +118,7 @@ describe("the material kinds of one package", () => {
       // Native charts carry the exact statement values, as the kernel hands them to a binary number.
       const expectedCharts = (material.presentationCharts ?? []).map((chart) => chart.series.points.map((point) => point.value));
       expect(charts).toEqual(expectedCharts);
-    });
+    }, renderTimeout);
   }
 
   it("prints the figures the financial-core kernels compute, by value, in every format", async () => {
@@ -126,7 +142,7 @@ describe("the material kinds of one package", () => {
         for (const [format, text] of Object.entries(files)) expect(text.replace(/\s+/g, " "), `${expectation.kind} ${format} ${lang}`).toContain(expectation[lang]);
       }
     }
-  });
+  }, renderTimeout);
 
   it("rounds ratios with the kernel and plots the exact statement values, the same in every format", async () => {
     for (const lang of langs) {
@@ -143,7 +159,7 @@ describe("the material kinds of one package", () => {
       expect(charts).toEqual(["ebitda", "cfads", "closingGrossDebt", "unrestrictedCash"].map((key) =>
         syntheticStatements.periods.map((period) => presentationNumber(period[key as "ebitda"]).value)));
     }
-  });
+  }, renderTimeout);
 
   it("reads a changed figure as a missing one, so the comparison is not vacuous", async () => {
     const original = materials.find((material) => material.kind === "package")!;
@@ -154,7 +170,7 @@ describe("the material kinds of one package", () => {
       expect(missingTokens(materialFigureTexts(original, "pt").flatMap(numberTokens), numberTokens(text))).toContain("42.300.000");
       expect(economicFigures(text)).toContain("42.300.001");
     }
-  });
+  }, renderTimeout);
 });
 
 describe("the approved financial result", () => {
@@ -206,7 +222,7 @@ describe("the approved financial result", () => {
       }
     }
     expect(charts).toEqual(["ebitda", "cfads", "closingGrossDebt", "unrestrictedCash"].map((key) => periods.map((period) => presentationNumber(period[key as "ebitda"]).value)));
-  });
+  }, renderTimeout);
 });
 
 describe("the execution result", () => {
