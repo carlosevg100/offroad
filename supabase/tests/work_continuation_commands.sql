@@ -400,6 +400,7 @@ do $$ declare s jsonb:=(select value from recompute_step where name='adopt');r p
  select * into strict r from public.work_continuation_requests where id=pg_temp.id('R1');
  select * into strict m from public.work_milestones where kind='update_adopted' and subject_id=r.id;
  if r.status<>'adopted' or m.id<>private.work_command_milestone_id_v1(r.organization_id,'a4190000-0000-4000-8000-000000000201') or m.outcome<>'approved'
+ or substring(m.id::text,15,1)<>'5' or substring(m.id::text,20,1) not in ('8','9','a','b')
  or m.revision<>r.revision-1 or m.created_by<>'a11b0000-0000-4000-8000-000000000001' or m.subject_kind<>'work_continuation_request' or m.label<>'dependency_update_adopted'
  -- The new results first (in the order of their candidates), then the results they replace.
  or (select array_agg(x order by x) from unnest(m.reference_milestone_ids[1:2]) x)<>(select array_agg(x order by x) from unnest(array[pg_temp.result_of('X1b'),pg_temp.result_of('X2b')]) x)
@@ -456,6 +457,7 @@ do $$ declare r public.work_continuation_requests:=pg_temp.update_request();s js
  or exists(select 1 from public.work_recompute_candidates where request_id=r.id and not (state='declined' and reason='person_declined:not_needed'))
  or exists(select 1 from private.dependency_recompute_holds where request_id=r.id and released_at is null)
  or m.kind<>'decision' or m.outcome<>'rejected' or m.subject_kind<>'work_continuation_request' or m.subject_id<>r.id or m.revision<>r.revision-1
+ or substring(m.id::text,15,1)<>'5' or substring(m.id::text,20,1) not in ('8','9','a','b')
  or m.reference_milestone_ids<>array[(select p.id from public.work_milestones p where p.kind='continuation_proposed' and p.subject_id=r.id)]
  or not pg_temp.history_intact() then
   raise exception 'decline of an open update mismatch: % %',to_jsonb(r),to_jsonb(m);
@@ -561,6 +563,7 @@ do $$ declare r public.work_continuation_requests:=pg_temp.update_request();c pu
  if c.state<>'scheduled' or c.execution_id is not null or s->>'updateStatus'<>'awaiting_authorization'
  or (select status from public.work_continuation_requests where id=r.id)<>'awaiting_authorization'
  or decision.kind<>'decision' or decision.outcome<>'approved' or decision.subject_kind<>'work_recompute_candidate' or decision.subject_id<>c.id
+ or substring(decision.id::text,15,1)<>'5' or substring(decision.id::text,20,1) not in ('8','9','a','b')
  or decision.revision<>c.revision-1 or decision.reference_milestone_ids<>array[wait.id] or decision.created_by<>'a11b0000-0000-4000-8000-000000000001'
  or resolution.kind<>'human_resolved' or resolution.resolves_milestone_id<>wait.id or resolution.reference_milestone_ids<>array[wait.id]
  or not pg_temp.history_intact() then
@@ -593,6 +596,7 @@ do $$ declare r public.work_continuation_requests:=pg_temp.update_request();c pu
  select * into strict decision from public.work_milestones where id=(s->>'milestoneId')::uuid;
  if c.state<>'declined' or c.reason<>'person_declined:cost_not_justified' or s->>'candidateState'<>'declined' or s->>'updateStatus'<>'awaiting_authorization'
  or decision.kind<>'decision' or decision.outcome<>'rejected' or decision.subject_id<>c.id or decision.reference_milestone_ids<>array[wait.id]
+ or substring(decision.id::text,15,1)<>'5' or substring(decision.id::text,20,1) not in ('8','9','a','b')
  or not exists(select 1 from public.work_milestones where kind='human_resolved' and resolves_milestone_id=wait.id and label='dependency_recompute_declined')
  or not pg_temp.history_intact() then
   raise exception 'decline of one waiting candidate mismatch: % %',to_jsonb(c),s;
@@ -716,8 +720,9 @@ end $$;
 
 -- 10b. The milestone of a command is an RFC 9562 version 5 UUID of the organization and the command
 -- (the rule 3A's correction set for every identifier the database derives), equal to one literal
--- vector; every command milestone this test recorded is one. The lock helpers take the project row
--- before the work lock, the global order of the writers of a work.
+-- vector; the adoption, authorization and decline sections check the version and variant of the
+-- milestones they record, before their savepoints roll them back. The lock helpers take the project
+-- row before the work lock, the global order of the writers of a work.
 do $$ declare v uuid:=private.work_command_milestone_id_v1('a11b0000-0000-4000-9000-000000000001','a4200000-0000-4000-8000-000000000001');f record;begin
  if v<>'afd3f2e3-0f7c-5192-828b-0fbc3a8bbfde'::uuid or substring(v::text,15,1)<>'5' or substring(v::text,20,1) not in ('8','9','a','b') then
   raise exception 'a command milestone id is not the version 5 vector: %',v;
@@ -726,11 +731,6 @@ do $$ declare v uuid:=private.work_command_milestone_id_v1('a11b0000-0000-4000-9
  or private.work_command_milestone_id_v1('a11b0000-0000-4000-9000-000000000001','a4200000-0000-4000-8000-000000000002')=v
  or private.work_command_milestone_id_v1('a11b0000-0000-4000-9000-000000000001','a4200000-0000-4000-8000-000000000001')<>v then
   raise exception 'command milestone ids are not a deterministic function of the organization and the command';
- end if;
- if not exists(select 1 from public.work_milestones m where m.kind='update_adopted')
- or exists(select 1 from public.work_milestones m where (m.kind='update_adopted' or (m.kind='decision' and m.subject_kind in ('work_continuation_request','work_recompute_candidate')))
-  and (substring(m.id::text,15,1)<>'5' or substring(m.id::text,20,1) not in ('8','9','a','b'))) then
-  raise exception 'a command milestone is not a version 5 UUID';
  end if;
  if exists(select 1 from pg_proc where prosrc ~* 'md5\([^;]*\)::uuid' and oid='private.work_command_milestone_id_v1(uuid,uuid)'::regprocedure) then
   raise exception 'an md5 digest still becomes a command milestone id';
