@@ -206,7 +206,9 @@ test("a mixed update of an execution and the financial model is adopted in one a
   const ready = page.locator('article.work-update[data-status="ready"]');
   await expect(ready).toContainText(fill(updates.recomputation.settled, {label: capitalTitle}));
   await expect(ready).toContainText(fill(updates.recomputation.institutional.settled, {label: names.institutionalModel}));
-  await expect(ready).toContainText(fill(updates.change.institutional_configuration, {from: 1, to: 2}));
+  const [firstRevision, secondRevision] = sql(`select string_agg(c.revision::text,',' order by c.revision) from private.institutional_model_configurations c
+    where c.capital_project_id='${projectId}' and c.status='approved';`).split(",");
+  await expect(ready).toContainText(fill(updates.change.institutional_configuration, {from: firstRevision!, to: secondRevision!}));
   await expect(ready).toContainText(fill(updates.change.source_version, {name: "balancete-sintetico.csv", from: 1, to: 2}));
   const merged = Number(sql(`select count(*) from public.work_continuation_requests where work_id='${projectId}' and status='superseded' and superseded_by_request_id='${updateId}'
     and created_at>=(select created_at from public.work_continuation_requests where id='${updateId}');`));
