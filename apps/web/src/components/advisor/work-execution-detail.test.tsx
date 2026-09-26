@@ -79,6 +79,14 @@ describe("execution detail screen", () => {
     expect(html).not.toContain(w.mdTest.questions.q1);
     expect(html).not.toMatch(dashes);
   });
+  it("keeps the evidence it always showed for an execution without a registered revision", async () => {
+    const html = await render("pt-BR", view(receipt(), partial()));
+    const w = pt.App.workExecutions;
+    for (const shown of [w.detail.contractFingerprint, w.detail.inputFingerprint, w.detail.execution, w.gates.fingerprint, w.detail.resultFingerprint, w.detail.packetFingerprint, id(1), hex("a"), hex("d")]) {
+      expect(html).toContain(shown);
+    }
+    expect(html).not.toContain("execution-result--recorded");
+  });
   it("keeps only the fingerprint of a receipt that does not match it", async () => {
     const tampered = {...receipt(), fingerprint: hex("0")};
     const html = await render("pt-BR", view(tampered, partial()));
@@ -114,6 +122,10 @@ describe("execution detail screen", () => {
     expect(result).not.toMatch(/[a-f0-9]{64}/); expect(result).not.toContain(id(1));
     for (const entry of value.result.decisiveNumbers) expect(html).toContain(`<strong>${formatDecimal(entry.value, "pt-BR")} ${entry.unit}</strong>`);
     for (const question of Object.values(w.mdTest.questions)) expect(html).toContain(question);
+    // Nowhere on the screen of a registered result: the execution, contract, input and gate identifiers.
+    for (const hidden of [w.detail.contractFingerprint, w.detail.inputFingerprint, w.detail.execution, w.gates.fingerprint, id(1), hex("a"), hex("b")]) expect(html).not.toContain(hidden);
+    expect(html).not.toMatch(/[a-f0-9]{64}/);
+    expect(html).toContain(w.gates.registrationStates.registered);
     expect(html).not.toMatch(dashes);
     const stale = await render("en-US", view(receipt(), canonical, registered(canonical, "stale")));
     expect(stale).toContain("Result recorded as revision 1 on "); expect(stale).toContain(en.App.workExecutions.detail.freshness.stale);
@@ -125,6 +137,7 @@ describe("execution detail screen", () => {
     const w = pt.App.workExecutions;
     expect(restricted).toContain(w.detail.withheldTitle); expect(restricted).toContain(w.detail.revisionWithheldBody);
     expect(restricted).not.toContain(hex("d")); expect(restricted).not.toContain(w.decisive.title);
+    expect(restricted).not.toMatch(/[a-f0-9]{64}/); expect(restricted).not.toContain(id(1));
     const state = registered(canonical);
     if (state.state !== "ready") throw new Error("ready expected");
     const mismatch = await render("pt-BR", view(receipt(), canonical, {state: "ready", revision: {...state.revision, pins: {...state.revision.pins, gatesFingerprint: hex("0")}}}));

@@ -185,7 +185,9 @@ test("a v4 capital execution is refused until the company under analysis is regi
  await expect(recorded).toContainText(copy.detail.recorded.replace("{revision}", "1").split("{date}")[0]!);
  await expect(recorded.getByRole("status")).toHaveText(copy.detail.freshness.current);
  await expect(recorded.locator("code")).toHaveCount(0);
- await expect(recorded).not.toContainText(executionId);
+ // The screen of a registered result names no identifier: not the execution, not a fingerprint.
+ await expect(page.locator("main.work-executions")).not.toContainText(executionId);
+ await expect(page.locator("main.work-executions")).not.toContainText(copy.detail.contractFingerprint);
  await test.info().attach("capital-execution-detail", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 
  // 5. The database agrees: one execution, one receipt of gates with the company registered, a
