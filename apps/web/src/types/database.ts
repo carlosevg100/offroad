@@ -5297,6 +5297,88 @@ export type Database = {
           },
         ]
       }
+      institutional_recompute_candidates: {
+        Row: {
+          base_result_id: string
+          created_at: string
+          head_inputs: Json
+          id: string
+          idempotency_key: string
+          new_input_fingerprint: string
+          organization_id: string
+          reason: string | null
+          request_id: string
+          requested_by: string
+          result_id: string | null
+          result_ids: string[]
+          revision: number
+          sequence: number
+          state: string
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          base_result_id: string
+          created_at?: string
+          head_inputs: Json
+          id?: string
+          idempotency_key: string
+          new_input_fingerprint: string
+          organization_id: string
+          reason?: string | null
+          request_id: string
+          requested_by: string
+          result_id?: string | null
+          result_ids: string[]
+          revision?: number
+          sequence?: never
+          state: string
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          base_result_id?: string
+          created_at?: string
+          head_inputs?: Json
+          id?: string
+          idempotency_key?: string
+          new_input_fingerprint?: string
+          organization_id?: string
+          reason?: string | null
+          request_id?: string
+          requested_by?: string
+          result_id?: string | null
+          result_ids?: string[]
+          revision?: number
+          sequence?: never
+          state?: string
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "institutional_recompute_candi_organization_id_work_id_requ_fkey"
+            columns: ["organization_id", "work_id", "request_id"]
+            isOneToOne: false
+            referencedRelation: "work_continuation_requests"
+            referencedColumns: ["organization_id", "work_id", "id"]
+          },
+          {
+            foreignKeyName: "institutional_recompute_candidates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "institutional_recompute_candidates_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       intake_domain_events: {
         Row: {
           created_by: string
@@ -12950,6 +13032,10 @@ export type Database = {
           p_precedent_purpose?: string
           p_query: string
         }
+        Returns: Json
+      }
+      worker_load_work_freshness_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
       worker_load_work_turn_v1: {

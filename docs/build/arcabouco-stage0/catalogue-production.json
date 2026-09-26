@@ -942,6 +942,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.backfill_institutional_result_dependencies_v1()",
+      "kind": "function",
+      "name": "backfill_institutional_result_dependencies_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.backfill_work_milestones_v1()",
       "kind": "function",
       "name": "backfill_work_milestones_v1",
@@ -2146,6 +2164,24 @@
       "id": "function:private.capture_identity_audit_v1()",
       "kind": "function",
       "name": "capture_identity_audit_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_institutional_configuration_event_v1()",
+      "kind": "function",
+      "name": "capture_institutional_configuration_event_v1",
       "grants": [
         [
           "postgres",
@@ -3446,6 +3482,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.enqueue_institutional_recompute_v1(p_org uuid, p_candidate uuid)",
+      "kind": "function",
+      "name": "enqueue_institutional_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_candidate uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.enqueue_primary_case_analysis(p_organization_id uuid, p_processing_run_id uuid, p_intake_session_id uuid)",
       "kind": "function",
       "name": "enqueue_primary_case_analysis",
@@ -4550,6 +4604,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.guard_institutional_recompute_candidate_v1()",
+      "kind": "function",
+      "name": "guard_institutional_recompute_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.guard_institutional_recompute_hold_v1()",
+      "kind": "function",
+      "name": "guard_institutional_recompute_hold_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
       "id": "function:private.guard_institutional_result_body()",
       "kind": "function",
       "name": "guard_institutional_result_body",
@@ -5123,6 +5213,42 @@
       "security_definer": true
     },
     {
+      "id": "function:private.institutional_approval_request_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "institutional_approval_request_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_approval_through_graph_v1(p_org uuid, p_work uuid, p_configuration uuid, p_request uuid)",
+      "kind": "function",
+      "name": "institutional_approval_through_graph_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_configuration uuid, p_request uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.institutional_config_hash(v jsonb)",
       "kind": "function",
       "name": "institutional_config_hash",
@@ -5139,6 +5265,42 @@
       ],
       "signature": "v jsonb",
       "security_definer": false
+    },
+    {
+      "id": "function:private.institutional_configuration_documents_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "name": "institutional_configuration_documents_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_configuration uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_configuration_head_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "institutional_configuration_head_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
+      "security_definer": true
     },
     {
       "id": "function:private.institutional_configuration_provenance(p_org uuid, p_configuration uuid)",
@@ -5159,6 +5321,150 @@
       "security_definer": true
     },
     {
+      "id": "function:private.institutional_configuration_source_versions_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "name": "institutional_configuration_source_versions_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_configuration uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_dependency_impact_v1(p_org uuid, p_source uuid, p_work uuid)",
+      "kind": "function",
+      "name": "institutional_dependency_impact_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_source uuid, p_work uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_dependent_detail_v1(p_org uuid, p_dependent uuid)",
+      "kind": "function",
+      "name": "institutional_dependent_detail_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_dependent uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_lineage_representative_v1(p_org uuid, p_root uuid)",
+      "kind": "function",
+      "name": "institutional_lineage_representative_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_root uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_lineage_root_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "name": "institutional_lineage_root_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_result uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_recompute_assessment_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "name": "institutional_recompute_assessment_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_result uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_recompute_job_subject_v1(p_org uuid, p_candidate uuid, p_result uuid, p_session uuid, p_run uuid, p_root uuid)",
+      "kind": "function",
+      "name": "institutional_recompute_job_subject_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_candidate uuid, p_result uuid, p_session uuid, p_run uuid, p_root uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_recompute_requester_authorized_v1(p_org uuid, p_work uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "institutional_recompute_requester_authorized_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.institutional_response_value(content text, binding jsonb, assumption jsonb)",
       "kind": "function",
       "name": "institutional_response_value",
@@ -5175,6 +5481,24 @@
       ],
       "signature": "content text, binding jsonb, assumption jsonb",
       "security_definer": false
+    },
+    {
+      "id": "function:private.institutional_result_is_live_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "name": "institutional_result_is_live_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_result uuid",
+      "security_definer": true
     },
     {
       "id": "function:private.institutional_source_context(p_org uuid, p_session uuid)",
@@ -5211,6 +5535,24 @@
       ],
       "signature": "v jsonb",
       "security_definer": false
+    },
+    {
+      "id": "function:private.institutional_update_through_graph_v1(p_org uuid, p_work uuid, p_approver uuid)",
+      "kind": "function",
+      "name": "institutional_update_through_graph_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_approver uuid",
+      "security_definer": true
     },
     {
       "id": "function:private.intake_session_for_origination(p_organization_id uuid, p_session_id uuid)",
@@ -6719,6 +7061,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.plan_institutional_recompute_v1(p_org uuid, p_work uuid, p_request uuid)",
+      "kind": "function",
+      "name": "plan_institutional_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_request uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.plan_open_dependency_requests_v1(p_org uuid)",
       "kind": "function",
       "name": "plan_open_dependency_requests_v1",
@@ -7112,6 +7472,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.project_institutional_result_dependencies_v1()",
+      "kind": "function",
+      "name": "project_institutional_result_dependencies_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
       "kind": "function",
       "name": "promote_contribution_to_work_v1",
@@ -7159,11 +7537,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
           "EXECUTE",
           false
         ]
@@ -8265,6 +8638,24 @@
       "id": "function:private.rebuild_incomplete_execution_dependencies_v1(p_org uuid)",
       "kind": "function",
       "name": "rebuild_incomplete_execution_dependencies_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.rebuild_incomplete_institutional_dependencies_v1(p_org uuid)",
+      "kind": "function",
+      "name": "rebuild_incomplete_institutional_dependencies_v1",
       "grants": [
         [
           "postgres",
@@ -11408,6 +11799,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.settle_institutional_recompute_v1()",
+      "kind": "function",
+      "name": "settle_institutional_recompute_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.settle_recompute_candidate_v1()",
       "kind": "function",
       "name": "settle_recompute_candidate_v1",
@@ -13161,6 +13570,24 @@
       ],
       "signature": "p_from text, p_to text",
       "security_definer": false
+    },
+    {
+      "id": "function:private.work_stale_dependents_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "work_stale_dependents_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
+      "security_definer": true
     },
     {
       "id": "function:private.work_turn_context_v1(p_job_id uuid)",
@@ -15367,6 +15794,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_query text, p_allowed_fund_ids uuid[], p_precedent_purpose text, p_limit integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_load_work_freshness_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_work_freshness_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
       "security_definer": true
     },
     {
@@ -18831,16 +19281,6 @@
       "grants": [
         [
           "postgres",
-          "EXECUTE",
-          false
-        ],
-        [
-          "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -24413,6 +24853,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_load_work_freshness_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_work_freshness_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "worker_load_work_turn_v1",
@@ -27366,6 +27829,51 @@
       "with_check": "false"
     },
     {
+      "id": "policy:private.institutional_recompute_holds.institutional_recompute_holds_deny_clients",
+      "kind": "policy",
+      "name": "institutional_recompute_holds_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_recompute_holds",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_result_dependencies.institutional_result_dependencies_deny_clients",
+      "kind": "policy",
+      "name": "institutional_result_dependencies_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_result_dependencies",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_result_invalidations.institutional_result_invalidations_deny_clients",
+      "kind": "policy",
+      "name": "institutional_result_invalidations_deny_clients",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_result_invalidations",
+      "schema": "private",
+      "command": "ALL",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
       "id": "policy:private.institutional_revision_proposals.institutional_revision_proposals_no_delete",
       "kind": "policy",
       "name": "institutional_revision_proposals_no_delete",
@@ -30046,6 +30554,62 @@
       "command": "UPDATE",
       "permissive": "PERMISSIVE",
       "with_check": "(( SELECT private.can_manage_organization(institution_capability_profiles.organization_id) AS can_manage_organization) AND (updated_by = ( SELECT auth.uid() AS uid)))"
+    },
+    {
+      "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_delete",
+      "kind": "policy",
+      "name": "institutional_recompute_candidates_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_recompute_candidates",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_insert",
+      "kind": "policy",
+      "name": "institutional_recompute_candidates_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_recompute_candidates",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_update",
+      "kind": "policy",
+      "name": "institutional_recompute_candidates_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_recompute_candidates",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_select_authorized",
+      "kind": "policy",
+      "name": "institutional_recompute_candidates_select_authorized",
+      "qual": "( SELECT private.can_access_capital_project(institutional_recompute_candidates.organization_id, institutional_recompute_candidates.work_id) AS can_access_capital_project)",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_recompute_candidates",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
     },
     {
       "id": "policy:public.intake_domain_events.intake_domain_events_select",
@@ -35589,6 +36153,156 @@
       "rls": true,
       "kind": "table",
       "name": "institutional_model_setup_submissions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.institutional_recompute_holds",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_recompute_holds",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.institutional_result_dependencies",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_result_dependencies",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.institutional_result_invalidations",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_result_invalidations",
       "grants": [
         [
           "postgres",
@@ -44570,6 +45284,61 @@
       "force_rls": true
     },
     {
+      "id": "r:public.institutional_recompute_candidates",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_recompute_candidates",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ],
+        [
+          "authenticated",
+          "SELECT",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
       "id": "r:public.intake_domain_events",
       "rls": true,
       "kind": "table",
@@ -52665,6 +53434,16 @@
       "definition": "CREATE TRIGGER institutional_configs_updated BEFORE UPDATE ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.institutional_model_configurations.institutional_configurations_dependency_event",
+      "kind": "trigger",
+      "name": "institutional_configurations_dependency_event",
+      "table": "institutional_model_configurations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_institutional_configuration_event_v1()",
+      "definition": "CREATE TRIGGER institutional_configurations_dependency_event AFTER INSERT OR UPDATE OF status ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.capture_institutional_configuration_event_v1()"
+    },
+    {
       "id": "trigger:private.institutional_model_configurations.institutional_revision_immutable",
       "kind": "trigger",
       "name": "institutional_revision_immutable",
@@ -52715,6 +53494,16 @@
       "definition": "CREATE TRIGGER institutional_results_audit AFTER INSERT OR DELETE OR UPDATE ON private.institutional_model_results FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
     },
     {
+      "id": "trigger:private.institutional_model_results.institutional_results_dependencies",
+      "kind": "trigger",
+      "name": "institutional_results_dependencies",
+      "table": "institutional_model_results",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.project_institutional_result_dependencies_v1()",
+      "definition": "CREATE TRIGGER institutional_results_dependencies AFTER INSERT ON private.institutional_model_results FOR EACH ROW EXECUTE FUNCTION private.project_institutional_result_dependencies_v1()"
+    },
+    {
       "id": "trigger:private.institutional_model_results.institutional_results_updated",
       "kind": "trigger",
       "name": "institutional_results_updated",
@@ -52753,6 +53542,96 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER institutional_setup_updated BEFORE UPDATE ON private.institutional_model_setup_submissions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_guard",
+      "kind": "trigger",
+      "name": "institutional_recompute_holds_guard",
+      "table": "institutional_recompute_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_institutional_recompute_hold_v1()",
+      "definition": "CREATE TRIGGER institutional_recompute_holds_guard BEFORE DELETE OR UPDATE ON private.institutional_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.guard_institutional_recompute_hold_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_truncate_guard",
+      "kind": "trigger",
+      "name": "institutional_recompute_holds_truncate_guard",
+      "table": "institutional_recompute_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_recompute_holds_truncate_guard BEFORE TRUNCATE ON private.institutional_recompute_holds FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_updated",
+      "kind": "trigger",
+      "name": "institutional_recompute_holds_updated",
+      "table": "institutional_recompute_holds",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_recompute_holds_updated BEFORE UPDATE ON private.institutional_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_immutable",
+      "kind": "trigger",
+      "name": "institutional_result_dependencies_immutable",
+      "table": "institutional_result_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_result_dependencies_immutable BEFORE DELETE OR UPDATE ON private.institutional_result_dependencies FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_truncate_guard",
+      "kind": "trigger",
+      "name": "institutional_result_dependencies_truncate_guard",
+      "table": "institutional_result_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_result_dependencies_truncate_guard BEFORE TRUNCATE ON private.institutional_result_dependencies FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_updated",
+      "kind": "trigger",
+      "name": "institutional_result_dependencies_updated",
+      "table": "institutional_result_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_result_dependencies_updated BEFORE UPDATE ON private.institutional_result_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_immutable",
+      "kind": "trigger",
+      "name": "institutional_result_invalidations_immutable",
+      "table": "institutional_result_invalidations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_result_invalidations_immutable BEFORE DELETE OR UPDATE ON private.institutional_result_invalidations FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_truncate_guard",
+      "kind": "trigger",
+      "name": "institutional_result_invalidations_truncate_guard",
+      "table": "institutional_result_invalidations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_result_invalidations_truncate_guard BEFORE TRUNCATE ON private.institutional_result_invalidations FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_updated",
+      "kind": "trigger",
+      "name": "institutional_result_invalidations_updated",
+      "table": "institutional_result_invalidations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_result_invalidations_updated BEFORE UPDATE ON private.institutional_result_invalidations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
       "id": "trigger:private.institutional_revision_proposals.institutional_revision_proposal_immutable",
@@ -54955,6 +55834,46 @@
       "definition": "CREATE TRIGGER institution_capability_set_updated_at BEFORE UPDATE ON public.institution_capability_profiles FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_audit",
+      "kind": "trigger",
+      "name": "institutional_recompute_candidates_audit",
+      "table": "institutional_recompute_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER institutional_recompute_candidates_audit AFTER INSERT OR DELETE OR UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_guard",
+      "kind": "trigger",
+      "name": "institutional_recompute_candidates_guard",
+      "table": "institutional_recompute_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_institutional_recompute_candidate_v1()",
+      "definition": "CREATE TRIGGER institutional_recompute_candidates_guard BEFORE DELETE OR UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_institutional_recompute_candidate_v1()"
+    },
+    {
+      "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_truncate_guard",
+      "kind": "trigger",
+      "name": "institutional_recompute_candidates_truncate_guard",
+      "table": "institutional_recompute_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_work_continuity_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_recompute_candidates_truncate_guard BEFORE TRUNCATE ON public.institutional_recompute_candidates FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_updated",
+      "kind": "trigger",
+      "name": "institutional_recompute_candidates_updated",
+      "table": "institutional_recompute_candidates",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_recompute_candidates_updated BEFORE UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:public.intake_domain_events.intake_domain_events_reject_update",
       "kind": "trigger",
       "name": "intake_domain_events_reject_update",
@@ -55733,6 +56652,16 @@
       "enabled": "O",
       "function": "private.enqueue_shadow_after_primary()",
       "definition": "CREATE TRIGGER processing_jobs_enqueue_controlled_shadow AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW EXECUTE FUNCTION private.enqueue_shadow_after_primary()"
+    },
+    {
+      "id": "trigger:public.processing_jobs.processing_jobs_institutional_recompute_settlement",
+      "kind": "trigger",
+      "name": "processing_jobs_institutional_recompute_settlement",
+      "table": "processing_jobs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.settle_institutional_recompute_v1()",
+      "definition": "CREATE TRIGGER processing_jobs_institutional_recompute_settlement AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW WHEN (((new.kind = 'agent_operation_brief'::text) AND (new.payload ? 'institutional_recompute_candidate_id'::text) AND (new.status = ANY (ARRAY['succeeded'::text, 'failed'::text, 'poison'::text, 'cancelled'::text])) AND (old.status IS DISTINCT FROM new.status))) EXECUTE FUNCTION private.settle_institutional_recompute_v1()"
     },
     {
       "id": "trigger:public.processing_jobs.processing_jobs_origination_budget_v1",
@@ -56989,6 +57918,56 @@
       "rls": false,
       "kind": "view",
       "name": "failures_without_cause",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": false
+    },
+    {
+      "id": "v:private.institutional_result_dependency_sources_v1",
+      "rls": false,
+      "kind": "view",
+      "name": "institutional_result_dependency_sources_v1",
       "grants": [
         [
           "postgres",

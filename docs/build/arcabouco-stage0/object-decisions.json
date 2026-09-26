@@ -2953,6 +2953,60 @@
       ]
     },
     {
+      "id": "function:private.backfill_institutional_result_dependencies_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.backfill_institutional_result_dependencies_v1()",
+          "kind": "function",
+          "name": "backfill_institutional_result_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.backfill_institutional_result_dependencies_v1()",
+          "kind": "function",
+          "name": "backfill_institutional_result_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 206,
+          "anchor": "create function private.backfill_institutional_result_dependencies_v1() returns bigint",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.backfill_work_milestones_v1()",
       "kind": "function",
       "catalogues": {
@@ -6659,6 +6713,60 @@
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
+      "id": "function:private.capture_institutional_configuration_event_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_institutional_configuration_event_v1()",
+          "kind": "function",
+          "name": "capture_institutional_configuration_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_institutional_configuration_event_v1()",
+          "kind": "function",
+          "name": "capture_institutional_configuration_event_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 354,
+          "anchor": "create function private.capture_institutional_configuration_event_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.capture_legacy_observation_v1()",
       "kind": "function",
       "catalogues": {
@@ -10060,6 +10168,12 @@
           "line": 45,
           "anchor": "create function private.domain_event_effect_v1(p_kind text) returns text",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 68,
+          "anchor": "create or replace function private.domain_event_effect_v1(p_kind text) returns text",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -10751,6 +10865,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.enqueue_institutional_recompute_v1(p_org uuid, p_candidate uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.enqueue_institutional_recompute_v1(p_org uuid, p_candidate uuid)",
+          "kind": "function",
+          "name": "enqueue_institutional_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_candidate uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.enqueue_institutional_recompute_v1(p_org uuid, p_candidate uuid)",
+          "kind": "function",
+          "name": "enqueue_institutional_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_candidate uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 649,
+          "anchor": "create function private.enqueue_institutional_recompute_v1(p_org uuid,p_candidate uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.enqueue_primary_case_analysis(p_organization_id uuid, p_processing_run_id uuid, p_intake_session_id uuid)",
@@ -14169,6 +14337,114 @@
       "consumer_status": "Consumido pelos comandos de identidade/dossiê, adaptadores legados, worker ou RLS; sem descoberta privada por nome."
     },
     {
+      "id": "function:private.guard_institutional_recompute_candidate_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_institutional_recompute_candidate_v1()",
+          "kind": "function",
+          "name": "guard_institutional_recompute_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_institutional_recompute_candidate_v1()",
+          "kind": "function",
+          "name": "guard_institutional_recompute_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 420,
+          "anchor": "create function private.guard_institutional_recompute_candidate_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_institutional_recompute_hold_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_institutional_recompute_hold_v1()",
+          "kind": "function",
+          "name": "guard_institutional_recompute_hold_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.guard_institutional_recompute_hold_v1()",
+          "kind": "function",
+          "name": "guard_institutional_recompute_hold_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 466,
+          "anchor": "create function private.guard_institutional_recompute_hold_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.guard_institutional_result_body()",
       "kind": "function",
       "catalogues": {
@@ -14223,6 +14499,12 @@
         {
           "path": "supabase/migrations/20260911020707_project_canonical_revisions.sql",
           "line": 167,
+          "anchor": "create or replace function private.guard_institutional_result_body() returns trigger language plpgsql set search_path = '' as $$",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 89,
           "anchor": "create or replace function private.guard_institutional_result_body() returns trigger language plpgsql set search_path = '' as $$",
           "mechanism": "direct_ddl"
         }
@@ -15928,6 +16210,114 @@
       "last_review_stage": "2"
     },
     {
+      "id": "function:private.institutional_approval_request_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_approval_request_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "institutional_approval_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_approval_request_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "institutional_approval_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 632,
+          "anchor": "create function private.institutional_approval_request_v1(p_org uuid,p_work uuid) returns table(request_id uuid,approver uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_approval_through_graph_v1(p_org uuid, p_work uuid, p_configuration uuid, p_request uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_approval_through_graph_v1(p_org uuid, p_work uuid, p_configuration uuid, p_request uuid)",
+          "kind": "function",
+          "name": "institutional_approval_through_graph_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_configuration uuid, p_request uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_approval_through_graph_v1(p_org uuid, p_work uuid, p_configuration uuid, p_request uuid)",
+          "kind": "function",
+          "name": "institutional_approval_through_graph_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_configuration uuid, p_request uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 853,
+          "anchor": "create function private.institutional_approval_through_graph_v1(p_org uuid,p_work uuid,p_configuration uuid,p_request uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.institutional_config_hash(v jsonb)",
       "kind": "function",
       "catalogues": {
@@ -15981,6 +16371,114 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.institutional_configuration_documents_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_configuration_documents_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_documents_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_configuration_documents_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_documents_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 152,
+          "anchor": "create function private.institutional_configuration_documents_v1(p_org uuid,p_configuration uuid) returns setof text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_configuration_head_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_configuration_head_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_head_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_configuration_head_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_head_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 235,
+          "anchor": "create function private.institutional_configuration_head_v1(p_org uuid,p_work uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.institutional_configuration_provenance(p_org uuid, p_configuration uuid)",
@@ -16038,6 +16536,438 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:private.institutional_configuration_source_versions_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_configuration_source_versions_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_source_versions_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_configuration_source_versions_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_source_versions_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 161,
+          "anchor": "create function private.institutional_configuration_source_versions_v1(p_org uuid,p_configuration uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_dependency_impact_v1(p_org uuid, p_source uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_dependency_impact_v1(p_org uuid, p_source uuid, p_work uuid)",
+          "kind": "function",
+          "name": "institutional_dependency_impact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_dependency_impact_v1(p_org uuid, p_source uuid, p_work uuid)",
+          "kind": "function",
+          "name": "institutional_dependency_impact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_source uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 303,
+          "anchor": "create function private.institutional_dependency_impact_v1(p_org uuid,p_source uuid,p_work uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_dependent_detail_v1(p_org uuid, p_dependent uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_dependent_detail_v1(p_org uuid, p_dependent uuid)",
+          "kind": "function",
+          "name": "institutional_dependent_detail_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_dependent uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_dependent_detail_v1(p_org uuid, p_dependent uuid)",
+          "kind": "function",
+          "name": "institutional_dependent_detail_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_dependent uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 866,
+          "anchor": "create function private.institutional_dependent_detail_v1(p_org uuid,p_dependent uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_lineage_representative_v1(p_org uuid, p_root uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_lineage_representative_v1(p_org uuid, p_root uuid)",
+          "kind": "function",
+          "name": "institutional_lineage_representative_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_root uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_lineage_representative_v1(p_org uuid, p_root uuid)",
+          "kind": "function",
+          "name": "institutional_lineage_representative_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_root uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 491,
+          "anchor": "create function private.institutional_lineage_representative_v1(p_org uuid,p_root uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_lineage_root_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_lineage_root_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_lineage_root_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_lineage_root_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_lineage_root_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 484,
+          "anchor": "create function private.institutional_lineage_root_v1(p_org uuid,p_result uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_recompute_assessment_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_recompute_assessment_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_recompute_assessment_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_recompute_assessment_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_recompute_assessment_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 525,
+          "anchor": "create function private.institutional_recompute_assessment_v1(p_org uuid,p_result uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_recompute_job_subject_v1(p_org uuid, p_candidate uuid, p_result uuid, p_session uuid, p_run uuid, p_root uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_recompute_job_subject_v1(p_org uuid, p_candidate uuid, p_result uuid, p_session uuid, p_run uuid, p_root uuid)",
+          "kind": "function",
+          "name": "institutional_recompute_job_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_candidate uuid, p_result uuid, p_session uuid, p_run uuid, p_root uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_recompute_job_subject_v1(p_org uuid, p_candidate uuid, p_result uuid, p_session uuid, p_run uuid, p_root uuid)",
+          "kind": "function",
+          "name": "institutional_recompute_job_subject_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_candidate uuid, p_result uuid, p_session uuid, p_run uuid, p_root uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 686,
+          "anchor": "create function private.institutional_recompute_job_subject_v1(p_org uuid,p_candidate uuid,p_result uuid,p_session uuid,p_run uuid,p_root uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_recompute_requester_authorized_v1(p_org uuid, p_work uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_recompute_requester_authorized_v1(p_org uuid, p_work uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "institutional_recompute_requester_authorized_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_recompute_requester_authorized_v1(p_org uuid, p_work uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "institutional_recompute_requester_authorized_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 505,
+          "anchor": "create function private.institutional_recompute_requester_authorized_v1(p_org uuid,p_work uuid,p_subject uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.institutional_response_value(content text, binding jsonb, assumption jsonb)",
       "kind": "function",
       "catalogues": {
@@ -16091,6 +17021,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.institutional_result_is_live_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_result_is_live_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_result_is_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_result_is_live_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_result_is_live_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 246,
+          "anchor": "create function private.institutional_result_is_live_v1(p_org uuid,p_result uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.institutional_source_context(p_org uuid, p_session uuid)",
@@ -16201,6 +17185,60 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.institutional_update_through_graph_v1(p_org uuid, p_work uuid, p_approver uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_update_through_graph_v1(p_org uuid, p_work uuid, p_approver uuid)",
+          "kind": "function",
+          "name": "institutional_update_through_graph_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_approver uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_update_through_graph_v1(p_org uuid, p_work uuid, p_approver uuid)",
+          "kind": "function",
+          "name": "institutional_update_through_graph_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_approver uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 835,
+          "anchor": "create function private.institutional_update_through_graph_v1(p_org uuid,p_work uuid,p_approver uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.intake_session_for_origination(p_organization_id uuid, p_session_id uuid)",
@@ -21001,6 +22039,60 @@
       ]
     },
     {
+      "id": "function:private.plan_institutional_recompute_v1(p_org uuid, p_work uuid, p_request uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.plan_institutional_recompute_v1(p_org uuid, p_work uuid, p_request uuid)",
+          "kind": "function",
+          "name": "plan_institutional_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_request uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.plan_institutional_recompute_v1(p_org uuid, p_work uuid, p_request uuid)",
+          "kind": "function",
+          "name": "plan_institutional_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_request uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 699,
+          "anchor": "create function private.plan_institutional_recompute_v1(p_org uuid,p_work uuid,p_request uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.plan_open_dependency_requests_v1(p_org uuid)",
       "kind": "function",
       "catalogues": {
@@ -22261,6 +23353,60 @@
       ]
     },
     {
+      "id": "function:private.project_institutional_result_dependencies_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.project_institutional_result_dependencies_v1()",
+          "kind": "function",
+          "name": "project_institutional_result_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.project_institutional_result_dependencies_v1()",
+          "kind": "function",
+          "name": "project_institutional_result_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 184,
+          "anchor": "create function private.project_institutional_result_dependencies_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.promote_contribution_to_work_v1(p_revision_id uuid, p_promotion_id uuid, p_expected_shared_revision_id uuid)",
       "kind": "function",
       "catalogues": {
@@ -22393,11 +23539,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -22416,11 +23557,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "private",
@@ -22433,8 +23569,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "0, 3, 23",
-      "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
+      "stage": "0, 3, 18 / 5A, 23",
+      "reason": "Aposentada na etapa 18 / 5A: o corpo privado passou a recusar pelo nome (project_revision_propagation_retired) e a execução foi revogada de todos os papéis de API; o evento de aprovação e o grafo comum a substituem. A remoção do objeto fica para a retirada geral da etapa 23.",
       "sources": [
         {
           "path": "supabase/migrations/20260911020808_project_revision_propagation.sql",
@@ -22447,6 +23583,18 @@
           "line": 32,
           "anchor": "create or replace function private.propagate_project_canonical_revision_v1(p_project_id uuid, p_request_id uuid, p_locale text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 1059,
+          "anchor": "create or replace function private.propagate_project_canonical_revision_v1(p_project_id uuid,p_request_id uuid,p_locale text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 1062,
+          "anchor": "revoke all on function private.propagate_project_canonical_revision_v1(uuid,uuid,text),public.propagate_project_canonical_revision_v1(uuid,uuid,text)",
+          "mechanism": "direct_grant_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -25952,6 +27100,60 @@
           "path": "supabase/migrations/20260925180927_work_dependency_events.sql",
           "line": 256,
           "anchor": "create function private.rebuild_incomplete_execution_dependencies_v1(p_org uuid) returns bigint",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.rebuild_incomplete_institutional_dependencies_v1(p_org uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.rebuild_incomplete_institutional_dependencies_v1(p_org uuid)",
+          "kind": "function",
+          "name": "rebuild_incomplete_institutional_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.rebuild_incomplete_institutional_dependencies_v1(p_org uuid)",
+          "kind": "function",
+          "name": "rebuild_incomplete_institutional_dependencies_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 222,
+          "anchor": "create function private.rebuild_incomplete_institutional_dependencies_v1(p_org uuid) returns bigint",
           "mechanism": "direct_ddl"
         }
       ]
@@ -35960,6 +37162,60 @@
       "consumer_status": "Consumido pelos comandos de contribuição, RLS, captura legada e auditoria; cliente sem escrita direta."
     },
     {
+      "id": "function:private.settle_institutional_recompute_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.settle_institutional_recompute_v1()",
+          "kind": "function",
+          "name": "settle_institutional_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.settle_institutional_recompute_v1()",
+          "kind": "function",
+          "name": "settle_institutional_recompute_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 806,
+          "anchor": "create function private.settle_institutional_recompute_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:private.settle_recompute_candidate_v1()",
       "kind": "function",
       "catalogues": {
@@ -41456,6 +42712,60 @@
           "path": "supabase/migrations/20260925204502_work_dependency_recompute.sql",
           "line": 165,
           "anchor": "create function private.work_recompute_transition_allowed_v1(p_from text,p_to text) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.work_stale_dependents_v1(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_stale_dependents_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "work_stale_dependents_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_stale_dependents_v1(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "work_stale_dependents_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 875,
+          "anchor": "create function private.work_stale_dependents_v1(p_org uuid,p_work uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -48255,6 +49565,70 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "function:private.worker_load_work_freshness_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_load_work_freshness_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_work_freshness_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_load_work_freshness_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_work_freshness_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 901,
+          "anchor": "create function private.worker_load_work_freshness_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "function:private.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
@@ -58725,16 +60099,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -58753,16 +60117,6 @@
               "postgres",
               "EXECUTE",
               false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
             ]
           ],
           "schema": "public",
@@ -58775,8 +60129,8 @@
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "refatorar",
-      "stage": "0, 3, 23",
-      "reason": "vincular helper/trigger ao contrato e autoridade do objeto consumidor; retirar somente após fechamento do grafo",
+      "stage": "0, 3, 18 / 5A, 23",
+      "reason": "Aposentada na etapa 18 / 5A: o corpo privado passou a recusar pelo nome (project_revision_propagation_retired) e a execução foi revogada de todos os papéis de API; o evento de aprovação e o grafo comum a substituem. A remoção do objeto fica para a retirada geral da etapa 23.",
       "sources": [
         {
           "path": "supabase/migrations/20260911020808_project_revision_propagation.sql",
@@ -58789,6 +60143,12 @@
           "line": 32,
           "anchor": "create or replace function private.propagate_project_canonical_revision_v1(p_project_id uuid, p_request_id uuid, p_locale text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 1062,
+          "anchor": "revoke all on function private.propagate_project_canonical_revision_v1(uuid,uuid,text),public.propagate_project_canonical_revision_v1(uuid,uuid,text)",
+          "mechanism": "direct_grant_revocation"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -75351,6 +76711,70 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "function:public.worker_load_work_freshness_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_load_work_freshness_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_work_freshness_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_load_work_freshness_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_work_freshness_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 912,
+          "anchor": "create function public.worker_load_work_freshness_v1(p_job_id uuid,p_capability_token text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "function:public.worker_load_work_turn_v1(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "catalogues": {
@@ -84604,6 +86028,150 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "policy:private.institutional_recompute_holds.institutional_recompute_holds_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_recompute_holds.institutional_recompute_holds_deny_clients",
+          "kind": "policy",
+          "name": "institutional_recompute_holds_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_recompute_holds",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_recompute_holds.institutional_recompute_holds_deny_clients",
+          "kind": "policy",
+          "name": "institutional_recompute_holds_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_recompute_holds",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 465,
+          "anchor": "create policy institutional_recompute_holds_deny_clients on private.institutional_recompute_holds as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_result_dependencies.institutional_result_dependencies_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_result_dependencies.institutional_result_dependencies_deny_clients",
+          "kind": "policy",
+          "name": "institutional_result_dependencies_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_result_dependencies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_result_dependencies.institutional_result_dependencies_deny_clients",
+          "kind": "policy",
+          "name": "institutional_result_dependencies_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_result_dependencies",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 144,
+          "anchor": "create policy institutional_result_dependencies_deny_clients on private.institutional_result_dependencies as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_result_invalidations.institutional_result_invalidations_deny_clients",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_result_invalidations.institutional_result_invalidations_deny_clients",
+          "kind": "policy",
+          "name": "institutional_result_invalidations_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_result_invalidations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_result_invalidations.institutional_result_invalidations_deny_clients",
+          "kind": "policy",
+          "name": "institutional_result_invalidations_deny_clients",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_result_invalidations",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 295,
+          "anchor": "create policy institutional_result_invalidations_deny_clients on private.institutional_result_invalidations as restrictive for all to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "policy:private.institutional_revision_proposals.institutional_revision_proposals_no_delete",
       "kind": "policy",
       "catalogues": {
@@ -93819,6 +95387,190 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_delete",
+          "kind": "policy",
+          "name": "institutional_recompute_candidates_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_delete",
+          "kind": "policy",
+          "name": "institutional_recompute_candidates_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 416,
+          "anchor": "create policy institutional_recompute_candidates_deny_delete on public.institutional_recompute_candidates for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_insert",
+          "kind": "policy",
+          "name": "institutional_recompute_candidates_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_insert",
+          "kind": "policy",
+          "name": "institutional_recompute_candidates_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 414,
+          "anchor": "create policy institutional_recompute_candidates_deny_insert on public.institutional_recompute_candidates for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_update",
+          "kind": "policy",
+          "name": "institutional_recompute_candidates_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_deny_update",
+          "kind": "policy",
+          "name": "institutional_recompute_candidates_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 415,
+          "anchor": "create policy institutional_recompute_candidates_deny_update on public.institutional_recompute_candidates for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_select_authorized",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_select_authorized",
+          "kind": "policy",
+          "name": "institutional_recompute_candidates_select_authorized",
+          "qual": "( SELECT private.can_access_capital_project(institutional_recompute_candidates.organization_id, institutional_recompute_candidates.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.institutional_recompute_candidates.institutional_recompute_candidates_select_authorized",
+          "kind": "policy",
+          "name": "institutional_recompute_candidates_select_authorized",
+          "qual": "( SELECT private.can_access_capital_project(institutional_recompute_candidates.organization_id, institutional_recompute_candidates.work_id) AS can_access_capital_project)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 413,
+          "anchor": "create policy institutional_recompute_candidates_select_authorized on public.institutional_recompute_candidates for select to authenticated using((select private.can_access_capital_project(organization_id,work_id)));",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "policy:public.intake_domain_events.intake_domain_events_select",
@@ -111119,6 +112871,360 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "r:private.institutional_recompute_holds",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.institutional_recompute_holds",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_recompute_holds",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.institutional_recompute_holds",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_recompute_holds",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 442,
+          "anchor": "create table private.institutional_recompute_holds (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.institutional_result_dependencies",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.institutional_result_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_result_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.institutional_result_dependencies",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_result_dependencies",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 108,
+          "anchor": "create table private.institutional_result_dependencies (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.institutional_result_invalidations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.institutional_result_invalidations",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_result_invalidations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.institutional_result_invalidations",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_result_invalidations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 255,
+          "anchor": "create table private.institutional_result_invalidations (",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "r:private.institutional_revision_proposals",
@@ -131582,6 +133688,134 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "r:public.institutional_recompute_candidates",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.institutional_recompute_candidates",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_recompute_candidates",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.institutional_recompute_candidates",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_recompute_candidates",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 368,
+          "anchor": "create table public.institutional_recompute_candidates (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "r:public.intake_domain_events",
       "kind": "table",
       "catalogues": {
@@ -151998,6 +154232,44 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:private.institutional_model_configurations.institutional_configurations_dependency_event",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_model_configurations.institutional_configurations_dependency_event",
+          "kind": "trigger",
+          "name": "institutional_configurations_dependency_event",
+          "table": "institutional_model_configurations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_institutional_configuration_event_v1()",
+          "definition": "CREATE TRIGGER institutional_configurations_dependency_event AFTER INSERT OR UPDATE OF status ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.capture_institutional_configuration_event_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_model_configurations.institutional_configurations_dependency_event",
+          "kind": "trigger",
+          "name": "institutional_configurations_dependency_event",
+          "table": "institutional_model_configurations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_institutional_configuration_event_v1()",
+          "definition": "CREATE TRIGGER institutional_configurations_dependency_event AFTER INSERT OR UPDATE OF status ON private.institutional_model_configurations FOR EACH ROW EXECUTE FUNCTION private.capture_institutional_configuration_event_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 364,
+          "anchor": "create trigger institutional_configurations_dependency_event after insert or update of status on private.institutional_model_configurations",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.institutional_model_configurations.institutional_revision_immutable",
       "kind": "trigger",
       "catalogues": {
@@ -152192,6 +154464,44 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:private.institutional_model_results.institutional_results_dependencies",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_model_results.institutional_results_dependencies",
+          "kind": "trigger",
+          "name": "institutional_results_dependencies",
+          "table": "institutional_model_results",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_institutional_result_dependencies_v1()",
+          "definition": "CREATE TRIGGER institutional_results_dependencies AFTER INSERT ON private.institutional_model_results FOR EACH ROW EXECUTE FUNCTION private.project_institutional_result_dependencies_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_model_results.institutional_results_dependencies",
+          "kind": "trigger",
+          "name": "institutional_results_dependencies",
+          "table": "institutional_model_results",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.project_institutional_result_dependencies_v1()",
+          "definition": "CREATE TRIGGER institutional_results_dependencies AFTER INSERT ON private.institutional_model_results FOR EACH ROW EXECUTE FUNCTION private.project_institutional_result_dependencies_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 203,
+          "anchor": "create trigger institutional_results_dependencies after insert on private.institutional_model_results for each row execute function private.project_institutional_result_dependencies_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:private.institutional_model_results.institutional_results_updated",
       "kind": "trigger",
       "catalogues": {
@@ -152346,6 +154656,348 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_guard",
+          "kind": "trigger",
+          "name": "institutional_recompute_holds_guard",
+          "table": "institutional_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_institutional_recompute_hold_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_holds_guard BEFORE DELETE OR UPDATE ON private.institutional_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.guard_institutional_recompute_hold_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_guard",
+          "kind": "trigger",
+          "name": "institutional_recompute_holds_guard",
+          "table": "institutional_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_institutional_recompute_hold_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_holds_guard BEFORE DELETE OR UPDATE ON private.institutional_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.guard_institutional_recompute_hold_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 477,
+          "anchor": "create trigger institutional_recompute_holds_guard before update or delete on private.institutional_recompute_holds for each row execute function private.guard_institutional_recompute_hold_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_truncate_guard",
+          "kind": "trigger",
+          "name": "institutional_recompute_holds_truncate_guard",
+          "table": "institutional_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_holds_truncate_guard BEFORE TRUNCATE ON private.institutional_recompute_holds FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_truncate_guard",
+          "kind": "trigger",
+          "name": "institutional_recompute_holds_truncate_guard",
+          "table": "institutional_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_holds_truncate_guard BEFORE TRUNCATE ON private.institutional_recompute_holds FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 478,
+          "anchor": "create trigger institutional_recompute_holds_truncate_guard before truncate on private.institutional_recompute_holds for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_updated",
+          "kind": "trigger",
+          "name": "institutional_recompute_holds_updated",
+          "table": "institutional_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_recompute_holds_updated BEFORE UPDATE ON private.institutional_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_recompute_holds.institutional_recompute_holds_updated",
+          "kind": "trigger",
+          "name": "institutional_recompute_holds_updated",
+          "table": "institutional_recompute_holds",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_recompute_holds_updated BEFORE UPDATE ON private.institutional_recompute_holds FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 479,
+          "anchor": "create trigger institutional_recompute_holds_updated before update on private.institutional_recompute_holds for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_immutable",
+          "kind": "trigger",
+          "name": "institutional_result_dependencies_immutable",
+          "table": "institutional_result_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_result_dependencies_immutable BEFORE DELETE OR UPDATE ON private.institutional_result_dependencies FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_immutable",
+          "kind": "trigger",
+          "name": "institutional_result_dependencies_immutable",
+          "table": "institutional_result_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_result_dependencies_immutable BEFORE DELETE OR UPDATE ON private.institutional_result_dependencies FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 145,
+          "anchor": "create trigger institutional_result_dependencies_immutable before update or delete on private.institutional_result_dependencies for each row execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_truncate_guard",
+          "kind": "trigger",
+          "name": "institutional_result_dependencies_truncate_guard",
+          "table": "institutional_result_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_result_dependencies_truncate_guard BEFORE TRUNCATE ON private.institutional_result_dependencies FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_truncate_guard",
+          "kind": "trigger",
+          "name": "institutional_result_dependencies_truncate_guard",
+          "table": "institutional_result_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_result_dependencies_truncate_guard BEFORE TRUNCATE ON private.institutional_result_dependencies FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 146,
+          "anchor": "create trigger institutional_result_dependencies_truncate_guard before truncate on private.institutional_result_dependencies for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_updated",
+          "kind": "trigger",
+          "name": "institutional_result_dependencies_updated",
+          "table": "institutional_result_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_result_dependencies_updated BEFORE UPDATE ON private.institutional_result_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_result_dependencies.institutional_result_dependencies_updated",
+          "kind": "trigger",
+          "name": "institutional_result_dependencies_updated",
+          "table": "institutional_result_dependencies",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_result_dependencies_updated BEFORE UPDATE ON private.institutional_result_dependencies FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 147,
+          "anchor": "create trigger institutional_result_dependencies_updated before update on private.institutional_result_dependencies for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_immutable",
+          "kind": "trigger",
+          "name": "institutional_result_invalidations_immutable",
+          "table": "institutional_result_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_result_invalidations_immutable BEFORE DELETE OR UPDATE ON private.institutional_result_invalidations FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_immutable",
+          "kind": "trigger",
+          "name": "institutional_result_invalidations_immutable",
+          "table": "institutional_result_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_result_invalidations_immutable BEFORE DELETE OR UPDATE ON private.institutional_result_invalidations FOR EACH ROW EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 296,
+          "anchor": "create trigger institutional_result_invalidations_immutable before update or delete on private.institutional_result_invalidations for each row execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_truncate_guard",
+          "kind": "trigger",
+          "name": "institutional_result_invalidations_truncate_guard",
+          "table": "institutional_result_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_result_invalidations_truncate_guard BEFORE TRUNCATE ON private.institutional_result_invalidations FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_truncate_guard",
+          "kind": "trigger",
+          "name": "institutional_result_invalidations_truncate_guard",
+          "table": "institutional_result_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_result_invalidations_truncate_guard BEFORE TRUNCATE ON private.institutional_result_invalidations FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 297,
+          "anchor": "create trigger institutional_result_invalidations_truncate_guard before truncate on private.institutional_result_invalidations for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_updated",
+          "kind": "trigger",
+          "name": "institutional_result_invalidations_updated",
+          "table": "institutional_result_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_result_invalidations_updated BEFORE UPDATE ON private.institutional_result_invalidations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_result_invalidations.institutional_result_invalidations_updated",
+          "kind": "trigger",
+          "name": "institutional_result_invalidations_updated",
+          "table": "institutional_result_invalidations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_result_invalidations_updated BEFORE UPDATE ON private.institutional_result_invalidations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 298,
+          "anchor": "create trigger institutional_result_invalidations_updated before update on private.institutional_result_invalidations for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:private.institutional_revision_proposals.institutional_revision_proposal_immutable",
@@ -161078,6 +163730,158 @@
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
     },
     {
+      "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_audit",
+          "kind": "trigger",
+          "name": "institutional_recompute_candidates_audit",
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_candidates_audit AFTER INSERT OR DELETE OR UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_audit",
+          "kind": "trigger",
+          "name": "institutional_recompute_candidates_audit",
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_candidates_audit AFTER INSERT OR DELETE OR UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 439,
+          "anchor": "create trigger institutional_recompute_candidates_audit after insert or update or delete on public.institutional_recompute_candidates for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_guard",
+          "kind": "trigger",
+          "name": "institutional_recompute_candidates_guard",
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_institutional_recompute_candidate_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_candidates_guard BEFORE DELETE OR UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_institutional_recompute_candidate_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_guard",
+          "kind": "trigger",
+          "name": "institutional_recompute_candidates_guard",
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_institutional_recompute_candidate_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_candidates_guard BEFORE DELETE OR UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_institutional_recompute_candidate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 436,
+          "anchor": "create trigger institutional_recompute_candidates_guard before update or delete on public.institutional_recompute_candidates for each row execute function private.guard_institutional_recompute_candidate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_truncate_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_truncate_guard",
+          "kind": "trigger",
+          "name": "institutional_recompute_candidates_truncate_guard",
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_candidates_truncate_guard BEFORE TRUNCATE ON public.institutional_recompute_candidates FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_truncate_guard",
+          "kind": "trigger",
+          "name": "institutional_recompute_candidates_truncate_guard",
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_work_continuity_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_recompute_candidates_truncate_guard BEFORE TRUNCATE ON public.institutional_recompute_candidates FOR EACH STATEMENT EXECUTE FUNCTION private.reject_work_continuity_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 437,
+          "anchor": "create trigger institutional_recompute_candidates_truncate_guard before truncate on public.institutional_recompute_candidates for each statement execute function private.reject_work_continuity_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_updated",
+          "kind": "trigger",
+          "name": "institutional_recompute_candidates_updated",
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_recompute_candidates_updated BEFORE UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.institutional_recompute_candidates.institutional_recompute_candidates_updated",
+          "kind": "trigger",
+          "name": "institutional_recompute_candidates_updated",
+          "table": "institutional_recompute_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_recompute_candidates_updated BEFORE UPDATE ON public.institutional_recompute_candidates FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 438,
+          "anchor": "create trigger institutional_recompute_candidates_updated before update on public.institutional_recompute_candidates for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
       "id": "trigger:public.intake_domain_events.intake_domain_events_reject_update",
       "kind": "trigger",
       "catalogues": {
@@ -164331,6 +167135,44 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "trigger:public.processing_jobs.processing_jobs_institutional_recompute_settlement",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.processing_jobs.processing_jobs_institutional_recompute_settlement",
+          "kind": "trigger",
+          "name": "processing_jobs_institutional_recompute_settlement",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.settle_institutional_recompute_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_institutional_recompute_settlement AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW WHEN (((new.kind = 'agent_operation_brief'::text) AND (new.payload ? 'institutional_recompute_candidate_id'::text) AND (new.status = ANY (ARRAY['succeeded'::text, 'failed'::text, 'poison'::text, 'cancelled'::text])) AND (old.status IS DISTINCT FROM new.status))) EXECUTE FUNCTION private.settle_institutional_recompute_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.processing_jobs.processing_jobs_institutional_recompute_settlement",
+          "kind": "trigger",
+          "name": "processing_jobs_institutional_recompute_settlement",
+          "table": "processing_jobs",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.settle_institutional_recompute_v1()",
+          "definition": "CREATE TRIGGER processing_jobs_institutional_recompute_settlement AFTER UPDATE OF status ON public.processing_jobs FOR EACH ROW WHEN (((new.kind = 'agent_operation_brief'::text) AND (new.payload ? 'institutional_recompute_candidate_id'::text) AND (new.status = ANY (ARRAY['succeeded'::text, 'failed'::text, 'poison'::text, 'cancelled'::text])) AND (old.status IS DISTINCT FROM new.status))) EXECUTE FUNCTION private.settle_institutional_recompute_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 827,
+          "anchor": "create trigger processing_jobs_institutional_recompute_settlement after update of status on public.processing_jobs for each row",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "trigger:public.processing_jobs.processing_jobs_origination_budget_v1",
@@ -169244,6 +172086,124 @@
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
+    },
+    {
+      "id": "v:private.institutional_result_dependency_sources_v1",
+      "kind": "view",
+      "catalogues": {
+        "production": {
+          "id": "v:private.institutional_result_dependency_sources_v1",
+          "rls": false,
+          "kind": "view",
+          "name": "institutional_result_dependency_sources_v1",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": false
+        },
+        "staging": {
+          "id": "v:private.institutional_result_dependency_sources_v1",
+          "rls": false,
+          "kind": "view",
+          "name": "institutional_result_dependency_sources_v1",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 18",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Resultados do modelo institucional no grafo comum de dependências: arestas do que cada resultado fixou, fatos de invalidação, candidatas e bloqueios de recálculo, planejamento e liquidação pelo mesmo contrato do 3B, leitura de atualidade para a análise de caso e retirada da propagação por revisão canônica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+          "line": 171,
+          "anchor": "create view private.institutional_result_dependency_sources_v1 with (security_invoker=true) as",
+          "mechanism": "direct_ddl"
+        }
+      ]
     },
     {
       "id": "v:private.intent_objective_routing_metrics_by_day",
@@ -177018,6 +179978,13 @@
       "decision": "preservar",
       "stage": "18 / 4",
       "reason": "Migração do incremento 4 de work_dependencies_and_continuity: referências e desfecho nos marcos, formato do follow-up e motivo de recusa nos pedidos, quatro comandos com núcleo privado e wrapper público, a leitura das atualizações e a trava do lease do worker na ordem global"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260926013425_institutional_result_dependencies.sql",
+      "decision": "preservar",
+      "stage": "18 / 5A",
+      "reason": "Migração do incremento 5A de work_dependencies_and_continuity: private.institutional_result_dependencies, private.institutional_result_invalidations, public.institutional_recompute_candidates e private.institutional_recompute_holds, o tipo de evento institutional_configuration, o planejador e a liquidação institucionais, o passo do grafo em aprovar e calcular com recuo para o cálculo antigo, a RPC de atualidade do worker e a retirada de propagate_project_canonical_revision_v1"
     }
   ],
   "staging_archive": [
