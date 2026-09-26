@@ -2210,6 +2210,7 @@
         "assumption_slot_unnamed": "Uma premissa da base de trabalho: a revisão {from} foi substituída pela revisão {to}",
         "method_release": "{name}: uma versão mais nova do método foi publicada",
         "graph_incomplete": "As dependências registradas estão incompletas; a execução será refeita por inteiro depois da reconstrução",
+        "institutional_configuration": "Configuração do modelo financeiro: a revisão aprovada {from} foi substituída pela revisão {to}",
         "unnamed": "sem nome visível",
         "unknownVersion": "não identificada",
         "affects": "Afeta: {executions}"
@@ -2221,12 +2222,22 @@
         "declined": "{label}: recálculo recusado",
         "failed": "{label}: o recálculo não foi concluído",
         "unnamed": "Execução sem nome",
+        "declineOne": "Recusar este recálculo",
+        "declineExplanation": "O recálculo é interrompido e nada mais é gravado por ele. O que já estava registrado continua como está, sem ser adotado.",
+        "institutional": {
+          "scheduled": "{label}: na fila para ser recalculado",
+          "produced": "{label}: sendo recalculado com os insumos atuais",
+          "settled": "{label}: recalculado com os insumos atuais; o novo resultado só passa a valer quando a atualização for adotada",
+          "declined": "{label}: recálculo recusado",
+          "failed": "{label}: o recálculo não foi concluído"
+        },
         "reasons": {
           "person": "Recusado por uma pessoa.",
           "requester": "Quem pediu a execução original não tem mais acesso a este trabalho.",
           "failed": "O recálculo não pôde ser produzido."
         }
       },
+      "merged": "{count, plural, one {Inclui # mudança registrada depois, já coberta por esta atualização.} other {Inclui # mudanças registradas depois, já cobertas por esta atualização.}}",
       "stayedValidNone": "Nenhuma outra execução deste trabalho.",
       "waitingNone": "Nada espera decisão nesta atualização.",
       "hold": {
@@ -2234,7 +2245,8 @@
         "basis_behind_source": "{execution}: aguardando uma revisão da base de trabalho que use a versão nova",
         "source_not_bindable": "{execution}: aguardando a verificação ou o direito de uso da versão nova",
         "method_not_executable": "{execution}: aguardando um método executável",
-        "graph_incomplete": "{execution}: aguardando a reconstrução das dependências"
+        "graph_incomplete": "{execution}: aguardando a reconstrução das dependências",
+        "configuration_behind_source": "{execution}: aguardando a aprovação de uma configuração sobre os documentos atuais"
       },
       "authorization": {
         "item": "{label}: recálculo com teto de {cost} e até {calls, plural, one {# chamada de modelo} other {# chamadas de modelo}}",
@@ -2294,11 +2306,44 @@
         "capital_project_artifact": "Resultado do trabalho",
         "company_debt_diagnostic": "Diagnóstico da dívida da companhia",
         "alternative_map": "Mapa de alternativas de dívida",
-        "meeting_brief": "Brief de reunião"
+        "meeting_brief": "Brief de reunião",
+        "user_followup_declined": "Continuação recusada",
+        "institutional_model_result": "Resultado do modelo financeiro"
+      },
+      "followups": {
+        "heading": "Continuações pedidas na conversa",
+        "status": {
+          "open": "Aguardando uma execução",
+          "awaiting_authorization": "Aguardando autorização",
+          "scheduled": "Execução pedida",
+          "ready": "Resultado pronto para adoção",
+          "adopted": "Adotada como base",
+          "declined": "Recusada",
+          "superseded": "Substituída"
+        },
+        "base": "Continua a partir de {label}, revisão {revision}.",
+        "execution": {
+          "none": "Nenhuma execução foi pedida para esta continuação. Ela começa quando um objetivo de execução repete este texto.",
+          "running": "{name}: execução em andamento.",
+          "result": "{name}: resultado registrado.",
+          "ended": "{name}: a execução terminou sem resultado. Um novo pedido com este objetivo continua daqui."
+        },
+        "adopt": "Adotar como base",
+        "adoptConfirm": "Confirmar adoção",
+        "adoptExplanation": "O resultado desta execução passa a ser a base aprovada, no lugar da base de que a continuação partiu, que continua registrada.",
+        "decline": "Recusar continuação",
+        "declineExplanation": "A continuação termina recusada, com o motivo escolhido. Uma execução já pedida continua registrada.",
+        "decided": {
+          "adopted": "Adotada como base em {date}."
+        },
+        "done": {
+          "adopted": "Continuação adotada como base."
+        }
       }
     },
     "workUpdateNames": {
       "unnamedMethod": "A análise desta base",
+      "institutionalModel": "O modelo financeiro",
       "repeated": "{name} ({count} execuções)",
       "metrics": {
         "netDebt": "Dívida líquida",

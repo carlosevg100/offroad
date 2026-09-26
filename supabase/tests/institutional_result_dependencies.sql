@@ -341,7 +341,8 @@ do $$ declare before jsonb;result jsonb;begin
 end $$;
 
 -- 4. The worker produces the recomputation through the existing job: the result completes, the
--- previous result is marked as previous and stays untouched, the candidate settles, the request is ready.
+-- candidate settles, the request is ready. Since 5C the previous result stays current (stored and
+-- untouched) until a person adopts the update; the adoption marks it as previous.
 select pg_temp.lease(pg_temp.job_of(pg_temp.id('R1')),repeat('s',64));
 do $$ declare context jsonb;job uuid:=pg_temp.job_of(pg_temp.id('R1'));r1 text:=pg_temp.id('R1')::text;c2 text:=pg_temp.id('C2')::text;begin
  perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000009');
@@ -358,6 +359,36 @@ end $$;
 create temporary table r0_before as select * from private.institutional_model_results where id=pg_temp.id('R0');
 select pg_temp.record(pg_temp.id('R1'),'completed');
 select pg_temp.complete_job(pg_temp.job_of(pg_temp.id('R1')),repeat('s',64));
+do $$ declare before private.institutional_model_results;after private.institutional_model_results;view jsonb;begin
+ select * into strict before from r0_before;
+ select * into strict after from private.institutional_model_results where id=pg_temp.id('R0');
+ if after.superseded_by is not null or after.artifact<>before.artifact or after.produced_at<>before.produced_at or after.configuration_id<>before.configuration_id
+ or after.canonical_revision_id<>before.canonical_revision_id then
+  raise exception 'the previous result changed before any adoption: %',to_jsonb(after);
+ end if;
+ if (select state from public.institutional_recompute_candidates where id=pg_temp.id('K1'))<>'settled'
+ or (select status from public.work_continuation_requests where work_id='c5a10000-0000-4000-9000-000000000010')<>'ready' then
+  raise exception 'the candidate did not settle or the request is not ready';
+ end if;
+ if private.institutional_lineage_root_v1('c5a10000-0000-4000-9000-000000000001',pg_temp.id('R1'))<>pg_temp.id('R0') then raise exception 'lineage root mismatch'; end if;
+ -- Not adopted yet: the view keeps the previous result (outdated, since its configuration moved) and
+ -- R0 still counts as stale.
+ perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
+ set local role authenticated;
+ view:=public.read_institutional_model_results_v1('c5a10000-0000-4000-9000-000000000010');
+ reset role;
+ perform pg_temp.act_as(null);
+ if view#>>'{latest,id}'<>pg_temp.id('R0')::text or view#>>'{latest,status}'<>'stale' or view#>'{latest,artifact}'<>'null'::jsonb then
+  raise exception 'a recomputation not adopted is shown as current: %',view->'latest';
+ end if;
+ if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleDependents'<>'1' then raise exception 'the result not yet replaced does not count as stale'; end if;
+ raise notice 'PASS: a completed recomputation is stored but not current before adoption; the previous result stays current and untouched';
+end $$;
+-- The owner adopts the update: the recomputation becomes current and the previous result previous.
+select pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
+select public.adopt_work_update_v1('c5a10000-0000-4000-9000-0000000000e1',(select id from public.work_continuation_requests where work_id='c5a10000-0000-4000-9000-000000000010'),
+ (select revision from public.work_continuation_requests where work_id='c5a10000-0000-4000-9000-000000000010'));
+select pg_temp.act_as(null);
 do $$ declare before private.institutional_model_results;after private.institutional_model_results;history jsonb;begin
  select * into strict before from r0_before;
  select * into strict after from private.institutional_model_results where id=pg_temp.id('R0');
@@ -365,11 +396,6 @@ do $$ declare before private.institutional_model_results;after private.instituti
  or after.canonical_revision_id<>before.canonical_revision_id then
   raise exception 'the previous result was not kept as previous: %',to_jsonb(after);
  end if;
- if (select state from public.institutional_recompute_candidates where id=pg_temp.id('K1'))<>'settled'
- or (select status from public.work_continuation_requests where work_id='c5a10000-0000-4000-9000-000000000010')<>'ready' then
-  raise exception 'the candidate did not settle or the request is not ready';
- end if;
- if private.institutional_lineage_root_v1('c5a10000-0000-4000-9000-000000000001',pg_temp.id('R1'))<>pg_temp.id('R0') then raise exception 'lineage root mismatch'; end if;
  perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
  set local role authenticated;
  history:=public.read_project_revision_history_v1('c5a10000-0000-4000-9000-000000000010');
@@ -381,7 +407,7 @@ do $$ declare before private.institutional_model_results;after private.instituti
  reset role;
  perform pg_temp.act_as(null);
  if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleDependents'<>'0' then raise exception 'a superseded result still counts as stale'; end if;
- raise notice 'PASS: the recomputed result supersedes the previous one, which stays stored, readable and unchanged; lineage names the root';
+ raise notice 'PASS: once adopted, the recomputed result supersedes the previous one, which stays stored, readable and unchanged; lineage names the root';
 end $$;
 
 -- 5. Two more approvals before the second recomputation completes: the scheduled candidate whose heads
@@ -416,9 +442,17 @@ do $$ declare k2 public.institutional_recompute_candidates;k3 public.institution
  perform pg_temp.record(pg_temp.id('R3'),'completed');
  perform pg_temp.complete_job(pg_temp.job_of(pg_temp.id('R3')),repeat('u',64));
  if (select state from public.institutional_recompute_candidates where id=k3.id)<>'settled'
- or (select superseded_by from private.institutional_model_results where id=pg_temp.id('R1'))<>pg_temp.id('R3')
+ or (select superseded_by from private.institutional_model_results where id=pg_temp.id('R1')) is not null then
+  raise exception 'the newest recomputation did not settle, or replaced the current result before adoption';
+ end if;
+ -- The adoption of the update makes it current: the result it replaces (R1) becomes previous; the
+ -- blocked result of the superseded candidate is not a result and stays as it is.
+ perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
+ perform public.adopt_work_update_v1('c5a10000-0000-4000-9000-0000000000e2',k3.request_id,(select revision from public.work_continuation_requests where id=k3.request_id));
+ perform pg_temp.act_as(null);
+ if (select superseded_by from private.institutional_model_results where id=pg_temp.id('R1'))<>pg_temp.id('R3')
  or (select superseded_by from private.institutional_model_results where id=pg_temp.id('R2')) is not null then
-  raise exception 'the newest recomputation did not settle and supersede';
+  raise exception 'the adopted recomputation did not supersede the result it replaces';
  end if;
  raise notice 'PASS: newer heads supersede a scheduled candidate; a lineage is recomputed once per heads, always keyed on its root';
 end $$;

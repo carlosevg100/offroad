@@ -65,6 +65,24 @@ export type WorkUpdateChangeRow = z.infer<typeof changeSchema>;
 
 const holdSchema = z.object({kind: holdKindSchema, signal: z.string(), subject: json, createdAt: z.string(), releasedAt: z.string().nullable()});
 
+/** An institutional model result as a dependent of an update (5A): the facts that invalidated it,
+ * its holds and its recomputation. A result is named "the financial model", never by an id. */
+export const institutionalHoldKindSchema = z.enum(["configuration_behind_source", "derived_source_not_rederived", "graph_incomplete"]);
+export type InstitutionalHoldKind = z.infer<typeof institutionalHoldKindSchema>;
+const institutionalChangeSchema = z.object({
+  eventId: recordIdSchema,
+  dependencyKind: z.enum(["source_version", "institutional_configuration"]).nullable(),
+  logicalKey: z.string().min(1),
+  reasonClass: z.enum(["data_change", "graph_incomplete"]),
+  gap: z.enum(["no_recorded_edges", "head_unknown", "head_behind_pin"]).nullable(),
+  pinned: json.nullable(),
+  head: json.nullable(),
+  createdAt: z.string(),
+  name: z.string().nullable(),
+});
+export type WorkUpdateInstitutionalChangeRow = z.infer<typeof institutionalChangeSchema>;
+const institutionalHoldSchema = z.object({kind: institutionalHoldKindSchema, signal: z.string(), subject: json, createdAt: z.string(), releasedAt: z.string().nullable()});
+
 const updateSchema = z.object({
   requestId: recordIdSchema,
   status: workUpdateStatusSchema,
@@ -92,6 +110,10 @@ const updateSchema = z.object({
     candidateId: recordIdSchema.nullable(),
     changes: z.array(changeSchema),
     holds: z.array(holdSchema),
+    dependentKind: z.enum(["work_execution", "institutional_result"]).default("work_execution"),
+    institutionalCandidateId: recordIdSchema.nullable().default(null),
+    institutionalChanges: z.array(institutionalChangeSchema).default([]),
+    institutionalHolds: z.array(institutionalHoldSchema).default([]),
   })),
   candidates: z.array(z.object({
     candidateId: recordIdSchema,
@@ -113,8 +135,56 @@ const updateSchema = z.object({
     updatedAt: z.string(),
   })),
   unaffected: z.array(z.object({executionId: recordIdSchema, label: z.string().nullable(), method: methodRefSchema.nullable().default(null), resultMilestoneId: recordIdSchema.nullable()})),
+  institutionalCandidates: z.array(z.object({
+    candidateId: recordIdSchema,
+    state: z.enum(["scheduled", "settled", "declined", "failed"]),
+    reason: z.string().nullable(),
+    revision: z.number().int().positive(),
+    baseResultId: recordIdSchema,
+    resultIds: z.array(recordIdSchema),
+    resultId: recordIdSchema.nullable(),
+    resultStatus: z.enum(["queued", "completed", "blocked"]).nullable(),
+    resultMilestoneId: recordIdSchema.nullable(),
+    current: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })).default([]),
 });
 export type WorkUpdateRow = z.infer<typeof updateSchema>;
+
+const followupSchema = z.object({
+  requestId: recordIdSchema,
+  status: workUpdateStatusSchema,
+  createdAt: z.string(),
+  createdBy: recordIdSchema.nullable(),
+  request: z.string(),
+  baseMilestoneId: recordIdSchema,
+  baseDecisionId: recordIdSchema,
+  baseRevision: z.number().int().positive(),
+  milestoneId: recordIdSchema.nullable(),
+  revision: z.number().int().positive().default(1),
+  updatedAt: z.string().nullable().default(null),
+  declineReason: z.string().nullable().default(null),
+  /** The execution the follow-up currently leads to, with the base it continues and where it stands. */
+  execution: z.object({
+    executionId: recordIdSchema,
+    baseMilestoneId: recordIdSchema,
+    baseRevision: z.number().int().positive(),
+    linkedAt: z.string(),
+    jobStatus: z.string().nullable(),
+    resultMilestoneId: recordIdSchema.nullable(),
+    method: methodRefSchema.nullable().default(null),
+  }).nullable().default(null),
+  decision: z.object({
+    milestoneId: recordIdSchema,
+    kind: z.enum(["update_adopted", "decision"]),
+    outcome: z.enum(["approved", "rejected"]).nullable(),
+    revision: z.number().int().positive().nullable(),
+    createdBy: recordIdSchema.nullable(),
+    occurredAt: z.string(),
+  }).nullable().default(null),
+});
+export type WorkFollowupRow = z.infer<typeof followupSchema>;
 
 export const workUpdateViewSchema = z.object({
   schemaVersion: z.literal("work-update-view.v1"),
@@ -123,17 +193,7 @@ export const workUpdateViewSchema = z.object({
   milestones: z.array(workMilestoneRowSchema),
   bases: z.array(continuationBaseRowSchema),
   updates: z.array(updateSchema),
-  followups: z.array(z.object({
-    requestId: recordIdSchema,
-    status: workUpdateStatusSchema,
-    createdAt: z.string(),
-    createdBy: recordIdSchema.nullable(),
-    request: z.string(),
-    baseMilestoneId: recordIdSchema,
-    baseDecisionId: recordIdSchema,
-    baseRevision: z.number().int().positive(),
-    milestoneId: recordIdSchema.nullable(),
-  })),
+  followups: z.array(followupSchema),
 });
 export type WorkUpdateView = z.infer<typeof workUpdateViewSchema>;
 
@@ -148,6 +208,8 @@ export const milestoneLabelKeys = [
   "dependency_recompute_authorization",
   "dependency_recompute_declined",
   "user_followup",
+  "user_followup_declined",
+  "institutional_model_result",
   "execution_brief",
   "institutional_model_configuration",
   "capital_project_artifact",

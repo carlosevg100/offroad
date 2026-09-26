@@ -590,7 +590,7 @@ do $$ declare r public.work_continuation_requests:=pg_temp.update_request();c pu
  c:=pg_temp.candidate('X2','awaiting_authorization');
  select * into strict wait from public.work_milestones where kind='awaiting_human' and subject_id=c.id;
  perform pg_temp.expect_error(format('select public.decline_work_update_v1(%L,%L,%L,%L,%L)',gen_random_uuid(),r.id,c.revision,'cost_not_justified',(pg_temp.candidate('X1','scheduled')).id),
-  'work_update_candidate_not_waiting','a scheduled candidate is not declined alone');
+  'work_update_changed','a scheduled candidate is declined alone only at the revision the person saw (5C: work_update_integration.sql declines one)');
  s:=public.decline_work_update_v1('a4190000-0000-4000-8000-000000000402',r.id,c.revision,'cost_not_justified',c.id);
  select * into strict c from public.work_recompute_candidates where id=c.id;
  select * into strict decision from public.work_milestones where id=(s->>'milestoneId')::uuid;

@@ -252,6 +252,11 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-dependency-recompute-concurrency.py
 
+      - name: Approval and planner, decline and worker, in both orders without a deadlock
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-work-update-integration-concurrency.py
+
       - name: Check stage-zero access surface and every file version against production journal
         run: |
           set -euo pipefail
