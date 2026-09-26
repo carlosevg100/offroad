@@ -13,9 +13,11 @@ export function splitOperandGap(gap: {code: string; reason: string}): {operand: 
 }
 
 /** Shows what the database returned and nothing more: state, outcome and reason always; the
- * published packet only when the bytes came back and parse as the released output; the gate
- * receipt only when its bytes match the stored fingerprint; the MD test question by question,
- * with no overall verdict; and each chart piece's decisive number as text, without a chart. */
+ * result only when the bytes came back under current inputs, taken from the blocks of its registered
+ * revision when there is one (with no identifier or fingerprint in the text) and from the published
+ * packet otherwise; the gate receipt only when its bytes match the stored fingerprint; the MD test
+ * question by question, with no overall verdict, over the packet and receipt the revision pinned;
+ * and each chart piece's decisive number as text, without a chart. */
 export async function WorkExecutionDetail({locale, projectId, view}: {locale: string; projectId: string; view: WorkExecutionView}) {
   const t = await getTranslations({locale, namespace: "App.workExecutions"});
   const when = new Intl.DateTimeFormat(locale, {dateStyle: "medium", timeStyle: "short"});
@@ -24,6 +26,9 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
   const result = view.result; const packet = result && !result.withheld ? result.packet : null; const marker = result && !result.withheld ? result.marker : null;
   const mdTest = result && !result.withheld ? result.mdTest : null; const decisive = result && !result.withheld ? result.decisiveNumbers : null;
   const gates = view.gates;
+  // A result with a registered revision is read as a result, not as raw evidence: the screen names no
+  // identifier or fingerprint. An execution without a revision keeps the evidence it always showed.
+  const recorded = result !== null && (result.withheld ? result.reason === "revision_restricted" : result.source === "revision");
   const alternativeLabel = (id: string) => packet?.alternatives.find(a => a.id === id)?.label ?? id;
   return <>
     <nav aria-label={t("detail.title")}><Link href={`/${locale}/app/projects/${projectId}/executions`}>{t("detail.list")}</Link><WorkExecutionRefresh label={t("detail.refresh")} /></nav>
@@ -36,26 +41,32 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
         <dt>{t("detail.requestedAt")}</dt><dd>{date(view.manifest?.requestedAt ?? view.createdAt)}</dd>
         {view.job ? <><dt>{t("detail.job")}</dt><dd>{known("states", view.job.status)} · {t("detail.attempts", {count: view.job.attempts})} · {date(view.job.updatedAt)}{view.job.lastErrorCode ? <> · {t("detail.lastError")}: <code>{view.job.lastErrorCode}</code></> : null}</dd></> : null}
         {view.manifest ? <><dt>{t("detail.method")}</dt><dd>{view.manifest.methodId ?? t("detail.notInformed")} {view.manifest.methodVersion ?? ""}</dd>
-          <dt>{t("detail.contractFingerprint")}</dt><dd><code>{view.manifest.contractFingerprint}</code></dd>
-          <dt>{t("detail.inputFingerprint")}</dt><dd><code>{view.manifest.inputFingerprint}</code></dd></> : null}
-        <dt>{t("detail.execution")}</dt><dd><code>{view.executionId}</code></dd>
+          {!recorded ? <><dt>{t("detail.contractFingerprint")}</dt><dd><code>{view.manifest.contractFingerprint}</code></dd>
+          <dt>{t("detail.inputFingerprint")}</dt><dd><code>{view.manifest.inputFingerprint}</code></dd></> : null}</> : null}
+        {!recorded ? <><dt>{t("detail.execution")}</dt><dd><code>{view.executionId}</code></dd></> : null}
       </dl>
     </section>
     <section><h2>{t("gates.title")}</h2>
       {!gates ? <p role="status">{t("gates.none")}</p>
-        : !gates.verified ? <p role="status">{t("gates.unverified")} <code>{gates.fingerprint}</code></p>
+        : !gates.verified ? <p role="status">{t("gates.unverified")}{!recorded ? <> <code>{gates.fingerprint}</code></> : null}</p>
         : <dl className="execution-facts">
           <dt>{t("gates.registration")}</dt><dd>{t(`gates.registrationStates.${gates.companyRegistration}`)}</dd>
           <dt>{t("gates.research")}</dt><dd>{t(`gates.researchStates.${gates.research}`)} · {t("gates.recordedOn", {date: date(gates.createdAt)})}</dd>
           <dt>{t("gates.situations")}</dt><dd><ul>{gates.methodSelection.situationIds.map(id => <li key={id}>{known("situations", id)}</li>)}</ul></dd>
           <dt>{t("gates.conventions")}</dt><dd>{!gates.conventions.length ? t("gates.noConventions") : <ul>{gates.conventions.map(c => <li key={c.key}><code>{c.key}</code>: {c.effective === "gap" ? t("gates.conventionGap") : t("gates.conventionApproved")}{c.status ? <> · {known("gates.conventionStatuses", c.status)}</> : null}{c.version ? <> · <code>{c.version}</code></> : null}</li>)}</ul>}</dd>
           <dt>{t("gates.voice")}</dt><dd>{t("gates.voiceCounts", {block: gates.voice.blockCount, warn: gates.voice.warnCount})}</dd>
-          <dt>{t("gates.fingerprint")}</dt><dd><code>{gates.fingerprint}</code></dd>
+          {!recorded ? <><dt>{t("gates.fingerprint")}</dt><dd><code>{gates.fingerprint}</code></dd></> : null}
         </dl>}
     </section>
-    {result?.withheld ? <section><h2>{t("detail.withheldTitle")}</h2><p role="status">{t("detail.withheldBody")}</p><p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p></section> : null}
-    {result && !result.withheld ? <section><h2>{t("detail.resultTitle")}</h2>
-      <p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p>
+    {result?.withheld ? <section><h2>{t("detail.withheldTitle")}</h2>
+      {result.reason === "revision_restricted"
+        ? <><p role="status">{t("detail.revisionWithheldBody")}</p><p>{t("detail.committedAt")}: {date(result.committedAt)}</p></>
+        : <><p role="status">{t("detail.withheldBody")}</p><p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p></>}
+    </section> : null}
+    {result && !result.withheld ? <section className={result.revision ? "execution-result execution-result--recorded" : "execution-result"}><h2>{t("detail.resultTitle")}</h2>
+      {result.revision
+        ? <><p>{t("detail.recorded", {revision: result.revision.revisionNo, date: date(result.revision.recordedAt)})}</p><p role="status">{t(`detail.freshness.${result.revision.freshness}`)}</p></>
+        : <p>{t("detail.resultFingerprint")}: <code>{result.resultFingerprint}</code> · {t("detail.committedAt")}: {date(result.committedAt)}</p>}
       {marker ? <p role="status">{t("detail.markerTitle")}: {known("reasons", marker.reason)}</p> : null}
       {!packet && !marker ? <p role="status">{t("detail.unreadable")}</p> : null}
       {packet ? <>
@@ -75,7 +86,7 @@ export async function WorkExecutionDetail({locale, projectId, view}: {locale: st
         {packet.contractualGaps.length ? <><h3>{t("detail.contractualGaps")}</h3><ul>{packet.contractualGaps.map((g, n) => <li key={n}>{g.subjectId}: <code>{g.code}</code></li>)}</ul></> : null}
         <h3>{t("detail.requirements")}</h3>
         {!packet.nextRequirements.length ? <p>{t("detail.noRequirements")}</p> : <ul>{packet.nextRequirements.map(r => <li key={r}>{known("requirements", r)}</li>)}</ul>}
-        <p>{t("detail.packetFingerprint")}: <code>{packet.fingerprint}</code></p>
+        {result.source === "packet" ? <p>{t("detail.packetFingerprint")}: <code>{packet.fingerprint}</code></p> : null}
       </> : null}
     </section> : null}
     {packet && mdTest ? <section><h2>{t("mdTest.title")}</h2><p>{t("mdTest.note")}</p>

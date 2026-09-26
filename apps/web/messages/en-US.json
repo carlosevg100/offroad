@@ -2445,7 +2445,14 @@
         "noRequirements": "No requirement pending.",
         "originalReason": "Reason recorded by the method",
         "decision": "the decision",
-        "packetFingerprint": "Packet fingerprint"
+        "packetFingerprint": "Packet fingerprint",
+        "recorded": "Result recorded as revision {revision} on {date}.",
+        "freshness": {
+          "current": "No recomputation or newer source version has replaced this result.",
+          "stale": "A recomputation or a newer source version has replaced this result. It stays available as recorded.",
+          "unknown": "It could not be confirmed that this result is still the latest."
+        },
+        "revisionWithheldBody": "The recorded result cannot be shown to you, because it uses a source that is not available to you."
       },
       "decisionStatus": {
         "framed": "Framed, without numerical comparison",
@@ -2555,7 +2562,8 @@
         "notEvaluated": {
           "gates_not_recorded": "With no recorded checks, the MD test was not evaluated.",
           "gates_unverified": "The checks do not match the stored fingerprint; the MD test was not evaluated.",
-          "evaluation_failed": "The MD test could not be evaluated on this packet."
+          "evaluation_failed": "The MD test could not be evaluated on this packet.",
+          "pins_mismatch": "The packet or the checks read now are not the ones the recorded result pinned; the MD test was not evaluated."
         },
         "questions": {
           "q1": "Did we understand the real problem, or did we only answer the literal request?",
@@ -2729,6 +2737,7 @@
       "awaitingAnswer": "Waiting for your answer",
       "noArtifacts": "Results will appear here as they are completed.",
       "openWork": "Open work",
+      "openExecutionResult": "Open the execution result",
       "existingProject": "The work already completed in this project is preserved. Open the analysis in the side panel or continue the conversation to add context, request a revision, or advance the next step.",
       "placeholder": "Continue the work, answer a question or request a change...",
       "attach": "Attach documents",

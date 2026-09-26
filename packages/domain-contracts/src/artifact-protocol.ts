@@ -966,6 +966,118 @@ export function manifestFromCapitalProcedurePacket(packet: CapitalProcedurePacke
   });
 }
 
+/** An execution result as a reader takes it back from its blocks: what the blocks carry, nothing recomputed. */
+export type ExecutionResultBlocksView = {
+  readonly framing: {readonly status: "framed" | "partial" | "prepared_for_human_review"; readonly question: string; readonly asOf: string; readonly contributionCount: number};
+  readonly alternatives: ReadonlyArray<{readonly id: string; readonly label: string; readonly kind: string; readonly calculated: boolean}>;
+  readonly ratios: ReadonlyArray<{
+    readonly id: string; readonly alternativeId: string; readonly ratioId: string; readonly definitionKind: string;
+    readonly measurementDate: string; readonly displayedRatio: string | null;
+  }>;
+  readonly recommendation: {readonly alternativeId: string} | null;
+  readonly informationGaps: ReadonlyArray<{readonly subjectId: string | null; readonly code: string; readonly reason: string}>;
+  readonly contractualGaps: ReadonlyArray<{readonly subjectId: string; readonly code: string}>;
+  readonly nextRequirements: readonly string[];
+  readonly decisiveNumbers: ReadonlyArray<{
+    readonly pieceId: string; readonly questionCode: (typeof executionResultDecisiveQuestions)[number]["questionCode"];
+    readonly alternativeId: string; readonly unit: string; readonly value: string; readonly periodLabel: string;
+  }>;
+};
+
+const noClaims = z.array(z.never()).length(0);
+const framingBlock = z.strictObject({blockKey: z.literal("framing"), kind: z.literal("section"), claims: noClaims,
+  content: z.strictObject({status: z.enum(["framed", "partial", "prepared_for_human_review"]), question: z.string(), asOf: z.string(), contributionCount: z.number().int().nonnegative()})});
+const alternativesBlock = z.strictObject({blockKey: z.literal("alternatives"), kind: z.literal("table"), claims: z.array(artifactClaimSchema),
+  content: z.strictObject({rows: z.array(z.strictObject({id: z.string(), label: z.string(), kind: z.string(), calculated: z.boolean()}))})});
+const ratiosBlock = z.strictObject({blockKey: z.literal("ratios"), kind: z.literal("table"), claims: z.array(artifactClaimSchema),
+  content: z.strictObject({rows: z.array(z.strictObject({id: z.string(), alternativeId: z.string(), ratioId: z.string(), definitionKind: z.string(),
+    measurementDate: z.string(), displayedRatio: z.string().nullable()}))})});
+const recommendationBlock = z.strictObject({blockKey: z.literal("recommendation"), kind: z.literal("section"), claims: z.array(artifactClaimSchema).length(1),
+  content: z.strictObject({alternativeId: z.string()})});
+const informationGapsBlock = z.strictObject({blockKey: z.literal("information-gaps"), kind: z.literal("table"), claims: noClaims,
+  content: z.strictObject({rows: z.array(z.strictObject({subjectId: z.string().nullable(), code: z.string(), reason: z.string()}))})});
+const contractualGapsBlock = z.strictObject({blockKey: z.literal("contractual-gaps"), kind: z.literal("table"), claims: noClaims,
+  content: z.strictObject({rows: z.array(z.strictObject({subjectId: z.string(), code: z.string()}))})});
+const requirementsBlock = z.strictObject({blockKey: z.literal("next-requirements"), kind: z.literal("section"), claims: noClaims,
+  content: z.strictObject({items: z.array(z.string())})});
+const decisiveBlock = z.strictObject({blockKey: z.string().regex(/^decisive:[a-z_]+:\d+$/), kind: z.literal("number"), claims: z.array(artifactClaimSchema).length(1),
+  content: z.strictObject({questionCode: z.enum(executionResultDecisiveQuestions.map((question) => question.questionCode) as ["lowest_available_cash_by_period", "largest_net_financing_outflow_by_period"]),
+    alternativeId: z.string(), unit: z.string(), value: z.string().regex(decimalText), periodLabel: z.string(), path: z.string()})});
+
+/**
+ * The reader of `capitalProcedurePacketBlocks`: the blocks of an execution result revision back into
+ * the fields they carry. Every block the mapping writes must be there once and consistent with its
+ * claims (alternative and ratio claims name their rows, the recommendation claim names the
+ * alternative, each number claim repeats its block's value, unit and period); an unknown key, a
+ * missing block or an inconsistent claim gives null, and the reader then shows nothing from it.
+ */
+export function readCapitalProcedurePacketBlocks(blocks: ReadonlyArray<{readonly blockKey: string; readonly kind: string; readonly content: unknown; readonly claims: unknown}>): ExecutionResultBlocksView | null {
+  const byKey = new Map<string, {blockKey: string; kind: string; content: unknown; claims: unknown}>();
+  for (const block of blocks) {
+    if (byKey.has(block.blockKey)) return null;
+    byKey.set(block.blockKey, {blockKey: block.blockKey, kind: block.kind, content: block.content, claims: block.claims});
+  }
+  const take = <T>(key: string, schema: z.ZodType<T>, optional = false): T | null | undefined => {
+    const block = byKey.get(key);
+    byKey.delete(key);
+    if (block === undefined) return optional ? null : undefined;
+    const parsed = schema.safeParse(block);
+    return parsed.success ? parsed.data : undefined;
+  };
+  const framing = take("framing", framingBlock);
+  const alternatives = take("alternatives", alternativesBlock);
+  const ratios = take("ratios", ratiosBlock, true);
+  const recommendation = take("recommendation", recommendationBlock, true);
+  const informationGaps = take("information-gaps", informationGapsBlock);
+  const contractualGaps = take("contractual-gaps", contractualGapsBlock);
+  const requirements = take("next-requirements", requirementsBlock);
+  if (!framing || !alternatives || ratios === undefined || recommendation === undefined || !informationGaps || !contractualGaps || !requirements) return null;
+  const rowsNamedByClaims = (rows: ReadonlyArray<{id: string}>, claims: ReadonlyArray<{claimId: string}>) => (
+    rows.length === claims.length && rows.every((row, index) => claims[index]?.claimId === row.id));
+  if (!rowsNamedByClaims(alternatives.content.rows, alternatives.claims) || (ratios !== null && !rowsNamedByClaims(ratios.content.rows, ratios.claims))) return null;
+  if (recommendation !== null && (recommendation.claims[0]!.claimId !== "recommendation" || recommendation.claims[0]!.value !== recommendation.content.alternativeId)) return null;
+  const decisiveNumbers: Array<ExecutionResultBlocksView["decisiveNumbers"][number]> = [];
+  for (const block of blocks) {
+    if (!block.blockKey.startsWith("decisive:")) continue;
+    const parsed = decisiveBlock.safeParse(byKey.get(block.blockKey));
+    byKey.delete(block.blockKey);
+    if (!parsed.success) return null;
+    const {content, claims} = parsed.data;
+    const claim = claims[0]!;
+    if (!parsed.data.blockKey.startsWith(`decisive:${content.questionCode}:`) || claim.claimId !== `${content.questionCode}:${content.alternativeId}`
+      || claim.value !== content.value || claim.unit !== content.unit || claim.period !== content.periodLabel) return null;
+    decisiveNumbers.push({pieceId: claim.claimId, questionCode: content.questionCode, alternativeId: content.alternativeId, unit: content.unit, value: content.value, periodLabel: content.periodLabel});
+  }
+  if (byKey.size > 0) return null;
+  return freezeArtifactValue({
+    framing: framing.content,
+    alternatives: alternatives.content.rows,
+    ratios: ratios?.content.rows ?? [],
+    recommendation: recommendation ? {alternativeId: recommendation.content.alternativeId} : null,
+    informationGaps: informationGaps.content.rows,
+    contractualGaps: contractualGaps.content.rows,
+    nextRequirements: requirements.content.items,
+    decisiveNumbers,
+  });
+}
+
+// Conversation citations ---------------------------------------------------------------------
+//
+// An answer of the conversation that cites the result of an execution names the execution and the
+// exact revision it read, in `metadata.citations`; the interface links to that revision. The
+// citation carries identifiers only, never the text or the numbers of the result.
+
+export const executionResultCitationSchema = z.strictObject({kind: z.literal("execution_result"), executionId: uuid, revisionId: uuid});
+export type ExecutionResultCitation = z.infer<typeof executionResultCitationSchema>;
+
+/** The execution results a message's metadata cites; anything else in the metadata is ignored, and a malformed citation list cites nothing. */
+export function executionResultCitations(metadata: unknown): readonly ExecutionResultCitation[] {
+  if (metadata === null || typeof metadata !== "object" || Array.isArray(metadata)) return [];
+  const parsed = z.array(executionResultCitationSchema).max(20).safeParse((metadata as Record<string, unknown>).citations);
+  if (!parsed.success || duplicates(parsed.data.map((citation) => citation.revisionId))) return [];
+  return freezeArtifactValue(parsed.data);
+}
+
 // Legacy labeling ----------------------------------------------------------------------------
 //
 // Four historical shapes become `legacy` revisions. Each keeps the row's own fingerprint verbatim

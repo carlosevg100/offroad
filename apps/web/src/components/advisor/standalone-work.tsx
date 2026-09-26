@@ -5,7 +5,9 @@ import {WorkContextPanel} from "@/components/advisor/work-context-panel";
 import {AdvisorProject} from "./advisor-project";
 import {WorkUpdates} from "./work-updates";
 import {advisorProjectCopy} from "@/lib/advisor/advisor-project-copy";
+import {executionResultCitations} from "@offroad/domain-contracts";
 import {continuationNote} from "@/lib/advisor/work-continuation";
+import {executionResultHref} from "@/lib/execution/revision";
 import {loadWorkUpdates} from "@/lib/advisor/work-updates-reader";
 import {summarizeWorkActivity} from "@/lib/advisor/work-activity";
 import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
@@ -50,7 +52,8 @@ export async function StandaloneWork({locale, project}: {
     activity={summarizeWorkActivity(activity)}
     messages={(messages ?? []).map(message => ({id: message.id, role: message.role,
       humanAuthorId: message.human_author_id, content: message.content, status: message.status, errorCode: message.error_code, createdAt: message.created_at,
-      continuation: continuationNote(message.metadata)}))}
+      continuation: continuationNote(message.metadata),
+      citedResults: message.role === "assistant" ? executionResultCitations(message.metadata).map((citation) => ({href: executionResultHref(locale, project.id, citation)})) : []}))}
     activityEvents={[]} coverage={{verified: 0, total: 0, openIssues: 0, notExamined: 0}}
     openRequirements={[]} decisionRecords={[]} proposals={[]}
     projectId={project.id} projectName={project.project_name}
