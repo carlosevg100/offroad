@@ -1,7 +1,8 @@
 "use client";
 
+import {moveStructureSection, presentationAudiences, type PresentationAudience, type PresentationStructure} from "@offroad/case-export/presentation-structure";
 import {offroadHouseTemplateDefinition, pdfRenderableFonts, presentationTemplateColorKeys, suggestedPdfFont} from "@offroad/case-export/presentation-template";
-import {useTranslations} from "next-intl";
+import {useFormatter, useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
 import {useState, useTransition, type FormEvent} from "react";
 
@@ -28,33 +29,39 @@ function initialValues(stored: StoredPresentationTemplate | null) {
 }
 
 /**
- * Choose and preview the visual identity a delivery is rendered with. The Offroad template is the
- * default and stays available; a client identity is recorded with an explicit PDF alternative for
- * any family this renderer cannot embed, because nothing is ever substituted silently.
+ * Choose and preview the visual identity a delivery is rendered with, and the semantic structure
+ * of the presentations: the order of the sections, which fields are required and who each section
+ * is for. Every save is a new immutable version; the previous versions stay listed. The Offroad
+ * template is the default and stays available; a client identity is recorded with an explicit PDF
+ * alternative for any family this renderer cannot embed, because nothing is ever substituted silently.
  */
 export function PresentationTemplateSettings({context, locale, projectId}: {context: PresentationTemplateContext; locale: "pt-BR" | "en-US"; projectId: string}) {
   const t = useTranslations("PresentationTemplate");
+  const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [scope, setScope] = useState<Scope>(context.project ? "project" : "organization");
   const stored = scope === "project" ? context.project : context.organization;
   const [values, setValues] = useState(() => initialValues(stored));
+  const [structure, setStructure] = useState<PresentationStructure>(() => stored?.structure ?? context.houseStructure);
   const [error, setError] = useState<TemplateError | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [savedVersion, setSavedVersion] = useState<number | null>(null);
 
   const changeScope = (next: Scope) => {
+    const target = next === "project" ? context.project : context.organization;
     setScope(next);
-    setValues(initialValues(next === "project" ? context.project : context.organization));
-    setError(null); setSaved(false);
+    setValues(initialValues(target));
+    setStructure(target?.structure ?? context.houseStructure);
+    setError(null); setSavedVersion(null);
   };
 
   const run = (formData: FormData) => {
-    setError(null); setSaved(false);
+    setError(null); setSavedVersion(null);
     startTransition(async () => {
       try {
         const result = await savePresentationTemplate(formData);
         if (!result.ok) setError(result.error);
-        else {setSaved(true); router.refresh();}
+        else {setSavedVersion(result.status === "stored" ? result.versionNo : null); router.refresh();}
       } catch {
         setError("save");
       }
@@ -65,11 +72,11 @@ export function PresentationTemplateSettings({context, locale, projectId}: {cont
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     formData.set("intent", "store");
+    formData.set("structure", JSON.stringify(structure));
     run(formData);
   };
 
-  const clear = (event: FormEvent<HTMLFormElement> | null) => {
-    void event;
+  const clear = () => {
     const formData = new FormData();
     formData.set("locale", locale); formData.set("projectId", projectId);
     formData.set("scope", scope); formData.set("intent", "clear");
@@ -77,9 +84,24 @@ export function PresentationTemplateSettings({context, locale, projectId}: {cont
     run(formData);
   };
 
+  const toggleAudience = (sectionKey: string, audience: PresentationAudience) => {
+    setStructure((current) => ({...current, sections: current.sections.map((section) => {
+      if (section.key !== sectionKey) return section;
+      const present = section.audiences.includes(audience);
+      if (present && section.audiences.length === 1) return section;
+      return {...section, audiences: present ? section.audiences.filter((item) => item !== audience) : [...section.audiences, audience]};
+    })}));
+  };
+  const toggleRequired = (sectionKey: string, fieldKey: string) => {
+    setStructure((current) => ({...current, sections: current.sections.map((section) => section.key !== sectionKey ? section
+      : {...section, fields: section.fields.map((field) => field.key === fieldKey ? {...field, required: !field.required} : field)})}));
+  };
+
   const displaySuggestion = suggestedPdfFont(values.fontDisplay);
   const bodySuggestion = suggestedPdfFont(values.fontBody);
   const effective = context.effective;
+  const date = (iso: string) => format.dateTime(new Date(iso), {dateStyle: "medium"});
+  const previousVersions = stored?.versions.filter((version) => !version.isCurrent) ?? [];
 
   return <section className={styles.template} data-testid="presentation-template-settings" data-scope={scope}>
     <p className={styles.current} data-testid="presentation-template-current">
@@ -87,6 +109,9 @@ export function PresentationTemplateSettings({context, locale, projectId}: {cont
         ? t("currentClient", {name: effective.definition.templateKey, version: effective.definition.templateVersion, scope: t(`scope.${effective.scope}`)})
         : t("currentHouse")}
     </p>
+    {effective && <p className={styles.muted} data-testid="presentation-template-version" data-version={effective.versionNo}>
+      {t("version", {number: effective.versionNo, date: date(effective.versionCreatedAt)})}
+    </p>}
     {effective && <p className={styles.muted}>{t("fingerprint", {fingerprint: effective.fingerprint.slice(0, 12)})}</p>}
     <p className={styles.muted}>{t("intro")}</p>
 
@@ -146,12 +171,59 @@ export function PresentationTemplateSettings({context, locale, projectId}: {cont
           </label>)}
         </fieldset>
         {stored?.definition.logo && <label className={styles.removeLogo}><input type="checkbox" name="removeLogo" />{t("removeLogo")}</label>}
+
+        <fieldset className={styles.structure} data-testid="presentation-template-structure">
+          <legend>{t("structureLegend")}</legend>
+          <p className={styles.muted}>{t("structureIntro")}</p>
+          <ol className={styles.sections}>
+            {structure.sections.map((section, index) => <li key={section.key} className={styles.section} data-section-key={section.key}>
+              <div className={styles.sectionHeader}>
+                <span className={styles.sectionTitle}>{section.title[locale]}</span>
+                <span className={styles.sectionMoves}>
+                  <button type="button" disabled={pending || index === 0} aria-label={t("moveUp", {title: section.title[locale]})}
+                    onClick={() => setStructure((current) => moveStructureSection(current, section.key, "up"))}>↑</button>
+                  <button type="button" disabled={pending || index === structure.sections.length - 1} aria-label={t("moveDown", {title: section.title[locale]})}
+                    onClick={() => setStructure((current) => moveStructureSection(current, section.key, "down"))}>↓</button>
+                </span>
+              </div>
+              <div className={styles.audiences} role="group" aria-label={t("audiencesLegend")}>
+                {presentationAudiences.map((audience) => <label key={audience}>
+                  <input type="checkbox" checked={section.audiences.includes(audience)}
+                    disabled={pending || (section.audiences.includes(audience) && section.audiences.length === 1)}
+                    onChange={() => toggleAudience(section.key, audience)} />
+                  {t(`audience.${audience}`)}
+                </label>)}
+              </div>
+              <ul className={styles.fields}>
+                {section.fields.map((field) => <li key={field.key}>
+                  <label>
+                    <input type="checkbox" checked={field.required} disabled={pending} onChange={() => toggleRequired(section.key, field.key)}
+                      data-testid={`presentation-template-required-${section.key}-${field.key}`} />
+                    <span>{field.title[locale]}</span>
+                    <span className={styles.kind}>{t(`kinds.${field.kind}`)}</span>
+                    <span className={styles.required}>{t("fieldRequired")}</span>
+                  </label>
+                </li>)}
+              </ul>
+            </li>)}
+          </ol>
+        </fieldset>
+
         <div className={styles.actions}>
           <button type="submit" disabled={pending}>{t("save")}</button>
-          <button type="button" disabled={pending || !stored} onClick={() => clear(null)}>{t("useHouse")}</button>
+          <button type="button" disabled={pending || !stored} onClick={clear}>{t("useHouse")}</button>
         </div>
-        {saved && <p className={styles.saved} role="status">{t("saved")}</p>}
+        {savedVersion !== null && <p className={styles.saved} role="status" data-testid="presentation-template-saved" data-version={savedVersion}>{t("savedVersion", {number: savedVersion})}</p>}
         {error && <p className={styles.error} role="alert">{t(`errors.${error}`)}</p>}
       </form>}
+
+    {stored && <section className={styles.history} data-testid="presentation-template-history" aria-label={t("versionHistoryTitle")}>
+      <h3>{t("versionHistoryTitle")}</h3>
+      {previousVersions.length === 0
+        ? <p className={styles.muted}>{t("noPreviousVersions")}</p>
+        : <ul>{previousVersions.map((version) => <li key={version.versionId} data-version={version.versionNo}>
+          {t("versionEntry", {number: version.versionNo, date: date(version.createdAt), author: version.authorName ?? t("authorUnknown")})}
+        </li>)}</ul>}
+    </section>}
   </section>;
 }

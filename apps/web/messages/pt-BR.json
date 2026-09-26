@@ -6311,8 +6311,33 @@
     "save": "Salvar identidade",
     "useHouse": "Voltar ao template Offroad",
     "saved": "Identidade atualizada. Os próximos arquivos usam esta versão.",
+    "savedVersion": "Identidade gravada como versão {number}. Os próximos arquivos usam esta versão.",
+    "version": "Versão {number}, gravada em {date}.",
+    "versionHistoryTitle": "Versões anteriores",
+    "versionEntry": "Versão {number}, {date}, {author}",
+    "authorUnknown": "autor não informado",
+    "noPreviousVersions": "Nenhuma versão anterior.",
+    "structureLegend": "Estrutura das apresentações",
+    "structureIntro": "As seções abaixo, nesta ordem, formam a apresentação. Marque os campos obrigatórios e para quem cada seção se destina. Um campo obrigatório sem conteúdo aparece no arquivo como lacuna nomeada, nunca preenchido.",
+    "moveUp": "Subir a seção {title}",
+    "moveDown": "Descer a seção {title}",
+    "audiencesLegend": "Destinatários da seção",
+    "audience": {
+      "internal": "Uso interno",
+      "advisor": "Assessores",
+      "external": "Terceiros"
+    },
+    "fieldRequired": "Obrigatório",
+    "kinds": {
+      "text": "Texto",
+      "number": "Número",
+      "table": "Tabela",
+      "chart": "Gráfico",
+      "source_list": "Lista de fontes"
+    },
     "errors": {
       "invalid": "Revise os campos: cores em hexadecimal de seis dígitos, nome e versão no formato indicado.",
+      "structure": "Revise a estrutura: cada seção precisa de ao menos um campo com nome e tipo conhecidos, sem repetições, e de ao menos um destinatário.",
       "unsupported_font": "Escolha uma fonte de PDF entre as disponíveis. Nenhuma fonte é substituída sem a sua escolha.",
       "logo": "O logotipo precisa ser PNG ou JPEG com até 2 MB e ficar na área da sua organização.",
       "denied": "Somente proprietários e administradores da organização alteram a identidade visual.",
