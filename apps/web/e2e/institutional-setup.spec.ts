@@ -173,12 +173,13 @@ test("guided institutional setup calculates only after review and survives resum
  await expect.poll(latestUpdate,{message:"the local worker recalculates the model in an update of the work",timeout:180_000,intervals:[2_000]}).toBe("ready");
  await resultLink.click();
  await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.stale);
- await page.goto(`${projectPath}#work-updates`);
+ // Only the fragment changes, so goto keeps the document the server rendered before the update was ready.
+ await page.goto(`${projectPath}#work-updates`);await page.reload();
  const update=page.locator('article.work-update[data-status="ready"]');
  await update.getByRole("button",{name:messages.App.workUpdates.adopt.action,exact:true}).click();
  await update.getByRole("button",{name:messages.App.workUpdates.adopt.confirm,exact:true}).click();
  await expect.poll(latestUpdate,{timeout:30_000}).toBe("adopted");
- await page.goto(projectPath);
+ await page.goto(projectPath);await page.reload();
  await resultLink.click();
  await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed,{timeout:120_000});
  await expect(xlsx).not.toHaveAttribute("href",resultUrl!);

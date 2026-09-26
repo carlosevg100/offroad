@@ -191,7 +191,9 @@ test("a mixed update of an execution and the financial model is adopted in one a
     {message: "the local worker recalculates the model inside the open update", timeout: 180_000, intervals: [2_000]}).toBe("settled");
   const r1 = sql(`select c.result_id ${recalculation};`);
   expect(sql(`select status from public.work_continuation_requests where id='${updateId}';`)).toBe("open");
+  // A goto that only changes the fragment keeps the rendered document, so every read of new facts reloads.
   await page.goto(`/pt-BR/app/projects/${projectId}#work-institutional-model-result`);
+  await page.reload();
   const panel = page.getByTestId("institutional-model-result");
   await expect(panel.getByRole("status")).toHaveText(results.status.stale);
   await expect(page.locator(`a[href$="/financial-results/${r1}/xlsx"]`)).toHaveCount(0);
@@ -203,6 +205,7 @@ test("a mixed update of an execution and the financial model is adopted in one a
   await expect.poll(() => sql(`select status from public.work_continuation_requests where id='${updateId}';`),
     {message: "the local worker recomputes the execution and the update becomes ready", timeout: 300_000, intervals: [3_000]}).toBe("ready");
   await page.goto(`/pt-BR/app/projects/${projectId}#work-updates`);
+  await page.reload();
   const ready = page.locator('article.work-update[data-status="ready"]');
   await expect(ready).toContainText(fill(updates.recomputation.settled, {label: capitalTitle}));
   await expect(ready).toContainText(fill(updates.recomputation.institutional.settled, {label: names.institutionalModel}));
@@ -229,6 +232,7 @@ test("a mixed update of an execution and the financial model is adopted in one a
     .toBe([milestone("work_execution", recomputed), milestone("institutional_model_result", r1), milestone("work_execution", rootId), milestone("institutional_model_result", r0)].join(","));
   expect(sql(`select superseded_by from private.institutional_model_results where id='${r0}';`)).toBe(r1);
   await page.goto(`/pt-BR/app/projects/${projectId}#work-institutional-model-result`);
+  await page.reload();
   await expect(panel.getByRole("status")).toHaveText(results.status.completed);
   await expect(page.locator(`a[href$="/financial-results/${r1}/xlsx"]`)).toHaveCount(1);
   await test.info().attach("mixed-update-adopted", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
@@ -263,6 +267,7 @@ test("a recalculation of the financial model declined before the worker runs it 
   expect(sql(`select status from public.processing_jobs where id='${job}';`)).toBe("queued");
 
   await page.goto(`/pt-BR/app/projects/${projectId}#work-updates`);
+  await page.reload();
   const scheduled = page.locator('article.work-update[data-status="scheduled"]');
   const entry = scheduled.locator('li.work-update__recomputation[data-kind="institutional"]');
   await expect(entry).toContainText(fill(updates.recomputation.institutional.scheduled, {label: names.institutionalModel}));
