@@ -283,8 +283,14 @@ test("a recalculation of the financial model declined before the worker runs it 
   await entry.getByRole("button", {name: updates.decline.confirm, exact: true}).click();
   await expect.poll(() => sql(`select c.state||':'||c.reason ${candidate};`), {timeout: 30_000}).toBe("declined:person_declined:not_needed");
   expect(sql(`select status||':'||(last_error->>'reason') from public.processing_jobs where id='${job}';`)).toBe("cancelled:person_declined");
+  // Its only recalculation declined, the update itself is declined and moves to the earlier updates.
+  expect(sql(`select r.status from public.work_continuation_requests r join public.institutional_recompute_candidates c on c.request_id=r.id where c.work_id='${projectId}';`)).toBe("declined");
   await openSection(page, projectId, "work-updates");
-  await expect(page.locator('article.work-update').first()).toContainText(fill(updates.recomputation.institutional.declined, {label: names.institutionalModel}));
+  const earlier = page.locator("details.work-updates__group");
+  await earlier.locator("summary").click();
+  const declined = earlier.locator('article.work-update[data-status="declined"]');
+  await expect(declined).toContainText(updates.status.declined);
+  await expect(declined).toContainText(fill(updates.recomputation.institutional.declined, {label: names.institutionalModel}));
   await test.info().attach("recalculation-declined", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 
   // The worker resumes: the cancelled job is not run and no result is written after the decline.
