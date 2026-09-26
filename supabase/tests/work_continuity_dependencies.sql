@@ -1403,5 +1403,92 @@ do $$ declare c jsonb;b jsonb;result jsonb;executions bigint:=(select count(*) f
  raise notice 'PASS: gate refusal: blocked gates fail the candidate with the gate code at submission; the worker records its own gate refusal by code; no execution';
 end $$;
 
+-- 31. An incomplete graph (stage 18, increment 6B). Procedure B has one platform release, recorded as
+-- published by the operator and pinned by X4 alone, next to the source T1. The operator retires it:
+-- the release is no longer published and its capability is closed, so the head of the procedure X4
+-- pinned is unknown. The capability of B's next version is released before that release exists, and
+-- its method_release event is judged while B has no published release: the fact names the gap, the
+-- planner holds X4 under the signal of the procedure, nothing is planned and nothing is reused, although
+-- T1 did not move. The next release of B restores the head: its event releases the hold and the next
+-- planning produces one candidate, under the new release.
+rollback to savepoint stage18_3b_ready;
+insert into private.platform_capability_releases(capability_key,released,exposure,method_id,method_version,method_maturity,approved_by,approved_at,approval_source)
+values('synthetic-execution-b',true,'universal','synthetic-execution-b','test-v1','tested','Synthetic approver',current_date,'Synthetic rollback-only fixture');
+insert into private.platform_method_releases(id,method_id,version,manifest_hash,manifest,components,evidence,approval,capability_key)
+select 'synthetic-execution-b-test-v1','synthetic-execution-b','test-v1',repeat('7',64),manifest,components,evidence,approval,'synthetic-execution-b'
+from private.platform_method_releases where id='synthetic-execution-test-v1';
+insert into private.execution_method_profiles(id,platform_release_id,serialization_version,canonical_payload,payload_fingerprint,adapter_source_commit,review_evidence)
+select 'a4183100-0000-4000-9000-0000000000c1','synthetic-execution-b-test-v1','offroad-execution-json-utf16-v1',payload::text,
+ encode(extensions.digest(payload::text,'sha256'),'hex'),repeat('c',40),jsonb_build_object('result','approved','subjectCommit',repeat('c',40),'reviewer','Synthetic independent reviewer','sourceHash',repeat('d',64))
+from (select jsonb_set(jsonb_set(jsonb_set(jsonb_set(p.payload,'{method,platformReleaseId}','"synthetic-execution-b-test-v1"'),'{method,methodId}','"synthetic-execution-b"'),
+ '{method,manifestHash}',to_jsonb(repeat('7',64))),'{method,baseManifestHash}',to_jsonb(repeat('7',64))) payload
+ from private.execution_method_profiles p where p.id='a4171000-0000-4000-9000-000000000001') f;
+-- The publication record the operator's retirement needs: a release imported without one counts as
+-- published by its import and cannot be retired.
+insert into private.platform_method_candidates(id,release_id,method_id,version,bundle,fingerprint,author)
+values('a4183100-0000-4000-9000-0000000000c2','synthetic-execution-b-test-v1','synthetic-execution-b','2026.09.26-v1','{"synthetic":"rollback-only publication record"}',repeat('6',64),'Synthetic author');
+insert into private.platform_method_publication_events(command_id,candidate_id,action,request_fingerprint,reason)
+values('a4183100-0000-4000-9000-0000000000c3','a4183100-0000-4000-9000-0000000000c2','published',repeat('5',64),'Synthetic publication record of procedure B');
+select pg_temp.request_execution('X4','a4183100-0000-4000-9000-0000000000c1',array['T1'],array[]::uuid[],null);
+select pg_temp.drain_outbox();
+select private.retire_platform_method_v1('a4183100-0000-4000-9000-0000000000c5','a4183100-0000-4000-9000-0000000000c2',repeat('6',64),'Synthetic retirement of procedure B');
+insert into private.platform_capability_releases(capability_key,released,exposure,method_id,method_version,method_maturity,approved_by,approved_at,approval_source)
+values('synthetic-execution-b-v2',true,'universal','synthetic-execution-b','test-v2','tested','Synthetic approver',current_date,'Synthetic rollback-only fixture');
+insert into dep values('E_B',pg_temp.event_of('method_release',private.method_procedure_aggregate_v1('synthetic-execution-b')));
+select pg_temp.drain_outbox();
+do $$ declare h private.dependency_recompute_holds;r public.work_continuation_requests;a jsonb;begin
+ if exists(select 1 from private.method_release_head_v1('a11b0000-0000-4000-9000-000000000001','synthetic-execution-b',false))
+ or exists(select 1 from private.platform_capability_releases where capability_key='synthetic-execution-b' and released) then
+  raise exception 'setup: the retired procedure still has a head';
+ end if;
+ if array(select to_jsonb(f) from pg_temp.facts_of(pg_temp.id('E_B')) f) is distinct from array[
+  jsonb_build_object('execution','X4','dependency_kind','method_release','reason_class','graph_incomplete','gap','head_unknown',
+   'pinned',jsonb_build_object('platformReleaseId','synthetic-execution-b-test-v1','houseReleaseId',null),'head',null,'via','{}'::text[])]
+ or exists(select 1 from private.execution_invalidations where execution_id<>pg_temp.id('X4')) then
+  raise exception 'graph_incomplete fact mismatch: %',array(select to_jsonb(f) from pg_temp.facts_of(pg_temp.id('E_B')) f);
+ end if;
+ select * into strict h from private.dependency_recompute_holds;
+ if h.execution_id<>pg_temp.id('X4') or h.hold_kind<>'graph_incomplete' or h.signal<>'method_release:synthetic-execution-b' or h.released_at is not null
+ or h.subject<>jsonb_build_object('code','head_unknown','key',private.continuation_logical_key_v1('method_release','synthetic-execution-b')) then
+  raise exception 'graph_incomplete hold mismatch: %',to_jsonb(h);
+ end if;
+ -- Nothing reused: the whole output is stale, the pinned source at its head included; the request
+ -- stays open on the hold, neither covered nor superseded.
+ select * into strict r from public.work_continuation_requests where id=h.request_id;
+ a:=private.execution_recompute_assessment_v1('a11b0000-0000-4000-9000-000000000001',pg_temp.id('X4'));
+ if exists(select 1 from public.work_recompute_candidates) or r.status<>'open' or r.payload->'affectedExecutionIds'<>jsonb_build_array(pg_temp.id('X4'))
+ or (select count(*) from public.work_continuation_requests)<>1
+ or a->>'status'<>'graph_incomplete' or a->'gaps'<>jsonb_build_array(h.subject) or a->>'currentFingerprint' is not null or a->>'key' is not null
+ or not (a#>'{pinnedInputs,inputs}' @> (select jsonb_build_array(jsonb_build_array(private.continuation_logical_key_v1('source_version',v.source_id::text),
+   jsonb_build_object('versionNo',v.version_no,'versionId',v.id))) from public.source_versions v where v.id=pg_temp.id('T1'))) then
+  raise exception 'an incomplete graph was planned or reused: % %',to_jsonb(r),a;
+ end if;
+ raise notice 'PASS: graph incomplete: a retired release leaves the pinned head unknown; the graph_incomplete fact names the gap (head_unknown) and the planner holds the execution with the signal method_release of the procedure; no candidate and no reuse, although the pinned source did not move';
+end $$;
+insert into private.platform_method_releases(id,method_id,version,manifest_hash,manifest,components,evidence,approval,capability_key)
+select 'synthetic-execution-b-test-v2','synthetic-execution-b','test-v2',repeat('4',64),manifest,components,evidence,approval,'synthetic-execution-b-v2'
+from private.platform_method_releases where id='synthetic-execution-test-v1';
+insert into private.execution_method_profiles(id,platform_release_id,serialization_version,canonical_payload,payload_fingerprint,adapter_source_commit,review_evidence)
+select 'a4183100-0000-4000-9000-0000000000c4','synthetic-execution-b-test-v2','offroad-execution-json-utf16-v1',payload::text,
+ encode(extensions.digest(payload::text,'sha256'),'hex'),repeat('c',40),jsonb_build_object('result','approved','subjectCommit',repeat('c',40),'reviewer','Synthetic independent reviewer','sourceHash',repeat('d',64))
+from (select jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(p.payload,'{method,platformReleaseId}','"synthetic-execution-b-test-v2"'),'{method,methodId}','"synthetic-execution-b"'),
+ '{method,methodVersion}','"test-v2"'),'{method,manifestHash}',to_jsonb(repeat('4',64))),'{method,baseManifestHash}',to_jsonb(repeat('4',64))) payload
+ from private.execution_method_profiles p where p.id='a4171000-0000-4000-9000-000000000001') f;
+select pg_temp.drain_outbox();
+do $$ declare c public.work_recompute_candidates;begin
+ select * into strict c from public.work_recompute_candidates;
+ if c.base_execution_id<>pg_temp.id('X4') or c.execution_ids<>array[pg_temp.id('X4')] or c.state<>'scheduled' or c.action<>'recompute' or c.max_cost_microusd<>0
+ or c.head_inputs<>(select private.continuation_input_identity_v1(jsonb_build_array(
+   jsonb_build_array(private.continuation_logical_key_v1('source_version',v.source_id::text),jsonb_build_object('versionNo',v.version_no,'versionId',v.id)),
+   jsonb_build_array(private.continuation_logical_key_v1('method_release','synthetic-execution-b'),
+    jsonb_build_object('platformReleaseId','synthetic-execution-b-test-v2','houseReleaseId',null)))) from public.source_versions v where v.id=pg_temp.id('T1'))
+ or exists(select 1 from private.dependency_recompute_holds where released_at is null)
+ or not exists(select 1 from private.dependency_recompute_holds where execution_id=pg_temp.id('X4') and hold_kind='graph_incomplete' and released_at is not null)
+ or (select status from public.work_continuation_requests where id=c.request_id)<>'scheduled' then
+  raise exception 'restored head: %',to_jsonb(c);
+ end if;
+ raise notice 'PASS: graph incomplete: the next release restores the head; its method_release event releases the hold and the next planning produces one candidate, under the new release';
+end $$;
+
 select 'work_continuity_dependencies: PASS' result;
 rollback;
