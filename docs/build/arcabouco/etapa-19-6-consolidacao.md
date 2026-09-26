@@ -8,7 +8,7 @@ Uma PR (`feat/19-6-consolidation`) sobre `main` `b6a9b231`, que já tem o increm
 
 **O que mudou.**
 
-- `packages/case-understanding/src/audit.ts` exporta `materialClaimWithoutSupport` e `materialJudgmentWithoutApproval` e as usa no próprio `auditClaims`, nas mesmas posições e com os mesmos códigos (`material_claim_without_support`, `material_judgment_without_approval`). Comportamento idêntico: os 123 testes do pacote seguem verdes.
+- `packages/case-understanding/src/audit.ts` exporta `materialClaimWithoutSupport` e `materialJudgmentWithoutApproval` e as usa no próprio `auditClaims`, nas mesmas posições e com os mesmos códigos (`material_claim_without_support`, `material_judgment_without_approval`). Comportamento idêntico: os 120 testes que o pacote já tinha seguem verdes, e com os três novos são 123.
 - `packages/case-materials/src/truth.ts` chama `materialClaimWithoutSupport` no lugar da cópia.
 - Testes migrados: `case-understanding/src/evidence-gates.test.ts` (as duas regras, os códigos e a cobertura 0 e 1 que o pacote testava, e a aprovação desligável que os registros de afirmação usam) e `case-materials/src/evidence-gates.test.ts` (o brief com afirmação sem suporte e com julgamento sem aprovação é recusado com o código da auditoria e compila depois da aprovação; o bloco compilado sem suporte é barrado na verdade dos materiais; as mesmas cifras em outra ordem passam e uma cifra diferente é bloqueada por LC-07, que era a identidade econômica do pacote).
 - `packages/evidence-compiler` saiu, com o workspace e a entrada do lockfile. O `pnpm install` mudou só entradas de workspace: sai o importador do pacote, entram o vínculo de `case-materials` com `financial-core` e o de desenvolvimento com `testing-fixtures`. Nenhuma versão externa mudou.
@@ -52,6 +52,8 @@ As linhas 88-89 e 132 de `institutional.ts` e os formatadores não estavam no le
 - **Resultado financeiro aprovado** (o artefato real committed em `supabase/tests/support/institutional_setup_fixture.sql`): a aba do cenário aprovado do xlsx traz cada valor exato; docx, pdf e pptx imprimem o mesmo valor, lido de volta como decimal igual ao da célula; as razões saem arredondadas pelo núcleo; os gráficos trazem os valores exatos; nas duas línguas.
 - **Resultado da execução** (incremento 4 está em `main`): o único formato dele é a própria revisão em blocos (manifesto `json`, sem arquivo). Lida pelo leitor autorizado, cada bloco de número tem o valor igual à afirmação e ao valor do pacote committed no caminho que o bloco registra, em texto decimal, sem conversão; as razões também. Arquivo do resultado da execução só existe com a exportação da etapa 21.
 - **Controle negativo:** uma cifra alterada é lida como ausente e a nova aparece, então a comparação não é vazia.
+
+Os serializadores já tinham convergido no incremento 3: o registro `apps/web/src/lib/artifacts/artifact-renderers.ts` é o único código de produto da web e do robô que chama os escritores de docx, pdf, pptx e HTML dos materiais (conferido nesta PR), e os testes acima passam por ele.
 
 ## 4. Caminho do objeto pela concessão
 

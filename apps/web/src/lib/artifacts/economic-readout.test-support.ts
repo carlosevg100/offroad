@@ -173,9 +173,31 @@ export function pptxContent(bytes: Uint8Array): {text: string; chartValues: numb
   };
 }
 
-/** The visible text of the printable HTML: tags dropped, entities decoded. */
+/**
+ * The visible text of the printable HTML, read with a small scanner rather than tag-stripping
+ * expressions: markup becomes a line break, the content of style and script elements is skipped
+ * (CSS carries its own percentages), and entities are decoded. Test support only; it reads what our
+ * own renderer wrote and sanitizes nothing.
+ */
 export function htmlText(html: string): string {
-  return decodeXml(html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, "").replace(/<[^>]+>/g, "\n"));
+  const lower = html.toLowerCase();
+  let text = "";
+  let index = 0;
+  while (index < html.length) {
+    if (html[index] !== "<") {
+      const next = html.indexOf("<", index);
+      const end = next < 0 ? html.length : next;
+      text += html.slice(index, end);
+      index = end;
+      continue;
+    }
+    const rawElement = ["style", "script"].find((name) => lower.startsWith(`<${name}`, index));
+    const markupEnd = rawElement ? lower.indexOf(`</${rawElement}`, index) : index;
+    const close = markupEnd < 0 ? -1 : html.indexOf(">", markupEnd);
+    index = close < 0 ? html.length : close + 1;
+    text += "\n";
+  }
+  return decodeXml(text);
 }
 
 /**
@@ -210,7 +232,9 @@ export function pdfText(bytes: Uint8Array): string {
     ? (hex.match(/.{4}/g) ?? []).map((code) => unicode.get(Number.parseInt(code, 16)) ?? "").join("")
     : Buffer.from(hex, "hex").toString("latin1");
   return streams.filter((stream) => /\b(?:Tj|TJ)\b/.test(stream))
-    .map((stream) => [...stream.matchAll(/<([0-9a-fA-F]*)>\s*Tj|\[((?:\s*(?:<[0-9a-fA-F]*>|-?[\d.]+))*)\s*\]\s*TJ/g)]
+    // A shown string (`<hex> Tj`) or an array of strings and kerning numbers (`[...] TJ`); the
+    // array body is read without nesting quantifiers, then its strings are taken one by one.
+    .map((stream) => [...stream.matchAll(/<([0-9a-fA-F]*)>\s*Tj|\[([^\]]*)\]\s*TJ/g)]
       .map((op) => op[1] !== undefined ? decode(op[1]) : [...op[2]!.matchAll(/<([0-9a-fA-F]*)>/g)].map((part) => decode(part[1]!)).join(""))
       .join("\n"))
     .join("\n");
