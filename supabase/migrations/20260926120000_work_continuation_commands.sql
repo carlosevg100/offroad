@@ -211,7 +211,7 @@ create function private.request_work_continuation_v1(p_request_id uuid,p_work_id
  p_base_milestone_id uuid,p_base_decision_id uuid,p_base_revision integer) returns jsonb
 language plpgsql volatile security definer set search_path='' as $$
 declare w public.capital_projects;v_content text:=btrim(coalesce(p_content,''));v_objective text;prior public.work_continuation_requests;
- base_row public.work_milestones;base_kind text;c public.agent_conversations;body jsonb;proposal uuid;base jsonb;
+ base_row public.work_milestones;c public.agent_conversations;body jsonb;proposal uuid;base jsonb;
 begin
  v_objective:=btrim(regexp_replace(v_content,'\s+',' ','g'));
  if p_request_id is null or p_work_id is null or p_locale is null or p_locale not in ('pt-BR','en-US') or char_length(v_content) not between 1 and 8000
@@ -383,7 +383,7 @@ end $$;
 create function private.decline_work_update_v1(p_command_id uuid,p_update_id uuid,p_expected_revision integer,p_reason text,p_candidate_id uuid default null) returns jsonb
 language plpgsql volatile security definer set search_path='' as $$
 declare r public.work_continuation_requests;c public.work_recompute_candidates;existing public.work_milestones;milestone uuid;wait public.work_milestones;
- v_reason text;proposal uuid;declined uuid[]:='{}';released integer;v_status text;
+ v_reason text;proposal uuid;declined uuid[]:='{}';released bigint;
 begin
  if p_command_id is null or p_update_id is null or p_expected_revision is null or p_expected_revision<1 or p_reason is null
  or p_reason not in ('not_needed','cost_not_justified','inputs_disputed','other') then
@@ -428,7 +428,7 @@ begin
   insert into public.work_milestones(id,organization_id,work_id,kind,subject_kind,subject_id,label,revision,outcome,created_by,occurred_at,reference_milestone_ids)
   values(milestone,c.organization_id,c.work_id,'decision','work_recompute_candidate',c.id,'dependency_recompute_declined',p_expected_revision,'rejected',
    auth.uid(),clock_timestamp(),array[wait.id]);
-  v_status:=private.advance_dependency_update_request_v1(c.organization_id,c.request_id);
+  perform private.advance_dependency_update_request_v1(c.organization_id,c.request_id);
   select * into strict r from public.work_continuation_requests where id=p_update_id;
   return jsonb_build_object('updateId',r.id,'updateStatus',r.status,'updateRevision',r.revision,'candidateId',c.id,'candidateState',c.state,
    'reason',v_reason,'milestoneId',milestone,'replayed',false);
@@ -577,7 +577,11 @@ end $$;
 -- work lock and then, through the execution request it submits, the project row for update: the
 -- reverse of the global order, so a person's command and the worker's submission on the same work
 -- could each wait for the other. It now takes the project row first, for no key update, as the
--- commands above do; the rest of the body is the one 3B published.
+-- commands above do; the rest of the body is the one 3B published, which the guard pins.
+do $$begin
+ if (select md5(prosrc) from pg_proc where oid='private.lock_recompute_lease_v1(text,uuid,uuid,text)'::regprocedure)<>'a1548a46f53d1b254493d5bf9e4a0f6f'
+ then raise exception 'recompute_lease_lock_contract_changed';end if;
+end $$;
 create or replace function private.lock_recompute_lease_v1(p_worker_token text,p_candidate uuid,p_lease uuid,p_capability text) returns public.work_recompute_candidates
 language plpgsql security definer set search_path='' as $$
 declare worker uuid;c public.work_recompute_candidates;l private.work_recompute_leases;begin
