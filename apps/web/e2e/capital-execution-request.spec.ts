@@ -178,6 +178,14 @@ test("a v4 capital execution is refused until the company under analysis is regi
  await expect(page.getByText(copy.gapCodes.projection_input_missing).first()).toBeVisible();
  const mdTest = page.locator("section").filter({has: page.getByRole("heading", {name: copy.mdTest.title, exact: true})});
  await expect(mdTest.locator("ol.execution-questions > li")).toHaveCount(Object.keys(copy.mdTest.questions).length);
+ // Stage 19: the commit registered the result as a revision, and the screen reads it from its blocks,
+ // saying which revision it shows and whether it is still current, with no fingerprint in the result.
+ const recorded = page.locator("section.execution-result--recorded");
+ await expect(recorded).toHaveCount(1);
+ await expect(recorded).toContainText(copy.detail.recorded.replace("{revision}", "1").split("{date}")[0]!);
+ await expect(recorded.getByRole("status")).toHaveText(copy.detail.freshness.current);
+ await expect(recorded.locator("code")).toHaveCount(0);
+ await expect(recorded).not.toContainText(executionId);
  await test.info().attach("capital-execution-detail", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 
  // 5. The database agrees: one execution, one receipt of gates with the company registered, a
@@ -192,4 +200,7 @@ test("a v4 capital execution is refused until the company under analysis is regi
   .toBe("succeeded|1|true");
  expect(sql(`select p.payload_fingerprint from private.execution_control_bindings b join private.execution_method_profiles p on p.id=b.profile_id where b.execution_id='${executionId}';`))
   .toBe(released.profileSha256);
+ // One execution_result revision, written by the worker's commit, pins the receipt's result fingerprint.
+ expect(sql(`select count(*)||'|'||bool_and(r.origin='worker')::text||'|'||bool_and(r.manifest#>>'{execution,resultFingerprint}'=x.result_fingerprint)::text from public.artifact_revisions r join public.artifacts a on a.organization_id=r.organization_id and a.id=r.artifact_id join private.execution_result_receipts x on x.organization_id=a.organization_id and x.execution_id='${executionId}' where a.kind='execution_result' and a.subject='execution:${executionId}';`))
+  .toBe("1|true|true");
 });
