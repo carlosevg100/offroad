@@ -7,6 +7,7 @@ import {
   executionsAreRunning,
   institutionalCalculationRuns,
   institutionalRecomputePipeline,
+  jobKindHeld,
   jobKindRunning,
   jobStatusRuns,
   noWorkActivity,
@@ -136,6 +137,13 @@ describe("work activity from persisted facts", () => {
     expect(executionsAreRunning(read({institutionalCandidates: [{id: id(73), state: "scheduled", result_id: null}]}))).toBe(false);
     expect(jobKindRunning(read({jobs: [job("queued", "case_analysis")]}), ["case_analysis"])).toBe(true);
     expect(jobKindRunning(read({jobs: [job("awaiting_approval", "case_analysis")]}), ["case_analysis"])).toBe(false);
+  });
+
+  it("tells a job held for a person's approval from a job a machine runs", () => {
+    expect(jobKindHeld(read({jobs: [job("awaiting_approval", "case_analysis")]}), ["case_analysis"])).toBe(true);
+    expect(jobKindHeld(read({jobs: [job("queued", "case_analysis")]}), ["case_analysis"])).toBe(false);
+    expect(jobKindHeld(read({jobs: [job("awaiting_approval", "capital_project_analysis")]}), ["case_analysis"])).toBe(false);
+    expect(jobKindHeld(read({jobs: [job("succeeded", "case_analysis")]}), ["case_analysis"])).toBe(false);
   });
 });
 

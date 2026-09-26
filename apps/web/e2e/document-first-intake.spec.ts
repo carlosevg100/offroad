@@ -319,6 +319,32 @@ test.describe("Document-first intake (company journey)", () => {
     confirmedOpportunityUrl = page.url();
     await expect(page.locator(".deal-workspace__topbar h1")).toHaveText(initialProjectName);
     await expectNoErrorNotice(page);
+
+    // Confirming the case queues the analysis of that decision once, held, like every case analysis
+    // of a project, for the approval of its plan. The workspace names that approval as the next step
+    // and offers no resume that would queue the same decision again.
+    await expect(page.locator(".deal-notice")).toContainText("aguarda a aprovação do plano");
+    const heldGap = page.getByTestId("analysis-gap");
+    await expect(heldGap).toHaveAttribute("data-step", "approve");
+    await expect(heldGap).toHaveAttribute("data-gap", "structure");
+    await expect(heldGap.getByRole("button")).toHaveCount(0);
+    const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+    const address = new URL(databaseUrl);
+    if (!["127.0.0.1", "localhost", "[::1]"].includes(address.hostname) || address.port !== "54322") {
+      throw new Error("The queued analysis is read only from the isolated local database.");
+    }
+    const sessionId = new URL(primaryProjectUrl, "http://localhost").searchParams.get("session")!;
+    const queued = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`], {encoding: "utf8", input: `
+      with analysis as (
+        select id, status from public.processing_jobs
+        where intake_session_id = :'session_id'::uuid and kind = 'case_analysis'
+          and payload ->> 'incremental_trigger' = 'understanding_confirmed'
+      )
+      select (select count(*) from analysis) || ':' || (select count(*) from analysis where status = 'awaiting_approval') || ':'
+        || (select count(*) from public.processing_jobs proposal where proposal.kind = 'execution_brief_proposal'
+          and proposal.payload ->> 'approval_target_job_id' in (select id::text from analysis)) || ':'
+        || (select status from public.document_intake_sessions where id = :'session_id'::uuid);`}).trim();
+    expect(queued).toBe("1:1:1:confirmed");
   });
 
   test("opens the governed workspace with its source context", async () => {

@@ -12,7 +12,7 @@ import {IntakeCase} from "@/components/intake/intake-case";
 import {workShouldRefresh} from "@/lib/advisor/work-activity";
 import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
 import {requireWorkspace} from "@/lib/auth/workspace";
-import {workbenchAnalysisGap, type DealStateGap} from "@/lib/deal-state/analysis-gap";
+import {dealStateGapApproval, workbenchAnalysisGap, type DealStateGap, type DealStateGapApproval} from "@/lib/deal-state/analysis-gap";
 import {loadDealStateWorkbench, localizedText, type CompiledStructure, type DealStateRow, type DealStateWorkbench, type StructureAlternative} from "@/lib/deal-state/workbench";
 import "@/app/work-activity.css";
 import {loadGovernedMaterialPackage, type GovernedMaterialPackage} from "@/lib/deal-state/materials";
@@ -88,6 +88,8 @@ export default async function OpportunityPage({params, searchParams}: Props) {
   const notice = query.notice && t.has(`notices.${query.notice}`) ? t(`notices.${query.notice}`) : null;
   // A decision whose result is missing while no analysis runs is a gap with its next step.
   const gap = workbenchAnalysisGap(workbench, governedMaterials !== null);
+  // While that analysis is held, its next step is the approval of its execution brief, in the project.
+  const gapApproval = dealStateGapApproval(workbench, `/${locale}/app/projects/${session.capital_project_id}#execution-brief-approval`);
   const gapCopy = await getTranslations({locale, namespace: "App.privateCase.analysisGap"});
 
   return (
@@ -111,7 +113,7 @@ export default async function OpportunityPage({params, searchParams}: Props) {
 
       <div className="deal-workspace__layout">
         <section className="deal-decision-canvas">
-          {renderDecisionStage({locale, opportunityId, sessionId: session.id, diagnosticCase, workbench, governedMaterials, gap, gapCopy, introductionPlan, introductionTargets, introductionRecipients, t, format})}
+          {renderDecisionStage({locale, opportunityId, sessionId: session.id, diagnosticCase, workbench, governedMaterials, gap, gapApproval, gapCopy, introductionPlan, introductionTargets, introductionRecipients, t, format})}
         </section>
         <aside className="deal-control-panel">
           <span className="section-kicker">{t("controlKicker")}</span>
@@ -144,7 +146,7 @@ function currentStage(workbench: DealStateWorkbench, governedMaterials: Governed
 }
 
 function renderDecisionStage({
-  locale, opportunityId, sessionId, diagnosticCase, workbench, governedMaterials, gap, gapCopy, introductionPlan, introductionTargets, introductionRecipients, t, format,
+  locale, opportunityId, sessionId, diagnosticCase, workbench, governedMaterials, gap, gapApproval, gapCopy, introductionPlan, introductionTargets, introductionRecipients, t, format,
 }: {
   locale: string;
   opportunityId: string;
@@ -153,6 +155,7 @@ function renderDecisionStage({
   workbench: DealStateWorkbench;
   governedMaterials: GovernedMaterialPackage | null;
   gap: DealStateGap | null;
+  gapApproval: DealStateGapApproval | null;
   gapCopy: Awaited<ReturnType<typeof getTranslations>>;
   introductionPlan: IntroductionPlan | null;
   introductionTargets: IntroductionTarget[];
@@ -195,9 +198,10 @@ function renderDecisionStage({
   }
 
   // Processing only while a case analysis job runs; a result missing after a decision, with nothing
-  // running, is a gap whose next step is to resume that decision's analysis.
+  // running, is a gap whose next step is to resume that decision's analysis, or to approve the plan
+  // of that analysis while it is held.
   if (workbench.isProcessing) return <ProcessingState t={t} />;
-  if (gap) return <AnalysisGapState gap={gap} gapCopy={gapCopy} locale={locale} opportunityId={opportunityId} />;
+  if (gap) return <AnalysisGapState approval={gapApproval} gap={gap} gapCopy={gapCopy} locale={locale} opportunityId={opportunityId} />;
 
   if (governedMaterials && workbench.packageReview?.status !== "approved") {
     return <MaterialReview governed={governedMaterials} locale={locale} opportunityId={opportunityId} sessionId={sessionId} t={t} />;
@@ -418,8 +422,18 @@ function MaterialReview({
   return <article className="deal-review material-review"><header><span>{t("materials.kicker")}</span><h2>{t("materials.title")}</h2><p>{t("materials.body")}</p></header><div className="material-review__list">{artifacts.map((artifact, index) => <section className={artifact.available ? "is-ready" : "is-blocked"} key={artifact.id}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{t(`production.artifacts.${artifact.id}`)}</strong><p>{artifact.available ? t("materials.ready") : t("materials.unavailable")}</p></div>{artifact.available ? <a href={artifact.href} rel="noreferrer" target="_blank"><Download aria-hidden="true" size={14} />{t("materials.open")}</a> : <small>{t("materials.blocked")}</small>}</section>)}</div>{complete ? <form action={approveMaterialPackage} className="deal-primary-action"><input name="locale" type="hidden" value={locale} /><input name="opportunity_id" type="hidden" value={opportunityId} /><input name="artifact_fingerprint" type="hidden" value={governed.artifactFingerprint} /><div><strong>{t("materials.approvalTitle")}</strong><p>{t("materials.approvalBody")}</p></div><DealStateSubmit idle={t("materials.approve")} pending={t("materials.approving")} value="approve" /></form> : <section className="deal-open-points"><h3>{t("materials.incompleteTitle")}</h3><p>{t("materials.incompleteBody")}</p></section>}<p className="deal-inline-boundary">{t("materials.boundary")}</p></article>;
 }
 
-function AnalysisGapState({gap, gapCopy, locale, opportunityId}: {gap: DealStateGap; gapCopy: Awaited<ReturnType<typeof getTranslations>>; locale: string; opportunityId: string}) {
-  return <article className="deal-review deal-review--state deal-review--gap" data-gap={gap} data-testid="analysis-gap">
+function AnalysisGapState({approval, gap, gapCopy, locale, opportunityId}: {approval: DealStateGapApproval | null; gap: DealStateGap; gapCopy: Awaited<ReturnType<typeof getTranslations>>; locale: string; opportunityId: string}) {
+  // A held analysis waits for the approval of its execution brief; resuming it would only replay it.
+  if (approval) {
+    return <article className="deal-review deal-review--state deal-review--gap" data-gap={gap} data-step="approve" data-testid="analysis-gap">
+      <Clock3 aria-hidden="true" size={22} /><span>{gapCopy("kicker")}</span><h2>{gapCopy(`${gap}.title`)}</h2><p>{gapCopy("held.body")}</p>
+      <div className="deal-primary-action">
+        <div><strong>{gapCopy("nextStepTitle")}</strong><p>{gapCopy("held.projectBody")}</p></div>
+        {approval.href ? <Link className="button button--ghost" href={approval.href}>{gapCopy("held.review")}</Link> : null}
+      </div>
+    </article>;
+  }
+  return <article className="deal-review deal-review--state deal-review--gap" data-gap={gap} data-step="resume" data-testid="analysis-gap">
     <AlertTriangle aria-hidden="true" size={22} /><span>{gapCopy("kicker")}</span><h2>{gapCopy(`${gap}.title`)}</h2><p>{gapCopy(`${gap}.body`)}</p>
     <form action={resumeAnalysis} className="deal-primary-action">
       <input name="locale" type="hidden" value={locale} />

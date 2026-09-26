@@ -88,7 +88,7 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
         <div><small>{t("deliverable")}</small><strong>{brief.proposedDeliverable}</strong></div>
       </section>
 
-      <section className="execution-brief-card__approval" data-approval-status={approvalStatus} data-caller-can-approve={currentApproval?.callerCanApprove === undefined ? undefined : String(currentApproval.callerCanApprove)} aria-busy={approving || awaitingRefresh}>
+      <section className="execution-brief-card__approval" data-approval-status={approvalStatus} id="execution-brief-approval" data-caller-can-approve={currentApproval?.callerCanApprove === undefined ? undefined : String(currentApproval.callerCanApprove)} aria-busy={approving || awaitingRefresh}>
         <div role="status"><strong>{t(`approval.${approvalStatus}.title`)}</strong><p>{t(currentApproval?.reason ? `approval.reason.${currentApproval.reason}` : `approval.${approvalStatus}.description`)}</p>
           {currentApproval?.record?.decision === "approved" && approvalStatus === "approved" ? <p className="execution-brief-card__record" data-testid="execution-brief-approval-record">{t("approval.record.approved", {reviewer: currentApproval.record.reviewedByLabel ?? unknownPerson, preparer: currentApproval.record.preparedByLabel ?? unknownPerson, version: currentApproval.record.approvedVersion ?? version})}</p> : null}
           {currentApproval?.record?.decision === "returned" ? <p className="execution-brief-card__record" data-testid="execution-brief-approval-record">{t("approval.record.returned", {reviewer: currentApproval.record.reviewedByLabel ?? unknownPerson})}</p> : null}

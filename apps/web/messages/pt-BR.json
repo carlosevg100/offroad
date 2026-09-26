@@ -2853,6 +2853,14 @@
         "resume": "Retomar a análise",
         "resuming": "Retomando a análise...",
         "resumed": "Análise retomada. O andamento aparece nesta página.",
+        "held": {
+          "body": "A análise desta decisão já está registrada e aguarda a aprovação do plano dela. Ela começa somente depois dessa aprovação e não é repetida enquanto aguarda.",
+          "nextStepBody": "Revise e aprove o plano desta análise nesta conversa para que ela comece.",
+          "preparingBody": "O plano desta análise ainda está sendo preparado. Ele aparece nesta conversa para aprovação assim que estiver pronto.",
+          "projectBody": "O plano desta análise é aprovado na conversa do projeto. A análise começa somente depois dessa aprovação.",
+          "review": "Revisar o plano para aprovação",
+          "resumed": "A análise foi registrada e aguarda a aprovação do plano dela nesta conversa. Ela começa depois dessa aprovação."
+        },
         "errors": {
           "invalid": "Não foi possível identificar o caso. Recarregue a página.",
           "stale": "O caso mudou desde que a página foi aberta. Recarregue a página.",
@@ -2932,7 +2940,8 @@
       "diagnosticErrors": {
         "stale": "O diagnóstico mudou. Recarregue o projeto antes de confirmar.",
         "save": "Não foi possível confirmar o diagnóstico.",
-        "processing": "O diagnóstico foi confirmado, mas a próxima etapa precisa ser iniciada novamente."
+        "processing": "O diagnóstico foi confirmado, mas a próxima etapa precisa ser iniciada novamente.",
+        "awaiting_approval": "O diagnóstico foi confirmado. Outra análise deste caso aguarda a aprovação do plano; a próxima etapa pode ser retomada depois dessa aprovação."
       },
       "structureKicker": "ESTRUTURA INDICATIVA",
       "structureProcessingTitle": "A Offroad está desenhando e testando as alternativas",
@@ -2965,7 +2974,8 @@
         "invalid": "Selecione uma alternativa e descreva o ajuste quando necessário.",
         "stale": "A estrutura mudou. Recarregue o projeto antes de decidir.",
         "save": "Não foi possível registrar a decisão.",
-        "processing": "A decisão foi registrada, mas a próxima etapa precisa ser iniciada novamente."
+        "processing": "A decisão foi registrada, mas a próxima etapa precisa ser iniciada novamente.",
+        "awaiting_approval": "A decisão foi registrada. Outra análise deste caso aguarda a aprovação do plano; esta etapa pode ser retomada depois dessa aprovação."
       },
       "productionKicker": "PLANO DE PREPARAÇÃO",
       "productionTitle": "O pacote será construído desta mesma base",
@@ -3133,6 +3143,7 @@
         "stale": "Esta versão mudou. Recarregue o projeto antes de decidir.",
         "save": "Não foi possível registrar esta decisão.",
         "processing": "A decisão foi preservada, mas a próxima análise precisa ser retomada.",
+        "awaiting_approval": "A decisão foi registrada. Outra análise deste caso aguarda a aprovação do plano; esta etapa pode ser retomada depois dessa aprovação.",
         "incomplete": "O pacote ainda não possui todos os artefatos previstos.",
         "forbidden": "Seu perfil ou a verificação de representação ainda não permite esta ação."
       },
@@ -3784,6 +3795,7 @@
       },
       "notices": {
         "analysis_resumed": "Análise retomada a partir da decisão registrada.",
+        "analysis_awaiting_approval": "Decisão registrada. A próxima análise aguarda a aprovação do plano dela no projeto e só começa depois dessa aprovação.",
         "analysis_finished": "A análise desta decisão já terminou sem gerar este resultado. Nenhum resultado foi presumido.",
         "analysis_current": "Não há resultado pendente nesta etapa.",
         "understanding_unavailable": "Não há um entendimento atual aguardando confirmação.",

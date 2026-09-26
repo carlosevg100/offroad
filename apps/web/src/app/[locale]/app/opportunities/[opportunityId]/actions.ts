@@ -9,7 +9,7 @@ import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {latestActiveDealState, parseCompiledStructure} from "@/lib/deal-state/workbench";
 import {governedMaterialPackageFromRows} from "@/lib/deal-state/materials";
-import {resumeDealStateAnalysis} from "@/lib/deal-state/resume-analysis";
+import {dealStateQueueOutcome, resumeDealStateAnalysis} from "@/lib/deal-state/resume-analysis";
 import type {Json} from "@/types/database";
 
 const fingerprintSchema = z.string().regex(/^[a-f0-9]{64}$/);
@@ -70,7 +70,19 @@ function destination(locale: string, opportunityId: string, notice: string) {
   return `/${locale}/app/opportunities/${opportunityId}?notice=${notice}`;
 }
 
-const resumeNotice = {resumed: "analysis_resumed", finished: "analysis_finished", current: "analysis_current", failed: "queue_failed"} as const;
+const resumeNotice = {
+  resumed: "analysis_resumed", awaiting_approval: "analysis_awaiting_approval", finished: "analysis_finished",
+  current: "analysis_current", failed: "queue_failed",
+} as const;
+
+/** The notice after a decision: its analysis started, waits for the approval of an execution brief
+ * (its own, since every case analysis of a project is held first, or another decision's), or could
+ * not be queued. */
+function queuedNotice(queue: {data: unknown; error: {code?: string; message?: string} | null}, started: string) {
+  const outcome = dealStateQueueOutcome(queue.data, queue.error);
+  if (outcome === "held" || outcome === "held_by_other") return "analysis_awaiting_approval";
+  return outcome === "failed" || outcome === "running" ? "queue_failed" : started;
+}
 
 /** The next step of a missing result: resume the analysis of the decision it depends on. The
  * database decides again whether that decision is current and never duplicates its work. */
@@ -107,13 +119,13 @@ export async function confirmUnderstanding(formData: FormData) {
   });
   if (decisionError) redirect(destination(runtime.locale, runtime.opportunityId, "decision_failed"));
 
-  const {error: queueError} = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
+  const queue = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
     p_organization_id: runtime.organization.id,
     p_session_id: runtime.sessionId,
     p_trigger_source: "understanding_confirmed",
   });
   revalidatePath(`/${runtime.locale}/app/opportunities/${runtime.opportunityId}`);
-  redirect(destination(runtime.locale, runtime.opportunityId, queueError ? "queue_failed" : "structure_started"));
+  redirect(destination(runtime.locale, runtime.opportunityId, queuedNotice(queue, "structure_started")));
 }
 
 export async function decideStructure(formData: FormData) {
@@ -170,20 +182,16 @@ export async function decideStructure(formData: FormData) {
   });
   if (decisionError) redirect(destination(runtime.locale, runtime.opportunityId, "decision_failed"));
 
-  let queueFailed = false;
+  let notice = "structure_declined";
   if (parsed.data.decision !== "decline") {
-    const {error} = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
+    const queue = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
       p_organization_id: runtime.organization.id,
       p_session_id: runtime.sessionId,
       p_trigger_source: parsed.data.decision === "confirm" ? "structure_confirmed" : "structure_changes_requested",
     });
-    queueFailed = Boolean(error);
+    notice = queuedNotice(queue, parsed.data.decision === "confirm" ? "materials_plan_started" : "structure_revision_started");
   }
   revalidatePath(`/${runtime.locale}/app/opportunities/${runtime.opportunityId}`);
-  const notice = queueFailed
-    ? "queue_failed"
-    : parsed.data.decision === "confirm" ? "materials_plan_started"
-      : parsed.data.decision === "request_changes" ? "structure_revision_started" : "structure_declined";
   redirect(destination(runtime.locale, runtime.opportunityId, notice));
 }
 
@@ -224,17 +232,13 @@ export async function approveProductionPlan(formData: FormData) {
   });
   if (decisionError) redirect(destination(runtime.locale, runtime.opportunityId, "decision_failed"));
 
-  const {error: queueError} = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
+  const queue = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
     p_organization_id: runtime.organization.id,
     p_session_id: runtime.sessionId,
     p_trigger_source: "production_plan_approved",
   });
   revalidatePath(`/${runtime.locale}/app/opportunities/${runtime.opportunityId}`);
-  redirect(destination(
-    runtime.locale,
-    runtime.opportunityId,
-    queueError ? "queue_failed" : "materials_started",
-  ));
+  redirect(destination(runtime.locale, runtime.opportunityId, queuedNotice(queue, "materials_started")));
 }
 
 export async function approveMaterialPackage(formData: FormData) {
@@ -289,13 +293,13 @@ export async function approveMaterialPackage(formData: FormData) {
     revalidatePath(`/${runtime.locale}/app/opportunities/${runtime.opportunityId}`);
     redirect(destination(runtime.locale, runtime.opportunityId, "decision_failed"));
   }
-  const {error: queueError} = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
+  const queue = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
     p_organization_id: runtime.organization.id,
     p_session_id: runtime.sessionId,
     p_trigger_source: "material_package_approved",
   });
   revalidatePath(`/${runtime.locale}/app/opportunities/${runtime.opportunityId}`);
-  redirect(destination(runtime.locale, runtime.opportunityId, queueError ? "queue_failed" : "match_started"));
+  redirect(destination(runtime.locale, runtime.opportunityId, queuedNotice(queue, "match_started")));
 }
 
 export async function approveMatchShortlist(formData: FormData) {

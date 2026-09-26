@@ -208,14 +208,17 @@ end;
 $$;
 
 -- 3. The person approves the execution with the production approval command, and the job is
--- queued. That command also moves the case from confirmed to processing, where this function
--- refuses every trigger with confirmed_case_required; that is reported with this fix and left
--- unchanged. With the case confirmed again, the state this function requires, the same decision
--- is a replay of the queued job, never a second analysis.
+-- queued. The case stays confirmed (migration deal_state_route), the state this function requires,
+-- and the same decision is a replay of the queued job, never a second analysis.
 select pg_temp.fixture_approve_execution(
   (select (value::jsonb ->> 'job_id')::uuid from package_trigger_proof where label = 'first'));
-update public.document_intake_sessions set status = 'confirmed'
-where id = 'b7300000-0000-4000-8000-000000000001' and status = 'processing';
+do $$
+begin
+  if (select status from public.document_intake_sessions where id = 'b7300000-0000-4000-8000-000000000001') <> 'confirmed' then
+    raise exception 'the approval of the package analysis reopened the confirmed case';
+  end if;
+end;
+$$;
 set local role authenticated;
 select set_config('request.jwt.claims',
   '{"sub":"b7100000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}', true);

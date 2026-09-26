@@ -94,8 +94,9 @@ begin
     raise exception 'current_deal_state_trigger_required' using errcode = '55000';
   end if;
 
-  -- Exact replay is idempotent. A failed job may be retried, but queued, leased and
-  -- successful work for the same decision fingerprint is never duplicated.
+  -- Exact replay is idempotent. A failed job, and a held job that can no longer be approved,
+  -- may be retried; live held, queued, leased and successful work for the same decision
+  -- fingerprint is never duplicated.
   select job.* into existing_job
   from public.processing_jobs job
   where job.organization_id = p_organization_id
@@ -103,7 +104,8 @@ begin
     and job.kind = 'case_analysis'
     and job.payload ->> 'incremental_trigger' = p_trigger_source
     and job.payload ->> 'trigger_fingerprint' = trigger_object.object_fingerprint
-    and job.status in ('queued', 'leased', 'succeeded')
+    and (job.status in ('queued', 'leased', 'succeeded')
+      or (job.status = 'awaiting_approval' and private.execution_hold_is_live_v1(job.id)))
   order by job.created_at desc
   limit 1;
 
@@ -123,10 +125,16 @@ begin
   where job.organization_id = p_organization_id
     and job.intake_session_id = p_session_id
     and job.kind = 'case_analysis'
-    and job.status in ('queued', 'leased')
+    and (job.status in ('queued', 'leased')
+      or (job.status = 'awaiting_approval' and private.execution_hold_is_live_v1(job.id)))
   order by job.created_at desc
   limit 1;
 
+  -- A held job that can still be approved, or whose brief is being prepared, waits for a person.
+  -- Another decision is refused until that approval, never queued beside it.
+  if found and active_job.status = 'awaiting_approval' then
+    raise exception 'deal_state_analysis_awaiting_approval' using errcode = '55000';
+  end if;
   if found then
     raise exception 'deal_state_analysis_already_running' using errcode = '55000';
   end if;
@@ -192,7 +200,7 @@ begin
   return jsonb_build_object(
     'processing_run_id', run_id,
     'job_id', job_id,
-    'job_status', 'queued',
+    'job_status', (select job.status from public.processing_jobs job where job.id = job_id),
     'trigger', p_trigger_source,
     'trigger_fingerprint', trigger_object.object_fingerprint,
     'deduplicated', false
