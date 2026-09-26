@@ -521,8 +521,8 @@ $$;
 --                                configuration of the work (institutional_configuration).
 create function private.institutional_recompute_assessment_v1(p_org uuid,p_result uuid) returns jsonb
 language plpgsql stable security definer set search_path='' as $$
-declare r private.institutional_model_results;v_root uuid;v_requester uuid;pinned_entries jsonb:='[]';head_entries jsonb:='[]';gaps jsonb:='[]';holds jsonb:='[]';
- moved boolean:=false;moved_sources uuid[]:='{}';src record;carrier record;cfg record;head_cfg record;input_key text;head_version uuid;head_no integer;
+declare r private.institutional_model_results;v_root uuid;v_requester uuid;pinned_entries jsonb:='[]'::jsonb;head_entries jsonb:='[]'::jsonb;gaps jsonb:='[]'::jsonb;holds jsonb:='[]'::jsonb;
+ moved boolean:=false;moved_sources uuid[]:='{}'::uuid[];src record;carrier record;cfg record;head_cfg record;input_key text;head_version uuid;head_no integer;
  v_identity jsonb;v_fingerprint text;v_key text;v_manifest text;
 begin
  select * into strict r from private.institutional_model_results where organization_id=p_org and id=p_result;
@@ -695,7 +695,7 @@ $$;
 -- request of a work. Called by plan_dependency_recompute_v1 (below) with the work lock held.
 create function private.plan_institutional_recompute_v1(p_org uuid,p_work uuid,p_request uuid) returns jsonb
 language plpgsql security definer set search_path='' as $$
-declare r public.work_continuation_requests;lineages jsonb;touched uuid[];produced text[];current_holds jsonb:='[]';hold_list jsonb;covered uuid[];covering uuid;
+declare r public.work_continuation_requests;lineages jsonb;touched uuid[];produced text[];current_holds jsonb:='[]'::jsonb;hold_list jsonb;covered uuid[];covering uuid;
  c record;g record;created uuid;v_requester uuid;v_authorized boolean;superseded integer:=0;scheduled integer:=0;declined integer:=0;failed integer:=0;held integer:=0;released integer:=0;
 begin
  select * into r from public.work_continuation_requests x where x.organization_id=p_org and x.id=p_request and x.work_id=p_work and x.kind='dependency_update' and x.status='open';
@@ -984,8 +984,8 @@ begin
  body:=replace(body,needle,E'  order by x.created_at desc,x.id desc limit 1;\n'
   ||E'  if covering is null then covering:=(institutional->>''coveringRequestId'')::uuid;\n'
   ||E'  elsif institutional->>''coveringRequestId'' is not null then\n'
-  ||E'   select q.id into covering from public.work_continuation_requests q where q.organization_id=p_org and q.id in (covering,(institutional->>''coveringRequestId'')::uuid)\n'
-  ||E'   order by q.created_at desc,q.id desc limit 1;\n'
+  ||E'   select newest.id into covering from public.work_continuation_requests newest where newest.organization_id=p_org and newest.id in (covering,(institutional->>''coveringRequestId'')::uuid)\n'
+  ||E'   order by newest.created_at desc,newest.id desc limit 1;\n'
   ||E'  end if;\n'
   ||E'  if covering is not null then\n');
  needle:='''held'',held,''released'',released);';

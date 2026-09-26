@@ -108,8 +108,8 @@ begin
   order by x.created_at desc,x.id desc limit 1;
   if covering is null then covering:=(institutional->>'coveringRequestId')::uuid;
   elsif institutional->>'coveringRequestId' is not null then
-   select q.id into covering from public.work_continuation_requests q where q.organization_id=p_org and q.id in (covering,(institutional->>'coveringRequestId')::uuid)
-   order by q.created_at desc,q.id desc limit 1;
+   select newest.id into covering from public.work_continuation_requests newest where newest.organization_id=p_org and newest.id in (covering,(institutional->>'coveringRequestId')::uuid)
+   order by newest.created_at desc,newest.id desc limit 1;
   end if;
   if covering is not null then
    update public.work_continuation_requests set status='superseded',superseded_by_request_id=covering,revision=revision+1 where organization_id=p_org and id=r.id;
