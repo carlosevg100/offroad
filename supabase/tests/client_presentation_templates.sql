@@ -462,6 +462,11 @@ update public.processing_jobs set leased_account_user_id='10000000-0000-4000-800
 insert into storage.objects (bucket_id, name, owner_id) values
   ('brand-templates', '20000000-0000-4000-8000-000000000801/presentation-templates/'||repeat('a',64)||'.png', '10000000-0000-4000-8000-000000000801'),
   ('brand-templates', '20000000-0000-4000-8000-000000000802/presentation-templates/'||repeat('b',64)||'.png', '10000000-0000-4000-8000-000000000804');
+-- Storage policies see the operation the Storage API names in storage.operation: the restrictive
+-- policy private_storage_no_bearer_signing (20260915204116) admits no row to a read that names no
+-- operation, so a bare SQL select sees nothing. The worker downloads the logo with an authenticated
+-- get; the proof emulates exactly that operation, as the other storage contracts emulate theirs.
+select set_config('storage.operation','object.get_authenticated',true);
 set local role authenticated;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000805');
 do $$
@@ -477,6 +482,21 @@ begin
   if (select count(*) from storage.objects where bucket_id='brand-templates')<>1
     or not exists (select 1 from storage.objects where bucket_id='brand-templates' and name like '20000000-0000-4000-8000-000000000801/%') then
     raise exception 'the worker read the logo object of another organization, or not its own';
+  end if;
+end $$;
+-- The worker policy opens nothing to anyone else: under the same operation a member still reads
+-- only its own organization's logo, through membership, and the other tenant never reads it.
+select pg_temp.as_user('10000000-0000-4000-8000-000000000803');
+do $$ begin
+  if not exists (select 1 from storage.objects where bucket_id='brand-templates' and name like '20000000-0000-4000-8000-000000000801/%')
+    or exists (select 1 from storage.objects where bucket_id='brand-templates' and name like '20000000-0000-4000-8000-000000000802/%') then
+    raise exception 'an organization member does not read exactly its own logo objects';
+  end if;
+end $$;
+select pg_temp.as_user('10000000-0000-4000-8000-000000000804');
+do $$ begin
+  if exists (select 1 from storage.objects where bucket_id='brand-templates' and name like '20000000-0000-4000-8000-000000000801/%') then
+    raise exception 'another tenant reads the organization logo object';
   end if;
 end $$;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000802');
