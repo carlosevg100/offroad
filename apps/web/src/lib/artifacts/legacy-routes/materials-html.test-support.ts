@@ -44,7 +44,7 @@ export async function legacyGET(request: Request, {params}: Params) {
 
   const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
 
-  // Resolve every citation to the field and the file it came from — an appendix of opaque ids
+  // Resolve every citation to the field and the file it came from; an appendix of opaque ids
   // would carry the form of traceability without the substance.
   const documentIds = [...new Set(state.reconciliation.facts.map((fact) => fact.accepted.sourceDocument).filter(Boolean))];
   const {data: documents} = documentIds.length

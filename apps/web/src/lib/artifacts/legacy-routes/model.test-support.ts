@@ -21,7 +21,7 @@ import {resolveCaseState} from "@/lib/intake/case-pipeline";
  * real .xlsx: formulas, not results.
  *
  * Built on demand rather than stored. The case state it reads is already cached, so the cost
- * here is arithmetic and a zip — and a stored workbook would go stale the moment a candidate
+ * here is arithmetic and a zip, and a stored workbook would go stale the moment a candidate
  * is reviewed, which is the sort of quiet staleness a credit file cannot carry.
  */
 
