@@ -424,9 +424,10 @@ function MaterialReview({
 function AnalysisGapState({gap, gapCopy, locale, opportunityId}: {gap: DealStateGap; gapCopy: Awaited<ReturnType<typeof getTranslations>>; locale: string; opportunityId: string}) {
   return <article className="deal-review deal-review--state deal-review--gap" data-gap={gap} data-testid="analysis-gap">
     <AlertTriangle aria-hidden="true" size={22} /><span>{gapCopy("kicker")}</span><h2>{gapCopy(`${gap}.title`)}</h2><p>{gapCopy(`${gap}.body`)}</p>
-    <form action={resumeAnalysis}>
+    <form action={resumeAnalysis} className="deal-primary-action">
       <input name="locale" type="hidden" value={locale} />
       <input name="opportunity_id" type="hidden" value={opportunityId} />
+      <div><strong>{gapCopy("nextStepTitle")}</strong><p>{gapCopy("nextStepBody")}</p></div>
       <DealStateSubmit idle={gapCopy("resume")} pending={gapCopy("resuming")} value="resume" />
     </form>
   </article>;

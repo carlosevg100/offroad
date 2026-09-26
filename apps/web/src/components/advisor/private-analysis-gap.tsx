@@ -23,6 +23,7 @@ export function PrivateAnalysisGap({gap, locale, projectId, sessionId}: {gap: De
         <span>{t("kicker")}</span>
         <strong>{t(`${gap}.title`)}</strong>
         <p>{t(`${gap}.body`)}</p>
+        <p>{t("nextStepBody")}</p>
         <form action={action} className="analysis-gap__action">
           <input name="locale" type="hidden" value={locale} />
           <input name="project_id" type="hidden" value={projectId} />

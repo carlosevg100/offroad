@@ -2799,6 +2799,8 @@
           "title": "The materials were not compiled",
           "body": "The preparation plan was approved, but no analysis is running to compile the materials."
         },
+        "nextStepTitle": "Next step",
+        "nextStepBody": "The analysis restarts from the recorded decision. An analysis already running or finished for the same decision is not repeated.",
         "resume": "Resume the analysis",
         "resuming": "Resuming the analysis...",
         "resumed": "Analysis resumed. Its progress appears on this page.",
