@@ -208,5 +208,14 @@ describe("worker runtime schema preflight", () => {
     const healthSql = readFileSync(`${migrationsDirectory}/${health}`, "utf8");
     expect(healthSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
     expect(healthSql).toContain(`'"dependency-recompute.v1","dependency-recompute-health.v1"]''::jsonb'`);
+    // Stage 19, increment 2b: migration A adds the announced capability by the same text patch; the
+    // image keeps it announced (not required) until increment 4 calls the command.
+    const artifact = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_artifact_revision_protocol.sql")).sort().at(-1);
+    expect(artifact).toBeDefined();
+    const artifactSql = readFileSync(`${migrationsDirectory}/${artifact}`, "utf8");
+    expect(artifactSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
+    expect(artifactSql).toContain(`'"dependency-recompute.v1","dependency-recompute-health.v1","artifact-revision.v1"]''::jsonb'`);
+    expect(artifactSql).toContain("artifact_revision_capability_contract_changed");
+    expect(ANNOUNCED_WORKER_RUNTIME_CAPABILITIES).toContain(ARTIFACT_REVISION_CAPABILITY);
   });
 });

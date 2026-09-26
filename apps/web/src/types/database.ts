@@ -11141,6 +11141,20 @@ export type Database = {
         }
         Returns: Json
       }
+      create_artifact_revision_v1: {
+        Args: {
+          p_audience: string
+          p_blocks: Json
+          p_byte_length?: number
+          p_content_sha256?: string
+          p_kind: string
+          p_links: Json
+          p_manifest: Json
+          p_subject: string
+          p_work: string
+        }
+        Returns: Json
+      }
       create_opportunity_intake: {
         Args: {
           p_currency: string
@@ -11456,6 +11470,14 @@ export type Database = {
       }
       read_advisor_execution_brief_approval_v1: {
         Args: { p_execution_brief_id: string; p_project_id: string }
+        Returns: Json
+      }
+      read_artifact_head_v1: {
+        Args: { p_kind: string; p_subject: string; p_work_id: string }
+        Returns: Json
+      }
+      read_artifact_revision_v1: {
+        Args: { p_revision_id: string }
         Returns: Json
       }
       read_capital_project_execution_brief_narrative_v1: {
@@ -12797,6 +12819,23 @@ export type Database = {
           p_capability: string
           p_lease: string
           p_worker_token: string
+        }
+        Returns: Json
+      }
+      worker_create_artifact_revision_v1: {
+        Args: {
+          p_audience: string
+          p_blocks: Json
+          p_byte_length?: number
+          p_capability: string
+          p_capability_token: string
+          p_content_sha256?: string
+          p_job_id: string
+          p_kind: string
+          p_links: Json
+          p_manifest: Json
+          p_subject: string
+          p_work: string
         }
         Returns: Json
       }
