@@ -302,9 +302,11 @@ test("a mixed update of an execution and the financial model is adopted in one a
   await cite.getByRole("checkbox", {name: executions.situations.refinancing, exact: true}).check();
   await cite.getByRole("button", {name: executions.request.submit, exact: true}).click();
   await expect(page).toHaveURL(new RegExp(`/pt-BR/app/projects/${projectId}/executions/[0-9a-f-]{36}$`), {timeout: 60_000});
+  // The request is linked to the follow-up in its own transaction; the local worker may already have
+  // written the result, which makes the follow-up ready.
   const citing = new URL(page.url()).pathname.split("/").at(-1)!;
-  expect(sql(`select r.status||':'||l.execution_id from public.work_continuation_requests r join private.work_followup_executions l on l.request_id=r.id
-    where r.id='${followupId}';`)).toBe(`scheduled:${citing}`);
+  expect(sql(`select l.execution_id||':'||(r.status in ('scheduled','ready'))::text from public.work_continuation_requests r
+    join private.work_followup_executions l on l.request_id=r.id where r.id='${followupId}';`)).toBe(`${citing}:true`);
   // The follow-up no longer waits for an execution: requested, or already with its result if the
   // local worker was quicker than this page.
   await openSection(page, projectId, "work-updates");
