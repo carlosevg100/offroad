@@ -6311,8 +6311,33 @@
     "save": "Save identity",
     "useHouse": "Return to the Offroad template",
     "saved": "Identity updated. The next files use this version.",
+    "savedVersion": "Identity recorded as version {number}. The next files use this version.",
+    "version": "Version {number}, recorded on {date}.",
+    "versionHistoryTitle": "Previous versions",
+    "versionEntry": "Version {number}, {date}, {author}",
+    "authorUnknown": "author not recorded",
+    "noPreviousVersions": "No previous versions.",
+    "structureLegend": "Structure of the presentations",
+    "structureIntro": "The sections below, in this order, make up the presentation. Mark the required fields and who each section is for. A required field without content appears in the file as a named gap, never filled in.",
+    "moveUp": "Move the section {title} up",
+    "moveDown": "Move the section {title} down",
+    "audiencesLegend": "Section audiences",
+    "audience": {
+      "internal": "Internal use",
+      "advisor": "Advisors",
+      "external": "Third parties"
+    },
+    "fieldRequired": "Required",
+    "kinds": {
+      "text": "Text",
+      "number": "Number",
+      "table": "Table",
+      "chart": "Chart",
+      "source_list": "Source list"
+    },
     "errors": {
       "invalid": "Check the fields: six-digit hexadecimal colours, name and version in the indicated format.",
+      "structure": "Check the structure: every section needs at least one field with a known name and kind, no repetitions, and at least one audience.",
       "unsupported_font": "Choose a PDF font among the available families. No font is replaced without your choice.",
       "logo": "The logo must be PNG or JPEG up to 2 MB and stored in your organization's own area.",
       "denied": "Only organization owners and administrators change the visual identity.",

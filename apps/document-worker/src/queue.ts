@@ -347,6 +347,10 @@ export type QueueClient = {
   loadProviderCaseFitContext?(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadProviderResearchContext?(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
+  /** The current client template version of the project this job belongs to: {template: null} when the house template applies. */
+  readPresentationTemplateVersion?(job: CapitalProjectAnalysisJob): Promise<unknown>;
+  /** The bytes of a logo object of the organization this worker holds an active lease for; null when it cannot read it. */
+  downloadBrandTemplateLogo?(objectPath: string): Promise<Uint8Array | null>;
   loadAgentPlanContext?(job: AgentPlanJob): Promise<unknown>;
   recordAgentPlan?(job: AgentPlanJob, plan: unknown): Promise<string>;
   recordAgentAssessment?(job: AgentPlanJob, assessment: DcmAgentAssessment): Promise<{
@@ -1039,6 +1043,21 @@ export function createQueueClient(
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
       });
+    },
+
+    async readPresentationTemplateVersion(job) {
+      return call("worker_read_presentation_template_version_v1", {
+        p_job_id: job.job_id,
+        p_capability_token: job.capability_token,
+      });
+    },
+
+    // The storage policy admits the read only while this account holds an active capital-analysis
+    // lease for the organization in the path; the caller verifies the bytes against the version.
+    async downloadBrandTemplateLogo(objectPath) {
+      const downloaded = await supabase.storage.from("brand-templates").download(objectPath);
+      if (downloaded.error || !downloaded.data) return null;
+      return new Uint8Array(await downloaded.data.arrayBuffer());
     },
 
     async loadAgentPlanContext(job) {

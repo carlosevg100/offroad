@@ -6,9 +6,10 @@ import type {InstitutionalPresentationTemplate} from "./presentation-template";
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
 import JSZip from "jszip";
 import {chartWorkbook, nativeChartXml, nativeChartFrame} from "./presentation-chart";
+import {applyPresentationStructure, type PresentationBlockContent, type PresentationStructure, type PresentationStructureApplication} from "./presentation-structure";
 import {presentationTemplateManifest} from "./presentation-template";
 
-export const institutionalPresentationRendererVersion = "2026.09.10-v2";
+export const institutionalPresentationRendererVersion = "2026.09.27-v3";
 
 
 export type InstitutionalPresentationInput = {
@@ -23,7 +24,10 @@ export type InstitutionalPresentationInput = {
 
 export type InstitutionalPresentationAudit = {
   rendererVersion: string;
-  template: {id: string; version: string; origin: InstitutionalPresentationTemplate["origin"]};
+  /** The exact template identity: the stored version id and its fingerprint when a client version rendered the deck, null for the house template. */
+  template: {id: string; version: string; origin: InstitutionalPresentationTemplate["origin"]; versionId: string | null; fingerprint: string | null};
+  /** How the version's semantic structure was applied; null when the deck was rendered without one (house). */
+  structure: (PresentationStructureApplication & {schemaVersion: string}) | null;
   slideCount: number;
   renderedBlockIds: string[];
   renderedClaimIds: string[];
@@ -121,13 +125,45 @@ function evidenceLabel(state: DecisionArtifactContract["claims"][number]["eviden
   return labels[state];
 }
 
-function buildSlides(input: InstitutionalPresentationInput, view: PresentationView): SlideSpec[] {
+type BuiltSlides = {slides: SlideSpec[]; blocks: PresentationBlock[]; application: PresentationStructureApplication | null};
+
+/** What a governed block can offer to each structure field kind; nothing here invents content. */
+function blockContent(block: PresentationBlock, claims: Map<string, DecisionArtifactContract["claims"][number]>): PresentationBlockContent {
+  const values = block.claimIds.map((id) => claims.get(id)?.value);
+  return {
+    id: block.id,
+    content: {
+      number: values.some((value) => typeof value === "number"),
+      text: values.some((value) => typeof value === "string"),
+      table: block.assumptionIds.length > 0 || block.gapIds.length > 0,
+      chart: (block.seriesIds ?? []).length > 0,
+      source_list: block.sourceIds.length > 0,
+    },
+  };
+}
+
+function structureFieldTitle(structure: PresentationStructure, sectionKey: string, fieldKey: string, locale: InstitutionalPresentationInput["locale"]): string {
+  const field = structure.sections.find((section) => section.key === sectionKey)?.fields.find((candidate) => candidate.key === fieldKey);
+  return field?.title[locale] ?? fieldKey;
+}
+
+function buildSlides(input: InstitutionalPresentationInput, view: PresentationView, structure: PresentationStructure | null): BuiltSlides {
   const claims = new Map(input.contract.claims.map((item) => [item.id, item]));
   const sources = new Map(input.contract.sources.map((item) => [item.id, item]));
   const assumptions = new Map(input.contract.assumptions.map((item) => [item.id, item]));
   const gaps = new Map(input.contract.gaps.map((item) => [item.id, item]));
   const series = new Map((input.contract.series ?? []).map((item) => [item.id, item]));
   const sourceNumbers = new Map(input.contract.sources.map((source, index) => [source.id, index + 1]));
+  // A structure decides order and omission and names the gaps; a block matches a section by key.
+  const application = structure ? applyPresentationStructure(structure, view.blocks.map((block) => blockContent(block, claims))) : null;
+  const blocksById = new Map(view.blocks.map((block) => [block.id, block]));
+  const entries: Array<{section: PresentationStructure["sections"][number] | null; block: PresentationBlock | null}> = structure
+    ? structure.sections.map((section) => ({section, block: blocksById.get(section.key) ?? null}))
+    : view.blocks.map((block) => ({section: null, block}));
+  const gapText = input.locale === "pt-BR" ? "Campo exigido pelo template sem conteúdo governado" : "Field required by the template without governed content";
+  const gapLinesFor = (sectionKey: string, blockId: string | null): SlideSpec["lines"] => (application?.gaps ?? [])
+    .filter((gap) => gap.sectionKey === sectionKey && gap.blockId === blockId)
+    .map((gap) => ({label: structureFieldTitle(structure!, gap.sectionKey, gap.fieldKey, input.locale), value: gapText, tone: "gap" as const, traceId: `structure-gap:${gap.sectionKey}:${gap.fieldKey}`}));
   const cover: SlideSpec = {
     title: input.title,
     eyebrow: input.companyName ?? (input.locale === "pt-BR" ? "ANÁLISE DE CRÉDITO" : "CREDIT ANALYSIS"),
@@ -140,7 +176,12 @@ function buildSlides(input: InstitutionalPresentationInput, view: PresentationVi
     ],
   };
 
-  const slides = view.blocks.flatMap((block): SlideSpec[] => {
+  const slides = entries.flatMap(({section, block}): SlideSpec[] => {
+    if (!block) {
+      // A section the deck has no block for renders nothing but its required fields as named gaps.
+      const missing = gapLinesFor(section!.key, null);
+      return paginateLines(missing).map((chunk): SlideSpec => ({title: section!.title[input.locale], eyebrow: sectionLabel("gap", input.locale), kind: "gap", blockId: null, lines: chunk}));
+    }
     const lines: SlideSpec["lines"] = [];
     for (const claimId of block.claimIds) {
       const claim = claims.get(claimId);
@@ -169,6 +210,8 @@ function buildSlides(input: InstitutionalPresentationInput, view: PresentationVi
       if (!source) continue;
       lines.push({label: `[${sourceNumbers.get(source.id)}] ${source.title}`, value: source.asOf, note: `${source.classification.toUpperCase()} · ${source.locator}`, tone: "source", traceId: source.id});
     }
+    // Required fields this block cannot satisfy are named on the slide, never filled in.
+    if (section) lines.push(...gapLinesFor(section.key, block.id));
     const blockSeries = (block.seriesIds ?? []).map((seriesId) => series.get(seriesId)!).filter(Boolean);
     if (lines.length === 0 && blockSeries.length === 0) throw new Error(`presentation block ${block.id} has no renderable governed content`);
     if (blockSeries.length > 1) throw new Error(`presentation block ${block.id} exceeds the one-series institutional chart limit`);
@@ -190,7 +233,7 @@ function buildSlides(input: InstitutionalPresentationInput, view: PresentationVi
       lines: chunk,
     }));
   });
-  return [cover, ...slides];
+  return {slides: [cover, ...slides], blocks: entries.flatMap(({block}) => (block ? [block] : [])), application};
 }
 
 function lineWeight(line: SlideSpec["lines"][number]): number {
@@ -350,6 +393,8 @@ function customProperties(input: InstitutionalPresentationInput, template: Insti
     ["OffroadRendererVersion", institutionalPresentationRendererVersion],
     ["OffroadTemplate", `${template.id}@${template.version}`],
     ["OffroadReleaseState", input.contract.release.state],
+    // The exact stored template version and its fingerprint travel inside the deck as well.
+    ...presentationTemplateManifest(template, template.fingerprint ?? "").filter((entry) => ["OffroadTemplateVersionId", "OffroadTemplateFingerprint"].includes(entry.name)).map((entry) => [entry.name, entry.value] as const),
   ];
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">${values.map(([name, value], index) => `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="${index + 2}" name="${name}"><vt:lpwstr>${xml(value)}</vt:lpwstr></property>`).join("")}</Properties>`;
 }
@@ -402,29 +447,30 @@ export async function renderInstitutionalPresentation(input: InstitutionalPresen
   const view = input.contract.views.find((candidate) => candidate.surface === "presentation");
   if (!view) throw new Error("decision artifact has no governed presentation view");
   if (view.artifactKind !== "pptx") throw new Error("presentation view is not a pptx surface");
-  const slides = buildSlides(input, view);
+  const {slides, blocks, application} = buildSlides(input, view, template.structure ?? null);
   if (slides.length > 40) throw new Error("institutional presentation exceeds the 40-slide safety limit");
 
   const bytes = await packageSlides(slides, input, template, customProperties(input, template));
   const requiredParts = ["[Content_Types].xml", "_rels/.rels", "ppt/presentation.xml", "ppt/slideMasters/slideMaster1.xml", "ppt/slideLayouts/slideLayout1.xml", "ppt/theme/theme1.xml", ...slides.map((_, index) => `ppt/slides/slide${index + 1}.xml`)];
   const archive = await JSZip.loadAsync(bytes);
   const missingParts = requiredParts.filter((part) => !archive.file(part));
-  const renderedClaimIds = [...new Set(view.blocks.flatMap((block) => block.claimIds))].sort();
-  const renderedSeriesIds = [...new Set(view.blocks.flatMap((block) => block.seriesIds ?? []))].sort();
+  const renderedClaimIds = [...new Set(blocks.flatMap((block) => block.claimIds))].sort();
+  const renderedSeriesIds = [...new Set(blocks.flatMap((block) => block.seriesIds ?? []))].sort();
   const renderedSeries = (input.contract.series ?? []).filter((series) => renderedSeriesIds.includes(series.id));
   const renderedClaims = input.contract.claims.filter((claim) => renderedClaimIds.includes(claim.id));
-  const directAssumptionIds = view.blocks.flatMap((block) => block.assumptionIds);
+  const directAssumptionIds = blocks.flatMap((block) => block.assumptionIds);
   const renderedAssumptionIds = [...new Set([...directAssumptionIds, ...renderedClaims.flatMap((claim) => claim.assumptionIds)])].sort();
   const renderedAssumptions = input.contract.assumptions.filter((assumption) => renderedAssumptionIds.includes(assumption.id));
-  const renderedSourceIds = [...new Set([...view.blocks.flatMap((block) => block.sourceIds), ...renderedClaims.flatMap((claim) => claim.sourceIds), ...renderedAssumptions.flatMap((assumption) => assumption.sourceIds), ...renderedSeries.flatMap((series) => series.points.flatMap((point) => point.sourceIds))])].sort();
-  const renderedGapIds = [...new Set([...view.blocks.flatMap((block) => block.gapIds), ...renderedClaims.flatMap((claim) => claim.gapIds), ...renderedSeries.flatMap((series) => series.points.flatMap((point) => point.gapIds))])].sort();
+  const renderedSourceIds = [...new Set([...blocks.flatMap((block) => block.sourceIds), ...renderedClaims.flatMap((claim) => claim.sourceIds), ...renderedAssumptions.flatMap((assumption) => assumption.sourceIds), ...renderedSeries.flatMap((series) => series.points.flatMap((point) => point.sourceIds))])].sort();
+  const renderedGapIds = [...new Set([...blocks.flatMap((block) => block.gapIds), ...renderedClaims.flatMap((claim) => claim.gapIds), ...renderedSeries.flatMap((series) => series.points.flatMap((point) => point.gapIds))])].sort();
   return {
     bytes,
     audit: {
       rendererVersion: institutionalPresentationRendererVersion,
-      template: {id: template.id, version: template.version, origin: template.origin},
+      template: {id: template.id, version: template.version, origin: template.origin, versionId: template.versionId ?? null, fingerprint: template.fingerprint ?? null},
+      structure: application && template.structure ? {schemaVersion: template.structure.schemaVersion, ...application} : null,
       slideCount: slides.length,
-      renderedBlockIds: view.blocks.map((block) => block.id),
+      renderedBlockIds: blocks.map((block) => block.id),
       renderedClaimIds,
       renderedSeriesIds,
       renderedSourceIds,

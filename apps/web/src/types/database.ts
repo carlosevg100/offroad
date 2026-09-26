@@ -7674,16 +7674,73 @@ export type Database = {
           },
         ]
       }
-      presentation_templates: {
+      presentation_template_versions: {
         Row: {
-          capital_project_id: string | null
           created_at: string
           created_by: string
           definition: Json
           fingerprint: string
           id: string
           organization_id: string
+          structure: Json
+          template_id: string
+          updated_at: string
+          version_no: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          definition: Json
+          fingerprint: string
+          id?: string
+          organization_id: string
+          structure: Json
+          template_id: string
+          updated_at?: string
+          version_no: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          definition?: Json
+          fingerprint?: string
+          id?: string
+          organization_id?: string
+          structure?: Json
+          template_id?: string
+          updated_at?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "presentation_template_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "presentation_template_versions_template_fkey"
+            columns: ["organization_id", "template_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_templates"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      presentation_templates: {
+        Row: {
+          capital_project_id: string | null
+          created_at: string
+          created_by: string
+          current_version_id: string | null
+          definition: Json
+          fingerprint: string
+          id: string
+          organization_id: string
           origin: string
+          retired_at: string | null
+          retired_by: string | null
           scope: string
           template_key: string
           template_version: string
@@ -7694,11 +7751,14 @@ export type Database = {
           capital_project_id?: string | null
           created_at?: string
           created_by: string
+          current_version_id?: string | null
           definition: Json
           fingerprint: string
           id?: string
           organization_id: string
           origin: string
+          retired_at?: string | null
+          retired_by?: string | null
           scope: string
           template_key: string
           template_version: string
@@ -7709,11 +7769,14 @@ export type Database = {
           capital_project_id?: string | null
           created_at?: string
           created_by?: string
+          current_version_id?: string | null
           definition?: Json
           fingerprint?: string
           id?: string
           organization_id?: string
           origin?: string
+          retired_at?: string | null
+          retired_by?: string | null
           scope?: string
           template_key?: string
           template_version?: string
@@ -7721,6 +7784,13 @@ export type Database = {
           updated_by?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "presentation_templates_current_version_fkey"
+            columns: ["organization_id", "current_version_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_template_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
           {
             foreignKeyName: "presentation_templates_organization_id_capital_project_id_fkey"
             columns: ["organization_id", "capital_project_id"]
@@ -9957,6 +10027,7 @@ export type Database = {
           id: string
           organization_id: string
           presentation_template_id: string | null
+          presentation_template_version_id: string | null
           previous_version_id: string | null
           provenance: Json
           reference_fingerprint: string | null
@@ -9977,6 +10048,7 @@ export type Database = {
           id: string
           organization_id: string
           presentation_template_id?: string | null
+          presentation_template_version_id?: string | null
           previous_version_id?: string | null
           provenance: Json
           reference_fingerprint?: string | null
@@ -9997,6 +10069,7 @@ export type Database = {
           id?: string
           organization_id?: string
           presentation_template_id?: string | null
+          presentation_template_version_id?: string | null
           previous_version_id?: string | null
           provenance?: Json
           reference_fingerprint?: string | null
@@ -10040,6 +10113,13 @@ export type Database = {
             columns: ["organization_id", "presentation_template_id"]
             isOneToOne: false
             referencedRelation: "presentation_templates"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_entry_versions_template_version_fkey"
+            columns: ["organization_id", "presentation_template_version_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_template_versions"
             referencedColumns: ["organization_id", "id"]
           },
           {
@@ -11499,6 +11579,10 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_presentation_template_version_v1: {
+        Args: { p_version_id: string }
+        Returns: Json
+      }
       read_processing_model_lineage: {
         Args: {
           p_organization_id: string
@@ -12201,6 +12285,7 @@ export type Database = {
           p_definition: Json
           p_organization_id: string
           p_project_id: string
+          p_structure?: Json
         }
         Returns: Json
       }
@@ -13043,6 +13128,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_work_turn_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_read_presentation_template_version_v1: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }

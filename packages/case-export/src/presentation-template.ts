@@ -12,7 +12,9 @@
  * silently: a family outside the set without a recorded alternative is refused.
  */
 
-export const presentationTemplateContractVersion = "2026.09.11-client-template-v1";
+import type {PresentationStructure} from "./presentation-structure";
+
+export const presentationTemplateContractVersion = "2026.09.27-client-template-v2";
 
 /** The families the PDF renderer can embed today. */
 export const pdfRenderableFonts = ["Helvetica", "Times New Roman", "Courier New"] as const;
@@ -35,8 +37,12 @@ export type InstitutionalPresentationTemplate = {
   logo?: {data: Uint8Array; extension: "png" | "jpeg"};
   logoOnDark?: {data: Uint8Array; extension: "png" | "jpeg"};
   confidentialityLabel?: string;
-  /** Identity fingerprint of the stored definition, bound into every exported file. */
+  /** Fingerprint of the exact template version (definition plus structure), bound into every exported file. */
   fingerprint?: string;
+  /** The exact stored version this identity came from; absent for the house template. */
+  versionId?: string;
+  /** The semantic structure of that version; absent for the house template, which renders as today. */
+  structure?: PresentationStructure;
 };
 
 export type PresentationTemplateLogo = {
@@ -194,7 +200,9 @@ export function institutionalTemplateFromDefinition(
 
 /**
  * The identity recorded inside every exported file. It answers, from the file alone, which
- * template produced it, in which version, from which origin and under which exact definition.
+ * template produced it, in which version, from which origin, from which exact stored version
+ * (`OffroadTemplateVersionId`, `house` when the Offroad template rendered it) and under which
+ * exact definition and structure (the version fingerprint).
  */
 export function presentationTemplateManifest(
   template: InstitutionalPresentationTemplate,
@@ -204,6 +212,7 @@ export function presentationTemplateManifest(
     {name: "OffroadTemplateId", value: template.id},
     {name: "OffroadTemplateVersion", value: template.version},
     {name: "OffroadTemplateOrigin", value: template.origin},
+    {name: "OffroadTemplateVersionId", value: template.versionId ?? "house"},
     {name: "OffroadTemplateFingerprint", value: fingerprint},
     {name: "OffroadTemplateFonts", value: `${template.fonts.display} / ${template.fonts.body}${template.pdfFonts ? ` (PDF: ${template.pdfFonts.display} / ${template.pdfFonts.body})` : ""}`},
     {name: "OffroadTemplateLogo", value: template.logo ? "embedded" : "none"},
