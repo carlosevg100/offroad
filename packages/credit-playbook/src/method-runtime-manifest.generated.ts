@@ -23038,7 +23038,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/domain-contracts/src/domain-event.ts",
-              "hash": "5d2df53ab61b62ea9bc029a88d42e1c7619207fdc0d1e895c224251a49773668"
+              "hash": "b4840fd085e29cff1f84bd790818db4c1b884e974fd81c7e0924401d5c6d4727"
             },
             {
               "path": "packages/domain-contracts/src/dossier.ts",
@@ -23633,7 +23633,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "8288c842613a7d01569cbb92e5aa6eeb08c55dee6b1a8573d4b10f8550784604"
+          "hash": "60eae2d0ab5b6eba34be64752d5a1b3cc18c376b85db108f87441de89cdea1ba"
         },
         "evidence": [
           {
@@ -23659,7 +23659,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "0700dbfb2cd0d7de8fa2a3bf3d37c3e8286a21266f872b47777ef022abe6db4b"
+    "manifestHash": "c8ab78fb2d0fee5af5e27cdcbec279fe953e4bf8ff3bb15823e0b18a83df95f6"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

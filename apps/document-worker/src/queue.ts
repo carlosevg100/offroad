@@ -88,8 +88,11 @@ export const preliminaryAnalysisJobSchema = claimedJobBase.extend({
 export const agentOperationBriefJobSchema = claimedJobBase.extend({
   kind: z.literal("agent_operation_brief"),
   payload: z.object({
+    /** The message of a person's request; for a dependency recompute, the id of the queued result (no message exists). */
     message_id: z.uuid(),
     locale: z.enum(["pt-BR", "en-US"]),
+    /** Set only on the recomputation of an institutional result the dependency graph scheduled (stage 18, increment 5A). */
+    institutional_recompute_candidate_id: z.uuid().optional(),
   }),
 });
 export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
