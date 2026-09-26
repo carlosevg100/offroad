@@ -6292,14 +6292,61 @@
     {
       "id": "function:private.can_read_presentation_template_v1(p_organization_id uuid, p_template_id uuid)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.can_read_presentation_template_v1(p_organization_id uuid, p_template_id uuid)",
+          "kind": "function",
+          "name": "can_read_presentation_template_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_template_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.can_read_presentation_template_v1(p_organization_id uuid, p_template_id uuid)",
+          "kind": "function",
+          "name": "can_read_presentation_template_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_template_id uuid",
+          "security_definer": true
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Regra de leitura de um template, usada pela política da tabela de versões sem aninhar RLS.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 105,
           "anchor": "create or replace function private.can_read_presentation_template_v1(p_organization_id uuid, p_template_id uuid)",
           "mechanism": "direct_ddl"
@@ -24372,14 +24419,51 @@
     {
       "id": "function:private.presentation_template_house_structure_v1()",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.presentation_template_house_structure_v1()",
+          "kind": "function",
+          "name": "presentation_template_house_structure_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.presentation_template_house_structure_v1()",
+          "kind": "function",
+          "name": "presentation_template_house_structure_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "A estrutura da casa como dado, igual ao objeto exportado por packages/case-export/src/presentation-structure.ts (teste unitário compara os dois literais).",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 146,
           "anchor": "create or replace function private.presentation_template_house_structure_v1()",
           "mechanism": "direct_ddl"
@@ -24390,14 +24474,51 @@
     {
       "id": "function:private.presentation_template_json_v1(p_organization_id uuid, p_template_id uuid)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.presentation_template_json_v1(p_organization_id uuid, p_template_id uuid)",
+          "kind": "function",
+          "name": "presentation_template_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_template_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.presentation_template_json_v1(p_organization_id uuid, p_template_id uuid)",
+          "kind": "function",
+          "name": "presentation_template_json_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_template_id uuid",
+          "security_definer": true
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Projeção de um template para os leitores: versão corrente, estrutura, fingerprint e histórico de versões; nulo para template retirado.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 444,
           "anchor": "create or replace function private.presentation_template_json_v1(p_organization_id uuid, p_template_id uuid)",
           "mechanism": "direct_ddl"
@@ -24473,14 +24594,51 @@
     {
       "id": "function:private.presentation_template_version_guard()",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.presentation_template_version_guard()",
+          "kind": "function",
+          "name": "presentation_template_version_guard",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.presentation_template_version_guard()",
+          "kind": "function",
+          "name": "presentation_template_version_guard",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Gatilho que recusa update, delete e truncate em versões de template (presentation_template_version_immutable).",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 87,
           "anchor": "create or replace function private.presentation_template_version_guard()",
           "mechanism": "direct_ddl"
@@ -28077,7 +28235,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 470,
           "anchor": "create or replace function private.read_presentation_template_v1(p_project_id uuid)",
           "mechanism": "direct_ddl"
@@ -28089,14 +28247,61 @@
     {
       "id": "function:private.read_presentation_template_version_v1(p_version_id uuid)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_presentation_template_version_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_presentation_template_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_presentation_template_version_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_presentation_template_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": true
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Leitura de uma versão exata sob a regra de acesso do template dela.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 498,
           "anchor": "create function private.read_presentation_template_version_v1(p_version_id uuid)",
           "mechanism": "direct_ddl"
@@ -38325,54 +38530,7 @@
     {
       "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
-          "kind": "function",
-          "name": "set_presentation_template_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb",
-          "security_definer": true
-        },
-        "staging": {
-          "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
-          "kind": "function",
-          "name": "set_presentation_template_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "private",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb",
-          "security_definer": true
-        }
-      },
+      "catalogues": {},
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "apagar",
       "stage": "19 / 5",
@@ -38397,7 +38555,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 368,
           "anchor": "drop function private.set_presentation_template_v1(uuid, uuid, jsonb);",
           "mechanism": "direct_ddl"
@@ -38409,14 +38567,61 @@
     {
       "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb)",
+          "kind": "function",
+          "name": "set_presentation_template_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb)",
+          "kind": "function",
+          "name": "set_presentation_template_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb",
+          "security_definer": true
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Comando que valida definição e estrutura, grava uma versão imutável (ou reaproveita a de mesmo conteúdo), move o ponteiro e retira em vez de apagar; p_structure tem a estrutura da casa como padrão.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 369,
           "anchor": "create function private.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb default null)",
           "mechanism": "direct_ddl"
@@ -42184,7 +42389,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 589,
           "anchor": "create or replace function private.submit_vault_entry_version_v1(p_entry_id uuid,p_version_id uuid,p_expected_version_id uuid,p_kind text,p_title text,p_directive_text text default null,p_reference_id uuid default null,p_source_version_ids uuid[] default '{}')",
           "mechanism": "direct_ddl"
@@ -43705,14 +43910,51 @@
     {
       "id": "function:private.validate_presentation_template_structure_v1(p_structure jsonb)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.validate_presentation_template_structure_v1(p_structure jsonb)",
+          "kind": "function",
+          "name": "validate_presentation_template_structure_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_structure jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.validate_presentation_template_structure_v1(p_structure jsonb)",
+          "kind": "function",
+          "name": "validate_presentation_template_structure_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_structure jsonb",
+          "security_definer": false
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Validação nomeada da estrutura semântica: seções vazias, chaves repetidas, tipos e audiências desconhecidos, campo obrigatório sem chave.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 290,
           "anchor": "create or replace function private.validate_presentation_template_structure_v1(p_structure jsonb)",
           "mechanism": "direct_ddl"
@@ -43992,7 +44234,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 643,
           "anchor": "create or replace function private.vault_reference_allowed_v1(p_org uuid,p_version uuid,p_purpose text)",
           "mechanism": "direct_ddl"
@@ -45802,14 +46044,61 @@
     {
       "id": "function:private.worker_can_read_brand_template_v1(p_object_path text)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_can_read_brand_template_v1(p_object_path text)",
+          "kind": "function",
+          "name": "worker_can_read_brand_template_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_object_path text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_can_read_brand_template_v1(p_object_path text)",
+          "kind": "function",
+          "name": "worker_can_read_brand_template_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_object_path text",
+          "security_definer": true
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Regra da política de Storage para o robô ler o logotipo: lease ativo de análise de projeto na organização do caminho.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 561,
           "anchor": "create function private.worker_can_read_brand_template_v1(p_object_path text)",
           "mechanism": "direct_ddl"
@@ -52019,14 +52308,61 @@
     {
       "id": "function:private.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_read_presentation_template_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_read_presentation_template_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Leitura do robô, pela capacidade do job: a versão corrente do template do projeto (o do projeto vence, depois o da organização; retirado é ausente).",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 530,
           "anchor": "create function private.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
           "mechanism": "direct_ddl"
@@ -64058,14 +64394,61 @@
     {
       "id": "function:public.read_presentation_template_version_v1(p_version_id uuid)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_presentation_template_version_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_presentation_template_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_presentation_template_version_v1(p_version_id uuid)",
+          "kind": "function",
+          "name": "read_presentation_template_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_version_id uuid",
+          "security_definer": false
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Invólucro público da leitura de uma versão exata.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 520,
           "anchor": "create function public.read_presentation_template_version_v1(p_version_id uuid)",
           "mechanism": "direct_ddl"
@@ -70351,64 +70734,7 @@
     {
       "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
       "kind": "function",
-      "catalogues": {
-        "production": {
-          "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
-          "kind": "function",
-          "name": "set_presentation_template_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "public",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb",
-          "security_definer": false
-        },
-        "staging": {
-          "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb)",
-          "kind": "function",
-          "name": "set_presentation_template_v1",
-          "grants": [
-            [
-              "postgres",
-              "EXECUTE",
-              false
-            ],
-            [
-              "authenticated",
-              "EXECUTE",
-              false
-            ],
-            [
-              "service_role",
-              "EXECUTE",
-              false
-            ]
-          ],
-          "schema": "public",
-          "settings": [
-            "search_path=\"\""
-          ],
-          "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb",
-          "security_definer": false
-        }
-      },
+      "catalogues": {},
       "owner": "Codex — etapa responsável do roteiro aprovado",
       "decision": "apagar",
       "stage": "19 / 5",
@@ -70427,7 +70753,7 @@
           "mechanism": "direct_ddl"
         },
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 367,
           "anchor": "drop function public.set_presentation_template_v1(uuid, uuid, jsonb);",
           "mechanism": "direct_ddl"
@@ -70438,14 +70764,61 @@
     {
       "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb)",
+          "kind": "function",
+          "name": "set_presentation_template_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb)",
+          "kind": "function",
+          "name": "set_presentation_template_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb",
+          "security_definer": false
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Invólucro público do comando com a mesma assinatura e o mesmo padrão.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 436,
           "anchor": "create function public.set_presentation_template_v1(p_organization_id uuid, p_project_id uuid, p_definition jsonb, p_structure jsonb default null)",
           "mechanism": "direct_ddl"
@@ -79488,14 +79861,61 @@
     {
       "id": "function:public.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
       "kind": "function",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_read_presentation_template_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_read_presentation_template_version_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Invólucro público da leitura do robô.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 554,
           "anchor": "create function public.worker_read_presentation_template_version_v1(p_job_id uuid, p_capability_token text)",
           "mechanism": "direct_ddl"
@@ -103788,14 +104208,43 @@
     {
       "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_delete",
       "kind": "policy",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_delete",
+          "kind": "policy",
+          "name": "presentation_template_versions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_delete",
+          "kind": "policy",
+          "name": "presentation_template_versions_deny_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Leitura pela regra do próprio template (membro da organização ou acesso ao projeto); nenhuma escrita direta de cliente.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 124,
           "anchor": "create policy presentation_template_versions_deny_delete on public.presentation_template_versions for delete to authenticated using (false);",
           "mechanism": "direct_ddl"
@@ -103806,14 +104255,43 @@
     {
       "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_insert",
       "kind": "policy",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_insert",
+          "kind": "policy",
+          "name": "presentation_template_versions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_insert",
+          "kind": "policy",
+          "name": "presentation_template_versions_deny_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Leitura pela regra do próprio template (membro da organização ou acesso ao projeto); nenhuma escrita direta de cliente.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 122,
           "anchor": "create policy presentation_template_versions_deny_insert on public.presentation_template_versions for insert to authenticated with check (false);",
           "mechanism": "direct_ddl"
@@ -103824,14 +104302,43 @@
     {
       "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_update",
       "kind": "policy",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_update",
+          "kind": "policy",
+          "name": "presentation_template_versions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.presentation_template_versions.presentation_template_versions_deny_update",
+          "kind": "policy",
+          "name": "presentation_template_versions_deny_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Leitura pela regra do próprio template (membro da organização ou acesso ao projeto); nenhuma escrita direta de cliente.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 123,
           "anchor": "create policy presentation_template_versions_deny_update on public.presentation_template_versions for update to authenticated using (false) with check (false);",
           "mechanism": "direct_ddl"
@@ -103842,14 +104349,43 @@
     {
       "id": "policy:public.presentation_template_versions.presentation_template_versions_select",
       "kind": "policy",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "policy:public.presentation_template_versions.presentation_template_versions_select",
+          "kind": "policy",
+          "name": "presentation_template_versions_select",
+          "qual": "( SELECT private.can_read_presentation_template_v1(presentation_template_versions.organization_id, presentation_template_versions.template_id) AS can_read_presentation_template_v1)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.presentation_template_versions.presentation_template_versions_select",
+          "kind": "policy",
+          "name": "presentation_template_versions_select",
+          "qual": "( SELECT private.can_read_presentation_template_v1(presentation_template_versions.organization_id, presentation_template_versions.template_id) AS can_read_presentation_template_v1)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Leitura pela regra do próprio template (membro da organização ou acesso ao projeto); nenhuma escrita direta de cliente.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 120,
           "anchor": "create policy presentation_template_versions_select on public.presentation_template_versions for select to authenticated",
           "mechanism": "direct_ddl"
@@ -109942,14 +110478,43 @@
     {
       "id": "policy:storage.objects.brand_templates_worker_select",
       "kind": "policy",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "policy:storage.objects.brand_templates_worker_select",
+          "kind": "policy",
+          "name": "brand_templates_worker_select",
+          "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.worker_can_read_brand_template_v1(objects.name) AS worker_can_read_brand_template_v1))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:storage.objects.brand_templates_worker_select",
+          "kind": "policy",
+          "name": "brand_templates_worker_select",
+          "qual": "((bucket_id = 'brand-templates'::text) AND ( SELECT private.worker_can_read_brand_template_v1(objects.name) AS worker_can_read_brand_template_v1))",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "O robô lê o logotipo de um template da organização somente enquanto detém um lease ativo de análise de projeto nessa organização; conferido por hash antes de embutir.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 574,
           "anchor": "create policy brand_templates_worker_select on storage.objects for select to authenticated",
           "mechanism": "direct_ddl"
@@ -145789,14 +146354,125 @@
     {
       "id": "r:public.presentation_template_versions",
       "kind": "table",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "r:public.presentation_template_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "presentation_template_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.presentation_template_versions",
+          "rls": true,
+          "kind": "table",
+          "name": "presentation_template_versions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ],
+            [
+              "authenticated",
+              "SELECT",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Versões imutáveis e numeradas do template de apresentação: definição visual, estrutura semântica e fingerprint das duas. Escrita só pelo comando set_presentation_template_v1; o cofre e cada arquivo renderizado fixam a versão, nunca a linha mutável.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 62,
           "anchor": "create table public.presentation_template_versions (",
           "mechanism": "direct_ddl"
@@ -171669,14 +172345,35 @@
     {
       "id": "trigger:public.presentation_template_versions.presentation_template_versions_audit",
       "kind": "trigger",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.presentation_template_versions.presentation_template_versions_audit",
+          "kind": "trigger",
+          "name": "presentation_template_versions_audit",
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER presentation_template_versions_audit AFTER INSERT OR DELETE OR UPDATE ON public.presentation_template_versions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:public.presentation_template_versions.presentation_template_versions_audit",
+          "kind": "trigger",
+          "name": "presentation_template_versions_audit",
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER presentation_template_versions_audit AFTER INSERT OR DELETE OR UPDATE ON public.presentation_template_versions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Guarda de imutabilidade (update, delete e truncate), carimbo de updated_at e auditoria da tabela de versões.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 100,
           "anchor": "create trigger presentation_template_versions_audit after insert or update or delete on public.presentation_template_versions",
           "mechanism": "direct_ddl"
@@ -171687,14 +172384,35 @@
     {
       "id": "trigger:public.presentation_template_versions.presentation_template_versions_immutable",
       "kind": "trigger",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.presentation_template_versions.presentation_template_versions_immutable",
+          "kind": "trigger",
+          "name": "presentation_template_versions_immutable",
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.presentation_template_version_guard()",
+          "definition": "CREATE TRIGGER presentation_template_versions_immutable BEFORE DELETE OR UPDATE ON public.presentation_template_versions FOR EACH ROW EXECUTE FUNCTION private.presentation_template_version_guard()"
+        },
+        "staging": {
+          "id": "trigger:public.presentation_template_versions.presentation_template_versions_immutable",
+          "kind": "trigger",
+          "name": "presentation_template_versions_immutable",
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.presentation_template_version_guard()",
+          "definition": "CREATE TRIGGER presentation_template_versions_immutable BEFORE DELETE OR UPDATE ON public.presentation_template_versions FOR EACH ROW EXECUTE FUNCTION private.presentation_template_version_guard()"
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Guarda de imutabilidade (update, delete e truncate), carimbo de updated_at e auditoria da tabela de versões.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 94,
           "anchor": "create trigger presentation_template_versions_immutable before update or delete on public.presentation_template_versions",
           "mechanism": "direct_ddl"
@@ -171705,14 +172423,35 @@
     {
       "id": "trigger:public.presentation_template_versions.presentation_template_versions_set_updated_at",
       "kind": "trigger",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.presentation_template_versions.presentation_template_versions_set_updated_at",
+          "kind": "trigger",
+          "name": "presentation_template_versions_set_updated_at",
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER presentation_template_versions_set_updated_at BEFORE UPDATE ON public.presentation_template_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.presentation_template_versions.presentation_template_versions_set_updated_at",
+          "kind": "trigger",
+          "name": "presentation_template_versions_set_updated_at",
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER presentation_template_versions_set_updated_at BEFORE UPDATE ON public.presentation_template_versions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Guarda de imutabilidade (update, delete e truncate), carimbo de updated_at e auditoria da tabela de versões.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 98,
           "anchor": "create trigger presentation_template_versions_set_updated_at before update on public.presentation_template_versions",
           "mechanism": "direct_ddl"
@@ -171723,14 +172462,35 @@
     {
       "id": "trigger:public.presentation_template_versions.presentation_template_versions_truncate_guard",
       "kind": "trigger",
-      "catalogues": {},
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.presentation_template_versions.presentation_template_versions_truncate_guard",
+          "kind": "trigger",
+          "name": "presentation_template_versions_truncate_guard",
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.presentation_template_version_guard()",
+          "definition": "CREATE TRIGGER presentation_template_versions_truncate_guard BEFORE TRUNCATE ON public.presentation_template_versions FOR EACH STATEMENT EXECUTE FUNCTION private.presentation_template_version_guard()"
+        },
+        "staging": {
+          "id": "trigger:public.presentation_template_versions.presentation_template_versions_truncate_guard",
+          "kind": "trigger",
+          "name": "presentation_template_versions_truncate_guard",
+          "table": "presentation_template_versions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.presentation_template_version_guard()",
+          "definition": "CREATE TRIGGER presentation_template_versions_truncate_guard BEFORE TRUNCATE ON public.presentation_template_versions FOR EACH STATEMENT EXECUTE FUNCTION private.presentation_template_version_guard()"
+        }
+      },
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Guarda de imutabilidade (update, delete e truncate), carimbo de updated_at e auditoria da tabela de versões.",
       "sources": [
         {
-          "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+          "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
           "line": 96,
           "anchor": "create trigger presentation_template_versions_truncate_guard before truncate on public.presentation_template_versions",
           "mechanism": "direct_ddl"
@@ -184990,7 +185750,7 @@
     },
     {
       "kind": "migration",
-      "path": "supabase/migrations/20260927130000_presentation_template_versions.sql",
+      "path": "supabase/migrations/20260926190857_presentation_template_versions.sql",
       "decision": "preservar",
       "stage": "19 / 5",
       "reason": "Etapa 19, incremento 5: templates de apresentação com estrutura semântica versionada, versões imutáveis, retirada em vez de exclusão, cofre e robô fixados na versão exata."
@@ -185615,9 +186375,10 @@
     "review": "docs/build/arcabouco/etapa-17-3b-consumidor.md"
   },
   "stage_19_template_versions_revision": {
-    "production_migrations": [],
+    "production_migrations": [
+      "20260926190857"
+    ],
     "new_objects": 22,
-    "review": "docs/build/arcabouco/etapa-19-5-templates-versionados.md",
-    "note": "Catálogos das 22 novas entradas vazios até a captura do líder (reconcile-stage0-inventory.py); o carimbo de produção substitui 20260927130000."
+    "review": "docs/build/arcabouco/etapa-19-5-templates-versionados.md"
   }
 }

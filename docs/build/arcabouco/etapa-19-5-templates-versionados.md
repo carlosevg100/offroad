@@ -1,6 +1,6 @@
 # Etapa 19, incremento 5: templates de apresentação com estrutura semântica versionada
 
-Migração nova `presentation_template_versions` (arquivo `20260927130000_presentation_template_versions.sql`, carimbo provisório que o líder substitui ao aplicar), pacote `case-export`, web e robô. Sobre `main` `b1d56d62`. A migração do incremento 2 (`artifact_revision_protocol`) não estava em `main` nem em ramo remoto quando este incremento fechou: só o 2a (#805, capacidade do robô) existia. Esta migração não depende dela (nenhuma chave estrangeira para `artifact_revisions`); a tabela de versões é o alvo que o `template {templateVersionId, fingerprint}` do manifesto da 2 apontará.
+Migração nova `presentation_template_versions` (`supabase/migrations/20260926190857_presentation_template_versions.sql`, aplicada em staging como `20260926190646` e em produção como `20260926190857`, depois da migração A do incremento 2), pacote `case-export`, web e robô. Sobre `main` `b1d56d62`. A migração do incremento 2 (`artifact_revision_protocol`) não estava em `main` nem em ramo remoto quando este incremento fechou: só o 2a (#805, capacidade do robô) existia. Esta migração não depende dela (nenhuma chave estrangeira para `artifact_revisions`); a tabela de versões é o alvo que o `template {templateVersionId, fingerprint}` do manifesto da 2 apontará.
 
 ## O ponto de partida medido
 
@@ -58,3 +58,7 @@ Os md5 foram calculados dos arquivos de migração (corpo entre os delimitadores
 - Ordem em relação ao incremento 2: independente; se a 2b entrar antes, esta segue depois sem mudança; se entrar depois, o manifesto da 2 passa a apontar `templateVersionId` para versões que já existem.
 - O robô precisa estar implantado com este commit antes que um projeto com template de cliente entre na prévia; até lá, a leitura nova não é chamada (o método é opcional no `QueueClient`) e o deck sai com a casa, como hoje. Não há capacidade nova no contrato de runtime: a leitura é só leitura.
 - A estrutura muda a ordem e a omissão dos blocos do deck governado e nomeia lacunas; não cria seções com conteúdo novo. Seções com chaves fora das da casa rendem só lacunas nomeadas até que um produtor emita blocos com essas chaves.
+
+## Resultado da aplicação, 26/09/2026
+
+O texto aplicado tem o md5 do arquivo revisado (`143a2074`) nos dois bancos, e os quatro corpos fixados por md5 conferiram em staging e em produção antes da aplicação. Staging registrou `20260926190646` e produção `20260926190857`. Nenhum dos dois tinha template nem pino de template no cofre, então o backfill não escreveu nada; a função de três argumentos saiu, a de quatro entrou, a proteção de imutabilidade do cofre voltou ligada e a política de leitura do logo pelo robô existe nos dois. Os advisors de segurança não acusam nada. Os 25 objetos capturados (22 novos e as três funções restatadas) são iguais entre produção e staging; os catálogos commitados perderam as duas funções de três argumentos, que ficaram sem catálogo no inventário. A tela de identidade visual deixou de mostrar o trecho da impressão do template.

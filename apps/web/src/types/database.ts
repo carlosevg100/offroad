@@ -10301,17 +10301,17 @@ export type Database = {
             referencedColumns: ["organization_id", "id"]
           },
           {
-            foreignKeyName: "vault_entry_versions_template_version_fkey"
-            columns: ["organization_id", "presentation_template_version_id"]
-            isOneToOne: false
-            referencedRelation: "presentation_template_versions"
-            referencedColumns: ["organization_id", "id"]
-          },
-          {
             foreignKeyName: "vault_entry_versions_organization_id_source_version_id_fkey"
             columns: ["organization_id", "source_version_id"]
             isOneToOne: false
             referencedRelation: "source_versions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vault_entry_versions_template_version_fkey"
+            columns: ["organization_id", "presentation_template_version_id"]
+            isOneToOne: false
+            referencedRelation: "presentation_template_versions"
             referencedColumns: ["organization_id", "id"]
           },
         ]

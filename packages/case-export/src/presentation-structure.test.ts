@@ -20,7 +20,7 @@ describe("presentation structure", () => {
     expect(offroadHousePresentationStructure.sections.map((section) => section.key)).toEqual([
       "decision-headline", "maturity-wall", "analytical-direction", "open-gaps", "source-register",
     ]);
-    const migration = await readFile(new URL("../../../supabase/migrations/20260927130000_presentation_template_versions.sql", import.meta.url), "utf8");
+    const migration = await readFile(new URL("../../../supabase/migrations/20260926190857_presentation_template_versions.sql", import.meta.url), "utf8");
     const literal = migration.split("$house$")[1];
     expect(literal, "the migration carries the house structure between $house$ markers").toBeTruthy();
     expect(JSON.parse(literal!)).toEqual(JSON.parse(JSON.stringify(offroadHousePresentationStructure)));
