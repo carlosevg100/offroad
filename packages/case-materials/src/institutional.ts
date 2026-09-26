@@ -1,8 +1,8 @@
-import Decimal from "decimal.js";
 import type {CaseBrief} from "@offroad/case-understanding";
 import {covenantsFor, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
 import type {DeskAnalysis, InternalRating, OperationVerdict, StressScenario, Trajectory} from "@offroad/credit-analysis";
 import type {CollateralPackage} from "@offroad/deal-structure";
+import {presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
 import type {IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
@@ -27,12 +27,15 @@ import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, traject
  * else is assembled from computed values with their citable ids.
  */
 
-const money = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
-  `R$ ${new Decimal(value).toNumber().toLocaleString(locale, {maximumFractionDigits: 0})}`;
-const turns = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
-  `${new Decimal(value).toNumber().toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
-const pct = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
-  `${new Decimal(value).times(100).toNumber().toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`;
+const money = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+  `R$ ${presentationNumber(value).value.toLocaleString(locale, {maximumFractionDigits: 0})}`;
+const turns = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+  `${presentationNumber(value).value.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
+const pct = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+  `${presentationNumber(presentationFigure({value, scale: "percent"}).value).value.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`;
+/** The whole millions a callout title states, and a spread in basis points printed as percent. */
+const millions = (value: DecimalInput) => presentationFigure({value, scale: "millions", decimals: 0}).value;
+const spreadPercent = (bps: number) => presentationFigure({value: bps, scale: "basis_points_as_percent", decimals: 2}).value;
 const bi = (pt: string, en: string) => ({pt, en});
 
 export type InstitutionalInput = {
@@ -85,8 +88,8 @@ export function verdictSection(verdict: OperationVerdict): MaterialBlock[] {
     blocks.push({
       type: "callout",
       title: bi(
-        `Alternativa: R$ ${(Number(alternative.amount) / 1_000_000).toFixed(0)}M em ${alternative.termMonths} meses`,
-        `Alternative: R$ ${(Number(alternative.amount) / 1_000_000).toFixed(0)}M over ${alternative.termMonths} months`,
+        `Alternativa: R$ ${millions(alternative.amount)}M em ${alternative.termMonths} meses`,
+        `Alternative: R$ ${millions(alternative.amount)}M over ${alternative.termMonths} months`,
       ),
       items: [
         {label: bi("Por quê", "Why"), value: {pt: alternative.why.pt, en: alternative.why.en}},
@@ -129,7 +132,7 @@ export function creditConsiderationsSection(input: InstitutionalInput): Material
     const p = input.price;
     blocks.push({type: "heading", text: bi("Referência indicativa de preço", "Indicative pricing reference")});
     blocks.push({type: "kv", rows: [
-      {label: bi("Faixa", "Range"), value: bi(`CDI + ${(p.bps.min / 100).toFixed(2).replace(".", ",")}% a CDI + ${(p.bps.max / 100).toFixed(2).replace(".", ",")}% a.a.`, `CDI + ${(p.bps.min / 100).toFixed(2)}% to CDI + ${(p.bps.max / 100).toFixed(2)}% p.a.`), note: bi(`Base: banda ${p.rating} para ${p.instrument}, ${p.base.bps.min} a ${p.base.bps.max} bps.`, `Base: ${p.rating} band for ${p.instrument}, ${p.base.bps.min} to ${p.base.bps.max} bps.`)},
+      {label: bi("Faixa", "Range"), value: bi(`CDI + ${spreadPercent(p.bps.min).replace(".", ",")}% a CDI + ${spreadPercent(p.bps.max).replace(".", ",")}% a.a.`, `CDI + ${spreadPercent(p.bps.min)}% to CDI + ${spreadPercent(p.bps.max)}% p.a.`), note: bi(`Base: banda ${p.rating} para ${p.instrument}, ${p.base.bps.min} a ${p.base.bps.max} bps.`, `Base: ${p.rating} band for ${p.instrument}, ${p.base.bps.min} to ${p.base.bps.max} bps.`)},
       ...p.adjustments.map((adjustment) => ({label: bi(`Ajuste: ${adjustment.id}`, `Adjustment: ${adjustment.id}`), value: bi(`${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`, `${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`), note: adjustment.rationale})),
       {label: bi("Proveniência", "Provenance"), value: bi(p.provenance.kind === "desk_practice" ? `Prática da mesa, declarada em ${p.provenance.statedOn}; não é observação de operações fechadas.` : `Observada em ${p.provenance.sample} operações nos últimos ${p.provenance.windowMonths} meses.`, p.provenance.kind === "desk_practice" ? `Desk practice, stated on ${p.provenance.statedOn}; not an observation of closed deals.` : `Observed across ${p.provenance.sample} deals in the last ${p.provenance.windowMonths} months.`)},
     ]});

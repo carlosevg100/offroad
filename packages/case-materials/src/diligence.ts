@@ -1,6 +1,11 @@
-import Decimal from "decimal.js";
-
 import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+import {
+  calculateCustomerConcentration,
+  calculateEbitdaAdjustments,
+  presentationFigure,
+  testScheduleTieOut,
+  type DecimalInput,
+} from "@offroad/financial-core";
 import type {ReconciledFact, TracedCalculation} from "@offroad/reconciliation";
 
 import type {Material, MaterialBlock} from "./compile";
@@ -11,17 +16,18 @@ import type {Material, MaterialBlock} from "./compile";
  * Every diligence starts with the same list, and a desk that has read the room answers most of
  * it from the facts and the battery before the first call. What it cannot answer it says is
  * open, addressed to the company, so the list is also the request that goes back. Every
- * answer cites what it stands on; an open question cites nothing and says so.
+ * answer cites what it stands on; an open question cites nothing and says so. The sums, the
+ * differences, the tolerance test and the unit conversions are financial-core kernels.
  */
 
 type Lang = "pt" | "en";
 type Bi = {pt: string; en: string};
 const bi = (pt: string, en: string): Bi => ({pt, en});
 
-const money = (value: Decimal.Value, locale: "pt-BR" | "en-US") =>
-  `R$ ${new Decimal(value).div(1_000_000).toFixed(1).replace(".", locale === "pt-BR" ? "," : ".")}M`;
-const turns = (value: Decimal.Value, locale: "pt-BR" | "en-US") => `${new Decimal(value).toFixed(2).replace(".", locale === "pt-BR" ? "," : ".")}x`;
-const pct = (value: Decimal.Value, locale: "pt-BR" | "en-US") => `${new Decimal(value).times(100).toFixed(1).replace(".", locale === "pt-BR" ? "," : ".")}%`;
+const money = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+  `R$ ${presentationFigure({value, scale: "millions", decimals: 1}).value.replace(".", locale === "pt-BR" ? "," : ".")}M`;
+const turns = (value: DecimalInput, locale: "pt-BR" | "en-US") => `${presentationFigure({value, decimals: 2}).value.replace(".", locale === "pt-BR" ? "," : ".")}x`;
+const pct = (value: DecimalInput, locale: "pt-BR" | "en-US") => `${presentationFigure({value, scale: "percent", decimals: 1}).value.replace(".", locale === "pt-BR" ? "," : ".")}%`;
 
 export type DiligenceContext = {
   facts: readonly ReconciledFact[];
@@ -61,9 +67,11 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   {id: "q03", section: bi("Negócio", "Business"), question: bi("Qual a concentração nos cinco maiores clientes?", "What is the concentration in the top five customers?"), resolve: ({facts}) => {
     const shares = indexed(facts, "customers.top_customers").filter((fact) => fact.key.fieldPath.endsWith(".share_pct"));
     if (shares.length === 0) return null;
-    const total = shares.slice(0, 5).reduce((sum, fact) => sum.plus(fact.value), new Decimal(0));
-    const top = shares.sort((a, b) => Number(b.value) - Number(a.value))[0]!;
-    return {answer: bi(`Cinco maiores: ${pct(total, "pt-BR")} da receita; o maior, ${pct(top.value, "pt-BR")}.`, `Top five: ${pct(total, "en-US")} of revenue; the largest, ${pct(top.value, "en-US")}.`), supportIds: shares.map((fact) => fact.key.fieldPath)};
+    // The listing is the ranking the source declares; the largest share is compared exactly.
+    const concentration = calculateCustomerConcentration({shares: shares.map((fact) => ({id: fact.key.fieldPath, share: fact.value})), leading: 5});
+    const total = concentration.leadingTotal;
+    const top = concentration.largest!.share;
+    return {answer: bi(`Cinco maiores: ${pct(total, "pt-BR")} da receita; o maior, ${pct(top, "pt-BR")}.`, `Top five: ${pct(total, "en-US")} of revenue; the largest, ${pct(top, "en-US")}.`), supportIds: [...concentration.ranking]};
   }},
   {id: "q04", section: bi("Negócio", "Business"), question: bi("Quais os prazos e cláusulas de rescisão dos contratos com os maiores clientes?", "What are the terms and termination clauses of the largest customers' contracts?"), resolve: ({facts}) => {
     const terms = find(facts, /^customers\.contract_terms$/);
@@ -100,8 +108,8 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   {id: "q10", section: bi("Financeiro", "Financials"), question: bi("Há itens não recorrentes no EBITDA? Quais?", "Are there non-recurring items in EBITDA? Which?"), resolve: ({facts}) => {
     const adjusted = find(facts, /^historical_financials\.\d{4}\.adjusted_ebitda$/); const reported = adjusted ? find(facts, new RegExp(`^${adjusted.key.fieldPath.replace("adjusted_ebitda", "ebitda").replace(/\./g, "\\\\.")}$`)) : undefined;
     if (!adjusted || !reported) return null;
-    const diff = new Decimal(adjusted.value).minus(reported.value);
-    return {answer: bi(`EBITDA ajustado de ${money(adjusted.value, "pt-BR")} contra reportado de ${money(reported.value, "pt-BR")}: ${money(diff.abs(), "pt-BR")} de ajustes, a detalhar item a item.`, `Adjusted EBITDA of ${money(adjusted.value, "en-US")} against reported ${money(reported.value, "en-US")}: ${money(diff.abs(), "en-US")} of adjustments, to be detailed item by item.`), supportIds: [adjusted.key.fieldPath, reported.key.fieldPath]};
+    const adjustments = calculateEbitdaAdjustments({adjustedEbitda: adjusted.value, reportedEbitda: reported.value}).magnitude;
+    return {answer: bi(`EBITDA ajustado de ${money(adjusted.value, "pt-BR")} contra reportado de ${money(reported.value, "pt-BR")}: ${money(adjustments, "pt-BR")} de ajustes, a detalhar item a item.`, `Adjusted EBITDA of ${money(adjusted.value, "en-US")} against reported ${money(reported.value, "en-US")}: ${money(adjustments, "en-US")} of adjustments, to be detailed item by item.`), supportIds: [adjusted.key.fieldPath, reported.key.fieldPath]};
   }},
   // ---- debt ---------------------------------------------------------------------------------
   {id: "q11", section: bi("Dívida", "Debt"), question: bi("Qual o estoque de dívida, por credor, custo e vencimento?", "What is the debt stack, by lender, cost and maturity?"), resolve: ({desk}) => {
@@ -111,8 +119,9 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   }},
   {id: "q12", section: bi("Dívida", "Debt"), question: bi("O mapa de dívida bate com o balanço?", "Does the debt schedule tie to the balance sheet?"), resolve: ({desk}) => {
     if (!desk) return null;
-    const gap = new Decimal(desk.stack.scheduleGap);
-    return {answer: gap.abs().lte(new Decimal(desk.stack.totalOnBalance).times("0.02")) ? bi("Sim, dentro de 2%.", "Yes, within 2%.") : bi(`Não: ${money(gap.abs(), "pt-BR")} ${gap.gt(0) ? "no balanço e fora do mapa" : "no mapa e fora do balanço"}; a companhia precisa explicar.`, `No: ${money(gap.abs(), "en-US")} ${gap.gt(0) ? "on the balance sheet and outside the schedule" : "in the schedule and outside the balance sheet"}; the company has to explain.`), supportIds: ["desk.divida_fora_do_mapa"]};
+    const tieOut = testScheduleTieOut({scheduleGap: desk.stack.scheduleGap, totalOnBalance: desk.stack.totalOnBalance, tolerance: "0.02"});
+    const balanceSide = tieOut.side === "balance_above_schedule";
+    return {answer: tieOut.outcome === "within_tolerance" ? bi("Sim, dentro de 2%.", "Yes, within 2%.") : bi(`Não: ${money(tieOut.magnitude, "pt-BR")} ${balanceSide ? "no balanço e fora do mapa" : "no mapa e fora do balanço"}; a companhia precisa explicar.`, `No: ${money(tieOut.magnitude, "en-US")} ${balanceSide ? "on the balance sheet and outside the schedule" : "in the schedule and outside the balance sheet"}; the company has to explain.`), supportIds: ["desk.divida_fora_do_mapa"]};
   }},
   {id: "q13", section: bi("Dívida", "Debt"), question: bi("Quais covenants existem hoje e qual a folga?", "Which covenants exist today and what is the headroom?"), resolve: ({desk}) => {
     if (!desk?.leverage.tightestCovenant) return null;

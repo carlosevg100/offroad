@@ -1,3 +1,5 @@
+import {presentationFigure, presentationNumber} from "@offroad/financial-core";
+
 import {auditCompiledMaterial} from "./conduct";
 import type {Material} from "./compile";
 
@@ -94,8 +96,8 @@ export function institutionalFinancialModelMaterial(input: {artifactFingerprint:
   const format = (value: string | null | undefined, ratio = false) => {
     if (value === null || value === undefined) return input.lang === "en" ? "Not computable" : "Não calculável";
     if (!input.lang) return value;
-    // Presentation precision only; approved inputs, calculations and registers stay exact.
-    if (ratio) value = Number(value).toFixed(2);
+    // Presentation precision only, half-up on the decimal value; approved inputs, calculations and registers stay exact.
+    if (ratio) value = presentationFigure({value, decimals: 2}).value;
     const [whole = "", fraction] = value.split(".");
     const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, input.lang === "pt" ? "." : ",");
     return grouped + (fraction ? `${input.lang === "pt" ? "," : "."}${fraction}` : "");
@@ -112,15 +114,17 @@ export function institutionalFinancialModelMaterial(input: {artifactFingerprint:
     ]),
     {type: "disclaimer", text: labels("Exportação dos resultados aprovados. Para alterar premissas e recalcular, submeta uma nova revisão na plataforma. Este arquivo não recalcula localmente e não constitui proposta ou compromisso de financiamento.", "Approved results export. To change assumptions and recalculate, submit a new review in the platform. This file does not recalculate locally and is not a financing offer or commitment.")},
   ]};
-  material.presentationCharts = input.scenarios.flatMap((scenario, scenarioIndex) => [
+  const chartLines = [
     ["ebitda", "Geração operacional", "Operating earnings"],
     ["cfads", "Caixa disponível para pagar a dívida", "Cash available to service debt"],
     ["closingGrossDebt", "Evolução da dívida bruta", "Gross debt trajectory"],
     ["unrestrictedCash", "Evolução do caixa disponível", "Unrestricted cash trajectory"],
-  ].map(([key, pt, en]) => ({title: labels(`${scenario.name}: ${pt}`, `${scenario.name}: ${en}`), series: {
-    id: `institutional-${scenarioIndex}-${key}`, label: input.lang === "en" ? en! : pt!, unit: scenario.currency, chartKind: "column" as const,
+  ] as const;
+  material.presentationCharts = input.scenarios.flatMap((scenario, scenarioIndex) => chartLines.map(([key, pt, en]) => ({title: labels(`${scenario.name}: ${pt}`, `${scenario.name}: ${en}`), series: {
+    id: `institutional-${scenarioIndex}-${key}`, label: input.lang === "en" ? en : pt, unit: scenario.currency, chartKind: "column" as const,
     object: {id: `institutional-${scenarioIndex}`, type: "financial_model", fingerprint: input.artifactFingerprint, path: `scenarios.${scenarioIndex}.periods.${key}`},
-    points: scenario.periods.map(period => ({label: period.period, value: Number(period[key as keyof InstitutionalStatementPeriod]), evidenceState: "calculated" as const, sourceIds: [...input.supportIds], assumptionIds: [], gapIds: []})),
+    // The chart point is the exact statement value handed to a binary number at the display boundary.
+    points: scenario.periods.map(period => ({label: period.period, value: presentationNumber(period[key]).value, evidenceState: "calculated" as const, sourceIds: [...input.supportIds], assumptionIds: [], gapIds: []})),
   }})));
   return {...material, conductAudit: auditCompiledMaterial(material)};
 }

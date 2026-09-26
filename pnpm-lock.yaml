@@ -429,6 +429,9 @@ importers:
       '@offroad/deal-structure':
         specifier: workspace:*
         version: link:../deal-structure
+      '@offroad/financial-core':
+        specifier: workspace:*
+        version: link:../financial-core
       '@offroad/market-reference':
         specifier: workspace:*
         version: link:../market-reference
