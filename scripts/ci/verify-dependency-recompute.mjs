@@ -229,13 +229,15 @@ commit;`);
   // 7. A human wait survives a restart. As the database owner: a second worker account bound to its
   // own token (the restarted worker, a new lease owner), the pinned release's capability closed, and
   // a newer release of the same procedure and version with its capability released and universal and
-  // a profile whose ceiling is above zero, so it is the one executable profile of the procedure.
+  // a profile whose ceiling is above zero, so it is the one executable profile of the procedure. The
+  // profile names the published manifest, the only one the capital provenance check accepts; the
+  // release row carries its own hash, since a release is unique by procedure, version and hash.
   const restarted = id('8000', 8), restartedEmail = 'a4197-restarted-worker@example.invalid';
   const restartedTokenId = id('9000', 23), restartedToken = `synthetic-dependency-recompute-restarted-worker-token-${prefix}`;
   const paidRelease = `${release.platformReleaseId}-paid-ci`, paidHash = sha(`synthetic paid ceiling over ${release.manifestHash}`);
   const {fingerprint: derivedFingerprint, ...unsigned} = profile;
   assert.equal(m.executionInputFingerprint(unsigned), derivedFingerprint, 'profile_fingerprint_rule_changed');
-  const paidUnsigned = {...unsigned, method: {...unsigned.method, platformReleaseId: paidRelease, manifestHash: paidHash, baseManifestHash: paidHash},
+  const paidUnsigned = {...unsigned, method: {...unsigned.method, platformReleaseId: paidRelease},
     limits: {...unsigned.limits, maxCostMicrousd: 250000, maxModelCalls: 3}};
   const paidText = m.executionCanonicalText({...paidUnsigned, fingerprint: m.executionInputFingerprint(paidUnsigned)});
   sql(`begin;
@@ -286,9 +288,13 @@ select jsonb_build_object('count',(select count(*) from c),'id',(select min(id::
     }
     throw new Error('dependency_recompute_loop_never_idle');
   };
-  // The running worker reaches idle without touching the wait. The DDL above reloads the schema cache,
-  // so each client first makes one call that tolerates the reload.
-  await call(account, 'worker_runtime_schema_contract_v1', {});
+  // The running worker reaches idle without touching the wait. The trigger DDL above reloads the
+  // schema cache, and the worker's own queue does not retry a request that lands during the reload:
+  // three spaced calls that tolerate it come first.
+  for (let n = 0; n < 3; n++) {
+    await call(account, 'worker_runtime_schema_contract_v1', {});
+    await new Promise(done => setTimeout(done, 1500));
+  }
   assert.deepEqual(await untilIdle(queue), [], 'the running worker worked a candidate that waits for a person');
   const held = waitState();
   assert(held.wait && held.candidate.state === 'awaiting_authorization' && held.candidate.execution_id === null && held.leases === 0 && held.executions === 0
