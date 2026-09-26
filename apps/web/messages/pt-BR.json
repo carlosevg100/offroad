@@ -6739,7 +6739,7 @@
     "no": "Não"
   },
   "ArtifactDownload": {
-    "releaseBlocked": "Esta versão é destinada a quem está fora do trabalho e ainda não foi aprovada, então o arquivo não foi gerado. Depois da aprovação, o mesmo endereço entrega o arquivo.",
+    "releaseBlocked": "Esta versão é para envio a terceiros e ainda não foi aprovada, então o arquivo não foi gerado. Depois da aprovação, o mesmo endereço entrega o arquivo.",
     "sourceRestricted": "Uma das fontes desta versão não está disponível para você, então o arquivo não foi gerado.",
     "bytesMismatch": "O arquivo produzido agora não é igual ao registrado para esta versão, então nada foi entregue. Peça uma nova versão antes de baixar.",
     "revisionReplaced": "Esta versão não é mais a vigente, então o arquivo não foi gerado. Abra a versão vigente e baixe a partir dela.",
@@ -6761,10 +6761,10 @@
       "unavailable": "Este resultado precisa de uma nova revisão ou ainda está sendo preparado."
     },
     "preview": {
-      "presentationNotReady": "A apresentação governada ainda não está pronta.",
-      "workbookNotReady": "O workbook governado ainda não está pronto.",
-      "storageUnavailable": "Não foi possível recuperar o material armazenado.",
-      "storageMismatch": "O material armazenado não corresponde ao manifesto governado.",
+      "presentationNotReady": "A apresentação ainda não está pronta.",
+      "workbookNotReady": "A planilha ainda não está pronta.",
+      "storageUnavailable": "Não foi possível recuperar o arquivo guardado.",
+      "storageMismatch": "O arquivo guardado não confere com o registro desta versão, então nada foi entregue.",
       "synthesisMissing": "A síntese ainda não foi produzida."
     }
   }

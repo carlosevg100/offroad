@@ -1227,6 +1227,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.backfill_execution_result_artifacts_v1()",
+      "kind": "function",
+      "name": "backfill_execution_result_artifacts_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
       "id": "function:private.backfill_institutional_result_dependencies_v1()",
       "kind": "function",
       "name": "backfill_institutional_result_dependencies_v1",
@@ -4623,6 +4641,24 @@
       ],
       "signature": "p_method_id text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.execution_result_blocks_v1(p_packet jsonb)",
+      "kind": "function",
+      "name": "execution_result_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_packet jsonb",
+      "security_definer": false
     },
     {
       "id": "function:private.execution_settled_result_v1(p_job uuid, p_capability text, p_lease uuid)",
@@ -9955,6 +9991,24 @@
         "search_path=\"\""
       ],
       "signature": "p_project_id uuid, p_snapshot jsonb, p_actor_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.record_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid)",
+      "kind": "function",
+      "name": "record_execution_result_artifact_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid, p_job uuid",
       "security_definer": true
     },
     {
@@ -62013,5 +62067,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-09-26T19:09:41.661583+00:00"
+  "captured_at": "2026-09-26T20:37:08.408015+00:00"
 }

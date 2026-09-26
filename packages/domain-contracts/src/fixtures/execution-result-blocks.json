@@ -1,0 +1,282 @@
+[
+  {
+    "blockKey": "framing",
+    "kind": "section",
+    "content": {
+      "status": "partial",
+      "question": "Pergunta sintética: a estrutura atual comporta o vencimento do ano seguinte?",
+      "asOf": "2026-12-31",
+      "contributionCount": 1
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "alternatives",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "alt-maintain",
+          "label": "Manter a estrutura atual",
+          "kind": "maintain",
+          "calculated": true
+        },
+        {
+          "id": "alt-extend",
+          "label": "Alongar a dívida bancária",
+          "kind": "change",
+          "calculated": true
+        },
+        {
+          "id": "alt-defer",
+          "label": "Adiar a decisão",
+          "kind": "defer",
+          "calculated": false
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "alt-maintain",
+        "kind": "judgment",
+        "value": "Manter a estrutura atual",
+        "unit": null,
+        "period": null,
+        "supportIds": [
+          "1111111111111111111111111111111111111111111111111111111111111111",
+          "2222222222222222222222222222222222222222222222222222222222222222"
+        ]
+      },
+      {
+        "claimId": "alt-extend",
+        "kind": "judgment",
+        "value": "Alongar a dívida bancária",
+        "unit": null,
+        "period": null,
+        "supportIds": [
+          "3333333333333333333333333333333333333333333333333333333333333333",
+          "4444444444444444444444444444444444444444444444444444444444444444"
+        ]
+      },
+      {
+        "claimId": "alt-defer",
+        "kind": "judgment",
+        "value": "Adiar a decisão",
+        "unit": null,
+        "period": null,
+        "supportIds": [
+          "5555555555555555555555555555555555555555555555555555555555555555",
+          "6666666666666666666666666666666666666666666666666666666666666666"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "ratios",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "id": "ratio-leverage",
+          "alternativeId": "alt-extend",
+          "ratioId": "net_debt_to_ebitda",
+          "definitionKind": "managerial",
+          "measurementDate": "2026-12-31",
+          "displayedRatio": "2.1"
+        },
+        {
+          "id": "ratio-coverage",
+          "alternativeId": "alt-maintain",
+          "ratioId": "interest_coverage",
+          "definitionKind": "contractual",
+          "measurementDate": "2026-12-31",
+          "displayedRatio": null
+        }
+      ]
+    },
+    "claims": [
+      {
+        "claimId": "ratio-leverage",
+        "kind": "calculation",
+        "value": "2.1",
+        "unit": "ratio",
+        "period": "2026-12-31",
+        "supportIds": [
+          "8888888888888888888888888888888888888888888888888888888888888888"
+        ]
+      },
+      {
+        "claimId": "ratio-coverage",
+        "kind": "calculation",
+        "value": null,
+        "unit": "ratio",
+        "period": "2026-12-31",
+        "supportIds": [
+          "9999999999999999999999999999999999999999999999999999999999999999"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "recommendation",
+    "kind": "section",
+    "content": {
+      "alternativeId": "alt-extend"
+    },
+    "claims": [
+      {
+        "claimId": "recommendation",
+        "kind": "judgment",
+        "value": "alt-extend",
+        "unit": null,
+        "period": null,
+        "supportIds": [
+          "a11b0000-0000-4000-9000-0000000000d1"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "information-gaps",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "subjectId": null,
+          "code": "projection_input_missing",
+          "reason": "capex: sem orçamento aprovado"
+        },
+        {
+          "subjectId": "alt-extend",
+          "code": "market_reference_missing",
+          "reason": "Sem cotação indicativa"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "contractual-gaps",
+    "kind": "table",
+    "content": {
+      "rows": [
+        {
+          "subjectId": "ratio-coverage",
+          "code": "contract_preparation_and_adoption_link_required"
+        }
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "next-requirements",
+    "kind": "section",
+    "content": {
+      "items": [
+        "source",
+        "market"
+      ]
+    },
+    "claims": []
+  },
+  {
+    "blockKey": "decisive:lowest_available_cash_by_period:0",
+    "kind": "number",
+    "content": {
+      "questionCode": "lowest_available_cash_by_period",
+      "alternativeId": "alt-maintain",
+      "unit": "BRL",
+      "value": "-35.25",
+      "periodLabel": "2026-Q2",
+      "path": "decision.alternatives[0].projection.rows[1].closingAvailable"
+    },
+    "claims": [
+      {
+        "claimId": "lowest_available_cash_by_period:alt-maintain",
+        "kind": "calculation",
+        "value": "-35.25",
+        "unit": "BRL",
+        "period": "2026-Q2",
+        "supportIds": [
+          "1111111111111111111111111111111111111111111111111111111111111111",
+          "2222222222222222222222222222222222222222222222222222222222222222"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "decisive:largest_net_financing_outflow_by_period:0",
+    "kind": "number",
+    "content": {
+      "questionCode": "largest_net_financing_outflow_by_period",
+      "alternativeId": "alt-maintain",
+      "unit": "BRL",
+      "value": "-40.5",
+      "periodLabel": "2026-Q2",
+      "path": "decision.alternatives[0].projection.rows[1].netFinancingAvailable"
+    },
+    "claims": [
+      {
+        "claimId": "largest_net_financing_outflow_by_period:alt-maintain",
+        "kind": "calculation",
+        "value": "-40.5",
+        "unit": "BRL",
+        "period": "2026-Q2",
+        "supportIds": [
+          "1111111111111111111111111111111111111111111111111111111111111111",
+          "2222222222222222222222222222222222222222222222222222222222222222"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "decisive:lowest_available_cash_by_period:1",
+    "kind": "number",
+    "content": {
+      "questionCode": "lowest_available_cash_by_period",
+      "alternativeId": "alt-extend",
+      "unit": "BRL",
+      "value": "9.9",
+      "periodLabel": "2026-Q2",
+      "path": "decision.alternatives[1].projection.rows[1].closingAvailable"
+    },
+    "claims": [
+      {
+        "claimId": "lowest_available_cash_by_period:alt-extend",
+        "kind": "calculation",
+        "value": "9.9",
+        "unit": "BRL",
+        "period": "2026-Q2",
+        "supportIds": [
+          "3333333333333333333333333333333333333333333333333333333333333333",
+          "4444444444444444444444444444444444444444444444444444444444444444"
+        ]
+      }
+    ]
+  },
+  {
+    "blockKey": "decisive:largest_net_financing_outflow_by_period:1",
+    "kind": "number",
+    "content": {
+      "questionCode": "largest_net_financing_outflow_by_period",
+      "alternativeId": "alt-extend",
+      "unit": "BRL",
+      "value": "-2.75",
+      "periodLabel": "2026-Q2",
+      "path": "decision.alternatives[1].projection.rows[1].netFinancingAvailable"
+    },
+    "claims": [
+      {
+        "claimId": "largest_net_financing_outflow_by_period:alt-extend",
+        "kind": "calculation",
+        "value": "-2.75",
+        "unit": "BRL",
+        "period": "2026-Q2",
+        "supportIds": [
+          "3333333333333333333333333333333333333333333333333333333333333333",
+          "4444444444444444444444444444444444444444444444444444444444444444"
+        ]
+      }
+    ]
+  }
+]

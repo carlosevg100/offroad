@@ -6739,7 +6739,7 @@
     "no": "No"
   },
   "ArtifactDownload": {
-    "releaseBlocked": "This version is meant for people outside the work and has not been approved yet, so the file was not produced. Once it is approved, the same address delivers the file.",
+    "releaseBlocked": "This version is meant for third parties and has not been approved yet, so the file was not produced. Once it is approved, the same address delivers the file.",
     "sourceRestricted": "One of the sources of this version is not available to you, so the file was not produced.",
     "bytesMismatch": "The file produced now is not the one recorded for this version, so nothing was delivered. Request a new version before downloading.",
     "revisionReplaced": "This version is no longer the current one, so the file was not produced. Open the current version and download from it.",
@@ -6761,10 +6761,10 @@
       "unavailable": "This result needs a new review or is still being prepared."
     },
     "preview": {
-      "presentationNotReady": "The governed presentation is not ready yet.",
-      "workbookNotReady": "The governed workbook is not ready yet.",
-      "storageUnavailable": "The stored material could not be retrieved.",
-      "storageMismatch": "The stored material does not match its governed manifest.",
+      "presentationNotReady": "The presentation is not ready yet.",
+      "workbookNotReady": "The spreadsheet is not ready yet.",
+      "storageUnavailable": "The stored file could not be retrieved.",
+      "storageMismatch": "The stored file does not match the record of this version, so nothing was delivered.",
       "synthesisMissing": "The synthesis has not been produced yet."
     }
   }

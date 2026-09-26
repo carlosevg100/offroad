@@ -1663,8 +1663,12 @@
   {
    "version": "20260926190646",
    "name": "presentation_template_versions"
+  },
+  {
+   "version": "20260926203509",
+   "name": "artifact_producers"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-26T19:10:27.893174+00:00"
+ "captured_at": "2026-09-26T20:37:33.427943+00:00"
 }

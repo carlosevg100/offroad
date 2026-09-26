@@ -17,6 +17,7 @@ import {renderDecisionWorkbook, renderInstitutionalPresentation, type Institutio
 import {bindRenderedMaterialsToDecisionArtifact, buildRenderedMaterialManifest, decisionArtifactIdentityReport, fingerprintJson, verifyRenderedMaterialBytes, type DecisionArtifactContract, type RenderedMaterialManifest} from "@offroad/case-understanding";
 import type {ModelGateway} from "@offroad/model-gateway";
 import {case01, executors, preview} from "@offroad/credit-playbook";
+import {manifestFromRenderedMaterialManifest, renderedMaterialBlocks} from "@offroad/domain-contracts";
 
 import {resolvePresentationTemplateForJob} from "./presentation-template-resolver";
 import {generatePreviewQuestions, type CandidateQuestion, type PreviewQuestionsResult} from "./preview-questions";
@@ -49,6 +50,7 @@ import {describeJobFailure} from "./job-failure";
 import {compilePreviewDecisionArtifact} from "./preview-decision-artifact";
 import type {MaterialRenderInspector} from "./material-render-inspection";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
+import {ARTIFACT_REVISION_CAPABILITY} from "./runtime-schema";
 
 export const PREVIEW_MARK = "[Validação interna, integration_preview]";
 export const PREVIEW_MARK_EN = "[Internal validation, integration_preview]";
@@ -482,6 +484,26 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
         const inspectedAt = (dependencies.now?.() ?? new Date()).toISOString();
         const sourceContract = contract;
         const materialManifests: RenderedMaterialManifest[] = [];
+        // Stage 19: each stored file is also a revision of the work's material artifact, written through
+        // the common command with the stored object's path, sha256 and size and the claims the renderer
+        // placed in it. The database accepts those bytes only for the object the grant stored for the
+        // work. A file that carries no claim has no material substance and records no revision.
+        const recordMaterialRevision = async (material: RenderedMaterialManifest) => {
+          if (!queue.createArtifactRevision) throw new Error("artifact revision command unavailable");
+          if (material.claimIds.length === 0) {
+            log("integration_preview.material_revision_skipped", {job: job.job_id, surface: material.surface, reason: "no_claims"});
+            return;
+          }
+          const manifest = manifestFromRenderedMaterialManifest(material, {
+            audience: "internal",
+            provenance: {producer: "document-worker:integration-preview", jobId: job.job_id, taskRunId: input.taskRunId, messageId: null, capability: ARTIFACT_REVISION_CAPABILITY},
+          });
+          const written = await queue.createArtifactRevision(job, {
+            workId: context.project.id, kind: manifest.kind, subject: `integration-preview:${material.surface}`, audience: "internal",
+            manifest, blocks: renderedMaterialBlocks(material, sourceContract.claims), contentSha256: material.contentSha256, byteLength: material.byteLength,
+          });
+          log("integration_preview.material_revision_recorded", {job: job.job_id, surface: material.surface, revisionNo: written.revisionNo, replayed: written.replayed});
+        };
 
         if (dependencies.presentationTemplate) {
           // The project's current client template version renders the deck when there is one; the
@@ -520,6 +542,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
             release: {state: "internal_only", recipientIds: []}, claimIds: rendered.audit.renderedClaimIds, sourceIds: rendered.audit.renderedSourceIds, assumptionIds: rendered.audit.renderedAssumptionIds, gapIds: rendered.audit.renderedGapIds,
           });
           verifyRenderedMaterialBytes(manifest, rendered.bytes);
+          await recordMaterialRevision(manifest);
           const materialArtifact = await queue.recordCapitalProjectArtifact(job, {
             taskRunId: input.taskRunId, artifactType: "preview_presentation_material", schemaVersion: "rendered-material.2026.09.07-v1", status: "draft",
             // Every output produced by one TaskRun is bound to that run's exact input fingerprint.
@@ -556,6 +579,7 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
           release: {state: "internal_only", recipientIds: []}, claimIds: workbook.audit.renderedClaimIds, sourceIds: workbook.audit.renderedSourceIds, assumptionIds: workbook.audit.renderedAssumptionIds, gapIds: workbook.audit.renderedGapIds,
         });
         verifyRenderedMaterialBytes(workbookManifest, workbook.bytes);
+        await recordMaterialRevision(workbookManifest);
         const workbookArtifact = await queue.recordCapitalProjectArtifact(job, {
           taskRunId: input.taskRunId, artifactType: "preview_workbook_material", schemaVersion: "rendered-material.2026.09.07-v1", status: "draft",
           inputFingerprint: input.inputFingerprint,

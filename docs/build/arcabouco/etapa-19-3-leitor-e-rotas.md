@@ -75,3 +75,14 @@ As quatro projeções da 2b gravam `bytes: null` e `template: null`; nenhuma rev
 - Os materiais continuam sem política de formatos (o pptx é oferecido para todo kind, como antes); dar uma política a eles é decisão de produto.
 - A jornada Playwright roda só na CI (sem Docker nem psql nesta máquina); as provas locais foram Vitest (todas as rotas e o leitor), lint, typecheck e build.
 - Achado fora do escopo, sem efeito em produção hoje: o workbook institucional imprime o localizador de cada linha de linhagem como `JSON.stringify(anchor)`, que depende da ordem das chaves, enquanto o fingerprint do artefato é canônico. Um produtor que monte âncoras fora da ordem do jsonb grava bytes que não se reproduzem depois que o artefato vira jsonb, e a rota recusa ("O modelo precisa ser preparado novamente."). O robô lê as âncoras do banco, já na ordem do jsonb, então os resultados reais reproduzem; a jornada monta o seu workbook do mesmo jeito. Corrigir pede imprimir o localizador em ordem canônica no `financial-model`, o que muda bytes de artefatos existentes e fica para decisão.
+
+## Decisões do lead, 26/09/2026
+
+1. A data de emissão de uma revisão legada é a data de criação da linha histórica, não o `created_at` da revisão: o backfill de 26/09 carimbou as 133 revisões de produção nesse dia, e usar essa data dataria errado documentos publicados antes.
+2. Um resultado institucional ou uma leitura documental anterior, pedidos pela revisão exata, continuam recusados com 409 enquanto nenhuma leitura autorizada devolve o conteúdo da linha histórica; abrir essa leitura exige migração e fica registrado como limite.
+3. A jornada que aprova uma revisão externa por uma linha de revisão de pacote inserida em SQL é prova de teste; nenhuma ação do produto aprova a impressão de uma revisão antes da etapa 20.
+4. Depois do incremento 4, parte A, os materiais da prévia gravam os bytes do objeto guardado; as demais revisões seguem sem bytes fixados, como a lista desta nota registra.
+5. A âncora de linhagem da planilha institucional impressa com `JSON.stringify` depende da ordem das chaves; os resultados reais leem as âncoras do banco e se reproduzem. Corrigir mudaria os bytes das planilhas existentes, então fica como risco registrado para a etapa 21, dona da exportação governada.
+6. Os materiais seguem sem política de formato própria e continuam oferecendo pptx para todo tipo, como antes; definir essa política é decisão de produto fora desta etapa.
+
+Textos de recusa revistos pelo lead: a versão bloqueada fala em envio a terceiros, e os avisos da prévia chamam de apresentação, planilha e arquivo guardado o que antes aparecia como material governado e manifesto.
