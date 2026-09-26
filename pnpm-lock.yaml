@@ -439,6 +439,9 @@ importers:
         specifier: 10.6.0
         version: 10.6.0
     devDependencies:
+      '@offroad/testing-fixtures':
+        specifier: workspace:*
+        version: link:../testing-fixtures
       '@types/node':
         specifier: ^20.19.43
         version: 20.19.43
