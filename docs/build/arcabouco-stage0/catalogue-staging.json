@@ -41596,11 +41596,6 @@
           "postgres",
           "UPDATE",
           false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
         ]
       ],
       "schema": "public",
@@ -41651,11 +41646,6 @@
           "postgres",
           "UPDATE",
           false
-        ],
-        [
-          "authenticated",
-          "SELECT",
-          false
         ]
       ],
       "schema": "public",
@@ -41705,11 +41695,6 @@
         [
           "postgres",
           "UPDATE",
-          false
-        ],
-        [
-          "authenticated",
-          "SELECT",
           false
         ]
       ],
