@@ -8,7 +8,7 @@ import {syntheticCreditMaterialsCase as aurora} from "@offroad/testing-fixtures/
 import {analyzeCreditPosition, type DeskAnalysis} from "./analyze";
 import {buildDeskInputs, type DeskInputs, type Fact} from "./from-facts";
 import {rateCredit} from "./rating";
-import {projectLeverageTrajectory, type Trajectory} from "./trajectory";
+import {projectLeverageTrajectory, type Trajectory, type TrajectoryInput} from "./trajectory";
 import {judgeOperation, type Operation, type OperationVerdict, type StructurePrice} from "./verdict";
 
 /**
@@ -25,7 +25,14 @@ import {judgeOperation, type Operation, type OperationVerdict, type StructurePri
  *   byte (measured when the pins were taken), so the default one runs.
  */
 
-export type DeskRun = {desk: DeskAnalysis; trajectory: Trajectory | null; verdict: OperationVerdict};
+export type DeskRun = {
+  desk: DeskAnalysis;
+  trajectory: Trajectory | null;
+  verdict: OperationVerdict;
+  /** What the desk was fed, and the trajectories the verdict re-ran for a structure the company did not ask for. */
+  inputs: DeskInputs;
+  simulations: TrajectoryInput[];
+};
 
 const here = dirname(fileURLToPath(import.meta.url));
 const goldFacts = (caseId: string): Fact[] =>
@@ -38,15 +45,20 @@ function run(inputs: DeskInputs, operation: Operation, price: ((band: ReturnType
   if (!inputs.desk) throw new Error(`the desk cannot read this fixture: ${inputs.missing.join(", ")}`);
   const desk = analyzeCreditPosition(inputs.desk);
   const trajectory = inputs.trajectory ? projectLeverageTrajectory(inputs.trajectory) : null;
-  if (!price) return {desk, trajectory, verdict: judgeOperation({desk, trajectory, operation})};
+  const simulations: TrajectoryInput[] = [];
+  if (!price) return {desk, trajectory, verdict: judgeOperation({desk, trajectory, operation}), inputs, simulations};
   const rating = rateCredit({desk, trajectory, evidenceRank});
-  return {desk, trajectory, verdict: judgeOperation({
+  return {desk, trajectory, inputs, simulations, verdict: judgeOperation({
     desk,
     trajectory,
     operation,
     priceFor: price(rating.band),
-    simulate: ({amount, termMonths, graceMonths, refinancing}) =>
-      inputs.trajectory ? projectLeverageTrajectory({...inputs.trajectory, newDebt: {amount, termMonths, graceMonths, refinancing}}) : null,
+    simulate: ({amount, termMonths, graceMonths, refinancing}) => {
+      if (!inputs.trajectory) return null;
+      const simulated: TrajectoryInput = {...inputs.trajectory, newDebt: {amount, termMonths, graceMonths, refinancing}};
+      simulations.push(simulated);
+      return projectLeverageTrajectory(simulated);
+    },
   })};
 }
 

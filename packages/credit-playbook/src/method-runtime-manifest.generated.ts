@@ -22509,6 +22509,10 @@ export const procedureBuildProvenance = [
               "hash": "aca5017d6b45fb97693e3023b29f1f55eecc454a2943b15980bc00c2567d1f0a"
             },
             {
+              "path": "packages/credit-analysis/src/desk-cases.test-support.ts",
+              "hash": "18ebd229a9330dc543506e4854665f3b9094af06edb09561ce63c84c7134491f"
+            },
+            {
               "path": "packages/credit-analysis/src/from-facts.ts",
               "hash": "ab986bf51636aaa86f667f8b1649bf7371d6fc4cefa52a0e6a986027cf116905"
             },
@@ -22538,7 +22542,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/credit-analysis/src/verdict-cases.test-support.ts",
-              "hash": "68ccc25dca12b91779414fb222feca7e6bb04fc7080443326968bbf1a1c79c0a"
+              "hash": "92027078194da8ef475066207288a9ea79949a240c41b4a56ab0cb1e005abebd"
             },
             {
               "path": "packages/credit-analysis/src/verdict.ts",
@@ -23645,7 +23649,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "127ed0d60eefca4633bb8b78ee79d436f8b801b05b59187c61baf8b74741f55c"
+          "hash": "ca10ac216b9bdba1b643e5678f400c0ded4492cb0e016ca9a1f24e30767fdb2c"
         },
         "evidence": [
           {
@@ -23671,7 +23675,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "1e2db82f99e120543e2b96222df5d14b71fffa0c3c8a1198a21fa3933ea39606"
+    "manifestHash": "55386ea6559fac020a81cd3e976c60c411b7a7935a8ce031740e3f9c53ec4967"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",
