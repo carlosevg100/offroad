@@ -6256,3 +6256,20 @@ do $$ declare f text; begin
  end loop;
  if exists(select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('public','private') and p.proname='set_presentation_template_v1' and pg_get_function_identity_arguments(p.oid) not like '%p_structure jsonb%') then raise exception 'Three-argument template command still installed';end if;
 end $$;
+
+-- Corrective wave A3: the common authority lock remains inaccessible to API clients.
+do $$ declare role_name text; begin
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+  if has_function_privilege(role_name,'private.lock_execution_authority_v1(uuid)','EXECUTE') then
+   raise exception 'execution authority helper exposed to %',role_name; end if;
+ end loop;
+end $$;
+
+-- Corrective A4/A5 commands remain platform-only after tightening their identity and replay checks.
+do $$ declare api_role text; signature text; begin
+ foreach api_role in array array['anon','authenticated','service_role'] loop
+  foreach signature in array array['private.publish_platform_method_v1(uuid,uuid,text,text)','private.register_execution_method_profile_v1(uuid,uuid,text,text,text,jsonb,uuid,text)'] loop
+   if has_function_privilege(api_role,signature,'EXECUTE') then raise exception 'platform authority exposed to %',api_role; end if;
+  end loop;
+ end loop;
+end $$;

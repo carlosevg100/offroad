@@ -1,6 +1,7 @@
 -- Synthetic, rollback-only. A new platform base, not another override of R01.
 begin;
 \ir support/platform_method_fixture.sql
+\ir support/platform_publisher_fixture.sql
 
 do $$ declare x record;b jsonb;actor_role text;sig text;begin
  select * into x from platform_method_fixture;
@@ -42,10 +43,10 @@ do $$ declare x record;e jsonb;begin
  begin perform private.attest_platform_method_candidate_v1(gen_random_uuid(),x.id,x.fingerprint,'content_approval','Synthetic human approver',e);raise exception 'machine review became human approval';exception when sqlstate '22023' then null;end;
  e:=e||'{"humanApproval":true}';
  begin perform private.attest_platform_method_candidate_v1(gen_random_uuid(),x.id,x.fingerprint,'content_approval','Synthetic human approver',e||jsonb_build_object('sourceHash',repeat('d',64)));raise exception 'unbound approval accepted';exception when sqlstate '22023' then null;end;
- perform private.attest_platform_method_candidate_v1('b5141000-0000-4000-9000-000000000003',x.id,x.fingerprint,'content_approval','Synthetic human approver',e);
+ perform private.attest_platform_method_candidate_v2('b5141000-0000-4000-9000-000000000003',x.id,x.fingerprint,'content_approval','b5141000-0000-4000-8000-000000000001',e);
  perform private.publish_platform_method_v1('b5141000-0000-4000-9000-000000000004',x.id,x.fingerprint,'Synthetic reviewed corpus publication');
  perform private.publish_platform_method_v1('b5141000-0000-4000-9000-000000000004',x.id,x.fingerprint,'Synthetic reviewed corpus publication');
- perform private.attest_platform_method_candidate_v1('b5141000-0000-4000-9000-000000000003',x.id,x.fingerprint,'content_approval','Synthetic human approver',e);
+ perform private.attest_platform_method_candidate_v2('b5141000-0000-4000-9000-000000000003',x.id,x.fingerprint,'content_approval','b5141000-0000-4000-8000-000000000001',e);
  if not private.platform_method_reference_available_v1(x.release_id) then raise exception 'published method unavailable';end if;
  if exists(select 1 from private.platform_capability_releases where method_id='synthetic-platform-method' and released) then raise exception 'publication activated executor';end if;
  perform private.compose_method_v1(null,x.release_id,'[]',null,'analysis');
