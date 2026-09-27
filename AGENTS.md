@@ -43,6 +43,10 @@ product without Offroad intervention. Stage 16 verifies actual provider non-trai
 retention terms per account/model/resource; zero retention is a future commercial option.
 The two early authoring deliverables do not publish a method or authorize its execution.
 
+## Current brand
+
+The product and brand are **Offroad**, only, as decided by the founder on 11 September 2026. Use Offroad in new product copy and documents. Historical references to Offroad Capital do not define the current brand. Do not rename directories, domains or historical identifiers just to replace the name.
+
 ## 1. What this repository is
 
 A pnpm + Turborepo monorepo for **Offroad**, the AI-native debt advisor that helps
