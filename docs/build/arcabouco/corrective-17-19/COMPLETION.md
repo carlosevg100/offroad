@@ -4,6 +4,8 @@ Estado: fechamento em preparação; CI final e deployments ainda em conferência
 
 ## O que foi feito
 
+PR 828 mesclada em `e3dcd43b`; PR 831 mesclada em `10c11e14`, contendo integralmente A3/A4/A5. PR 829 fechada como absorvida pela 831. Quality da revisão consolidada 36323882427 inteiramente aprovada; Quality de main e deployment final em conferência.
+
 A1 remove leitura direta de `artifacts`, `artifact_revisions` e `artifact_blocks` por `anon`, `authenticated` e `service_role`; o leitor autorizado permanece o caminho de conteúdo. A2 fecha a leitura quando a ancestralidade ultrapassa a fronteira verificável de 64 vínculos. A3 serializa a conta humana persistida com o commit de execução, inclusive quando o worker usa outra conta. A4 exige fundador ativo e identificado para nova publicação de método, inclusive quando o último fundador foi revogado. A5 impede replay do cadastro do perfil com commit de adaptador diferente.
 
 | Migração | Staging | Produção e arquivo |
@@ -30,7 +32,7 @@ Arquivos principais: as três migrações acima, `supabase/tests/artifact_conten
 | platform_operator_identity.sql, platform_method_publication.sql | PASS em staging e CI: operador/rótulo não substituem fundador, replay exato funciona e adapter commit diferente é negado |
 | platform_founder_revoke_revocation_first, platform_founder_revoke_publication_first | PASS, espera real e quantidade de publicações conferida |
 | platform_founder_ban_revocation_first, platform_founder_ban_publication_first | PASS, espera real e quantidade de publicações conferida |
-| Playwright da revisão consolidada | PASS, 44 jornadas; casos pulados permanecem fora da prova, sem chamada de modelo pago |
+| Playwright da revisão consolidada | PASS, 44 jornadas e 16 puladas; casos pulados permanecem fora da prova, sem chamada de modelo pago |
 | pnpm check | PASS, 44 tarefas; lint, tipos, testes e build no Node 24.19.0 |
 | Checkers | PASS: inventário dos dois ambientes, 16 arquivos recuperados, manifesto de 94 funções; 18 testes do inventário e cinco do histórico |
 
