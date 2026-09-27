@@ -150,6 +150,7 @@ test("governed materials and model come from one exact revision, and an external
   const released = await page.request.get(`${base}/term_sheet/docx?revision=${external}`);
   expect(await outcome(released)).toBe("200");
   expect(released.headers()["x-artifact-release"]).toBe("released");
+  expect(released.headers()["x-artifact-bytes"]).toBe("pinned");
   expect(released.headers()["x-artifact-content-sha256"]).toBe(sha256(docx));
   expect(released.headers()["x-artifact-legacy"]).toBeUndefined();
   expect(sha256(await released.body())).toBe(sha256(docx));

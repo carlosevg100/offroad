@@ -1,6 +1,6 @@
 import {startLegacyConversation} from "./support/legacy-conversation";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
-import {randomBytes} from "node:crypto";
+import {createHash, randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
 
@@ -248,7 +248,16 @@ test.describe("live_intelligence_preview: Case 01 with the semantic router", () 
     const xlsx = await page.request.get(`${base}?format=xlsx`);
     expect(xlsx.status()).toBe(200);
     expect(xlsx.headers()["content-type"]).toContain("spreadsheetml");
-    writeFileSync(join(outputDirectory, "material.xlsx"), await xlsx.body());
+    const xlsxBody = await xlsx.body();
+    // The spreadsheet is the revision the worker wrote with the stored object pinned, verified before
+    // it is served, and the same address with that revision returns the same file.
+    expect(xlsx.headers()["x-artifact-bytes"]).toBe("pinned");
+    expect(xlsx.headers()["x-artifact-content-sha256"]).toBe(createHash("sha256").update(xlsxBody).digest("hex"));
+    expect(xlsx.headers()["x-artifact-legacy"]).toBeUndefined();
+    const exact = await page.request.get(`${base}?format=xlsx&revision=${xlsx.headers()["x-artifact-revision"]}`);
+    expect(exact.status()).toBe(200);
+    expect((await exact.body()).equals(xlsxBody)).toBe(true);
+    writeFileSync(join(outputDirectory, "material.xlsx"), xlsxBody);
     const version = Number(docx.headers()["x-preview-artifact-version"]);
     expect(version).toBeGreaterThanOrEqual(2);
     transcript.push(`\n**Arquivo:** material.docx (versão ${version}, ${docxBody.byteLength} bytes) e material.xlsx gerados dos objetos assinados.\n`);

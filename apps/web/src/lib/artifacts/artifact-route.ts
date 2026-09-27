@@ -58,7 +58,8 @@ export function requestedRevision(request: Request): RevisionParameter {
 export type RouteRevisionTarget = {workId: string; kind: ArtifactKind; subject: string};
 export type ServedRead = Extract<ArtifactRead, {withheld: false}>;
 export type RouteRevision =
-  | {ok: true; read: ServedRead; revision: ArtifactRevision; exact: boolean}
+  /** `target` is the work, kind and subject the served revision belongs to. */
+  | {ok: true; read: ServedRead; revision: ArtifactRevision; exact: boolean; target: RouteRevisionTarget}
   /** An exact revision that does not exist, is not readable, or belongs to another work, kind or subject. */
   | {ok: false; outcome: "not_found"}
   /** The work has no current revision for this kind and subject; each route keeps its own answer for it. */
@@ -70,14 +71,43 @@ export async function resolveRouteRevision(
   target: RouteRevisionTarget,
   revisionId: string | null,
 ): Promise<RouteRevision> {
-  const result = revisionId === null ? await readArtifactHead(supabase, target) : await readArtifactRevision(supabase, {revisionId});
-  if (!result.ok) return {ok: false, outcome: revisionId === null ? "head_missing" : "not_found"};
-  if (!revisionBelongsTo(result.read, target)) return {ok: false, outcome: "not_found"};
-  const serving = artifactServing(result.read);
+  return resolvePreferredRouteRevision(supabase, [target], revisionId);
+}
+
+/**
+ * The same resolution over targets in order of preference. An exact revision is this route's when it
+ * belongs to one of them; without `?revision=`, the head of the first target that has one is served.
+ * Only a target with no revision at all passes to the next one: a head that cannot be read stops the
+ * search, so a later target is never served in place of a preferred one that exists.
+ */
+export async function resolvePreferredRouteRevision(
+  supabase: SupabaseClient<Database>,
+  targets: readonly RouteRevisionTarget[],
+  revisionId: string | null,
+): Promise<RouteRevision> {
+  let found: {read: ArtifactRead; target: RouteRevisionTarget} | null = null;
+  if (revisionId !== null) {
+    const result = await readArtifactRevision(supabase, {revisionId});
+    if (!result.ok) return {ok: false, outcome: "not_found"};
+    const target = targets.find((candidate) => revisionBelongsTo(result.read, candidate));
+    if (!target) return {ok: false, outcome: "not_found"};
+    found = {read: result.read, target};
+  } else {
+    for (const target of targets) {
+      const result = await readArtifactHead(supabase, target);
+      if (result.ok) {
+        found = {read: result.read, target};
+        break;
+      }
+      if (result.error !== "artifact_revision_not_found") return {ok: false, outcome: "head_missing"};
+    }
+    if (found === null || !revisionBelongsTo(found.read, found.target)) return {ok: false, outcome: "head_missing"};
+  }
+  const serving = artifactServing(found.read);
   if (!serving.serve) return {ok: false, outcome: "refused", refusal: serving.refusal};
   // A withheld read is never served; the serving rule already refused it, and the type says so here.
-  if (result.read.withheld) return {ok: false, outcome: "refused", refusal: "artifact_release_blocked"};
-  return {ok: true, read: result.read, revision: serving.revision, exact: revisionId !== null};
+  if (found.read.withheld) return {ok: false, outcome: "refused", refusal: "artifact_release_blocked"};
+  return {ok: true, read: found.read, revision: serving.revision, exact: revisionId !== null, target: found.target};
 }
 
 export function refusalText(copy: ArtifactDownloadCopy, refusal: ArtifactRefusal): string {

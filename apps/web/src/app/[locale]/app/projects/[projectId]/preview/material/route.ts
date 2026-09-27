@@ -7,8 +7,9 @@ import {
   legacyRowId,
   refusalText,
   requestedRevision,
-  resolveRouteRevision,
+  resolvePreferredRouteRevision,
   revisionRendererAllowed,
+  type RouteRevisionTarget,
 } from "@/lib/artifacts/artifact-route";
 import {
   artifactResponseHeaders,
@@ -24,7 +25,7 @@ import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
 import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
-import {resolveGovernedMaterialDownload} from "@/lib/integration-preview/governed-material-download";
+import {decisionContractBoundSha256, resolveGovernedMaterialDownload} from "@/lib/integration-preview/governed-material-download";
 
 /**
  * Authenticated retrieval for governed presentation/workbook bytes plus the basic internal Word
@@ -32,12 +33,16 @@ import {resolveGovernedMaterialDownload} from "@/lib/integration-preview/governe
  * object, exact SHA and binding in the latest Decision Artifact must all agree. Internal
  * validation only; the project must run in integration_preview and every read remains scoped.
  *
- * Each file is one exact artifact revision (`?revision=`, or the head of the preview type), read
- * through the authorized reader with the same release evaluation as every download: a version for
- * an external audience is never served before it is released. The Word preview is issued on the
- * date of its version and composed of the tables that existed when that version was created.
- * Stored bytes are read at the address of their upload grant, and a missing object or other bytes
- * are refused with a reason, never served and never answered as a server failure.
+ * Each file is one exact artifact revision (`?revision=`, or the head), read through the authorized
+ * reader with the same release evaluation as every download: a version for an external audience is
+ * never served before it is released. The presentation and the spreadsheet are, first, the revision
+ * the worker writes with the stored object pinned (kind `presentation` or `workbook`, subject
+ * `integration-preview:<surface>`); a preview older than those revisions has only the projection of
+ * its receipt row, served as before and unpinned. A stored file is served only while the latest
+ * decision contract binds its exact bytes to its surface, as the receipt had to be. The Word preview
+ * is issued on the date of its version and composed of the tables that existed when that version was
+ * created. Stored bytes are read at the address of their upload grant, and a missing object or other
+ * bytes are refused with a reason, never served and never answered as a server failure.
  */
 type Params = {params: Promise<{locale: string; projectId: string}>};
 
@@ -76,6 +81,7 @@ const tableKeys: Record<string, {key: string; caption: {pt: string; en: string}}
 };
 
 const artifactTypeFor = {docx: "preview_material", pptx: "preview_presentation_material", xlsx: "preview_workbook_material"} as const;
+const surfaceFor = {pptx: "presentation", xlsx: "workbook"} as const;
 
 export async function GET(request: Request, {params}: Params) {
   const {locale, projectId} = await params;
@@ -92,7 +98,12 @@ export async function GET(request: Request, {params}: Params) {
   const notReady = format === "pptx" ? copy.preview.presentationNotReady : format === "xlsx" ? copy.preview.workbookNotReady : copy.preview.synthesisMissing;
 
   const artifactType = artifactTypeFor[format];
-  const resolved = await resolveRouteRevision(supabase, {workId: projectId, kind: "work_product", subject: artifactType}, revisionParameter.revisionId);
+  // A file resolves first the revision that pins its stored object; a preview without one keeps the
+  // projection of its receipt row. A revision of another work, kind or subject is not this file's.
+  const receiptTarget: RouteRevisionTarget = {workId: projectId, kind: "work_product", subject: artifactType};
+  const targets: RouteRevisionTarget[] = format === "docx" ? [receiptTarget]
+    : [{workId: projectId, kind: surfaceFor[format], subject: `integration-preview:${surfaceFor[format]}`}, receiptTarget];
+  const resolved = await resolvePreferredRouteRevision(supabase, targets, revisionParameter.revisionId);
   if (!resolved.ok) {
     if (resolved.outcome === "not_found") return artifactNotFound();
     return artifactUnavailable(resolved.outcome === "refused" ? refusalText(copy, resolved.refusal) : notReady);
@@ -129,6 +140,11 @@ export async function GET(request: Request, {params}: Params) {
     let fileName: string;
     let manifest: ReturnType<typeof resolveGovernedMaterialDownload> | null = null;
     if (stored) {
+      // A stored file is current only while the latest decision contract binds exactly its bytes: after a
+      // newer contract recorded without files the head is not ready, and an older revision was replaced.
+      if (decisionContractBoundSha256(latestByType.get("preview_decision_contract")?.content, format) !== stored.sha256) {
+        return artifactUnavailable(read.isHead ? notReady : copy.revisionReplaced);
+      }
       object = stored;
       mimeType = format === "pptx" ? "application/vnd.openxmlformats-officedocument.presentationml.presentation" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
       fileName = `material-preview-${projectId.slice(0, 8)}-r${revision.revisionNo}.${format}`;

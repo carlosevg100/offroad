@@ -44,6 +44,19 @@ export function resolveGovernedMaterialDownload(input: {
   return manifest;
 }
 
+/**
+ * The sha256 of the file the decision contract binds to the surface of a format, or null when the
+ * contract is absent, malformed or binds no file to that surface. A run that records a newer
+ * contract without rendering files binds none, so the last stored file is no longer the one the
+ * contract speaks for.
+ */
+export function decisionContractBoundSha256(decisionContractContent: unknown, format: GovernedDownloadFormat): string | null {
+  const contractContent = isRecord(decisionContractContent) ? decisionContractContent : null;
+  const parsedContract = decisionArtifactContractSchema.safeParse(contractContent?.contract);
+  if (!parsedContract.success) return null;
+  return parsedContract.data.views.find((view) => view.surface === surfaceFor(format))?.artifactFingerprint ?? null;
+}
+
 export function verifyGovernedMaterialDownload(manifest: RenderedMaterialManifest, bytes: Uint8Array): void {
   try {
     verifyRenderedMaterialBytes(manifest, bytes);
