@@ -6264,3 +6264,12 @@ do $$ declare role_name text; begin
    raise exception 'execution authority helper exposed to %',role_name; end if;
  end loop;
 end $$;
+
+-- Corrective A4/A5 commands remain platform-only after tightening their identity and replay checks.
+do $$ declare api_role text; signature text; begin
+ foreach api_role in array array['anon','authenticated','service_role'] loop
+  foreach signature in array array['private.publish_platform_method_v1(uuid,uuid,text,text)','private.register_execution_method_profile_v1(uuid,uuid,text,text,text,jsonb,uuid,text)'] loop
+   if has_function_privilege(api_role,signature,'EXECUTE') then raise exception 'platform authority exposed to %',api_role; end if;
+  end loop;
+ end loop;
+end $$;

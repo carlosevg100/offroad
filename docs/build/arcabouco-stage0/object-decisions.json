@@ -26605,6 +26605,12 @@
           "line": 144,
           "anchor": "create function private.publish_platform_method_v1(p_command uuid,p_candidate uuid,p_fingerprint text,p_reason text) returns text",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927133737_platform_publication_authority_hardening.sql",
+          "line": 2,
+          "anchor": "create or replace function private.publish_platform_method_v1(p_command uuid,p_candidate uuid,p_fingerprint text,p_reason text) returns text",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Comandos do operador de plataforma; nenhum grant a cliente ou worker."
@@ -32170,6 +32176,12 @@
         {
           "path": "supabase/migrations/20260923203112_platform_operator_identity_hardening.sql",
           "line": 66,
+          "anchor": "create or replace function private.register_execution_method_profile_v1(p_command uuid,p_profile uuid,p_release text,p_canonical_payload text,p_adapter_source_commit text,p_review_evidence jsonb,p_actor_user_id uuid,p_reason text) returns uuid",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927133737_platform_publication_authority_hardening.sql",
+          "line": 32,
           "anchor": "create or replace function private.register_execution_method_profile_v1(p_command uuid,p_profile uuid,p_release text,p_canonical_payload text,p_adapter_source_commit text,p_review_evidence jsonb,p_actor_user_id uuid,p_reason text) returns uuid",
           "mechanism": "direct_ddl"
         }
@@ -185916,6 +185928,13 @@
       "decision": "preservar",
       "stage": "17 / correção A3",
       "reason": "Serializar conta humana e commit; aplicada em staging e produção após prova concorrente na CI."
+    },
+    {
+      "path": "supabase/migrations/20260927133737_platform_publication_authority_hardening.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "stage": "17 / correções A4-A5",
+      "reason": "Publicação exige fundador ativo; replay vincula também o commit do adaptador. Aplicada nos dois ambientes."
     }
   ],
   "staging_archive": [

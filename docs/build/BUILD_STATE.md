@@ -1,3 +1,7 @@
+## Rodada corretiva 17–19: publicação e replay de perfil
+
+A4/A5: publicação exige fundador ativo e conta viva, com travas até commit; replay do perfil compara também o commit do adaptador. Bugs reproduzidos antes e negados depois em staging. Migração staging `20260927133313`, produção `20260927133737`; definições instaladas idênticas. Evidência em `docs/build/arcabouco/corrective-17-19/platform-authority-evidence.md`. CI, merge e deployments ainda pendentes.
+
 ## Rodada corretiva 17–19: serialização da revogação humana
 
 A3 em validação: lock do sujeito humano persistido no caminho comum de autoridade. Prova concorrente antes/depois no banco descartável da CI com worker distinto; negativos de staging sob rollback. Evidência em `docs/build/arcabouco/corrective-17-19/human-revocation-evidence.md`. Migração staging `20260927133553`, produção `20260927133717`; definição instalada idêntica. CI reproduziu a corrida histórica e aprovou os seis casos corrigidos. Colisão entre fixtures corrigida; CI final, merge e deployments pendentes.
