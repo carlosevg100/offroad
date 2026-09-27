@@ -133,3 +133,96 @@ Regenerado por `pnpm --filter @offroad/credit-playbook manifest:generate`: mudam
 3. O Q&A imprime valores em milhões com uma casa, então ajustes de EBITDA abaixo de R$ 50 mil aparecem como "R$ 0,0M de ajustes" embora não sejam zero; é o mesmo formato de todas as respostas do Q&A.
 4. `verdict.ts` ainda faz contas Decimal próprias (milhões, múltiplos, percentual do EBITDA, alavancagem após a estrutura) e ordena os anos pesados por `toNumber()` da diferença; não são ponto flutuante na conta e ficam fora deste incremento, que tratou os pontos-base.
 5. O manifesto de métodos precisa ser regenerado de novo pela PR que for mesclada depois de outra que também o regenere.
+
+## Incremento 6C: as lacunas de invariante que o 6B encontrou
+
+Uma PR (`fix/19-6c-invariant-fixes`) sobre `main` `f132a68a`, que já tem o incremento 6B (PR #823). Sem migração, sem banco. Resolve as perguntas abertas 1 a 4 do 6B: a identidade econômica bilíngue vira teste de todo material (invariante 9), valores pequenos deixam de sair como zero, e o veredito e as frases de preço passam a fazer suas contas por núcleos de `financial-core` (invariante 4).
+
+### 1. Identidade econômica bilíngue em todo material
+
+**A regra como teste.** Para todo tipo de material e todo item que ele imprime (título, parágrafo, métrica, lista, par chave e valor, nota, destaque, legenda e cabeçalho de tabela e cada célula), os números lidos do texto em português são os mesmos lidos do texto em inglês, cada um lido com os separadores da própria língua: em pt-BR o ponto agrupa milhares e a vírgula marca decimais, em en-US o contrário. Um número escrito com os separadores da outra língua ("2,19x" em inglês, "90.3 dias" em português) não é lido como número, é apontado como estrangeiro. São números os valores em reais (lidos pelo valor cheio, então "R$ 17,4M", "R$ 45 mil" e "R$ 45 thousand" comparam pela economia e não pela palavra), percentuais, múltiplos, pontos-base, datas, frações ("2/3", "dois terços" e "two-thirds" são a mesma fração, como na regra LC-07 da conduta) e contagens (meses, anos, dias). Ordinais ("1º teste") são prosa. A comparação é de multiconjuntos, mais estrita que a de conjuntos.
+
+O leitor é apoio de teste em `packages/testing-fixtures/src/bilingual-figures.ts` (exportado como `@offroad/testing-fixtures/bilingual-figures`, com `bilingual-figures.test.ts`), para servir aos três pacotes sem dependência nova de produção. A identidade roda:
+
+- em `packages/case-materials/src/bilingual-identity.test.ts`, sobre o caso Aurora nas três variantes do mapa de dívida dos pinos de paridade: memorando, term sheet, Q&A, teaser, perfil, pacote, a entrada do modelo e as demonstrações bilíngues, item a item; as demonstrações em português e em inglês, pareadas item a item; um controle negativo (o inglês da pergunta 20 como a v5 publicou é apontado, com o 2,19x que falta e as quatro vírgulas, e uma tabela só em português é apontada no documento em inglês); e a checagem de que nenhum material imprime "R$ 0,0M" ou "R$ 0 mil";
+- em `packages/credit-analysis/src/bilingual-identity.test.ts`, sobre as doze execuções dos pinos do veredito (`verdict-cases.test-support.ts`, que passou a servir também ao teste de paridade): todo achado da mesa, todo achado da trajetória e toda nota do veredito;
+- em `apps/web/src/lib/artifacts/economic-rendering.test.ts`, sobre todos os tipos de um pacote, com o índice da sala.
+
+**Texto citado do caso.** As afirmações do brief e o texto dos fatos (nome do credor, taxa pedida como a companhia escreveu, premissas das projeções) são português nos dois documentos; o teste lê esses trechos como português dos dois lados, só onde aparecem inteiros (o "9% a.a." de uma premissa não é o final de "14,9% a.a."), e lê todo o resto do texto em inglês como inglês.
+
+**Divergências que o teste encontrou e como foram corrigidas.**
+
+| Onde | O que o inglês fazia | Correção |
+|---|---|---|
+| Achados da mesa (`credit-analysis/src/analyze.ts`), no quadro de riscos do perfil, do pacote e do memorando e nas perguntas 20 e 33 do Q&A | valores, múltiplos e percentuais com vírgula decimal e "a.a."; a pergunta 20 (taxa pedida contra o estoque) omitia o 2,19x da alavancagem do estoque e terminava em "a.a.." | os formatadores recebem a língua e passam pelos núcleos (`presentationAmount`, `presentationFigure`); o inglês imprime separadores en-US e "p.a."; a pergunta 20 diz "written at the lower leverage of 2.19x"; a lista de valores divergentes usa "and" |
+| Achados da trajetória (`trajectory.ts`) | valores e múltiplos com vírgula decimal | mesma correção dos formatadores |
+| Veredito (`verdict.ts`), no memorando e nas condições precedentes do term sheet | valores e múltiplos com vírgula decimal; "twelve months" e "Sixty months with up to twelve of grace" por extenso; faixa de preço com "a"; sem a diferença de preço das duas alternativas | separadores en-US; "12 months" e "A 60-month tenor with up to 12 of grace"; "to" na faixa; "0.35 percentage point at the low end" e "0.40 percentage point saved by shortening" |
+| Q&A (`case-materials/src/diligence.ts`) | pergunta 2 com as participações em formato português; pergunta 11 com as linhas do estoque em português ("a", "a.a.", "venc.") no inglês; perguntas 9, 24 e 36 com dias e meses em decimal inglês também no português ("90.3 dias") | cada língua monta a própria frase; dias e meses com uma casa, na vírgula ou no ponto de cada língua |
+| Term sheet (`institutional.ts`) | cronograma do covenant com vírgula decimal no inglês | o cronograma é montado em cada língua |
+| Todas as tabelas (histórico, fontes e usos, estrutura de capital, trajetória, covenant, riscos, choques, garantias, termos do pacote, demonstrações bilíngues) | a célula era um texto só, em português, impresso também no documento em inglês; as demonstrações bilíngues imprimiam decimais crus ("7412500.5") nas duas línguas | a célula pode carregar as duas línguas (`MaterialTableCell`), como abaixo |
+
+**Células bilíngues.** O bloco de tabela de `MaterialBlock` passa a aceitar `rows: MaterialTableCell[][]`, em que a célula é um texto impresso como está nas duas línguas (nome, código, ano) ou `{pt, en}`. `case-materials` usa a forma bilíngue em toda célula com número ou prosa; os escritores de docx, pdf, pptx e HTML (`case-export`, `case-render`) imprimem a célula da língua do documento, e o esquema dos materiais guardados da web (`apps/web/src/lib/deal-state/materials.ts`) aceita as duas formas. Materiais já gravados continuam com células só em texto e renderizam como antes. As demonstrações bilíngues mantêm todos os dígitos exatos, agora com os separadores de cada língua. O índice da sala continua com rótulos em português por desenho (`data-room`), sem número em formato de língua.
+
+Na auditoria de conduta em sombra, saem os três achados LC-07 que o inglês causava: a condição do veredito no memorando (que continua bloqueado por outros achados), a pergunta 20 no Q&A (de bloqueado para revisão) e a mesma condição nas condições precedentes do term sheet (de bloqueado para aprovado).
+
+Uma correção de apoio de teste: o leitor da camada de texto do pdf em `economic-readout.test-support.ts` cortava o último byte de um fluxo comprimido que terminasse em retorno de carro, porque lia até "endstream"; agora lê o comprimento que o dicionário do fluxo declara. O term sheet em inglês passou a ter um fluxo assim.
+
+### 2. Valores pequenos: uma regra só
+
+**A regra**, no núcleo `presentationAmount` de `packages/financial-core/src/material-arithmetic.ts` (conversão de apresentação, com rastro `material.presentation_amount`, fora do registro de cálculos como as demais conversões), usada por todo material que imprime valor:
+
+- **Em frase** (estilo `abbreviated`): a partir de R$ 999.500, milhões com uma casa ("R$ 17,4M" e "R$ 17.4M"); a partir de R$ 1 mil, milhares sem casas ("R$ 45 mil" e "R$ 45 thousand"); abaixo disso, o valor exato em reais ("R$ 450"). O limite de R$ 999.500 é onde os milhares arredondariam para mil milhares, então o valor passa a milhões ("R$ 1,0M") em vez de "R$ 1.000 mil".
+- **Em tabela ou termo** (estilo `whole`): reais inteiros, agrupados pela língua ("R$ 42.300.000" e "R$ 42,300,000"); abaixo de R$ 1 e diferente de zero, o valor exato ("R$ 0,4").
+- Arredondamento meio para cima no valor decimal; zero sai "R$ 0". Nenhum valor diferente de zero sai como zero, testado em `material-arithmetic.test.ts`.
+
+O símbolo continua "R$" nas duas línguas, como os materiais já imprimiam em inglês. Usam a regra: as respostas do Q&A, os achados da mesa e da trajetória, o veredito, o título das alternativas do memorando (que imprimia milhões inteiros, "R$ 71M", e passa a "R$ 71,3M"), as tabelas e termos de `case-materials` e os valores do term sheet de `deal-structure` (que convertiam com `Number(value)` e agora passam pelo núcleo; valor que não é número sai como escrito, em vez de "R$ NaN"). No caso Aurora, a pergunta 10 passa de "R$ 0,6M de ajustes" a "R$ 572 mil de ajustes"; um ajuste de R$ 42 mil sairia "R$ 42 mil", e não "R$ 0,0M".
+
+### 3. Aritmética fora do núcleo
+
+**Veredito.** `packages/credit-analysis/src/verdict.ts` não importa mais `decimal.js`. Núcleos novos em `material-arithmetic.ts`, com rastro, testes e registro em `financialCalculationRegistry`:
+
+| Conta no veredito | Núcleo | Registro |
+|---|---|---|
+| dinheiro novo igual ao tíquete menos o refinanciamento | `calculateNetNewMoney` | `material.net_new_money` |
+| tíquete maior e refinanciamento maior pelo principal do ano pesado | `calculateEnlargedTicket` | `material.enlarged_ticket` |
+| alavancagem após a estrutura, com quatro casas para a referência de preço | `calculateLeverageAfterStructure` | `material.leverage_after_structure` |
+| alavancagem atual contra o teto do covenant | `testCovenantCeiling` | `material.covenant_ceiling` |
+| ano mais pesado do cronograma acima de 1x do EBITDA | `selectHeaviestScheduleYear` | `material.heaviest_schedule_year` |
+
+As comparações restantes (cobertura abaixo de 1,3x, refinanciamento abaixo da parede, valores positivos) passam por `compareFigures`, comparação exata que não cria número e por isso não leva rastro; milhões, múltiplos, percentual do EBITDA e as quatro casas da alavancagem de pico passam por `presentationFigure`.
+
+**Frases de preço.** A frase da faixa de prática da mesa (`market-reference/src/index.ts`) e a da faixa observada (`pricing-truth.ts`, a que o motor do caso usa) imprimiam o spread com `Math.abs(bps) / 100` e o custo total com `Number(allIn) * 100`. Agora o spread vem do núcleo novo `presentationSpread` (sinal e magnitude, exata ou meio para cima com casas declaradas) e o custo total de `presentationFigure`. `materialArithmeticVersion` passa a `2026.09.26-v3`; nenhum núcleo existente mudou de resultado e `financialCoreVersion` segue `2026.09.20-v24`.
+
+**Prova de paridade.** `packages/market-reference/src/price-sentence-parity.test.ts` entrou no primeiro commit da PR, antes de qualquer mudança, e fixa o sha256 das frases da mesa sobre toda banda da grade, com e sem cada ajuste e em dois níveis de CDI (mais de 10 mil frases, com spreads negativos, zero e positivos, de uma e de duas casas), e das frases observadas sobre amostras com pontos-base inteiros, de um quarto e de meio, negativos e ajustes rastreados. O commit que moveu as contas manteve os dois pinos das frases e os 12 pinos do veredito sem mudança. Para todo ponto-base inteiro de -10000 a 10000, as duas frases imprimem o mesmo texto de antes (`material-arithmetic.test.ts`).
+
+**Diferenças deliberadas, fora de toda fixture:**
+
+- Sobre um EBITDA zero, a mesa imprime a alavancagem como `Infinity`. O veredito escrevia "A companhia está em Infinityx" como condição de waiver, precificava a estrutura com alavancagem infinita e tratava um ano de EBITDA projetado zero como o mais pesado, com "Infinity%". Agora a alavancagem que não é número não é comparada com o covenant (como já acontecia com EBITDA negativo), a estrutura não é precificada (não há alavancagem para ler) e o ano fica fora da classificação, nomeado no rastro. `verdict.test.ts` prova as três coisas e falha no código anterior.
+- Na frase da mesa, um ponto-base fracionário imprime o quociente exato ("19,987" para 1998,7 bps), e não o erro da divisão binária ("19,987000000000002"). A grade só cota pontos-base inteiros.
+- Na frase observada não há diferença medida: o `Intl` arredonda o decimal mais curto do quociente e coincide com o núcleo em todo décimo de ponto-base de -2000 a 2000.
+- Refinanciamento que não é número é recusado com `RangeError`, em vez do erro do `decimal.js`; os dois recusam.
+
+### 4. Versão, pinos e manifesto
+
+`caseMaterialsVersion` passa de `2026.09.26-v5` para `2026.09.26-v6`. Dos 22 pinos de `material-parity.test.ts`, mudaram 16: memorando, term sheet, Q&A, perfil e pacote nas três variantes, e as demonstrações bilíngues. Os outros 6 (os três teasers, a entrada do modelo e as demonstrações em português e em inglês) passam com os valores da v5, e o diff do teste altera só as 16 linhas. A comparação item a item do JSON da v5 com o da v6, nas três variantes, mostra que nenhum campo fora dos textos mudou (estrutura, dependências, suportes, gráficos, caminhos dos itens) além da auditoria de conduta em sombra; que o inglês mudou como descrito acima; e que o português mudou só em:
+
+- "O tíquete resgata R$ 0,0M" para "R$ 0" (o refinanciamento do caso é zero), no memorando e no term sheet;
+- "Alternativa: R$ 71M em 48 meses" para "R$ 71,3M", no memorando;
+- "R$ 0,6M de ajustes" para "R$ 572 mil de ajustes", "DSO 90.3 dias" para "90,3" e "106.5 dias" para "106,5", no Q&A;
+- as demonstrações bilíngues, que passam de decimais crus aos separadores de cada língua, com os rótulos separados por língua.
+
+O perfil e o pacote não mudaram em português. Os 12 pinos do veredito mudaram todos, porque todo veredito tem valor no texto em inglês; em português, nas doze execuções, a única mudança é "R$ 0,0M" para "R$ 0" (Camil, Fakeco e Aurora), e nenhum campo fora dos textos mudou.
+
+**Onde a versão é fixada.** Como no 6B, `caseMaterialsVersion` existe só em `packages/case-materials/src/index.ts`, gravada pelo motor do caso em `versions.materialCompiler`; revisões já gravadas não mudam, e a compilação seguinte publica os materiais novos.
+
+**Manifesto de métodos.** Regenerado por `pnpm --filter @offroad/credit-playbook manifest:generate` nos dois commits que mudam fontes fixadas (`verdict.ts`, `analyze.ts`, `trajectory.ts`, `credit-math.ts`, `material-arithmetic.ts` e o apoio de teste novo de `credit-analysis`, que entra na proveniência como os demais testes do pacote). R01 publicado segue com `manifestHash` `17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090`, e os 496 testes de `credit-playbook` passam.
+
+### Limites e perguntas abertas do 6C
+
+1. Texto em português nos documentos em inglês: as afirmações do brief e o resumo executivo, o texto dos fatos citados, a descrição das exceções da conciliação (gerada numa língua só), os rótulos do índice da sala e as descrições de garantias. Os números desses textos são lidos como português e batem; traduzi-los pede um brief bilíngue.
+2. A regra LC-07 da conduta continua sem ler células de tabela e lê vírgula e ponto como decimal nas duas línguas, então não apontava "4,70x" em inglês. O teste novo é mais estrito; tornar a LC-07 sensível à língua muda `conductPolicyVersion` e todas as auditorias, e fica para uma decisão própria.
+3. Fora dos materiais, `credit-analysis/src/questions.ts` (perguntas da mesa à companhia) ainda imprime valores em milhões com vírgula decimal também no inglês e sem a regra de valores pequenos.
+4. `analyze.ts` e `trajectory.ts` ainda calculam seus números com Decimal próprio; este incremento moveu para os núcleos a impressão deles e as contas do veredito.
+5. Em `market-reference`, a soma dos ajustes em pontos-base (inteiros em número binário), a conversão de pontos-base em taxa e as comparações com limites ainda são contas locais, e `pricing-truth.ts` converte o custo anualizado com `Number(...)`.
+6. Identificadores internos já visíveis antes desta PR: a coluna "Base" dos termos do pacote (`capacity`, `playbook`) e os rótulos dos ajustes de preço do memorando (`Ajuste: tenor`). Os textos de prazo do term sheet em `deal-structure` separam os limites da banda com traço meia-risca, também anterior a esta PR.
+7. O manifesto de métodos precisa ser regenerado de novo pela PR que for mesclada depois de outra que também o regenere.

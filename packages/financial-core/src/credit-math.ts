@@ -242,6 +242,11 @@ export const financialCalculationRegistry = {
   "material.ebitda_adjustments": "calculateEbitdaAdjustments",
   "material.schedule_tie_out": "testScheduleTieOut",
   "material.spread_difference": "calculateSpreadDifference",
+  "material.net_new_money": "calculateNetNewMoney",
+  "material.enlarged_ticket": "calculateEnlargedTicket",
+  "material.leverage_after_structure": "calculateLeverageAfterStructure",
+  "material.covenant_ceiling": "testCovenantCeiling",
+  "material.heaviest_schedule_year": "selectHeaviestScheduleYear",
 } as const;
 
 export type FinancialCalculationId = keyof typeof financialCalculationRegistry;

@@ -2,6 +2,7 @@ import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
 import {
   calculateCustomerConcentration,
   calculateEbitdaAdjustments,
+  presentationAmount,
   presentationFigure,
   testScheduleTieOut,
   type DecimalInput,
@@ -24,10 +25,14 @@ type Lang = "pt" | "en";
 type Bi = {pt: string; en: string};
 const bi = (pt: string, en: string): Bi => ({pt, en});
 
-const money = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
-  `R$ ${presentationFigure({value, scale: "millions", decimals: 1}).value.replace(".", locale === "pt-BR" ? "," : ".")}M`;
-const turns = (value: DecimalInput, locale: "pt-BR" | "en-US") => `${presentationFigure({value, decimals: 2}).value.replace(".", locale === "pt-BR" ? "," : ".")}x`;
-const pct = (value: DecimalInput, locale: "pt-BR" | "en-US") => `${presentationFigure({value, scale: "percent", decimals: 1}).value.replace(".", locale === "pt-BR" ? "," : ".")}%`;
+type Locale = "pt-BR" | "en-US";
+const local = (figure: string, locale: Locale) => figure.replace(".", locale === "pt-BR" ? "," : ".");
+/** An amount by the one rule of the materials: millions with one decimal, thousands below a million, never a zero that is not. */
+const money = (value: DecimalInput, locale: Locale) => presentationAmount({value, locale, style: "abbreviated"}).text;
+const turns = (value: DecimalInput, locale: Locale) => `${local(presentationFigure({value, decimals: 2}).value, locale)}x`;
+const pct = (value: DecimalInput, locale: Locale) => `${local(presentationFigure({value, scale: "percent", decimals: 1}).value, locale)}%`;
+/** Days and months as the desk states them, to the one decimal it computes, in the separators of each language. */
+const count = (value: DecimalInput, locale: Locale) => local(presentationFigure({value, decimals: 1}).value, locale);
 
 export type DiligenceContext = {
   facts: readonly ReconciledFact[];
@@ -63,8 +68,8 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   {id: "q02", section: bi("Negócio", "Business"), question: bi("Quem controla a companhia e com que participação?", "Who controls the company and with what stake?"), resolve: ({facts}) => {
     const names = indexed(facts, "company.controllers").filter((fact) => fact.key.fieldPath.endsWith(".name"));
     if (names.length === 0) return null;
-    const parts = names.map((name) => {const share = facts.find((fact) => fact.key.fieldPath === name.key.fieldPath.replace(".name", ".ownership_pct")); return `${name.value}${share ? ` (${pct(share.value, "pt-BR")})` : ""}`;});
-    return {answer: bi(parts.join("; ") + ".", parts.join("; ") + "."), supportIds: names.map((name) => name.key.fieldPath)};
+    const parts = (locale: Locale) => names.map((name) => {const share = facts.find((fact) => fact.key.fieldPath === name.key.fieldPath.replace(".name", ".ownership_pct")); return `${name.value}${share ? ` (${pct(share.value, locale)})` : ""}`;}).join("; ");
+    return {answer: bi(parts("pt-BR") + ".", parts("en-US") + "."), supportIds: names.map((name) => name.key.fieldPath)};
   }},
   {id: "q03", section: bi("Negócio", "Business"), question: bi("Qual a concentração nos cinco maiores clientes?", "What is the concentration in the top five customers?"), resolve: ({facts}) => {
     const shares = indexed(facts, "customers.top_customers").filter((fact) => fact.key.fieldPath.endsWith(".share_pct"));
@@ -105,7 +110,8 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   {id: "q09", section: bi("Financeiro", "Financials"), question: bi("Qual o ciclo de caixa (DSO, DIO, DPO)?", "What is the cash cycle (DSO, DIO, DPO)?"), resolve: ({desk}) => {
     if (!desk?.workingCapital.cycleDays) return null;
     const w = desk.workingCapital;
-    return {answer: bi(`DSO ${w.dso} dias, DIO ${w.dio} dias, DPO ${w.dpo} dias: ciclo de ${w.cycleDays} dias.`, `DSO ${w.dso} days, DIO ${w.dio} days, DPO ${w.dpo} days: a ${w.cycleDays}-day cycle.`), supportIds: ["desk.ciclo_de_caixa_dias"]};
+    const days = (value: string | null, locale: Locale) => (value === null ? (locale === "pt-BR" ? "n/d" : "n/a") : count(value, locale));
+    return {answer: bi(`DSO ${days(w.dso, "pt-BR")} dias, DIO ${days(w.dio, "pt-BR")} dias, DPO ${days(w.dpo, "pt-BR")} dias: ciclo de ${count(w.cycleDays!, "pt-BR")} dias.`, `DSO ${days(w.dso, "en-US")} days, DIO ${days(w.dio, "en-US")} days, DPO ${days(w.dpo, "en-US")} days: a ${count(w.cycleDays!, "en-US")}-day cycle.`), supportIds: ["desk.ciclo_de_caixa_dias"]};
   }},
   {id: "q10", section: bi("Financeiro", "Financials"), question: bi("Há itens não recorrentes no EBITDA? Quais?", "Are there non-recurring items in EBITDA? Which?"), resolve: ({facts}) => {
     // The latest adjusted EBITDA against the reported EBITDA of the same year, read at its exact path.
@@ -129,8 +135,10 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   // ---- debt ---------------------------------------------------------------------------------
   {id: "q11", section: bi("Dívida", "Debt"), question: bi("Qual o estoque de dívida, por credor, custo e vencimento?", "What is the debt stack, by lender, cost and maturity?"), resolve: ({desk}) => {
     if (!desk || desk.stack.lines.length === 0) return null;
-    const lines = desk.stack.lines.map((line) => `${line.lender} ${money(line.balance, "pt-BR")}${line.effectiveAnnual ? ` a ${pct(line.effectiveAnnual, "pt-BR")} a.a.` : ""}${line.maturity ? `, venc. ${line.maturity}` : ""}`);
-    return {answer: bi(`${desk.stack.lines.length} linha(s), ${money(desk.stack.totalSchedule, "pt-BR")} no total${desk.stack.weightedCost ? `, custo médio ${pct(desk.stack.weightedCost, "pt-BR")} a.a.` : ""}: ${lines.join("; ")}.`, `${desk.stack.lines.length} line(s), ${money(desk.stack.totalSchedule, "en-US")} in total${desk.stack.weightedCost ? `, weighted cost ${pct(desk.stack.weightedCost, "en-US")} p.a.` : ""}: ${lines.join("; ")}.`), supportIds: ["desk.custo_medio_do_stack"]};
+    const lines = (locale: Locale) => desk.stack.lines.map((line) => locale === "pt-BR"
+      ? `${line.lender} ${money(line.balance, locale)}${line.effectiveAnnual ? ` a ${pct(line.effectiveAnnual, locale)} a.a.` : ""}${line.maturity ? `, venc. ${line.maturity}` : ""}`
+      : `${line.lender} ${money(line.balance, locale)}${line.effectiveAnnual ? ` at ${pct(line.effectiveAnnual, locale)} p.a.` : ""}${line.maturity ? `, due ${line.maturity}` : ""}`).join("; ");
+    return {answer: bi(`${desk.stack.lines.length} linha(s), ${money(desk.stack.totalSchedule, "pt-BR")} no total${desk.stack.weightedCost ? `, custo médio ${pct(desk.stack.weightedCost, "pt-BR")} a.a.` : ""}: ${lines("pt-BR")}.`, `${desk.stack.lines.length} line(s), ${money(desk.stack.totalSchedule, "en-US")} in total${desk.stack.weightedCost ? `, weighted cost ${pct(desk.stack.weightedCost, "en-US")} p.a.` : ""}: ${lines("en-US")}.`), supportIds: ["desk.custo_medio_do_stack"]};
   }},
   {id: "q12", section: bi("Dívida", "Debt"), question: bi("O mapa de dívida bate com o balanço?", "Does the debt schedule tie to the balance sheet?"), resolve: ({desk}) => {
     if (!desk) return null;
@@ -197,7 +205,8 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   }},
   {id: "q24", section: bi("Projeções", "Projections"), question: bi("Quanto capital de giro o crescimento projetado absorve?", "How much working capital does projected growth absorb?"), resolve: ({desk}) => {
     if (!desk?.workingCapital.growthAbsorption) return null;
-    return {answer: bi(`${money(desk.workingCapital.growthAbsorption, "pt-BR")} ao ciclo atual de ${desk.workingCapital.cycleDays} dias.`, `${money(desk.workingCapital.growthAbsorption, "en-US")} at the current ${desk.workingCapital.cycleDays}-day cycle.`), supportIds: ["desk.ciclo_de_caixa_dias"]};
+    const cycle = desk.workingCapital.cycleDays!;
+    return {answer: bi(`${money(desk.workingCapital.growthAbsorption, "pt-BR")} ao ciclo atual de ${count(cycle, "pt-BR")} dias.`, `${money(desk.workingCapital.growthAbsorption, "en-US")} at the current ${count(cycle, "en-US")}-day cycle.`), supportIds: ["desk.ciclo_de_caixa_dias"]};
   }},
   {id: "q25", section: bi("Projeções", "Projections"), question: bi("Qual o covenant de alavancagem que a trajetória suporta?", "What leverage covenant does the trajectory support?"), resolve: ({trajectory}) => {
     if (!trajectory || trajectory.covenantProposal.length === 0) return null;
@@ -239,7 +248,7 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   {id: "q36", section: bi("Startup", "Startup"), question: bi("Qual o runway hoje e com a operação?", "What is runway today and with the deal?"), resolve: ({desk}) => {
     if (!desk?.runway) return null;
     const r = desk.runway;
-    return {answer: bi(`${r.monthsPre} meses hoje; ${r.monthsPostAfterService} com a captação, pagando os juros dela.`, `${r.monthsPre} months today; ${r.monthsPostAfterService} with the raise, paying its interest.`), supportIds: ["desk.runway_pre_meses", "desk.runway_pos_meses"]};
+    return {answer: bi(`${count(r.monthsPre, "pt-BR")} meses hoje; ${count(r.monthsPostAfterService, "pt-BR")} com a captação, pagando os juros dela.`, `${count(r.monthsPre, "en-US")} months today; ${count(r.monthsPostAfterService, "en-US")} with the raise, paying its interest.`), supportIds: ["desk.runway_pre_meses", "desk.runway_pos_meses"]};
   }},
   {id: "q37", section: bi("Startup", "Startup"), question: bi("Qual o ARR e a retenção líquida?", "What are ARR and net revenue retention?"), resolve: ({desk}) => {
     if (!desk?.runway?.arr) return null;

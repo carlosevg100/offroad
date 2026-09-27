@@ -27,7 +27,8 @@ const materialBlockSchema = z.discriminatedUnion("type", [
     formatted: localizedSchema,
     supportIds: z.array(z.string()),
   }))}),
-  z.object({type: z.literal("table"), caption: localizedSchema, head: z.array(localizedSchema), rows: z.array(z.array(z.string()))}),
+  // A cell is one string printed as written, or the cell in each language (case-materials 2026.09.26-v6).
+  z.object({type: z.literal("table"), caption: localizedSchema, head: z.array(localizedSchema), rows: z.array(z.array(z.union([z.string(), localizedSchema])))}),
   z.object({type: z.literal("list"), items: z.array(localizedSchema)}),
   z.object({type: z.literal("disclaimer"), text: localizedSchema}),
   z.object({type: z.literal("kv"), caption: localizedSchema.optional(), rows: z.array(z.object({

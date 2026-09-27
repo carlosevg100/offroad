@@ -1,3 +1,4 @@
+import {presentationAmount, presentationFigure} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 
 import type {Finding} from "./analyze";
@@ -130,8 +131,13 @@ export type Trajectory = {
 };
 
 const d = (value: string | number): Decimal => new Decimal(value);
-const brlM = (value: Decimal.Value): string => `R$ ${new Decimal(value).div(1_000_000).toFixed(1).replace(".", ",")}M`;
-const turns = (value: Decimal.Value): string => `${new Decimal(value).toFixed(2).replace(".", ",")}x`;
+// Amounts and multiples print through financial-core, each language with its own separators.
+type Locale = "pt-BR" | "en-US";
+const brlM = (value: Decimal.Value, locale: Locale = "pt-BR"): string => presentationAmount({value, locale, style: "abbreviated"}).text;
+const turns = (value: Decimal.Value, locale: Locale = "pt-BR"): string => {
+  const figure = presentationFigure({value, decimals: 2}).value;
+  return `${locale === "pt-BR" ? figure.replace(".", ",") : figure}x`;
+};
 
 const yearMonth = (iso: string): number => {
   const [year, month] = iso.split("-").map(Number);
@@ -249,7 +255,7 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
       id: "refinancing-inside-ticket",
       severity: "high",
       pt: `A captação é, em ${brlM(refinancing)}, troca de passivo: esse valor resgata dívida existente no desembolso e sobra ${brlM(netNewMoney)} de dinheiro efetivamente novo. A alavancagem pós-operação é ${turns(postLeverage)} sobre o EBITDA reportado, não a soma ingênua do tíquete ao estoque. O que a operação compra é prazo e carência, e é contra isso que o fundo precifica.`,
-      en: `${brlM(refinancing)} of the raise is a liability swap: it repays existing debt at disbursement, leaving ${brlM(netNewMoney)} of genuinely new money. Post-transaction leverage is ${turns(postLeverage)} on reported EBITDA, not the naive sum of ticket and stock. What the deal buys is tenor and grace, and that is what the fund prices.`,
+      en: `${brlM(refinancing, "en-US")} of the raise is a liability swap: it repays existing debt at disbursement, leaving ${brlM(netNewMoney, "en-US")} of genuinely new money. Post-transaction leverage is ${turns(postLeverage, "en-US")} on reported EBITDA, not the naive sum of ticket and stock. What the deal buys is tenor and grace, and that is what the fund prices.`,
       values: {refinancing: refinancing.toFixed(2), netNewMoney: netNewMoney.toFixed(2), postLeverage: postLeverage.toFixed(4)},
       inputs: ["transaction.refinancing", "transaction.requested_amount", "debt.instruments"],
     });
@@ -271,7 +277,7 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
       id: "liability-management",
       severity: "high",
       pt: `A estrutura que destrava a operação é quitar as linhas com covenant dentro do tíquete: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance)})`).join(" e ")}, ${brlM(covenantedBalance)} no total. O rompimento no dia um deixa de existir porque o contrato que testaria deixa de existir; sobra ${brlM(netNewMoney)} de dinheiro efetivamente novo, a alavancagem pós fica em ${turns(postLeverage)} sobre o EBITDA reportado, e quem passa a testar é o covenant do novo instrumento, desenhado sobre a trajetória abaixo. É assim que uma empresa nesta posição capta: reestruturação e dinheiro novo no mesmo instrumento, não dinheiro novo por cima do estoque.`,
-      en: `The structure that unlocks the deal is refinancing the covenanted lines inside the ticket: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance)})`).join(" and ")}, ${brlM(covenantedBalance)} in total. The day-one breach ceases to exist because the contract that would test it does; ${brlM(netNewMoney)} of genuinely new money remains, post leverage stands at ${turns(postLeverage)} on reported EBITDA, and what binds is the new instrument's covenant, written to the trajectory below. That is how a company in this position raises: restructuring and new money in one instrument, not new money on top of the stock.`,
+      en: `The structure that unlocks the deal is refinancing the covenanted lines inside the ticket: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance, "en-US")})`).join(" and ")}, ${brlM(covenantedBalance, "en-US")} in total. The day-one breach ceases to exist because the contract that would test it does; ${brlM(netNewMoney, "en-US")} of genuinely new money remains, post leverage stands at ${turns(postLeverage, "en-US")} on reported EBITDA, and what binds is the new instrument's covenant, written to the trajectory below. That is how a company in this position raises: restructuring and new money in one instrument, not new money on top of the stock.`,
       values: {covenantedBalance: covenantedBalance.toFixed(2), netNewMoney: netNewMoney.toFixed(2), postLeverage: postLeverage.toFixed(4)},
       inputs: ["debt.instruments", "debt.covenants", "transaction.requested_amount"],
     });
@@ -285,7 +291,7 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
       id: "amortization-outruns-cash",
       severity: "critical",
       pt: `O cronograma contratado exige ${brlM(worst.principalDue)} de amortização em ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% do EBITDA projetado do ano, antes de juros e de qualquer investimento. Esse ano não se paga com o caixa da operação, então ele será rolado: a pergunta não é se rola, é a que preço e com que prazo. Alongar resolve e custa spread e garantia; dimensionar a captação para cobrir ${worst.year} agora custa tíquete maior e alavancagem de pico mais alta. As duas saídas são defensáveis, e a escolha entre elas é o que o material precisa mostrar ao investidor.`,
-      en: `The contracted schedule demands ${brlM(worst.principalDue)} of amortisation in ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% of that year's projected EBITDA, before interest and any investment. That year will not be paid out of operating cash, so it will be rolled: the question is not whether, but at what price and tenor. Terming it out works and costs spread and security; sizing the raise to cover ${worst.year} now costs a larger ticket and a higher peak leverage. Both are defensible, and choosing between them is what the material has to show the investor.`,
+      en: `The contracted schedule demands ${brlM(worst.principalDue, "en-US")} of amortisation in ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% of that year's projected EBITDA, before interest and any investment. That year will not be paid out of operating cash, so it will be rolled: the question is not whether, but at what price and tenor. Terming it out works and costs spread and security; sizing the raise to cover ${worst.year} now costs a larger ticket and a higher peak leverage. Both are defensible, and choosing between them is what the material has to show the investor.`,
       values: {year: String(worst.year), principalDue: worst.principalDue, strain: worst.scheduleStrain},
       inputs: ["debt.instruments", "projections.ebitda"],
     });
@@ -303,7 +309,7 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
     id: "leverage-trajectory",
     severity: "info",
     pt: `Trajetória${input.ebitdaHeldFlat ? " (sem projeção da companhia: EBITDA mantido no nível do último exercício, premissa da mesa)" : ""}: pico de ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} no cenário com corte de ${haircut.times(100).toFixed(0)}% do crescimento) em ${peakYear.year}, desalavancando pela amortização SAC${input.ebitdaHeldFlat ? "" : " e pela rampa do projeto"}${back && back.yearStressed ? `, e voltando abaixo de ${turns(back.maximum)} em ${back.yearStressed} mesmo no cenário cortado` : ""}. Covenant proposto para o novo instrumento, com folga de ${cushion.toFixed(2).replace(".", ",")}x sobre o cenário cortado e teste anual: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum.replace(".", ",")}x`).join("; ")}. Primeira aferição no primeiro exercício completo após o desembolso.`,
-    en: `Trajectory${input.ebitdaHeldFlat ? " (no company projection: EBITDA held at the latest audited level, a desk assumption)" : ""}: peak of ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} with ${haircut.times(100).toFixed(0)}% of the growth cut) in ${peakYear.year}, deleveraging through SAC amortisation${input.ebitdaHeldFlat ? "" : " and the project ramp"}${back && back.yearStressed ? `, and back under ${turns(back.maximum)} by ${back.yearStressed} even in the cut scenario` : ""}. Proposed covenant for the new instrument, ${cushion.toFixed(2)}x of cushion over the cut scenario, tested annually: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum}x`).join("; ")}. First test at the first full year after disbursement.`,
+    en: `Trajectory${input.ebitdaHeldFlat ? " (no company projection: EBITDA held at the latest audited level, a desk assumption)" : ""}: peak of ${turns(peakYear.leverageBase, "en-US")} (${turns(peakYear.leverageStressed, "en-US")} with ${haircut.times(100).toFixed(0)}% of the growth cut) in ${peakYear.year}, deleveraging through SAC amortisation${input.ebitdaHeldFlat ? "" : " and the project ramp"}${back && back.yearStressed ? `, and back under ${turns(back.maximum, "en-US")} by ${back.yearStressed} even in the cut scenario` : ""}. Proposed covenant for the new instrument, ${cushion.toFixed(2)}x of cushion over the cut scenario, tested annually: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum}x`).join("; ")}. First test at the first full year after disbursement.`,
     values: {peakBase: peakYear.leverageBase, peakStressed: peakYear.leverageStressed, peakYear: String(peakYear.year)},
     inputs: ["projections.ebitda", "debt.instruments", "transaction.requested_amount"],
   });

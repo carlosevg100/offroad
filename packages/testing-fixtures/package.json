@@ -31,6 +31,10 @@
     "./credit-materials-case": {
       "types": "./src/credit-materials-case.ts",
       "default": "./src/credit-materials-case.ts"
+    },
+    "./bilingual-figures": {
+      "types": "./src/bilingual-figures.ts",
+      "default": "./src/bilingual-figures.ts"
     }
   },
   "scripts": {

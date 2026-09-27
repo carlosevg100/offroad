@@ -207,7 +207,8 @@ export async function materialToPdf(input: {material: Material; lang: DocxLang; 
       case "disclaimer": text(block.text[lang], 9, regular, 10, muted); break;
       case "list": block.items.forEach((item) => text(`• ${item[lang]}`)); break;
       case "metrics": table([lang === "pt" ? "Indicador" : "Metric", lang === "pt" ? "Valor" : "Value"], block.items.map((item) => [item.label[lang], item.formatted[lang]])); break;
-      case "table": table(block.head.map((cell) => cell[lang]), block.rows, block.caption[lang]); break;
+      // Each cell in the document's language: a bilingual cell prints its own, a plain one as written.
+      case "table": table(block.head.map((cell) => cell[lang]), block.rows.map((row) => row.map((cell) => (typeof cell === "string" ? cell : cell[lang]))), block.caption[lang]); break;
       case "kv":
         if (block.rows.some(row => row.value[lang].length > 600)) {
           if (block.caption) {ensure(58); text(block.caption[lang], 11, bold, 7);}

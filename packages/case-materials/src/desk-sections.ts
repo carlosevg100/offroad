@@ -1,8 +1,8 @@
 import Decimal from "decimal.js";
 import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
-import {calculateNewInstrumentAmount, presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
+import {calculateNewInstrumentAmount, presentationAmount, presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
 
-import type {MaterialBlock} from "./compile";
+import type {MaterialBlock, MaterialTableCell} from "./compile";
 
 /**
  * The sections a fund actually underwrites from, built from the desk battery.
@@ -18,19 +18,22 @@ import type {MaterialBlock} from "./compile";
  * conversion of a figure is a financial-core kernel; this file only lays the figures out.
  */
 
-const money = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
-  `R$ ${presentationNumber(value).value.toLocaleString(locale, {maximumFractionDigits: 0})}`;
-const pct = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+type Locale = "pt-BR" | "en-US";
+const money = (value: DecimalInput, locale: Locale) => presentationAmount({value, locale, style: "whole"}).text;
+const pct = (value: DecimalInput, locale: Locale) =>
   `${presentationNumber(presentationFigure({value, scale: "percent"}).value).value.toLocaleString(locale, {minimumFractionDigits: 1, maximumFractionDigits: 2})}%`;
-const turns = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
+const turns = (value: DecimalInput, locale: Locale) =>
   `${presentationNumber(value).value.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
+/** A table cell in each language: a figure prints with the separators of the language that reads it (invariant 9). */
+const cell = (value: (locale: Locale) => string): MaterialTableCell => ({pt: value("pt-BR"), en: value("en-US")});
 
 /** Preserve the exact threshold: only Decimal normalizes insignificant fractional zeroes. */
-function covenantTurns(value: string): string {
+function covenantTurns(value: string, locale: Locale): string {
   const decimal = new Decimal(value);
   if (!decimal.isFinite()) throw new Error("Covenant maximum must be finite");
   const [coefficient, exponent] = decimal.toString().split("e");
-  const localized = coefficient!.includes(".") ? coefficient!.replace(".", ",") : `${coefficient},0`;
+  const separator = locale === "pt-BR" ? "," : ".";
+  const localized = coefficient!.includes(".") ? coefficient!.replace(".", separator) : `${coefficient}${separator}0`;
   return `${localized}${exponent === undefined ? "" : `e${exponent}`}x`;
 }
 
@@ -55,9 +58,14 @@ export function sourcesAndUses(desk: DeskAnalysis, trajectory: Trajectory): Mate
       {pt: "Valor", en: "Amount"},
     ],
     rows: [
-      ["Fonte: novo instrumento", money(amount, "pt-BR")],
-      [lm.lendersTakenOut.length > 0 ? `Uso: quitação das linhas com covenant (${lm.lendersTakenOut.join(", ")})` : "Uso: resgate de dívida existente (troca de passivo)", money(lm.covenantedBalance, "pt-BR")],
-      ["Uso: recursos novos para o plano da companhia", money(lm.netNewMoney, "pt-BR")],
+      [{pt: "Fonte: novo instrumento", en: "Source: new instrument"}, cell((locale) => money(amount, locale))],
+      [
+        lm.lendersTakenOut.length > 0
+          ? {pt: `Uso: quitação das linhas com covenant (${lm.lendersTakenOut.join(", ")})`, en: `Use: takeout of the covenanted lines (${lm.lendersTakenOut.join(", ")})`}
+          : {pt: "Uso: resgate de dívida existente (troca de passivo)", en: "Use: repayment of existing debt (liability swap)"},
+        cell((locale) => money(lm.covenantedBalance, locale)),
+      ],
+      [{pt: "Uso: recursos novos para o plano da companhia", en: "Use: new money for the company's plan"}, cell((locale) => money(lm.netNewMoney, locale))],
     ],
   };
 }
@@ -83,13 +91,13 @@ export function runwayAndRecurring(desk: DeskAnalysis): MaterialBlock | null {
 
 export function capitalStructure(desk: DeskAnalysis, trajectory: Trajectory | null): MaterialBlock[] {
   const takenOut = new Set(trajectory?.liabilityManagement?.lendersTakenOut ?? []);
-  const rows = desk.stack.lines.map((line) => [
+  const rows = desk.stack.lines.map((line): MaterialTableCell[] => [
     line.lender,
-    money(line.balance, "pt-BR"),
-    line.effectiveAnnual ? pct(line.effectiveAnnual, "pt-BR") : "não normalizável",
-    line.maturity ?? "não informado",
-    line.covenant ? `Dív.líq./EBITDA ≤ ${covenantTurns(line.covenant.maximum)}` : "sem covenant",
-    takenOut.has(line.lender) ? "quitada na operação" : "mantida",
+    cell((locale) => money(line.balance, locale)),
+    line.effectiveAnnual ? cell((locale) => pct(line.effectiveAnnual!, locale)) : {pt: "não normalizável", en: "not normalisable"},
+    line.maturity ?? {pt: "não informado", en: "not stated"},
+    line.covenant ? {pt: `Dív.líq./EBITDA ≤ ${covenantTurns(line.covenant.maximum, "pt-BR")}`, en: `Net debt/EBITDA ≤ ${covenantTurns(line.covenant.maximum, "en-US")}`} : {pt: "sem covenant", en: "no covenant"},
+    takenOut.has(line.lender) ? {pt: "quitada na operação", en: "taken out in the transaction"} : {pt: "mantida", en: "kept"},
   ]);
 
   const blocks: MaterialBlock[] = [
@@ -161,10 +169,10 @@ export function trajectoryTable(trajectory: Trajectory): MaterialBlock {
     ],
     rows: trajectory.years.map((year) => [
       String(year.year),
-      money(year.netDebt, "pt-BR"),
-      money(year.ebitdaBase, "pt-BR"),
-      turns(year.leverageBase, "pt-BR"),
-      turns(year.leverageStressed, "pt-BR"),
+      cell((locale) => money(year.netDebt, locale)),
+      cell((locale) => money(year.ebitdaBase, locale)),
+      cell((locale) => turns(year.leverageBase, locale)),
+      cell((locale) => turns(year.leverageStressed, locale)),
     ]),
   };
 }
@@ -181,7 +189,7 @@ export function covenantSchedule(trajectory: Trajectory): MaterialBlock {
       {pt: "Exercício", en: "Year"},
       {pt: "Máximo", en: "Maximum"},
     ],
-    rows: trajectory.covenantProposal.map((step) => [String(step.year), turns(step.maximum, "pt-BR")]),
+    rows: trajectory.covenantProposal.map((step) => [String(step.year), cell((locale) => turns(step.maximum, locale))]),
   };
 }
 
@@ -234,9 +242,10 @@ export function riskFactors(desk: DeskAnalysis, trajectory: Trajectory | null): 
         {pt: "Risco", en: "Risk"},
         {pt: "Tratamento", en: "Treatment"},
       ],
+      // Each document states the risk and its treatment in its own language, figures included.
       rows: relevant.map((finding) => [
-        finding.pt,
-        mitigants[finding.id]?.pt ?? "Pergunta aberta à companhia; ver Pontos em aberto.",
+        {pt: finding.pt, en: finding.en},
+        mitigants[finding.id] ?? {pt: "Pergunta aberta à companhia; ver Pontos em aberto.", en: "Open question to the company; see Open points."},
       ]),
     },
   ];

@@ -20,30 +20,37 @@ import {syntheticMaterials, type SyntheticMaterialsVariant} from "./synthetic-ma
  * answers from the adjusted and the reported EBITDA of the same year, so the Q&A gains that answer
  * with its two supports, one more answered question in its opening count and the adjusted EBITDA
  * among its dependencies. The other nineteen pins keep their 2026.09.09-v4 values.
+ *
+ * `case-materials` 2026.09.26-v6 (increment 6C) moved sixteen pins: the credit memo, the term sheet,
+ * the Q&A, the credit profile and the package in the three variants, and the bilingual approved
+ * statements. The English text of every item now states the figures of the Portuguese one in en-US
+ * separators, table cells with figures carry both languages, and every amount follows the one rule
+ * of the materials (thousands below a million, so no amount that is not zero prints as zero). The
+ * teasers, the workbook entry and the two single-language statements keep their values.
  */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 
 const pins: Record<string, string> = {
-  "balanceAboveSchedule:credit_memo": "b8556ff78617dbf0bedd030138cef9d458095f304ce3cfbeb785e5ef24ea879d",
-  "balanceAboveSchedule:term_sheet": "a60a43c83381a3e0fce09c9ef7eafc3fa459af0003e2b5c45197318cae6230e6",
-  "balanceAboveSchedule:diligence_qa": "9608983bf564eb5ca0539ae4d68353aa41002dd72d0a25833c49c78ec83e31bb",
+  "balanceAboveSchedule:credit_memo": "77f5e966cb2b4dbb8ad34af6ccfd891d9fe4604496ee9b3f24f9e2bcd43585fe",
+  "balanceAboveSchedule:term_sheet": "d0f39f7aedeeddb71a9f5e17894e8a4e3749c07221a4b932eee005cf070229b3",
+  "balanceAboveSchedule:diligence_qa": "66ade8c4893d4ca7c3d35d087fd8b65f70336319bdb3622d6819eebfe5ba5a6c",
   "balanceAboveSchedule:teaser": "49a4e0b28e7664640e0db86c495f51a956d9a35f752268cf2d6353b0789740fb",
-  "balanceAboveSchedule:credit_profile": "ad78d19b52e4cf4f65346f4b3b67a2b36dd5f70f8f201045c62b7b9c6c7352d5",
-  "balanceAboveSchedule:package": "96ab35d093953de7a9f65906005c696f458d84948b15bcf40ce8f5e6b362d283",
-  "withinTolerance:credit_memo": "49ca8180b531d8dc15db9633edd959f7d32d75ab4c395bffb6e0749a2837bb61",
-  "withinTolerance:term_sheet": "2723564a383279e2811baff31b056e3e664bf981d34892ba218155412dbb1cb1",
-  "withinTolerance:diligence_qa": "f8f18aa4a3bca2df5abb0b0e36e4de6bed0b9f890b7e02d82b0909bd51ce4ef6",
+  "balanceAboveSchedule:credit_profile": "69b126773e523eb5d4243872fa768e15e694f8d8411273f6aa9d8b807f9f61f4",
+  "balanceAboveSchedule:package": "b432781b83f846f90da683a691b4de3dbc07a4d76700655edc15f366668aff23",
+  "withinTolerance:credit_memo": "91f418310e11f60a4e249efc6b046f8166ea9686420fc159128584c1632d74ed",
+  "withinTolerance:term_sheet": "8548e8d1f543cf312a4df85a9c9fd4b4700b81d349fc1bd8d6040f5eb6e00dd4",
+  "withinTolerance:diligence_qa": "9737e3226c36577a41887c09fdf84c32265b0b5afd955a0ba3e22441449a515a",
   "withinTolerance:teaser": "1c0a2e04da63748e7544c9406382153381b8bc110c8f63d248c520a4b1847f89",
-  "withinTolerance:credit_profile": "56009e488a1f6f581c7f011f696c3b2a27d1ed991a49e7f5d07f8ae8d4145430",
-  "withinTolerance:package": "03bd27678e1ddc0e944921c1da9dff7cd4fb8bb3fbb5f6493f04c7f55d448c0d",
-  "scheduleAboveBalance:credit_memo": "8e6a6d74e2703f79e2e99841337dd0bd21f3cc1194ffb4bc9718f7403926d82a",
-  "scheduleAboveBalance:term_sheet": "a60a43c83381a3e0fce09c9ef7eafc3fa459af0003e2b5c45197318cae6230e6",
-  "scheduleAboveBalance:diligence_qa": "6675488487521990c83bf214dc020e65811f7d97a2e417dce6f3db8c96b5315b",
+  "withinTolerance:credit_profile": "b82c1618b2c19e14e0cc5296464098ba633cdc056c87dd8f390c68e42901a587",
+  "withinTolerance:package": "d99d90a6a7ef7c04a68dc2b3827349b4e75f330eae26be973c7b814608982adf",
+  "scheduleAboveBalance:credit_memo": "4c57f776ee506f922f472f574ae8ec11b41acc01d936cee4b250cd5aa4a6203a",
+  "scheduleAboveBalance:term_sheet": "d0f39f7aedeeddb71a9f5e17894e8a4e3749c07221a4b932eee005cf070229b3",
+  "scheduleAboveBalance:diligence_qa": "404695cecf738006a4ce3fe118056a2abedce37d3734e6ecf508a87d0216cffe",
   "scheduleAboveBalance:teaser": "49a4e0b28e7664640e0db86c495f51a956d9a35f752268cf2d6353b0789740fb",
-  "scheduleAboveBalance:credit_profile": "cf3013423733694f614e3c852a781c81aa6f8f1dcdf0ef1f2ba6e045def53856",
-  "scheduleAboveBalance:package": "3365fa4eec65af4ba5683e77184f38e3b5f7f444c83a3566f8f76921f3d5b9a4",
+  "scheduleAboveBalance:credit_profile": "75190b87d8c91f6876b61294b783ad6e5b6289ad814f1ffb7c09c9dc5441d2a2",
+  "scheduleAboveBalance:package": "430f03844a66ec0138ec19bf1f79c0ca98d80855d7ab79bd1d03fee0f4f6f26b",
   "financial_model:workbook_entry": "ffecd15a3eef1dbe2b535229884c20ddaf18b32f5daa503035216ebcbd6fb736",
-  "financial_model:statements": "1e6ad41ab87022bbc0e517336d15e3cc07375ba5dba304c569a577b579c41dc4",
+  "financial_model:statements": "7a9bbd4f9431f5abfff8f7c24bafe0d33cc8d1b501b41c26f08a2ef6df652769",
   "financial_model:statements:pt": "70eb018adc16a5d14469cb6f3db2076e80ae6ffc376b7650c68b2d0f56abc735",
   "financial_model:statements:en": "ae706191f9f52720f5b9867fbb896eb1701700ddbe50d2bae050dc94ec58cf35",
 };

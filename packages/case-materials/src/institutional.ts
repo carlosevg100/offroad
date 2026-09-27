@@ -2,7 +2,7 @@ import type {CaseBrief} from "@offroad/case-understanding";
 import {covenantsFor, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
 import type {DeskAnalysis, InternalRating, OperationVerdict, StressScenario, Trajectory} from "@offroad/credit-analysis";
 import type {CollateralPackage} from "@offroad/deal-structure";
-import {presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
+import {presentationAmount, presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
 import type {IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
@@ -27,16 +27,17 @@ import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, traject
  * else is assembled from computed values with their citable ids.
  */
 
-const money = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
-  `R$ ${presentationNumber(value).value.toLocaleString(locale, {maximumFractionDigits: 0})}`;
+const money = (value: DecimalInput, locale: "pt-BR" | "en-US") => presentationAmount({value, locale, style: "whole"}).text;
 const turns = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
   `${presentationNumber(value).value.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
 const pct = (value: DecimalInput, locale: "pt-BR" | "en-US") =>
   `${presentationNumber(presentationFigure({value, scale: "percent"}).value).value.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}%`;
-/** The whole millions a callout title states, and a spread in basis points printed as percent. */
-const millions = (value: DecimalInput) => presentationFigure({value, scale: "millions", decimals: 0}).value;
+/** An amount in a title, by the one rule of the materials, and a spread in basis points printed as percent. */
+const amountInWords = (value: DecimalInput, locale: "pt-BR" | "en-US") => presentationAmount({value, locale, style: "abbreviated"}).text;
 const spreadPercent = (bps: number) => presentationFigure({value: bps, scale: "basis_points_as_percent", decimals: 2}).value;
 const bi = (pt: string, en: string) => ({pt, en});
+/** A table cell in each language. */
+const cell = (value: (locale: "pt-BR" | "en-US") => string) => ({pt: value("pt-BR"), en: value("en-US")});
 
 export type InstitutionalInput = {
   brief: CaseBrief;
@@ -88,8 +89,8 @@ export function verdictSection(verdict: OperationVerdict): MaterialBlock[] {
     blocks.push({
       type: "callout",
       title: bi(
-        `Alternativa: R$ ${millions(alternative.amount)}M em ${alternative.termMonths} meses`,
-        `Alternative: R$ ${millions(alternative.amount)}M over ${alternative.termMonths} months`,
+        `Alternativa: ${amountInWords(alternative.amount, "pt-BR")} em ${alternative.termMonths} meses`,
+        `Alternative: ${amountInWords(alternative.amount, "en-US")} over ${alternative.termMonths} months`,
       ),
       items: [
         {label: bi("Por quê", "Why"), value: {pt: alternative.why.pt, en: alternative.why.en}},
@@ -118,7 +119,13 @@ export function creditConsiderationsSection(input: InstitutionalInput): Material
       type: "table",
       caption: bi("Choques padrão sobre a posição pós-operação", "Standard shocks on the post-transaction position"),
       head: [bi("Cenário", "Scenario"), bi("Alavancagem", "Leverage"), bi("Juros anuais", "Annual interest"), bi("Folga de covenant", "Covenant headroom"), bi("Rompe?", "Breaches?")],
-      rows: input.stress.map((row) => [row.labels.pt, row.leverage ? turns(row.leverage, "pt-BR") : "n/d", row.annualInterest ? money(row.annualInterest, "pt-BR") : "n/d", row.covenantHeadroom ? money(row.covenantHeadroom, "pt-BR") : "n/d", row.breachesCovenant === null ? "n/d" : row.breachesCovenant ? "sim" : "não"]),
+      rows: input.stress.map((row) => [
+        row.labels,
+        row.leverage ? cell((locale) => turns(row.leverage!, locale)) : bi("n/d", "n/a"),
+        row.annualInterest ? cell((locale) => money(row.annualInterest!, locale)) : bi("n/d", "n/a"),
+        row.covenantHeadroom ? cell((locale) => money(row.covenantHeadroom!, locale)) : bi("n/d", "n/a"),
+        row.breachesCovenant === null ? bi("n/d", "n/a") : row.breachesCovenant ? bi("sim", "yes") : bi("não", "no"),
+      ]),
     });
   }
   if (input.instruments && input.instruments.length > 0) {
@@ -145,7 +152,13 @@ export function creditConsiderationsSection(input: InstitutionalInput): Material
       type: "table",
       caption: bi("Ativos, haircut e valor elegível", "Assets, haircut and eligible value"),
       head: [bi("Ativo", "Asset"), bi("Valor", "Value"), bi("Haircut", "Haircut"), bi("Elegível", "Eligible"), bi("No pacote", "In package")],
-      rows: c.lines.map((line) => [line.asset.description, money(line.asset.value, "pt-BR"), `${pct(line.haircut, "pt-BR")}${line.haircutSource === "policy" ? " (política)" : ""}`, money(line.eligible, "pt-BR"), line.selected ? "sim" : "não"]),
+      rows: c.lines.map((line) => [
+        line.asset.description,
+        cell((locale) => money(line.asset.value, locale)),
+        cell((locale) => `${pct(line.haircut, locale)}${line.haircutSource === "policy" ? (locale === "pt-BR" ? " (política)" : " (policy)") : ""}`),
+        cell((locale) => money(line.eligible, locale)),
+        line.selected ? bi("sim", "yes") : bi("não", "no"),
+      ]),
     });
     for (const note of c.notes) blocks.push({type: "paragraph", text: note});
   }
@@ -352,8 +365,8 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
     material: true,
   }));
 
-  const covenantText = trajectory
-    ? trajectory.covenantProposal.map((step) => `${step.year}: ≤ ${turns(step.maximum, "pt-BR")}`).join("; ")
+  const covenantText = (locale: "pt-BR" | "en-US") => trajectory
+    ? trajectory.covenantProposal.map((step) => `${step.year}: ≤ ${turns(step.maximum, locale)}`).join("; ")
     : null;
 
   const blocks: MaterialBlock[] = [
@@ -393,8 +406,8 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
     {
       type: "kv",
       rows: [
-        ...(covenantText
-          ? [{label: bi("Dívida líquida / EBITDA", "Net debt / EBITDA"), value: bi(`${covenantText}. Teste anual sobre demonstrações auditadas; primeira aferição no primeiro exercício completo após o desembolso.`, `${covenantText}. Tested annually on audited statements; first test at the first full year after disbursement.`), supportIds: ["trajetoria.2026.alavancagem_cortada"]}]
+        ...(covenantText("pt-BR")
+          ? [{label: bi("Dívida líquida / EBITDA", "Net debt / EBITDA"), value: bi(`${covenantText("pt-BR")}. Teste anual sobre demonstrações auditadas; primeira aferição no primeiro exercício completo após o desembolso.`, `${covenantText("en-US")}. Tested annually on audited statements; first test at the first full year after disbursement.`), supportIds: ["trajetoria.2026.alavancagem_cortada"]}]
           : []),
       ],
     },

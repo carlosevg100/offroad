@@ -3,26 +3,29 @@ import Decimal from "decimal.js";
 import type {CalculationTrace} from "./credit-math";
 
 /**
- * The arithmetic of the governed credit materials (stage 19, increments 6 and 6B).
+ * The arithmetic of the governed credit materials (stage 19, increments 6, 6B and 6C).
  *
  * `@offroad/case-materials` assembles the documents a company takes to market; every number it
  * prints that is not a value it received (a sum, a difference, a share, a tolerance test, a unit or
  * precision conversion) is computed here, in Decimal, with a trace naming the formula and the
  * operands. The operation verdict of `@offroad/credit-analysis`, which the credit memo carries,
- * prints its spreads through the same kernels. Two kinds of kernel live in this file:
+ * computes and prints through the same kernels, and so do the price sentences of
+ * `@offroad/market-reference`. Two kinds of kernel live in this file:
  *
  * - computations, which create a financial figure (the new instrument's amount, the concentration
  *   of the leading customers, the EBITDA adjustments, the tie-out of the debt schedule, the
- *   difference between two spreads); and
+ *   difference between two spreads, and for the verdict the net new money, the enlarged ticket,
+ *   the leverage after a structure, the covenant ceiling test and the heaviest schedule year); and
  * - presentation conversions, which print a figure in another unit or at a stated precision
- *   (percent, millions, basis points as percent, half-up rounding) and, at the very edge, hand an
- *   exact decimal to the binary number that `Intl.NumberFormat` and a chart point require.
+ *   (percent, millions, basis points as percent, a signed spread, an amount by the one rule every
+ *   material prints amounts with, half-up rounding) and, at the very edge, hand an exact decimal
+ *   to the binary number that `Intl.NumberFormat` and a chart point require.
  *
  * Figures are full-precision decimal strings (`Decimal#toFixed()` without rounding) unless the
  * kernel is a rounding one. A value that is not a finite decimal number is refused, never read as
  * zero.
  */
-export const materialArithmeticVersion = "2026.09.26-v2";
+export const materialArithmeticVersion = "2026.09.26-v3";
 
 // The same arithmetic contract the package root declares, so a kernel imported on its own computes
 // exactly what it computes inside a published material.
@@ -160,6 +163,142 @@ export function testScheduleTieOut(input: {scheduleGap: Decimal.Value; totalOnBa
 }
 
 /**
+ * The part of a ticket that is new money: the ticket less the existing debt it redeems at
+ * disbursement. Negative when the refinancing stated exceeds the ticket, so the verdict can see it.
+ */
+export function calculateNetNewMoney(input: {ticket: Decimal.Value; refinancing: Decimal.Value}): MaterialFigure {
+  const ticket = finite("ticket", input.ticket);
+  const refinancing = finite("refinancing", input.refinancing);
+  const netNewMoney = ticket.minus(refinancing);
+  return {
+    value: full(netNewMoney),
+    trace: {
+      id: "material.net_new_money",
+      formula: "net new money = ticket - existing debt redeemed at disbursement",
+      operands: {ticket: full(ticket), refinancing: full(refinancing)},
+      result: full(netNewMoney),
+    },
+  };
+}
+
+/**
+ * The ticket the verdict offers as the second road: large enough to clear one more year of the
+ * schedule, so the ticket and the debt it redeems both grow by that year's principal.
+ */
+export function calculateEnlargedTicket(input: {ticket: Decimal.Value; refinancing: Decimal.Value; principalDue: Decimal.Value}): {
+  readonly ticket: string;
+  readonly refinancing: string;
+  readonly trace: CalculationTrace;
+} {
+  const ticket = finite("ticket", input.ticket);
+  const refinancing = finite("refinancing", input.refinancing);
+  const principalDue = finite("principal due", input.principalDue);
+  const enlarged = ticket.plus(principalDue);
+  const redeemed = refinancing.plus(principalDue);
+  return {
+    ticket: full(enlarged),
+    refinancing: full(redeemed),
+    trace: {
+      id: "material.enlarged_ticket",
+      formula: "enlarged ticket = ticket + principal due; enlarged refinancing = refinancing + principal due",
+      operands: {ticket: full(ticket), refinancing: full(refinancing), principalDue: full(principalDue)},
+      result: `ticket=${full(enlarged)}; refinancing=${full(redeemed)}`,
+    },
+  };
+}
+
+/**
+ * Net leverage once a structure lands: the net debt today plus the part of the ticket that does not
+ * redeem existing debt, over EBITDA, rounded half-up to `decimals` places when a precision is stated.
+ * Over a zero EBITDA the ratio is not a number and the value is null: never an infinite leverage
+ * handed on as if it were one.
+ */
+export function calculateLeverageAfterStructure(input: {netDebt: Decimal.Value; ticket: Decimal.Value; redeemed: Decimal.Value; ebitda: Decimal.Value; decimals?: number}): {
+  readonly value: string | null;
+  readonly trace: CalculationTrace;
+} {
+  if (input.decimals !== undefined && (!Number.isInteger(input.decimals) || input.decimals < 0 || input.decimals > 20)) {
+    throw new RangeError("decimals must be an integer between 0 and 20");
+  }
+  const netDebt = finite("net debt", input.netDebt);
+  const ticket = finite("ticket", input.ticket);
+  const redeemed = finite("redeemed debt", input.redeemed);
+  const ebitda = finite("EBITDA", input.ebitda);
+  const operands = {netDebt: full(netDebt), ticket: full(ticket), redeemed: full(redeemed), ebitda: full(ebitda)};
+  const formula = `leverage = (net debt + ticket - redeemed) / EBITDA${input.decimals === undefined ? "" : `, half-up to ${input.decimals} decimals`}`;
+  if (ebitda.isZero()) return {value: null, trace: {id: "material.leverage_after_structure", formula, operands, result: "not computable: zero EBITDA"}};
+  const leverage = netDebt.plus(ticket.minus(redeemed)).div(ebitda);
+  const value = input.decimals === undefined ? full(leverage) : leverage.toFixed(input.decimals, Decimal.ROUND_HALF_UP);
+  return {value, trace: {id: "material.leverage_after_structure", formula, operands, result: value}};
+}
+
+/**
+ * The first test of the verdict: whether leverage today sits above the tightest covenant's ceiling,
+ * and by how much. A leverage that is not a finite number (the ratio over a zero EBITDA) is not
+ * computable and is never compared with a ceiling.
+ */
+export function testCovenantCeiling(input: {leverage: Decimal.Value; ceiling: Decimal.Value}): {
+  readonly outcome: "above_ceiling" | "within_ceiling" | "not_computable";
+  /** Leverage minus the ceiling, when above it. */
+  readonly excess: string | null;
+  readonly trace: CalculationTrace;
+} {
+  const ceiling = finite("covenant ceiling", input.ceiling);
+  const leverage = parse(input.leverage);
+  const trace = (result: string) => ({
+    id: "material.covenant_ceiling",
+    formula: "above when leverage > ceiling; excess = leverage - ceiling",
+    operands: {leverage: leverage ? full(leverage) : String(input.leverage), ceiling: full(ceiling)},
+    result,
+  });
+  if (!leverage) return {outcome: "not_computable", excess: null, trace: trace("not computable: leverage is not a finite number")};
+  if (!leverage.gt(ceiling)) return {outcome: "within_ceiling", excess: null, trace: trace("within_ceiling")};
+  const excess = full(leverage.minus(ceiling));
+  return {outcome: "above_ceiling", excess, trace: trace(`above_ceiling; excess=${excess}`)};
+}
+
+/**
+ * The heaviest year of an amortisation schedule: the largest strain (principal due over the year's
+ * EBITDA) above the threshold, the first listed among equals. Strains compare exactly, never as
+ * binary numbers. A strain that is not a finite number (the principal over a zero projected EBITDA)
+ * cannot be ranked and is left out, named in the trace.
+ */
+export function selectHeaviestScheduleYear(input: {years: ReadonlyArray<{id: string; strain: Decimal.Value}>; threshold: Decimal.Value}): {
+  readonly id: string | null;
+  readonly strain: string | null;
+  readonly trace: CalculationTrace;
+} {
+  const threshold = finite("strain threshold", input.threshold);
+  const unranked = input.years.filter((year) => !parse(year.strain)).map((year) => year.id);
+  let heaviest: {id: string; strain: Decimal} | null = null;
+  for (const year of input.years) {
+    const strain = parse(year.strain);
+    if (!strain || !strain.gt(threshold)) continue;
+    if (!heaviest || strain.gt(heaviest.strain)) heaviest = {id: year.id, strain};
+  }
+  return {
+    id: heaviest?.id ?? null,
+    strain: heaviest ? full(heaviest.strain) : null,
+    trace: {
+      id: "material.heaviest_schedule_year",
+      formula: "heaviest = largest strain above the threshold, the first listed among equals; a strain that is not a finite number is not ranked",
+      operands: {threshold: full(threshold), ...Object.fromEntries(input.years.map((year) => [year.id, parse(year.strain) ? full(parse(year.strain)!) : String(year.strain)]))},
+      result: `${heaviest ? `${heaviest.id}:${full(heaviest.strain)}` : "none"}${unranked.length ? `; not ranked: ${unranked.join(", ")}` : ""}`,
+    },
+  };
+}
+
+/**
+ * Compares two figures exactly, for the thresholds a document's decisions test (a coverage under
+ * 1.3x, a refinancing below the wall). A comparison creates no figure, so it carries no trace; it
+ * exists so that a decision never compares binary numbers. Refuses a value that is not a finite
+ * decimal number.
+ */
+export function compareFigures(left: Decimal.Value, right: Decimal.Value): -1 | 0 | 1 {
+  return finite("left figure", left).comparedTo(finite("right figure", right)) as -1 | 0 | 1;
+}
+
+/**
  * How far one spread sits from another, both in basis points, as the verdict compares an
  * alternative's price with the requested structure's: the signed difference, in basis points.
  * Fractional basis points subtract exactly (372.3 - 370.1 is 2.2).
@@ -210,6 +349,96 @@ export function presentationFigure(input: {value: Decimal.Value; scale?: Present
       formula: input.decimals === undefined ? scales[scale].formula : `${scales[scale].formula}, half-up to ${input.decimals} decimals`,
       operands: {value: full(value), scale},
       result: printed,
+    },
+  };
+}
+
+export type AmountLocale = "pt-BR" | "en-US";
+
+export type PresentationAmount = {
+  /** The amount as a document prints it: "R$ 17,4M", "R$ 45 mil", "R$ 45 thousand", "R$ 42.300.000". */
+  readonly text: string;
+  /** The printed figure as a decimal string, before the separators of the locale. */
+  readonly figure: string;
+  readonly unit: "millions" | "thousands" | "units";
+  readonly trace: CalculationTrace;
+};
+
+// From here, thousands without decimals would print 1,000 thousand: the amount is stated in millions.
+const MILLIONS_FROM = new Decimal("999500");
+
+/**
+ * The one rule by which every material prints an amount, so that no amount that is not zero ever
+ * prints as zero. Two styles:
+ *
+ * - `abbreviated`, for amounts in a sentence: millions with one decimal from R$ 999,500 (where
+ *   thousands would round to a thousand thousand), "R$ 17,4M" and "R$ 17.4M"; thousands without
+ *   decimals from R$ 1 thousand, "R$ 45 mil" and "R$ 45 thousand"; below that, the exact amount in
+ *   units, "R$ 450".
+ * - `whole`, for amounts in a table or a term: whole units grouped as the locale groups them,
+ *   "R$ 42.300.000" and "R$ 42,300,000"; an amount under one unit that is not zero, exact, "R$ 0,3".
+ *
+ * Rounding is half away from zero on the decimal value; zero prints as zero, "R$ 0".
+ */
+export function presentationAmount(input: {value: Decimal.Value; locale: AmountLocale; style: "abbreviated" | "whole"; currency?: string}): PresentationAmount {
+  const value = finite("amount", input.value);
+  const currency = input.currency ?? "R$";
+  const separator = input.locale === "pt-BR" ? "," : ".";
+  const local = (figure: string) => figure.replace(".", separator);
+  const magnitude = value.abs();
+  let unit: PresentationAmount["unit"];
+  let figure: string;
+  let text: string;
+  if (input.style === "abbreviated" && magnitude.gte(MILLIONS_FROM)) {
+    unit = "millions";
+    figure = value.div(1_000_000).toFixed(1, Decimal.ROUND_HALF_UP);
+    text = `${currency} ${local(figure)}M`;
+  } else if (input.style === "abbreviated" && magnitude.gte(1000)) {
+    unit = "thousands";
+    figure = value.div(1000).toFixed(0, Decimal.ROUND_HALF_UP);
+    text = `${currency} ${figure} ${input.locale === "pt-BR" ? "mil" : "thousand"}`;
+  } else if (input.style === "whole" && (magnitude.gte(1) || value.isZero())) {
+    unit = "units";
+    figure = value.toFixed(0, Decimal.ROUND_HALF_UP);
+    // The figure is already a whole number; Intl only groups its digits in the locale.
+    text = `${currency} ${presentationNumber(figure).value.toLocaleString(input.locale, {maximumFractionDigits: 0})}`;
+  } else {
+    unit = "units";
+    figure = full(value);
+    text = `${currency} ${local(figure)}`;
+  }
+  return {
+    text,
+    figure,
+    unit,
+    trace: {
+      id: "material.presentation_amount",
+      formula: input.style === "abbreviated"
+        ? "millions, half-up to 1 decimal, from 999500; thousands, half-up to 0 decimals, from 1000; below, the exact amount"
+        : "whole units, half-up; below one unit and not zero, the exact amount",
+      operands: {value: full(value), style: input.style, locale: input.locale},
+      result: text,
+    },
+  };
+}
+
+/**
+ * A spread in basis points as the signed percentage a price sentence states ("CDI + 2.5%",
+ * "CDI - 1%"): the sign apart from the magnitude, which is exact, or rounded half-up to `decimals`
+ * places when a precision is stated. Zero carries the plus sign, as a sentence writes "CDI + 0%".
+ */
+export function presentationSpread(input: {bps: Decimal.Value; decimals?: number}): {readonly sign: "+" | "-"; readonly magnitude: string; readonly trace: CalculationTrace} {
+  const bps = finite("spread in basis points", input.bps);
+  const magnitude = presentationFigure({value: bps.abs(), scale: "basis_points_as_percent", ...(input.decimals === undefined ? {} : {decimals: input.decimals})}).value;
+  const sign = bps.isNegative() && !bps.isZero() ? "-" : "+";
+  return {
+    sign,
+    magnitude,
+    trace: {
+      id: "material.presentation_spread",
+      formula: `sign of the spread; |basis points| / 100${input.decimals === undefined ? "" : `, half-up to ${input.decimals} decimals`}`,
+      operands: {bps: full(bps)},
+      result: `${sign}${magnitude}`,
     },
   };
 }

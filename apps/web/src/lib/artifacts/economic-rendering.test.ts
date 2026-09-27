@@ -3,7 +3,7 @@ import {resolve} from "node:path";
 
 import {institutionalFinancialModelMaterial, type Material} from "@offroad/case-materials";
 import {capitalProcedurePacketBlocks, type CapitalProcedurePacketLike} from "@offroad/domain-contracts";
-import {calculateCustomerConcentration, calculateEbitdaAdjustments, calculateNewInstrumentAmount, presentationFigure, presentationNumber, testScheduleTieOut} from "@offroad/financial-core";
+import {calculateCustomerConcentration, calculateEbitdaAdjustments, calculateNewInstrumentAmount, presentationAmount, presentationFigure, presentationNumber, testScheduleTieOut} from "@offroad/financial-core";
 import {buildInstitutionalFinancialModel, institutionalWorkbookArtifactSchema, renderApprovedInstitutionalFinancialWorkbook} from "@offroad/financial-model";
 import {syntheticCreditMaterialsCase} from "@offroad/testing-fixtures/credit-materials-case";
 import {describe, expect, it, vi} from "vitest";
@@ -26,9 +26,11 @@ import {
   syntheticCompanyName,
   syntheticIssuedOn,
   syntheticPackage,
+  syntheticQuotes,
   syntheticStatements,
   xlsxCells,
 } from "./economic-readout.test-support";
+import {bilingualDivergences} from "@offroad/testing-fixtures/bilingual-figures";
 import {renderArtifactRevision} from "./render-artifact-revision";
 
 /**
@@ -112,6 +114,11 @@ describe("the material kinds of one package", () => {
       .toEqual(["credit_memo", "credit_profile", "data_room_index", "diligence_qa", "financial_model", "package", "teaser", "term_sheet"]);
   });
 
+  it("states the same figures in Portuguese and in English in every item of every kind, the data room index included (invariant 9)", () => {
+    // Each item read with the separators of its own language; a text quoted as written from the case reads as Portuguese in both.
+    for (const material of materials) expect(bilingualDivergences(material, syntheticQuotes), material.kind).toEqual([]);
+  });
+
   for (const material of materials) {
     it.each(langs)(`${material.kind}${material.artifactFingerprint ? ` (${material.title.en})` : ""} states the same figures in docx, pdf, pptx and html (%s)`, async (lang) => {
       const {files, charts} = await renderAll(material, lang);
@@ -131,16 +138,19 @@ describe("the material kinds of one package", () => {
     const concentration = calculateCustomerConcentration({shares, leading: 5});
     const fact = (path: string) => syntheticCreditMaterialsCase.facts.find((entry) => entry.fieldPath === path)!.value;
     const adjustments = calculateEbitdaAdjustments({adjustedEbitda: fact("historical_financials.2025.adjusted_ebitda"), reportedEbitda: fact("historical_financials.2025.ebitda")});
-    const adjustmentsInMillions = presentationFigure({value: adjustments.magnitude, scale: "millions", decimals: 1}).value;
+    const adjustmentsText = (locale: "pt-BR" | "en-US") => presentationAmount({value: adjustments.magnitude, locale, style: "abbreviated"}).text;
     const expectations: Array<{kind: Material["kind"]; pt: string; en: string}> = [
-      {kind: "package", pt: `R$ ${localized(source, "pt")}`, en: `R$ ${localized(source, "pt")}`},
+      // Table cells carry both languages since case-materials 2026.09.26-v6: the English package prints English separators.
+      {kind: "package", pt: `R$ ${localized(source, "pt")}`, en: `R$ ${localized(source, "en")}`},
       {kind: "diligence_qa", pt: `${localized(presentationFigure({value: concentration.leadingTotal, scale: "percent", decimals: 1}).value, "pt")}% da receita`, en: `${presentationFigure({value: concentration.leadingTotal, scale: "percent", decimals: 1}).value}% of revenue`},
       {kind: "diligence_qa", pt: `R$ ${localized(presentationFigure({value: tieOut.magnitude, scale: "millions", decimals: 1}).value, "pt")}M no balanço`, en: `R$ ${presentationFigure({value: tieOut.magnitude, scale: "millions", decimals: 1}).value}M on the balance sheet`},
-      // Question 10 answers from the adjustments kernel since case-materials 2026.09.26-v5.
-      {kind: "diligence_qa", pt: `R$ ${localized(adjustmentsInMillions, "pt")}M de ajustes`, en: `R$ ${adjustmentsInMillions}M of adjustments`},
+      // Question 10 answers from the adjustments kernel since case-materials 2026.09.26-v5, in
+      // thousands under a million since 2026.09.26-v6 (the one amount rule of financial-core).
+      {kind: "diligence_qa", pt: `${adjustmentsText("pt-BR")} de ajustes`, en: `${adjustmentsText("en-US")} of adjustments`},
       {kind: "credit_memo", pt: "CDI + 3,70% a CDI + 5,20% a.a.", en: "CDI + 3.70% to CDI + 5.20% p.a."},
-      {kind: "credit_memo", pt: "Alternativa: R$ 71M em 48 meses", en: "Alternative: R$ 71M over 48 months"},
+      {kind: "credit_memo", pt: "Alternativa: R$ 71,3M em 48 meses", en: "Alternative: R$ 71.3M over 48 months"},
     ];
+    expect(adjustmentsText("pt-BR")).toBe("R$ 572 mil");
     expect(source).toBe("42300000");
     for (const expectation of expectations) {
       for (const lang of langs) {
