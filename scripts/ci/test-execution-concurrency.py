@@ -112,8 +112,8 @@ def fresh_scope(number, lease_seconds=60, distinct_worker=False):
     """Independent work and release for each terminal race; no regrant of old authority."""
     global actor, work, execution, last_job, last_claim, worker_actor
     worker_actor = None
-    org_prefix = f'a417{number:x}000'
-    execution_prefix = f'a418{number:x}000'
+    org_prefix = f'a417{number}000' if number < 9 else f'a427{number:02x}00'
+    execution_prefix = f'a418{number}000' if number < 9 else f'a428{number:02x}00'
     actor = org_prefix + '-0000-4000-8000-000000000001'
     work = org_prefix + '-0000-4000-9000-000000000002'
     execution = execution_prefix + '-0000-4000-9000-000000000002'
