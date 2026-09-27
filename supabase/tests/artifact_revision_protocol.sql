@@ -1,5 +1,6 @@
 -- Stage 19, increment 2: the artifact revision protocol (migration A). The done criteria of the plan
--- on synthetic rows: derivation from sources A and B requires both at read time; a new source
+-- on synthetic rows: derivation from sources A and B requires both at read time (either one refused
+-- alone withholds the revision and what derives from it); a new source
 -- version leaves the old revision byte-identical and stale while a revision on the new head is
 -- current; a revision without claim, source or calculation is refused and an informational answer
 -- accepted; rendered bytes record the sha256 the reader returns; the head reader and the exact
@@ -215,8 +216,10 @@ begin
 end $$;
 
 -- 6. Rights: a source the reader cannot use withholds the content and names the link; the same on
--- a revision that derives from the restricted one; the rights restored, the content returns.
-do $$ declare x jsonb;bb uuid:=pg_temp.val('source_b','')::uuid;rev uuid:=pg_temp.val('r1','revision_id')::uuid;r jsonb;b jsonb;link uuid;
+-- a revision that derives from the restricted one; the rights restored, the content returns. Each
+-- source is required on its own: B refused with A usable, then A refused with B usable (A is also
+-- anchored in a block), and neither refusal names a link to the other source.
+do $$ declare x jsonb;a uuid:=pg_temp.val('source_a','')::uuid;bb uuid:=pg_temp.val('source_b','')::uuid;rev uuid:=pg_temp.val('r1','revision_id')::uuid;r jsonb;b jsonb;link uuid;a_links jsonb;
 begin
  insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
  values('a11b0000-0000-4000-9000-000000000001',bb,2,array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('c',64),'a11b0000-0000-4000-8000-000000000001');
@@ -238,6 +241,29 @@ begin
  if jsonb_typeof(x->'restriction')<>'null' or jsonb_array_length(x->'blocks')<>2 then raise exception 'restored rights did not return the content: %',x; end if;
  x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',(r->>'revision_id')::uuid);
  if jsonb_typeof(x->'restriction')<>'null' or jsonb_array_length(x->'blocks')<>1 then raise exception 'restored rights did not return the derived content: %',x; end if;
+ -- The other source alone: with B usable again, a rights version of A that no longer allows reading
+ -- withholds the revision and what derives from it, and names exactly the links to A (the revision's
+ -- and the one anchored in the leverage block), none to B; A restored, both revisions read whole.
+ select to_jsonb(array_agg(l.id order by l.id)) into a_links from private.artifact_dependency_links l
+  where l.revision_id=rev and l.link_kind='source_version' and l.source_version_id=a;
+ if jsonb_array_length(a_links)<>2 or (select count(*) from private.artifact_dependency_links l where l.revision_id=rev and l.source_version_id=a and l.block_id is not null)<>1 then
+  raise exception 'setup: source A is not linked by the revision and by one block: %',a_links; end if;
+ insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+ values('a11b0000-0000-4000-9000-000000000001',a,2,array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('e',64),'a11b0000-0000-4000-8000-000000000001');
+ x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',rev);
+ if x#>>'{restriction,kind}' is distinct from 'source_rights' or x#>'{restriction,linkIds}' is distinct from a_links or x#>'{restriction,unresolvedRevisionIds}' is distinct from '[]'::jsonb
+  or jsonb_typeof(x#>'{revision,manifest}') is distinct from 'null' or jsonb_array_length(x->'blocks')<>0 or x#>>'{revision,manifestFingerprint}' is distinct from pg_temp.val('r1','manifest_fingerprint')
+ then raise exception 'restricted source A alone did not withhold the content or did not name exactly its links: %',x; end if;
+ x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',(r->>'revision_id')::uuid);
+ if x#>>'{restriction,kind}' is distinct from 'source_rights' or x#>'{restriction,linkIds}' is distinct from a_links or jsonb_array_length(x->'blocks')<>0 then
+  raise exception 'derived revision did not inherit the restriction of source A: %',x; end if;
+ insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+ values('a11b0000-0000-4000-9000-000000000001',a,3,array['read','process','store','derive','export'],array['analysis','retrieval','export'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('f',64),'a11b0000-0000-4000-8000-000000000001');
+ x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',rev);
+ if jsonb_typeof(x->'restriction') is distinct from 'null' or jsonb_array_length(x->'blocks')<>2 then raise exception 'restored rights of A did not return the content: %',x; end if;
+ x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',(r->>'revision_id')::uuid);
+ if jsonb_typeof(x->'restriction') is distinct from 'null' or jsonb_array_length(x->'blocks')<>1 then raise exception 'restored rights of A did not return the derived content: %',x; end if;
+ raise notice 'PASS: source A refused alone, with B usable, withholds the revision and its derivation and names exactly the links to A, the block anchor included';
  raise notice 'PASS: derived from A and B requires both at read time, on the revision and on what derives from it';
 end $$;
 
