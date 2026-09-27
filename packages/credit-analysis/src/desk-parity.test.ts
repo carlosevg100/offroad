@@ -16,6 +16,15 @@ import {projectLeverageTrajectory, type Trajectory} from "./trajectory";
  * fixtures and the synthetic variants that reach every finding and every branch of its sentence.
  * The whole output is pinned, not only the sentences: every total, ratio, window, scenario and year
  * of the trajectory. A pin moves only with a deliberate change.
+ *
+ * The move of the arithmetic kept every pin. Then the questions moved fifteen of their nineteen pins
+ * deliberately, for two reasons only (compared question by question: no question was added, removed,
+ * reordered or given another severity). Every figure a question states is printed by financial-core
+ * in the language of the question, so the English amounts carry en-US separators and the two
+ * diverging amounts are joined by "and" (invariant 9); and a missing input is named in words instead
+ * of by its field path, in both languages. On these cases the Portuguese changed only in the
+ * missing-input questions; the four Nimbus unit cases ask nothing with an amount or a missing input
+ * and keep their pins. The desk and trajectory pins are unchanged.
  */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 
@@ -74,23 +83,23 @@ const pins = {
     "unit:trajectory-pure-swap": "4a2b73344ca34cec9430ba130deac2161a2763b94c943244d4e1467b91ee54cf",
   } as Record<string, string>,
   questions: {
-    "gold:camil": "ab069947eed4edd065ab5397dd30c04ebd47ab5fff449c5482a423056439f55e",
-    "gold:fakeco": "09564f499d832fe4667793f11ca749cbd508018f36c1c73a530fa3ce74fa8973",
-    "gold:nimbus": "490a0cc3515732bb4bfedfd1cbd0c4e4870751f9919ece5493865897dbd8107e",
-    "gold:rede-horizonte": "4e0a114333070984779c4ef9831e8e528de8e647db110735bd1f1fb63f33a426",
-    "gold:camil:ask-800": "ab069947eed4edd065ab5397dd30c04ebd47ab5fff449c5482a423056439f55e",
-    "aurora": "baec2ae04036dd349144ae487f1451d94fccbe861f1e10445de2ab32709ea755",
-    "unit:aurora": "d73cf883035046e2a8216df980100f6af8d3d92baed45ed4d1288e92df6e952a",
-    "unit:aurora-questions": "ea456848a63943d4e02897b492c1048ce91faf0e95e28f00e41758daee6d2580",
+    "gold:camil": "54594414a06d422e9a93fa800cb12bafd751333a55f69d9eaff9ea1f6617f44d",
+    "gold:fakeco": "45d460d04b9473858ddc50cab6cac6937e4103789f8d3f791d38696aa24a6bd1",
+    "gold:nimbus": "3f5e5bb300c06229336eece3017d8038c6722af1a92a70b138706b7e036bcf78",
+    "gold:rede-horizonte": "b262dfdc32d6521fde0b95f02b4f21546adb53dde49497a159faec849c6ac1e7",
+    "gold:camil:ask-800": "54594414a06d422e9a93fa800cb12bafd751333a55f69d9eaff9ea1f6617f44d",
+    "aurora": "b28ff9c592752026e42406b99b8ff97f70da5125ba51b486caf5a6193746d76f",
+    "unit:aurora": "2d2e492f232edb873afb921f977701898c36e519fcf8ee86eae4533628dfbdbf",
+    "unit:aurora-questions": "e4c8f5014c1fd5a2b1bd22b372d9be325a069217480ca172b481422e798101a1",
     "unit:nimbus": "013259accee6c09c1f4433c949f36a36d22b6c6ceac3886edaf97ee81691f5e9",
     "unit:nimbus-short-runway": "660b71721829825e1ce8d5e0176b76fa4526bd31dcd5ba97d25a43fb61cde6b5",
-    "unit:camil-listed": "29e28409319daa3a8467d8ea9d7eb9afd564e0768fd38017cf0b5850333fcc8e",
-    "unit:maturity-profile": "719a9c674beae88724bd7868580145639053c503ef2020912cd2edf78b29cda4",
-    "unit:no-desk": "3c3074c79243c9b71b59c6cf01c8b54b7ae6a42b877a2e0c86b33f74aa183e2d",
-    "unit:aurora-schedule-above-balance": "a4f68395507bde76e7b54ee95a62260a40c6b44221a5ae6196675f3d7008704a",
-    "unit:aurora-unpriced-lines": "d8f73662486a6ea8ebdf8762d9a141a461b8cb90af0a288dd4baf3212ce46b5a",
-    "unit:aurora-thin-coverage-ask": "d73cf883035046e2a8216df980100f6af8d3d92baed45ed4d1288e92df6e952a",
-    "unit:aurora-thin-coverage-stack": "18b4131c4591af7060aadd01933db3d0ee1640c534ea00c99014fe8a153171fa",
+    "unit:camil-listed": "87b3c9dc12a0d318d690adb083bfcef03803060b3138fcb187d866ce96060871",
+    "unit:maturity-profile": "5cea5ed950bcd429d5f240e7e4b68ad78f0de0bf5b72e42d0909c4364819c614",
+    "unit:no-desk": "097ee37a83dc684eb4d3e3b9fd8caacbc05f6652c502df1cdda86bb9572201ff",
+    "unit:aurora-schedule-above-balance": "45114c09bf7137972ab19033e251b5da2ebb2696b838ea4d5c953612a8a9f732",
+    "unit:aurora-unpriced-lines": "0cecb2a20faea3661bc329adb516aad4ac639ccdbd554eadf3f7cdcb48f15ba5",
+    "unit:aurora-thin-coverage-ask": "2d2e492f232edb873afb921f977701898c36e519fcf8ee86eae4533628dfbdbf",
+    "unit:aurora-thin-coverage-stack": "279efd3cc1aa4d9b622ae023269bf4755aea934f316b2e6036e58139c505d65f",
     "unit:nimbus-runway-under-twelve": "32c85550dcfe1396bb6ba963d2569143995174d28822ff2825921e6a55fd2299",
     "unit:nimbus-rate-asked": "013259accee6c09c1f4433c949f36a36d22b6c6ceac3886edaf97ee81691f5e9",
   } as Record<string, string>,
@@ -138,7 +147,7 @@ describe("the desk, the trajectory and the questions across the move to financia
     expect(asked.some((question) => question.pt.startsWith("O balanço reconhece"))).toBe(true);
     expect(asked.some((question) => question.pt.startsWith("O mapa de dívida soma"))).toBe(true);
     expect(asked.some((question) => question.pt.startsWith("A análise de crédito não pôde ser montada"))).toBe(true);
-    expect(asked.some((question) => question.pt.startsWith("Falta "))).toBe(true);
+    expect(asked.some((question) => question.pt.startsWith("Para completar a análise, falta este dado:"))).toBe(true);
   });
 
   it("reproduces every pinned output byte for byte", () => {
