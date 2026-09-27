@@ -35,6 +35,16 @@ import {buildTermSheet} from "./termsheet";
  *   amounts and fractional sources and uses.
  *
  * A pin moves only with a deliberate change.
+ *
+ * The move kept the pins of the term sheet, the structure, the operation and the alternatives, and
+ * moved two, deliberately, for two texts only. The Portuguese explanation of the cash-flow and market
+ * walls printed the playbook's DSCR and leverage ceiling with a decimal point ("DSCR mínimo de 1.30x",
+ * "Espaço até 3.5x"); it now writes them with a decimal comma ("1,30x", "3,5x"), the English unchanged.
+ * The note of a package short of its coverage printed the amount missing as raw digits ("faltam
+ * 13222000 de valor elegível"); it now prints it as every material prints an amount ("faltam
+ * R$ 13.222.000", "R$ 13,222,000 of eligible value is missing"). Compared field by field, 120 wall
+ * explanations and 49 notes in each language changed and nothing else; the same outputs with those
+ * texts masked are pinned apart, captured from the sources before the move, and hold.
  */
 const digest = (items: Iterable<unknown>) => {
   const hash = createHash("sha256");
@@ -395,6 +405,21 @@ function* alternativeSets() {
   })};
 }
 
+/**
+ * The same capacities and packages with the two texts the move changed deliberately masked: the
+ * Portuguese explanation of each wall (the DSCR and the leverage ceiling now carry a decimal comma) and
+ * the note of a package short of its coverage (the amount missing is now printed as every material
+ * prints an amount). Captured from the sources before the move, they prove nothing else changed.
+ */
+function* maskedCapacities() {
+  for (const item of capacities()) {
+    yield {...item, capacity: {...item.capacity, walls: item.capacity.walls.map((wall) => ({...wall, explanation: {...wall.explanation, pt: null}}))}};
+  }
+}
+function* maskedPackages() {
+  for (const item of packages()) yield {...item, pkg: {...item.pkg, notes: item.pkg.notes.map((note) => (note.pt.startsWith("O inventário cobre") ? null : note))}};
+}
+
 describe("the deal structure across the move to financial-core", () => {
   it("reaches every wall, a package short and sufficient, constrained amounts and every sizing branch", () => {
     const allCapacities = [...capacities()].map(({capacity}) => capacity);
@@ -415,12 +440,16 @@ describe("the deal structure across the move to financial-core", () => {
   });
 
   it("reproduces every pinned output byte for byte", () => {
+    expect({capacity: digest(maskedCapacities()), collateral: digest(maskedPackages())}).toEqual({
+      capacity: {count: 140, sha256: "fa8f72347cb926d941d46c4bf46993a0ae0d74ea00d6d76cd958850a9d4cfc95"},
+      collateral: {count: 144, sha256: "7164c1f9ed83ca547daacc0babe390e2620aa9ffe4f4ab1e9b9ad4cca5dded2b"},
+    });
     expect({
       capacity: digest(capacities()), collateral: digest(packages()), termSheet: digest(termSheets()),
       structure: digest(structures()), operation: digest(operations()), alternatives: digest(alternativeSets()),
     }).toEqual({
-      capacity: {count: 140, sha256: "1375f2f038ef705d6f2b545184692e7c1d711fa91c426e05e81c0c633f06b812"},
-      collateral: {count: 144, sha256: "91f482dc8080a0703b89a5d9b0e97c098c26c5c9990ecc19041f5ab6f7b945d1"},
+      capacity: {count: 140, sha256: "9a11ddf24470c25625b2cc31468929d8845282573234ed30aef85eeb97977ca6"},
+      collateral: {count: 144, sha256: "6d085dc970102de2dfb8f76584766439b30477b429a6677e95d003e86bfcf69d"},
       termSheet: {count: 210, sha256: "74f6833fb29237535c3969add315b5c4551f08ff09fe13db85142bab30090e43"},
       structure: {count: 22, sha256: "82612052b9d31edda4a952496279726c3de992372af305bb2ba9d017a1d25aec"},
       operation: {count: 13, sha256: "ec564f204ed537cdb0b9c57ea290be3a780b5946a756f0cf3d00a5989907af9e"},

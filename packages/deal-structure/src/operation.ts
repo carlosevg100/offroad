@@ -1,13 +1,17 @@
 import {
+  calculateAmountDifference,
   calculateExcessFundingCarry,
   calculateIncrementalWorkingCapital,
   calculateProFormaPosition,
   calculateTransactionNeed,
+  compareFigures,
+  readFactFigure,
+  readMonthCount,
   reconcileSourcesAndUses,
+  sumAmounts,
   testDisbursementCoverage,
 } from "@offroad/financial-core";
 import type {DebtTruthSet, FinancialTruthSet, ReconciledFact} from "@offroad/reconciliation";
-import Decimal from "decimal.js";
 
 import type {CapacityAssessment} from "./capacity";
 
@@ -67,9 +71,15 @@ const source = (fact: ReconciledFact): EvidenceLink => ({
   sourceDocument: fact.accepted.sourceDocument,
   ...(fact.accepted.anchor !== undefined ? {anchor: fact.accepted.anchor} : {}),
 });
-const asNumber = (value: string | undefined) => value !== undefined && Number.isFinite(Number(value)) ? value : undefined;
-const asInteger = (value: string | undefined) => value !== undefined && Number.isInteger(Number(value)) ? Number(value) : null;
-const sum = (values: Array<string | undefined>) => values.reduce((total, value) => total.plus(asNumber(value) ?? 0), new Decimal(0)).toFixed();
+// A fact's figure is read by financial-core in decimal notation, and handed on as the fact states it: an
+// empty text or another notation is no figure, and a count is a whole number of the same reading.
+const asNumber = (value: string | undefined) => value !== undefined && readFactFigure({text: value}).value !== null ? value : undefined;
+const asInteger = (value: string | undefined) => {
+  const count = value === undefined ? null : readMonthCount({text: value}).value;
+  return count !== null && Number.isInteger(count) ? count : null;
+};
+/** The figures among the values, summed by financial-core: a value that is absent or not a figure adds nothing. */
+const sum = (values: Array<string | undefined>) => sumAmounts({amounts: values.flatMap((value) => asNumber(value) === undefined ? [] : [value!])}).value;
 
 export function buildOperationTruthSet(input: {
   facts: readonly ReconciledFact[];
@@ -124,7 +134,7 @@ export function buildOperationTruthSet(input: {
     lines,
     totalSources: unmatchedTotalSources,
     totalUses: unmatchedTotalUses,
-    difference: new Decimal(unmatchedTotalSources).minus(unmatchedTotalUses).toFixed(),
+    difference: calculateAmountDifference({amount: unmatchedTotalSources, reference: unmatchedTotalUses}).value,
     status: "not_computable" as const,
   };
 
@@ -136,9 +146,10 @@ export function buildOperationTruthSet(input: {
   let calculatedNeed: OperationTruthSet["calculatedNeed"] = null;
   if (capex && incrementalWcValue && transactionCosts && executionBuffer !== undefined) {
     const calculation = calculateTransactionNeed({capex, incrementalWorkingCapital: incrementalWcValue, transactionCosts, executionBuffer, selfFunding});
-    const divergence = requested ? new Decimal(requested).minus(calculation.calculatedNeed).toFixed() : null;
+    const difference = requested ? calculateAmountDifference({amount: requested, reference: calculation.calculatedNeed}) : null;
+    const divergence = difference ? difference.value : null;
     calculatedNeed = {value: calculation.calculatedNeed, trace: calculation.trace, divergence, status: requested && policy.sizingMateriality !== undefined ? "completed" : "partial"};
-    if (requested && policy.sizingMateriality !== undefined && new Decimal(divergence!).abs().gt(policy.sizingMateriality)) {
+    if (difference && policy.sizingMateriality !== undefined && compareFigures(difference.magnitude, policy.sizingMateriality) > 0) {
       exceptions.push({id: "request-need-divergence", severity: "high", message: "The stated request differs materially from calculated need.", affectedFields: ["transaction.requested_amount"]});
     }
   } else {
@@ -188,7 +199,7 @@ export function buildOperationTruthSet(input: {
     const coverage = asNumber(value(`${base}.dscr`)) ?? null;
     const deficit = asNumber(value(`${base}.liquidity_deficit`));
     if (!scenario || deficit === undefined) return [];
-    return [{scenario, coverage, deficit, status: coverage === null || policy.minimumDscr === undefined ? "not_computable" as const : new Decimal(coverage).gte(policy.minimumDscr) && new Decimal(deficit).eq(0) ? "pass" as const : "fail" as const}];
+    return [{scenario, coverage, deficit, status: coverage === null || policy.minimumDscr === undefined ? "not_computable" as const : compareFigures(coverage, policy.minimumDscr) >= 0 && compareFigures(deficit, 0) === 0 ? "pass" as const : "fail" as const}];
   });
 
   const effects = {
