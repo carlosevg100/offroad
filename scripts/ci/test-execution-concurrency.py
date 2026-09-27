@@ -14,6 +14,7 @@ url = os.environ['DATABASE_URL']
 if urlparse(url).hostname not in ('localhost', '127.0.0.1', '::1'):
     raise SystemExit('Execution concurrency requires the disposable local CI database')
 command = ['psql', url, '-X', '-A', '-t', '-q', '-v', 'ON_ERROR_STOP=1']
+worker_actor = None
 actor = 'a4172000-0000-4000-8000-000000000001'
 work = 'a4172000-0000-4000-9000-000000000002'
 execution = 'a4173000-0000-4000-9000-000000000002'
@@ -28,9 +29,9 @@ def expand(path):
     return re.sub(r'^\\ir (.+)$', lambda m: expand(path.parent / m[1].strip()), path.read_text(), flags=re.M)
 
 def authorized(sql):
-    return "select set_config('request.jwt.claim.sub','" + actor + "',true);" + sql
+    return "select set_config('request.jwt.claim.sub','" + (worker_actor or actor) + "',true);" + sql
 
-def compete(first_sql, second_sql, expected_error=None, first_receipt=False):
+def compete(first_sql, second_sql, expected_error=None, first_receipt=False, expect_wait=True, first_rollback=False):
     """The second session must visibly wait for a lock, then complete after the first."""
     first = second = None
     try:
@@ -52,11 +53,18 @@ def compete(first_sql, second_sql, expected_error=None, first_receipt=False):
         second.stdin.close()
         second.stdin = None
         deadline = time.monotonic() + 20
-        while run("select count(*) from pg_stat_activity where application_name='offroad_execution_contender' and wait_event_type='Lock';") != '1':
-            if time.monotonic() >= deadline or second.poll() is not None:
-                raise AssertionError('Second execution command did not wait on the lock')
-            time.sleep(.05)
-        first.stdin.write('commit;\n' + ('\\o\nselect receipt from execution_claim_receipt;\n' if first_receipt else ''))
+        if expect_wait:
+            while run("select count(*) from pg_stat_activity where application_name='offroad_execution_contender' and wait_event_type='Lock';") != '1':
+                if time.monotonic() >= deadline or second.poll() is not None:
+                    raise AssertionError('Second execution command did not wait on the lock')
+                time.sleep(.05)
+        else:
+            # Baseline proof: the contender commits while the human update is still uncommitted.
+            while second.poll() is None:
+                if time.monotonic() >= deadline:
+                    raise AssertionError('Expected baseline race did not complete before revocation')
+                time.sleep(.05)
+        first.stdin.write(('rollback;' if first_rollback else 'commit;') + '\n' + ('\\o\nselect receipt from execution_claim_receipt;\n' if first_receipt else ''))
         first.stdin.close()
         first.stdin = None
         a = first.communicate(timeout=20)[0]
@@ -100,11 +108,12 @@ compete(revoke, reserve, 'execution_authority_denied')
 assert run("select count(*) from private.execution_result_receipts where execution_id='" + execution + "';") == '0'
 print('execution_concurrency: PASS (two worker tokens, one claim, one operation, observed policy wait, stale authority denied)')
 
-def fresh_scope(number, lease_seconds=60):
+def fresh_scope(number, lease_seconds=60, distinct_worker=False):
     """Independent work and release for each terminal race; no regrant of old authority."""
-    global actor, work, execution, last_job, last_claim
-    org_prefix = f'a417{number}000'
-    execution_prefix = f'a418{number}000'
+    global actor, work, execution, last_job, last_claim, worker_actor
+    worker_actor = None
+    org_prefix = f'a417{number:x}000'
+    execution_prefix = f'a418{number:x}000'
     actor = org_prefix + '-0000-4000-8000-000000000001'
     work = org_prefix + '-0000-4000-9000-000000000002'
     execution = execution_prefix + '-0000-4000-9000-000000000002'
@@ -113,6 +122,10 @@ def fresh_scope(number, lease_seconds=60):
     fixture = fixture.replace('a11b0000', org_prefix).replace('a4171000', execution_prefix)
     fixture = fixture.replace('a11b-', org_prefix + '-').replace('synthetic-execution', 'synthetic-execution-' + str(number))
     run('begin;' + fixture + "select private.request_work_execution_v1('" + profile + "',contract::text,'{}') from execution_fixture;commit;")
+    if distinct_worker:
+        worker_actor = org_prefix + '-0000-4000-8000-000000000003'
+        run("begin;insert into auth.users(id,email) values('" + worker_actor + "','" + org_prefix + "-worker@example.invalid');"
+            "update private.worker_tokens set execution_account_user_id='" + worker_actor + "' where token_sha256=extensions.digest('synthetic-policy-worker-fixture-token-v1','sha256');commit;")
     job = run("select id from public.processing_jobs where execution_id='" + execution + "';")
     output = run('begin;' + authorized("select private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1','" + job + "',"+str(lease_seconds)+");") + 'commit;')
     claim = json.loads(next(line for line in output.splitlines() if line.startswith('{')))
@@ -168,3 +181,42 @@ finally:
 run('begin;'+authorized("select public.worker_claim_execution_v1('synthetic-policy-worker-fixture-token-v1',array[repeat('a',64)]);")+'commit;')
 assert run("select status from public.processing_jobs where id='"+exhausted_job+"';")=='failed'
 print('execution_cleanup_contention: PASS (contended exhausted organization skipped; unrelated heartbeat progresses; cleanup completes after release)')
+
+# A3: use the real historical function only inside this disposable local database. Restore the
+# installed function even if reproduction fails; never patch a body by replacing SQL fragments.
+installed_authority = run("select pg_get_functiondef('private.lock_execution_authority_v1(uuid)'::regprocedure);")
+historical = (ROOT / 'supabase/migrations/20260922153436_execution_authority_commands.sql').read_text()
+a = historical.index('create function private.lock_execution_authority_v1')
+b = historical.index('create function private.execution_for_lease_v1', a)
+baseline_authority = historical[a:b].replace('create function', 'create or replace function', 1)
+try:
+    run(baseline_authority)
+    commit, _ = fresh_scope(9, distinct_worker=True)
+    suspend = "update auth.users set banned_until=clock_timestamp()+interval '1 hour' where id='"+actor+"';"
+    compete(suspend, commit, expect_wait=False)
+    assert run("select count(*) from private.execution_result_receipts where execution_id='"+execution+"';") == '1'
+    print('human_revocation_baseline: REPRODUCED (distinct worker committed while human suspension was uncommitted)')
+finally:
+    run(installed_authority)
+
+for number, column in [(10, 'banned_until'), (13, 'deleted_at')]:
+    value = "clock_timestamp()+interval '1 hour'" if column == 'banned_until' else 'clock_timestamp()'
+    commit, _ = fresh_scope(number, distinct_worker=True)
+    revoke_human = "update auth.users set "+column+"="+value+" where id='"+actor+"';"
+    compete(revoke_human, commit, 'execution_authority_denied')
+    assert run("select count(*) from private.execution_result_receipts where execution_id='"+execution+"';") == '0'
+    print('human_'+column+'_first: PASS (observed wait, commit denied, no result)')
+
+    commit, _ = fresh_scope(number+1, distinct_worker=True)
+    revoke_human = "update auth.users set "+column+"="+value+" where id='"+actor+"';"
+    compete(commit, revoke_human)
+    assert run("select count(*) from private.execution_result_receipts where execution_id='"+execution+"';") == '1'
+    denied = subprocess.run(command, input='begin;'+authorized(commit)+'commit;', text=True, capture_output=True, timeout=20)
+    assert denied.returncode != 0 and 'execution_authority_denied' in denied.stderr
+    print('human_'+column+'_commit_first: PASS (observed wait, prior result preserved, replay denied)')
+
+    commit, _ = fresh_scope(number+2, distinct_worker=True)
+    revoke_human = "update auth.users set "+column+"="+value+" where id='"+actor+"';"
+    compete(revoke_human, commit, first_rollback=True)
+    assert run("select count(*) from private.execution_result_receipts where execution_id='"+execution+"';") == '1'
+    print('human_'+column+'_rollback: PASS (observed wait, rolled-back revocation permits result)')

@@ -1,3 +1,7 @@
+## Rodada corretiva 17–19: serialização da revogação humana
+
+A3 em validação: lock do sujeito humano persistido no caminho comum de autoridade. Prova concorrente antes/depois no banco descartável da CI com worker distinto; negativos de staging sob rollback. Evidência em `docs/build/arcabouco/corrective-17-19/human-revocation-evidence.md`. Migração remota e fechamento ainda pendentes.
+
 ## Rodada corretiva 17–19: autoridade de leitura de artefatos, 27/09/2026
 
 A1/A2: removido o SELECT direto das três tabelas de artefatos; a leitura autorizada nega conteúdo quando a ancestralidade excede a fronteira verificável. Reprodução anterior e testes posteriores em staging registrados em `docs/build/arcabouco/corrective-17-19/artifact-access-evidence.md`. Migração staging `20260927131021`, produção `20260927131506`, SQL e corpo instalado idênticos. Suítes SQL de conteúdo, protocolo, produtores e não interferência aprovadas em staging; advisors sem alertas. CI, merge e deployments ainda pendentes; este registro não declara a onda concluída.
