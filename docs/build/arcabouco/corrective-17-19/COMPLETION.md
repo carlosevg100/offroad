@@ -1,6 +1,6 @@
 # Rodada corretiva das etapas 17–19
 
-Correções A1–A5 mescladas, aplicadas e implantadas no commit `10c11e14`. Relatório e roteiro publicados pela PR 832. Este documento não autoriza a etapa 20.
+Correções A1–A5 mescladas, aplicadas e implantadas no commit `10c11e14`. Relatório e roteiro reunidos na PR 832. Este documento não autoriza a etapa 20.
 
 ## O que foi feito
 
