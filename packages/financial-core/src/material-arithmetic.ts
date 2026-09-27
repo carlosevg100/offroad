@@ -19,14 +19,15 @@ import {finiteFigure, fullFigure, parseFigure} from "./figure-input";
  *   the leverage after a structure, the covenant ceiling test and the heaviest schedule year); and
  * - presentation conversions, which print a figure in another unit or at a stated precision
  *   (percent, millions, basis points as percent, a signed spread, an amount by the one rule every
- *   material prints amounts with, half-up rounding) and, at the very edge, hand an exact decimal
- *   to the binary number that `Intl.NumberFormat` and a chart point require.
+ *   material prints amounts with, a ratio as the desk publishes it, half-up rounding) and, at the
+ *   very edge, hand an exact decimal to the binary number that `Intl.NumberFormat` and a chart
+ *   point require.
  *
  * Figures are full-precision decimal strings (`Decimal#toFixed()` without rounding) unless the
  * kernel is a rounding one. A value that is not a finite decimal number is refused, never read as
  * zero.
  */
-export const materialArithmeticVersion = "2026.09.26-v3";
+export const materialArithmeticVersion = "2026.09.27-v4";
 
 // The same arithmetic contract the package root declares, so a kernel imported on its own computes
 // exactly what it computes inside a published material.
