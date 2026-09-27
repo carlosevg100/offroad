@@ -53,8 +53,8 @@ describe("the trajectory answers the founder's correction", () => {
   });
 
   it("peaks in 2026 and crosses back under 3,0x in 2027, even in the cut scenario", () => {
-    expect(trajectory.peak.year).toBe(2026);
-    expect(Number(trajectory.peak.leverageStressed)).toBeCloseTo(3.204, 2);
+    expect(trajectory.peak!.year).toBe(2026);
+    expect(Number(trajectory.peak!.leverageStressed)).toBeCloseTo(3.204, 2);
     const three = trajectory.crossings.find((crossing) => new Decimal(crossing.maximum).eq("3"));
     expect(three?.yearStressed).toBe(2027);
   });

@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 
+import {publishedRatio} from "./absent-ratio";
 import type {DeskAnalysis} from "./analyze";
 import type {Trajectory} from "./trajectory";
 
@@ -79,17 +80,33 @@ export function rateCredit(input: RatingInput): InternalRating {
 
   // ---- leverage: net debt over EBITDA, post-transaction when a trajectory says what it becomes
   if (!burning) {
-    const post = trajectory?.liabilityManagement?.postLeverageAfterRefi ?? desk.leverage.scenarios[0]?.postTurns ?? null;
-    const value = d(post ?? desk.leverage.preTurns);
-    const points = pointsUnder(value, [{max: "1.5", points: 4}, {max: "2.5", points: 3}, {max: "3.5", points: 2}, {max: "4.5", points: 1}], 0);
-    factors.push({
-      id: "leverage", weight: 3, value: value.toFixed(4), points,
-      labels: {pt: "Alavancagem pós-operação", en: "Post-transaction leverage"},
-      rationale: {
-        pt: `Dívida líquida sobre EBITDA de ${fmt(value)}x após a operação (${post ? "com a estrutura proposta" : "sem trajetória, pré-operação"}). Faixas: até 1,5x forte; até 2,5x adequada; até 3,5x atenção; até 4,5x fraca; acima, crítica.`,
-        en: `Net debt over EBITDA of ${value.toFixed(2)}x after the transaction (${post ? "with the proposed structure" : "no trajectory, pre-transaction"}). Bands: up to 1.5x strong; up to 2.5x adequate; up to 3.5x watch; up to 4.5x weak; above, critical.`,
-      },
-    });
+    // The leverage the structure leaves: after the swap when the trajectory says what it becomes, after
+    // the ask otherwise, today when neither is stated. An absent one (over a zero EBITDA) is not rated.
+    const lm = trajectory?.liabilityManagement ?? null;
+    const scenario = desk.leverage.scenarios[0];
+    const post = Boolean(lm || scenario);
+    const leverage = publishedRatio(lm ? lm.postLeverageAfterRefi : scenario ? scenario.postTurns : desk.leverage.preTurns);
+    if (leverage === null) {
+      factors.push({
+        id: "leverage", weight: 3, value: null, points: null,
+        labels: {pt: "Alavancagem pós-operação", en: "Post-transaction leverage"},
+        rationale: {
+          pt: "Não avaliada: a alavancagem não é calculável, porque o EBITDA do último exercício é zero.",
+          en: "Not assessed: leverage is not computable, because EBITDA for the latest financial year is zero.",
+        },
+      });
+    } else {
+      const value = d(leverage);
+      const points = pointsUnder(value, [{max: "1.5", points: 4}, {max: "2.5", points: 3}, {max: "3.5", points: 2}, {max: "4.5", points: 1}], 0);
+      factors.push({
+        id: "leverage", weight: 3, value: value.toFixed(4), points,
+        labels: {pt: "Alavancagem pós-operação", en: "Post-transaction leverage"},
+        rationale: {
+          pt: `Dívida líquida sobre EBITDA de ${fmt(value)}x após a operação (${post ? "com a estrutura proposta" : "sem trajetória, pré-operação"}). Faixas: até 1,5x forte; até 2,5x adequada; até 3,5x atenção; até 4,5x fraca; acima, crítica.`,
+          en: `Net debt over EBITDA of ${value.toFixed(2)}x after the transaction (${post ? "with the proposed structure" : "no trajectory, pre-transaction"}). Bands: up to 1.5x strong; up to 2.5x adequate; up to 3.5x watch; up to 4.5x weak; above, critical.`,
+        },
+      });
+    }
   }
 
   // ---- coverage: EBITDA over interest expense
@@ -165,14 +182,21 @@ export function rateCredit(input: RatingInput): InternalRating {
 
   // ---- runway, in place of leverage and coverage for a company that burns cash
   if (burning) {
-    const months = desk.runway ? d(desk.runway.monthsPostAfterService) : null;
+    // An absent runway after service (the burn plus the raise's interest sums to zero) is named, never rated.
+    const afterService = desk.runway ? publishedRatio(desk.runway.monthsPostAfterService) : null;
+    const months = afterService !== null ? d(afterService) : null;
     const points = months ? pointsOver(months, [{min: "6", points: 1}, {min: "12", points: 2}, {min: "18", points: 3}, {min: "24", points: 4}], 0) : null;
     factors.push({
       id: "runway", weight: 5, value: months ? months.toFixed(1) : null, points,
       labels: {pt: "Runway após a operação, com o serviço", en: "Runway after the deal, with service"},
       rationale: months
         ? {pt: `${fmt(months, 1)} meses de caixa após a captação, pagando os juros dela. Faixas: acima de 24 forte; de 18 adequada; de 12 atenção; de 6 fraca; abaixo, crítica.`, en: `${months.toFixed(1)} months of cash after the raise, paying its interest. Bands: above 24 strong; from 18 adequate; from 12 watch; from 6 weak; below, critical.`}
-        : {pt: "Não avaliada: sem queima mensal na sala.", en: "Not assessed: no monthly burn in the room."},
+        : desk.runway
+          ? {
+              pt: "Não avaliada: o runway após a operação não é calculável, porque a queima mensal somada aos juros mensais da captação é zero.",
+              en: "Not assessed: runway after the deal is not computable, because monthly burn plus the raise's monthly interest is zero.",
+            }
+          : {pt: "Não avaliada: sem queima mensal na sala.", en: "Not assessed: no monthly burn in the room."},
     });
   }
 

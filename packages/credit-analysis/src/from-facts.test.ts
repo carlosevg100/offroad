@@ -50,7 +50,7 @@ describe("from flat facts to desk inputs", () => {
     expect(inputs.trajectory).not.toBeNull();
 
     const desk = analyzeCreditPosition(inputs.desk!);
-    expect(desk.leverage.preTurns.slice(0, 4)).toBe("2.19");
+    expect(desk.leverage.preTurns!.slice(0, 4)).toBe("2.19");
     expect(desk.findings.some((finding) => finding.id === "covenant-breach-day-one")).toBe(true);
 
     const trajectory = projectLeverageTrajectory(inputs.trajectory!);

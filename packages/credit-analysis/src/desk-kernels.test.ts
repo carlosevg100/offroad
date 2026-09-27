@@ -37,8 +37,10 @@ describe("what the move of the desk to financial-core changed on purpose", () =>
 
   it("leaves a year of zero projected EBITDA out of the heaviest-year ranking, as the verdict does, instead of printing Infinity%", () => {
     const result = projectLeverageTrajectory(trajectory([{year: 2026, ebitda: "200"}, {year: 2027, ebitda: "0"}]));
-    // The published year still states the principal and a strain that is not a number, as before.
-    expect(result.years[1]).toMatchObject({principalDue: "1000.00", scheduleStrain: "Infinity"});
+    // The published year states the principal; its strain over the zero EBITDA is absent (stage 19,
+    // second polish; it was published as "Infinity"), with the gap listed.
+    expect(result.years[1]).toMatchObject({principalDue: "1000.00", scheduleStrain: null});
+    expect(result.absentRatios).toContainEqual({field: "years.2027.scheduleStrain", gap: "projected_ebitda"});
     // Before: "O cronograma contratado exige R$ 1 mil de amortização em 2027, Infinity% do EBITDA".
     expect(result.findings.map((finding) => finding.id)).toEqual(["leverage-trajectory"]);
     expect(JSON.stringify(result.findings)).not.toContain("Infinity");

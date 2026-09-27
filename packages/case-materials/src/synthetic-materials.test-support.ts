@@ -1,5 +1,5 @@
 import {deskEvidence, type CaseBrief, type ReadinessReport} from "@offroad/case-understanding";
-import {analyzeCreditPosition, buildDeskInputs, judgeOperation, projectLeverageTrajectory, rateCredit, stressTable, type Fact} from "@offroad/credit-analysis";
+import {analyzeCreditPosition, buildDeskInputs, judgeOperation, projectLeverageTrajectory, rateCredit, stressTable, type Fact, type TrajectoryInput} from "@offroad/credit-analysis";
 import {instrumentVerdicts} from "@offroad/credit-playbook";
 import {assessCapacity, buildTermSheet, designCollateralPackage} from "@offroad/deal-structure";
 import {indicativePrice} from "@offroad/market-reference";
@@ -57,15 +57,27 @@ const readiness: ReadinessReport = {state: "in_progress", score: 0.8, components
 
 export type SyntheticMaterialsVariant = keyof typeof fixture.grossDebtVariants;
 
+/**
+ * What a test changes in the synthetic case: facts replaced by path, and the trajectory input, from
+ * the unchanged case's, when the changed facts would not build one (a zero EBITDA builds none).
+ */
+export type SyntheticMaterialsOverrides = {
+  facts?: Readonly<Record<string, string>>;
+  trajectory?: (base: TrajectoryInput) => TrajectoryInput;
+};
+
 /** The six compiled documents, the package's workbook entry and the approved statements in the three languages of the table labels. */
-export function syntheticMaterials(variant: SyntheticMaterialsVariant = "balanceAboveSchedule") {
-  const facts: Fact[] = fixture.facts.map((fact) => fact.fieldPath === "historical_financials.2025.gross_debt"
+export function syntheticMaterials(variant: SyntheticMaterialsVariant = "balanceAboveSchedule", overrides: SyntheticMaterialsOverrides = {}) {
+  const variantFacts: Fact[] = fixture.facts.map((fact) => fact.fieldPath === "historical_financials.2025.gross_debt"
     ? {fieldPath: fact.fieldPath, value: fixture.grossDebtVariants[variant]}
     : {fieldPath: fact.fieldPath, value: fact.value});
-  const inputs = buildDeskInputs(facts, {referenceDate: fixture.referenceDate, indexLevels: fixture.indexLevels, statedRequest: fixture.statedRequest});
-  if (!inputs.desk || !inputs.trajectory) throw new Error("synthetic desk inputs are incomplete");
+  const facts: Fact[] = variantFacts.map((fact) => ({fieldPath: fact.fieldPath, value: overrides.facts?.[fact.fieldPath] ?? fact.value}));
+  const options = {referenceDate: fixture.referenceDate, indexLevels: fixture.indexLevels, statedRequest: fixture.statedRequest};
+  const inputs = buildDeskInputs(facts, options);
+  const trajectoryInput = overrides.trajectory ? overrides.trajectory(buildDeskInputs(variantFacts, options).trajectory!) : inputs.trajectory;
+  if (!inputs.desk || !trajectoryInput) throw new Error("synthetic desk inputs are incomplete");
   const desk = analyzeCreditPosition(inputs.desk);
-  const trajectory = projectLeverageTrajectory(inputs.trajectory);
+  const trajectory = projectLeverageTrajectory(trajectoryInput);
   const capacity = assessCapacity(fixture.capacity);
   const termSheet = buildTermSheet({...fixture.termSheet, capacity, blockers: []});
   const reconciled = reconciledSyntheticFacts(facts);

@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 
+import {absentRatioGap, publishedRatio} from "./absent-ratio";
 import type {DeskAnalysis} from "./analyze";
 
 /**
@@ -53,7 +54,10 @@ export function stressTable(input: StressInput): StressScenario[] {
   const ceiling = desk.leverage.tightestCovenant ? d(desk.leverage.tightestCovenant.maximum) : null;
   const cdi = d(desk.assumptions.cdi);
   const weightedCost = desk.stack.weightedCost ? d(desk.stack.weightedCost) : null;
-  const cycleDays = desk.workingCapital.cycleDays ? d(desk.workingCapital.cycleDays) : null;
+  // A cycle absent over a zero cost of goods sold is named, never printed as a number of days.
+  const cycleText = publishedRatio(desk.workingCapital.cycleDays);
+  const cycleDays = cycleText ? d(cycleText) : null;
+  const cycleGap = cycleDays ? null : absentRatioGap(desk, "workingCapital.cycleDays", desk.workingCapital.cycleDays);
   const revenue = input.revenue ? d(input.revenue) : null;
 
   const leverageOf = (e: Decimal) => (e.gt(0) ? netDebtPost.div(e) : null);
@@ -87,8 +91,12 @@ export function stressTable(input: StressInput): StressScenario[] {
       en: `CDI from ${cdi.times(100).toFixed(2)}% to ${cdi.plus("0.03").times(100).toFixed(2)}%, passed fully to the floating stack. EBITDA unchanged.`,
     }),
     scenario("cycle_plus_15", {pt: "Ciclo de caixa +15 dias", en: "Cash cycle +15 days"}, ebitda, weightedCost, revenue ? revenue.times(15).div(365) : null, {
-      pt: cycleDays ? `Ciclo de ${cycleDays.toFixed(0)} para ${cycleDays.plus(15).toFixed(0)} dias; o capital de giro absorvido é 15/365 da receita anual.` : "Ciclo de caixa não calculado; o capital de giro absorvido é 15/365 da receita anual.",
-      en: cycleDays ? `Cycle from ${cycleDays.toFixed(0)} to ${cycleDays.plus(15).toFixed(0)} days; the working capital absorbed is 15/365 of annual revenue.` : "Cash cycle not computed; the working capital absorbed is 15/365 of annual revenue.",
+      pt: cycleDays
+        ? `Ciclo de ${cycleDays.toFixed(0)} para ${cycleDays.plus(15).toFixed(0)} dias; o capital de giro absorvido é 15/365 da receita anual.`
+        : `Ciclo de caixa ${cycleGap ? cycleGap.pt : "não calculado"}; o capital de giro absorvido é 15/365 da receita anual.`,
+      en: cycleDays
+        ? `Cycle from ${cycleDays.toFixed(0)} to ${cycleDays.plus(15).toFixed(0)} days; the working capital absorbed is 15/365 of annual revenue.`
+        : `Cash cycle ${cycleGap ? cycleGap.en : "not computed"}; the working capital absorbed is 15/365 of annual revenue.`,
     }),
     (() => {
       const share = input.topCustomerShare ? d(input.topCustomerShare) : null;

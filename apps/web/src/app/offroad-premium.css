@@ -10952,12 +10952,6 @@ button[disabled].workspace-search,
   font-size: 0.88rem;
 }
 
-.case-desk__missing code {
-  color: var(--muted);
-  font-family: ui-monospace, SFMono-Regular, monospace;
-  font-size: 0.74rem;
-}
-
 /* ---- Delivery map: what landed, what it was, what is still open ------------------------ */
 .intake-map {
   border: 1px solid var(--line, #d7dbdd);

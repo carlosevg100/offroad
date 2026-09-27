@@ -1,3 +1,4 @@
+import {instruments} from "@offroad/credit-playbook";
 import {composeCdiPlusBasisPoints, compareFigures, presentationFigure, presentationNumber, presentationSpread, shiftSpreadBand} from "@offroad/financial-core";
 
 export const marketReferenceVersion = "2026.09.24-v1";
@@ -55,6 +56,27 @@ export const spreadBands: readonly SpreadBand[] = [
   band("finame", "strong", -250, -100), band("finame", "adequate", -200, -50), band("finame", "watch", -100, 100),
   band("leasing", "strong", 180, 280), band("leasing", "adequate", 280, 400), band("leasing", "watch", 400, 550), band("leasing", "weak", 550, 750),
 ];
+
+/**
+ * The band of the indicative analytical profile in the words each language prints, never its key:
+ * the price sentence, the committee screen and the memorandum name the band the same way.
+ */
+export const ratingBandLabels: Readonly<Record<RatingBand, {pt: string; en: string}>> = {
+  strong: {pt: "forte", en: "strong"},
+  adequate: {pt: "adequado", en: "adequate"},
+  watch: {pt: "atenção", en: "watch"},
+  weak: {pt: "fraco", en: "weak"},
+  distressed: {pt: "crítico", en: "distressed"},
+};
+
+/**
+ * An instrument of the grid by its name in the playbook catalog (`@offroad/credit-playbook`), never
+ * by its key: "Cédula de Crédito Bancário (CCB)", not "ccb". Every instrument of the grid is in the
+ * catalog (tested); an identifier outside it is named generically, never printed.
+ */
+export function pricedInstrumentLabel(instrument: string): {pt: string; en: string} {
+  return instruments.find((entry) => entry.id === instrument)?.labels ?? {pt: "instrumento indicado", en: "instrument indicated"};
+}
 
 export type PriceAdjustment = {id: "tenor" | "security" | "coverage" | "size" | "leverage"; bps: number; rationale: {pt: string; en: string}};
 
@@ -150,6 +172,10 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
     const figure = presentationFigure({value: rate, scale: "percent", decimals: 2}).value;
     return locale === "pt" ? figure.replace(".", ",") : figure;
   };
+  // The basis names the instrument by its catalog name and the analytical profile by its band, in
+  // words, as the memorandum prints it: never the internal key of either.
+  const instrumentName = pricedInstrumentLabel(input.instrument);
+  const bandName = ratingBandLabels[input.rating];
   const prov = provenance.kind === "desk_practice"
     ? {pt: `Faixa de prática da mesa, declarada em ${provenance.statedOn}; não é observação de operações fechadas.`, en: `The desk's practice band, stated on ${provenance.statedOn}; not an observation of closed transactions.`}
     : {pt: `Faixa observada em ${provenance.sample} operações nos últimos ${provenance.windowMonths} meses.`, en: `Band observed across ${provenance.sample} transactions in the last ${provenance.windowMonths} months.`};
@@ -162,8 +188,8 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
     adjustments,
     provenance,
     sentence: {
-      pt: `CDI ${fmtBps(bps.min)}% a CDI ${fmtBps(bps.max)}% a.a. (${percent(allIn.min, "pt")}% a ${percent(allIn.max, "pt")}% a.a. com CDI a ${percent(allIn.cdi, "pt")}%). Base: banda ${input.rating} para ${input.instrument}, ${base.bps.min} a ${base.bps.max} bps${adjustments.length ? `; ajustes: ${adjustments.map((a) => `${compareFigures(a.bps, 0) >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.pt})`).join(", ")}` : ""}. ${prov.pt}`,
-      en: `CDI ${fmtBpsEn(bps.min)}% to CDI ${fmtBpsEn(bps.max)}% p.a. (${percent(allIn.min, "en")}% to ${percent(allIn.max, "en")}% p.a. at CDI ${percent(allIn.cdi, "en")}%). Base: ${input.rating} band for ${input.instrument}, ${base.bps.min} to ${base.bps.max} bps${adjustments.length ? `; adjustments: ${adjustments.map((a) => `${compareFigures(a.bps, 0) >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.en})`).join(", ")}` : ""}. ${prov.en}`,
+      pt: `CDI ${fmtBps(bps.min)}% a CDI ${fmtBps(bps.max)}% a.a. (${percent(allIn.min, "pt")}% a ${percent(allIn.max, "pt")}% a.a. com CDI a ${percent(allIn.cdi, "pt")}%). Base: ${instrumentName.pt}; perfil analítico: ${bandName.pt}; faixa de ${base.bps.min} a ${base.bps.max} bps${adjustments.length ? `; ajustes: ${adjustments.map((a) => `${compareFigures(a.bps, 0) >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.pt})`).join(", ")}` : ""}. ${prov.pt}`,
+      en: `CDI ${fmtBpsEn(bps.min)}% to CDI ${fmtBpsEn(bps.max)}% p.a. (${percent(allIn.min, "en")}% to ${percent(allIn.max, "en")}% p.a. at CDI ${percent(allIn.cdi, "en")}%). Base: ${instrumentName.en}; analytical profile: ${bandName.en}; range of ${base.bps.min} to ${base.bps.max} bps${adjustments.length ? `; adjustments: ${adjustments.map((a) => `${compareFigures(a.bps, 0) >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.en})`).join(", ")}` : ""}. ${prov.en}`,
     },
   };
 }

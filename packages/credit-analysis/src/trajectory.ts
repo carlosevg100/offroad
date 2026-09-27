@@ -3,6 +3,7 @@ import {
   presentationRatio, projectLeveragePath, selectHeaviestScheduleYear, type DecimalInput,
 } from "@offroad/financial-core";
 
+import {listYears, type AbsentRatio} from "./absent-ratio";
 import type {Finding} from "./analyze";
 
 /**
@@ -105,31 +106,41 @@ export type TrajectoryYear = {
   netDebt: string;
   ebitdaBase: string;
   ebitdaStressed: string;
-  leverageBase: string;
-  leverageStressed: string;
+  /** Absent (null) when the year's projected EBITDA is zero. */
+  leverageBase: string | null;
+  /** Absent (null) when the year's EBITDA in the cut case is zero. */
+  leverageStressed: string | null;
   /** Principal contractually due in the year, existing schedule plus the new loan. */
   principalDue: string;
-  /** principalDue / ebitdaBase: above 1 the schedule outruns the whole operation. */
-  scheduleStrain: string;
+  /** principalDue / ebitdaBase: above 1 the schedule outruns the whole operation; absent when the year's projected EBITDA is zero. */
+  scheduleStrain: string | null;
 };
 
 export type LiabilityManagement = {
   covenantedBalance: string;
   netNewMoney: string;
-  postLeverageAfterRefi: string;
+  /** Absent (null) over a zero EBITDA. */
+  postLeverageAfterRefi: string | null;
   lendersTakenOut: string[];
 };
 
-export type CovenantStep = {year: number; maximum: string};
+/** The ceiling proposed for a year; absent (null) when the year's leverage in the cut case is. */
+export type CovenantStep = {year: number; maximum: string | null};
 
 export type Trajectory = {
   assumptions: {cashHeldFlat: string; growthHaircut: string; covenantCushion: string; disbursement: string; ebitdaHeldFlat: boolean; refinancing: string};
   years: TrajectoryYear[];
-  peak: {year: number; leverageBase: string; leverageStressed: string};
+  /**
+   * The year of the highest leverage in the cut case, with both leverages. Null when a year's
+   * leverage in the cut case is absent: the highest of the years cannot be stated around it.
+   */
+  peak: {year: number; leverageBase: string | null; leverageStressed: string} | null;
   crossings: Array<{maximum: string; yearBase: number | null; yearStressed: number | null}>;
   liabilityManagement: LiabilityManagement | null;
   covenantProposal: CovenantStep[];
   findings: Finding[];
+  /** The ratios published as absent because their denominator is zero, with the gap: present only when there is one. */
+  absentRatios?: AbsentRatio[];
 };
 
 // Every figure comes from a financial-core kernel; amounts and multiples print through financial-core,
@@ -138,9 +149,9 @@ type Locale = "pt-BR" | "en-US";
 const local = (figure: string, locale: Locale) => (locale === "pt-BR" ? figure.replace(".", ",") : figure);
 const brlM = (value: DecimalInput, locale: Locale = "pt-BR"): string => presentationAmount({value, locale, style: "abbreviated"}).text;
 const turns = (value: DecimalInput, locale: Locale = "pt-BR"): string => `${local(presentationFigure({value, decimals: 2}).value, locale)}x`;
-/** A figure at the precision the trajectory publishes it; a ratio over a zero denominator as the division prints it. */
+/** A figure at the precision the trajectory publishes it; a ratio over a zero denominator stays absent. */
 const at = (value: DecimalInput, decimals: number): string => presentationFigure({value, decimals}).value;
-const ratioAt = (value: string, decimals: number): string => presentationRatio({value, decimals}).value;
+const ratioAt = (value: string | null, decimals: number): string | null => presentationRatio({value, decimals}).value;
 const percentAt = (value: DecimalInput, decimals: number): string => presentationFigure({value, scale: "percent", decimals}).value;
 
 const yearMonth = (iso: string): number => {
@@ -186,7 +197,8 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
     ceilings: input.existingCovenants.map((covenant) => covenant.maximum),
   });
   const years: TrajectoryYear[] = path.years.map((row) => ({...row}));
-  const peakYear = years[path.peakIndex]!;
+  // Absent when a year's leverage in the cut case is: no peak is stated around it.
+  const peakYear = path.peakIndex === null ? null : years[path.peakIndex]!;
   const ceilings = path.ceilings;
   const crossings = path.crossings.map((crossing) => ({...crossing}));
 
@@ -203,18 +215,20 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
       cash: input.cash,
       ebitda: input.auditedEbitda,
     });
+    const postLeverage = ratioAt(swap.leverageAfter, 4);
     liabilityManagement = {
       covenantedBalance: at(refinancing, 2),
       netNewMoney: at(swap.netNewMoney, 2),
-      postLeverageAfterRefi: ratioAt(swap.leverageAfter, 4),
+      postLeverageAfterRefi: postLeverage,
       lendersTakenOut: [],
     };
+    // Over a zero EBITDA the leverage after the swap is absent: the sentence names the gap instead of a number.
     findings.push({
       id: "refinancing-inside-ticket",
       severity: "high",
-      pt: `A captação é, em ${brlM(refinancing)}, troca de passivo: esse valor resgata dívida existente no desembolso e sobra ${brlM(swap.netNewMoney)} de dinheiro efetivamente novo. A alavancagem pós-operação é ${turns(swap.leverageAfter)} sobre o EBITDA reportado, não a soma ingênua do tíquete ao estoque. O que a operação compra é prazo e carência, e é contra isso que o fundo precifica.`,
-      en: `${brlM(refinancing, "en-US")} of the raise is a liability swap: it repays existing debt at disbursement, leaving ${brlM(swap.netNewMoney, "en-US")} of genuinely new money. Post-transaction leverage is ${turns(swap.leverageAfter, "en-US")} on reported EBITDA, not the naive sum of ticket and stock. What the deal buys is tenor and grace, and that is what the fund prices.`,
-      values: {refinancing: at(refinancing, 2), netNewMoney: at(swap.netNewMoney, 2), postLeverage: ratioAt(swap.leverageAfter, 4)},
+      pt: `A captação é, em ${brlM(refinancing)}, troca de passivo: esse valor resgata dívida existente no desembolso e sobra ${brlM(swap.netNewMoney)} de dinheiro efetivamente novo. ${swap.leverageAfter !== null ? `A alavancagem pós-operação é ${turns(swap.leverageAfter)} sobre o EBITDA reportado, não a soma ingênua do tíquete ao estoque.` : "A alavancagem pós-operação sobre o EBITDA reportado não é calculável, porque o EBITDA do último exercício é zero."} O que a operação compra é prazo e carência, e é contra isso que o fundo precifica.`,
+      en: `${brlM(refinancing, "en-US")} of the raise is a liability swap: it repays existing debt at disbursement, leaving ${brlM(swap.netNewMoney, "en-US")} of genuinely new money. ${swap.leverageAfter !== null ? `Post-transaction leverage is ${turns(swap.leverageAfter, "en-US")} on reported EBITDA, not the naive sum of ticket and stock.` : "Post-transaction leverage on reported EBITDA is not computable, because EBITDA for the latest financial year is zero."} What the deal buys is tenor and grace, and that is what the fund prices.`,
+      values: {refinancing: at(refinancing, 2), netNewMoney: at(swap.netNewMoney, 2), ...(postLeverage !== null ? {postLeverage} : {})},
       inputs: ["transaction.refinancing", "transaction.requested_amount", "debt.instruments"],
     });
   }
@@ -226,19 +240,21 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
       cash: input.cash,
       ebitda: input.auditedEbitda,
     });
+    const postLeverage = ratioAt(takeout.leverageAfter, 4);
     liabilityManagement = {
       covenantedBalance: at(takeout.redeemed, 2),
       netNewMoney: at(takeout.netNewMoney, 2),
-      postLeverageAfterRefi: ratioAt(takeout.leverageAfter, 4),
+      postLeverageAfterRefi: postLeverage,
       lendersTakenOut: covenanted.map((line) => line.lender),
     };
+    const after = takeout.leverageAfter;
 
     findings.push({
       id: "liability-management",
       severity: "high",
-      pt: `A estrutura que destrava a operação é quitar as linhas com covenant dentro do tíquete: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance)})`).join(" e ")}, ${brlM(takeout.redeemed)} no total. O rompimento no dia um deixa de existir porque o contrato que testaria deixa de existir; sobra ${brlM(takeout.netNewMoney)} de dinheiro efetivamente novo, a alavancagem pós fica em ${turns(takeout.leverageAfter)} sobre o EBITDA reportado, e quem passa a testar é o covenant do novo instrumento, desenhado sobre a trajetória abaixo. É assim que uma empresa nesta posição capta: reestruturação e dinheiro novo no mesmo instrumento, não dinheiro novo por cima do estoque.`,
-      en: `The structure that unlocks the deal is refinancing the covenanted lines inside the ticket: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance, "en-US")})`).join(" and ")}, ${brlM(takeout.redeemed, "en-US")} in total. The day-one breach ceases to exist because the contract that would test it does; ${brlM(takeout.netNewMoney, "en-US")} of genuinely new money remains, post leverage stands at ${turns(takeout.leverageAfter, "en-US")} on reported EBITDA, and what binds is the new instrument's covenant, written to the trajectory below. That is how a company in this position raises: restructuring and new money in one instrument, not new money on top of the stock.`,
-      values: {covenantedBalance: at(takeout.redeemed, 2), netNewMoney: at(takeout.netNewMoney, 2), postLeverage: ratioAt(takeout.leverageAfter, 4)},
+      pt: `A estrutura que destrava a operação é quitar as linhas com covenant dentro do tíquete: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance)})`).join(" e ")}, ${brlM(takeout.redeemed)} no total. O rompimento no dia um deixa de existir porque o contrato que testaria deixa de existir; sobra ${brlM(takeout.netNewMoney)} de dinheiro efetivamente novo, ${after !== null ? `a alavancagem pós fica em ${turns(after)} sobre o EBITDA reportado` : "a alavancagem pós sobre o EBITDA reportado não é calculável (o EBITDA do último exercício é zero)"}, e quem passa a testar é o covenant do novo instrumento, desenhado sobre a trajetória abaixo. É assim que uma empresa nesta posição capta: reestruturação e dinheiro novo no mesmo instrumento, não dinheiro novo por cima do estoque.`,
+      en: `The structure that unlocks the deal is refinancing the covenanted lines inside the ticket: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance, "en-US")})`).join(" and ")}, ${brlM(takeout.redeemed, "en-US")} in total. The day-one breach ceases to exist because the contract that would test it does; ${brlM(takeout.netNewMoney, "en-US")} of genuinely new money remains, ${after !== null ? `post leverage stands at ${turns(after, "en-US")} on reported EBITDA` : "post leverage on reported EBITDA is not computable (EBITDA for the latest financial year is zero)"}, and what binds is the new instrument's covenant, written to the trajectory below. That is how a company in this position raises: restructuring and new money in one instrument, not new money on top of the stock.`,
+      values: {covenantedBalance: at(takeout.redeemed, 2), netNewMoney: at(takeout.netNewMoney, 2), ...(postLeverage !== null ? {postLeverage} : {})},
       inputs: ["debt.instruments", "debt.covenants", "transaction.requested_amount"],
     });
   }
@@ -252,9 +268,9 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
     findings.push({
       id: "amortization-outruns-cash",
       severity: "critical",
-      pt: `O cronograma contratado exige ${brlM(worst.principalDue)} de amortização em ${worst.year}, ${percentAt(worst.scheduleStrain, 0)}% do EBITDA projetado do ano, antes de juros e de qualquer investimento. Esse ano não se paga com o caixa da operação, então ele será rolado: a pergunta não é se rola, é a que preço e com que prazo. Alongar resolve e custa spread e garantia; dimensionar a captação para cobrir ${worst.year} agora custa tíquete maior e alavancagem de pico mais alta. As duas saídas são defensáveis, e a escolha entre elas é o que o material precisa mostrar ao investidor.`,
-      en: `The contracted schedule demands ${brlM(worst.principalDue, "en-US")} of amortisation in ${worst.year}, ${percentAt(worst.scheduleStrain, 0)}% of that year's projected EBITDA, before interest and any investment. That year will not be paid out of operating cash, so it will be rolled: the question is not whether, but at what price and tenor. Terming it out works and costs spread and security; sizing the raise to cover ${worst.year} now costs a larger ticket and a higher peak leverage. Both are defensible, and choosing between them is what the material has to show the investor.`,
-      values: {year: String(worst.year), principalDue: worst.principalDue, strain: worst.scheduleStrain},
+      pt: `O cronograma contratado exige ${brlM(worst.principalDue)} de amortização em ${worst.year}, ${percentAt(worst.scheduleStrain!, 0)}% do EBITDA projetado do ano, antes de juros e de qualquer investimento. Esse ano não se paga com o caixa da operação, então ele será rolado: a pergunta não é se rola, é a que preço e com que prazo. Alongar resolve e custa spread e garantia; dimensionar a captação para cobrir ${worst.year} agora custa tíquete maior e alavancagem de pico mais alta. As duas saídas são defensáveis, e a escolha entre elas é o que o material precisa mostrar ao investidor.`,
+      en: `The contracted schedule demands ${brlM(worst.principalDue, "en-US")} of amortisation in ${worst.year}, ${percentAt(worst.scheduleStrain!, 0)}% of that year's projected EBITDA, before interest and any investment. That year will not be paid out of operating cash, so it will be rolled: the question is not whether, but at what price and tenor. Terming it out works and costs spread and security; sizing the raise to cover ${worst.year} now costs a larger ticket and a higher peak leverage. Both are defensible, and choosing between them is what the material has to show the investor.`,
+      values: {year: String(worst.year), principalDue: worst.principalDue, strain: worst.scheduleStrain!},
       inputs: ["debt.instruments", "projections.ebitda"],
     });
   }
@@ -263,17 +279,73 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
   const covenantProposal: CovenantStep[] = path.covenantProposal.map((step) => ({...step}));
 
   const back = crossings.find((crossing) => compareFigures(crossing.maximum, ceilings[0]!) === 0);
+  // An absent leverage is named, never printed: the peak year without its uncut leverage, no peak
+  // at all around a year whose leverage in the cut case is absent, and no covenant step for that year.
+  const cut = percentAt(haircut, 0);
+  const flat = {
+    pt: input.ebitdaHeldFlat ? " (sem projeção da companhia: EBITDA mantido no nível do último exercício, premissa da mesa)" : "",
+    en: input.ebitdaHeldFlat ? " (no company projection: EBITDA held at the latest audited level, a desk assumption)" : "",
+  };
+  const deleveraging = {
+    pt: `desalavancando pela amortização SAC${input.ebitdaHeldFlat ? "" : " e pela rampa do projeto"}`,
+    en: `deleveraging through SAC amortisation${input.ebitdaHeldFlat ? "" : " and the project ramp"}`,
+  };
+  const backUnder = {
+    pt: back && back.yearStressed ? `, e voltando abaixo de ${turns(back.maximum)} em ${back.yearStressed} mesmo no cenário cortado` : "",
+    en: back && back.yearStressed ? `, and back under ${turns(back.maximum, "en-US")} by ${back.yearStressed} even in the cut scenario` : "",
+  };
+  const unrankedYears = years.filter((row) => row.leverageStressed === null).map((row) => row.year);
+  const peakClause = !peakYear
+    ? {
+        pt: `o pico não pode ser afirmado, porque a alavancagem no cenário com corte de ${cut}% do crescimento não é calculável em ${listYears(unrankedYears, "pt-BR")}: o EBITDA ${unrankedYears.length === 1 ? "do ano" : "desses anos"} nesse cenário é zero${backUnder.pt}`,
+        en: `the peak cannot be stated, because leverage with ${cut}% of the growth cut is not computable in ${listYears(unrankedYears, "en-US")}: ${unrankedYears.length === 1 ? "that year's" : "those years'"} EBITDA in the cut case is zero${backUnder.en}`,
+      }
+    : peakYear.leverageBase === null
+      ? {
+          pt: `pico de ${turns(peakYear.leverageStressed!)} no cenário com corte de ${cut}% do crescimento em ${peakYear.year} (sem o corte, a alavancagem desse ano não é calculável, porque o EBITDA projetado é zero), ${deleveraging.pt}${backUnder.pt}`,
+          en: `peak of ${turns(peakYear.leverageStressed!, "en-US")} with ${cut}% of the growth cut in ${peakYear.year} (without the cut, that year's leverage is not computable, because its projected EBITDA is zero), ${deleveraging.en}${backUnder.en}`,
+        }
+      : {
+          pt: `pico de ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed!)} no cenário com corte de ${cut}% do crescimento) em ${peakYear.year}, ${deleveraging.pt}${backUnder.pt}`,
+          en: `peak of ${turns(peakYear.leverageBase, "en-US")} (${turns(peakYear.leverageStressed!, "en-US")} with ${cut}% of the growth cut) in ${peakYear.year}, ${deleveraging.en}${backUnder.en}`,
+        };
+  const steps = covenantProposal.flatMap((step) => (step.maximum === null ? [] : [{year: step.year, maximum: step.maximum}]));
+  const untested = covenantProposal.filter((step) => step.maximum === null).map((step) => step.year);
+  const covenantClause = steps.length === 0
+    ? {
+        pt: "Covenant proposto para o novo instrumento: nenhum teste anual pode ser proposto, porque o EBITDA de todos os anos no cenário cortado é zero.",
+        en: "Proposed covenant for the new instrument: no annual test can be proposed, because every year's EBITDA in the cut case is zero.",
+      }
+    : {
+        pt: `Covenant proposto para o novo instrumento, com folga de ${local(at(cushion, 2), "pt-BR")}x sobre o cenário cortado e teste anual: ${steps.map((step) => `${step.year} ≤ ${step.maximum.replace(".", ",")}x`).join("; ")}${untested.length ? `; sem teste proposto para ${listYears(untested, "pt-BR")}, porque o EBITDA ${untested.length === 1 ? "do ano" : "desses anos"} no cenário cortado é zero` : ""}. Primeira aferição no primeiro exercício completo após o desembolso.`,
+        en: `Proposed covenant for the new instrument, ${at(cushion, 2)}x of cushion over the cut scenario, tested annually: ${steps.map((step) => `${step.year} ≤ ${step.maximum}x`).join("; ")}${untested.length ? `; no test proposed for ${listYears(untested, "en-US")}, because ${untested.length === 1 ? "that year's" : "those years'"} EBITDA in the cut case is zero` : ""}. First test at the first full year after disbursement.`,
+      };
   findings.push({
     id: "leverage-trajectory",
     severity: "info",
-    pt: `Trajetória${input.ebitdaHeldFlat ? " (sem projeção da companhia: EBITDA mantido no nível do último exercício, premissa da mesa)" : ""}: pico de ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} no cenário com corte de ${percentAt(haircut, 0)}% do crescimento) em ${peakYear.year}, desalavancando pela amortização SAC${input.ebitdaHeldFlat ? "" : " e pela rampa do projeto"}${back && back.yearStressed ? `, e voltando abaixo de ${turns(back.maximum)} em ${back.yearStressed} mesmo no cenário cortado` : ""}. Covenant proposto para o novo instrumento, com folga de ${local(at(cushion, 2), "pt-BR")}x sobre o cenário cortado e teste anual: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum.replace(".", ",")}x`).join("; ")}. Primeira aferição no primeiro exercício completo após o desembolso.`,
-    en: `Trajectory${input.ebitdaHeldFlat ? " (no company projection: EBITDA held at the latest audited level, a desk assumption)" : ""}: peak of ${turns(peakYear.leverageBase, "en-US")} (${turns(peakYear.leverageStressed, "en-US")} with ${percentAt(haircut, 0)}% of the growth cut) in ${peakYear.year}, deleveraging through SAC amortisation${input.ebitdaHeldFlat ? "" : " and the project ramp"}${back && back.yearStressed ? `, and back under ${turns(back.maximum, "en-US")} by ${back.yearStressed} even in the cut scenario` : ""}. Proposed covenant for the new instrument, ${at(cushion, 2)}x of cushion over the cut scenario, tested annually: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum}x`).join("; ")}. First test at the first full year after disbursement.`,
-    values: {peakBase: peakYear.leverageBase, peakStressed: peakYear.leverageStressed, peakYear: String(peakYear.year)},
+    pt: `Trajetória${flat.pt}: ${peakClause.pt}. ${covenantClause.pt}`,
+    en: `Trajectory${flat.en}: ${peakClause.en}. ${covenantClause.en}`,
+    values: peakYear
+      ? {...(peakYear.leverageBase !== null ? {peakBase: peakYear.leverageBase} : {}), peakStressed: peakYear.leverageStressed!, peakYear: String(peakYear.year)}
+      : {},
     inputs: ["projections.ebitda", "debt.instruments", "transaction.requested_amount"],
   });
 
   const order = {critical: 0, high: 1, medium: 2, info: 3};
   findings.sort((a, b) => order[a.severity] - order[b.severity]);
+
+  // The published ratios a zero EBITDA left absent, each with the gap a reader is shown.
+  const absentRatios: AbsentRatio[] = [
+    ...path.absent.flatMap(({ratio}): AbsentRatio[] => {
+      if (ratio === "peak") return [{field: "peak", gap: "stressed_ebitda"}];
+      const [year, name] = ratio.split(".");
+      if (name === "leverageBase" || name === "scheduleStrain") return [{field: `years.${year}.${name}`, gap: "projected_ebitda"}];
+      if (name === "leverageStressed") return [{field: `years.${year}.leverageStressed`, gap: "stressed_ebitda"}];
+      if (name === "covenantStep") return [{field: `covenantProposal.${year}.maximum`, gap: "stressed_ebitda"}];
+      return [];
+    }),
+    ...(liabilityManagement && liabilityManagement.postLeverageAfterRefi === null ? [{field: "liabilityManagement.postLeverageAfterRefi", gap: "ebitda" as const}] : []),
+  ];
 
   return {
     assumptions: {
@@ -285,10 +357,11 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
       refinancing: at(refinancing, 2),
     },
     years,
-    peak: {year: peakYear.year, leverageBase: peakYear.leverageBase, leverageStressed: peakYear.leverageStressed},
+    peak: peakYear ? {year: peakYear.year, leverageBase: peakYear.leverageBase, leverageStressed: peakYear.leverageStressed!} : null,
     crossings,
     liabilityManagement,
     covenantProposal,
     findings,
+    ...(absentRatios.length > 0 ? {absentRatios} : {}),
   };
 }

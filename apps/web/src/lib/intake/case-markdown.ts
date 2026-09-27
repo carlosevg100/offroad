@@ -1,5 +1,6 @@
 import type {CaseState} from "./case-pipeline";
 import {resolveExecutiveSummaryClaims} from "@offroad/case-understanding";
+import {absentRatioGap, publishedRatio, type Trajectory} from "@offroad/credit-analysis";
 
 type Locale = "pt" | "en";
 
@@ -15,6 +16,12 @@ const money = (value: string | null | undefined, locale: Locale, currency: strin
 };
 
 const text = (locale: Locale, pt: string, en: string) => locale === "pt" ? pt : en;
+/** A leverage of the trajectory as the export prints it, or the gap in words when it is absent (a ratio over a zero EBITDA). */
+const leverage = (trajectory: Trajectory, year: Trajectory["years"][number], field: "leverageBase" | "leverageStressed", locale: Locale) => {
+  const value = publishedRatio(year[field]);
+  if (value !== null) return `${value}x`;
+  return absentRatioGap(trajectory, `years.${year.year}.${field}`, year[field])?.[locale] ?? text(locale, "Não calculado", "Not computed");
+};
 const lines = (items: readonly string[], locale: Locale) => items.length ? items.map((item) => `- ${item}`) : [text(locale, "- Nenhum.", "- None.")];
 
 /** A readable, portable diagnosis compiled from the exact governed case state on screen. */
@@ -97,7 +104,7 @@ export function caseDiagnosisMarkdown(input: {state: CaseState; locale: Locale; 
       "",
       `- ${text(locale, "Pedido", "Request")}: ${money(state.capacity.requested, locale, currency)}`,
       `- ${text(locale, "Capacidade recomendada", "Recommended capacity")}: ${money(state.capacity.recommended, locale, currency)}`,
-      `- ${text(locale, "Restrição vinculante", "Binding constraint")}: ${state.capacity.bindingConstraint ?? text(locale, "Não determinada", "Not determined")}`,
+      `- ${text(locale, "Restrição vinculante", "Binding constraint")}: ${state.capacity.walls.find((wall) => wall.id === state.capacity!.bindingConstraint)?.labels[locale] ?? text(locale, "Não determinada", "Not determined")}`,
       "",
       ...state.capacity.walls.map((wall) => `- ${wall.labels[locale]}: ${money(wall.amount, locale, currency)}. ${wall.explanation[locale]}`),
       "",
@@ -110,7 +117,7 @@ export function caseDiagnosisMarkdown(input: {state: CaseState; locale: Locale; 
       "",
       `| ${text(locale, "Ano", "Year")} | EBITDA base | EBITDA stress | ${text(locale, "Dívida líquida", "Net debt")} | ${text(locale, "Alavancagem base", "Base leverage")} | ${text(locale, "Alavancagem stress", "Stressed leverage")} |`,
       "|---|---:|---:|---:|---:|---:|",
-      ...state.trajectory.years.map((year) => `| ${year.year} | ${money(year.ebitdaBase, locale, currency)} | ${money(year.ebitdaStressed, locale, currency)} | ${money(year.netDebt, locale, currency)} | ${year.leverageBase}x | ${year.leverageStressed}x |`),
+      ...state.trajectory.years.map((year) => `| ${year.year} | ${money(year.ebitdaBase, locale, currency)} | ${money(year.ebitdaStressed, locale, currency)} | ${money(year.netDebt, locale, currency)} | ${leverage(state.trajectory!, year, "leverageBase", locale)} | ${leverage(state.trajectory!, year, "leverageStressed", locale)} |`),
       "",
     );
   }

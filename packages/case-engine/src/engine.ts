@@ -41,7 +41,9 @@ import {
 import {
   analyzeCreditPosition,
   buildDeskInputs,
+  creditAnalysisVersion,
   judgeOperation,
+  publishedRatio,
   projectLeverageTrajectory,
   questionsForCompany,
   rateCredit,
@@ -742,7 +744,7 @@ export async function executeCaseEngine(
     input,
     inputSchema,
     policy,
-    versions: {caseEngine: caseEngineVersion, ...input.runtimeVersions, caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
+    versions: {caseEngine: caseEngineVersion, ...input.runtimeVersions, creditAnalysis: creditAnalysisVersion, caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
     ...(input.onStage ? {onStage: input.onStage} : {}),
     ...(input.taskCache ? {taskCache: input.taskCache} : {}),
     stages: {
@@ -1662,7 +1664,7 @@ async function runStructureSubgraph(
     caseId: caseInput.caseId,
     input: graphInput,
     tasks,
-    versions: {caseEngine: caseEngineVersion, ...(caseInput.runtimeVersions ?? {}), caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
+    versions: {caseEngine: caseEngineVersion, ...(caseInput.runtimeVersions ?? {}), creditAnalysis: creditAnalysisVersion, caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
   });
   return {
     output: result.outputs.assemble as StructureOutput,
@@ -2047,7 +2049,7 @@ async function runMaterialsSubgraph(graphInput: MaterialsSubgraphInput) {
     caseId: input.caseId,
     input: graphInput,
     tasks,
-    versions: {caseEngine: caseEngineVersion, governedWorkbookRenderer: governedWorkbookRendererVersion, ...(input.runtimeVersions ?? {}), caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
+    versions: {caseEngine: caseEngineVersion, governedWorkbookRenderer: governedWorkbookRendererVersion, ...(input.runtimeVersions ?? {}), creditAnalysis: creditAnalysisVersion, caseUnderstanding: caseUnderstandingVersion, materialCompiler: caseMaterialsVersion},
   });
   return {
     output: result.outputs.assemble as MaterialsOutput,
@@ -2172,12 +2174,15 @@ function requestForMatching(
     .filter((entry) => entry.eligible)
     .map((entry) => legacyInstrumentMap[entry.instrument.id])
     .filter((entry): entry is Instrument => Boolean(entry));
-  const deskLeverage = proposedAmount
-    ? metrics.desk?.leverage.scenarios.find((scenario) => scenario.amount === proposedAmount)?.postTurns
-    : metrics.desk?.leverage.scenarios[0]?.postTurns;
-  const leverage = deskLeverage
-    ?? reconciliation.calculations.find((calculation) => calculation.id === "leverage_post_transaction")?.value
-    ?? calculationBasis(reconciliation.facts).facts.find((fact) => fact.key.fieldPath === "leverage.post_transaction_net_debt_ebitda")?.value;
+  const deskScenario = proposedAmount
+    ? metrics.desk?.leverage.scenarios.find((scenario) => scenario.amount === proposedAmount)
+    : metrics.desk?.leverage.scenarios[0];
+  // The desk's leverage after the ask when it states one; absent over a zero EBITDA, and then no
+  // leverage is matched on, rather than a figure from elsewhere standing in for the absent one.
+  const leverage = deskScenario
+    ? publishedRatio(deskScenario.postTurns) ?? undefined
+    : reconciliation.calculations.find((calculation) => calculation.id === "leverage_post_transaction")?.value
+      ?? calculationBasis(reconciliation.facts).facts.find((fact) => fact.key.fieldPath === "leverage.post_transaction_net_debt_ebitda")?.value;
   const dscr = calculationBasis(reconciliation.facts).facts.find((fact) => fact.key.fieldPath === "projections.minimum_dscr")?.value;
   return {
     ...(proposedAmount ? {amount: proposedAmount} : {}),

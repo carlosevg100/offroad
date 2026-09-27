@@ -49,7 +49,14 @@ const inputLabels: Record<string, {pt: string; en: string}> = {
   "transaction.desired_term_months": {pt: "prazo desejado para a operação", en: "desired tenor for the transaction"},
   "transaction.desired_grace_months": {pt: "carência desejada para a operação", en: "desired grace period for the transaction"},
 };
-const inputLabel = (path: string) => inputLabels[path] ?? {pt: "informação exigida pela análise", en: "information the analysis requires"};
+/**
+ * An input the desk lacks, in the company's words: the questions and the list of missing information
+ * on the desk screen name it the same way, never by its field path.
+ */
+export function deskInputLabel(path: string): {pt: string; en: string} {
+  return inputLabels[path] ?? {pt: "informação exigida pela análise", en: "information the analysis requires"};
+}
+const inputLabel = deskInputLabel;
 
 export function questionsForCompany(
   desk: DeskAnalysis | null,
