@@ -454,3 +454,56 @@ Nenhuma fixture as alcança. `credit-analysis/src/review-kernels.test.ts` testa 
 2. A pergunta 24 do Q&A dos materiais ("Quanto capital de giro o crescimento projetado absorve?") ainda responde com a absorção negativa ("R$ -9,0M ao ciclo atual de -190 dias") quando o ciclo é negativo; `case-materials` fica fora desta PR.
 3. O motor do caso ainda calcula em binário a cobertura dos recebíveis livres sobre o valor pedido que a triagem de instrumentos lê (`Number(...) / Number(...)` em `case-engine/src/engine.ts`).
 4. O manifesto de métodos precisa ser regenerado de novo pela parte 2B depois que esta for mesclada.
+
+## Segundo acabamento, parte 2B: a aritmética da estrutura da operação
+
+Uma PR (`fix/19-deal-structure-arithmetic-to-financial-core`) sobre a parte 2A (PR #833), porque usa os núcleos de leitura de fatos que ela cria (`readFactFigure` e `readMonthCount`); é mesclada depois dela, como pede o brief. Sem migração, sem banco. Move para `financial-core` a aritmética de `deal-structure` (capacidade, garantias, estrutura, alternativas, operação e a comparação de valor do term sheet) e resolve os dois números de `deal-structure` impressos fora da regra de apresentação que a parte 1 registrou na pergunta 2: o valor cru na nota do pacote de garantias e o DSCR e o teto de alavancagem com ponto nos textos de capacidade em português.
+
+### 1. Pinos tomados antes da mudança
+
+O primeiro commit só acrescenta `deal-structure/src/deal-parity.test.ts`, tirado das fontes como a parte 2A as deixou: a capacidade de cada um dos sete arquétipos sob 20 conjuntos de entradas (140: as três paredes com e sem cada entrada, EBITDA zero e negativo, dívida líquida acima do teto, valores em meio centavo, paredes empatadas e as frações de ARR e de rodada do venture debt); o pacote de garantias sobre oito conjuntos de ativos (uma classe de cada, haircut da sala sobre o da política, gravame acima do valor, empates de classe e de valor, valores fracionários e só aval) em seis valores e três coberturas (144); o term sheet de cada arquétipo sobre seis capacidades, restritas e não, e cinco conjuntos de entradas opcionais (210); a verdade de estrutura sobre o gabarito dos seus testes e 21 variantes que alcançam cada ramo de dimensionamento, cronograma, cobertura, vencimentos, garantias e dimensionamento final (22); a verdade de operação sobre 13 conjuntos de fatos; e as alternativas de estrutura sobre 9 propostas (verificadas e não, tolerâncias, valor acima do envelope, valor inválido, fontes e usos fracionários).
+
+### 2. Núcleos
+
+| Núcleo | Registro | Conta |
+|---|---|---|
+| `calculateVentureDebtCapacity` | `deal.venture_capacity` | a menor entre a fração do ARR e a da última rodada, meio para cima em centavos |
+| `calculateLeverageCeilingRoom` | `deal.leverage_ceiling_room` | EBITDA vezes o teto, menos a dívida líquida, nunca negativo, em centavos |
+| `selectLowestFigure` | `deal.lowest_figure` | o menor valor, por comparação exata, o primeiro no empate |
+| `designCollateralCoverage` | `deal.collateral_coverage` | valor elegível, ordem, seleção, cobertura alcançada e falta |
+| `sumAmounts` | `deal.amount_sum` | soma exata, na ordem dada |
+| `calculateAmountDifference` | `deal.amount_difference` | diferença e módulo |
+| `testWithinTolerance` | `deal.within_tolerance` | fontes e usos dentro da tolerância |
+| `calculateSizingGap` | `deal.sizing_gap` | pedido menos envelope, nunca negativo |
+| `sumAmountsByKey` | `deal.amounts_by_key` | vencimentos somados por ano |
+
+Ficam no módulo novo `financial-core/src/deal-arithmetic.ts` (`dealArithmeticVersion` `2026.09.27-v1`). As comparações exatas passam por `compareFigures`, e os números dos fatos são lidos por `readFactFigure` e `readMonthCount`, da parte 2A. Ficam no pacote a política como dado (as frações do venture debt, o haircut e a posição de cada classe de garantia), o calendário (o ano de cada parcela e de cada vencimento), os portões e as frases. Nenhum arquivo de `deal-structure` importa mais `decimal.js`; `Number` fica só para índices e anos.
+
+### 3. Paridade
+
+Todos os pinos existentes se mantiveram, menos os três do memorando nos materiais (seção 5). Dos pinos novos, os do term sheet, da estrutura, da operação e das alternativas se mantiveram; os da capacidade e das garantias mudaram só pelos dois textos da seção 4. Comparados campo a campo com as fontes anteriores, mudaram 120 explicações de parede em português e 49 notas em cada língua, e nada mais; as mesmas saídas com esses textos mascarados, tiradas das fontes anteriores, estão fixadas e se mantêm.
+
+### 4. Textos corrigidos
+
+**Capacidade**, na tela do caso. Antes: "A geração cobre um serviço de dívida a um DSCR mínimo de 1.30x, que é a cobertura que um financiador subscreve para este tipo de operação." e "Espaço até 3.5x dívida líquida / EBITDA no fechamento". Agora: "DSCR mínimo de 1,30x" e "Espaço até 3,5x", com os dígitos que o playbook escreve; o inglês não muda.
+
+**Nota do pacote de garantias**, no memorando e na tela de comitê. Antes: "O inventário cobre 0,46x do pedido contra 1,30x exigidos: faltam 35712000 de valor elegível." e "35712000 of eligible value is missing". Agora: "faltam R$ 35.712.000 de valor elegível" e "R$ 35,712,000 of eligible value is missing", pela regra única de valores, em reais inteiros agrupados pela língua, como o parágrafo do memorando que vem antes da nota imprime o mesmo valor.
+
+### 5. Materiais, versões e manifesto
+
+`caseMaterialsVersion` passa a `2026.09.27-v9`: mudaram os três pinos do memorando, um por variante, só pela nota e pelo fingerprint da auditoria de conduta em sombra, com os mesmos achados; os outros 19 pinos dos materiais se mantiveram. As versões de contrato de `deal-structure` (`structureTruthVersion`, `operationTruthVersion` e `structureAlternativesVersion`) seguem: as saídas de entradas legíveis têm os mesmos bytes, e mudar a versão das alternativas mudaria a impressão digital de toda proposta em curso e invalidaria a confirmação pendente da companhia. O manifesto de métodos foi regenerado; R01 segue com `manifestHash` `17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090`.
+
+### 6. Diferenças deliberadas
+
+Nenhuma fixture as alcança. `deal-structure/src/deal-kernels.test.ts` testa cada uma, e cada asserção falhou nas fontes anteriores; o DSCR e o teto com vírgula estão em `index.test.ts`.
+
+1. **Fatos da operação e da estrutura em notação decimal.** Um fato vazio é ausente, não zero: um prazo vazio era zero meses, e um colchão de execução vazio fazia o cálculo da necessidade lançar erro, e agora é pedido. Um número hexadecimal não é número: "0x10" de aporte dos sócios valia 16 e baixava a necessidade calculada de 100 para 84.
+2. **Alternativas.** Uma linha de fontes ou de usos que não é número deixa de ser pulada na soma e impede fechar fontes e usos: linhas escritas por extenso somavam zero contra zero e fechavam, e uma linha hexadecimal valia 100.000.000. Um valor da alternativa que não é número deixa os termos sem verificação em vez de lançar erro, e um valor com espaços em volta passa a ser lido.
+3. **Capacidade.** Uma dívida líquida que não é número é recusada mesmo quando o EBITDA não é positivo; antes ela só era lida com EBITDA positivo.
+
+### Limites e perguntas abertas da parte 2B
+
+1. `operation.ts` soma os componentes do autofinanciamento e as linhas de uso que existem e são números; um fato presente mas ilegível continua sem contar, como antes, em vez de deixar a necessidade não calculável.
+2. A exceção `sizing-exceeds-envelope` da verdade de estrutura não é alcançável: o valor proposto é o menor entre a base e o envelope, reduzido ao teto do mandato, e nunca passa do envelope.
+3. `deal-structure` e `market-reference` ainda declaram `decimal.js` como dependência sem importá-lo; tirar muda o lockfile e fica para uma PR de manutenção.
+4. Esta PR contém os commits da parte 2A até que a #833 seja mesclada; depois, uma mescla de `main` mantém as duas entradas dos registros e regenera o manifesto.
