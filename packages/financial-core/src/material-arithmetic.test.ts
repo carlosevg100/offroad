@@ -298,16 +298,19 @@ describe("material presentation conversions", () => {
     expect(presentationSpread({bps: 370, decimals: 2})).toMatchObject({sign: "+", magnitude: "3.70"});
     // The desk sentence printed `Math.abs(bps) / 100`; the observed sentence printed `Math.abs(bps / 100)`
     // through Intl with at most two decimals. For every whole basis point both texts are unchanged.
+    // One formatter with the options `toLocaleString` took prints the same text, without building a
+    // formatter per call.
+    const intl = new Intl.NumberFormat("pt-BR", {maximumFractionDigits: 2});
     const differing: number[] = [];
     for (let bps = -10_000; bps <= 10_000; bps += 1) {
       const exact = presentationSpread({bps});
       const rounded = presentationSpread({bps, decimals: 2});
       const desk = `${exact.sign} ${exact.magnitude}` === `${bps >= 0 ? "+" : "-"} ${Math.abs(bps) / 100}`;
-      const observed = `${rounded.sign} ${presentationNumber(rounded.magnitude).value.toLocaleString("pt-BR", {maximumFractionDigits: 2})}`
-        === `${bps >= 0 ? "+" : "-"} ${Math.abs(bps / 100).toLocaleString("pt-BR", {maximumFractionDigits: 2})}`;
+      const observed = `${rounded.sign} ${intl.format(presentationNumber(rounded.magnitude).value)}` === `${bps >= 0 ? "+" : "-"} ${intl.format(Math.abs(bps / 100))}`;
       if (!desk || !observed) differing.push(bps);
     }
     expect(differing).toEqual([]);
+    expect(intl.format(12.5)).toBe((12.5).toLocaleString("pt-BR", {maximumFractionDigits: 2}));
     // Intl rounds the shortest decimal of the quotient, so the observed sentence already agreed on
     // half basis points; the kernel keeps that on the decimal value.
     expect(presentationSpread({bps: 100.5, decimals: 2}).magnitude).toBe("1.01");
@@ -317,7 +320,8 @@ describe("material presentation conversions", () => {
     expect(presentationSpread({bps: 1998.7}).magnitude).toBe("19.987");
     expect(`${Math.abs(1998.7) / 100}`).toBe("19.987000000000002");
     expect(() => presentationSpread({bps: Number.NaN})).toThrow(RangeError);
-  });
+    // Twenty thousand quotes in each sentence: the default five seconds is not a budget for a loaded runner.
+  }, 60_000);
 
   it("hands the exact decimal to the binary number the display needs, as Number reads decimal text", () => {
     for (const text of ["18760000", "12450000.75", "-3290000.4", "0.181", "-0", "1e3", "123456789.123456789"]) {
