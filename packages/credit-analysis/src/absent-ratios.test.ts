@@ -248,7 +248,7 @@ describe("reading an absent ratio", () => {
     expect(absentRatioGap(undefined, "leverage.preTurns", "2.19")).toBeNull();
     expect([publishedRatio("Infinity"), publishedRatio("NaN"), publishedRatio(null), publishedRatio(undefined), publishedRatio("2.19")]).toEqual([null, null, null, null, "2.19"]);
     for (const label of Object.values(ratioGapLabels)) {
-      for (const text of [label.pt, label.en]) expect(text).not.toMatch(/[–—_]|Infinity|NaN/);
+      for (const text of [label.pt, label.en]) expect(text).not.toMatch(/[\u2013\u2014_]|Infinity|NaN/);
     }
   });
 });

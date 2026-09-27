@@ -17,10 +17,13 @@ import {syntheticMaterials, type SyntheticMaterialsVariant} from "./synthetic-ma
 const variants: readonly SyntheticMaterialsVariant[] = ["balanceAboveSchedule", "withinTolerance", "scheduleAboveBalance"];
 const identifier = /\b[a-z0-9]+_[a-z0-9_]+\b|\{ano\}|\b[a-z_]+\.[a-z_]+\.[a-z0-9_{}]+/;
 const dash = /[‒–—―]/;
+// A legal form by its key (stage 19, second polish: the English reason of a closed debenture read "Requires sa; the company is ltda.").
+const legalFormKey = /(?<![\p{L}\p{N}_])(?:sa|ltda)(?![\p{L}\p{N}_])/u;
 
 const offending = (material: Material) => bilingualItems(material).flatMap((item) => [item.pt, item.en].flatMap((text) => [
   ...(dash.test(text) ? [`dash at ${item.path}: ${text}`] : []),
   ...(identifier.test(text) ? [`identifier ${text.match(identifier)![0]} at ${item.path}`] : []),
+  ...(legalFormKey.test(text) ? [`legal form key at ${item.path}: ${text}`] : []),
 ]));
 
 describe("no material shows an internal identifier or a dash", () => {

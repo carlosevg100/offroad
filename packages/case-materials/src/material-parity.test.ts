@@ -38,28 +38,32 @@ import {syntheticMaterials, type SyntheticMaterialsVariant} from "./synthetic-ma
  * but the fingerprint of the shadow conduct audit of the memo and the term sheet, whose findings are
  * the same. The move of the desk, trajectory and price arithmetic into financial-core kept every pin.
  *
- * `case-materials` 2026.09.27-v8 (stage 19, second polish) moved no pin. A ratio of the desk or of the
+ * `case-materials` 2026.09.27-v8 (stage 19, second polish) moved three pins: the credit memo in the
+ * three variants, because the English reason of the two closed debentures named the legal form by its
+ * key ("Requires sa; the company is ltda.") and now names it in words ("Requires a sociedade anônima;
+ * the company is a limitada."). Compared item by item, nothing else changed but the fingerprint of
+ * the shadow conduct audit of the memo, whose findings are the same. A ratio of the desk or of the
  * trajectory over a zero denominator is now absent, and every material names its gap in words where
- * it printed the ratio (`absent-ratios.test.ts`); before, such a case compiled no material. No pinned
- * case has a zero denominator. The memorandum names the price basis through the labels the price
- * reference now exports, with the same bytes.
+ * it printed the ratio (`absent-ratios.test.ts`); before, such a case compiled no material, and no
+ * pinned case has one. The memorandum names the price basis through the labels the price reference
+ * now exports, with the same bytes.
  */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 
 const pins: Record<string, string> = {
-  "balanceAboveSchedule:credit_memo": "3f394176b8301932bc8e858c3ce7f08cc7979a4c38d41dcf78600a48e62b8c86",
+  "balanceAboveSchedule:credit_memo": "dba130cdcd96170662964332de61e22daccc36e87fd43c0802378da0804e15cd",
   "balanceAboveSchedule:term_sheet": "c3b2780e210ed54b1cb30bae673afe5c76ba27011d39729315d70113db3add6a",
   "balanceAboveSchedule:diligence_qa": "66ade8c4893d4ca7c3d35d087fd8b65f70336319bdb3622d6819eebfe5ba5a6c",
   "balanceAboveSchedule:teaser": "49a4e0b28e7664640e0db86c495f51a956d9a35f752268cf2d6353b0789740fb",
   "balanceAboveSchedule:credit_profile": "69b126773e523eb5d4243872fa768e15e694f8d8411273f6aa9d8b807f9f61f4",
   "balanceAboveSchedule:package": "780e3110a7c3e969a75b7c5e6b655e31830900aacd002f218b5a163a2e3698d0",
-  "withinTolerance:credit_memo": "4e52cd9e0611c76f24db4cc4d4128661231b8d5328a7133415f48f27183e6bb3",
+  "withinTolerance:credit_memo": "55af0bd73a1a39ed9505942425eb76402f72d5a0bce90144237e71d0aeaab66d",
   "withinTolerance:term_sheet": "8e91a5f967f906f14953d95ea94817ffb043a28ea9739a1df9b96849b64d152b",
   "withinTolerance:diligence_qa": "9737e3226c36577a41887c09fdf84c32265b0b5afd955a0ba3e22441449a515a",
   "withinTolerance:teaser": "1c0a2e04da63748e7544c9406382153381b8bc110c8f63d248c520a4b1847f89",
   "withinTolerance:credit_profile": "b82c1618b2c19e14e0cc5296464098ba633cdc056c87dd8f390c68e42901a587",
   "withinTolerance:package": "688d34760bac8bf095bcad9c1ae44ddc9f8269205be410488ae5a1ed312a6992",
-  "scheduleAboveBalance:credit_memo": "819d66a6d88ab976847f65e1eca3d189d810ec1dde61dcd5c70445848671f1b1",
+  "scheduleAboveBalance:credit_memo": "76940fef947ca7670fe1119e197a2e503d3b7a85078728fca39cbccd3ad89ca1",
   "scheduleAboveBalance:term_sheet": "c3b2780e210ed54b1cb30bae673afe5c76ba27011d39729315d70113db3add6a",
   "scheduleAboveBalance:diligence_qa": "404695cecf738006a4ce3fe118056a2abedce37d3734e6ecf508a87d0216cffe",
   "scheduleAboveBalance:teaser": "49a4e0b28e7664640e0db86c495f51a956d9a35f752268cf2d6353b0789740fb",

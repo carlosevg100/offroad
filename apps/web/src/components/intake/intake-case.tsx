@@ -2,8 +2,10 @@ import {ReceivablesSupportPeriods} from "./receivables-support-periods";
 import {AlertTriangle, FileDown, FileText, Info, Printer, Table2} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 import {resolveExecutiveSummaryClaims} from "@offroad/case-understanding";
+import {termBasisLabels} from "@offroad/deal-structure";
 
 import type {CaseState} from "@/lib/intake/case-pipeline";
+import {evidenceLabels} from "@/lib/intake/evidence-labels";
 
 import {IntakeCommittee} from "./intake-committee";
 import {IntakeDataRoom} from "./intake-data-room";
@@ -77,12 +79,13 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
   const structureConstraint = (value: string | null) => {
     if (!value) return t("notInformed");
     const known = new Set(["cash_flow", "collateral", "market", "arr_and_round", "existing_covenant"]);
-    return known.has(value) ? t(`structureConstraint_${value}`) : value.replaceAll("_", " ");
+    // An unknown constraint is named generically, never by its identifier.
+    return known.has(value) ? t(`structureConstraint_${value}`) : t("structureConstraint_other");
   };
   const repaymentFormat = (value: string | null) => {
     if (!value) return t("notInformed");
     const known = new Set(["sac", "price", "bullet", "balloon"]);
-    return known.has(value) ? t(`structureRepayment_${value}`) : value.replaceAll("_", " ");
+    return known.has(value) ? t(`structureRepayment_${value}`) : t("structureRepayment_other");
   };
 
   if (!state) {
@@ -97,6 +100,8 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
   const {readiness, capacity, termSheet, brief, materials} = state;
   const summaryClaims = brief ? resolveExecutiveSummaryClaims(brief) : null;
   const receivables = state.receivablesVertical;
+  // What a claim of the brief stands on, in words: the facts and calculations it cites, never their identifiers.
+  const supportText = (ids: readonly string[]) => evidenceLabels(ids, lang, state.reconciliation.calculations).join(" · ");
   const readinessLabel =
     readiness.state === "blocked" ? t("readinessBlocked") : readiness.state === "ready" ? t("readinessReady") : t("readinessInProgress");
 
@@ -297,7 +302,6 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
         <section className="case-financial-truth">
           <header className="case-truth__head">
             <div>
-              <span className="section-kicker">M2</span>
               <h3>{t("financialTruthTitle")}</h3>
             </div>
             <span className={`case-truth__status is-${state.reconciliation.financialTruth.status}`}>
@@ -336,7 +340,6 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
         <section className="case-debt-truth">
           <header className="case-truth__head">
             <div>
-              <span className="section-kicker">M3</span>
               <h3>{t("debtTruthTitle")}</h3>
             </div>
             <span className={`case-truth__status is-${state.reconciliation.debtTruth.status}`}>
@@ -374,7 +377,6 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
       <section className="case-operation-truth">
         <header className="case-truth__head">
           <div>
-            <span className="section-kicker">M4</span>
             <h3>{t("operationTruthTitle")}</h3>
           </div>
           <span className={`case-truth__status is-${state.operationTruth.status}`}>
@@ -401,7 +403,6 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
       <section className="case-structure-truth">
         <header className="case-truth__head">
           <div>
-            <span className="section-kicker">M5</span>
             <h3>{t("structureTruthTitle")}</h3>
           </div>
           <span className={`case-truth__status is-${state.structureTruth.status}`}>
@@ -427,7 +428,6 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
       <section className="case-pricing-truth">
         <header className="case-truth__head">
           <div>
-            <span className="section-kicker">M6</span>
             <h3>{t("pricingTruthTitle")}</h3>
           </div>
           <span className={`case-truth__status is-${state.pricingTruth.status}`}>
@@ -446,13 +446,13 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
               </strong>
               <small>{state.pricingTruth.indicativePrice.sentence[lang]}</small>
             </div>
-            <dl className="case-truth__metrics">
+            {/* The governing policy is an identifier: it stays with the element, off the visible text. */}
+            <dl className="case-truth__metrics" data-pricing-policy={state.pricingTruth.policyVersion}>
               <div><dt>{t("pricingSample")}</dt><dd>{state.pricingTruth.sample.eligibleCount}</dd></div>
               <div><dt>{t("pricingSources")}</dt><dd>{state.pricingTruth.sample.distinctSources}</dd></div>
               <div><dt>{t("pricingLatest")}</dt><dd>{date(state.pricingTruth.sample.latestObservation, locale)}</dd></div>
               <div><dt>{t("pricingAnnualizedCosts")}</dt><dd>{basisPoints(state.pricingTruth.allIn.annualizedCostBps, locale)}</dd></div>
               <div><dt>{t("pricingAllIn")}</dt><dd>{percentageRange(state.pricingTruth.allIn.totalRate, locale)}</dd></div>
-              <div><dt>{t("pricingPolicy")}</dt><dd>{state.pricingTruth.policyVersion}</dd></div>
             </dl>
           </>
         ) : (
@@ -496,7 +496,7 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
                   {t(`origin_${term.origin}`)}
                 </span>
                 <span className="case-terms__basis">
-                  {t("termBasis")}: {term.basis}
+                  {t("termBasis")}: {termBasisLabels[term.basis][lang]}
                 </span>
                 <span className="case-terms__why">{term.rationale[lang]}</span>
                 {/* The disagreement, with both sides. A term sheet that quietly replaces a
@@ -523,20 +523,26 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
         <div className="case-calculations">
           <h3>{t("calculationsTitle")}</h3>
           <ul>
-            {state.reconciliation.calculations.map((calculation) => (
-              <li key={calculation.id}>
+            {state.reconciliation.calculations.map((calculation) => {
+              // What the figure is computed from, in words: never the field paths it reads.
+              const inputs = evidenceLabels(calculation.inputs, lang);
+              return (
+              <li key={calculation.id} data-inputs={calculation.inputs.join(" ")}>
                 <strong>{calculation.labels[lang]}</strong>
                 <span className="case-calculations__value">{money(calculation.value, locale)}</span>
-                <span className="case-calculations__trace">
-                  {t("tracedFrom")}: {calculation.inputs.join(" · ")}
-                </span>
+                {inputs.length > 0 ? (
+                  <span className="case-calculations__trace">
+                    {t("tracedFrom")}: {inputs.join(" · ")}
+                  </span>
+                ) : null}
                 {calculation.warnings.map((warning) => (
                   <span className="case-calculations__warning" key={warning}>
                     <Info aria-hidden="true" size={12} /> {warning}
                   </span>
                 ))}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       ) : null}
@@ -547,9 +553,9 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
         {brief ? (
           <>
             {summaryClaims ? summaryClaims.map(claim => (
-              <p className="case-brief__summary" key={claim.id}>
+              <p className="case-brief__summary" key={claim.id} data-support-ids={claim.supportIds.join(" ")}>
                 {claim.text}
-                {claim.supportIds.length > 0 ? <span className="case-brief__support">{claim.supportIds.join(" · ")}</span> : null}
+                {supportText(claim.supportIds) ? <span className="case-brief__support">{supportText(claim.supportIds)}</span> : null}
               </p>
             )) : <p className="form-notice">{t("briefBlocked")}</p>}
             {brief.sections
@@ -558,9 +564,9 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
                 <div key={section.id} className="case-brief__section">
                   <h4>{section.heading}</h4>
                   {section.claims.map((claim) => (
-                    <p key={claim.id}>
+                    <p key={claim.id} data-support-ids={claim.supportIds.join(" ")}>
                       {claim.text}
-                      {claim.supportIds.length > 0 ? <span className="case-brief__support">{claim.supportIds.join(" · ")}</span> : null}
+                      {supportText(claim.supportIds) ? <span className="case-brief__support">{supportText(claim.supportIds)}</span> : null}
                     </p>
                   ))}
                 </div>
@@ -659,7 +665,6 @@ export async function IntakeCase({locale, caseState: state, sessionId, view = "f
       <section className="case-market-truth">
         <header className="case-truth__head">
           <div>
-            <span className="section-kicker">M8</span>
             <h3>{t("marketTruthTitle")}</h3>
           </div>
           <span className={`case-truth__status is-${state.matching.marketTruth.status}`}>

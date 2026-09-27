@@ -86,7 +86,7 @@ export async function IntakeCommittee({locale, rating, stress, instruments, coll
             {open.map((verdict) => (
               <li key={verdict.instrument.id} className="is-open">
                 <strong>{verdict.instrument.labels[lang]}</strong>
-                <span>{verdict.instrument.tenorMonths.min} a {verdict.instrument.tenorMonths.max} {t("months")} · {verdict.instrument.buyers.join(", ")}</span>
+                <span>{t("tenorRange", {min: verdict.instrument.tenorMonths.min, max: verdict.instrument.tenorMonths.max})} · {verdict.instrument.buyers.join(", ")}</span>
                 <span className="case-committee__why">{verdict.reasons[0]?.[lang]}</span>
               </li>
             ))}
@@ -104,7 +104,7 @@ export async function IntakeCommittee({locale, rating, stress, instruments, coll
         <section className="case-committee__price">
           <h4>{t("priceTitle")}</h4>
           <p className="case-committee__priceRange">
-            CDI + {(price.bps.min / 100).toLocaleString(intl(locale), {minimumFractionDigits: 2, maximumFractionDigits: 2})}% {t("to")} CDI + {(price.bps.max / 100).toLocaleString(intl(locale), {minimumFractionDigits: 2, maximumFractionDigits: 2})}% a.a.
+            CDI + {(price.bps.min / 100).toLocaleString(intl(locale), {minimumFractionDigits: 2, maximumFractionDigits: 2})}% {t("to")} CDI + {(price.bps.max / 100).toLocaleString(intl(locale), {minimumFractionDigits: 2, maximumFractionDigits: 2})}% {t("perYear")}
           </p>
           <p className="case-desk__note">{price.sentence[lang]}</p>
         </section>
