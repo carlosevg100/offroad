@@ -262,8 +262,23 @@ describe("a ratio over a zero denominator", () => {
     expect(partial.absent.map((entry) => entry.ratio)).toEqual(["dpo"]);
     // A cycle of zero days absorbs nothing: the ask still exceeds twice that, and how many times the need it is, is absent.
     const flat = calculateWorkingCapitalCycle({revenue: "365", receivables: "20", cogs: "365", inventory: "20", suppliers: "40", nextYearRevenue: "465", workingCapitalAsk: "40"});
-    expect(flat).toMatchObject({cycleDays: "0", growthAbsorption: "0", askExceedsTwiceNeed: true, askOverNeed: null});
+    expect(flat).toMatchObject({cycleDays: "0", growthAbsorption: "0", askExceedsTwiceNeed: true, askOverNeed: null, growthRelease: null});
     expect(flat.absent).toEqual([{ratio: "askOverNeed", denominator: "working capital that growth absorbs"}]);
+  });
+
+  it("reads a negative need as working capital released, never as a negative multiple of the ask (stage 19, third polish)", () => {
+    // DSO 20, DIO 36.5 and DPO 146: a cycle of -89.5 days. Revenue growing by 100 releases 100 x 89.5 / 365 of working capital.
+    const negative = calculateWorkingCapitalCycle({revenue: "365", receivables: "20", cogs: "100", inventory: "10", suppliers: "40", nextYearRevenue: "465", workingCapitalAsk: "40"});
+    expect(negative).toMatchObject({cycleDays: "-89.5", askExceedsTwiceNeed: true, askOverNeed: null, absent: []});
+    expect(negative.growthAbsorption!.startsWith("-24.52054794520547945")).toBe(true);
+    expect(negative.growthRelease!.startsWith("24.52054794520547945")).toBe(true);
+    expect(negative.trace.result).toContain("askOverNeed=none (growth releases 24.5205479452");
+    // Until then the ask was divided by the negative need: 40 over -24.52 printed as -1.6 times the need.
+    expect(negative.askOverNeed).toBeNull();
+    // A positive need keeps its multiple and releases nothing.
+    const positive = calculateWorkingCapitalCycle({revenue: "365", receivables: "40", cogs: "365", inventory: "20", suppliers: "20", nextYearRevenue: "465", workingCapitalAsk: "40"});
+    expect(positive).toMatchObject({cycleDays: "40", askExceedsTwiceNeed: true, growthRelease: null});
+    expect(positive.askOverNeed!.startsWith("3.65")).toBe(true);
   });
 
   it("leaves a year's leverage, strain and covenant step absent over a zero EBITDA, never ranks or compares them, and states no peak around an absent one", () => {

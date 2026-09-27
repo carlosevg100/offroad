@@ -1,4 +1,4 @@
-import Decimal from "decimal.js";
+import {calculateStressTable, presentationFigure, type StressScenarioFigures} from "@offroad/financial-core";
 
 import {absentRatioGap, publishedRatio} from "./absent-ratio";
 import type {DeskAnalysis} from "./analyze";
@@ -12,6 +12,10 @@ import type {DeskAnalysis} from "./analyze";
  * model, and says what it does to leverage, to the interest bill, to working capital and to
  * the headroom under the tightest covenant. A shock that needs a number the room does not
  * carry says so instead of guessing.
+ *
+ * Every figure of the table, the shocked CDI and cycle its sentences state and every figure they
+ * print come from `@offroad/financial-core` (stage 19, third polish); the labels and the sentences
+ * stay here.
  */
 
 export type StressScenario = {
@@ -42,70 +46,67 @@ export type StressInput = {
   lostCustomerMargin?: string;
 };
 
-const d = (value: string | number): Decimal => new Decimal(value);
-const ZERO = new Decimal(0);
+/** A figure at the precision the table publishes it, half-up on the decimal value; null stays null. */
+const at = (value: string | null, decimals: number) => (value === null ? null : presentationFigure({value, decimals}).value);
+/** A fraction as the percentage a sentence states. */
+const percent = (value: string, decimals: number) => presentationFigure({value, scale: "percent", decimals}).value;
 
 export function stressTable(input: StressInput): StressScenario[] {
   const {desk} = input;
-  const ebitda = d(desk.leverage.ebitda);
-  const amount = input.amount ? d(input.amount) : desk.leverage.scenarios.reduce((max, s) => (d(s.amount).gt(max) ? d(s.amount) : max), ZERO);
-  const netDebtPost = d(desk.leverage.netDebtPre).plus(amount);
-  const grossDebtPost = d(desk.stack.totalOnBalance).plus(amount);
-  const ceiling = desk.leverage.tightestCovenant ? d(desk.leverage.tightestCovenant.maximum) : null;
-  const cdi = d(desk.assumptions.cdi);
-  const weightedCost = desk.stack.weightedCost ? d(desk.stack.weightedCost) : null;
   // A cycle absent over a zero cost of goods sold is named, never printed as a number of days.
   const cycleText = publishedRatio(desk.workingCapital.cycleDays);
-  const cycleDays = cycleText ? d(cycleText) : null;
+  const cycleDays = cycleText ? cycleText : null;
   const cycleGap = cycleDays ? null : absentRatioGap(desk, "workingCapital.cycleDays", desk.workingCapital.cycleDays);
-  const revenue = input.revenue ? d(input.revenue) : null;
+  const share = input.topCustomerShare ? input.topCustomerShare : null;
+  const margin = input.lostCustomerMargin ?? "0.35";
+  const table = calculateStressTable({
+    ebitda: desk.leverage.ebitda,
+    netDebtPre: desk.leverage.netDebtPre,
+    grossDebt: desk.stack.totalOnBalance,
+    amount: input.amount ? input.amount : null,
+    scenarioAmounts: desk.leverage.scenarios.map((scenario) => scenario.amount),
+    covenantCeiling: desk.leverage.tightestCovenant ? desk.leverage.tightestCovenant.maximum : null,
+    weightedCost: desk.stack.weightedCost ? desk.stack.weightedCost : null,
+    cdi: desk.assumptions.cdi,
+    cycleDays,
+    revenue: input.revenue ? input.revenue : null,
+    topCustomerShare: share,
+    lostCustomerMargin: margin,
+  });
+  const [minus20, minus30, cdiShock, cycleShock, customerLost] = table.scenarios as [StressScenarioFigures, StressScenarioFigures, StressScenarioFigures, StressScenarioFigures, StressScenarioFigures];
 
-  const leverageOf = (e: Decimal) => (e.gt(0) ? netDebtPost.div(e) : null);
-  const headroomOf = (e: Decimal) => (ceiling && e.gt(0) ? ceiling.times(e).minus(netDebtPost) : null);
-  const interestAt = (cost: Decimal | null) => (cost ? grossDebtPost.times(cost) : null);
-
-  const scenario = (
-    id: StressScenario["id"], labels: {pt: string; en: string}, shockedEbitda: Decimal, cost: Decimal | null,
-    workingCapitalNeed: Decimal | null, assumptions: {pt: string; en: string},
-  ): StressScenario => {
-    const leverage = leverageOf(shockedEbitda);
-    const headroom = headroomOf(shockedEbitda);
-    return {
-      id, labels,
-      leverage: leverage ? leverage.toFixed(4) : null,
-      annualInterest: interestAt(cost)?.toFixed(2) ?? null,
-      workingCapitalNeed: workingCapitalNeed ? workingCapitalNeed.toFixed(2) : null,
-      covenantHeadroom: headroom ? headroom.toFixed(2) : null,
-      breachesCovenant: leverage && ceiling ? leverage.gt(ceiling) : null,
-      assumptions,
-    };
-  };
+  const scenario = (figures: StressScenarioFigures, labels: {pt: string; en: string}, assumptions: {pt: string; en: string}): StressScenario => ({
+    id: figures.id, labels,
+    leverage: at(figures.leverage, 4),
+    annualInterest: at(figures.annualInterest, 2),
+    workingCapitalNeed: at(figures.workingCapitalNeed, 2),
+    covenantHeadroom: at(figures.covenantHeadroom, 2),
+    breachesCovenant: figures.breachesCovenant,
+    assumptions,
+  });
 
   const base = {pt: "Dívida líquida pós-operação sobre o EBITDA reportado; juros ao custo médio do estoque, com o novo papel ao mesmo custo.", en: "Post-transaction net debt over reported EBITDA; interest at the stack's weighted cost, the new paper at the same cost."};
 
+  const cdiFrom = percent(desk.assumptions.cdi, 2);
+  const cdiTo = percent(table.shockedCdi, 2);
   return [
-    scenario("ebitda_minus_20", {pt: "EBITDA -20%", en: "EBITDA -20%"}, ebitda.times("0.8"), weightedCost, null, base),
-    scenario("ebitda_minus_30", {pt: "EBITDA -30%", en: "EBITDA -30%"}, ebitda.times("0.7"), weightedCost, null, base),
-    scenario("cdi_plus_300", {pt: "CDI +300 bps", en: "CDI +300 bps"}, ebitda, weightedCost ? weightedCost.plus("0.03") : null, null, {
-      pt: `CDI de ${cdi.times(100).toFixed(2).replace(".", ",")}% para ${cdi.plus("0.03").times(100).toFixed(2).replace(".", ",")}%, repassado integralmente ao estoque pós-fixado. EBITDA inalterado.`,
-      en: `CDI from ${cdi.times(100).toFixed(2)}% to ${cdi.plus("0.03").times(100).toFixed(2)}%, passed fully to the floating stack. EBITDA unchanged.`,
+    scenario(minus20, {pt: "EBITDA -20%", en: "EBITDA -20%"}, base),
+    scenario(minus30, {pt: "EBITDA -30%", en: "EBITDA -30%"}, base),
+    scenario(cdiShock, {pt: "CDI +300 bps", en: "CDI +300 bps"}, {
+      pt: `CDI de ${cdiFrom.replace(".", ",")}% para ${cdiTo.replace(".", ",")}%, repassado integralmente ao estoque pós-fixado. EBITDA inalterado.`,
+      en: `CDI from ${cdiFrom}% to ${cdiTo}%, passed fully to the floating stack. EBITDA unchanged.`,
     }),
-    scenario("cycle_plus_15", {pt: "Ciclo de caixa +15 dias", en: "Cash cycle +15 days"}, ebitda, weightedCost, revenue ? revenue.times(15).div(365) : null, {
+    scenario(cycleShock, {pt: "Ciclo de caixa +15 dias", en: "Cash cycle +15 days"}, {
       pt: cycleDays
-        ? `Ciclo de ${cycleDays.toFixed(0)} para ${cycleDays.plus(15).toFixed(0)} dias; o capital de giro absorvido é 15/365 da receita anual.`
+        ? `Ciclo de ${at(cycleDays, 0)} para ${at(table.shockedCycleDays, 0)} dias; o capital de giro absorvido é 15/365 da receita anual.`
         : `Ciclo de caixa ${cycleGap ? cycleGap.pt : "não calculado"}; o capital de giro absorvido é 15/365 da receita anual.`,
       en: cycleDays
-        ? `Cycle from ${cycleDays.toFixed(0)} to ${cycleDays.plus(15).toFixed(0)} days; the working capital absorbed is 15/365 of annual revenue.`
+        ? `Cycle from ${at(cycleDays, 0)} to ${at(table.shockedCycleDays, 0)} days; the working capital absorbed is 15/365 of annual revenue.`
         : `Cash cycle ${cycleGap ? cycleGap.en : "not computed"}; the working capital absorbed is 15/365 of annual revenue.`,
     }),
-    (() => {
-      const share = input.topCustomerShare ? d(input.topCustomerShare) : null;
-      const margin = d(input.lostCustomerMargin ?? "0.35");
-      const lost = share && revenue ? revenue.times(share).times(margin) : null;
-      return scenario("top_customer_lost", {pt: "Perda do maior cliente", en: "Largest customer lost"}, lost ? ebitda.minus(lost) : ebitda, weightedCost, null, {
-        pt: share ? `O maior cliente (${share.times(100).toFixed(1).replace(".", ",")}% da receita) sai; o EBITDA perde a margem de contribuição dessa receita (${margin.times(100).toFixed(0)}% assumido).` : "Concentração de clientes não informada; cenário não aplicado ao EBITDA.",
-        en: share ? `The largest customer (${share.times(100).toFixed(1)}% of revenue) leaves; EBITDA loses that revenue's contribution margin (${margin.times(100).toFixed(0)}% assumed).` : "Customer concentration not stated; scenario not applied to EBITDA.",
-      });
-    })(),
+    scenario(customerLost, {pt: "Perda do maior cliente", en: "Largest customer lost"}, {
+      pt: share ? `O maior cliente (${percent(share, 1).replace(".", ",")}% da receita) sai; o EBITDA perde a margem de contribuição dessa receita (${percent(margin, 0)}% assumido).` : "Concentração de clientes não informada; cenário não aplicado ao EBITDA.",
+      en: share ? `The largest customer (${percent(share, 1)}% of revenue) leaves; EBITDA loses that revenue's contribution margin (${percent(margin, 0)}% assumed).` : "Customer concentration not stated; scenario not applied to EBITDA.",
+    }),
   ];
 }

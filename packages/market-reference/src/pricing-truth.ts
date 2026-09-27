@@ -1,7 +1,7 @@
-import Decimal from "decimal.js";
 import {
-  annualizeCostInBasisPoints, calculateSpreadDifference, compareFigures, composeCdiPlusBasisPoints, presentationFigure, presentationNumber,
-  presentationSpread, shiftSpreadBand, sumBasisPoints, testSpreadNormalization,
+  annualizeCostInBasisPoints, calculateCostDifference, calculateObservationWeight, calculateRecencyFactor, calculateSpreadDifference,
+  calculateTenorWindow, compareFigures, composeCdiPlusBasisPoints, presentationFigure, presentationNumber, presentationSpread, scoreComparability,
+  selectWeightedQuantiles, shiftSpreadBand, sumBasisPoints, testObservationWindows, testSpreadNormalization,
 } from "@offroad/financial-core";
 
 import type {IndicativePrice, PriceAdjustment, PricedInstrument, RatingBand, SpreadBand} from "./index";
@@ -142,9 +142,15 @@ export type PricingAbstention = {
  * Comparability of `policy.pricing.sample-quality` (weights of Case 01, section R7). Risk band,
  * instrument and security class stay exact here, so their dimensions score 1; tenor and size are
  * windows; sector and amortization lower the weight of an observation without excluding it.
+ *
+ * The policy's weights, bands and windows stay here as data, with the calendar (the age of an
+ * observation in days) and which text counts as the same sector or amortization family. The
+ * statistics are computed by `@offroad/financial-core` (stage 19, third polish): the tenor window,
+ * the tenor gap and the amount ratio, the recency factor, the comparability score, the weight, the
+ * weighted quantiles and the difference against the current cost.
  */
 const COMPARABILITY_WEIGHTS = {security: "0.25", risk: "0.25", instrument: "0.15", tenor: "0.15", sector: "0.10", size: "0.05", amortization: "0.05"} as const;
-const DIRECT_MIN_SCORE = new Decimal("0.80");
+const DIRECT_MIN_SCORE = "0.80";
 const DEFAULT_TENOR_WINDOW = {floorMonths: 6, relativeToTarget: "0.5"} as const;
 /** Recency by source kind: full weight up to the first count of days, linear decay to zero at the second. */
 const RECENCY_DAYS: Readonly<Record<PricingObservation["sourceKind"], {full: number; zero: number}>> = {
@@ -155,21 +161,26 @@ const RECENCY_DAYS: Readonly<Record<PricingObservation["sourceKind"], {full: num
   indication: {full: 120, zero: 180},
   sounding: {full: 120, zero: 180},
 };
-const QUARTILES = {p25: new Decimal("0.25"), p50: new Decimal("0.5"), p75: new Decimal("0.75")} as const;
+const QUARTILES = ["0.25", "0.5", "0.75"] as const;
 
 const isoValid = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`));
+/** Whole days between two calendar dates (the calendar, not a figure). */
 const daysBetween = (from: string, to: string) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
-const moneyRatio = (observation: string, target: string) => new Decimal(observation).div(target);
 
-/** Tenor window in months: min(maxTenorDeltaMonths; max(floor; share × target)). */
-export function tenorWindowMonths(targetMonths: number, policy: Pick<PricingPolicy, "maxTenorDeltaMonths" | "tenorWindowFloorMonths" | "tenorWindowRelative">): Decimal {
-  const floor = new Decimal(policy.tenorWindowFloorMonths ?? DEFAULT_TENOR_WINDOW.floorMonths);
-  const relative = new Decimal(policy.tenorWindowRelative ?? DEFAULT_TENOR_WINDOW.relativeToTarget).times(targetMonths);
-  return Decimal.min(policy.maxTenorDeltaMonths, Decimal.max(floor, relative));
+/** Tenor window in months: min(maxTenorDeltaMonths; max(floor; share × target)), as a decimal string. */
+export function tenorWindowMonths(targetMonths: number, policy: Pick<PricingPolicy, "maxTenorDeltaMonths" | "tenorWindowFloorMonths" | "tenorWindowRelative">): string {
+  return calculateTenorWindow({
+    targetMonths,
+    maxDeltaMonths: policy.maxTenorDeltaMonths,
+    floorMonths: policy.tenorWindowFloorMonths ?? DEFAULT_TENOR_WINDOW.floorMonths,
+    relativeToTarget: policy.tenorWindowRelative ?? DEFAULT_TENOR_WINDOW.relativeToTarget,
+  }).value;
 }
 
-const tenorSimilarity = (deltaMonths: number) => deltaMonths <= 6 ? "1" : deltaMonths <= 12 ? "0.8" : deltaMonths <= 24 ? "0.5" : "0";
-const sizeSimilarity = (ratio: Decimal) => ratio.gte("0.5") && ratio.lte(2) ? "1" : ratio.gte("0.25") && ratio.lte(4) ? "0.5" : "0";
+/** The similarity bands of tenor and size, compared exactly against the gap and the ratio financial-core computed. */
+const tenorSimilarity = (deltaMonths: string) => compareFigures(deltaMonths, 6) <= 0 ? "1" : compareFigures(deltaMonths, 12) <= 0 ? "0.8" : compareFigures(deltaMonths, 24) <= 0 ? "0.5" : "0";
+const sizeSimilarity = (ratio: string) =>
+  compareFigures(ratio, "0.5") >= 0 && compareFigures(ratio, 2) <= 0 ? "1" : compareFigures(ratio, "0.25") >= 0 && compareFigures(ratio, 4) <= 0 ? "0.5" : "0";
 const sectorSimilarity = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase() ? "1" : "0.3";
 function amortizationFamily(value: string): "concentrated" | "amortizing" | null {
   const text = value.trim().toLowerCase();
@@ -184,37 +195,34 @@ function amortizationSimilarity(a: string, b: string): string {
 }
 
 /** Recency factor: 1 inside the full-weight window, linear to 0 at the end of the decay, 0 after. */
-function recencyFactor(ageDays: number, kind: PricingObservation["sourceKind"]): Decimal {
+function recencyFactor(ageDays: number, kind: PricingObservation["sourceKind"]): string {
   const window = RECENCY_DAYS[kind];
-  if (ageDays <= window.full) return new Decimal(1);
-  if (ageDays >= window.zero) return new Decimal(0);
-  return new Decimal(window.zero - ageDays).div(window.zero - window.full).toDecimalPlaces(6, Decimal.ROUND_HALF_UP);
+  return calculateRecencyFactor({ageDays, fullWeightDays: window.full, zeroWeightDays: window.zero}).value;
 }
 
 /**
- * Weighted quantile: order by spread, then the first value whose cumulative normalized weight
- * reaches q. The comparison is cumulative weight against q × total weight, which is the same test
- * without dividing each weight and rounding it.
+ * Weighted P25, median and P75: order by spread, then the first value whose cumulative normalized
+ * weight reaches q (financial-core compares the cumulative weight with q × the total weight). The
+ * spread is handed on exactly as the observation states it.
  */
-function weightedQuantile(entries: ReadonlyArray<{id: string; value: number; weight: Decimal}>, q: Decimal): number {
-  const ordered = [...entries].sort((a, b) => a.value - b.value || a.id.localeCompare(b.id));
-  const threshold = q.times(ordered.reduce((sum, entry) => sum.plus(entry.weight), new Decimal(0)));
-  let cumulative = new Decimal(0);
-  for (const entry of ordered) {
-    cumulative = cumulative.plus(entry.weight);
-    if (cumulative.gte(threshold)) return entry.value;
-  }
-  return ordered[ordered.length - 1]!.value;
+function weightedQuartiles(entries: ReadonlyArray<{id: string; value: number; weight: string}>): {p25: number; p50: number; p75: number} {
+  const {selected} = selectWeightedQuantiles({entries, quantiles: QUARTILES});
+  const at = (position: number) => entries[selected[position]!.index]!.value;
+  return {p25: at(0), p50: at(1), p75: at(2)};
 }
 
 /** Comparability score of an observation that already passed the exact and window filters. */
-function comparabilityScore(input: {observation: PricingObservation; target: PricingTarget; tenorDeltaMonths: number; amountRatio: Decimal}): Decimal {
-  const weight = (dimension: keyof typeof COMPARABILITY_WEIGHTS) => new Decimal(COMPARABILITY_WEIGHTS[dimension]);
-  return weight("security").plus(weight("risk")).plus(weight("instrument"))
-    .plus(weight("tenor").times(tenorSimilarity(input.tenorDeltaMonths)))
-    .plus(weight("sector").times(sectorSimilarity(input.observation.sectorGroup, input.target.sectorGroup)))
-    .plus(weight("size").times(sizeSimilarity(input.amountRatio)))
-    .plus(weight("amortization").times(amortizationSimilarity(input.observation.amortizationClass, input.target.amortizationClass)));
+function comparabilityScore(input: {observation: PricingObservation; target: PricingTarget; tenorDeltaMonths: string; amountRatio: string}): string {
+  const dimension = (name: keyof typeof COMPARABILITY_WEIGHTS, similarity: string) => ({dimension: name, weight: COMPARABILITY_WEIGHTS[name], similarity});
+  return scoreComparability({dimensions: [
+    dimension("security", "1"),
+    dimension("risk", "1"),
+    dimension("instrument", "1"),
+    dimension("tenor", tenorSimilarity(input.tenorDeltaMonths)),
+    dimension("sector", sectorSimilarity(input.observation.sectorGroup, input.target.sectorGroup)),
+    dimension("size", sizeSimilarity(input.amountRatio)),
+    dimension("amortization", amortizationSimilarity(input.observation.amortizationClass, input.target.amortizationClass)),
+  ]}).value;
 }
 
 /** The single reason no reference was published, in the order a reviewer would have to clear them. */
@@ -307,14 +315,13 @@ export function buildPricingTruthSet(input: {
       if (observation.instrument !== target.instrument) reasons.push("different_instrument");
       if (observation.rating !== target.rating) reasons.push("different_risk_band");
       if (observation.securityClass !== target.securityClass) reasons.push("different_security");
-      const tenorDeltaMonths = Math.abs(observation.tenorMonths - target.tenorMonths);
-      if (tenorWindow.lt(tenorDeltaMonths)) reasons.push("tenor_outside_window");
-      let amountRatio: Decimal | null = null;
-      if (new Decimal(target.amount).lte(0) || new Decimal(observation.amount).lte(0)) reasons.push("invalid_amount");
-      else {
-        amountRatio = moneyRatio(observation.amount, target.amount);
-        if (amountRatio.lt(policy.minAmountRatio) || amountRatio.gt(policy.maxAmountRatio)) reasons.push("amount_outside_window");
-      }
+      const windows = testObservationWindows({
+        observationTenorMonths: observation.tenorMonths, targetTenorMonths: target.tenorMonths, tenorWindowMonths: tenorWindow,
+        observationAmount: observation.amount, targetAmount: target.amount, minAmountRatio: policy.minAmountRatio, maxAmountRatio: policy.maxAmountRatio,
+      });
+      if (!windows.tenorInsideWindow) reasons.push("tenor_outside_window");
+      if (!windows.amountsPositive) reasons.push("invalid_amount");
+      else if (!windows.amountInsideWindow) reasons.push("amount_outside_window");
       if (!observation.sourceId || !observation.normalizationMethod) reasons.push("missing_lineage");
       if (observation.economics) {
         // The economics add up to the normalized spread within 0.01 basis point, summed as decimals.
@@ -323,22 +330,20 @@ export function buildPricingTruthSet(input: {
         if (!identity.holds) reasons.push("normalization_identity_failed");
       }
       const recency = ageDays !== null && ageDays >= 0 ? recencyFactor(ageDays, observation.sourceKind) : null;
-      if (recency?.isZero()) reasons.push("outside_recency_window");
-      const score = amountRatio ? comparabilityScore({observation, target, tenorDeltaMonths, amountRatio}) : null;
-      if (score?.lt(DIRECT_MIN_SCORE)) reasons.push("comparability_below_policy");
-      if (reasons.length || !recency || !score) {
+      if (recency !== null && compareFigures(recency, 0) === 0) reasons.push("outside_recency_window");
+      const score = windows.amountRatio !== null ? comparabilityScore({observation, target, tenorDeltaMonths: windows.tenorDeltaMonths, amountRatio: windows.amountRatio}) : null;
+      if (score !== null && compareFigures(score, DIRECT_MIN_SCORE) < 0) reasons.push("comparability_below_policy");
+      if (reasons.length || recency === null || score === null) {
         rejected.push({id: observation.id, reasons});
         continue;
       }
-      admitted.push({observation, weight: {id: observation.id, recency: recency.toString(), score: score.toString(), weight: recency.times(score).toString()}});
+      admitted.push({observation, weight: {id: observation.id, recency, score, weight: calculateObservationWeight({recency, score}).value}});
     }
   }
   const eligible = admitted.map((entry) => entry.observation);
   const weights = admitted.map((entry) => entry.weight);
-  const weightedSpreads = admitted.map(({observation, weight}) => ({id: observation.id, value: observation.normalizedSpreadBps, weight: new Decimal(weight.weight)}));
-  const quantiles = weightedSpreads.length
-    ? {p25: weightedQuantile(weightedSpreads, QUARTILES.p25), p50: weightedQuantile(weightedSpreads, QUARTILES.p50), p75: weightedQuantile(weightedSpreads, QUARTILES.p75)}
-    : null;
+  const weightedSpreads = admitted.map(({observation, weight}) => ({id: observation.id, value: observation.normalizedSpreadBps, weight: weight.weight}));
+  const quantiles = weightedSpreads.length ? weightedQuartiles(weightedSpreads) : null;
 
   const distinctSources = new Set(eligible.map((observation) => observation.sourceId)).size;
   const sampleSufficient = Boolean(policy?.status === "active" && eligible.length >= policy.minObservations && distinctSources >= policy.minDistinctSources);
@@ -429,8 +434,8 @@ export function buildPricingTruthSet(input: {
     current: target.currentAllIn,
     proposedMin: indicativePrice.allIn.min,
     proposedMax: indicativePrice.allIn.max,
-    deltaMin: new Decimal(indicativePrice.allIn.min).minus(target.currentAllIn).toFixed(6),
-    deltaMax: new Decimal(indicativePrice.allIn.max).minus(target.currentAllIn).toFixed(6),
+    deltaMin: presentationFigure({value: calculateCostDifference({proposed: indicativePrice.allIn.min, current: target.currentAllIn}).value, decimals: 6}).value,
+    deltaMax: presentationFigure({value: calculateCostDifference({proposed: indicativePrice.allIn.max, current: target.currentAllIn}).value, decimals: 6}).value,
   } : null;
 
   const coverage: PricingProcedureResult[] = [

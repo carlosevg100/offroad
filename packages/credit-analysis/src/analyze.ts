@@ -537,18 +537,24 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
     workingCapitalAsk,
   });
   if (cycle.askExceedsTwiceNeed) {
-    // A cycle of zero days absorbs nothing: the ask is then no multiple of the need, and the sentence says so instead of dividing by zero.
+    // A cycle of zero days absorbs nothing, and a negative cycle releases working capital as revenue grows: the ask is then
+    // no multiple of the need, and the sentence says so instead of dividing by zero or printing a negative multiple.
     const multiple = cycle.askOverNeed;
+    const release = cycle.growthRelease;
     findings.push({
       id: "wc-ask-vs-need",
       severity: "high",
       pt: multiple !== null
         ? `O crescimento projetado (${brlM(cycle.growth!)} de receita) absorve ${brlM(cycle.growthAbsorption!)} de capital de giro ao ciclo atual de ${at(cycle.cycleDays!, 0)} dias, mas o pedido rotula ${brlM(workingCapitalAsk!)} como giro, ${local(at(multiple, 1), "pt-BR")} vezes a necessidade incremental. A diferença financia outra coisa (alongamento de ciclo, recomposição de caixa ou substituição de linhas), e a mesa precisa nomear o quê, porque o fundo vai perguntar.`
-        : `O crescimento projetado (${brlM(cycle.growth!)} de receita) não absorve capital de giro ao ciclo atual de ${at(cycle.cycleDays!, 0)} dias, mas o pedido rotula ${brlM(workingCapitalAsk!)} como giro; sem necessidade incremental, o pedido não é múltiplo dela. O valor financia outra coisa (alongamento de ciclo, recomposição de caixa ou substituição de linhas), e a mesa precisa nomear o quê, porque o fundo vai perguntar.`,
+        : release !== null
+          ? `O crescimento projetado (${brlM(cycle.growth!)} de receita) libera ${brlM(release)} de capital de giro ao ciclo atual de ${at(cycle.cycleDays!, 0)} dias, porque o ciclo de caixa é negativo, mas o pedido rotula ${brlM(workingCapitalAsk!)} como giro; sem necessidade incremental, o pedido não é múltiplo dela. O valor financia outra coisa (alongamento de ciclo, recomposição de caixa ou substituição de linhas), e a mesa precisa nomear o quê, porque o fundo vai perguntar.`
+          : `O crescimento projetado (${brlM(cycle.growth!)} de receita) não absorve capital de giro ao ciclo atual de ${at(cycle.cycleDays!, 0)} dias, mas o pedido rotula ${brlM(workingCapitalAsk!)} como giro; sem necessidade incremental, o pedido não é múltiplo dela. O valor financia outra coisa (alongamento de ciclo, recomposição de caixa ou substituição de linhas), e a mesa precisa nomear o quê, porque o fundo vai perguntar.`,
       en: multiple !== null
         ? `Projected growth (${brlM(cycle.growth!, "en-US")} of revenue) absorbs ${brlM(cycle.growthAbsorption!, "en-US")} of working capital at the current ${at(cycle.cycleDays!, 0)}-day cycle, yet the ask labels ${brlM(workingCapitalAsk!, "en-US")} as working capital, ${at(multiple, 1)} times the incremental need. The difference funds something else, and the desk has to name it, because the fund will ask.`
-        : `Projected growth (${brlM(cycle.growth!, "en-US")} of revenue) absorbs no working capital at the current ${at(cycle.cycleDays!, 0)}-day cycle, yet the ask labels ${brlM(workingCapitalAsk!, "en-US")} as working capital; with no incremental need, the ask is no multiple of it. The amount funds something else, and the desk has to name it, because the fund will ask.`,
-      values: {need: at(cycle.growthAbsorption!, 2), ask: at(workingCapitalAsk!, 2), cycleDays: at(cycle.cycleDays!, 1)},
+        : release !== null
+          ? `Projected growth (${brlM(cycle.growth!, "en-US")} of revenue) releases ${brlM(release, "en-US")} of working capital at the current ${at(cycle.cycleDays!, 0)}-day cycle, because the cash cycle is negative, yet the ask labels ${brlM(workingCapitalAsk!, "en-US")} as working capital; with no incremental need, the ask is no multiple of it. The amount funds something else, and the desk has to name it, because the fund will ask.`
+          : `Projected growth (${brlM(cycle.growth!, "en-US")} of revenue) absorbs no working capital at the current ${at(cycle.cycleDays!, 0)}-day cycle, yet the ask labels ${brlM(workingCapitalAsk!, "en-US")} as working capital; with no incremental need, the ask is no multiple of it. The amount funds something else, and the desk has to name it, because the fund will ask.`,
+      values: {need: at(cycle.growthAbsorption!, 2), ask: at(workingCapitalAsk!, 2), cycleDays: at(cycle.cycleDays!, 1), ...(release !== null ? {released: at(release, 2)} : {})},
       inputs: ["projections.revenue", "historical_financials.revenue", "transaction.use_of_proceeds"],
     });
   }

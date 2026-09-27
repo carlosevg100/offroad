@@ -34,6 +34,16 @@ import {projectLeverageTrajectory, type Trajectory} from "./trajectory";
  *   grammar admits, at two sets of index levels.
  *
  * A pin moves only with a deliberate change.
+ *
+ * The move kept every pin of the stress table, the desk inputs and the reading, and all but five of
+ * the rating, which moved deliberately for one reason only: the score is the weighted points over
+ * the most the assessable factors allow, times 100, rounded half-up on the exact decimal. Twenty-three
+ * points of forty is 57.5 and prints 58; the binary division printed 57.49999999999999 and rounded it
+ * to 57. It is the only pair of points and weights the scale can produce where the two differ, it
+ * never moves the grade (5 either way), and in these five pins it is reached only by the synthetic
+ * sets of optional inputs (`gold:rede-horizonte` strong, `unit:aurora-questions` weak with its
+ * trajectory, `liquidity:1` moderate, `liquidity:1.5` edges-mid, `runway:6` edges-high and edges-mid);
+ * compared field by field, the score and the sentence that states it are all that changed.
  */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 
@@ -222,7 +232,7 @@ const pins = {
     "gold:camil:ask-800": "a946c86672c63bc413727923aef5f90fdede4705c04d4f15bc1c992390a29f32",
     "gold:fakeco": "4ce61fe4c4075ebcc0114f1447b3e1abe4873501b5a5a7be201aeb617ec15a3b",
     "gold:nimbus": "f176154bc9edb9a6c2eff5f779513d631e4cfe30ed26ba372b70f8eb4514f8e5",
-    "gold:rede-horizonte": "ca04fd716e6e277b1d1c8572247b0d9eb3ddbfaadb8bdc9cf273175c26ebbead",
+    "gold:rede-horizonte": "ddf59c252efdb1e3d97903c46482844bc2b575ecfa23ee2ab0507491b1f3cb16",
     "leverage:1.4999": "c7ebdee297253fcdc227181ba5bc790f2c65d421bbfbc45ead3e448b1d3650f5",
     "leverage:1.5": "97989f326b6e3ac65dee9271286cfcd3ffd95fbb1f9bfd6186ca505635fe1a4a",
     "leverage:2.5": "8b943cde05f9289e331536b4dc17c505e3121fb13b64eb7c59b8f401a3637c6a",
@@ -233,8 +243,8 @@ const pins = {
     "leverage:null": "ed913a485fb589cb26ecd887f4c70bdef61f77dd1f04296a75c238da696b80d3",
     "liquidity:0.4999": "8dfbe4d0cae9e5cb9bf561b2a0e5c709b39741b984cdf1c1b00f390417e99679",
     "liquidity:0.5": "80204aceaa2f9a10447449392bbe4a8edd73e95e9c3464016e44a43aa3a7ea75",
-    "liquidity:1": "9764c0ad3cce47f024e04149d34b4ccee22402000d2f95446b6a89838482829e",
-    "liquidity:1.5": "c2b6ad36e0a17321a08701d99d8135c8498954ac28277c655a875ca0d872ea08",
+    "liquidity:1": "c31a028a69db15aa3bd7c1cd7451fc211341f4fd5890da0d9e9381c7ae2ee4a0",
+    "liquidity:1.5": "ce6bc35296a7ccd2ef9846355bf3514c59ad3dce0f5c5d2c050d6bf9c8d6684d",
     "liquidity:2.5": "575f7cd78cb5f09937d2b97e98473ec4ff1f7e997b0d4b08780470c0de7845a4",
     "liquidity:nothing-due": "b4bf726b735739e9be78bb465177a5f15ae4021061749a32e11d250373f62ce0",
     "liquidity:null": "00fb47fcf922611aca0cc61021205f17fa841eda43eeeedb4ccc99c0a3ee6f8f",
@@ -243,12 +253,12 @@ const pins = {
     "runway:18": "d17be90bc9ab59a8047bdf8d914e314b449400e9f5180e001565edecf600e522",
     "runway:24": "ef7b2f27984543e58f1ea360b1e5a242f4b1b06a4ce706d01df6a0d043ae6514",
     "runway:5.9": "7002f9a1cfab5154e38edbae1b0864fb0d8d481112867abfcddc86905be60abb",
-    "runway:6": "0397b7d138c24ad2a9f7b5ecb6c74d36a253036ead08a43b05978cfa8eee6869",
+    "runway:6": "7579a979848e919cb707befa137507c9a04374073ac38645202bf249bc7bd696",
     "runway:Infinity": "c15bb26e05334d0b4a9f2c61684222a6cbaa82f09fe71e401f126bb52845a19d",
     "runway:none": "c2bd23e8400d84863b5127810d596e163315b5dcfad8db9b73166cfa97ff51c1",
     "runway:null": "c15bb26e05334d0b4a9f2c61684222a6cbaa82f09fe71e401f126bb52845a19d",
     "unit:aurora": "7de2d207a6f3c3efc1f5395bf70bb8f5bcf098fbbed47ac3dcfe0288ac0d6e6e",
-    "unit:aurora-questions": "77af88ae4cd33d1cc6f3ebac50b13f212182921e3cab4269b1b2eeb64693d0ad",
+    "unit:aurora-questions": "523b721aad33b5b6a16bd910013c1cc82ff55e2f5e21cdebf9f020d9cfbc7da7",
     "unit:aurora-schedule-above-balance": "d39cf45cc5a12eec65cea84b261d4e6382dbc711c1b655ba5071fadff388c6de",
     "unit:aurora-thin-coverage-ask": "03b4bf1d2d2c262bbd3d667bf759f0e9ea05cfb6a4692c5f0fc6c4770956e667",
     "unit:aurora-thin-coverage-stack": "0f16aa7d51b4af9f2d5758597f1b3a564b6e80d1f36d305c4cd4f1f5bdbabda2",

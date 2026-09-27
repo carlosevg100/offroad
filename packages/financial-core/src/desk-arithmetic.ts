@@ -23,7 +23,7 @@ import {finiteFigure as finite, fullFigure as full} from "./figure-input";
  * a division by zero prints it (`Infinity`, `-Infinity`, `NaN`). A ratio over a negative
  * denominator is a number and is handed on as before.
  */
-export const deskArithmeticVersion = "2026.09.27-v2";
+export const deskArithmeticVersion = "2026.09.27-v3";
 
 // The same arithmetic contract the package root declares, so a kernel imported on its own computes
 // exactly what it computes inside the desk.
@@ -369,9 +369,14 @@ export function calculateWorkingCapitalCycle(input: {
   readonly cycleDays: string | null;
   readonly growth: string | null;
   readonly growthAbsorption: string | null;
-  /** Whether the working-capital ask exceeds twice what growth absorbs, and by how many times the need (absent when the need is zero). */
+  /**
+   * Whether the working-capital ask exceeds twice what growth absorbs, and by how many times the need: absent when the
+   * need is zero, and not a multiple (null) when the need is negative, because growth then releases working capital.
+   */
   readonly askExceedsTwiceNeed: boolean;
   readonly askOverNeed: string | null;
+  /** The working capital growth releases at a negative cycle (the magnitude of a negative need); null otherwise. */
+  readonly growthRelease: string | null;
   /** The figures a zero cost of goods sold left absent (the days over it, the cycle, what growth absorbs), and the ask over a zero need. */
   readonly absent: readonly AbsentRatio[];
   readonly trace: CalculationTrace;
@@ -399,18 +404,23 @@ export function calculateWorkingCapitalCycle(input: {
   let absorption: Decimal | null = null;
   let askOverNeed: Decimal | null = null;
   let askExceedsTwiceNeed = false;
+  let release: Decimal | null = null;
   if ((cycle || cycleAbsent) && input.nextYearRevenue !== null) {
     growth = finite("next year's revenue", input.nextYearRevenue).minus(revenue);
     if (growth.gt(0)) {
       if (!cycle) absent.push({ratio: "growthAbsorption", denominator: COGS});
       else {
         absorption = growth.times(cycle).div(365);
+        // A negative cycle releases working capital as revenue grows: the need is negative, and no ask is a multiple of it.
+        if (absorption.lt(0)) release = absorption.neg();
         if (input.workingCapitalAsk !== null) {
           const ask = finite("working-capital ask", input.workingCapitalAsk);
           if (ask.gt(absorption.times(2))) {
             askExceedsTwiceNeed = true;
-            askOverNeed = quotient(ask, absorption);
-            if (askOverNeed === null) absent.push({ratio: "askOverNeed", denominator: "working capital that growth absorbs"});
+            if (!release) {
+              askOverNeed = quotient(ask, absorption);
+              if (askOverNeed === null) absent.push({ratio: "askOverNeed", denominator: "working capital that growth absorbs"});
+            }
           }
         }
       }
@@ -427,14 +437,15 @@ export function calculateWorkingCapitalCycle(input: {
     growthAbsorption: text(absorption),
     askExceedsTwiceNeed,
     askOverNeed: text(askOverNeed),
+    growthRelease: text(release),
     absent,
     trace: {
       id: "desk.working_capital_cycle",
       formula: "DSO = receivables / revenue x 365; DIO = inventory / COGS x 365; DPO = suppliers / COGS x 365; cycle = DSO + DIO - DPO; "
         + "absorbed = growth of revenue x cycle / 365, when revenue grows; the ask is flagged above twice what is absorbed; "
-        + "a figure over a zero COGS, and what depends on it, is absent",
+        + "a figure over a zero COGS, and what depends on it, is absent; a negative need is working capital released, and the ask is no multiple of it",
       operands: {revenue: full(revenue), cogs: cogs ? full(cogs) : "none", nextYearRevenue: input.nextYearRevenue === null ? "none" : String(input.nextYearRevenue)},
-      result: `cycle=${stated(cycle, "cycleDays")}; absorbed=${stated(absorption, "growthAbsorption")}; askOverNeed=${stated(askOverNeed, "askOverNeed")}`,
+      result: `cycle=${stated(cycle, "cycleDays")}; absorbed=${stated(absorption, "growthAbsorption")}; askOverNeed=${release ? `none (growth releases ${full(release)})` : stated(askOverNeed, "askOverNeed")}`,
     },
   };
 }
