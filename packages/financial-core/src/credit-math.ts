@@ -247,6 +247,21 @@ export const financialCalculationRegistry = {
   "material.leverage_after_structure": "calculateLeverageAfterStructure",
   "material.covenant_ceiling": "testCovenantCeiling",
   "material.heaviest_schedule_year": "selectHeaviestScheduleYear",
+  "desk.debt_stack": "calculateDeskDebtStack",
+  "desk.leverage": "calculateDeskLeverage",
+  "desk.interest_coverage": "calculateInterestCoverage",
+  "desk.runway": "calculateVentureRunway",
+  "desk.working_capital_cycle": "calculateWorkingCapitalCycle",
+  "desk.receivables_encumbrance": "calculateReceivablesEncumbrance",
+  "desk.rate_ask_vs_stack": "testRateAskAgainstStack",
+  "desk.refinancing_redemption": "allocateRefinancingNearestFirst",
+  "desk.leverage_path": "projectLeveragePath",
+  "desk.liability_management": "calculateLiabilityManagement",
+  "price.basis_points_sum": "sumBasisPoints",
+  "price.spread_band": "shiftSpreadBand",
+  "price.cdi_plus_basis_points": "composeCdiPlusBasisPoints",
+  "price.normalization_identity": "testSpreadNormalization",
+  "price.annualized_cost": "annualizeCostInBasisPoints",
 } as const;
 
 export type FinancialCalculationId = keyof typeof financialCalculationRegistry;

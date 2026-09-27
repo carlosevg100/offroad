@@ -30,3 +30,5 @@ export * from "./operating-cash-projection";
 export * from "./capital-period-cash";
 export * from "./rate-composition";
 export * from "./material-arithmetic";
+export * from "./desk-arithmetic";
+export * from "./price-arithmetic";

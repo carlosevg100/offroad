@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 
 import type {CalculationTrace} from "./credit-math";
+import {finiteFigure, fullFigure, parseFigure} from "./figure-input";
 
 /**
  * The arithmetic of the governed credit materials (stage 19, increments 6, 6B and 6C).
@@ -33,22 +34,9 @@ Decimal.set({precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -30, toEx
 
 export type MaterialFigure = {readonly value: string; readonly trace: CalculationTrace};
 
-const decimalText = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
-
-function parse(value: Decimal.Value): Decimal | null {
-  if (typeof value === "string" && !decimalText.test(value)) return null;
-  if (typeof value === "number" && !Number.isFinite(value)) return null;
-  const parsed = new Decimal(value);
-  return parsed.isFinite() ? parsed : null;
-}
-
-function finite(label: string, value: Decimal.Value): Decimal {
-  const parsed = parse(value);
-  if (!parsed) throw new RangeError(`${label} must be a finite decimal number`);
-  return parsed;
-}
-
-const full = (value: Decimal) => value.toFixed();
+const parse = parseFigure;
+const finite = finiteFigure;
+const full = fullFigure;
 
 // Computations ---------------------------------------------------------------------------------
 
@@ -351,6 +339,21 @@ export function presentationFigure(input: {value: Decimal.Value; scale?: Present
       result: printed,
     },
   };
+}
+
+/**
+ * A ratio at the precision the desk publishes it. A finite ratio prints exactly as
+ * `presentationFigure` prints it. A ratio over a zero denominator is not a number: the desk has
+ * always published it as a division by zero prints (`Infinity`, `-Infinity`, `NaN`) and never
+ * compares it or states it in a sentence, so that text is handed on as it is, neither refused nor
+ * read as zero.
+ */
+export function presentationRatio(input: {value: string; decimals: number}): MaterialFigure {
+  if (/^(?:-?Infinity|NaN)$/.test(input.value)) {
+    return {value: input.value, trace: {id: "material.presentation_ratio", formula: "a ratio over a zero denominator is not a number and prints as the division gives it", operands: {value: input.value}, result: input.value}};
+  }
+  const figure = presentationFigure({value: input.value, decimals: input.decimals});
+  return {value: figure.value, trace: {...figure.trace, id: "material.presentation_ratio"}};
 }
 
 export type AmountLocale = "pt-BR" | "en-US";

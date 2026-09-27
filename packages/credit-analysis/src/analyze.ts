@@ -1,5 +1,8 @@
-import Decimal from "decimal.js";
-import {composeIndexAndSpread, presentationAmount, presentationFigure, spreadOverIndex} from "@offroad/financial-core";
+import {
+  calculateDeskDebtStack, calculateDeskLeverage, calculateInterestCoverage, calculateReceivablesEncumbrance, calculateVentureRunway,
+  calculateWorkingCapitalCycle, compareFigures, composeIndexAndSpread, presentationAmount, presentationFigure, presentationRatio,
+  spreadOverIndex, testRateAskAgainstStack, testScheduleTieOut, tryPresentationNumber, type DecimalInput,
+} from "@offroad/financial-core";
 
 import {
   effectiveAnnualCost, isReceivablesCession, parseCovenant, parseRate,
@@ -23,9 +26,9 @@ import {
  * Three sentences a desk head says in the first meeting, none of which the product could
  * produce, because nothing computed them.
  *
- * Everything here is Decimal, everything is traced (every finding names its inputs and carries
- * the numbers it cites), and everything degrades honestly: an unparsable rate becomes an open
- * question, never a silent zero inside an average.
+ * Every figure here comes from a `@offroad/financial-core` kernel (Decimal, traced, tested),
+ * every finding names its inputs and carries the numbers it cites, and everything degrades
+ * honestly: an unparsable rate becomes an open question, never a silent zero inside an average.
  */
 
 export type DebtLineInput = {
@@ -206,9 +209,6 @@ export type DeskAnalysis = {
   findings: Finding[];
 };
 
-const d = (value: string | number): Decimal => new Decimal(value);
-const ZERO = new Decimal(0);
-
 type Locale = "pt-BR" | "en-US";
 const local = (figure: string, locale: Locale) => (locale === "pt-BR" ? figure.replace(".", ",") : figure);
 /**
@@ -216,10 +216,17 @@ const local = (figure: string, locale: Locale) => (locale === "pt-BR" ? figure.r
  * prints amounts with (financial-core): thousands below a million, never "R$ 0,0M" for an amount
  * that is not zero. Each language prints its own separators; the figures are the same.
  */
-const brlM = (value: Decimal.Value, locale: Locale = "pt-BR"): string => presentationAmount({value, locale, style: "abbreviated"}).text;
-const turns = (value: Decimal.Value, locale: Locale = "pt-BR"): string => `${local(presentationFigure({value, decimals: 2}).value, locale)}x`;
-const pctAA = (value: Decimal.Value, locale: Locale = "pt-BR"): string =>
+const brlM = (value: DecimalInput, locale: Locale = "pt-BR"): string => presentationAmount({value, locale, style: "abbreviated"}).text;
+const turns = (value: DecimalInput, locale: Locale = "pt-BR"): string => `${local(presentationFigure({value, decimals: 2}).value, locale)}x`;
+const pctAA = (value: DecimalInput, locale: Locale = "pt-BR"): string =>
   `${local(presentationFigure({value, scale: "percent", decimals: 1}).value, locale)}% ${locale === "pt-BR" ? "a.a." : "p.a."}`;
+/** A figure at the precision the desk publishes it, rounded half-up on the decimal value. */
+const at = (value: DecimalInput, decimals: number): string => presentationFigure({value, decimals}).value;
+/** A ratio at the precision the desk publishes it; over a zero denominator, as the division prints it. */
+const ratioAt = (value: string, decimals: number): string => presentationRatio({value, decimals}).value;
+const percentAt = (value: DecimalInput, decimals: number): string => presentationFigure({value, scale: "percent", decimals}).value;
+/** A ratio the desk may compare with a threshold: a ratio over a zero denominator is never compared. */
+const comparable = (value: string | null): value is string => value !== null && tryPresentationNumber(value) !== null;
 
 /**
  * Calendar months between two ISO dates, read from the string itself.
@@ -237,75 +244,65 @@ const monthsBetween = (fromIso: string, toIso: string): number => {
 
 export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
   const findings: Finding[] = [];
-  const cdi = d(input.indexLevels.cdi);
+  const cdi = input.indexLevels.cdi;
 
   // ---- the stack, on one axis -----------------------------------------------------------------
-  const lines: StackLine[] = input.debt.map((line) => {
+  const read = input.debt.map((line) => {
     const rate = parseRate(line.rate);
-    return {
-      lender: line.lender,
-      ...(line.instrumentType !== undefined ? {instrumentType: line.instrumentType} : {}),
-      balance: d(line.balance).toFixed(2),
-      rate,
-      effectiveAnnual: rate ? effectiveAnnualCost(rate, input.indexLevels) : null,
-      ...(line.maturity !== undefined ? {maturity: line.maturity} : {}),
-      covenant: parseCovenant(line.covenant),
-    };
+    return {line, rate, effectiveAnnual: rate ? effectiveAnnualCost(rate, input.indexLevels) : null};
   });
-
-  const totalSchedule = lines.reduce((sum, line) => sum.plus(line.balance), ZERO);
-  const totalOnBalance = d(input.balance.grossDebt);
-  const scheduleGap = totalOnBalance.minus(totalSchedule);
-
-  const priceable = lines.filter((line) => line.effectiveAnnual !== null);
-  const priceableTotal = priceable.reduce((sum, line) => sum.plus(line.balance), ZERO);
-  const weightedCost = priceableTotal.gt(0)
-    ? priceable.reduce((sum, line) => sum.plus(d(line.balance).times(line.effectiveAnnual!)), ZERO).div(priceableTotal)
-    : null;
-  // The spread a composed cost carries over the CDI is (1 + cost) / (1 + CDI) - 1, not cost - CDI.
-  const weightedSpread = weightedCost ? d(spreadOverIndex({annualRate: weightedCost.toString(), annualIndex: cdi.toString()}).value) : null;
-
-  const maturingFromLines = lines
-    .filter((line) => line.maturity !== undefined && monthsBetween(input.referenceDate, line.maturity) <= 24)
-    .reduce((sum, line) => sum.plus(line.balance), ZERO);
   // The profile wins when the lines cannot speak: a line without a maturity is not a line that
   // never matures, and a note that says "Jun/26 a Mai/27: 1.229.828" has already done the sum.
-  const linesWithDates = lines.filter((line) => line.maturity !== undefined).length;
-  const profileWithin24 = (input.maturityProfile ?? [])
-    .filter((entry) => entry.endsOn !== undefined && monthsBetween(input.referenceDate, entry.endsOn) <= 24)
-    .reduce((sum, entry) => sum.plus(entry.amount), ZERO);
-  const maturing24 = linesWithDates < lines.length && profileWithin24.gt(maturingFromLines) ? profileWithin24 : maturingFromLines;
-  const within12FromLines = lines
-    .filter((line) => line.maturity !== undefined && monthsBetween(input.referenceDate, line.maturity) <= 12)
-    .reduce((sum, line) => sum.plus(line.balance), ZERO);
-  const profileWithin12 = (input.maturityProfile ?? [])
-    .filter((entry) => entry.endsOn !== undefined && monthsBetween(input.referenceDate, entry.endsOn) <= 12)
-    .reduce((sum, entry) => sum.plus(entry.amount), ZERO);
-  const maturing12 = linesWithDates < lines.length && profileWithin12.gt(within12FromLines) ? profileWithin12 : within12FromLines;
-  const liquidityCoverage12 = maturing12.gt(0) ? d(input.balance.cash).div(maturing12) : null;
+  const stack = calculateDeskDebtStack({
+    lines: read.map(({line, effectiveAnnual}) => ({
+      balance: line.balance,
+      effectiveAnnual,
+      monthsToMaturity: line.maturity !== undefined ? monthsBetween(input.referenceDate, line.maturity) : null,
+    })),
+    grossDebt: input.balance.grossDebt,
+    cash: input.balance.cash,
+    maturityProfile: (input.maturityProfile ?? []).map((entry) => ({
+      amount: entry.amount,
+      monthsToEnd: entry.endsOn !== undefined ? monthsBetween(input.referenceDate, entry.endsOn) : null,
+    })),
+  });
+  const lines: StackLine[] = read.map(({line, rate, effectiveAnnual}, index) => ({
+    lender: line.lender,
+    ...(line.instrumentType !== undefined ? {instrumentType: line.instrumentType} : {}),
+    balance: stack.lineBalances[index]!,
+    rate,
+    effectiveAnnual,
+    ...(line.maturity !== undefined ? {maturity: line.maturity} : {}),
+    covenant: parseCovenant(line.covenant),
+  }));
+  // The spread a composed cost carries over the CDI is (1 + cost) / (1 + CDI) - 1, not cost - CDI.
+  const weightedSpread = stack.weightedCost !== null ? spreadOverIndex({annualRate: stack.weightedCost, annualIndex: cdi}).value : null;
 
   // The wall a desk actually worries about is the next twelve months against the cash on hand.
   // A company can carry a heavy schedule if it sits on the cash to meet it; a light one is a
   // wall if the cash is not there. The ratio says which, before any refinancing assumption.
-  if (liquidityCoverage12 && liquidityCoverage12.lt("1.5")) {
-    const tight = liquidityCoverage12.lt(1);
+  const coverage12 = stack.liquidityCoverage12;
+  if (coverage12 !== null && compareFigures(coverage12, "1.5") < 0) {
+    const tight = compareFigures(coverage12, 1) < 0;
     findings.push({
       id: "short-term-principal-vs-cash",
       severity: tight ? "critical" : "high",
-      pt: `${brlM(maturing12)} de principal vencem nos próximos 12 meses contra ${brlM(input.balance.cash)} de caixa: cobertura de ${liquidityCoverage12.toFixed(2).replace(".", ",")}x. ${tight ? "O caixa não cobre o principal do ano: sem refinanciamento ou geração acima do histórico, a companhia não chega ao fim do período pelos próprios meios, e a captação tem que ser dimensionada para isso." : "Cobre, mas sem folga para a sazonalidade do capital de giro: parte do caixa que paga a dívida é o caixa que compra estoque, e a mesa precisa ver o fluxo mensal antes de tratar o refinanciamento como opcional."}`,
-      en: `${brlM(maturing12, "en-US")} of principal falls due in the next 12 months against ${brlM(input.balance.cash, "en-US")} of cash: ${liquidityCoverage12.toFixed(2)}x coverage. ${tight ? "Cash does not cover the year's principal: without refinancing or generation above history, the company does not reach the end of the period on its own means, and the raise has to be sized for that." : "It covers, but without room for working-capital seasonality: part of the cash that pays the debt is the cash that buys inventory, and the desk needs the monthly flow before treating refinancing as optional."}`,
-      values: {maturing12: maturing12.toFixed(2), cash: d(input.balance.cash).toFixed(2), coverage: liquidityCoverage12.toFixed(4)},
+      pt: `${brlM(stack.maturingWithin12Months)} de principal vencem nos próximos 12 meses contra ${brlM(input.balance.cash)} de caixa: cobertura de ${local(at(coverage12, 2), "pt-BR")}x. ${tight ? "O caixa não cobre o principal do ano: sem refinanciamento ou geração acima do histórico, a companhia não chega ao fim do período pelos próprios meios, e a captação tem que ser dimensionada para isso." : "Cobre, mas sem folga para a sazonalidade do capital de giro: parte do caixa que paga a dívida é o caixa que compra estoque, e a mesa precisa ver o fluxo mensal antes de tratar o refinanciamento como opcional."}`,
+      en: `${brlM(stack.maturingWithin12Months, "en-US")} of principal falls due in the next 12 months against ${brlM(input.balance.cash, "en-US")} of cash: ${at(coverage12, 2)}x coverage. ${tight ? "Cash does not cover the year's principal: without refinancing or generation above history, the company does not reach the end of the period on its own means, and the raise has to be sized for that." : "It covers, but without room for working-capital seasonality: part of the cash that pays the debt is the cash that buys inventory, and the desk needs the monthly flow before treating refinancing as optional."}`,
+      values: {maturing12: at(stack.maturingWithin12Months, 2), cash: at(input.balance.cash, 2), coverage: at(coverage12, 4)},
       inputs: ["debt.maturity_profile", "debt.instruments", "interim_financials.cash"],
     });
   }
 
-  if (scheduleGap.abs().gt(totalOnBalance.times("0.02"))) {
+  const tieOut = testScheduleTieOut({scheduleGap: stack.scheduleGap, totalOnBalance: stack.totalOnBalance, tolerance: "0.02"});
+  if (tieOut.outcome === "outside_tolerance") {
+    const outside = tieOut.side === "balance_above_schedule";
     findings.push({
       id: "stack-vs-balance",
       severity: "critical",
-      pt: `O mapa de dívida soma ${brlM(totalSchedule)} e o balanço reconhece ${brlM(totalOnBalance)}: há ${brlM(scheduleGap.abs())} de dívida ${scheduleGap.gt(0) ? "fora do mapa" : "a mais no mapa"}. Antes de qualquer estrutura, a mesa precisa saber o que é, tipicamente arrendamento ou fiança não listada.`,
-      en: `The debt schedule sums to ${brlM(totalSchedule, "en-US")} while the balance sheet recognises ${brlM(totalOnBalance, "en-US")}: ${brlM(scheduleGap.abs(), "en-US")} of debt sits ${scheduleGap.gt(0) ? "outside the schedule" : "in the schedule only"}. The desk needs to know what it is before structuring, typically leases or unlisted guarantees.`,
-      values: {schedule: totalSchedule.toFixed(2), onBalance: totalOnBalance.toFixed(2), gap: scheduleGap.toFixed(2)},
+      pt: `O mapa de dívida soma ${brlM(stack.totalSchedule)} e o balanço reconhece ${brlM(stack.totalOnBalance)}: há ${brlM(tieOut.magnitude)} de dívida ${outside ? "fora do mapa" : "a mais no mapa"}. Antes de qualquer estrutura, a mesa precisa saber o que é, tipicamente arrendamento ou fiança não listada.`,
+      en: `The debt schedule sums to ${brlM(stack.totalSchedule, "en-US")} while the balance sheet recognises ${brlM(stack.totalOnBalance, "en-US")}: ${brlM(tieOut.magnitude, "en-US")} of debt sits ${outside ? "outside the schedule" : "in the schedule only"}. The desk needs to know what it is before structuring, typically leases or unlisted guarantees.`,
+      values: {schedule: at(stack.totalSchedule, 2), onBalance: at(stack.totalOnBalance, 2), gap: at(stack.scheduleGap, 2)},
       inputs: ["debt.total_gross", "historical_financials.gross_debt"],
     });
   }
@@ -323,84 +320,83 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
   }
 
   // ---- leverage and covenants, pre and post ---------------------------------------------------
-  const ebitda = d(input.audited.ebitda);
-  const netDebtPre = totalOnBalance.minus(input.balance.cash);
-  const preTurns = netDebtPre.div(ebitda);
-
-  const scenarios = input.request.amounts.map((amount) => ({
-    amount: d(amount.value).toFixed(2),
-    source: amount.source,
-    postTurns: netDebtPre.plus(amount.value).div(ebitda).toFixed(4),
-  }));
-
   const covenants = [
     ...lines.filter((line) => line.covenant !== null).map((line) => ({lender: line.lender, covenant: line.covenant!})),
     ...(input.covenants ?? [])
       .map((entry) => ({lender: entry.scope, covenant: parseCovenant(entry.text)}))
       .filter((entry): entry is {lender: string; covenant: ParsedCovenant} => entry.covenant !== null),
   ];
-  const tightest = covenants.length > 0
-    ? covenants.reduce((min, entry) => (d(entry.covenant.maximum).lt(min.covenant.maximum) ? entry : min))
-    : null;
+  const leverage = calculateDeskLeverage({
+    grossDebt: input.balance.grossDebt,
+    cash: input.balance.cash,
+    ebitda: input.audited.ebitda,
+    amounts: input.request.amounts.map((amount) => amount.value),
+    ceilings: covenants.map((entry) => entry.covenant.maximum),
+  });
+  const scenarios = input.request.amounts.map((amount, index) => ({
+    amount: leverage.scenarios[index]!.amount,
+    source: amount.source,
+    postTurns: leverage.scenarios[index]!.postTurns,
+  }));
+  const tightest = leverage.tightest ? covenants[leverage.tightest.index]! : null;
 
   // ---- interest coverage: what the operation earns against what the debt costs ---------------
-  const expenses = input.audited.financialExpenses ? d(input.audited.financialExpenses).abs() : null;
-  const interestCoverage = expenses && expenses.gt(0) && ebitda.gt(0) ? ebitda.div(expenses) : null;
-  const askAmount = scenarios.length > 0 ? scenarios.reduce((max, s) => (d(s.amount).gt(max) ? d(s.amount) : max), ZERO) : ZERO;
   const askRateParsed = parseRate(input.request.rateAsk);
   const askCostRaw = askRateParsed ? effectiveAnnualCost(askRateParsed, input.indexLevels) : null;
-  const askCost = askCostRaw ? d(askCostRaw) : weightedCost;
-  const interestCoveragePost = interestCoverage && expenses && askCost ? ebitda.div(expenses.plus(askAmount.times(askCost))) : null;
-  if (interestCoveragePost && interestCoveragePost.lt("2")) {
+  const askCost = askCostRaw !== null ? askCostRaw : stack.weightedCost;
+  const interest = calculateInterestCoverage({
+    ebitda: input.audited.ebitda,
+    financialExpenses: input.audited.financialExpenses ? input.audited.financialExpenses : null,
+    askAmount: leverage.largestAmount,
+    askCost,
+  });
+  const coveragePost = interest.coveragePost;
+  if (comparable(coveragePost) && compareFigures(coveragePost, "2") < 0) {
     findings.push({
       id: "thin-interest-coverage",
-      severity: interestCoveragePost.lt("1.5") ? "critical" : "high",
-      pt: `Cobertura de juros de ${interestCoverage!.toFixed(1).replace(".", ",")}x hoje e ${interestCoveragePost.toFixed(1).replace(".", ",")}x com a operação (juros do pedido a ${pctAA(askCost!)}${askCostRaw ? ", a taxa pedida" : ", o custo médio do estoque"}). Abaixo de 2x a operação consome a maior parte do que a companhia gera antes de amortizar um real; abaixo de 1,5x o serviço depende de refinanciamento contínuo.`,
-      en: `Interest coverage of ${interestCoverage!.toFixed(1)}x today and ${interestCoveragePost.toFixed(1)}x with the deal (the ask's interest at ${pctAA(askCost!, "en-US")}${askCostRaw ? ", the rate asked" : ", the stack's weighted cost"}). Under 2x the operation consumes most of what the company generates before amortising a real; under 1.5x service depends on continuous refinancing.`,
-      values: {coverage: interestCoverage!.toFixed(4), coveragePost: interestCoveragePost.toFixed(4), askCost: askCost!.toFixed(6)},
+      severity: compareFigures(coveragePost, "1.5") < 0 ? "critical" : "high",
+      pt: `Cobertura de juros de ${local(at(interest.coverage!, 1), "pt-BR")}x hoje e ${local(at(coveragePost, 1), "pt-BR")}x com a operação (juros do pedido a ${pctAA(askCost!)}${askCostRaw ? ", a taxa pedida" : ", o custo médio do estoque"}). Abaixo de 2x a operação consome a maior parte do que a companhia gera antes de amortizar um real; abaixo de 1,5x o serviço depende de refinanciamento contínuo.`,
+      en: `Interest coverage of ${at(interest.coverage!, 1)}x today and ${at(coveragePost, 1)}x with the deal (the ask's interest at ${pctAA(askCost!, "en-US")}${askCostRaw ? ", the rate asked" : ", the stack's weighted cost"}). Under 2x the operation consumes most of what the company generates before amortising a real; under 1.5x service depends on continuous refinancing.`,
+      values: {coverage: at(interest.coverage!, 4), coveragePost: at(coveragePost, 4), askCost: at(askCost!, 6)},
       inputs: ["historical_financials.ebitda", "historical_financials.financial_expenses", "transaction.requested_amount", "debt.instruments"],
     });
   }
 
   // Leverage over a negative EBITDA is a number with no meaning, and a covenant test on it is
   // a sentence with no meaning. The cash-burning company is read through its runway instead.
-  const burning = ebitda.lte(0);
-
-  let maxNewDebt: Decimal | null = null;
-  if (tightest && !burning) {
-    maxNewDebt = d(tightest.covenant.maximum).times(ebitda).minus(netDebtPre);
-    const worst = scenarios.reduce((max, s) => (d(s.postTurns).gt(max.postTurns) ? s : max), scenarios[0]!);
-    if (scenarios.some((s) => d(s.postTurns).gt(tightest.covenant.maximum))) {
+  let maxNewDebt: string | null = null;
+  if (tightest && leverage.covenant) {
+    const test = leverage.covenant;
+    maxNewDebt = test.maxNewDebt;
+    if (test.breached) {
+      const worst = scenarios[test.worstScenario!]!;
       // Already above the ceiling before the deal is a different sentence from "the deal breaks
       // it": the first is a fact about the company today, and new money can only enter as a swap.
-      const alreadyAbove = preTurns.gt(tightest.covenant.maximum);
       findings.push({
         id: "covenant-breach-day-one",
         severity: "critical",
-        pt: alreadyAbove
-          ? `A companhia já está acima do covenant antes da operação: ${turns(preTurns)} contra o teto de ${turns(tightest.covenant.maximum)} (${tightest.lender}), excesso de ${brlM(maxNewDebt.abs())} de dívida líquida. Não cabe dívida nova por cima do estoque; a operação só existe como troca de passivo (resgate de linhas dentro do tíquete) ou com renegociação do covenant, e a trajetória até a próxima medição é o que a mesa precisa mostrar.`
-          : `A operação como solicitada rompe covenant existente no dia um: a alavancagem sai de ${turns(preTurns)} para ${turns(worst.postTurns)} contra o teto de ${turns(tightest.covenant.maximum)} (${tightest.lender}). Nos números atuais cabem ${brlM(Decimal.max(maxNewDebt, 0))} de dívida nova antes do covenant, não ${brlM(worst.amount)}. Isso muda a natureza da operação: ou o pedido inclui quitação/renegociação das linhas com covenant, ou o tíquete cai, ou não há operação.`,
-        en: alreadyAbove
-          ? `The company is already above the covenant before the deal: ${turns(preTurns, "en-US")} against the ${turns(tightest.covenant.maximum, "en-US")} ceiling (${tightest.lender}), ${brlM(maxNewDebt.abs(), "en-US")} of net debt in excess. No new debt fits on top of the stock; the deal exists only as a liability swap (lines repaid inside the ticket) or with a renegotiated covenant, and the trajectory to the next test is what the desk has to show.`
-          : `The transaction as asked breaches an existing covenant on day one: leverage moves from ${turns(preTurns, "en-US")} to ${turns(worst.postTurns, "en-US")} against the ${turns(tightest.covenant.maximum, "en-US")} ceiling (${tightest.lender}). The current numbers admit ${brlM(Decimal.max(maxNewDebt, 0), "en-US")} of new debt before the covenant, not ${brlM(worst.amount, "en-US")}. That changes the nature of the deal: either the ask includes repaying or renegotiating the covenanted lines, or the ticket comes down, or there is no deal.`,
-        values: {pre: preTurns.toFixed(4), post: worst.postTurns, ceiling: tightest.covenant.maximum, maxNewDebt: maxNewDebt.toFixed(2)},
+        pt: test.alreadyAbove
+          ? `A companhia já está acima do covenant antes da operação: ${turns(leverage.preTurns)} contra o teto de ${turns(tightest.covenant.maximum)} (${tightest.lender}), excesso de ${brlM(test.excessNetDebt)} de dívida líquida. Não cabe dívida nova por cima do estoque; a operação só existe como troca de passivo (resgate de linhas dentro do tíquete) ou com renegociação do covenant, e a trajetória até a próxima medição é o que a mesa precisa mostrar.`
+          : `A operação como solicitada rompe covenant existente no dia um: a alavancagem sai de ${turns(leverage.preTurns)} para ${turns(worst.postTurns)} contra o teto de ${turns(tightest.covenant.maximum)} (${tightest.lender}). Nos números atuais cabem ${brlM(test.roomForNewDebt)} de dívida nova antes do covenant, não ${brlM(worst.amount)}. Isso muda a natureza da operação: ou o pedido inclui quitação/renegociação das linhas com covenant, ou o tíquete cai, ou não há operação.`,
+        en: test.alreadyAbove
+          ? `The company is already above the covenant before the deal: ${turns(leverage.preTurns, "en-US")} against the ${turns(tightest.covenant.maximum, "en-US")} ceiling (${tightest.lender}), ${brlM(test.excessNetDebt, "en-US")} of net debt in excess. No new debt fits on top of the stock; the deal exists only as a liability swap (lines repaid inside the ticket) or with a renegotiated covenant, and the trajectory to the next test is what the desk has to show.`
+          : `The transaction as asked breaches an existing covenant on day one: leverage moves from ${turns(leverage.preTurns, "en-US")} to ${turns(worst.postTurns, "en-US")} against the ${turns(tightest.covenant.maximum, "en-US")} ceiling (${tightest.lender}). The current numbers admit ${brlM(test.roomForNewDebt, "en-US")} of new debt before the covenant, not ${brlM(worst.amount, "en-US")}. That changes the nature of the deal: either the ask includes repaying or renegotiating the covenanted lines, or the ticket comes down, or there is no deal.`,
+        values: {pre: at(leverage.preTurns, 4), post: worst.postTurns, ceiling: tightest.covenant.maximum, maxNewDebt: at(test.maxNewDebt, 2)},
         inputs: ["debt.covenants", "historical_financials.gross_debt", "historical_financials.cash", "historical_financials.ebitda", "transaction.requested_amount"],
       });
     }
   }
 
-  if (maturing24.gt(0) && totalSchedule.gt(0)) {
-    const share = Decimal.min(maturing24.div(totalSchedule), 1);
-    if (share.gte("0.4")) {
-      findings.push({
-        id: "maturity-wall",
-        severity: "high",
-        pt: `${brlM(maturing24)} (${share.times(100).toFixed(0)}% do mapa) vencem em até 24 meses. A operação disputa caixa com uma parede de refinanciamento, e o desenho tem que dizer o que acontece com essas linhas.`,
-        en: `${brlM(maturing24, "en-US")} (${share.times(100).toFixed(0)}% of the schedule) matures within 24 months. The transaction competes with a refinancing wall, and the structure has to say what happens to those lines.`,
-        values: {maturing24: maturing24.toFixed(2), share: share.toFixed(4)},
-        inputs: ["debt.instruments"],
-      });
-    }
+  const share = stack.maturingShare24;
+  if (share !== null && compareFigures(share, "0.4") >= 0) {
+    findings.push({
+      id: "maturity-wall",
+      severity: "high",
+      pt: `${brlM(stack.maturingWithin24Months)} (${percentAt(share, 0)}% do mapa) vencem em até 24 meses. A operação disputa caixa com uma parede de refinanciamento, e o desenho tem que dizer o que acontece com essas linhas.`,
+      en: `${brlM(stack.maturingWithin24Months, "en-US")} (${percentAt(share, 0)}% of the schedule) matures within 24 months. The transaction competes with a refinancing wall, and the structure has to say what happens to those lines.`,
+      values: {maturing24: at(stack.maturingWithin24Months, 2), share: at(share, 4)},
+      inputs: ["debt.instruments"],
+    });
   }
 
   // ---- runway: the axis a venture lender actually reads ---------------------------------------
@@ -411,177 +407,164 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
   // quoted the first figure.
   let runway: RunwayAnalysis | null = null;
   const venture = input.venture;
-  if (venture?.monthlyBurn && d(venture.monthlyBurn).gt(0)) {
-    const burn = d(venture.monthlyBurn);
-    const cashNow = d(input.balance.cash);
-    const ask = scenarios.length > 0 ? scenarios.reduce((max, s) => (d(s.amount).gt(max) ? d(s.amount) : max), ZERO) : ZERO;
+  if (venture?.monthlyBurn && compareFigures(venture.monthlyBurn, 0) > 0) {
+    const ask = leverage.largestAmount;
     const askRate = parseRate(input.request.rateAsk);
-    const askCost = askRate ? effectiveAnnualCost(askRate, input.indexLevels) : null;
+    const askRateCost = askRate ? effectiveAnnualCost(askRate, input.indexLevels) : null;
     // Venture practice when the ask names no rate: CDI plus six, before the warrant, compounded.
-    const assumedRate = askCost ? d(askCost) : d(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: "0.06"}).value);
-    const monthsPre = cashNow.div(burn);
-    const monthsPost = cashNow.plus(ask).div(burn);
-    const monthlyInterest = ask.times(assumedRate).div(12);
-    const monthsPostAfterService = cashNow.plus(ask).div(burn.plus(monthlyInterest));
-    const arr = venture.arr ? d(venture.arr) : null;
-    const debtToArr = arr && arr.gt(0) ? totalOnBalance.plus(ask).div(arr) : null;
-    const nrr = venture.nrr ? d(venture.nrr) : null;
-    const topShare = venture.topCustomerShare ? d(venture.topCustomerShare) : null;
+    const assumedRate = askRateCost ? askRateCost : composeIndexAndSpread({index: "DI", annualIndex: cdi, annualSpread: "0.06"}).value;
+    const run = calculateVentureRunway({
+      cash: input.balance.cash,
+      monthlyBurn: venture.monthlyBurn,
+      ask,
+      assumedRate,
+      grossDebt: input.balance.grossDebt,
+      arr: venture.arr ? venture.arr : null,
+      statedRunwayMonths: venture.runwayMonthsStated ? venture.runwayMonthsStated : null,
+    });
     runway = {
-      monthlyBurn: burn.toFixed(2),
-      cash: cashNow.toFixed(2),
-      monthsPre: monthsPre.toFixed(1),
-      monthsPost: monthsPost.toFixed(1),
-      monthsPostAfterService: monthsPostAfterService.toFixed(1),
-      assumedRate: assumedRate.toFixed(6),
-      arr: arr ? arr.toFixed(2) : null,
-      debtToArr: debtToArr ? debtToArr.toFixed(4) : null,
-      nrr: nrr ? nrr.toFixed(4) : null,
-      topCustomerShare: topShare ? topShare.toFixed(4) : null,
+      monthlyBurn: at(venture.monthlyBurn, 2),
+      cash: at(input.balance.cash, 2),
+      monthsPre: at(run.monthsPre, 1),
+      monthsPost: at(run.monthsPost, 1),
+      monthsPostAfterService: ratioAt(run.monthsPostAfterService, 1),
+      assumedRate: at(assumedRate, 6),
+      arr: venture.arr ? at(venture.arr, 2) : null,
+      debtToArr: run.debtToArr ? at(run.debtToArr, 4) : null,
+      nrr: venture.nrr ? at(venture.nrr, 4) : null,
+      topCustomerShare: venture.topCustomerShare ? at(venture.topCustomerShare, 4) : null,
     };
-    const months = (value: Decimal) => value.toFixed(1).replace(".", ",");
+    const months = (value: string, locale: Locale = "pt-BR") => local(ratioAt(value, 1), locale);
 
-    if (monthsPre.lt(12)) {
+    if (compareFigures(run.monthsPre, 12) < 0) {
+      const underNine = compareFigures(run.monthsPre, 9) < 0;
       findings.push({
         id: "runway-short",
-        severity: monthsPre.lt(9) ? "critical" : "high",
-        pt: `Runway de ${months(monthsPre)} meses antes da operação (caixa de ${brlM(cashNow)} sobre queima de ${brlM(burn)} por mês). ${monthsPre.lt(9) ? "Abaixo de nove meses não é venture debt, é ponte de equity: o credor entraria para financiar a própria saída." : "Abaixo de doze meses o credor vai exigir que a rodada esteja encaminhada antes do desembolso, não depois."}`,
-        en: `Runway of ${monthsPre.toFixed(1)} months before the deal (${brlM(cashNow, "en-US")} of cash over ${brlM(burn, "en-US")} of monthly burn). ${monthsPre.lt(9) ? "Under nine months this is not venture debt but an equity bridge: the lender would be funding its own exit." : "Under twelve months the lender will want the round in motion before disbursement, not after."}`,
-        values: {monthsPre: monthsPre.toFixed(2), cash: cashNow.toFixed(2), burn: burn.toFixed(2)},
+        severity: underNine ? "critical" : "high",
+        pt: `Runway de ${months(run.monthsPre)} meses antes da operação (caixa de ${brlM(input.balance.cash)} sobre queima de ${brlM(venture.monthlyBurn)} por mês). ${underNine ? "Abaixo de nove meses não é venture debt, é ponte de equity: o credor entraria para financiar a própria saída." : "Abaixo de doze meses o credor vai exigir que a rodada esteja encaminhada antes do desembolso, não depois."}`,
+        en: `Runway of ${months(run.monthsPre, "en-US")} months before the deal (${brlM(input.balance.cash, "en-US")} of cash over ${brlM(venture.monthlyBurn, "en-US")} of monthly burn). ${underNine ? "Under nine months this is not venture debt but an equity bridge: the lender would be funding its own exit." : "Under twelve months the lender will want the round in motion before disbursement, not after."}`,
+        values: {monthsPre: at(run.monthsPre, 2), cash: at(input.balance.cash, 2), burn: at(venture.monthlyBurn, 2)},
         inputs: ["interim_financials.cash", "interim_financials.monthly_burn"],
       });
     }
-    if (venture.runwayMonthsStated && d(venture.runwayMonthsStated).minus(monthsPre).abs().gt("1.5")) {
+    if (run.statedGap !== null && compareFigures(run.statedGap, "1.5") > 0) {
+      const stated = venture.runwayMonthsStated!;
       findings.push({
         id: "runway-stated-vs-computed",
         severity: "high",
-        pt: `A companhia declara ${d(venture.runwayMonthsStated).toFixed(0)} meses de runway; o caixa sobre a queima média dá ${months(monthsPre)}. A diferença é a queima escolhida (melhor mês contra média do trimestre), e o credor usa a média.`,
-        en: `The company states ${d(venture.runwayMonthsStated).toFixed(0)} months of runway; cash over average burn gives ${monthsPre.toFixed(1)}. The difference is the burn chosen (best month versus quarterly average), and the lender uses the average.`,
-        values: {stated: d(venture.runwayMonthsStated).toFixed(2), computed: monthsPre.toFixed(2)},
+        pt: `A companhia declara ${at(stated, 0)} meses de runway; o caixa sobre a queima média dá ${months(run.monthsPre)}. A diferença é a queima escolhida (melhor mês contra média do trimestre), e o credor usa a média.`,
+        en: `The company states ${at(stated, 0)} months of runway; cash over average burn gives ${months(run.monthsPre, "en-US")}. The difference is the burn chosen (best month versus quarterly average), and the lender uses the average.`,
+        values: {stated: at(stated, 2), computed: at(run.monthsPre, 2)},
         inputs: ["company.runway_months", "interim_financials.cash", "interim_financials.monthly_burn"],
       });
     }
-    if (ask.gt(0)) {
+    if (compareFigures(ask, 0) > 0) {
       findings.push({
         id: "runway-bought",
         severity: "info",
-        pt: `A captação de ${brlM(ask)} leva o runway de ${months(monthsPre)} para ${months(monthsPost)} meses antes do serviço, e para ${months(monthsPostAfterService)} com os juros pagos do mesmo caixa (${pctAA(assumedRate)} assumido${askCost ? ", a taxa pedida" : ", prática de venture debt quando o pedido não nomeia taxa"}). O que a operação compra é ${months(monthsPostAfterService.minus(monthsPre))} meses, não ${months(monthsPost.minus(monthsPre))}.`,
-        en: `The ${brlM(ask, "en-US")} raise takes runway from ${monthsPre.toFixed(1)} to ${monthsPost.toFixed(1)} months before service, and to ${monthsPostAfterService.toFixed(1)} with interest paid from the same cash (${pctAA(assumedRate, "en-US")} assumed${askCost ? ", the rate asked" : ", venture-debt practice when the ask names no rate"}). What the deal buys is ${monthsPostAfterService.minus(monthsPre).toFixed(1)} months, not ${monthsPost.minus(monthsPre).toFixed(1)}.`,
-        values: {monthsPre: monthsPre.toFixed(2), monthsPost: monthsPost.toFixed(2), monthsPostAfterService: monthsPostAfterService.toFixed(2), assumedRate: assumedRate.toFixed(6)},
+        pt: `A captação de ${brlM(ask)} leva o runway de ${months(run.monthsPre)} para ${months(run.monthsPost)} meses antes do serviço, e para ${months(run.monthsPostAfterService)} com os juros pagos do mesmo caixa (${pctAA(assumedRate)} assumido${askRateCost ? ", a taxa pedida" : ", prática de venture debt quando o pedido não nomeia taxa"}). O que a operação compra é ${months(run.monthsBought)} meses, não ${months(run.monthsBoughtBeforeService)}.`,
+        en: `The ${brlM(ask, "en-US")} raise takes runway from ${months(run.monthsPre, "en-US")} to ${months(run.monthsPost, "en-US")} months before service, and to ${months(run.monthsPostAfterService, "en-US")} with interest paid from the same cash (${pctAA(assumedRate, "en-US")} assumed${askRateCost ? ", the rate asked" : ", venture-debt practice when the ask names no rate"}). What the deal buys is ${months(run.monthsBought, "en-US")} months, not ${months(run.monthsBoughtBeforeService, "en-US")}.`,
+        values: {monthsPre: at(run.monthsPre, 2), monthsPost: at(run.monthsPost, 2), monthsPostAfterService: ratioAt(run.monthsPostAfterService, 2), assumedRate: at(assumedRate, 6)},
         inputs: ["transaction.requested_amount", "interim_financials.cash", "interim_financials.monthly_burn"],
       });
     }
-    if (debtToArr && debtToArr.gt("0.35")) {
+    if (run.debtToArr !== null && compareFigures(run.debtToArr, "0.35") > 0) {
       findings.push({
         id: "debt-to-arr",
         severity: "high",
-        pt: `Dívida total pós-operação de ${brlM(totalOnBalance.plus(ask))} sobre ARR de ${brlM(arr!)}: ${debtToArr.times(100).toFixed(0)}% do ARR. A prática de venture debt fica entre 20% e 35%; acima disso o credor está financiando a queima, não a tração.`,
-        en: `Total post-deal debt of ${brlM(totalOnBalance.plus(ask), "en-US")} over ARR of ${brlM(arr!, "en-US")}: ${debtToArr.times(100).toFixed(0)}% of ARR. Venture practice sits between 20% and 35%; above that the lender is funding burn, not traction.`,
-        values: {debtToArr: debtToArr.toFixed(4), arr: arr!.toFixed(2), debtPost: totalOnBalance.plus(ask).toFixed(2)},
+        pt: `Dívida total pós-operação de ${brlM(run.debtAfterRaise)} sobre ARR de ${brlM(venture.arr!)}: ${percentAt(run.debtToArr, 0)}% do ARR. A prática de venture debt fica entre 20% e 35%; acima disso o credor está financiando a queima, não a tração.`,
+        en: `Total post-deal debt of ${brlM(run.debtAfterRaise, "en-US")} over ARR of ${brlM(venture.arr!, "en-US")}: ${percentAt(run.debtToArr, 0)}% of ARR. Venture practice sits between 20% and 35%; above that the lender is funding burn, not traction.`,
+        values: {debtToArr: at(run.debtToArr, 4), arr: at(venture.arr!, 2), debtPost: at(run.debtAfterRaise, 2)},
         inputs: ["interim_financials.arr", "debt.total_gross", "transaction.requested_amount"],
       });
     }
-    if (nrr && nrr.lt(1)) {
+    if (venture.nrr && compareFigures(venture.nrr, 1) < 0) {
       findings.push({
         id: "nrr-below-par",
         severity: "high",
-        pt: `Retenção líquida de receita de ${nrr.times(100).toFixed(0)}%: a base encolhe sem venda nova. Em venture debt a base é a garantia; abaixo de 100% o credor precifica churn, não crescimento.`,
-        en: `Net revenue retention of ${nrr.times(100).toFixed(0)}%: the base shrinks without new sales. In venture debt the base is the collateral; under 100% the lender prices churn, not growth.`,
-        values: {nrr: nrr.toFixed(4)},
+        pt: `Retenção líquida de receita de ${percentAt(venture.nrr, 0)}%: a base encolhe sem venda nova. Em venture debt a base é a garantia; abaixo de 100% o credor precifica churn, não crescimento.`,
+        en: `Net revenue retention of ${percentAt(venture.nrr, 0)}%: the base shrinks without new sales. In venture debt the base is the collateral; under 100% the lender prices churn, not growth.`,
+        values: {nrr: at(venture.nrr, 4)},
         inputs: ["company.net_revenue_retention"],
       });
     }
-    if (topShare && topShare.gt("0.20")) {
+    if (venture.topCustomerShare && compareFigures(venture.topCustomerShare, "0.20") > 0) {
       findings.push({
         id: "customer-concentration",
         severity: "high",
-        pt: `O maior cliente responde por ${topShare.times(100).toFixed(0)}% do MRR. Acima de 20% a perda de um contrato move o runway em meses, e o credor vai pedir o contrato e uma cláusula de vencimento antecipado ligada a ele.`,
-        en: `The largest customer is ${topShare.times(100).toFixed(0)}% of MRR. Above 20% losing one contract moves runway by months, and the lender will ask for the contract and an acceleration clause tied to it.`,
-        values: {topCustomerShare: topShare.toFixed(4)},
+        pt: `O maior cliente responde por ${percentAt(venture.topCustomerShare, 0)}% do MRR. Acima de 20% a perda de um contrato move o runway em meses, e o credor vai pedir o contrato e uma cláusula de vencimento antecipado ligada a ele.`,
+        en: `The largest customer is ${percentAt(venture.topCustomerShare, 0)}% of MRR. Above 20% losing one contract moves runway by months, and the lender will ask for the contract and an acceleration clause tied to it.`,
+        values: {topCustomerShare: at(venture.topCustomerShare, 4)},
         inputs: ["customers.top_customers.1.share_pct"],
       });
     }
   }
 
   // ---- working capital: the cycle and what growth absorbs -------------------------------------
-  const revenue = d(input.audited.revenue);
-  const cogs = input.audited.cogs ? d(input.audited.cogs) : null;
-  const dso = revenue.gt(0) ? d(input.balance.receivables).div(revenue).times(365) : null;
-  const dio = cogs && input.balance.inventory ? d(input.balance.inventory).div(cogs).times(365) : null;
-  const dpo = cogs && input.balance.suppliers ? d(input.balance.suppliers).div(cogs).times(365) : null;
-  const cycle = dso && dio && dpo ? dso.plus(dio).minus(dpo) : null;
-
-  let growthAbsorption: Decimal | null = null;
-  if (cycle && input.projectedNextYear) {
-    const growth = d(input.projectedNextYear.revenue).minus(revenue);
-    if (growth.gt(0)) {
-      growthAbsorption = growth.times(cycle).div(365);
-      if (input.request.workingCapitalAsk) {
-        const ask = d(input.request.workingCapitalAsk);
-        if (ask.gt(growthAbsorption.times(2))) {
-          findings.push({
-            id: "wc-ask-vs-need",
-            severity: "high",
-            pt: `O crescimento projetado (${brlM(growth)} de receita) absorve ${brlM(growthAbsorption)} de capital de giro ao ciclo atual de ${cycle.toFixed(0)} dias, mas o pedido rotula ${brlM(ask)} como giro, ${ask.div(growthAbsorption).toFixed(1).replace(".", ",")} vezes a necessidade incremental. A diferença financia outra coisa (alongamento de ciclo, recomposição de caixa ou substituição de linhas), e a mesa precisa nomear o quê, porque o fundo vai perguntar.`,
-            en: `Projected growth (${brlM(growth, "en-US")} of revenue) absorbs ${brlM(growthAbsorption, "en-US")} of working capital at the current ${cycle.toFixed(0)}-day cycle, yet the ask labels ${brlM(ask, "en-US")} as working capital, ${ask.div(growthAbsorption).toFixed(1)} times the incremental need. The difference funds something else, and the desk has to name it, because the fund will ask.`,
-            values: {need: growthAbsorption.toFixed(2), ask: ask.toFixed(2), cycleDays: cycle.toFixed(1)},
-            inputs: ["projections.revenue", "historical_financials.revenue", "transaction.use_of_proceeds"],
-          });
-        }
-      }
-    }
+  const workingCapitalAsk = input.request.workingCapitalAsk ? input.request.workingCapitalAsk : null;
+  const cycle = calculateWorkingCapitalCycle({
+    revenue: input.audited.revenue,
+    receivables: input.balance.receivables,
+    cogs: input.audited.cogs ? input.audited.cogs : null,
+    inventory: input.balance.inventory ? input.balance.inventory : null,
+    suppliers: input.balance.suppliers ? input.balance.suppliers : null,
+    nextYearRevenue: input.projectedNextYear ? input.projectedNextYear.revenue : null,
+    workingCapitalAsk,
+  });
+  if (cycle.askExceedsTwiceNeed) {
+    findings.push({
+      id: "wc-ask-vs-need",
+      severity: "high",
+      pt: `O crescimento projetado (${brlM(cycle.growth!)} de receita) absorve ${brlM(cycle.growthAbsorption!)} de capital de giro ao ciclo atual de ${ratioAt(cycle.cycleDays!, 0)} dias, mas o pedido rotula ${brlM(workingCapitalAsk!)} como giro, ${local(ratioAt(cycle.askOverNeed!, 1), "pt-BR")} vezes a necessidade incremental. A diferença financia outra coisa (alongamento de ciclo, recomposição de caixa ou substituição de linhas), e a mesa precisa nomear o quê, porque o fundo vai perguntar.`,
+      en: `Projected growth (${brlM(cycle.growth!, "en-US")} of revenue) absorbs ${brlM(cycle.growthAbsorption!, "en-US")} of working capital at the current ${ratioAt(cycle.cycleDays!, 0)}-day cycle, yet the ask labels ${brlM(workingCapitalAsk!, "en-US")} as working capital, ${ratioAt(cycle.askOverNeed!, 1)} times the incremental need. The difference funds something else, and the desk has to name it, because the fund will ask.`,
+      values: {need: at(cycle.growthAbsorption!, 2), ask: at(workingCapitalAsk!, 2), cycleDays: ratioAt(cycle.cycleDays!, 1)},
+      inputs: ["projections.revenue", "historical_financials.revenue", "transaction.use_of_proceeds"],
+    });
   }
 
   // ---- encumbrance: how free is the asset being offered ---------------------------------------
-  const receivablesBase = d(input.interim?.receivables ?? input.balance.receivables);
-  let encumbered = ZERO;
-  for (const [index, line] of input.debt.entries()) {
-    const coverage = parseReceivablesCoverage(line.collateral);
-    if (coverage) encumbered = encumbered.plus(d(line.balance).times(coverage));
-    else if (isReceivablesCession(line.collateral)) encumbered = encumbered.plus(line.balance);
-    void index;
-  }
-  const free = Decimal.max(receivablesBase.minus(encumbered), 0);
-  let askAgainstFree: Decimal | null = null;
-  if (input.request.workingCapitalAsk && free.gt(0)) {
-    askAgainstFree = d(input.request.workingCapitalAsk).div(free);
-    if (askAgainstFree.gte("0.8")) {
-      findings.push({
-        id: "receivables-encumbrance",
-        severity: "high",
-        pt: `Dos ${brlM(receivablesBase)} de recebíveis, ${brlM(encumbered)} já estão comprometidos com as linhas atuais (coberturas de 125% a 130% e cessões). Sobram ${brlM(free)} livres, e o pedido de giro de ${brlM(input.request.workingCapitalAsk)} consome ${askAgainstFree.times(100).toFixed(0)}% disso. Garantia para dinheiro novo é escassa, e qualquer estrutura vai disputar colateral com os bancos incumbentes.`,
-        en: `Of ${brlM(receivablesBase, "en-US")} in receivables, ${brlM(encumbered, "en-US")} is already committed to the current lines (125% to 130% coverages and cessions). ${brlM(free, "en-US")} remains free, and the ${brlM(input.request.workingCapitalAsk, "en-US")} working-capital ask consumes ${askAgainstFree.times(100).toFixed(0)}% of it. Collateral for new money is scarce, and any structure will compete with incumbent banks for it.`,
-        values: {base: receivablesBase.toFixed(2), encumbered: encumbered.toFixed(2), free: free.toFixed(2), askShare: askAgainstFree.toFixed(4)},
-        inputs: ["debt.instruments", "interim_financials.receivables"],
-      });
-    }
+  const receivablesBase = input.interim?.receivables ?? input.balance.receivables;
+  const encumbrance = calculateReceivablesEncumbrance({
+    base: receivablesBase,
+    lines: input.debt.map((line) => ({balance: line.balance, coverage: parseReceivablesCoverage(line.collateral), cession: isReceivablesCession(line.collateral)})),
+    workingCapitalAsk,
+  });
+  const askAgainstFree = encumbrance.askAgainstFree;
+  if (askAgainstFree !== null && compareFigures(askAgainstFree, "0.8") >= 0) {
+    findings.push({
+      id: "receivables-encumbrance",
+      severity: "high",
+      pt: `Dos ${brlM(receivablesBase)} de recebíveis, ${brlM(encumbrance.encumbered)} já estão comprometidos com as linhas atuais (coberturas de 125% a 130% e cessões). Sobram ${brlM(encumbrance.free)} livres, e o pedido de giro de ${brlM(workingCapitalAsk!)} consome ${percentAt(askAgainstFree, 0)}% disso. Garantia para dinheiro novo é escassa, e qualquer estrutura vai disputar colateral com os bancos incumbentes.`,
+      en: `Of ${brlM(receivablesBase, "en-US")} in receivables, ${brlM(encumbrance.encumbered, "en-US")} is already committed to the current lines (125% to 130% coverages and cessions). ${brlM(encumbrance.free, "en-US")} remains free, and the ${brlM(workingCapitalAsk!, "en-US")} working-capital ask consumes ${percentAt(askAgainstFree, 0)}% of it. Collateral for new money is scarce, and any structure will compete with incumbent banks for it.`,
+      values: {base: at(receivablesBase, 2), encumbered: at(encumbrance.encumbered, 2), free: at(encumbrance.free, 2), askShare: at(askAgainstFree, 4)},
+      inputs: ["debt.instruments", "interim_financials.receivables"],
+    });
   }
 
   // ---- the ask against the room's own numbers -------------------------------------------------
-  const distinctAmounts = [...new Set(input.request.amounts.map((a) => d(a.value).toFixed(2)))];
-  if (distinctAmounts.length > 1) {
+  if (new Set(scenarios.map((scenario) => scenario.amount)).size > 1) {
     const described = (locale: Locale) => input.request.amounts.map((a) => `${brlM(a.value, locale)} (${a.source})`).join(locale === "pt-BR" ? " e " : " and ");
     findings.push({
       id: "amount-divergence",
       severity: "high",
       pt: `A sala pede dois valores diferentes: ${described("pt-BR")}. Nenhuma fonte manda na outra; é pergunta para a empresa antes de qualquer material ir a mercado.`,
       en: `The room asks for two different amounts: ${described("en-US")}. Neither source outranks the other; it is a question for the company before any material goes to market.`,
-      values: Object.fromEntries(input.request.amounts.map((a, i) => [`amount_${i + 1}`, d(a.value).toFixed(2)])),
+      values: Object.fromEntries(scenarios.map((scenario, i) => [`amount_${i + 1}`, scenario.amount])),
       inputs: ["transaction.requested_amount"],
     });
   }
 
   const rateAsk = parseRate(input.request.rateAsk);
   const rateAskAnnual = rateAsk ? effectiveAnnualCost(rateAsk, input.indexLevels) : null;
-  if (rateAskAnnual && weightedCost && tightest) {
-    const worstPost = scenarios.reduce((max, s) => Decimal.max(max, s.postTurns), ZERO);
-    if (d(rateAskAnnual).lte(weightedCost.plus("0.005")) && worstPost.gt(preTurns)) {
+  if (rateAskAnnual && stack.weightedCost !== null && tightest) {
+    const test = testRateAskAgainstStack({askRate: rateAskAnnual, stackCost: stack.weightedCost, tolerance: "0.005"});
+    if (test.atOrBelowStack && leverage.worstPostAbovePre) {
       findings.push({
         id: "rate-ask-vs-stack",
         severity: "high",
-        pt: `A empresa pede ${pctAA(rateAskAnnual)} (com CDI a ${pctAA(cdi)}) para dinheiro novo que leva a alavancagem a ${turns(worstPost)}, enquanto o stack atual, contratado à alavancagem menor de ${turns(preTurns)}, já custa ${pctAA(weightedCost)} na média. Dinheiro novo, mais alavancado e mais junior não sai mais barato que o estoque; a expectativa de taxa precisa ser recalibrada antes da conversa com fundos.`,
-        en: `The company asks ${pctAA(rateAskAnnual, "en-US")} (CDI at ${pctAA(cdi, "en-US")}) for new money that takes leverage to ${turns(worstPost, "en-US")}, while the current stack, written at the lower leverage of ${turns(preTurns, "en-US")}, already averages ${pctAA(weightedCost, "en-US")} Newer, more levered, more junior money does not price below the stock; the rate expectation needs recalibrating before any fund conversation.`,
-        values: {ask: rateAskAnnual, stackAverage: weightedCost.toFixed(6), postTurns: worstPost.toFixed(4)},
+        pt: `A empresa pede ${pctAA(rateAskAnnual)} (com CDI a ${pctAA(cdi)}) para dinheiro novo que leva a alavancagem a ${turns(leverage.worstPostTurns)}, enquanto o stack atual, contratado à alavancagem menor de ${turns(leverage.preTurns)}, já custa ${pctAA(stack.weightedCost)} na média. Dinheiro novo, mais alavancado e mais junior não sai mais barato que o estoque; a expectativa de taxa precisa ser recalibrada antes da conversa com fundos.`,
+        en: `The company asks ${pctAA(rateAskAnnual, "en-US")} (CDI at ${pctAA(cdi, "en-US")}) for new money that takes leverage to ${turns(leverage.worstPostTurns, "en-US")}, while the current stack, written at the lower leverage of ${turns(leverage.preTurns, "en-US")}, already averages ${pctAA(stack.weightedCost, "en-US")} Newer, more levered, more junior money does not price below the stock; the rate expectation needs recalibrating before any fund conversation.`,
+        values: {ask: rateAskAnnual, stackAverage: at(stack.weightedCost, 6), postTurns: ratioAt(leverage.worstPostTurns, 4)},
         inputs: ["transaction.expected_rate", "debt.instruments"],
       });
     }
@@ -606,43 +589,43 @@ export function analyzeCreditPosition(input: DeskInput): DeskAnalysis {
   findings.sort((a, b) => order[a.severity] - order[b.severity]);
 
   return {
-    assumptions: {cdi: cdi.toFixed(6), referenceDate: input.referenceDate},
+    assumptions: {cdi: at(cdi, 6), referenceDate: input.referenceDate},
     stack: {
       lines,
-      totalSchedule: totalSchedule.toFixed(2),
-      totalOnBalance: totalOnBalance.toFixed(2),
-      scheduleGap: scheduleGap.toFixed(2),
-      weightedCost: weightedCost ? weightedCost.toFixed(6) : null,
-      weightedSpreadOverCdi: weightedSpread ? weightedSpread.toFixed(6) : null,
+      totalSchedule: at(stack.totalSchedule, 2),
+      totalOnBalance: at(stack.totalOnBalance, 2),
+      scheduleGap: at(stack.scheduleGap, 2),
+      weightedCost: stack.weightedCost !== null ? at(stack.weightedCost, 6) : null,
+      weightedSpreadOverCdi: weightedSpread !== null ? at(weightedSpread, 6) : null,
       unpriceableLines: unpriceable.length,
-      maturingWithin24Months: maturing24.toFixed(2),
-      maturingWithin12Months: maturing12.toFixed(2),
-      liquidityCoverage12: liquidityCoverage12 ? liquidityCoverage12.toFixed(4) : null,
+      maturingWithin24Months: at(stack.maturingWithin24Months, 2),
+      maturingWithin12Months: at(stack.maturingWithin12Months, 2),
+      liquidityCoverage12: coverage12 !== null ? at(coverage12, 4) : null,
     },
     leverage: {
-      netDebtPre: netDebtPre.toFixed(2),
-      ebitda: ebitda.toFixed(2),
-      preTurns: preTurns.toFixed(4),
+      netDebtPre: at(leverage.netDebt, 2),
+      ebitda: at(input.audited.ebitda, 2),
+      preTurns: ratioAt(leverage.preTurns, 4),
       scenarios,
       tightestCovenant: tightest ? {lender: tightest.lender, maximum: tightest.covenant.maximum} : null,
-      maxNewDebtUnderCovenants: maxNewDebt ? maxNewDebt.toFixed(2) : null,
-      interestCoverage: interestCoverage ? interestCoverage.toFixed(4) : null,
-      interestCoveragePost: interestCoveragePost ? interestCoveragePost.toFixed(4) : null,
+      maxNewDebtUnderCovenants: maxNewDebt !== null ? at(maxNewDebt, 2) : null,
+      interestCoverage: interest.coverage !== null ? at(interest.coverage, 4) : null,
+      interestCoveragePost: coveragePost !== null ? ratioAt(coveragePost, 4) : null,
     },
     workingCapital: {
-      dso: dso ? dso.toFixed(1) : null,
-      dio: dio ? dio.toFixed(1) : null,
-      dpo: dpo ? dpo.toFixed(1) : null,
-      cycleDays: cycle ? cycle.toFixed(1) : null,
-      growthAbsorption: growthAbsorption ? growthAbsorption.toFixed(2) : null,
+      dso: cycle.dso !== null ? ratioAt(cycle.dso, 1) : null,
+      dio: cycle.dio !== null ? ratioAt(cycle.dio, 1) : null,
+      dpo: cycle.dpo !== null ? ratioAt(cycle.dpo, 1) : null,
+      cycleDays: cycle.cycleDays !== null ? ratioAt(cycle.cycleDays, 1) : null,
+      growthAbsorption: cycle.growthAbsorption !== null ? ratioAt(cycle.growthAbsorption, 2) : null,
     },
     encumbrance: {
-      receivablesBase: receivablesBase.toFixed(2),
-      encumbered: encumbered.toFixed(2),
-      free: free.toFixed(2),
-      askAgainstFree: askAgainstFree ? askAgainstFree.toFixed(4) : null,
+      receivablesBase: at(receivablesBase, 2),
+      encumbered: at(encumbrance.encumbered, 2),
+      free: at(encumbrance.free, 2),
+      askAgainstFree: askAgainstFree !== null ? at(askAgainstFree, 4) : null,
     },
-    profile: burning ? "cash_burning" : "cash_generative",
+    profile: leverage.profile,
     runway,
     findings,
   };
