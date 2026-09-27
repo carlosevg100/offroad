@@ -1,8 +1,7 @@
 import {AlertTriangle, CircleHelp, MessageSquareText} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
-import type {ClientQuestion, DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
-import {resolveFieldPath} from "@offroad/credit-ontology";
+import {deskInputLabel, type ClientQuestion, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
 
 type Props = {
   locale: string;
@@ -28,12 +27,13 @@ const ratePct = (value: string | null, locale: string) =>
   value === null ? null : `${(Number(value) * 100).toLocaleString(intl(locale), {minimumFractionDigits: 1, maximumFractionDigits: 1})}% a.a.`;
 const days = (value: string | null) => (value === null ? null : `${Math.round(Number(value))}`);
 
-/** Field path to the words a company recognises, falling back to the path when the catalogue does not know it. */
-const fieldLabel = (path: string, lang: "pt" | "en") => {
-  const resolved = resolveFieldPath(path);
-  if (!resolved) return path;
-  const period = resolved.params.period ? ` (${resolved.params.period.replace("_", "/")})` : "";
-  return `${resolved.definition.labels[lang]}${period}`;
+/**
+ * An input the desk lacks, in the words the questions to the company use for it, never its field
+ * path: the person reading is the one who has to go and find the document.
+ */
+const fieldLabel = (path: string, lang: "pt" | "en", locale: string) => {
+  const label = deskInputLabel(path)[lang];
+  return label.charAt(0).toLocaleUpperCase(intl(locale)) + label.slice(1);
 };
 
 /**
@@ -245,9 +245,8 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
           <p className="case-desk__note">{desk ? t("missingSomeBody") : t("missingAllBody")}</p>
           <ul>
             {deskMissing.map((path) => (
-              <li key={path}>
-                <strong>{fieldLabel(path, lang)}</strong>
-                <code>{path}</code>
+              <li key={path} data-field-path={path}>
+                <strong>{fieldLabel(path, lang, locale)}</strong>
               </li>
             ))}
           </ul>
