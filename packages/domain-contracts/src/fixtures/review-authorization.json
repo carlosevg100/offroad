@@ -1,0 +1,8 @@
+[
+  {"name":"source denied despite approver role","assignmentRequired":true,"selfApprovalAllowed":false,"roles":["approver"],"samePerson":false,"declared":false,"sourceAccess":false,"allowed":false,"reason":"review_source_access_required"},
+  {"name":"segregation rejects preparer even with declaration","assignmentRequired":true,"selfApprovalAllowed":false,"roles":["approver"],"samePerson":true,"declared":true,"sourceAccess":true,"allowed":false,"reason":"capital_project_self_approval_forbidden"},
+  {"name":"individual self approval requires declaration","assignmentRequired":false,"selfApprovalAllowed":true,"roles":[],"samePerson":true,"declared":false,"sourceAccess":true,"allowed":false,"reason":"capital_project_self_approval_forbidden"},
+  {"name":"individual explicit approval allowed","assignmentRequired":false,"selfApprovalAllowed":true,"roles":[],"samePerson":true,"declared":true,"sourceAccess":true,"allowed":true},
+  {"name":"missing assignment denies approval","assignmentRequired":true,"selfApprovalAllowed":true,"roles":[],"samePerson":false,"declared":false,"sourceAccess":true,"allowed":false,"reason":"review_assignment_required"},
+  {"name":"independent approver allowed","assignmentRequired":true,"selfApprovalAllowed":false,"roles":["approver"],"samePerson":false,"declared":false,"sourceAccess":true,"allowed":true}
+]

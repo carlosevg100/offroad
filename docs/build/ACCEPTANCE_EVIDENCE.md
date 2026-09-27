@@ -3979,3 +3979,7 @@ OK do fundador recebido. Inventário renovado sobre `f4a0a7b0759e8fc361b59fed166
 ## Etapa15: avaliação integrada do pacote de decisão
 
 Seis casos em `capital-decision-domain-eval.test.ts`: oráculo independente em centavos, caixa negativo, integridade/perímetro, lacunas, consistência e duração sintética do domínio. Não comprova latência de usuário nem revisão independente. Ver `docs/build/arcabouco/etapa-15-eval-integrado.md`. Etapa15 permanece aberta; completion exige CI e produção no commit.
+
+## 2026-09-27: contrato da etapa 20
+
+`review-protocol.test.ts`: negativos de acesso, autoaprovação explícita, aprovação/revogação exatas, três decisões concorrentes e resolução completa, relatos sem efeitos; fixtures de classificação incluem narrativa sob hash igual e campo desconhecido. Suite de domínio e typecheck locais aprovados (129 testes). Fixtures SQL compartilháveis não equivalem a espelho SQL aplicado: essa prova pertence ao incremento 2. CI/publicação deste incremento ainda não declaradas concluídas nesta nota.
