@@ -1615,8 +1615,16 @@
   {
    "version": "20260927131506",
    "name": "artifact_content_access_hardening"
+  },
+  {
+   "version": "20260927133717",
+   "name": "execution_human_revocation_serialization"
+  },
+  {
+   "version": "20260927133737",
+   "name": "platform_publication_authority_hardening"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-27T13:17:51.570632+00:00"
+ "captured_at": "2026-09-27T13:38:04.740Z"
 }

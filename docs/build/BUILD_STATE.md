@@ -1,6 +1,6 @@
 ## Rodada corretiva 17–19: serialização da revogação humana
 
-A3 em validação: lock do sujeito humano persistido no caminho comum de autoridade. Prova concorrente antes/depois no banco descartável da CI com worker distinto; negativos de staging sob rollback. Evidência em `docs/build/arcabouco/corrective-17-19/human-revocation-evidence.md`. Migração remota e fechamento ainda pendentes.
+A3 em validação: lock do sujeito humano persistido no caminho comum de autoridade. Prova concorrente antes/depois no banco descartável da CI com worker distinto; negativos de staging sob rollback. Evidência em `docs/build/arcabouco/corrective-17-19/human-revocation-evidence.md`. Migração staging `20260927133553`, produção `20260927133717`; definição instalada idêntica. CI reproduziu a corrida histórica e aprovou os seis casos corrigidos. Colisão entre fixtures corrigida; CI final, merge e deployments pendentes.
 
 ## Rodada corretiva 17–19: autoridade de leitura de artefatos, 27/09/2026
 

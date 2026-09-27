@@ -21783,6 +21783,12 @@
           "line": 342,
           "anchor": "create function private.lock_execution_authority_v1(p_job uuid) returns public.processing_jobs",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927133717_execution_human_revocation_serialization.sql",
+          "line": 2,
+          "anchor": "create or replace function private.lock_execution_authority_v1(p_job uuid) returns public.processing_jobs",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Núcleo fechado, sem grants ou produtor; consumidor é o incremento 3."
@@ -185903,6 +185909,13 @@
       "decision": "preservar",
       "stage": "19 / correção A1-A2",
       "reason": "Fechar leitura direta de conteúdo e negar ancestralidade incompleta; aplicada nos dois ambientes."
+    },
+    {
+      "path": "supabase/migrations/20260927133717_execution_human_revocation_serialization.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "stage": "17 / correção A3",
+      "reason": "Serializar conta humana e commit; aplicada em staging e produção após prova concorrente na CI."
     }
   ],
   "staging_archive": [
