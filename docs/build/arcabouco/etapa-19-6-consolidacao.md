@@ -388,3 +388,69 @@ O manifesto de métodos foi regenerado por `pnpm --filter @offroad/credit-playbo
 3. Uma necessidade de giro negativa (ciclo negativo com receita crescendo) faz o achado de giro escrever um múltiplo negativo; não é denominador zero e fica como estava.
 4. Os textos da vertente de recebíveis na tela do caso não foram alterados: o método R01 publicado não muda nesta PR.
 5. O manifesto de métodos precisa ser regenerado de novo pela PR que for mesclada depois de outra que também o regenere.
+
+## Segundo acabamento, parte 2A: a aritmética da análise de crédito e da referência de preço
+
+Uma PR (`fix/19-remaining-arithmetic-to-financial-core`) sobre `main` `ef1e4565` (parte 1, PR #830). Sem migração, sem banco. Move para `financial-core` a aritmética que ainda era feita em `credit-analysis` (a leitura de taxas de `parse.ts`, `rating.ts`, `stress.ts` e `from-facts.ts`) e na estatística da amostra de preço de `market-reference`, como registrado no acabamento depois do fechamento, e resolve a pergunta 3 da parte 1, a necessidade de giro negativa. A parte 2B, `deal-structure`, vem numa PR própria, mesclada depois desta.
+
+### 1. Pinos tomados antes da mudança
+
+O primeiro commit só acrescenta pinos, tirados das fontes como a parte 1 as deixou:
+
+- `credit-analysis/src/review-parity.test.ts`: a nota interna de cada um dos 18 desks de `desk-cases.test-support.ts` e de 23 desks variados para alcançar cada faixa de alavancagem, liquidez e runway, com e sem trajetória, sob oito conjuntos de entradas opcionais que alcançam cada faixa de cobertura, tendência, concentração e evidência no limite exato, e a nota e os choques que os materiais compilam para o caso Aurora (42 pinos); a tabela de choques de cada desk sob valor, receita e cliente, e de desks variados sem covenant, sem custo, com EBITDA zero e negativo, com ciclo ausente e com CDI de 13,65% (27); as entradas do desk de cada caso, de cada gabarito ouro e do caso Aurora dos materiais, com valor informado acima, abaixo e igual ao dos documentos e prazos escritos de formas diferentes (36); e a leitura de toda taxa, covenant e cobertura das fixtures e das formas que a gramática admite, em dois conjuntos de níveis de índice (1).
+- `market-reference/src/pricing-sample-parity.test.ts`: 65 conjuntos de verdade de preço sobre idades em volta da janela de peso cheio e do decaimento de cada tipo de fonte; prazos dentro, no limite e fora da janela, com a janela padrão e uma governada, em seis prazos-alvo; razões de valor em cada borda das faixas de tamanho e da janela da política, e valores não positivos; setores e amortizações iguais, escritos de outro jeito, da mesma família e diferentes; toda outra recusa; faixas publicadas sobre pesos decaídos, com a expectativa abaixo, dentro e acima da faixa e o custo atual abaixo, no e acima do all-in; empates de spread e pesos acumulados exatamente num quartil; e 60 janelas de prazo. O pino de verdade de `price-output-parity.test.ts` mantém a amostra numa idade, num prazo e num valor, e não alcança nada disso.
+
+### 2. Núcleos
+
+| Núcleo | Registro | Conta |
+|---|---|---|
+| `readDocumentFigure` | `review.document_figure` | número escrito num documento brasileiro |
+| `readDocumentPercent` | `review.document_percent` | percentual escrito como fração, meio para cima na precisão pedida |
+| `annualRateForMonthlyRate` | `review.monthly_compounding` | (1 + taxa mensal)^12 - 1 |
+| `readFactFigure` | `review.fact_figure` | número de um fato, em notação decimal |
+| `readMonthCount` | `review.month_count` | contagem de meses de um fato |
+| `selectLargestAmount` | `review.largest_amount` | o maior valor informado, por comparação exata, o primeiro no empate |
+| `calculateRatingCoverage` | `rating.interest_coverage` | EBITDA sobre o módulo da despesa financeira |
+| `calculateEbitdaTrend` | `rating.ebitda_trend` | (EBITDA atual - anterior) / módulo do anterior |
+| `scoreRatingFactor` | `rating.factor_points` | pontos do fator contra tetos ou pisos |
+| `gradeInternalRating` | `rating.grade` | pontuação e nota |
+| `calculateStressTable` | `stress.table` | os cinco choques |
+| `calculateTenorWindow` | `price.tenor_window` | janela de prazo |
+| `testObservationWindows` | `price.observation_windows` | distância de prazo e razão de valor contra as janelas |
+| `calculateRecencyFactor` | `price.recency` | fator de recência |
+| `scoreComparability` | `price.comparability` | soma de peso vezes similaridade |
+| `calculateObservationWeight` | `price.observation_weight` | recência vezes comparabilidade |
+| `selectWeightedQuantiles` | `price.weighted_quantiles` | quantis ponderados |
+| `calculateCostDifference` | `price.cost_difference` | all-in proposto menos custo atual |
+
+Os de leitura, nota e choques ficam no módulo novo `financial-core/src/credit-review-arithmetic.ts` (`creditReviewArithmeticVersion` `2026.09.27-v1`); os da amostra, em `price-arithmetic.ts` (`priceArithmeticVersion` `2026.09.27-v2`). Os limites que não criam número passam por `compareFigures`. Ficam nos pacotes a gramática da prosa das taxas, as faixas e os pesos da nota como dado, os rótulos e as frases; na referência de preço, os pesos, as faixas e as janelas da política como dado, o calendário (a idade da observação em dias e a janela da amostra em meses) e o texto que conta como o mesmo setor ou a mesma família de amortização. `parse.ts`, `rating.ts`, `stress.ts` e `pricing-truth.ts` não importam mais `decimal.js`; em `from-facts.ts`, `Number` fica só para índices e anos. `tenorWindowMonths` passa a devolver o texto decimal da janela.
+
+### 3. Paridade
+
+O commit da mudança manteve todos os pinos existentes (54 do desk, da trajetória e das perguntas, 12 do veredito, 22 dos materiais, 4 de saída inteira do preço e 3 das frases de preço) e os pinos novos das entradas do desk, da leitura, dos choques e da amostra. Dos 42 pinos novos da nota, 37 se mantiveram; 5 mudaram pela diferença deliberada 1.
+
+### 4. Diferenças deliberadas
+
+Nenhuma fixture as alcança. `credit-analysis/src/review-kernels.test.ts` testa cada uma, e cada asserção falhou nas fontes do commit anterior; os núcleos têm os próprios testes em `financial-core`.
+
+1. **Pontuação da nota.** A pontuação é arredondada meio para cima sobre o decimal exato. 23 pontos de 40 são 57,5 e saem 58; a divisão binária dava 57,49999999999999 e saía 57. É o único par de pontos e pesos da escala em que as duas diferem, e a nota não muda (5). Os 5 pinos novos que mudaram (`gold:rede-horizonte`, `unit:aurora-questions`, `liquidity:1`, `liquidity:1.5` e `runway:6`) chegam a esse par só pelos conjuntos sintéticos de entradas opcionais; comparados campo a campo, só a pontuação e a frase que a diz mudaram ("57 pontos em 100" para "58 pontos em 100").
+2. **Leitura de números escritos.** Pontos agrupam milhares de três em três e a vírgula marca os decimais, como antes; um ponto único que não pode agrupar milhares passa a marcar os decimais: "CDI + 4.10% a.a." era lido como spread de 410% e "Dívida líquida/EBITDA <= 3.5x" como teto de 35 vezes. Texto que não é número deixa a leitura nula em vez de lançar erro ("CDI + 1,2,3% a.a."), de ser lido pela metade (",5% a.m." era 0,5% ao mês) ou de juntar grupos ("Duplicatas 1.2.3%" era 1,23). O número capturado começa e termina num dígito, então o ponto final de uma frase ("menor ou igual a 3,0.") continua fora dele, como a leitura anterior o descartava.
+3. **Entradas do desk.** Um prazo vazio era zero meses e "0x3C" era sessenta; nenhum dos dois é contagem, e o prazo passa a ser pedido à companhia. O maior valor informado é escolhido por comparação exata ("12345678901234567.01" e "12345678901234567.02" eram o mesmo número binário, e o dos documentos ficava). O múltiplo do covenant de uma linha é lido pela regra dos documentos ("1.234,5x" era passado como "1.234.5"). Também deixa de contar como EBITDA positivo, para a trajetória, o texto que não é número finito em notação decimal ("Infinity", "0x10"), e um valor informado que não é número é recusado já na escolha do maior, onde antes o desk o recusava depois.
+4. **Necessidade de giro negativa**, na seção 5.
+
+### 5. Necessidade de giro negativa
+
+**Antes.** Com ciclo de caixa negativo e receita crescendo, o crescimento libera capital de giro, e o achado de giro dividia o pedido pela necessidade negativa: "O crescimento projetado (R$ 17,3M de receita) absorve R$ -9,0M de capital de giro ao ciclo atual de -190 dias, mas o pedido rotula R$ 25,0M como giro, -2,8 vezes a necessidade incremental." A pergunta à companhia dizia "O crescimento projetado absorve R$ -9,0M de capital de giro, mas o pedido rotula R$ 25,0M como giro."
+
+**Agora.** O núcleo `calculateWorkingCapitalCycle` devolve o capital que o crescimento libera (`growthRelease`) e nenhum múltiplo quando a necessidade é negativa (`deskArithmeticVersion` `2026.09.27-v3`). O achado diz "O crescimento projetado (R$ 17,3M de receita) libera R$ 9,0M de capital de giro ao ciclo atual de -190 dias, porque o ciclo de caixa é negativo, mas o pedido rotula R$ 25,0M como giro; sem necessidade incremental, o pedido não é múltiplo dela.", com o valor liberado em `values.released`, e a pergunta diz "O crescimento projetado libera R$ 9,0M de capital de giro, porque o ciclo de caixa é negativo, mas o pedido rotula R$ 25,0M como giro. O que esse valor financia: alongamento do ciclo, recomposição de caixa, substituição de linhas?". O inglês diz o mesmo, com os separadores do inglês.
+
+### 6. Versões e manifesto
+
+`creditAnalysisVersion` passa a `2026.09.27-desk-v3`, gravada pelo motor do caso em toda execução, porque o desk muda no achado de giro com necessidade negativa, na pontuação e na leitura de taxas. `caseMaterialsVersion` segue `2026.09.27-v8`, porque nenhum pino dos materiais mudou, e `financialCoreVersion` segue `2026.09.20-v24`. O manifesto de métodos foi regenerado; R01 segue com `manifestHash` `17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090`.
+
+### Limites e perguntas abertas da parte 2A
+
+1. A escala da nota nunca chega à nota 1: a pontuação máxima, 100, dá 10 - piso(100 / 11,2) = 2. O comentário que dizia "100 → grade 1" foi corrigido; a escala não mudou, porque mudar a nota de todo caso forte é decisão de crédito.
+2. A pergunta 24 do Q&A dos materiais ("Quanto capital de giro o crescimento projetado absorve?") ainda responde com a absorção negativa ("R$ -9,0M ao ciclo atual de -190 dias") quando o ciclo é negativo; `case-materials` fica fora desta PR.
+3. O motor do caso ainda calcula em binário a cobertura dos recebíveis livres sobre o valor pedido que a triagem de instrumentos lê (`Number(...) / Number(...)` em `case-engine/src/engine.ts`).
+4. O manifesto de métodos precisa ser regenerado de novo pela parte 2B depois que esta for mesclada.
