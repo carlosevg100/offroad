@@ -105,6 +105,13 @@ test("contextual adoption preserves revisions and reproduces a calculation after
  const rail=await page.locator(".app-rail").boundingBox();
  const main=await page.locator(".app-main").boundingBox();
  expect(rail!.x+rail!.width).toBeLessThanOrEqual(main!.x+1);
- await expect(page.getByRole("heading",{name:copy.title,exact:true})).toBeInViewport();
+ // After the reload the browser restores the scroll position of the calculation form, and whether the
+ // title is still on screen after the resize depended on when it applied it. The person scrolls to the
+ // title: bring it into view and assert it is on screen, repeating both until the page has settled.
+ const title=page.getByRole("heading",{name:copy.title,exact:true});
+ await expect(async()=>{
+  await title.scrollIntoViewIfNeeded();
+  await expect(title).toBeInViewport({timeout:1_000});
+ }).toPass({timeout:30_000});
  await test.info().attach("contextual-basis-mobile",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
 });
