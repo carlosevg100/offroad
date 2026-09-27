@@ -1006,6 +1006,9 @@ importers:
 
   packages/market-reference:
     dependencies:
+      '@offroad/credit-playbook':
+        specifier: workspace:*
+        version: link:../credit-playbook
       '@offroad/financial-core':
         specifier: workspace:*
         version: link:../financial-core

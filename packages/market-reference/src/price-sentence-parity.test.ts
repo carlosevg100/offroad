@@ -17,6 +17,12 @@ import {buildPricingTruthSet, type GovernedPriceAdjustment, type PricingObservat
  *   whole and fractional basis points, negative spreads and traced adjustments.
  *
  * A pin moves only with a deliberate change of the sentence.
+ *
+ * The desk pin moved once, deliberately (stage 19, second polish): the basis of the practice band
+ * names the instrument by its catalog name and the analytical profile by its band, in words, as the
+ * memorandum prints it ("Base: Cédula de Crédito Bancário (CCB); perfil analítico: adequado; faixa
+ * de 280 a 400 bps", not "Base: banda adequate para ccb, 280 a 400 bps"). Compared sentence by
+ * sentence over the grid, nothing else changed. The observed pin is unchanged.
  */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 
@@ -99,7 +105,7 @@ describe("the price sentences across the move to financial-core", () => {
 
   it("reproduces every pinned sentence byte for byte", () => {
     expect({desk: sha256(desk), observed: sha256(observed)}).toEqual({
-      desk: "a959f0efecf245bc48b54c53933b70088dd80fa0cfca81bf81ba4d53b2b02232",
+      desk: "39e81b65af8ffa11cb5e709b74143df03993393a7727c76ead6b9ab3fc105179",
       observed: "a3ac41aa965778b76cda19a29a2448c38b97c6ea751090cd9767fa7615167b07",
     });
   });

@@ -1,9 +1,9 @@
 import type {CaseBrief} from "@offroad/case-understanding";
-import {covenantsFor, instruments, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
+import {covenantsFor, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
 import type {DeskAnalysis, InternalRating, OperationVerdict, StressScenario, Trajectory} from "@offroad/credit-analysis";
 import type {CollateralPackage} from "@offroad/deal-structure";
 import {presentationAmount, presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
-import {priceAdjustmentLabels, type IndicativePrice} from "@offroad/market-reference";
+import {priceAdjustmentLabels, pricedInstrumentLabel, ratingBandLabels, type IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
@@ -38,16 +38,10 @@ const spreadPercent = (bps: number) => presentationFigure({value: bps, scale: "b
 const bi = (pt: string, en: string) => ({pt, en});
 /** A table cell in each language. */
 const cell = (value: (locale: "pt-BR" | "en-US") => string) => ({pt: value("pt-BR"), en: value("en-US")});
-/** The band of the indicative analytical profile, in the words each language prints. */
-const ratingBandLabels = {
-  strong: bi("forte", "strong"),
-  adequate: bi("adequado", "adequate"),
-  watch: bi("atenção", "watch"),
-  weak: bi("fraco", "weak"),
-  distressed: bi("crítico", "distressed"),
-} as const;
-/** An instrument of the price reference by its name in the playbook catalog, never by its key. */
-const instrumentLabel = (id: string) => instruments.find((entry) => entry.id === id)?.labels ?? bi("instrumento indicado", "instrument indicated");
+// The band of the analytical profile and the instrument of the price are named in words by the price
+// reference (`ratingBandLabels`, `pricedInstrumentLabel`), so the memorandum and the price sentence
+// print them the same way.
+const instrumentLabel = pricedInstrumentLabel;
 
 export type InstitutionalInput = {
   brief: CaseBrief;
