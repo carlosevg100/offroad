@@ -28,20 +28,25 @@ describe("contradictions between documents", () => {
   ];
   const report = reconcileCase({archetypeId: "venture_debt", candidates: room, documents: [], locale: "pt"});
   const byRule = (id: string) => report.exceptions.filter((exception) => exception.ruleId === id);
+  /** The exception on a field, found by the path its evidence carries: the text names the field in words. */
+  const onField = (exception: {evidence: Array<{fieldPath?: string}>}, fragment: string) => exception.evidence.some((entry) => entry.fieldPath?.includes(fragment));
 
   it("flags the deck's ARR against the export, as a source conflict on a material fact", () => {
-    const arr = byRule("R3").find((exception) => exception.description.includes(".arr"));
+    const arr = byRule("R3").find((exception) => onField(exception, ".arr"));
     expect(arr).toBeDefined();
     expect(arr!.severity).toBe("critical");
+    // The field is named in words, never by its path (stage 19, second polish).
+    expect(arr!.description).not.toMatch(/interim_financials|\.arr\b/);
     expect(arr!.description).toContain("40000000");
     expect(arr!.description).toContain("37326000");
     expect(arr!.evidence.map((entry) => entry.sourceDocument)).toEqual(expect.arrayContaining(["00_Deck.docx", "02_Metricas.xlsx"]));
   });
 
   it("flags two different asks", () => {
-    const ask = byRule("R3").find((exception) => exception.description.includes("requested_amount"));
+    const ask = byRule("R3").find((exception) => onField(exception, "requested_amount"));
     expect(ask).toBeDefined();
     expect(ask!.severity).toBe("critical");
+    expect(ask!.description).not.toContain("requested_amount");
   });
 
   it("computes the runway the statement gives and holds it against the letter", () => {
@@ -81,9 +86,11 @@ describe("Aurora's three contradictions", () => {
   const report = reconcileCase({archetypeId: "growth_expansion", candidates: room, documents: [], locale: "pt"});
 
   it("names the rounded revenue at low severity, the two asks as critical, and the debt outside the map", () => {
-    const revenue = report.exceptions.find((exception) => exception.ruleId === "R3" && exception.description.includes("revenue"));
+    const onField = (exception: {evidence: Array<{fieldPath?: string}>}, fragment: string) => exception.evidence.some((entry) => entry.fieldPath?.includes(fragment));
+    const revenue = report.exceptions.find((exception) => exception.ruleId === "R3" && onField(exception, "revenue"));
     expect(revenue?.severity).toBe("low");
-    const ask = report.exceptions.find((exception) => exception.ruleId === "R3" && exception.description.includes("requested_amount"));
+    expect(revenue?.description).not.toContain("historical_financials");
+    const ask = report.exceptions.find((exception) => exception.ruleId === "R3" && onField(exception, "requested_amount"));
     expect(ask?.severity).toBe("critical");
     const map = report.exceptions.find((exception) => exception.ruleId === "R19");
     expect(map).toBeDefined();

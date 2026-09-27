@@ -308,3 +308,83 @@ O manifesto de métodos foi regenerado por `pnpm --filter @offroad/credit-playbo
 3. Fora dos materiais, do term sheet e das perguntas, dois textos visíveis ainda mostram identificadores: a frase de preço da mesa de `indicativePrice` na tela de comitê da entrada do caso ("Base: banda adequate para ccb"), cujo pino muda se ela mudar, e a lista de informações que faltam na tela da mesa (`intake-desk.tsx`), que mostra o caminho do campo em código ao lado do rótulo.
 4. Uma razão sobre EBITDA zero continua publicada como a divisão imprime ("Infinity", "NaN") nos campos do desk e da trajetória, para não mudar bytes publicados; os materiais não compilam esse caso, como antes. Publicar a razão como ausente muda o contrato do desk.
 5. O manifesto de métodos precisa ser regenerado de novo pela PR que for mesclada depois de outra que também o regenere.
+
+## Segundo acabamento, parte 1: o que uma pessoa vê
+
+Uma PR (`fix/19-visible-identifiers-and-absent-ratios`) sobre `main` `9f4935c4`, que já tem o acabamento depois do fechamento (PR #827: `caseMaterialsVersion` `2026.09.27-v7`, `desk-arithmetic.ts`, `price-arithmetic.ts`). Sem migração, sem banco. Resolve as perguntas abertas 3 e 4 do acabamento pelas invariantes 2, 4 e 9 e pelas regras de texto do produto: a frase de preço da mesa e a lista de informações que faltam deixam de mostrar identificadores, uma razão sobre denominador zero passa a ser publicada como ausente, com a lacuna nomeada onde uma pessoa lê, e uma varredura do texto visível da entrada do caso, da mesa, da tela de comitê e das perguntas à companhia corrige o que restava. A parte 2 (o resto da aritmética em `financial-core`) vem numa PR própria, depois desta.
+
+### 1. Frase de preço da mesa
+
+**Antes.** A frase de `indicativePrice`, que a tela de comitê da entrada do caso imprime, dizia "Base: banda adequate para ccb, 280 a 400 bps" e "Base: adequate band for ccb, 280 to 400 bps".
+
+**Agora.** A base nomeia o instrumento pelo nome do catálogo do playbook e o perfil analítico pela faixa, em palavras, nas duas línguas, como o #827 fez na base do preço do memorando: "Base: Cédula de Crédito Bancário (CCB); perfil analítico: adequado; faixa de 280 a 400 bps" e "Base: Bank credit note (CCB); analytical profile: adequate; range of 280 to 400 bps". `market-reference` passa a depender de `credit-playbook` (o catálogo) e exporta `ratingBandLabels` e `pricedInstrumentLabel`; o memorando usa os dois no lugar das cópias que tinha, com os mesmos bytes.
+
+**Pinos.** Mudaram o pino das frases da mesa em `price-sentence-parity.test.ts` (`a959f0ef` para `39e81b65`) e os pinos de saída inteira da grade e dos limites em `price-output-parity.test.ts` (`71464e8c` para `58dc6187`, `51fa2d17` para `ec89badb`). Um pino novo das mesmas saídas sem a frase, tirado antes da mudança (`fd4c0dd6` e `7cda3996`), continua valendo, e a comparação frase a frase das 15.360 saídas da grade mostrou que só a oração da base mudou. Os pinos da frase observada e da verdade de preço não mudaram.
+
+### 2. Lista de informações que faltam
+
+**Antes.** A lista da tela da mesa (`intake-desk.tsx`) mostrava o caminho do campo em código ao lado do rótulo, e o rótulo caía no próprio caminho, porque a ontologia não resolve os caminhos com "{ano}" que a mesa reporta: "historical_financials.{ano}.revenue" duas vezes.
+
+**Agora.** Cada informação é nomeada pelas mesmas palavras das perguntas à companhia (`deskInputLabel`, exportado por `credit-analysis`), nas duas línguas e com a primeira letra maiúscula: "Receita líquida do último exercício" e "Net revenue for the latest financial year". O caminho fica fora do texto visível, no atributo `data-field-path`; o estilo do código sai. `intake-desk.test.tsx` renderiza a lista nas duas línguas sobre todo caminho que `buildDeskInputs` pode reportar e falha no componente anterior.
+
+### 3. Razões sobre denominador zero
+
+**Antes.** O desk e a trajetória publicavam uma razão sobre denominador zero como a divisão imprime ("Infinity", "NaN"), comparavam essa razão com limites e, onde uma frase a imprimia, recusavam a bateria inteira. Uma dívida líquida negativa sobre EBITDA zero dava "-Infinity" antes do pedido e "Infinity" depois, que a mesa lia como alavancagem subindo; um EBITDA projetado zero cruzava abaixo de todo covenant; um ciclo de zero dias escrevia "Infinity vezes a necessidade incremental"; e os materiais de um caso assim não compilavam.
+
+**Contrato novo.** Uma razão sobre denominador zero é ausente: o campo é nulo, a razão entra em `absentRatios` com a lacuna, a lacuna é nomeada em palavras onde a razão seria impressa, e uma razão ausente nunca é comparada com um limite. Uma razão sobre denominador negativo continua sendo um número, como antes.
+
+| Onde | Razões que podem ser ausentes | Lacuna |
+|---|---|---|
+| Alavancagem do desk | hoje e depois de cada valor pedido | EBITDA do último exercício igual a zero |
+| Cobertura de juros com o pedido | quando a despesa de juros somada aos juros do pedido é zero | despesa de juros somada aos juros do pedido igual a zero |
+| Runway depois do serviço | quando a queima mensal somada aos juros mensais da captação é zero | queima mensal somada aos juros mensais da captação igual a zero |
+| Ciclo de caixa | DIO, DPO, o ciclo e o que o crescimento absorve | custo das mercadorias vendidas do último exercício igual a zero |
+| Trajetória, por ano | alavancagem e peso do cronograma sobre o EBITDA projetado | EBITDA projetado do ano igual a zero |
+| Trajetória, por ano | alavancagem no cenário cortado e o degrau do covenant | EBITDA do ano no cenário cortado igual a zero |
+| Trajetória | o pico, quando a alavancagem cortada de algum ano é ausente | EBITDA do ano no cenário cortado igual a zero |
+| Gestão de passivo | alavancagem depois da troca | EBITDA do último exercício igual a zero |
+
+Em `financial-core`, os núcleos da mesa devolvem nulo, listam em `absent` a razão e o denominador e o nomeiam no rastro (`deskArithmeticVersion` `2026.09.27-v2`); `presentationRatio` mantém a razão ausente e lê como ausente o texto que a divisão imprimia (`materialArithmeticVersion` `2026.09.27-v5`); `testCovenantCeiling` e `selectHeaviestScheduleYear` aceitam o valor ausente. Três escolhas de semântica: o pico é o mais alto de todos os anos, então uma alavancagem cortada ausente deixa o pico ausente, em vez de um pico dos anos que sobram; a travessia de um teto é o primeiro ano cuja alavancagem é número e está no teto ou abaixo; e o que o pedido representa da necessidade de giro é ausente quando a necessidade é zero, e a frase diz que o pedido não é múltiplo dela.
+
+Em `credit-analysis`, o contrato do desk passa a `creditAnalysisVersion` `2026.09.27-desk-v2`, e o motor do caso passa a gravar essa versão em toda execução (`creditAnalysis`, ao lado de `materialCompiler`), para que o desk gravado diga de que contrato veio e para que uma execução nova não reaproveite uma etapa do contrato anterior. `absentRatios` só aparece quando alguma razão é ausente, então um desk sem razão ausente sai com os mesmos bytes, e um desk gravado antes continua válido. `absentRatioGap`, `ratioGapLabels` e `publishedRatio` nomeiam a lacuna e leem o desk gravado antes desta PR, cujo texto de divisão é lido como ausente pelo denominador do campo. Todo consumidor segue:
+
+- frases do desk e da trajetória: o runway comprado, o pedido de giro sobre necessidade zero, a gestão de passivo e a trajetória nomeiam a lacuna ("o pico não pode ser afirmado, porque a alavancagem no cenário com corte de 25% do crescimento não é calculável em 2027: o EBITDA do ano nesse cenário é zero"), e os valores citados deixam de fora a razão ausente;
+- veredito: não precifica uma trajetória sem pico e não escreve waiver sobre alavancagem ausente; nota: não avalia alavancagem nem runway ausentes e diz por quê; choques: o choque de ciclo nomeia o ciclo ausente;
+- materiais (`caseMaterialsVersion` `2026.09.27-v8`): a estrutura de capital, a tabela de trajetória, o cronograma do covenant, os termos-chave e o term sheet do memorando e as perguntas 9, 13, 15, 16, 24, 25 e 36 do Q&A imprimem a lacuna; a alavancagem pré sobre EBITDA zero deixa de sair como "não se aplica (EBITDA negativo)";
+- tela da mesa, exportação do diagnóstico, evidência da mesa entregue ao modelo e pedido de triagem dos financiadores: a lacuna em palavras, nunca um número; na tela, "sem sentido com EBITDA negativo" passa a "sem sentido com EBITDA zero ou negativo" (cobertura de juros), e as taxas saem com "p.a." em inglês.
+
+**Testes que falham no código anterior**, conferidos contra as fontes do commit anterior: `financial-core/desk-arithmetic.test.ts` e `material-arithmetic.test.ts`, `credit-analysis/absent-ratios.test.ts` (onze testes de comportamento, todos falhando antes), `case-materials/absent-ratios.test.ts` (os materiais sobre EBITDA zero e sobre custo das mercadorias vendidas zero compilam, nomeiam cada lacuna e mantêm a identidade bilíngue), `case-understanding/desk-evidence.test.ts` e `apps/web/.../intake-desk.test.tsx`. Nenhum pino mudou por esta seção: nenhum caso fixado tem denominador zero (54 pinos de desk, trajetória e perguntas, 12 do veredito, 22 dos materiais).
+
+### 4. Varredura do texto visível
+
+Uma renderização da tela do caso, da mesa e do comitê nas duas línguas sobre o caso Aurora sintético (`intake-visible-text.test.tsx` e `intake-case.test.tsx`), com a leitura da revisão da entrada, achou e corrige:
+
+| Onde | Antes | Agora |
+|---|---|---|
+| Comitê, motivo de debênture fechada (`credit-playbook`) | "Requires sa; the company is ltda." | "Requires a sociedade anônima; the company is a limitada." |
+| Comitê, prazo dos instrumentos | "12 a 60 months" em inglês | "12 to 60 months" (catálogo) |
+| Comitê, faixa de preço | "a.a." em inglês | "p.a." (catálogo) |
+| Tela do caso, base dos termos | "capacity", "company_request" | "Capacidade de endividamento calculada", "Pedido da companhia" (`termBasisLabels`) |
+| Tela do caso, cálculos | "calculado de: historical_financials.2025.gross_debt · ..." | "calculado de: Dívida bruta (2025) · Caixa e equivalentes (2025)" |
+| Tela do caso, suporte das afirmações do brief | identificadores e caminhos | rótulos dos fatos e dos cálculos; os identificadores ficam no atributo `data-support-ids` |
+| Tela do caso, política de preço | a versão ("pricing-policy-2026-08") | fora do texto, no atributo `data-pricing-policy` |
+| Tela do caso, seções | rótulos de módulo "M2" a "M8" | sem rótulo |
+| Tela do caso, restrição e amortização desconhecidas | o identificador com espaços | "Outra restrição", "Outro formato" |
+| Pontos em aberto, regra R3 da conciliação | "historical_financials.2025.revenue (2025-12-31): ..." | o campo em palavras; os testes acham a exceção pelo caminho da evidência |
+| Revisão da entrada, classe da informação | o identificador com espaços ("bank statement") | "Extrato bancário" e "Bank statement" (catálogo) |
+
+Nenhum travessão ou meia-risca apareceu. O teste de texto visível dos materiais passa a apontar também a forma societária pela chave.
+
+### 5. Versão, pinos e manifesto
+
+`caseMaterialsVersion` passa de `2026.09.27-v7` para `2026.09.27-v8`. Dos 22 pinos de `material-parity.test.ts`, mudaram 3, o memorando nas três variantes, pelo motivo da debênture fechada em inglês; a comparação item a item mostra só as duas frases em inglês e o fingerprint da auditoria de conduta em sombra, com os mesmos achados. Os pinos do desk, da trajetória, das perguntas e do veredito não mudaram; os de preço mudaram como na seção 1. `financialCoreVersion` segue `2026.09.20-v24`: a mudança de resultado é dos núcleos da mesa e da apresentação de razão, registrada nas versões próprias (`deskArithmeticVersion` v2 e `materialArithmeticVersion` v5), e nenhuma saída de `financial-model` que grava `financialCoreVersion` passa por eles.
+
+O manifesto de métodos foi regenerado por `pnpm --filter @offroad/credit-playbook manifest:generate` em cada commit que mudou fonte fixada; R01 publicado segue com `manifestHash` `17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090`, e os 496 testes de `credit-playbook` passam.
+
+### Limites e perguntas abertas da parte 1
+
+1. Texto em português de sistema no inglês, fora da regra de identificadores: a origem dos valores pedidos no achado de divergência ("(documentos)" e "(informado pela empresa)"), os rótulos da evidência das exceções da conciliação ("adotado", "conflito") e os compradores de cada instrumento no catálogo do playbook ("bancos, fundos de crédito via cessão, FIDCs").
+2. Números fora da regra de apresentação: a nota do pacote de garantias imprime o valor cru ("faltam 35712000 de valor elegível"), a explicação das paredes de capacidade imprime o DSCR e o teto com ponto também em português, e a tela da mesa formata valores por conta própria ("R$ 0,0M" para valores pequenos). As contas de garantias e capacidade entram em `financial-core` na parte 2.
+3. Uma necessidade de giro negativa (ciclo negativo com receita crescendo) faz o achado de giro escrever um múltiplo negativo; não é denominador zero e fica como estava.
+4. Os textos da vertente de recebíveis na tela do caso não foram alterados: o método R01 publicado não muda nesta PR.
+5. O manifesto de métodos precisa ser regenerado de novo pela PR que for mesclada depois de outra que também o regenere.

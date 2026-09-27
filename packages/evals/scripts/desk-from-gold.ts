@@ -61,9 +61,10 @@ if (desk) {
   for (const finding of desk.findings) console.log(`  [${finding.severity}] ${finding.id}: ${finding.pt}`);
 }
 if (trajectory) {
-  console.log(`\ntrajetória: pico ${trajectory.peak.year} ${trajectory.peak.leverageBase} (cortado ${trajectory.peak.leverageStressed})`);
-  for (const year of trajectory.years) console.log(`  ${year.year}  DL ${year.netDebt}  EBITDA ${year.ebitdaBase}  ${year.leverageBase}x / ${year.leverageStressed}x  principal ${year.principalDue}`);
-  console.log(`covenant proposto: ${trajectory.covenantProposal.map((s) => `${s.year} ≤ ${s.maximum}`).join("; ")}`);
+  // An absent ratio (over a zero EBITDA) prints as n/d.
+  console.log(`\ntrajetória: pico ${trajectory.peak ? `${trajectory.peak.year} ${trajectory.peak.leverageBase ?? "n/d"} (cortado ${trajectory.peak.leverageStressed})` : "n/d"}`);
+  for (const year of trajectory.years) console.log(`  ${year.year}  DL ${year.netDebt}  EBITDA ${year.ebitdaBase}  ${year.leverageBase ?? "n/d"}x / ${year.leverageStressed ?? "n/d"}x  principal ${year.principalDue}`);
+  console.log(`covenant proposto: ${trajectory.covenantProposal.map((s) => `${s.year} ≤ ${s.maximum ?? "n/d"}`).join("; ")}`);
   if (trajectory.liabilityManagement) console.log(`gestão de passivo: quita ${trajectory.liabilityManagement.lendersTakenOut.join(", ")} (${trajectory.liabilityManagement.covenantedBalance}); novo dinheiro ${trajectory.liabilityManagement.netNewMoney}; pós ${trajectory.liabilityManagement.postLeverageAfterRefi}`);
   for (const finding of trajectory.findings) console.log(`  [${finding.severity}] ${finding.id}: ${finding.pt}`);
 }

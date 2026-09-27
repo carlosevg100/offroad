@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import {isMaterialFieldPath, reconciliationRule, type ExceptionSeverity} from "@offroad/credit-ontology";
+import {isMaterialFieldPath, reconciliationRule, resolveFieldPath, type ExceptionSeverity} from "@offroad/credit-ontology";
 
 import {factValue, indexFacts, relativeDelta, type ReconciledFact} from "./facts";
 
@@ -54,6 +54,13 @@ export function buildContext(facts: readonly ReconciledFact[], locale: "pt" | "e
 
 const money = (value: Decimal) =>
   `R$ ${value.toDecimalPlaces(0).toFixed().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+
+/**
+ * A field in the words a company recognises, never its path (stage 19, second polish): the ontology
+ * label. The path stays in the evidence of the exception, off the text a person reads.
+ */
+const fieldInWords = (fieldPath: string, locale: "pt" | "en"): string =>
+  resolveFieldPath(fieldPath)?.definition.labels[locale] ?? (locale === "pt" ? "Dado material" : "Material figure");
 
 function exceptionFrom(
   ruleId: string,
@@ -288,8 +295,8 @@ function ruleSourceConflict(context: RuleContext): ReconciliationException[] {
         "R3",
         !fact.disputed ? "low" : decisive.test(fact.key.fieldPath) && wide ? "critical" : "high",
         {
-          pt: `${fact.key.fieldPath}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""}: ${fact.accepted.sourceDocument} diz ${fact.value} e ${worst.candidate.sourceDocument} diz ${worst.candidate.normalizedValue} (diferença de ${pct}%). Foi adotado o de maior rank de evidência; a divergência precisa de explicação da companhia antes de qualquer material ir ao mercado.`,
-          en: `${fact.key.fieldPath}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""}: ${fact.accepted.sourceDocument} says ${fact.value} and ${worst.candidate.sourceDocument} says ${worst.candidate.normalizedValue} (a ${pct}% difference). The higher evidence rank was adopted; the divergence needs the company's explanation before any material goes to market.`,
+          pt: `${fieldInWords(fact.key.fieldPath, "pt")}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""}: ${fact.accepted.sourceDocument} diz ${fact.value} e ${worst.candidate.sourceDocument} diz ${worst.candidate.normalizedValue} (diferença de ${pct}%). Foi adotado o de maior rank de evidência; a divergência precisa de explicação da companhia antes de qualquer material ir ao mercado.`,
+          en: `${fieldInWords(fact.key.fieldPath, "en")}${fact.key.periodEnd ? ` (${fact.key.periodEnd})` : ""}: ${fact.accepted.sourceDocument} says ${fact.value} and ${worst.candidate.sourceDocument} says ${worst.candidate.normalizedValue} (a ${pct}% difference). The higher evidence rank was adopted; the divergence needs the company's explanation before any material goes to market.`,
         },
         [
           {label: "adotado", value: fact.value, sourceDocument: fact.accepted.sourceDocument, fieldPath: fact.key.fieldPath, anchor: fact.accepted.anchor},

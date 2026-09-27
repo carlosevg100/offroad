@@ -1,9 +1,9 @@
 import type {CaseBrief} from "@offroad/case-understanding";
-import {covenantsFor, instruments, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
-import type {DeskAnalysis, InternalRating, OperationVerdict, StressScenario, Trajectory} from "@offroad/credit-analysis";
+import {covenantsFor, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
+import {absentRatioGap, publishedRatio, ratioGapLabels, ratioGapReasons, type DeskAnalysis, type InternalRating, type OperationVerdict, type StressScenario, type Trajectory} from "@offroad/credit-analysis";
 import type {CollateralPackage} from "@offroad/deal-structure";
 import {presentationAmount, presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
-import {priceAdjustmentLabels, type IndicativePrice} from "@offroad/market-reference";
+import {priceAdjustmentLabels, pricedInstrumentLabel, ratingBandLabels, type IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
@@ -38,16 +38,34 @@ const spreadPercent = (bps: number) => presentationFigure({value: bps, scale: "b
 const bi = (pt: string, en: string) => ({pt, en});
 /** A table cell in each language. */
 const cell = (value: (locale: "pt-BR" | "en-US") => string) => ({pt: value("pt-BR"), en: value("en-US")});
-/** The band of the indicative analytical profile, in the words each language prints. */
-const ratingBandLabels = {
-  strong: bi("forte", "strong"),
-  adequate: bi("adequado", "adequate"),
-  watch: bi("atenção", "watch"),
-  weak: bi("fraco", "weak"),
-  distressed: bi("crítico", "distressed"),
-} as const;
-/** An instrument of the price reference by its name in the playbook catalog, never by its key. */
-const instrumentLabel = (id: string) => instruments.find((entry) => entry.id === id)?.labels ?? bi("instrumento indicado", "instrument indicated");
+// The band of the analytical profile and the instrument of the price are named in words by the price
+// reference (`ratingBandLabels`, `pricedInstrumentLabel`), so the memorandum and the price sentence
+// print them the same way.
+const instrumentLabel = pricedInstrumentLabel;
+
+/**
+ * Leverage before and after the structure, each a multiple or, when absent over a zero EBITDA, "não
+ * calculável", with the gap named once: both divide by the latest year's EBITDA.
+ */
+function leveragePrePost(desk: DeskAnalysis, lm: Trajectory["liabilityManagement"]): {pt: string; en: string} {
+  const pre = publishedRatio(desk.leverage.preTurns);
+  const post = lm ? publishedRatio(lm.postLeverageAfterRefi) : null;
+  const absent = pre === null || (lm !== null && post === null);
+  const side = (value: string | null, locale: "pt-BR" | "en-US") => (value !== null ? turns(value, locale) : locale === "pt-BR" ? "não calculável" : "not computable");
+  const reason = absent ? ratioGapReasons.ebitda : null;
+  return {
+    pt: `${side(pre, "pt-BR")} / ${lm ? side(post, "pt-BR") : "n/d"}${reason ? ` (${reason.pt})` : ""}`,
+    en: `${side(pre, "en-US")} / ${lm ? side(post, "en-US") : "n/a"}${reason ? ` (${reason.en})` : ""}`,
+  };
+}
+
+/** The first covenant test of the key terms, or the gap of its year when its leverage in the cut case is absent. */
+function firstStepText(trajectory: Trajectory, step: Trajectory["covenantProposal"][number]): {pt: string; en: string} {
+  const maximum = publishedRatio(step.maximum);
+  if (maximum !== null) return {pt: `Dív. líq./EBITDA ≤ ${turns(maximum, "pt-BR")} em ${step.year}`, en: `Net debt/EBITDA ≤ ${turns(maximum, "en-US")} in ${step.year}`};
+  const gap = absentRatioGap(trajectory, `covenantProposal.${step.year}.maximum`, step.maximum) ?? ratioGapLabels.stressed_ebitda;
+  return {pt: `Dív. líq./EBITDA em ${step.year}: ${gap.pt}`, en: `Net debt/EBITDA in ${step.year}: ${gap.en}`};
+}
 
 export type InstitutionalInput = {
   brief: CaseBrief;
@@ -214,10 +232,7 @@ function keyTerms(input: InstitutionalInput): MaterialBlock {
       ...(input.rating ? [{label: bi("Perfil analítico indicativo", "Indicative analytical profile"), value: bi(`${input.rating.grade} de 10 (${ratingBandLabels[input.rating.band].pt})`, `${input.rating.grade} of 10 (${ratingBandLabels[input.rating.band].en})`), material: true, claimKind: "calculation" as const, supportIds: ["analysis.internal_rating"]}] : []),
       {
         label: bi("Alavancagem pré / pós", "Leverage pre / post"),
-        value: bi(
-          `${turns(desk.leverage.preTurns, "pt-BR")} / ${lm ? turns(lm.postLeverageAfterRefi, "pt-BR") : "n/d"}`,
-          `${turns(desk.leverage.preTurns, "en-US")} / ${lm ? turns(lm.postLeverageAfterRefi, "en-US") : "n/a"}`,
-        ),
+        value: leveragePrePost(desk, lm ?? null),
         material: true,
         claimKind: "calculation" as const,
         supportIds: ["desk.alavancagem_pre", ...(lm ? ["trajetoria.alavancagem_pos_refi"] : [])],
@@ -225,7 +240,7 @@ function keyTerms(input: InstitutionalInput): MaterialBlock {
       ...(firstStep
         ? [{
             label: bi("Covenant proposto (1º teste)", "Proposed covenant (first test)"),
-            value: bi(`Dív. líq./EBITDA ≤ ${turns(firstStep.maximum, "pt-BR")} em ${firstStep.year}`, `Net debt/EBITDA ≤ ${turns(firstStep.maximum, "en-US")} in ${firstStep.year}`),
+            value: firstStepText(trajectory!, firstStep),
             material: true,
             claimKind: "premise" as const,
             supportIds: [`trajetoria.${firstStep.year}.alavancagem_cortada`],
@@ -375,8 +390,13 @@ export function termSheetDocument(input: InstitutionalInput): Material | null {
     material: true,
   }));
 
+  // A year without a step (its leverage in the cut case is absent) states the gap, never a number.
   const covenantText = (locale: "pt-BR" | "en-US") => trajectory
-    ? trajectory.covenantProposal.map((step) => `${step.year}: ≤ ${turns(step.maximum, locale)}`).join("; ")
+    ? trajectory.covenantProposal.map((step) => {
+      const maximum = publishedRatio(step.maximum);
+      const gap = absentRatioGap(trajectory, `covenantProposal.${step.year}.maximum`, step.maximum) ?? ratioGapLabels.stressed_ebitda;
+      return maximum !== null ? `${step.year}: ≤ ${turns(maximum, locale)}` : `${step.year}: ${gap[locale === "pt-BR" ? "pt" : "en"]}`;
+    }).join("; ")
     : null;
 
   const blocks: MaterialBlock[] = [

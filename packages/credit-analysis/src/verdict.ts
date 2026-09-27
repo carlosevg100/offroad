@@ -120,16 +120,22 @@ export function judgeOperation(input: {
   const leverageAfter = (ticket: DecimalInput, redeemed: DecimalInput) =>
     calculateLeverageAfterStructure({netDebt: desk.leverage.netDebtPre, ticket, redeemed, ebitda: desk.leverage.ebitda, decimals: 4}).value;
   const simulate = input.simulate ?? (() => null);
-  const peakOf = (result: Trajectory | null) => (result ? result.peak.leverageStressed : null);
+  const peakOf = (result: Trajectory | null) => result?.peak?.leverageStressed ?? null;
   const fourDecimals = (value: DecimalInput) => presentationFigure({value, decimals: 4}).value;
-  /** Prices a structure at the leverage it leaves, the stressed peak of its trajectory when there is one. */
-  const priceAt = (structure: {amount: string; termMonths: number}, peak: string | null, leverage: () => string | null) => {
+  /**
+   * Prices a structure at the leverage it leaves: the stressed peak of its trajectory when there is
+   * one, the leverage after the structure otherwise. A trajectory whose peak is absent (a year's
+   * leverage in the cut case over a zero EBITDA) leaves no leverage to price, so there is no price.
+   */
+  const priceAt = (structure: {amount: string; termMonths: number}, run: Trajectory | null, leverage: () => string | null) => {
+    if (run && !run.peak) return null;
+    const peak = peakOf(run);
     const leveragePost = peak !== null ? fourDecimals(peak) : leverage();
     return leveragePost === null ? null : priceFor({...structure, leveragePost});
   };
   const amount = operation.amount;
   const refinancing = operation.refinancing ?? "0";
-  const price = priceAt({amount, termMonths: operation.termMonths}, peakOf(trajectory), () => leverageAfter(amount, refinancing));
+  const price = priceAt({amount, termMonths: operation.termMonths}, trajectory, () => leverageAfter(amount, refinancing));
   const spread = (value: StructurePrice | null, locale: Locale = "pt-BR") =>
     value ? `CDI + ${bpsAsPercent(value.bps.min, locale)}% ${locale === "pt-BR" ? "a" : "to"} ${bpsAsPercent(value.bps.max, locale)}%` : null;
   const conditions: VerdictNote[] = [];
@@ -142,7 +148,8 @@ export function judgeOperation(input: {
   const covenant = desk.leverage.tightestCovenant;
 
   // ---- what has to be true for the operation to exist ----------------------------------------
-  if (covenant && testCovenantCeiling({leverage: pre, ceiling: covenant.maximum}).outcome === "above_ceiling") {
+  // An absent leverage (over a zero EBITDA) is not computable and never compared with the ceiling.
+  if (covenant && pre !== null && testCovenantCeiling({leverage: pre, ceiling: covenant.maximum}).outcome === "above_ceiling") {
     conditions.push({
       id: "waiver-before-anything",
       pt: `A companhia está em ${turns(pre)} contra o teto de ${turns(covenant.maximum)} (${covenant.lender}). Nenhuma dívida nova é contratável antes de um waiver ou da renegociação desse covenant. Esta é a primeira condição precedente da estrutura indicativa. ${isPositive(netNewMoney) ? `Os ${brlM(netNewMoney)} de dinheiro novo dependem dela; a parte de troca de passivo, ${brlM(refinancing)}, é discutível com os credores atuais como alongamento.` : `Por ser troca pura de passivo, a conversa com os credores atuais é de alongamento e não de dívida nova, o que é o argumento mais forte para o waiver.`}`,
@@ -183,7 +190,8 @@ export function judgeOperation(input: {
   const heaviest = trajectory ? selectHeaviestScheduleYear({years: trajectory.years.map((year) => ({id: String(year.year), strain: year.scheduleStrain})), threshold: 1}) : null;
   const worst = heaviest?.id ? trajectory!.years.find((year) => String(year.year) === heaviest.id) : undefined;
   if (worst) {
-    const strain = presentationFigure({value: worst.scheduleStrain, scale: "percent", decimals: 0}).value;
+    // The heaviest year is ranked among the strains that are numbers, so its strain is one.
+    const strain = presentationFigure({value: worst.scheduleStrain!, scale: "percent", decimals: 0}).value;
     leaves.push({
       id: "later-wall-untouched",
       pt: `${worst.year} continua exigindo ${brlM(worst.principalDue)} de amortização, ${strain}% do EBITDA daquele ano. Esta operação não passa por lá, e esse ano será rolado de novo.`,
@@ -192,7 +200,7 @@ export function judgeOperation(input: {
     const bigger = calculateEnlargedTicket({ticket: amount, refinancing, principalDue: worst.principalDue});
     const biggerRun = simulate({amount: cents(bigger.ticket), termMonths: operation.termMonths, graceMonths: operation.graceMonths, refinancing: cents(bigger.refinancing)});
     const biggerPeak = peakOf(biggerRun);
-    const biggerPrice = priceAt({amount: cents(bigger.ticket), termMonths: operation.termMonths}, biggerPeak, () => leverageAfter(bigger.ticket, bigger.refinancing));
+    const biggerPrice = priceAt({amount: cents(bigger.ticket), termMonths: operation.termMonths}, biggerRun, () => leverageAfter(bigger.ticket, bigger.refinancing));
     const ownPeak = peakOf(trajectory);
     const biggerTradeoff = {
       pt: `${biggerPeak && ownPeak ? `O pico de alavancagem vai de ${turns(ownPeak)} para ${turns(biggerPeak)}` : "Custa alavancagem de pico mais alta"} e o livro fica maior.${biggerPrice && price ? ` No preço: ${spread(biggerPrice)} contra ${spread(price)} da estrutura pedida${biggerPrice.bps.min === price.bps.min ? ", o mesmo spread, porque em ambas o dinheiro novo é zero e o que muda é o prazo do passivo" : `, ${spreadGap(biggerPrice.bps.min, price.bps.min)} ponto percentual na ponta baixa`}.` : ""}`,

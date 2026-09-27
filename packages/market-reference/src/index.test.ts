@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 
-import {indicativePrice, spreadBands} from "./index";
+import {indicativePrice, pricedInstrumentLabel, ratingBandLabels, spreadBands} from "./index";
 
 describe("the desk's price reference", () => {
   it("has a band for every instrument at the adequate rating, and says it is practice, not observation", () => {
@@ -20,6 +20,25 @@ describe("the desk's price reference", () => {
     expect(price.allIn.max).toBe("0.1459");
     expect(price.adjustments.map((a) => a.id)).toEqual(["security"]);
     expect(price.sentence.pt).toContain("CDI + 2,5%");
+  });
+
+  it("names the instrument by its catalog name and the analytical profile by its band, in words, never by their keys", () => {
+    // Before: "Base: banda adequate para ccb, 280 a 400 bps" and "Base: adequate band for ccb, 280 to 400 bps".
+    const aurora = indicativePrice({instrument: "ccb", rating: "watch", cdi: "0.105"})!;
+    expect(aurora.sentence.pt).toContain("Base: Cédula de Crédito Bancário (CCB); perfil analítico: atenção; faixa de 400 a 550 bps; ajustes: +40 bps (Sem garantia real declarada: quirografário.).");
+    expect(aurora.sentence.en).toContain("Base: Bank credit note (CCB); analytical profile: watch; range of 400 to 550 bps; adjustments: +40 bps (No security stated: unsecured.).");
+    for (const band of spreadBands) {
+      const price = indicativePrice({instrument: band.instrument, rating: band.rating, cdi: "0.105", tenorMonths: 84, amount: "8000000"})!;
+      const name = pricedInstrumentLabel(band.instrument);
+      expect(name.pt).not.toBe("instrumento indicado");
+      expect(price.sentence.pt).toContain(`Base: ${name.pt}; perfil analítico: ${ratingBandLabels[band.rating].pt}; faixa de ${band.bps.min} a ${band.bps.max} bps`);
+      expect(price.sentence.en).toContain(`Base: ${name.en}; analytical profile: ${ratingBandLabels[band.rating].en}; range of ${band.bps.min} to ${band.bps.max} bps`);
+      expect(price.sentence.pt).not.toMatch(/\b(?:strong|adequate|watch|weak|distressed)\b/);
+      for (const text of [price.sentence.pt, price.sentence.en]) {
+        expect(text).not.toMatch(/\b[a-z]+_[a-z0-9_]+\b/);
+        expect(text).not.toMatch(/[\u2013\u2014]/);
+      }
+    }
   });
 
   it("closes the door where no lender would look", () => {

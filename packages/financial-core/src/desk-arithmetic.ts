@@ -16,18 +16,32 @@ import {finiteFigure as finite, fullFigure as full} from "./figure-input";
  *
  * Figures are full-precision decimal strings unless the kernel states the precision the desk
  * publishes. A value received that is not a finite decimal number is refused, never read as zero.
- * A ratio over a zero denominator is not a number: the desk has always published it as a division
- * by zero prints it (`Infinity`, `-Infinity`, `NaN`) and never compared it or stated it in a
- * sentence, so these kernels hand it on as that text and decide every threshold on the decimal
- * value, exactly as before.
+ *
+ * A ratio over a zero denominator is absent (stage 19, second polish): the kernel hands it on as
+ * null, lists it in `absent` with the denominator that is zero, names it in the trace, and never
+ * compares it with a threshold or with another ratio. Until then the desk published such a ratio as
+ * a division by zero prints it (`Infinity`, `-Infinity`, `NaN`). A ratio over a negative
+ * denominator is a number and is handed on as before.
  */
-export const deskArithmeticVersion = "2026.09.27-v1";
+export const deskArithmeticVersion = "2026.09.27-v2";
 
 // The same arithmetic contract the package root declares, so a kernel imported on its own computes
 // exactly what it computes inside the desk.
 Decimal.set({precision: 40, rounding: Decimal.ROUND_HALF_UP, toExpNeg: -30, toExpPos: 30});
 
 const ZERO = new Decimal(0);
+
+/**
+ * A ratio a kernel could not compute because its denominator is zero: the output it would fill
+ * (`preTurns`, `scenarios.2.postTurns`, `2027.leverageBase`) and the denominator, named.
+ */
+export type AbsentRatio = {readonly ratio: string; readonly denominator: string};
+
+/** The quotient, or null when the denominator is zero: an absent ratio, never a number. */
+const quotient = (numerator: Decimal, denominator: Decimal): Decimal | null => (denominator.isZero() ? null : numerator.div(denominator));
+/** How a trace states a ratio that may be absent. */
+const traced = (value: Decimal | string | null, denominator: string) =>
+  value === null ? `absent (zero ${denominator})` : typeof value === "string" ? value : full(value);
 
 // The stack on one axis -------------------------------------------------------------------------
 
@@ -123,17 +137,22 @@ export function calculateDeskDebtStack(input: {
 
 export type DeskLeverage = {
   readonly netDebt: string;
-  /** Net debt over EBITDA today; over a zero EBITDA not a number, as the division prints it. */
-  readonly preTurns: string;
+  /** Net debt over EBITDA today; absent (null) over a zero EBITDA. */
+  readonly preTurns: string | null;
   /** A company whose EBITDA is not positive has no turns to count: the desk reads its runway instead. */
   readonly profile: "cash_generative" | "cash_burning";
-  /** Each amount the room states, at cents, with the leverage it would leave at four decimals, in the order stated. */
-  readonly scenarios: ReadonlyArray<{readonly amount: string; readonly postTurns: string}>;
+  /** Each amount the room states, at cents, with the leverage it would leave at four decimals (absent over a zero EBITDA), in the order stated. */
+  readonly scenarios: ReadonlyArray<{readonly amount: string; readonly postTurns: string | null}>;
   /** The largest amount stated, at cents, never below zero. */
   readonly largestAmount: string;
-  /** The highest leverage the stated amounts leave (four decimals), never below zero, and whether it exceeds leverage today. */
-  readonly worstPostTurns: string;
-  readonly worstPostAbovePre: boolean;
+  /**
+   * The highest leverage the stated amounts leave (four decimals), never below zero, and whether it
+   * exceeds leverage today; both absent over a zero EBITDA, where no leverage is compared.
+   */
+  readonly worstPostTurns: string | null;
+  readonly worstPostAbovePre: boolean | null;
+  /** The ratios a zero EBITDA left absent. */
+  readonly absent: readonly AbsentRatio[];
   /** The tightest ceiling, the first listed among equals; null when no ceiling is stated. */
   readonly tightest: {readonly index: number} | null;
   /** The covenant arithmetic, when there is a ceiling and EBITDA is positive. */
@@ -167,11 +186,22 @@ export function calculateDeskLeverage(input: {
   const cash = finite("cash", input.cash);
   const ebitda = finite("EBITDA", input.ebitda);
   const netDebt = grossDebt.minus(cash);
-  const preTurns = netDebt.div(ebitda);
+  const preTurns = quotient(netDebt, ebitda);
   const amounts = input.amounts.map((amount, index) => finite(`amount ${index + 1}`, amount));
-  const scenarios = amounts.map((amount) => ({amount: amount.toFixed(2), postTurns: netDebt.plus(amount).div(ebitda).toFixed(4)}));
+  const scenarios = amounts.map((amount) => {
+    const post = quotient(netDebt.plus(amount), ebitda);
+    return {amount: amount.toFixed(2), postTurns: post === null ? null : post.toFixed(4)};
+  });
   const largestAmount = scenarios.reduce((max, scenario) => (new Decimal(scenario.amount).gt(max) ? new Decimal(scenario.amount) : max), ZERO);
-  const worstPost = scenarios.reduce((max, scenario) => Decimal.max(max, scenario.postTurns), ZERO);
+  // Over a zero EBITDA every leverage is absent: none is ranked, none is compared with leverage today.
+  const worstPost = preTurns === null ? null : scenarios.reduce((max, scenario) => Decimal.max(max, scenario.postTurns!), ZERO);
+  const absent: AbsentRatio[] = preTurns === null
+    ? [
+        {ratio: "preTurns", denominator: "EBITDA"},
+        ...scenarios.map((_, index) => ({ratio: `scenarios.${index}.postTurns`, denominator: "EBITDA"})),
+        {ratio: "worstPostTurns", denominator: "EBITDA"},
+      ]
+    : [];
 
   const ceilings = input.ceilings.map((ceiling, index) => finite(`ceiling ${index + 1}`, ceiling));
   let tightest: {index: number; maximum: Decimal} | null = null;
@@ -182,34 +212,37 @@ export function calculateDeskLeverage(input: {
   const burning = ebitda.lte(0);
 
   let covenant: DeskLeverage["covenant"] = null;
-  if (bound && !burning) {
+  // The covenant arithmetic runs only over a positive EBITDA, where every leverage is a number.
+  if (bound && !burning && preTurns !== null) {
     const maxNewDebt = bound.maximum.times(ebitda).minus(netDebt);
+    const posts = scenarios.map((scenario) => new Decimal(scenario.postTurns!));
     covenant = {
       maxNewDebt: full(maxNewDebt),
       roomForNewDebt: full(Decimal.max(maxNewDebt, 0)),
       excessNetDebt: full(maxNewDebt.abs()),
       alreadyAbove: preTurns.gt(bound.maximum),
-      breached: scenarios.some((scenario) => new Decimal(scenario.postTurns).gt(bound.maximum)),
-      worstScenario: scenarios.length === 0 ? null : scenarios.reduce((worst, scenario, index) => (new Decimal(scenario.postTurns).gt(scenarios[worst]!.postTurns) ? index : worst), 0),
+      breached: posts.some((post) => post.gt(bound.maximum)),
+      worstScenario: posts.length === 0 ? null : posts.reduce((worst, post, index) => (post.gt(posts[worst]!) ? index : worst), 0),
     };
   }
 
   return {
     netDebt: full(netDebt),
-    preTurns: full(preTurns),
+    preTurns: preTurns === null ? null : full(preTurns),
     profile: burning ? "cash_burning" : "cash_generative",
     scenarios,
     largestAmount: full(largestAmount),
-    worstPostTurns: full(worstPost),
-    worstPostAbovePre: worstPost.gt(preTurns),
+    worstPostTurns: worstPost === null ? null : full(worstPost),
+    worstPostAbovePre: worstPost === null || preTurns === null ? null : worstPost.gt(preTurns),
+    absent,
     tightest: bound ? {index: bound.index} : null,
     covenant,
     trace: {
       id: "desk.leverage",
-      formula: "net debt = gross debt - cash; leverage = net debt / EBITDA; after an amount = (net debt + amount) / EBITDA at four decimals; "
+      formula: "net debt = gross debt - cash; leverage = net debt / EBITDA, absent over a zero EBITDA; after an amount = (net debt + amount) / EBITDA at four decimals; "
         + "tightest = lowest ceiling, the first listed among equals; admitted new money = ceiling x EBITDA - net debt, only when EBITDA is positive",
       operands: {grossDebt: full(grossDebt), cash: full(cash), ebitda: full(ebitda), amounts: amounts.map(full).join(", "), ceilings: ceilings.map(full).join(", ")},
-      result: `netDebt=${full(netDebt)}; pre=${full(preTurns)}; post=${scenarios.map((scenario) => scenario.postTurns).join(", ")}${covenant ? `; admitted=${covenant.maxNewDebt}` : ""}`,
+      result: `netDebt=${full(netDebt)}; pre=${traced(preTurns, "EBITDA")}; post=${scenarios.map((scenario) => traced(scenario.postTurns, "EBITDA")).join(", ")}${covenant ? `; admitted=${covenant.maxNewDebt}` : ""}`,
     },
   };
 }
@@ -217,28 +250,35 @@ export function calculateDeskLeverage(input: {
 /**
  * Interest coverage today (EBITDA over the year's interest expense, as a magnitude) and with the
  * ask's interest added at its cost: the rate the company asks when it can be read, the stack's
- * weighted cost otherwise. Null when the expense or EBITDA is not positive, or no cost is known.
+ * weighted cost otherwise. Null when the expense or EBITDA is not positive, or no cost is known;
+ * the coverage with the ask is absent, and listed in `absent`, when the interest it divides by
+ * sums to zero.
  */
 export function calculateInterestCoverage(input: {
   ebitda: Decimal.Value;
   financialExpenses: Decimal.Value | null;
   askAmount: Decimal.Value;
   askCost: Decimal.Value | null;
-}): {readonly coverage: string | null; readonly coveragePost: string | null; readonly trace: CalculationTrace} {
+}): {readonly coverage: string | null; readonly coveragePost: string | null; readonly absent: readonly AbsentRatio[]; readonly trace: CalculationTrace} {
   const ebitda = finite("EBITDA", input.ebitda);
   const expenses = input.financialExpenses === null ? null : finite("financial expenses", input.financialExpenses).abs();
   const coverage = expenses && expenses.gt(0) && ebitda.gt(0) ? ebitda.div(expenses) : null;
   const askAmount = finite("amount asked", input.askAmount);
   const askCost = input.askCost === null ? null : finite("cost of the amount asked", input.askCost);
-  const coveragePost = coverage && expenses && askCost ? ebitda.div(expenses.plus(askAmount.times(askCost))) : null;
+  const interestWithAsk = coverage && expenses && askCost ? expenses.plus(askAmount.times(askCost)) : null;
+  const coveragePost = interestWithAsk ? quotient(ebitda, interestWithAsk) : null;
+  const absent: AbsentRatio[] = interestWithAsk && interestWithAsk.isZero()
+    ? [{ratio: "coveragePost", denominator: "interest expense plus the interest on the amount asked"}]
+    : [];
   return {
     coverage: coverage ? full(coverage) : null,
     coveragePost: coveragePost ? full(coveragePost) : null,
+    absent,
     trace: {
       id: "desk.interest_coverage",
-      formula: "coverage = EBITDA / |interest expense|; with the ask = EBITDA / (|interest expense| + amount asked x its annual cost)",
+      formula: "coverage = EBITDA / |interest expense|; with the ask = EBITDA / (|interest expense| + amount asked x its annual cost), absent when that interest is zero",
       operands: {ebitda: full(ebitda), financialExpenses: expenses ? full(expenses) : "none", askAmount: full(askAmount), askCost: askCost ? full(askCost) : "none"},
-      result: `coverage=${coverage ? full(coverage) : "none"}; post=${coveragePost ? full(coveragePost) : "none"}`,
+      result: `coverage=${coverage ? full(coverage) : "none"}; post=${coveragePost ? full(coveragePost) : absent.length > 0 ? "absent (zero interest with the ask)" : "none"}`,
     },
   };
 }
@@ -259,14 +299,16 @@ export function calculateVentureRunway(input: {
 }): {
   readonly monthsPre: string;
   readonly monthsPost: string;
-  readonly monthsPostAfterService: string;
-  /** Months the deal buys after its own interest, and before it. */
-  readonly monthsBought: string;
+  /** Absent (null) when the burn plus the ticket's monthly interest is zero. */
+  readonly monthsPostAfterService: string | null;
+  /** Months the deal buys after its own interest (absent with the runway after service), and before it. */
+  readonly monthsBought: string | null;
   readonly monthsBoughtBeforeService: string;
   readonly debtAfterRaise: string;
   readonly debtToArr: string | null;
   /** |stated runway - computed runway|, when the company states one. */
   readonly statedGap: string | null;
+  readonly absent: readonly AbsentRatio[];
   readonly trace: CalculationTrace;
 } {
   const burn = finite("monthly burn", input.monthlyBurn);
@@ -278,25 +320,31 @@ export function calculateVentureRunway(input: {
   const monthsPre = cash.div(burn);
   const monthsPost = cash.plus(ask).div(burn);
   const monthlyInterest = ask.times(rate).div(12);
-  const monthsPostAfterService = cash.plus(ask).div(burn.plus(monthlyInterest));
+  const monthsPostAfterService = quotient(cash.plus(ask), burn.plus(monthlyInterest));
   const arr = input.arr === null ? null : finite("ARR", input.arr);
   const debtAfterRaise = grossDebt.plus(ask);
   const debtToArr = arr && arr.gt(0) ? debtAfterRaise.div(arr) : null;
   const statedGap = input.statedRunwayMonths === null ? null : finite("stated runway", input.statedRunwayMonths).minus(monthsPre).abs();
+  const denominator = "monthly burn plus the ticket's monthly interest";
+  const absent: AbsentRatio[] = monthsPostAfterService === null
+    ? [{ratio: "monthsPostAfterService", denominator}, {ratio: "monthsBought", denominator}]
+    : [];
   return {
     monthsPre: full(monthsPre),
     monthsPost: full(monthsPost),
-    monthsPostAfterService: full(monthsPostAfterService),
-    monthsBought: full(monthsPostAfterService.minus(monthsPre)),
+    monthsPostAfterService: monthsPostAfterService === null ? null : full(monthsPostAfterService),
+    monthsBought: monthsPostAfterService === null ? null : full(monthsPostAfterService.minus(monthsPre)),
     monthsBoughtBeforeService: full(monthsPost.minus(monthsPre)),
     debtAfterRaise: full(debtAfterRaise),
     debtToArr: debtToArr ? full(debtToArr) : null,
     statedGap: statedGap ? full(statedGap) : null,
+    absent,
     trace: {
       id: "desk.runway",
-      formula: "runway = cash / burn; with the ticket = (cash + ticket) / burn; after its interest = (cash + ticket) / (burn + ticket x rate / 12); debt to ARR = (gross debt + ticket) / ARR",
+      formula: "runway = cash / burn; with the ticket = (cash + ticket) / burn; after its interest = (cash + ticket) / (burn + ticket x rate / 12), absent when that denominator is zero; "
+        + "debt to ARR = (gross debt + ticket) / ARR",
       operands: {cash: full(cash), monthlyBurn: full(burn), ask: full(ask), assumedRate: full(rate), grossDebt: full(grossDebt), arr: arr ? full(arr) : "none"},
-      result: `pre=${full(monthsPre)}; post=${full(monthsPost)}; afterService=${full(monthsPostAfterService)}; debtToArr=${debtToArr ? full(debtToArr) : "none"}`,
+      result: `pre=${full(monthsPre)}; post=${full(monthsPost)}; afterService=${traced(monthsPostAfterService, "burn plus interest")}; debtToArr=${debtToArr ? full(debtToArr) : "none"}`,
     },
   };
 }
@@ -321,31 +369,55 @@ export function calculateWorkingCapitalCycle(input: {
   readonly cycleDays: string | null;
   readonly growth: string | null;
   readonly growthAbsorption: string | null;
-  /** Whether the working-capital ask exceeds twice what growth absorbs, and by how many times the need. */
+  /** Whether the working-capital ask exceeds twice what growth absorbs, and by how many times the need (absent when the need is zero). */
   readonly askExceedsTwiceNeed: boolean;
   readonly askOverNeed: string | null;
+  /** The figures a zero cost of goods sold left absent (the days over it, the cycle, what growth absorbs), and the ask over a zero need. */
+  readonly absent: readonly AbsentRatio[];
   readonly trace: CalculationTrace;
 } {
   const revenue = finite("revenue", input.revenue);
   const cogs = input.cogs === null ? null : finite("cost of goods sold", input.cogs);
+  const absent: AbsentRatio[] = [];
+  const isAbsent = (ratio: string) => absent.some((entry) => entry.ratio === ratio);
+  const COGS = "cost of goods sold";
+  // Days over the cost of goods sold: not computed when the stock is not stated, absent over a zero cost.
+  const daysOverCogs = (ratio: "dio" | "dpo", label: string, stock: Decimal.Value | null): Decimal | null => {
+    if (!cogs || stock === null) return null;
+    const share = quotient(finite(label, stock), cogs);
+    if (share === null) absent.push({ratio, denominator: COGS});
+    return share === null ? null : share.times(365);
+  };
   const dso = revenue.gt(0) ? finite("receivables", input.receivables).div(revenue).times(365) : null;
-  const dio = cogs && input.inventory !== null ? finite("inventory", input.inventory).div(cogs).times(365) : null;
-  const dpo = cogs && input.suppliers !== null ? finite("suppliers", input.suppliers).div(cogs).times(365) : null;
+  const dio = daysOverCogs("dio", "inventory", input.inventory);
+  const dpo = daysOverCogs("dpo", "suppliers", input.suppliers);
   const cycle = dso && dio && dpo ? dso.plus(dio).minus(dpo) : null;
+  // The cycle has all three legs or none: a leg absent over a zero cost leaves it absent, and what growth absorbs with it.
+  const cycleAbsent = dso !== null && (dio !== null || isAbsent("dio")) && (dpo !== null || isAbsent("dpo")) && (isAbsent("dio") || isAbsent("dpo"));
+  if (cycleAbsent) absent.push({ratio: "cycleDays", denominator: COGS});
   let growth: Decimal | null = null;
   let absorption: Decimal | null = null;
   let askOverNeed: Decimal | null = null;
-  if (cycle && input.nextYearRevenue !== null) {
+  let askExceedsTwiceNeed = false;
+  if ((cycle || cycleAbsent) && input.nextYearRevenue !== null) {
     growth = finite("next year's revenue", input.nextYearRevenue).minus(revenue);
     if (growth.gt(0)) {
-      absorption = growth.times(cycle).div(365);
-      if (input.workingCapitalAsk !== null) {
-        const ask = finite("working-capital ask", input.workingCapitalAsk);
-        if (ask.gt(absorption.times(2))) askOverNeed = ask.div(absorption);
+      if (!cycle) absent.push({ratio: "growthAbsorption", denominator: COGS});
+      else {
+        absorption = growth.times(cycle).div(365);
+        if (input.workingCapitalAsk !== null) {
+          const ask = finite("working-capital ask", input.workingCapitalAsk);
+          if (ask.gt(absorption.times(2))) {
+            askExceedsTwiceNeed = true;
+            askOverNeed = quotient(ask, absorption);
+            if (askOverNeed === null) absent.push({ratio: "askOverNeed", denominator: "working capital that growth absorbs"});
+          }
+        }
       }
     }
   }
   const text = (value: Decimal | null) => (value ? full(value) : null);
+  const stated = (value: Decimal | null, ratio: string) => text(value) ?? (isAbsent(ratio) ? "absent" : "none");
   return {
     dso: text(dso),
     dio: text(dio),
@@ -353,14 +425,16 @@ export function calculateWorkingCapitalCycle(input: {
     cycleDays: text(cycle),
     growth: text(growth),
     growthAbsorption: text(absorption),
-    askExceedsTwiceNeed: askOverNeed !== null,
+    askExceedsTwiceNeed,
     askOverNeed: text(askOverNeed),
+    absent,
     trace: {
       id: "desk.working_capital_cycle",
       formula: "DSO = receivables / revenue x 365; DIO = inventory / COGS x 365; DPO = suppliers / COGS x 365; cycle = DSO + DIO - DPO; "
-        + "absorbed = growth of revenue x cycle / 365, when revenue grows; the ask is flagged above twice what is absorbed",
+        + "absorbed = growth of revenue x cycle / 365, when revenue grows; the ask is flagged above twice what is absorbed; "
+        + "a figure over a zero COGS, and what depends on it, is absent",
       operands: {revenue: full(revenue), cogs: cogs ? full(cogs) : "none", nextYearRevenue: input.nextYearRevenue === null ? "none" : String(input.nextYearRevenue)},
-      result: `cycle=${text(cycle) ?? "none"}; absorbed=${text(absorption) ?? "none"}; askOverNeed=${text(askOverNeed) ?? "none"}`,
+      result: `cycle=${stated(cycle, "cycleDays")}; absorbed=${stated(absorption, "growthAbsorption")}; askOverNeed=${stated(askOverNeed, "askOverNeed")}`,
     },
   };
 }
@@ -460,10 +534,13 @@ export type LeveragePathYear = {
   netDebt: string;
   ebitdaBase: string;
   ebitdaStressed: string;
-  leverageBase: string;
-  leverageStressed: string;
+  /** Absent (null) when the year's projected EBITDA is zero. */
+  leverageBase: string | null;
+  /** Absent (null) when the year's EBITDA in the stressed case is zero. */
+  leverageStressed: string | null;
   principalDue: string;
-  scheduleStrain: string;
+  /** Absent (null) when the year's projected EBITDA is zero. */
+  scheduleStrain: string | null;
 };
 
 /**
@@ -475,6 +552,11 @@ export type LeveragePathYear = {
  * leverage, the first year among equals), the first year under each existing ceiling, and the
  * covenant step-down: the stressed leverage plus a cushion, up to the next quarter turn, never below
  * a floor.
+ *
+ * A year whose EBITDA is zero has no leverage and no strain in that case: they are absent, and an
+ * absent leverage is never compared. The peak is the highest of all the years, so one absent
+ * stressed leverage leaves the peak absent (null); a crossing is the first year whose leverage is a
+ * number at or under the ceiling; the covenant step of a year without a stressed leverage is absent.
  */
 export function projectLeveragePath(input: {
   /** year x 12 + month - 1 of the reference date, which is also the disbursement. */
@@ -490,10 +572,14 @@ export function projectLeveragePath(input: {
   ceilings: readonly Decimal.Value[];
 }): {
   readonly years: readonly LeveragePathYear[];
-  readonly peakIndex: number;
+  /** The year of the highest stressed leverage; null when a year's stressed leverage is absent. */
+  readonly peakIndex: number | null;
   readonly ceilings: readonly string[];
   readonly crossings: ReadonlyArray<{maximum: string; yearBase: number | null; yearStressed: number | null}>;
-  readonly covenantProposal: ReadonlyArray<{year: number; maximum: string}>;
+  /** The step of each year; absent (null) when the year's stressed leverage is. */
+  readonly covenantProposal: ReadonlyArray<{year: number; maximum: string | null}>;
+  /** The ratios a zero EBITDA left absent, by year (`2027.leverageBase`), and the covenant steps and the peak with them. */
+  readonly absent: readonly AbsentRatio[];
   readonly trace: CalculationTrace;
 } {
   if (input.years.length === 0) throw new RangeError("the trajectory needs at least one projected year");
@@ -522,6 +608,7 @@ export function projectLeveragePath(input: {
     return amount.times(amortMonths - amortised).div(amortMonths);
   };
 
+  const fourDecimals = (value: Decimal | null) => (value === null ? null : value.toFixed(4));
   const years: LeveragePathYear[] = input.years.map(({year, ebitda}) => {
     const at = year * 12 + 11; // December of the year.
     const previous = Math.max((year - 1) * 12 + 11, reference);
@@ -540,26 +627,41 @@ export function projectLeveragePath(input: {
       netDebt: netDebt.toFixed(2),
       ebitdaBase: base.toFixed(2),
       ebitdaStressed: stressed.toFixed(2),
-      leverageBase: netDebt.div(base).toFixed(4),
-      leverageStressed: netDebt.div(stressed).toFixed(4),
+      leverageBase: fourDecimals(quotient(netDebt, base)),
+      leverageStressed: fourDecimals(quotient(netDebt, stressed)),
       principalDue: principalDue.toFixed(2),
-      scheduleStrain: principalDue.div(base).toFixed(4),
+      scheduleStrain: fourDecimals(quotient(principalDue, base)),
     };
   });
 
-  const peakIndex = years.reduce((peak, row, index) => (new Decimal(row.leverageStressed).gt(years[peak]!.leverageStressed) ? index : peak), 0);
+  const absent: AbsentRatio[] = years.flatMap((row) => [
+    ...(row.leverageBase === null ? [{ratio: `${row.year}.leverageBase`, denominator: `projected EBITDA of ${row.year}`}] : []),
+    ...(row.leverageStressed === null ? [{ratio: `${row.year}.leverageStressed`, denominator: `stressed EBITDA of ${row.year}`}] : []),
+    ...(row.scheduleStrain === null ? [{ratio: `${row.year}.scheduleStrain`, denominator: `projected EBITDA of ${row.year}`}] : []),
+  ]);
+  // The highest of all the years: one absent stressed leverage leaves the peak absent, never ranked around it.
+  const peakIndex = years.some((row) => row.leverageStressed === null)
+    ? null
+    : years.reduce((peak, row, index) => (new Decimal(row.leverageStressed!).gt(years[peak]!.leverageStressed!) ? index : peak), 0);
   const ceilings = [...new Set(input.ceilings.map((ceiling, index) => finite(`ceiling ${index + 1}`, ceiling).toFixed(4)))]
     .sort((a, b) => new Decimal(a).comparedTo(b));
+  // The first year whose leverage is a number at or under the ceiling; an absent leverage is not compared.
+  const atOrUnder = (value: string | null, maximum: string) => value !== null && new Decimal(value).lte(maximum);
   const crossings = ceilings.map((maximum) => ({
     maximum,
-    yearBase: years.find((row) => new Decimal(row.leverageBase).lte(maximum))?.year ?? null,
-    yearStressed: years.find((row) => new Decimal(row.leverageStressed).lte(maximum))?.year ?? null,
+    yearBase: years.find((row) => atOrUnder(row.leverageBase, maximum))?.year ?? null,
+    yearStressed: years.find((row) => atOrUnder(row.leverageStressed, maximum))?.year ?? null,
   }));
   const covenantProposal = years.map((row) => {
+    if (row.leverageStressed === null) return {year: row.year, maximum: null};
     const stepped = new Decimal(row.leverageStressed).plus(cushion);
     const rounded = stepped.times(4).ceil().div(4); // to the nearest upper quarter turn
     return {year: row.year, maximum: Decimal.max(rounded, floor).toFixed(2)};
   });
+  for (const step of covenantProposal) {
+    if (step.maximum === null) absent.push({ratio: `${step.year}.covenantStep`, denominator: `stressed EBITDA of ${step.year}`});
+  }
+  if (peakIndex === null) absent.push({ratio: "peak", denominator: "stressed EBITDA of a year"});
 
   return {
     years,
@@ -567,13 +669,15 @@ export function projectLeveragePath(input: {
     ceilings,
     crossings,
     covenantProposal,
+    absent,
     trace: {
       id: "desk.leverage_path",
       formula: "per year-end: existing = own schedule (linear to maturity when amortising); new = flat through grace, SAC after; net debt = existing + new - cash; "
         + "stressed EBITDA = audited + max(projected - audited, 0) x (1 - haircut); leverage = net debt / EBITDA; principal due = fall of the balances in the year; strain = principal due / EBITDA; "
-        + "peak = highest stressed leverage, the first year among equals; crossing = first year at or under each ceiling; covenant = max(ceil((stressed + cushion) x 4) / 4, floor)",
+        + "peak = highest stressed leverage, the first year among equals; crossing = first year at or under each ceiling; covenant = max(ceil((stressed + cushion) x 4) / 4, floor); "
+        + "over a zero EBITDA the leverage, the strain and the covenant step are absent, and an absent stressed leverage leaves the peak absent",
       operands: {cash: full(cash), newDebt: full(amount), termMonths: String(input.newDebt.termMonths), graceMonths: String(input.newDebt.graceMonths), auditedEbitda: full(audited), growthHaircut: full(haircut), covenantCushion: full(cushion), covenantFloor: full(floor)},
-      result: `peak=${years[peakIndex]!.year}:${years[peakIndex]!.leverageStressed}; covenant=${covenantProposal.map((step) => `${step.year}:${step.maximum}`).join(", ")}`,
+      result: `peak=${peakIndex === null ? "absent" : `${years[peakIndex]!.year}:${years[peakIndex]!.leverageStressed}`}; covenant=${covenantProposal.map((step) => `${step.year}:${step.maximum ?? "absent"}`).join(", ")}`,
     },
   };
 }
@@ -583,7 +687,7 @@ export function projectLeveragePath(input: {
  * covenanted lines taken out, or the refinancing the room states) and the new money left, and net
  * leverage once the structure lands on the audited EBITDA, on the same base as leverage today: the
  * debt before, less what is redeemed, plus the ticket. Every term is an amount in cents, so the sum
- * is exact at 40 significant digits in any order.
+ * is exact at 40 significant digits in any order. Over a zero EBITDA the leverage after is absent.
  */
 export function calculateLiabilityManagement(input: {
   ticket: Decimal.Value;
@@ -591,7 +695,7 @@ export function calculateLiabilityManagement(input: {
   grossDebtBefore: Decimal.Value;
   cash: Decimal.Value;
   ebitda: Decimal.Value;
-}): {readonly redeemed: string; readonly netNewMoney: string; readonly leverageAfter: string; readonly trace: CalculationTrace} {
+}): {readonly redeemed: string; readonly netNewMoney: string; readonly leverageAfter: string | null; readonly absent: readonly AbsentRatio[]; readonly trace: CalculationTrace} {
   const ticket = finite("ticket", input.ticket);
   const redeemed = input.redeemed.reduce<Decimal>((sum, value, index) => sum.plus(finite(`redeemed ${index + 1}`, value)), new Decimal(0));
   const before = finite("gross debt before", input.grossDebtBefore);
@@ -599,16 +703,17 @@ export function calculateLiabilityManagement(input: {
   const ebitda = finite("EBITDA", input.ebitda);
   const netNewMoney = ticket.minus(redeemed);
   const after = before.minus(redeemed).plus(ticket);
-  const leverageAfter = after.minus(cash).div(ebitda);
+  const leverageAfter = quotient(after.minus(cash), ebitda);
   return {
     redeemed: full(redeemed),
     netNewMoney: full(netNewMoney),
-    leverageAfter: full(leverageAfter),
+    leverageAfter: leverageAfter === null ? null : full(leverageAfter),
+    absent: leverageAfter === null ? [{ratio: "leverageAfter", denominator: "EBITDA"}] : [],
     trace: {
       id: "desk.liability_management",
-      formula: "new money = ticket - redeemed; leverage after = (gross debt before - redeemed + ticket - cash) / EBITDA",
+      formula: "new money = ticket - redeemed; leverage after = (gross debt before - redeemed + ticket - cash) / EBITDA, absent over a zero EBITDA",
       operands: {ticket: full(ticket), redeemed: full(redeemed), grossDebtBefore: full(before), cash: full(cash), ebitda: full(ebitda)},
-      result: `newMoney=${full(netNewMoney)}; leverageAfter=${full(leverageAfter)}`,
+      result: `newMoney=${full(netNewMoney)}; leverageAfter=${traced(leverageAfter, "EBITDA")}`,
     },
   };
 }

@@ -23,6 +23,10 @@ import {
  *   spread, and bands under the floor and over the ceiling of communication.
  *
  * A pin moves only with a deliberate change of the price.
+ *
+ * The desk and edge pins moved once, deliberately (stage 19, second polish), for the sentence only:
+ * its basis names the instrument and the analytical profile in words. The same outputs without the
+ * sentence are pinned apart, captured before that change, and hold. The truth pin is unchanged.
  */
 const digest = (items: Iterable<unknown>) => {
   const hash = createHash("sha256");
@@ -156,9 +160,17 @@ describe("the whole price outputs across the move to financial-core", () => {
   });
 
   it("reproduces every pinned output byte for byte", () => {
+    // Every field but the sentence, pinned apart so a deliberate change of the sentence can prove it moved nothing else.
+    const withoutSentence = function* (prices: Iterable<{input: PriceInput; price: ReturnType<typeof indicativePrice>}>) {
+      for (const {input, price} of prices) yield {input, price: price ? {...price, sentence: null} : null};
+    };
+    expect({desk: digest(withoutSentence(deskPrices())), edges: digest(withoutSentence(edgePrices()))}).toEqual({
+      desk: {count: 15360, sha256: "fd4c0dd6cd3ea9adfed5c8b4cf3ceee95a2fe237cd31e1feddca70a01ed9e8b2"},
+      edges: {count: 42, sha256: "7cda3996c19287f8c3bfab7ff04118ce291f46a53f6da08619ad08ec2bf14d11"},
+    });
     expect({desk: digest(deskPrices()), edges: digest(edgePrices()), truth: digest(truthSets())}).toEqual({
-      desk: {count: 15360, sha256: "71464e8c9df7170d005e7fd4cd66506592feef4c7d8749a0d71d76636a14548b"},
-      edges: {count: 42, sha256: "51fa2d178ccdfead9be2a69cb6c911fa4c04d58da65e5c3e997f034bcead80a2"},
+      desk: {count: 15360, sha256: "58dc618724461f246480118d1860bbb0d732023e9d4f9e47eba9ecf5bf163acb"},
+      edges: {count: 42, sha256: "ec89badb42d8c77c86fc2b291a4b6a90ea939ddfc8ed60ae8fae6930918b9f3b"},
       truth: {count: 636, sha256: "0da40644e8d00de00d76ec1e1db601e724345d22856b3a04134114ca2060ae30"},
     });
   });

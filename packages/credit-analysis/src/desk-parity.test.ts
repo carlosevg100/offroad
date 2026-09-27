@@ -25,6 +25,10 @@ import {projectLeverageTrajectory, type Trajectory} from "./trajectory";
  * of by its field path, in both languages. On these cases the Portuguese changed only in the
  * missing-input questions; the four Nimbus unit cases ask nothing with an amount or a missing input
  * and keep their pins. The desk and trajectory pins are unchanged.
+ *
+ * The desk contract `desk-v2` (stage 19, second polish) moved no pin: a ratio over a zero denominator
+ * is published as absent, with `absentRatios` present only when there is one, and no pinned case has
+ * one (`absent-ratios.test.ts` covers them).
  */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 

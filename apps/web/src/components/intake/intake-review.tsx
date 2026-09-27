@@ -266,7 +266,7 @@ export async function IntakeReview({executionApproval, locale, session, document
                         <small>{display}</small>
                       </label>
                       <div className="intake-field__evidence">
-                        <span>{candidate.information_class.replaceAll("_", " ")} · {anchorText(candidate, anchorLabels)}</span>
+                        <span>{t(`informationClass_${candidate.information_class}`)} · {anchorText(candidate, anchorLabels)}</span>
                         {source?.downloadUrl ? <a href={source.downloadUrl} rel="noreferrer" target="_blank">{t("viewEvidence")}<ArrowRight size={11} /></a> : null}
                       </div>
                       {candidate.raw_value && candidate.raw_value !== display ? <small className="intake-field__raw">{t("original")}: {candidate.raw_value}</small> : null}

@@ -82,4 +82,18 @@ describe("the desk's findings are evidence, under the same gate as everything el
     expect(evidence.calculations).toHaveLength(0);
     expect(evidence.promptLines).toHaveLength(0);
   });
+
+  it("hands the model the gap of an absent leverage in words, never a number, and cites no calculation for it", () => {
+    // A year of zero projected EBITDA: its uncut leverage is absent (stage 19, second polish).
+    const inputs = buildDeskInputs(facts, {referenceDate: "2026-08-21", indexLevels: {cdi: "0.105"}, statedRequest: {termMonths: 48, graceMonths: 6}});
+    const desk = analyzeCreditPosition(inputs.desk!);
+    const trajectory = projectLeverageTrajectory({...inputs.trajectory!, projectedEbitda: [{year: 2026, ebitda: "18760000"}, {year: 2027, ebitda: "0"}]});
+    const evidence = deskEvidence(desk, trajectory);
+    const line = evidence.promptLines.find((entry) => entry.startsWith("2027: "))!;
+    // Before: "2027: Infinityx (cenário cortado 2,45x)".
+    expect(line).toMatch(/^2027: não calculável \(EBITDA projetado do ano igual a zero\) \(cenário cortado \d+\.\d{4}x\)$/);
+    expect(evidence.promptLines.join("\n")).not.toMatch(/Infinity|NaN|null/);
+    expect(evidence.calculations.map((calculation) => calculation.id)).not.toContain("trajetoria.2027.alavancagem");
+    expect(evidence.calculations.map((calculation) => calculation.id)).toContain("trajetoria.2027.alavancagem_cortada");
+  });
 });

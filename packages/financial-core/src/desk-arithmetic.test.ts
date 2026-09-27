@@ -62,7 +62,7 @@ describe("leverage and the covenant", () => {
 
   it("computes the number that changes the meeting: 13,644M fit under the tightest covenant, not 42,3M", () => {
     expect(aurora.netDebt).toBe("36900000");
-    expect(at(aurora.preTurns, 4)).toBe("2.1902");
+    expect(at(aurora.preTurns!, 4)).toBe("2.1902");
     expect(aurora.scenarios).toEqual([{amount: "40000000.00", postTurns: "4.5643"}, {amount: "42300000.00", postTurns: "4.7009"}]);
     expect(aurora.tightest).toEqual({index: 0});
     expect(aurora.covenant).toEqual({
@@ -80,12 +80,12 @@ describe("leverage and the covenant", () => {
     expect(burning.profile).toBe("cash_burning");
     expect(burning.covenant).toBeNull();
     expect(burning.tightest).toEqual({index: 0});
-    // Over a zero EBITDA the ratio is not a number: handed on as the division prints it, never compared.
+    // Over a zero EBITDA the ratio is absent, never compared (stage 19, second polish; it was handed on as "Infinity").
     const zero = calculateDeskLeverage({grossDebt: "10", cash: "0", ebitda: "0", amounts: ["5"], ceilings: ["3"]});
-    expect(zero.preTurns).toBe("Infinity");
-    expect(zero.scenarios[0]!.postTurns).toBe("Infinity");
+    expect(zero.preTurns).toBeNull();
+    expect(zero.scenarios[0]!.postTurns).toBeNull();
     expect(zero.covenant).toBeNull();
-    expect(zero.worstPostAbovePre).toBe(false);
+    expect(zero.worstPostAbovePre).toBeNull();
   });
 });
 
@@ -106,8 +106,8 @@ describe("coverage, runway and the cash cycle", () => {
     expect(at(runway.monthsPre, 1)).toBe("13.0");
     expect(at(runway.monthsPost, 1)).toBe("21.1");
     // Interest of 15M x 17,13% / 12 = 214.125 a month joins the burn: 39,1M / 2.064.125.
-    expect(at(runway.monthsPostAfterService, 4)).toBe("18.9427");
-    expect(at(runway.monthsBought, 1)).toBe("5.9");
+    expect(at(runway.monthsPostAfterService!, 4)).toBe("18.9427");
+    expect(at(runway.monthsBought!, 1)).toBe("5.9");
     expect(at(runway.monthsBoughtBeforeService, 1)).toBe("8.1");
     expect(runway.debtAfterRaise).toBe("18200000");
     expect(at(runway.debtToArr!, 4)).toBe("0.4876");
@@ -200,7 +200,7 @@ describe("the trajectory", () => {
     const takeout = calculateLiabilityManagement({ticket: "42300000", redeemed: ["9840000", "7500000"], grossDebtBefore: "38500000", cash: "8420000", ebitda: "16848000"});
     expect(takeout.redeemed).toBe("17340000");
     expect(takeout.netNewMoney).toBe("24960000");
-    expect(at(takeout.leverageAfter, 4)).toBe("3.2669");
+    expect(at(takeout.leverageAfter!, 4)).toBe("3.2669");
     const swap = calculateLiabilityManagement({ticket: "700", redeemed: ["700"], grossDebtBefore: "5000", cash: "1000", ebitda: "1000"});
     expect(swap).toMatchObject({netNewMoney: "0", leverageAfter: "4"});
     expect(takeout.trace.id).toBe("desk.liability_management");
@@ -208,9 +208,89 @@ describe("the trajectory", () => {
 });
 
 describe("a ratio as the desk publishes it", () => {
-  it("rounds a finite ratio as presentationFigure does and hands on a ratio over a zero denominator as the division prints it", () => {
+  it("rounds a finite ratio as presentationFigure does and keeps an absent ratio absent, the text a division by zero printed before included", () => {
     expect(presentationRatio({value: "2.19016", decimals: 4}).value).toBe("2.1902");
-    for (const text of ["Infinity", "-Infinity", "NaN"]) expect(presentationRatio({value: text, decimals: 4}).value).toBe(text);
+    expect(presentationRatio({value: null, decimals: 4}).value).toBeNull();
+    // Before: the text was handed on as it is, so a desk published "Infinity" and "NaN".
+    for (const text of ["Infinity", "-Infinity", "NaN"]) expect(presentationRatio({value: text, decimals: 4}).value).toBeNull();
     expect(() => presentationRatio({value: "abc", decimals: 2})).toThrow(RangeError);
+  });
+});
+
+/**
+ * A ratio over a zero denominator is absent (stage 19, second polish): null, listed in `absent` with
+ * the denominator, and never compared. Every expectation below fails on the kernels as the
+ * post-closure polish left them, which published the ratio as the division printed it.
+ */
+describe("a ratio over a zero denominator", () => {
+  it("leaves leverage absent over a zero EBITDA and compares none of it", () => {
+    // Net cash of 50 over a zero EBITDA: the division gave -Infinity today and +Infinity after 80 of new debt.
+    const zero = calculateDeskLeverage({grossDebt: "50", cash: "100", ebitda: "0", amounts: ["80", "20"], ceilings: ["3"]});
+    expect(zero).toMatchObject({preTurns: null, worstPostTurns: null, worstPostAbovePre: null, profile: "cash_burning", covenant: null, tightest: {index: 0}});
+    expect(zero.scenarios).toEqual([{amount: "80.00", postTurns: null}, {amount: "20.00", postTurns: null}]);
+    expect(zero.absent.map((entry) => entry.ratio)).toEqual(["preTurns", "scenarios.0.postTurns", "scenarios.1.postTurns", "worstPostTurns"]);
+    expect(zero.absent.every((entry) => entry.denominator === "EBITDA")).toBe(true);
+    expect(zero.trace.result).toContain("pre=absent (zero EBITDA)");
+    // A negative EBITDA divides: its leverage is a number, as before.
+    const negative = calculateDeskLeverage({grossDebt: "50", cash: "100", ebitda: "-10", amounts: ["80"], ceilings: []});
+    expect(negative).toMatchObject({preTurns: "5", scenarios: [{amount: "80.00", postTurns: "-3.0000"}], absent: []});
+    expect(calculateDeskLeverage({grossDebt: "45320000", cash: "8420000", ebitda: "16848000", amounts: ["40000000"], ceilings: []}).absent).toEqual([]);
+  });
+
+  it("leaves the coverage with the ask absent when the interest it divides by sums to zero", () => {
+    // 100 of interest and 1.000 asked at a cost of -10%: the ask's interest cancels the expense.
+    const zero = calculateInterestCoverage({ebitda: "500", financialExpenses: "100", askAmount: "1000", askCost: "-0.1"});
+    expect(zero).toMatchObject({coverage: "5", coveragePost: null, absent: [{ratio: "coveragePost", denominator: "interest expense plus the interest on the amount asked"}]});
+    // Not computed for another reason is not absent: no expense stated.
+    expect(calculateInterestCoverage({ebitda: "500", financialExpenses: null, askAmount: "1000", askCost: "0.1"})).toMatchObject({coveragePost: null, absent: []});
+  });
+
+  it("leaves the runway after service absent when the burn plus the ticket's interest is zero", () => {
+    // 1.200 asked at -100% a year pays back 100 a month, exactly the burn.
+    const zero = calculateVentureRunway({cash: "600", monthlyBurn: "100", ask: "1200", assumedRate: "-1", grossDebt: "0", arr: null, statedRunwayMonths: null});
+    expect(zero).toMatchObject({monthsPre: "6", monthsPost: "18", monthsPostAfterService: null, monthsBought: null, monthsBoughtBeforeService: "12"});
+    expect(zero.absent.map((entry) => entry.ratio)).toEqual(["monthsPostAfterService", "monthsBought"]);
+  });
+
+  it("leaves the days over a zero cost of goods sold absent, and the cycle and what growth absorbs with them", () => {
+    const zero = calculateWorkingCapitalCycle({revenue: "365", receivables: "30", cogs: "0", inventory: "60", suppliers: "20", nextYearRevenue: "465", workingCapitalAsk: "40"});
+    expect(zero).toMatchObject({dso: "30", dio: null, dpo: null, cycleDays: null, growth: "100", growthAbsorption: null, askExceedsTwiceNeed: false, askOverNeed: null});
+    expect(zero.absent.map((entry) => entry.ratio)).toEqual(["dio", "dpo", "cycleDays", "growthAbsorption"]);
+    expect(zero.absent.every((entry) => entry.denominator === "cost of goods sold")).toBe(true);
+    // Inventory not stated: DIO and the cycle are not computed, which is not absent; DPO over the zero cost is.
+    const partial = calculateWorkingCapitalCycle({revenue: "365", receivables: "30", cogs: "0", inventory: null, suppliers: "20", nextYearRevenue: null, workingCapitalAsk: null});
+    expect(partial.absent.map((entry) => entry.ratio)).toEqual(["dpo"]);
+    // A cycle of zero days absorbs nothing: the ask still exceeds twice that, and how many times the need it is, is absent.
+    const flat = calculateWorkingCapitalCycle({revenue: "365", receivables: "20", cogs: "365", inventory: "20", suppliers: "40", nextYearRevenue: "465", workingCapitalAsk: "40"});
+    expect(flat).toMatchObject({cycleDays: "0", growthAbsorption: "0", askExceedsTwiceNeed: true, askOverNeed: null});
+    expect(flat.absent).toEqual([{ratio: "askOverNeed", denominator: "working capital that growth absorbs"}]);
+  });
+
+  it("leaves a year's leverage, strain and covenant step absent over a zero EBITDA, never ranks or compares them, and states no peak around an absent one", () => {
+    const input = {
+      referenceMonth: 2026 * 12 + 5, cash: "0", newDebt: {amount: "0", termMonths: 12, graceMonths: 0}, growthHaircut: "0.25", covenantCushion: "0.5", covenantFloor: "2.5", ceilings: ["3"],
+      lines: [{balance: "1000", maturityMonth: 2030 * 12 + 5, amortizes: false}],
+    };
+    // Audited EBITDA of 100: a zero projection in 2027 leaves the base leverage and the strain absent; the stressed case stays on the audited base.
+    const projected = projectLeveragePath({...input, auditedEbitda: "100", years: [{year: 2026, ebitda: "400"}, {year: 2027, ebitda: "0"}]});
+    expect(projected.years[1]).toMatchObject({ebitdaBase: "0.00", ebitdaStressed: "100.00", leverageBase: null, leverageStressed: "10.0000", scheduleStrain: null});
+    expect(projected.peakIndex).toBe(1);
+    expect(projected.absent.map((entry) => entry.ratio)).toEqual(["2027.leverageBase", "2027.scheduleStrain"]);
+    // Audited EBITDA of zero and a zero projection: the stressed case is zero too, so the peak is absent and so is that year's step.
+    const stressed = projectLeveragePath({...input, auditedEbitda: "0", years: [{year: 2026, ebitda: "400"}, {year: 2027, ebitda: "0"}]});
+    expect(stressed.years[1]).toMatchObject({leverageBase: null, leverageStressed: null, scheduleStrain: null});
+    expect(stressed.peakIndex).toBeNull();
+    expect(stressed.covenantProposal).toEqual([{year: 2026, maximum: "4.00"}, {year: 2027, maximum: null}]);
+    expect(stressed.absent.map((entry) => entry.ratio)).toEqual(["2027.leverageBase", "2027.leverageStressed", "2027.scheduleStrain", "2027.covenantStep", "peak"]);
+    expect(stressed.trace.result).toContain("peak=absent");
+    // Net cash over a zero EBITDA: the division gave -Infinity, which crossed under every ceiling. An absent leverage crosses none.
+    const netCash = projectLeveragePath({...input, cash: "2000", auditedEbitda: "0", years: [{year: 2027, ebitda: "0"}, {year: 2028, ebitda: "400"}]});
+    expect(netCash.crossings).toEqual([{maximum: "3.0000", yearBase: 2028, yearStressed: 2028}]);
+    expect(netCash.covenantProposal[0]).toEqual({year: 2027, maximum: null});
+  });
+
+  it("leaves the leverage after a liability swap absent over a zero EBITDA", () => {
+    const zero = calculateLiabilityManagement({ticket: "700", redeemed: ["700"], grossDebtBefore: "5000", cash: "1000", ebitda: "0"});
+    expect(zero).toMatchObject({netNewMoney: "0", leverageAfter: null, absent: [{ratio: "leverageAfter", denominator: "EBITDA"}]});
   });
 });

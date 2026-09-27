@@ -312,7 +312,11 @@ export function instrumentVerdicts(profile: IssuerProfile): InstrumentVerdict[] 
     let eligible = true;
     if (!instrument.legalForms.includes(profile.legalForm)) {
       eligible = false;
-      reasons.push(bi(`Exige ${instrument.legalForms.map((form) => ({sa: "sociedade anônima", ltda: "limitada", other: "outra forma"})[form]).join(" ou ")}; a companhia é ${({sa: "sociedade anônima", ltda: "limitada", other: "de outra forma"})[profile.legalForm]}.`, `Requires ${instrument.legalForms.join(" or ")}; the company is ${profile.legalForm}.`));
+      // The legal form in words in both languages, never its key ("sa", "ltda").
+      reasons.push(bi(
+        `Exige ${instrument.legalForms.map((form) => ({sa: "sociedade anônima", ltda: "limitada", other: "outra forma"})[form]).join(" ou ")}; a companhia é ${({sa: "sociedade anônima", ltda: "limitada", other: "de outra forma"})[profile.legalForm]}.`,
+        `Requires ${instrument.legalForms.map((form) => ({sa: "a sociedade anônima", ltda: "a limitada", other: "another legal form"})[form]).join(" or ")}; the company ${({sa: "is a sociedade anônima", ltda: "is a limitada", other: "has another legal form"})[profile.legalForm]}.`,
+      ));
     }
     if ((instrument.id === "debenture_476" || instrument.id === "debenture_160") && profile.legalForm === "ltda") {
       reasons.push(bi("A limitada não emite debênture; a nota comercial e a CCB são as rotas equivalentes.", "A limitada cannot issue debentures; the commercial note and the CCB are the equivalent routes."));
