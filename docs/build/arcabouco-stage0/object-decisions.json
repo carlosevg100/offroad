@@ -124609,11 +124609,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
             ]
           ],
           "schema": "public",
@@ -124664,11 +124659,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
             ]
           ],
           "schema": "public",
@@ -124678,12 +124668,18 @@
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 2",
-      "reason": "Protocolo único de artefato da etapa 19: a identidade do artefato, as revisões imutáveis e numeradas com manifesto validado em SQL, os blocos com as afirmações que carregam e as âncoras ao grafo de dependências; o escritor único para pessoa e worker, os leitores da revisão exata e da corrente com liberação e atualidade, a projeção dos quatro armazenamentos legados e a capacidade artifact-revision.v1 no contrato de runtime do worker",
+      "reason": "Protocolo único de artefato da etapa 19: a identidade do artefato, as revisões imutáveis e numeradas com manifesto validado em SQL, os blocos com as afirmações que carregam e as âncoras ao grafo de dependências; o escritor único para pessoa e worker, os leitores da revisão exata e da corrente com liberação e atualidade, a projeção dos quatro armazenamentos legados e a capacidade artifact-revision.v1 no contrato de runtime do worker Correção A1: clientes leem exclusivamente pelo RPC autorizado; SELECT direto removido para respeitar direitos herdados e liberação.",
       "sources": [
         {
           "path": "supabase/migrations/20260926183957_artifact_revision_protocol.sql",
           "line": 107,
           "anchor": "create table public.artifact_blocks (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927131506_artifact_content_access_hardening.sql",
+          "line": 2,
+          "anchor": "revoke select on public.artifacts, public.artifact_revisions, public.artifact_blocks from authenticated, anon, service_role;",
           "mechanism": "direct_ddl"
         }
       ]
@@ -124737,11 +124733,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
             ]
           ],
           "schema": "public",
@@ -124792,11 +124783,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
             ]
           ],
           "schema": "public",
@@ -124806,12 +124792,18 @@
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 2",
-      "reason": "Protocolo único de artefato da etapa 19: a identidade do artefato, as revisões imutáveis e numeradas com manifesto validado em SQL, os blocos com as afirmações que carregam e as âncoras ao grafo de dependências; o escritor único para pessoa e worker, os leitores da revisão exata e da corrente com liberação e atualidade, a projeção dos quatro armazenamentos legados e a capacidade artifact-revision.v1 no contrato de runtime do worker",
+      "reason": "Protocolo único de artefato da etapa 19: a identidade do artefato, as revisões imutáveis e numeradas com manifesto validado em SQL, os blocos com as afirmações que carregam e as âncoras ao grafo de dependências; o escritor único para pessoa e worker, os leitores da revisão exata e da corrente com liberação e atualidade, a projeção dos quatro armazenamentos legados e a capacidade artifact-revision.v1 no contrato de runtime do worker Correção A1: clientes leem exclusivamente pelo RPC autorizado; SELECT direto removido para respeitar direitos herdados e liberação.",
       "sources": [
         {
           "path": "supabase/migrations/20260926183957_artifact_revision_protocol.sql",
           "line": 69,
           "anchor": "create table public.artifact_revisions (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927131506_artifact_content_access_hardening.sql",
+          "line": 2,
+          "anchor": "revoke select on public.artifacts, public.artifact_revisions, public.artifact_blocks from authenticated, anon, service_role;",
           "mechanism": "direct_ddl"
         }
       ]
@@ -124865,11 +124857,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
             ]
           ],
           "schema": "public",
@@ -124920,11 +124907,6 @@
               "postgres",
               "UPDATE",
               false
-            ],
-            [
-              "authenticated",
-              "SELECT",
-              false
             ]
           ],
           "schema": "public",
@@ -124934,12 +124916,18 @@
       "owner": "Engenharia de execução, etapa 19",
       "decision": "preservar",
       "stage": "19 / 2",
-      "reason": "Protocolo único de artefato da etapa 19: a identidade do artefato, as revisões imutáveis e numeradas com manifesto validado em SQL, os blocos com as afirmações que carregam e as âncoras ao grafo de dependências; o escritor único para pessoa e worker, os leitores da revisão exata e da corrente com liberação e atualidade, a projeção dos quatro armazenamentos legados e a capacidade artifact-revision.v1 no contrato de runtime do worker",
+      "reason": "Protocolo único de artefato da etapa 19: a identidade do artefato, as revisões imutáveis e numeradas com manifesto validado em SQL, os blocos com as afirmações que carregam e as âncoras ao grafo de dependências; o escritor único para pessoa e worker, os leitores da revisão exata e da corrente com liberação e atualidade, a projeção dos quatro armazenamentos legados e a capacidade artifact-revision.v1 no contrato de runtime do worker Correção A1: clientes leem exclusivamente pelo RPC autorizado; SELECT direto removido para respeitar direitos herdados e liberação.",
       "sources": [
         {
           "path": "supabase/migrations/20260926183957_artifact_revision_protocol.sql",
           "line": 52,
           "anchor": "create table public.artifacts (",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260927131506_artifact_content_access_hardening.sql",
+          "line": 2,
+          "anchor": "revoke select on public.artifacts, public.artifact_revisions, public.artifact_blocks from authenticated, anon, service_role;",
           "mechanism": "direct_ddl"
         }
       ]
@@ -185908,6 +185896,13 @@
       "decision": "preservar",
       "stage": "19 / 4",
       "reason": "Migração B do incremento 4 da etapa 19: o commit da execução registra a revisão do resultado com blocos, afirmações, fontes fixadas, retrato dos insumos e recibo de gates; o comando comum só aceita bytes guardados que a concessão de upload gravou para o trabalho; backfill sem linhas nos dois ambientes"
+    },
+    {
+      "path": "supabase/migrations/20260927131506_artifact_content_access_hardening.sql",
+      "kind": "migration",
+      "decision": "preservar",
+      "stage": "19 / correção A1-A2",
+      "reason": "Fechar leitura direta de conteúdo e negar ancestralidade incompleta; aplicada nos dois ambientes."
     }
   ],
   "staging_archive": [

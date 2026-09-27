@@ -5819,11 +5819,11 @@ begin
   rev:=(written->>'revision_id')::uuid;
   set local role authenticated;
   perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
-  if (select count(*) from public.artifact_revisions where id=rev)<>1 or (select count(*) from public.artifact_blocks where revision_id=rev)<>1
-    or (select count(*) from public.artifacts where head_revision_id=rev)<>1 or public.read_artifact_revision_v1(rev)->>'release'<>'internal' then
+  if jsonb_array_length(public.read_artifact_revision_v1(rev)->'blocks')<>1 or public.read_artifact_revision_v1(rev)->>'release'<>'internal' then
     raise exception 'owner cannot read the artifact revision of its work';
   end if;
   foreach attempt in array array[
+    'select * from public.artifacts', 'select * from public.artifact_revisions', 'select * from public.artifact_blocks',
     format('update public.artifact_revisions set audience=%L where id=%L','external',rev),
     format('delete from public.artifact_revisions where id=%L',rev),
     format('update public.artifact_blocks set content=%L where revision_id=%L','{"forged":true}',rev),
@@ -5842,10 +5842,11 @@ begin
   -- The foreign tenant and the revoked member: no row, no read, no write, no existence leak.
   foreach probe in array array['10000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000019'] loop
     perform set_config('request.jwt.claims',format('{"sub":"%s","role":"authenticated","aal":"aal1"}',probe),true);
-    if exists(select 1 from public.artifacts where organization_id='20000000-0000-4000-8000-000000000001')
-      or exists(select 1 from public.artifact_revisions where id=rev) or exists(select 1 from public.artifact_blocks where revision_id=rev) then
-      raise exception 'artifact rows crossed the access boundary for %',probe;
-    end if;
+    foreach attempt in array array['select * from public.artifacts','select * from public.artifact_revisions','select * from public.artifact_blocks'] loop
+      rejected:=false;
+      begin execute attempt; exception when insufficient_privilege then rejected:=true; end;
+      if not rejected then raise exception 'direct artifact read accepted for %',probe; end if;
+    end loop;
     rejected:=false;
     begin perform public.read_artifact_revision_v1(rev); exception when others then rejected:=sqlerrm='artifact_revision_not_found'; end;
     if not rejected then raise exception '% read an artifact revision',probe; end if;
