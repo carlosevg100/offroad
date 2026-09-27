@@ -3,7 +3,7 @@ import {createHash} from "node:crypto";
 import {buildDecisionArtifactContract, buildRenderedMaterialManifest, type DecisionArtifactContractInput} from "@offroad/case-understanding";
 import {describe, expect, it} from "vitest";
 
-import {resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "./governed-material-download";
+import {decisionContractBoundSha256, resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "./governed-material-download";
 
 const organizationId = "11111111-1111-4111-8111-111111111111";
 const projectId = "22222222-2222-4222-8222-222222222222";
@@ -58,5 +58,16 @@ describe("governed material download", () => {
     const resolved = resolveGovernedMaterialDownload({materialContent: {manifest}, decisionContractContent: {contract}, format: "xlsx", organizationId, projectId});
     expect(() => verifyGovernedMaterialDownload(resolved, bytes)).not.toThrow();
     expect(() => verifyGovernedMaterialDownload(resolved, new TextEncoder().encode("tampered"))).toThrow(/tampered_bytes/);
+  });
+
+  it("reads the sha256 the latest decision contract binds to each surface, and nothing from a contract that binds none", () => {
+    const {contract} = fixture();
+    expect(decisionContractBoundSha256({contract}, "xlsx")).toBe(sha);
+    expect(decisionContractBoundSha256({contract}, "pptx")).toBeNull();
+    const body = Object.fromEntries(Object.entries(contract).filter(([key]) => key !== "contractFingerprint")) as DecisionArtifactContractInput;
+    const unbound = buildDecisionArtifactContract({...body, views: contract.views.map((view) => view.surface === "workbook" ? {...view, artifactFingerprint: null} : view)});
+    expect(decisionContractBoundSha256({contract: unbound}, "xlsx")).toBeNull();
+    expect(decisionContractBoundSha256(undefined, "xlsx")).toBeNull();
+    expect(decisionContractBoundSha256({contract: {...contract, views: "tampered"}}, "xlsx")).toBeNull();
   });
 });

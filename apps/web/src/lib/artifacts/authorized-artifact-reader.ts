@@ -287,8 +287,10 @@ export function verifyRenderedBytes(revision: ArtifactRevision, bytes: Uint8Arra
 }
 
 /**
- * The response headers of a served revision. Hash claims appear only for verified bytes; a revision
- * that pins no bytes says so, and a legacy one says it is a legacy row without pinned bytes.
+ * The response headers of a served revision. `x-artifact-bytes` says whether the served bytes are
+ * the ones the revision pins (`pinned`, verified by sha256 and length) or whether nothing was
+ * verified (`unpinned`); the hash claim appears only for verified bytes, and a legacy revision says
+ * it is a legacy row without pinned bytes.
  */
 export function artifactResponseHeaders(read: ArtifactRead & {withheld: false}, verification: BytesVerification): Record<string, string> {
   return {
@@ -296,7 +298,9 @@ export function artifactResponseHeaders(read: ArtifactRead & {withheld: false}, 
     "x-artifact-manifest-fingerprint": read.revision.manifestFingerprint,
     "x-artifact-release": read.release,
     "x-artifact-freshness": read.freshness,
-    ...(verification.status === "verified" ? {"x-artifact-content-sha256": verification.sha256} : {"x-artifact-bytes": "unpinned"}),
+    ...(verification.status === "verified"
+      ? {"x-artifact-bytes": "pinned", "x-artifact-content-sha256": verification.sha256}
+      : {"x-artifact-bytes": "unpinned"}),
     ...(legacyUnpinned(read.revision) ? {"x-artifact-legacy": "unpinned"} : {}),
   };
 }
