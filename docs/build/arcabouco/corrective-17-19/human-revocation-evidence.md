@@ -1,6 +1,6 @@
 # Human revocation serialization
 
-Status: independently reviewed and applied to both databases; full CI, merge and deployments remain pending.
+Status: merged in PR 831 (10c11e14), complete Quality 36323882427 passed, both databases applied, web and worker deployed. See COMPLETION.md for the exact deployment and boot evidence.
 
 The common execution authority function locks the persisted human subject before policy, release, authorization revision and job. Suspension and logical deletion now participate in the same transaction ordering as the result commit. The exhausted-job cleanup remains able to close revoked work.
 
@@ -14,4 +14,7 @@ CI run 36322527305, database job 108628987536, 27 September 2026 at 13:32:13 UTC
 
 Staging migration `20260927133553`; production `20260927133717`. Functional negative suite and execution_commands, execution_consumer, execution_consumer_exhaustion passed under rollback in staging. Installed authority definition matches across environments. Production security advisors returned no findings; no production fixture or client execution was created.
 
-Local `pnpm check`: 44 tasks passed, Node 24.19.0. Final CI and deployment evidence will close this increment.
+Local `pnpm check`: 44 tasks passed, Node 24.19.0. Final CI and deployment evidence is recorded in COMPLETION.md.
+
+
+The corrected full database job passed in run 36323133942, job 108630785523. At 13:43:32 UTC the historical race was reproduced and all six human suspension/deletion ordering and rollback cases passed. The later R01 and dependency suites also passed; no fixture collision remained. A subsequent merge of main preserves the same implementation and is subject to the complete CI again.

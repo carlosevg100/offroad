@@ -1,6 +1,6 @@
 # Artifact content authority - corrective wave 17–19
 
-Status: implementation under validation; not complete or deployed.
+Status: merged and deployed; corrective wave closure is recorded separately in COMPLETION.md.
 
 ## Staging reproduction before migration - 27 September 2026
 
@@ -22,4 +22,7 @@ Staging passed `artifact_content_authority.sql`, `artifact_revision_protocol.sql
 
 Local `pnpm check` passed under Node 24.19.0. The first run exposed em dashes in this evidence document (removed); sandboxed eval subprocesses could not open their local IPC socket, and passed with the normal local execution permissions. An overly broad test edit initially inserted SELECT into the privileged immutability test; it was corrected before the full protocol passed.
 
-CI, merge and deployments remain pending.
+PR 828 merged as e3dcd43b. Quality 36322311475 passed before merge; main Quality 36323414311 passed. Vercel production deployment 6692973083 succeeded on that commit. Worker rollout 36323936807 succeeded with task definition offroad-document-worker:481 at nonzero desired capacity. The automated boot-log probe reported unavailable_aws_read; that is not counted as a boot-log proof.
+
+
+Authenticated AWS CloudShell independently supplied the missing boot proof: 27 September at 13:58:24 UTC, worker.boot has providerDataPolicyEnforced=true; worker.schema_contract_verified reports 24 capabilities and announcedPresent=[]; at 13:58:25 UTC worker.pinned_executors_verified reports two artifacts. No permission was broadened.

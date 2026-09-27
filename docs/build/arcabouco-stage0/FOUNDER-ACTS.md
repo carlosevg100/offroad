@@ -82,3 +82,7 @@ Leitura do executor:
 - É o OK expresso da onda da etapa 19, pelo roteiro aprovado. As decisões técnicas da etapa seguem a autoridade permanente de execução de 21/09/2026; aprovar conteúdo profissional, gasto novo, efeito externo e liberação de execução para cliente real continuam atos do fundador e não decorrem deste OK.
 - A explicação que precedeu o OK registrou o alcance: um único protocolo para respostas e arquivos (artefato, revisão imutável, blocos com afirmações rastreadas, manifesto, derivação ancorada no grafo comum, audiência declarada), sem add-in de Office, sem mudança de método ou número, sem publicação externa. As quatro tabelas históricas ficam como origem; nenhum byte antigo é descartado; artefato sem linhagem completa recebe rótulo de legado com a evidência disponível.
 - A preparação técnica das etapas 20 e 21 (notas de desenho e contratos, sem migração) pode correr em paralelo, como o roteiro permite; a migração de cada uma delas só entra com o OK seguinte.
+
+## OK da rodada corretiva anterior à etapa 20, 27/09/2026
+
+Após a segunda opinião sobre 17–19, o fundador pediu: "entao faz isso.. melhorar e corrigir oq foi feito para estarmos perfeitamente prontos para seguirmos com as etapas". Autoriza a rodada corretiva A1–A5 e o refinamento técnico do plano; não inicia automaticamente 20–24. Permanecem separados conteúdo profissional, execução para cliente real, gasto/contrato novo e efeitos externos. O executor fecha cada incremento com revisão independente, testes, migração nos dois ambientes quando aplicável, main e deployments.
