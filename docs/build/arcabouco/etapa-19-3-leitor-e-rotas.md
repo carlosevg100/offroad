@@ -120,6 +120,8 @@ Uma PR (`fix/19-3b-preview-pinned`) sobre `main` `8e935605` (#822), só web, sem
 
 `contextual-adoption.spec.ts` falhou uma vez na primeira tentativa (run 36279840665 da #822): o título "Base da análise" ficou com proporção 0 na tela durante os 30 segundos depois do redimensionamento para 390 por 844 e passou na repetição, o que `failOnFlakyTests` transforma em job reprovado. Antes do redimensionamento a jornada recarrega a página depois de clicar no cálculo, no fim da página; o navegador restaura a posição de rolagem, e se o título continua na tela depois do redimensionamento depende de quando essa restauração é aplicada. Correção, só na jornada: o título é trazido para a tela (`scrollIntoViewIfNeeded`) e então conferido na tela, e os dois passos se repetem até a página assentar (`toPass`). Nenhum comportamento do produto mudou.
 
+Prova: a Quality rodou quatro vezes no commit `1eba52b8` deste ramo, a execução da PR (36283805685) e três disparos manuais (36283808350, 36283811960 e 36283813305). Nas quatro, os três jobs passaram na primeira tentativa e o Playwright terminou com 44 aprovados, 16 pulados, nenhum instável e nenhuma falha de primeira tentativa; a jornada de adoção contextual passou de primeira em todas, entre 12,5 e 15,3 segundos.
+
 ### Limites e perguntas abertas
 
 1. As revisões da prévia não têm vínculo de dependência (a prévia não roda release publicada nem lê versão de fonte), então o banco responde `current` sempre; a vigência vem do contrato de decisão, pela regra 5, e não do frescor.
