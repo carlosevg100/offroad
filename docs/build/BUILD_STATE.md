@@ -1,6 +1,6 @@
 ## Rodada corretiva 17–19: fechamento e roteiro seguinte, 27/09/2026
 
-A1–A5 mescladas nas PRs 828 (`e3dcd43b`) e 831 (`10c11e14`); 829 absorvida pela 831 e fechada. Três migrações aplicadas em staging/produção, SQL exato e catálogos conciliados. CI da revisão consolidada 36323882427 aprovada; 44 jornadas Playwright passaram, 16 puladas não contam como prova. Relatório em `docs/build/arcabouco/corrective-17-19/COMPLETION.md`; a conferência final de deployments está em andamento. Planos 20–24 corrigidos; nenhuma implementação dessas ondas começou, e o próximo OK continua necessário.
+A1–A5 mescladas nas PRs 828 (`e3dcd43b`) e 831 (`10c11e14`); 829 absorvida pela 831 e fechada. Três migrações aplicadas em staging/produção, SQL exato e catálogos conciliados. CI da revisão consolidada 36323882427 aprovada; 44 jornadas Playwright passaram, 16 puladas não contam como prova. Relatório em `docs/build/arcabouco/corrective-17-19/COMPLETION.md`; web e worker conferidos em `10c11e14`, tarefa 482, rollout 36324951579 e boot com 24 capacidades/dois executores. Planos 20–24 corrigidos; nenhuma implementação dessas ondas começou, e o próximo OK continua necessário.
 
 ## Rodada corretiva 17–19: publicação e replay de perfil
 

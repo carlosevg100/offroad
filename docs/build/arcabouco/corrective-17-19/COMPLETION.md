@@ -1,10 +1,10 @@
 # Rodada corretiva das etapas 17–19
 
-Estado: fechamento em preparação; CI final e deployments ainda em conferência. Este documento não autoriza a etapa 20.
+Correções A1–A5 mescladas, aplicadas e implantadas no commit `10c11e14`. Relatório e roteiro publicados pela PR 832. Este documento não autoriza a etapa 20.
 
 ## O que foi feito
 
-PR 828 mesclada em `e3dcd43b`; PR 831 mesclada em `10c11e14`, contendo integralmente A3/A4/A5. PR 829 fechada como absorvida pela 831. Quality da revisão consolidada 36323882427 inteiramente aprovada; Quality de main e deployment final em conferência.
+PR 828 mesclada em `e3dcd43b`; PR 831 mesclada em `10c11e14`, contendo integralmente A3/A4/A5. PR 829 fechada como absorvida pela 831. Quality da revisão consolidada [36323882427](https://github.com/carlosevg100/offroad/actions/runs/36323882427) inteiramente aprovada. Web e worker conferidos no mesmo commit `10c11e14`.
 
 A1 remove leitura direta de `artifacts`, `artifact_revisions` e `artifact_blocks` por `anon`, `authenticated` e `service_role`; o leitor autorizado permanece o caminho de conteúdo. A2 fecha a leitura quando a ancestralidade ultrapassa a fronteira verificável de 64 vínculos. A3 serializa a conta humana persistida com o commit de execução, inclusive quando o worker usa outra conta. A4 exige fundador ativo e identificado para nova publicação de método, inclusive quando o último fundador foi revogado. A5 impede replay do cadastro do perfil com commit de adaptador diferente.
 
@@ -42,7 +42,11 @@ Provas concorrentes completas: Quality 36323133942, database 108630785523 (A3 e 
 
 ## O que mudou em produção e como foi verificado
 
-As três fronteiras de autoridade acima estão ativas. SQL do journal, definições instaladas e grants foram lidos dos ambientes vivos. Produção preservou 130 artefatos e 133 revisões, com zero execuções, zero recibos de resultado e zero usuários de fixture. Staging ficou com zero revisões de artefato e zero usuários das novas famílias de fixture.
+As três fronteiras de autoridade acima estão ativas. Vercel: deployment Production `6693239017`, status success às 14:09:44 UTC, commit `10c11e1459be42c4de1b839d18187fb1fb91091e`. Worker: [run 36324951579](https://github.com/carlosevg100/offroad/actions/runs/36324951579) aprovado, tarefa `offroad-document-worker:482`, imagem `offroad/document-worker:10c11e1459be`, uma tarefa desejada/uma em execução/zero pendentes. Rollout estabilizado às 14:17:22 UTC.
+
+O papel da CI não conseguiu ler os logs de boot; isso não foi contado como prova. A sessão AWS autenticada confirmou a tarefa `48bc72ea1c3f49b59b8ef4f7e90fabb1`, sua imagem e os eventos às 14:15:50–51 UTC: política de dados ativa, 24 capacidades, nenhuma capacidade anunciada além do contrato e dois executores fixados. Sem ampliação de permissões.
+
+ SQL do journal, definições instaladas e grants foram lidos dos ambientes vivos. Produção preservou 130 artefatos e 133 revisões, com zero execuções, zero recibos de resultado e zero usuários de fixture. Staging ficou com zero revisões de artefato e zero usuários das novas famílias de fixture.
 
 Páginas `/pt-BR` e `/en-US` responderam 200; `/pt-BR/app` sem sessão respondeu 307 para autenticação. Oito alarmes `offroad-*` estavam OK. Nenhum método real foi publicado ou ativado; nenhuma aprovação histórica recebeu autoria retroativa.
 
@@ -58,4 +62,4 @@ Seguir o roteiro corrigido: texto substantivo material e continuação por ID na
 
 ## O que precisa do fundador
 
-Após o fechamento efetivo desta rodada, somente o OK da onda 20 para iniciar sua implementação. Aprovação profissional, liberação de execução real, gasto ou contrato novo continuam atos próprios quando aplicáveis. Não pedir recertificação manual de acessos nem retenção zero como pré-condição técnica.
+Somente o OK da onda 20 para iniciar sua implementação. Aprovação profissional, liberação de execução real, gasto ou contrato novo continuam atos próprios quando aplicáveis. Não pedir recertificação manual de acessos nem retenção zero como pré-condição técnica.
