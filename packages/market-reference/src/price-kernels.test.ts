@@ -35,7 +35,7 @@ describe("what the move of the price reference to financial-core changed on purp
       observations: [observation("a", 0), observation("b", 60), observation("c", 120)],
       adjustments: [adjustment(0.1), adjustment(0.2)],
     });
-    // Before: 0.30000000000000004, a width of 120.00000000000001 and a gap of 0.20000000000000004.
+    // Before: a band from 0.30000000000000004 and a gap of 0.20000000000000004; the width was 120 either way.
     expect(truth.indicativePrice!.bps).toEqual({min: 0.3, max: 120.3});
     expect(truth.procedureCoverage.find((entry) => entry.procedureId === "PR-09")!.result).toMatchObject({widthBps: 120});
     expect(truth.procedureCoverage.find((entry) => entry.procedureId === "PR-08")!.result).toMatchObject({gapToNearest: 0.2});
