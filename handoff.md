@@ -6024,3 +6024,7 @@ OK do fundador recebido. Inventário renovado sobre `f4a0a7b0759e8fc361b59fed166
 ## Etapa15: avaliação integrada do pacote de decisão
 
 Seis casos em `capital-decision-domain-eval.test.ts`: oráculo independente em centavos, caixa negativo, integridade/perímetro, lacunas, consistência e duração sintética do domínio. Não comprova latência de usuário nem revisão independente. Ver `docs/build/arcabouco/etapa-15-eval-integrado.md`. Etapa15 permanece aberta; completion exige CI e produção no commit.
+
+## 2026-09-27: retomada da etapa 20
+
+Fundador respondeu "Ok" ao início da 20 após a onda corretiva encerrada em `85191003`. Primeiro incremento cria contrato puro `review-protocol.ts` e endurece classificação de mudança narrativa. Ver `docs/build/arcabouco/etapa-20-1-contrato.md`; ainda sem migração, rotas ou efeito operacional novo. Próximos incrementos permanecem na ordem aprovada; não iniciar 21–24.

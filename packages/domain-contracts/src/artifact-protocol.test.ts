@@ -158,7 +158,7 @@ describe("derivation and restriction", () => {
     const links = linksFromManifest(head.id, head.manifest);
     expect(links).toEqual([{revisionId: head.id, blockId: null, kind: "source_version", ...sourceA}]);
     expect(derivedSourceRequirements(links)).toEqual(derivedSourceRequirements(linksFromManifest(head.id, head.manifest)));
-    expect(compareRevisions({revision: head, blocks: [cited]}, {revision: head, blocks: [uncited]})).toBe("cosmetic");
+    expect(compareRevisions({revision: head, blocks: [cited]}, {revision: head, blocks: [uncited]})).toBe("material");
   });
 });
 
@@ -198,7 +198,7 @@ describe("material change", () => {
 
   it("identical, cosmetic and material comparisons", () => {
     expect(compareRevisions({revision: base, blocks}, {revision: base, blocks: [block({claims: [claim]})]})).toBe("identical");
-    expect(compareRevisions({revision: base, blocks}, {revision: base, blocks: [block({claims: [claim], content: {text: "outro texto"}, contentFingerprint: hex("9")})]})).toBe("cosmetic");
+    expect(compareRevisions({revision: base, blocks}, {revision: base, blocks: [block({claims: [claim], content: {text: "outro texto"}, contentFingerprint: hex("9")})]})).toBe("material");
     const reordered = [block({blockNo: 2, claims: [claim]}), block({id: id(21), blockNo: 1, blockKey: "answer.intro", contentFingerprint: hex("a")})];
     const ordered = [block({blockNo: 1, claims: [claim]}), block({id: id(21), blockNo: 2, blockKey: "answer.intro", contentFingerprint: hex("a")})];
     expect(compareRevisions({revision: base, blocks: ordered}, {revision: base, blocks: reordered})).toBe("cosmetic");

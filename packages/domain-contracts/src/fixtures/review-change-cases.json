@@ -1,0 +1,785 @@
+[
+  {
+    "name": "identical",
+    "previous": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "next": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "outcome": "identical",
+    "reason": null
+  },
+  {
+    "name": "recommendation text changed under same fingerprints",
+    "previous": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "next": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir sem cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "outcome": "material",
+    "reason": "block_content"
+  },
+  {
+    "name": "unknown layout field cannot carry hidden recommendation",
+    "previous": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "next": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual.",
+            "layout": {
+              "recommendation": "Aprovar"
+            }
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "outcome": "material",
+    "reason": "block_content"
+  },
+  {
+    "name": "input snapshot changes under same manifest fingerprint",
+    "previous": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "next": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": {
+            "fingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "outcome": "material",
+    "reason": "manifest_context"
+  },
+  {
+    "name": "typed template only",
+    "previous": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "next": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": {
+            "templateVersionId": "house@2",
+            "fingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          },
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "outcome": "cosmetic",
+    "reason": null
+  },
+  {
+    "name": "new bytes are unverified despite unchanged blocks",
+    "previous": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "next": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "byteLength": 30,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "outcome": "material",
+    "reason": "unverified_bytes"
+  },
+  {
+    "name": "duplicate block identity",
+    "previous": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "next": {
+      "revision": {
+        "id": "b5200000-0000-4000-8000-000000000004",
+        "artifactId": "b5200000-0000-4000-8000-000000000003",
+        "revisionNo": 1,
+        "previousRevisionId": null,
+        "manifestFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "audience": "internal",
+        "origin": "person",
+        "contentSha256": null,
+        "byteLength": null,
+        "createdAt": "2026-09-27T16:00:00Z",
+        "legacyRef": null,
+        "manifest": {
+          "schemaVersion": "artifact-manifest.2026.09.26-v1",
+          "kind": "answer",
+          "audience": "internal",
+          "format": "text",
+          "bytes": null,
+          "method": null,
+          "execution": null,
+          "inputSnapshot": null,
+          "institutionalResult": null,
+          "sources": [],
+          "claims": [],
+          "traces": [],
+          "template": null,
+          "provenance": {
+            "producer": "person",
+            "jobId": null,
+            "taskRunId": null,
+            "messageId": null,
+            "capability": null
+          },
+          "legacy": null
+        }
+      },
+      "blocks": [
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        },
+        {
+          "id": "b5200000-0000-4000-8000-000000000005",
+          "revisionId": "b5200000-0000-4000-8000-000000000004",
+          "blockNo": 1,
+          "blockKey": "recommendation",
+          "kind": "paragraph",
+          "content": {
+            "text": "Prosseguir apenas se houver cobertura contratual."
+          },
+          "claims": [],
+          "contentFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      ]
+    },
+    "outcome": "material",
+    "reason": "invalid_snapshot"
+  }
+]

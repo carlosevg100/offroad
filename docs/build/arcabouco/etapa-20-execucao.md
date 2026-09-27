@@ -90,3 +90,7 @@ Esta revisão do plano não inicia a etapa 20. A rodada corretiva A1–A5 deve f
 - A etapa 20 trata resultado persistido sem artefato como estado observável, com recuperação idempotente por produtor, sem novo cálculo nem cobrança. O catch do produtor legado não pode esconder indisponibilidade. Provar falha após resultado, recuperação e ausência de duplicata.
 - Citação literal conserva idioma e texto da fonte; uma tradução é rotulada separadamente e conserva a âncora. LC-07 usa fatos e estados econômicos estruturados, com a mesma decisão nas duas línguas. A escolha é técnica; não pede ato do fundador.
 - Os testes determinísticos não homologam o portão pago de modelos. Gate de arquivo guardado pertence ao início da 21 e deve passar sem chamada de modelo antes de alegar cobertura de download armazenado.
+
+## Contratos refinados no incremento 1, 27/09/2026
+
+O OK da onda está registrado em `FOUNDER-ACTS.md`. Para resolver contestação, `basis.decisions` referencia decisões do próprio trabalho por `{decisionId, revision, fingerprint}`, separadamente de `basis.assessments` (proposta do robô). A precedência rejeita histórico misto/incompleto e nunca escolhe uma ponta enquanto a chave estiver contestada; uma resolução parcial permanece contestada. Relato recusa efeitos operacionais em vez de apagá-los silenciosamente. O incremento 2 espelha `review-authorization.json` e `review-change-cases.json` no banco e mantém a mesma lista fechada de mudanças cosméticas.

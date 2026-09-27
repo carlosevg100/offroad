@@ -86,3 +86,7 @@ Leitura do executor:
 ## OK da rodada corretiva anterior à etapa 20, 27/09/2026
 
 Após a segunda opinião sobre 17–19, o fundador pediu: "entao faz isso.. melhorar e corrigir oq foi feito para estarmos perfeitamente prontos para seguirmos com as etapas". Autoriza a rodada corretiva A1–A5 e o refinamento técnico do plano; não inicia automaticamente 20–24. Permanecem separados conteúdo profissional, execução para cliente real, gasto/contrato novo e efeitos externos. O executor fecha cada incremento com revisão independente, testes, migração nos dois ambientes quando aplicável, main e deployments.
+
+## OK da etapa 20, 27/09/2026
+
+Depois do fechamento da onda corretiva (PRs 828, 831 e 832, migrações nos dois ambientes, CI de main e web/worker em `85191003`), o executor indicou "seu OK para iniciar a etapa 20" e o fundador respondeu: "Ok". Autoriza os incrementos da etapa 20 na ordem do plano; "OK seguinte" nas notas preparatórias significa este OK de onda, não uma aprovação adicional por migração. Permanecem fora etapas 21–24, conteúdo profissional, gastos/contratos novos, efeitos externos e liberação para cliente real. Cada incremento continua sujeito a revisão independente, gates e publicação completa.

@@ -416,7 +416,8 @@ export function revisionSubstance(revision: {readonly manifest: ArtifactManifest
 
 export type RevisionChange = "identical" | "cosmetic" | "material";
 export type MaterialChangeReason =
-  | "claim_set" | "claim_value" | "source_versions" | "method_release" | "execution" | "institutional_result" | "audience";
+  | "claim_set" | "claim_value" | "source_versions" | "method_release" | "execution" | "institutional_result" | "audience"
+  | "block_content" | "claim_support" | "manifest_context" | "unverified_bytes" | "invalid_snapshot";
 
 function claimIndex(blocks: readonly ArtifactBlock[]): Map<string, string> {
   const index = new Map<string, string>();
@@ -432,25 +433,34 @@ function sameBlocks(previous: readonly ArtifactBlock[], next: readonly ArtifactB
   return a.length === b.length && a.every((block, index) => {
     const other = b[index];
     return other !== undefined && block.blockKey === other.blockKey && block.contentFingerprint === other.contentFingerprint
+      && block.kind === other.kind && stable(block.content) === stable(other.content)
       && stable(block.claims) === stable(other.claims);
   });
 }
 
 function sameManifest(previous: RevisionSnapshot["revision"], next: RevisionSnapshot["revision"]): boolean {
-  if ("manifestFingerprint" in previous && "manifestFingerprint" in next) return previous.manifestFingerprint === next.manifestFingerprint;
+  if ("manifestFingerprint" in previous && "manifestFingerprint" in next && previous.manifestFingerprint !== next.manifestFingerprint) return false;
   return stable(previous.manifest) === stable(next.manifest);
 }
 
 /**
  * Material when any claim id, claim value, source version, method release, execution,
- * institutional result or audience differs; cosmetic when only text without claims, block order
- * or layout differs; identical when fingerprints match. Stage 20 requires a new approval act on
+ * institutional result or audience differs. Arbitrary content changes are material, even when
+ * claims stay equal. Only block order and the typed template reference may be cosmetic;
+ * fingerprints alone never override divergent content. Stage 20 requires a new approval act on
  * a material change.
  */
 export type RevisionChangeReport = {readonly outcome: RevisionChange; readonly reasons: readonly MaterialChangeReason[]};
 
 export function describeRevisionChange(previous: RevisionSnapshot, next: RevisionSnapshot): RevisionChangeReport {
-  if (sameManifest(previous.revision, next.revision) && sameBlocks(previous.blocks, next.blocks)) {
+  const duplicateIdentity = [previous, next].some((snapshot) =>
+    duplicates(snapshot.blocks.map((block) => block.blockKey))
+    || duplicates(snapshot.blocks.flatMap((block) => block.claims.map((claim) => claim.claimId))));
+  if (duplicateIdentity) return freezeArtifactValue({outcome: "material", reasons: ["invalid_snapshot"]});
+  if (sameManifest(previous.revision, next.revision) && sameBlocks(previous.blocks, next.blocks)
+    && previous.revision.contentSha256 === next.revision.contentSha256
+    && previous.revision.byteLength === next.revision.byteLength
+    && previous.revision.audience === next.revision.audience) {
     const identical: RevisionChangeReport = {outcome: "identical", reasons: []};
     return freezeArtifactValue(identical);
   }
@@ -459,6 +469,14 @@ export function describeRevisionChange(previous: RevisionSnapshot, next: Revisio
   const after = claimIndex(next.blocks);
   if (before.size !== after.size || [...before.keys()].some((claimId) => !after.has(claimId))) reasons.push("claim_set");
   if ([...before].some(([claimId, value]) => after.has(claimId) && after.get(claimId) !== value)) reasons.push("claim_value");
+  const semanticBlocks = (blocks: readonly ArtifactBlock[]) => stable([...blocks]
+    .sort((a, b) => a.blockKey.localeCompare(b.blockKey))
+    .map((block) => ({key: block.blockKey, kind: block.kind, content: block.content})));
+  if (semanticBlocks(previous.blocks) !== semanticBlocks(next.blocks)) reasons.push("block_content");
+  const supports = (blocks: readonly ArtifactBlock[]) => stable([...blocks]
+    .sort((a, b) => a.blockKey.localeCompare(b.blockKey))
+    .map((block) => ({key: block.blockKey, claims: block.claims.map((claim) => ({id: claim.claimId, supportIds: [...claim.supportIds].sort()}))})));
+  if (supports(previous.blocks) !== supports(next.blocks)) reasons.push("claim_support");
   const previousManifest = previous.revision.manifest;
   const nextManifest = next.revision.manifest;
   const sourceKey = (manifest: ArtifactManifest) => stable([...manifest.sources].map((source) => `${source.sourceVersionId}:${source.rightsVersionId ?? ""}`).sort());
@@ -467,6 +485,14 @@ export function describeRevisionChange(previous: RevisionSnapshot, next: Revisio
   if (stable(previousManifest.execution) !== stable(nextManifest.execution)) reasons.push("execution");
   if (stable(previousManifest.institutionalResult) !== stable(nextManifest.institutionalResult)) reasons.push("institutional_result");
   if (previous.revision.audience !== next.revision.audience) reasons.push("audience");
+  const context = (manifest: ArtifactManifest) => ({kind: manifest.kind, format: manifest.format,
+    inputSnapshot: manifest.inputSnapshot, traces: manifest.traces, provenance: manifest.provenance,
+    legacy: manifest.legacy, claims: [...manifest.claims].sort((a, b) => a.blockKey.localeCompare(b.blockKey))});
+  if (stable(context(previousManifest)) !== stable(context(nextManifest))) reasons.push("manifest_context");
+  // Until a pinned renderer proves byte equivalence, a byte change is not a layout claim.
+  if (stable(previousManifest.bytes) !== stable(nextManifest.bytes)
+    || previous.revision.contentSha256 !== next.revision.contentSha256
+    || previous.revision.byteLength !== next.revision.byteLength) reasons.push("unverified_bytes");
   const report: RevisionChangeReport = {outcome: reasons.length > 0 ? "material" : "cosmetic", reasons};
   return freezeArtifactValue(report);
 }
