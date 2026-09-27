@@ -26,6 +26,17 @@ import {bandProvenanceNote, playbookBand, reconcileTenor, type MarketBand} from 
 export type TermBasis = "capacity" | "playbook" | "company_request" | "reconciled_fact";
 
 /**
+ * Where a term came from, in the words a company and a lawyer read (the "Base" column of the
+ * investor package): never the internal value of `TermBasis`.
+ */
+export const termBasisLabels: Readonly<Record<TermBasis, {pt: string; en: string}>> = {
+  capacity: {pt: "Capacidade de endividamento calculada", en: "Computed debt capacity"},
+  playbook: {pt: "Prática de mercado para esta estrutura", en: "Market practice for this structure"},
+  company_request: {pt: "Pedido da companhia", en: "Company request"},
+  reconciled_fact: {pt: "Dado conciliado da companhia", en: "Reconciled company data"},
+};
+
+/**
  * Whether this term answers something the company asked for, or fills something it did not.
  *
  * A company often arrives knowing one thing — "I need R$ 40 million" — and nothing else. It does
@@ -201,12 +212,12 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     rationale:
       input.requestedTermMonths === undefined
         ? {
-            pt: `Você não indicou prazo, então propomos ${tenor.value} meses: é o prazo que os financiadores compram neste perfil (${band.tenorMonths.min}–${band.tenorMonths.max} meses). ${bandNote.pt} ${definition.structure.notes.pt}`,
-            en: `You did not state a tenor, so we propose ${tenor.value} months: it is the tenor lenders buy in this profile (${band.tenorMonths.min}–${band.tenorMonths.max} months). ${bandNote.en} ${definition.structure.notes.en}`,
+            pt: `Você não indicou prazo, então propomos ${tenor.value} meses: é o prazo que os financiadores compram neste perfil (entre ${band.tenorMonths.min} e ${band.tenorMonths.max} meses). ${bandNote.pt} ${definition.structure.notes.pt}`,
+            en: `You did not state a tenor, so we propose ${tenor.value} months: it is the tenor lenders buy in this profile (between ${band.tenorMonths.min} and ${band.tenorMonths.max} months). ${bandNote.en} ${definition.structure.notes.en}`,
           }
         : {
-            pt: `Dentro do que os financiadores compram neste perfil (${band.tenorMonths.min}–${band.tenorMonths.max} meses). ${bandNote.pt} ${definition.structure.notes.pt}`,
-            en: `Inside what lenders buy in this profile (${band.tenorMonths.min}–${band.tenorMonths.max} months). ${bandNote.en} ${definition.structure.notes.en}`,
+            pt: `Dentro do que os financiadores compram neste perfil (entre ${band.tenorMonths.min} e ${band.tenorMonths.max} meses). ${bandNote.pt} ${definition.structure.notes.pt}`,
+            en: `Inside what lenders buy in this profile (between ${band.tenorMonths.min} and ${band.tenorMonths.max} months). ${bandNote.en} ${definition.structure.notes.en}`,
           },
     ...(tenor.clamped
       ? {
@@ -228,6 +239,7 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
   });
 
   const grace = withinBand(input.requestedGraceMonths, definition.structure.gracePeriodMonths.typical);
+  const [graceLow, graceHigh] = definition.structure.gracePeriodMonths.typical;
   terms.push({
     id: "grace",
     labels: {pt: "Carência", en: "Grace period"},
@@ -241,12 +253,12 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
     rationale:
       input.requestedGraceMonths === undefined
         ? {
-            pt: `Você não indicou carência, então propomos ${grace.value} meses. A banda usual desta operação é ${definition.structure.gracePeriodMonths.typical.join("–")} meses, e ela existe para cobrir o tempo até o investimento começar a gerar caixa.`,
-            en: `You did not state a grace period, so we propose ${grace.value} months. The usual band for this operation is ${definition.structure.gracePeriodMonths.typical.join("–")} months, and it exists to cover the time before the investment starts generating cash.`,
+            pt: `Você não indicou carência, então propomos ${grace.value} meses. A banda usual desta operação fica entre ${graceLow} e ${graceHigh} meses, e ela existe para cobrir o tempo até o investimento começar a gerar caixa.`,
+            en: `You did not state a grace period, so we propose ${grace.value} months. The usual band for this operation is between ${graceLow} and ${graceHigh} months, and it exists to cover the time before the investment starts generating cash.`,
           }
         : {
-            pt: `Banda típica: ${definition.structure.gracePeriodMonths.typical.join("–")} meses.`,
-            en: `Typical band: ${definition.structure.gracePeriodMonths.typical.join("–")} months.`,
+            pt: `Banda típica: entre ${graceLow} e ${graceHigh} meses.`,
+            en: `Typical band: between ${graceLow} and ${graceHigh} months.`,
           },
     ...(grace.clamped
       ? {
@@ -259,8 +271,8 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
                     en: `Short for this operation. Amortising before the investment matures is what usually squeezes coverage in year one, and year one is what a committee looks at.`,
                   }
                 : {
-                    pt: `Mais longa que o usual (${definition.structure.gracePeriodMonths.typical.join("–")} meses). Carência longa não é de graça: o juro do período corre e entra no saldo, e o financiador cobra por isso.`,
-                    en: `Longer than usual (${definition.structure.gracePeriodMonths.typical.join("–")} months). A long grace is not free: interest accrues into the balance over the period, and the lender charges for it.`,
+                    pt: `Mais longa que o usual (entre ${graceLow} e ${graceHigh} meses). Carência longa não é de graça: o juro do período corre e entra no saldo, e o financiador cobra por isso.`,
+                    en: `Longer than usual (between ${graceLow} and ${graceHigh} months). A long grace is not free: interest accrues into the balance over the period, and the lender charges for it.`,
                   },
           },
         }

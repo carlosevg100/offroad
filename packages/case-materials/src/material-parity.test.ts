@@ -27,28 +27,38 @@ import {syntheticMaterials, type SyntheticMaterialsVariant} from "./synthetic-ma
  * separators, table cells with figures carry both languages, and every amount follows the one rule
  * of the materials (thousands below a million, so no amount that is not zero prints as zero). The
  * teasers, the workbook entry and the two single-language statements keep their values.
+ *
+ * `case-materials` 2026.09.27-v7 (post-closure polish of stage 19) moved nine pins: the credit memo,
+ * the term sheet and the package in the three variants, because visible text no longer shows an
+ * internal identifier or a dash. The memo names the basis of the price (the instrument by its
+ * catalog name, the analytical profile by its band) and each price adjustment in words ("Ajuste
+ * pelas garantias", not "Ajuste: security"); the term sheet states the tenor and grace bands in
+ * words ("entre 48 e 84 meses", not "48–84 meses"); the package prints where each term came from in
+ * words ("Pedido da companhia", not "company_request"). Compared item by item, nothing else changed
+ * but the fingerprint of the shadow conduct audit of the memo and the term sheet, whose findings are
+ * the same. The move of the desk, trajectory and price arithmetic into financial-core kept every pin.
  */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 
 const pins: Record<string, string> = {
-  "balanceAboveSchedule:credit_memo": "77f5e966cb2b4dbb8ad34af6ccfd891d9fe4604496ee9b3f24f9e2bcd43585fe",
-  "balanceAboveSchedule:term_sheet": "d0f39f7aedeeddb71a9f5e17894e8a4e3749c07221a4b932eee005cf070229b3",
+  "balanceAboveSchedule:credit_memo": "3f394176b8301932bc8e858c3ce7f08cc7979a4c38d41dcf78600a48e62b8c86",
+  "balanceAboveSchedule:term_sheet": "c3b2780e210ed54b1cb30bae673afe5c76ba27011d39729315d70113db3add6a",
   "balanceAboveSchedule:diligence_qa": "66ade8c4893d4ca7c3d35d087fd8b65f70336319bdb3622d6819eebfe5ba5a6c",
   "balanceAboveSchedule:teaser": "49a4e0b28e7664640e0db86c495f51a956d9a35f752268cf2d6353b0789740fb",
   "balanceAboveSchedule:credit_profile": "69b126773e523eb5d4243872fa768e15e694f8d8411273f6aa9d8b807f9f61f4",
-  "balanceAboveSchedule:package": "b432781b83f846f90da683a691b4de3dbc07a4d76700655edc15f366668aff23",
-  "withinTolerance:credit_memo": "91f418310e11f60a4e249efc6b046f8166ea9686420fc159128584c1632d74ed",
-  "withinTolerance:term_sheet": "8548e8d1f543cf312a4df85a9c9fd4b4700b81d349fc1bd8d6040f5eb6e00dd4",
+  "balanceAboveSchedule:package": "780e3110a7c3e969a75b7c5e6b655e31830900aacd002f218b5a163a2e3698d0",
+  "withinTolerance:credit_memo": "4e52cd9e0611c76f24db4cc4d4128661231b8d5328a7133415f48f27183e6bb3",
+  "withinTolerance:term_sheet": "8e91a5f967f906f14953d95ea94817ffb043a28ea9739a1df9b96849b64d152b",
   "withinTolerance:diligence_qa": "9737e3226c36577a41887c09fdf84c32265b0b5afd955a0ba3e22441449a515a",
   "withinTolerance:teaser": "1c0a2e04da63748e7544c9406382153381b8bc110c8f63d248c520a4b1847f89",
   "withinTolerance:credit_profile": "b82c1618b2c19e14e0cc5296464098ba633cdc056c87dd8f390c68e42901a587",
-  "withinTolerance:package": "d99d90a6a7ef7c04a68dc2b3827349b4e75f330eae26be973c7b814608982adf",
-  "scheduleAboveBalance:credit_memo": "4c57f776ee506f922f472f574ae8ec11b41acc01d936cee4b250cd5aa4a6203a",
-  "scheduleAboveBalance:term_sheet": "d0f39f7aedeeddb71a9f5e17894e8a4e3749c07221a4b932eee005cf070229b3",
+  "withinTolerance:package": "688d34760bac8bf095bcad9c1ae44ddc9f8269205be410488ae5a1ed312a6992",
+  "scheduleAboveBalance:credit_memo": "819d66a6d88ab976847f65e1eca3d189d810ec1dde61dcd5c70445848671f1b1",
+  "scheduleAboveBalance:term_sheet": "c3b2780e210ed54b1cb30bae673afe5c76ba27011d39729315d70113db3add6a",
   "scheduleAboveBalance:diligence_qa": "404695cecf738006a4ce3fe118056a2abedce37d3734e6ecf508a87d0216cffe",
   "scheduleAboveBalance:teaser": "49a4e0b28e7664640e0db86c495f51a956d9a35f752268cf2d6353b0789740fb",
   "scheduleAboveBalance:credit_profile": "75190b87d8c91f6876b61294b783ad6e5b6289ad814f1ffb7c09c9dc5441d2a2",
-  "scheduleAboveBalance:package": "430f03844a66ec0138ec19bf1f79c0ca98d80855d7ab79bd1d03fee0f4f6f26b",
+  "scheduleAboveBalance:package": "bb1527855f4794546b12e6be1a7beb7e568e9c2a78ddbaf6db2cd5e18d0ca134",
   "financial_model:workbook_entry": "ffecd15a3eef1dbe2b535229884c20ddaf18b32f5daa503035216ebcbd6fb736",
   "financial_model:statements": "7a9bbd4f9431f5abfff8f7c24bafe0d33cc8d1b501b41c26f08a2ef6df652769",
   "financial_model:statements:pt": "70eb018adc16a5d14469cb6f3db2076e80ae6ffc376b7650c68b2d0f56abc735",

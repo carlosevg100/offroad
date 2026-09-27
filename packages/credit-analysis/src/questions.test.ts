@@ -1,6 +1,7 @@
 import {describe, expect, it} from "vitest";
 
 import {analyzeCreditPosition} from "./analyze";
+import {deskCases} from "./desk-cases.test-support";
 import {buildDeskInputs, type Fact} from "./from-facts";
 import {questionsForCompany} from "./questions";
 import {projectLeverageTrajectory} from "./trajectory";
@@ -65,9 +66,39 @@ describe("the questions are the analysis continuing, not a checklist beside it",
     }
   });
 
-  it("degrades to document requests when no analysis could be built", () => {
+  it("degrades to document requests when no analysis could be built, naming the input in words", () => {
     const none = questionsForCompany(null, null, ["historical_financials.{ano}.ebitda"]);
     expect(none).toHaveLength(1);
-    expect(none[0]!.pt).toContain("historical_financials.{ano}.ebitda");
+    expect(none[0]!.findingId).toBe("missing:historical_financials.{ano}.ebitda");
+    expect(none[0]!.pt).toBe("A análise de crédito não pôde ser montada sem este dado: EBITDA do último exercício. Consegue enviar o documento que traz essa informação?");
+    expect(none[0]!.en).toBe("The credit analysis could not be assembled without this information: EBITDA for the latest financial year. Can you send the document that carries it?");
+  });
+
+  it("prints each amount in the language of the question by the one rule of the materials", () => {
+    // A schedule 450 thousand above the balance sheet: before, "R$ 0,5M" in both languages.
+    const small = analyzeCreditPosition({...inputs.desk!, balance: {...inputs.desk!.balance, grossDebt: "9390000"}});
+    const gap = questionsForCompany(small, null).find((question) => question.findingId === "stack-vs-balance")!;
+    expect(gap.pt).toContain("O mapa de dívida soma R$ 450 mil a mais");
+    expect(gap.en).toContain("The debt schedule sums to R$ 450 thousand more");
+    const amounts = questions.find((question) => question.findingId === "amount-divergence")!;
+    expect(amounts.pt).toContain("R$ 42,3M e R$ 40,0M");
+    expect(amounts.en).toContain("R$ 42.3M and R$ 40.0M");
+  });
+});
+
+describe("no question shows an internal identifier", () => {
+  it("names every input the desk can miss in words, in both languages, and never prints a field path", () => {
+    for (const [key, entry] of Object.entries(deskCases())) {
+      if (!entry.desk && entry.missing.length === 0) continue;
+      const desk = entry.desk ? analyzeCreditPosition(entry.desk) : null;
+      const trajectory = entry.trajectory ? projectLeverageTrajectory(entry.trajectory) : null;
+      for (const question of questionsForCompany(desk, trajectory, entry.missing)) {
+        for (const text of [question.pt, question.en]) {
+          expect(text, `${key} ${question.findingId}`).not.toMatch(/\{ano\}|\b[a-z0-9]+_[a-z0-9_]+\b|\b[a-z_]+\.[a-z_{][a-z0-9_{}]*\b/);
+          expect(text).not.toMatch(/[–—]/);
+          expect(text).not.toContain("informação exigida pela análise");
+        }
+      }
+    }
   });
 });

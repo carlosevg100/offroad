@@ -1,5 +1,4 @@
-import Decimal from "decimal.js";
-import {composeIndexAndSpread, presentationFigure, presentationSpread} from "@offroad/financial-core";
+import {composeCdiPlusBasisPoints, compareFigures, presentationFigure, presentationNumber, presentationSpread, shiftSpreadBand} from "@offroad/financial-core";
 
 export const marketReferenceVersion = "2026.09.24-v1";
 
@@ -59,6 +58,19 @@ export const spreadBands: readonly SpreadBand[] = [
 
 export type PriceAdjustment = {id: "tenor" | "security" | "coverage" | "size" | "leverage"; bps: number; rationale: {pt: string; en: string}};
 
+/**
+ * What each adjustment of a price is, in the words a memorandum prints: never the internal id of
+ * `PriceAdjustment`. The grid applies the tenor, security, size and leverage adjustments; interest
+ * coverage is named as the house names that factor, for a governed adjustment that carries it.
+ */
+export const priceAdjustmentLabels: Readonly<Record<PriceAdjustment["id"], {pt: string; en: string}>> = {
+  tenor: {pt: "Ajuste pelo prazo", en: "Tenor adjustment"},
+  security: {pt: "Ajuste pelas garantias", en: "Security adjustment"},
+  coverage: {pt: "Ajuste pela cobertura de juros", en: "Interest coverage adjustment"},
+  size: {pt: "Ajuste pelo tamanho do tíquete", en: "Ticket size adjustment"},
+  leverage: {pt: "Ajuste pela alavancagem pós-operação", en: "Post-transaction leverage adjustment"},
+};
+
 export type IndicativePrice = {
   instrument: PricedInstrument;
   rating: RatingBand;
@@ -97,33 +109,35 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
   const base = spreadBands.find((entry) => entry.instrument === input.instrument && entry.rating === input.rating);
   if (!base) return null;
   const adjustments: PriceAdjustment[] = [];
+  // Every threshold is an exact comparison on the decimal value (financial-core), never on a binary number.
   if (input.tenorMonths !== undefined) {
-    if (input.tenorMonths > 60) adjustments.push({id: "tenor", bps: 40, rationale: {pt: "Prazo acima de 60 meses: o comprador cobra pela duração.", en: "Tenor above 60 months: the buyer charges for duration."}});
-    else if (input.tenorMonths <= 24) adjustments.push({id: "tenor", bps: -20, rationale: {pt: "Prazo até 24 meses: risco de crédito menor no tempo.", en: "Tenor up to 24 months: less credit risk over time."}});
+    if (compareFigures(input.tenorMonths, 60) > 0) adjustments.push({id: "tenor", bps: 40, rationale: {pt: "Prazo acima de 60 meses: o comprador cobra pela duração.", en: "Tenor above 60 months: the buyer charges for duration."}});
+    else if (compareFigures(input.tenorMonths, 24) <= 0) adjustments.push({id: "tenor", bps: -20, rationale: {pt: "Prazo até 24 meses: risco de crédito menor no tempo.", en: "Tenor up to 24 months: less credit risk over time."}});
   }
   if (input.collateralCoverage !== undefined) {
-    const coverage = new Decimal(input.collateralCoverage);
-    if (coverage.gte("1.5")) adjustments.push({id: "security", bps: -60, rationale: {pt: "Cobertura de garantias de 1,5x ou mais: o papel é sênior garantido.", en: "Collateral coverage of 1.5x or more: senior secured paper."}});
-    else if (coverage.gte("1.2")) adjustments.push({id: "security", bps: -30, rationale: {pt: "Cobertura de garantias entre 1,2x e 1,5x.", en: "Collateral coverage between 1.2x and 1.5x."}});
-    else if (coverage.lt("1")) adjustments.push({id: "security", bps: 50, rationale: {pt: "Garantias abaixo do tíquete: parte do papel é quirografária.", en: "Collateral below the ticket: part of the paper is unsecured."}});
+    const coverage = input.collateralCoverage;
+    if (compareFigures(coverage, "1.5") >= 0) adjustments.push({id: "security", bps: -60, rationale: {pt: "Cobertura de garantias de 1,5x ou mais: o papel é sênior garantido.", en: "Collateral coverage of 1.5x or more: senior secured paper."}});
+    else if (compareFigures(coverage, "1.2") >= 0) adjustments.push({id: "security", bps: -30, rationale: {pt: "Cobertura de garantias entre 1,2x e 1,5x.", en: "Collateral coverage between 1.2x and 1.5x."}});
+    else if (compareFigures(coverage, 1) < 0) adjustments.push({id: "security", bps: 50, rationale: {pt: "Garantias abaixo do tíquete: parte do papel é quirografária.", en: "Collateral below the ticket: part of the paper is unsecured."}});
   } else if (input.instrument === "ccb" || input.instrument === "debenture_476") {
     adjustments.push({id: "security", bps: 40, rationale: {pt: "Sem garantia real declarada: quirografário.", en: "No security stated: unsecured."}});
   }
   if (input.leveragePost !== undefined) {
-    const leverage = new Decimal(input.leveragePost);
-    if (leverage.gte("4.5")) adjustments.push({id: "leverage", bps: 75, rationale: {pt: "Alavancagem pós-operação em 4,5x ou mais: o papel entra na faixa onde o comprador exige prêmio.", en: "Post-transaction leverage at 4.5x or above: the paper enters the band where buyers demand a premium."}});
-    else if (leverage.gte("3.5")) adjustments.push({id: "leverage", bps: 35, rationale: {pt: "Alavancagem pós-operação entre 3,5x e 4,5x.", en: "Post-transaction leverage between 3.5x and 4.5x."}});
-    else if (leverage.lt("2.5")) adjustments.push({id: "leverage", bps: -25, rationale: {pt: "Alavancagem pós-operação abaixo de 2,5x: o papel compete com emissor melhor classificado.", en: "Post-transaction leverage below 2.5x: the paper competes with better-rated issuers."}});
+    const leverage = input.leveragePost;
+    if (compareFigures(leverage, "4.5") >= 0) adjustments.push({id: "leverage", bps: 75, rationale: {pt: "Alavancagem pós-operação em 4,5x ou mais: o papel entra na faixa onde o comprador exige prêmio.", en: "Post-transaction leverage at 4.5x or above: the paper enters the band where buyers demand a premium."}});
+    else if (compareFigures(leverage, "3.5") >= 0) adjustments.push({id: "leverage", bps: 35, rationale: {pt: "Alavancagem pós-operação entre 3,5x e 4,5x.", en: "Post-transaction leverage between 3.5x and 4.5x."}});
+    else if (compareFigures(leverage, "2.5") < 0) adjustments.push({id: "leverage", bps: -25, rationale: {pt: "Alavancagem pós-operação abaixo de 2,5x: o papel compete com emissor melhor classificado.", en: "Post-transaction leverage below 2.5x: the paper competes with better-rated issuers."}});
   }
-  if (input.amount !== undefined && new Decimal(input.amount).lt("10000000")) {
+  if (input.amount !== undefined && compareFigures(input.amount, "10000000") < 0) {
     adjustments.push({id: "size", bps: 50, rationale: {pt: "Tíquete abaixo de R$ 10 milhões: custo fixo de estruturação pesa no spread.", en: "Ticket under R$ 10 million: fixed set-up cost weighs on the spread."}});
   }
-  const shift = adjustments.reduce((sum, adjustment) => sum + adjustment.bps, 0);
-  const bps = {min: base.bps.min + shift, max: base.bps.max + shift};
-  const cdi = new Decimal(input.cdi);
-  // DI plus spread compounds: (1 + CDI) × (1 + spread) - 1, the B3 convention, never the sum.
-  const composed = (spreadBps: number) => new Decimal(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: new Decimal(spreadBps).div(10_000).toString()}).value);
-  const allIn = {min: composed(bps.min).toFixed(4), max: composed(bps.max).toFixed(4), cdi: cdi.toFixed(4)};
+  // The band moves by the exact sum of its adjustments, and DI plus spread compounds:
+  // (1 + CDI) × (1 + spread) - 1, the B3 convention, never the sum. Both are financial-core kernels.
+  const band = shiftSpreadBand({minBps: base.bps.min, maxBps: base.bps.max, adjustmentsBps: adjustments.map((adjustment) => adjustment.bps)});
+  const bps = {min: presentationNumber(band.min).value, max: presentationNumber(band.max).value};
+  const composed = (spreadBps: string) => composeCdiPlusBasisPoints({annualCdi: input.cdi, spreadBps}).value;
+  const fourDecimals = (value: string) => presentationFigure({value, decimals: 4}).value;
+  const allIn = {min: fourDecimals(composed(band.min)), max: fourDecimals(composed(band.max)), cdi: fourDecimals(input.cdi)};
   // The sentence's conversions are financial-core kernels on the decimal value: the spread in basis
   // points as a signed percentage, and the all-in rates as percentages at two decimals.
   const spreadText = (value: number, locale: "pt" | "en") => {
@@ -148,8 +162,8 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
     adjustments,
     provenance,
     sentence: {
-      pt: `CDI ${fmtBps(bps.min)}% a CDI ${fmtBps(bps.max)}% a.a. (${percent(allIn.min, "pt")}% a ${percent(allIn.max, "pt")}% a.a. com CDI a ${percent(allIn.cdi, "pt")}%). Base: banda ${input.rating} para ${input.instrument}, ${base.bps.min} a ${base.bps.max} bps${adjustments.length ? `; ajustes: ${adjustments.map((a) => `${a.bps >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.pt})`).join(", ")}` : ""}. ${prov.pt}`,
-      en: `CDI ${fmtBpsEn(bps.min)}% to CDI ${fmtBpsEn(bps.max)}% p.a. (${percent(allIn.min, "en")}% to ${percent(allIn.max, "en")}% p.a. at CDI ${percent(allIn.cdi, "en")}%). Base: ${input.rating} band for ${input.instrument}, ${base.bps.min} to ${base.bps.max} bps${adjustments.length ? `; adjustments: ${adjustments.map((a) => `${a.bps >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.en})`).join(", ")}` : ""}. ${prov.en}`,
+      pt: `CDI ${fmtBps(bps.min)}% a CDI ${fmtBps(bps.max)}% a.a. (${percent(allIn.min, "pt")}% a ${percent(allIn.max, "pt")}% a.a. com CDI a ${percent(allIn.cdi, "pt")}%). Base: banda ${input.rating} para ${input.instrument}, ${base.bps.min} a ${base.bps.max} bps${adjustments.length ? `; ajustes: ${adjustments.map((a) => `${compareFigures(a.bps, 0) >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.pt})`).join(", ")}` : ""}. ${prov.pt}`,
+      en: `CDI ${fmtBpsEn(bps.min)}% to CDI ${fmtBpsEn(bps.max)}% p.a. (${percent(allIn.min, "en")}% to ${percent(allIn.max, "en")}% p.a. at CDI ${percent(allIn.cdi, "en")}%). Base: ${input.rating} band for ${input.instrument}, ${base.bps.min} to ${base.bps.max} bps${adjustments.length ? `; adjustments: ${adjustments.map((a) => `${compareFigures(a.bps, 0) >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.en})`).join(", ")}` : ""}. ${prov.en}`,
     },
   };
 }

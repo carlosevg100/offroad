@@ -1,5 +1,8 @@
 import Decimal from "decimal.js";
-import {composeIndexAndSpread, presentationNumber, presentationSpread} from "@offroad/financial-core";
+import {
+  annualizeCostInBasisPoints, calculateSpreadDifference, compareFigures, composeCdiPlusBasisPoints, presentationFigure, presentationNumber,
+  presentationSpread, shiftSpreadBand, sumBasisPoints, testSpreadNormalization,
+} from "@offroad/financial-core";
 
 import type {IndicativePrice, PriceAdjustment, PricedInstrument, RatingBand, SpreadBand} from "./index";
 
@@ -243,10 +246,9 @@ function abstentionFor(input: {target: PricingTarget | null; policy: PricingPoli
 }
 /**
  * CDI plus a spread in basis points as one annual rate, composed the way the B3 formula book and
- * the indentures accrue it: (1 + CDI) × (1 + spread) - 1, never CDI + spread.
+ * the indentures accrue it: (1 + CDI) × (1 + spread) - 1, never CDI + spread, at six decimals.
  */
-const cdiPlus = (cdi: Decimal, spreadBps: Decimal.Value) =>
-  new Decimal(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: new Decimal(spreadBps).div(10_000).toString()}).value);
+const cdiPlus = (cdi: string, spreadBps: string) => presentationFigure({value: composeCdiPlusBasisPoints({annualCdi: cdi, spreadBps}).value, decimals: 6}).value;
 // A spread in basis points as the signed percentage the sentence states, rounded half-up on the
 // decimal value by the financial-core kernel; Intl only prints the rounded figure in the locale.
 const fmt = (value: number, locale: "pt" | "en") => {
@@ -315,12 +317,10 @@ export function buildPricingTruthSet(input: {
       }
       if (!observation.sourceId || !observation.normalizationMethod) reasons.push("missing_lineage");
       if (observation.economics) {
-        const normalized = observation.economics.quotedSpreadBps
-          + observation.economics.feeBps
-          + observation.economics.oidBps
-          + observation.economics.warrantBps
-          + observation.economics.hedgeBps;
-        if (Math.abs(normalized - observation.normalizedSpreadBps) > 0.01) reasons.push("normalization_identity_failed");
+        // The economics add up to the normalized spread within 0.01 basis point, summed as decimals.
+        const {quotedSpreadBps, feeBps, oidBps, warrantBps, hedgeBps} = observation.economics;
+        const identity = testSpreadNormalization({componentsBps: [quotedSpreadBps, feeBps, oidBps, warrantBps, hedgeBps], normalizedBps: observation.normalizedSpreadBps, toleranceBps: "0.01"});
+        if (!identity.holds) reasons.push("normalization_identity_failed");
       }
       const recency = ageDays !== null && ageDays >= 0 ? recencyFactor(ageDays, observation.sourceKind) : null;
       if (recency?.isZero()) reasons.push("outside_recency_window");
@@ -350,22 +350,25 @@ export function buildPricingTruthSet(input: {
   if (rejectedAdjustments.length) exceptions.push({id: "expired-or-untraced-adjustment", severity: "high", message: "At least one proposed pricing adjustment is expired or lacks a source.", affectedProcedures: ["PR-03", "PR-04", "PR-05", "PR-08"]});
 
   let indicativePrice: IndicativePrice | null = null;
+  let publishedWidthBps: number | null = null;
   if (target && policy && sampleSufficient && quantiles) {
-    const shift = validAdjustments.reduce((sum, adjustment) => sum + adjustment.bps, 0);
     // The band is the weighted P25 to P75 of the governed sample, never its minimum and maximum:
-    // one outlier at either end no longer sets the edge the house would have to defend.
+    // one outlier at either end no longer sets the edge the house would have to defend. The valid
+    // adjustments shift it by their exact sum, and its width is tested against the communication
+    // floor and ceiling on the decimal value (financial-core).
     const baseMin = quantiles.p25;
     const baseMax = quantiles.p75;
-    const width = baseMax - baseMin;
-    if (width < policy.minBandWidthBps) exceptions.push({id: "band-too-narrow", severity: "critical", message: "The observed band is narrower than the governed communication floor.", affectedProcedures: ["PR-01", "PR-07", "PR-09"]});
-    if (width > policy.maxBandWidthBps) exceptions.push({id: "band-too-wide", severity: "critical", message: "The observed dispersion is wider than the governed communication ceiling.", affectedProcedures: ["PR-01", "PR-02", "PR-07", "PR-09"]});
+    const band = shiftSpreadBand({minBps: baseMin, maxBps: baseMax, adjustmentsBps: validAdjustments.map((adjustment) => adjustment.bps)});
+    const width = band.width;
+    if (compareFigures(width, policy.minBandWidthBps) < 0) exceptions.push({id: "band-too-narrow", severity: "critical", message: "The observed band is narrower than the governed communication floor.", affectedProcedures: ["PR-01", "PR-07", "PR-09"]});
+    if (compareFigures(width, policy.maxBandWidthBps) > 0) exceptions.push({id: "band-too-wide", severity: "critical", message: "The observed dispersion is wider than the governed communication ceiling.", affectedProcedures: ["PR-01", "PR-02", "PR-07", "PR-09"]});
     if (!exceptions.some((exception) => exception.severity === "critical")) {
-      const bps = {min: baseMin + shift, max: baseMax + shift};
-      const cdi = new Decimal(target.cdi);
+      const bps = {min: presentationNumber(band.min).value, max: presentationNumber(band.max).value};
+      publishedWidthBps = presentationNumber(band.width).value;
       const base: SpreadBand = {instrument: target.instrument, rating: target.rating, bps: {min: baseMin, max: baseMax}};
       const latest = [...eligible].sort((a, b) => b.observedOn.localeCompare(a.observedOn))[0]!.observedOn;
       const oldest = [...eligible].sort((a, b) => a.observedOn.localeCompare(b.observedOn))[0]!.observedOn;
-      const allIn = {min: cdiPlus(cdi, bps.min).toFixed(6), max: cdiPlus(cdi, bps.max).toFixed(6), cdi: cdi.toFixed(6)};
+      const allIn = {min: cdiPlus(target.cdi, band.min), max: cdiPlus(target.cdi, band.max), cdi: presentationFigure({value: target.cdi, decimals: 6}).value};
       indicativePrice = {
         instrument: target.instrument,
         rating: target.rating,
@@ -382,22 +385,29 @@ export function buildPricingTruthSet(input: {
     }
   }
 
+  // A cost is annualized over the weighted average life and the ticket by a financial-core kernel;
+  // over a life or a ticket that is not positive it is not computable, never an infinite cost.
   const costComponents = (input.costs ?? []).map((component) => {
-    if (!target || !policy || component.validUntil < policy.asOf || !input.weightedAverageLifeYears || new Decimal(input.weightedAverageLifeYears).lte(0)) return {...component, annualizedBps: null};
-    const annual = new Decimal(component.annualAmount ?? 0).plus(new Decimal(component.oneTimeAmount ?? 0).div(input.weightedAverageLifeYears));
-    return {...component, annualizedBps: Number(annual.div(target.amount).times(10_000).toDecimalPlaces(2).toFixed())};
+    if (!target || !policy || component.validUntil < policy.asOf || !input.weightedAverageLifeYears || compareFigures(input.weightedAverageLifeYears, 0) <= 0 || compareFigures(target.amount, 0) <= 0) return {...component, annualizedBps: null};
+    const annualized = annualizeCostInBasisPoints({
+      ...(component.annualAmount === undefined ? {} : {annualAmount: component.annualAmount}),
+      ...(component.oneTimeAmount === undefined ? {} : {oneTimeAmount: component.oneTimeAmount}),
+      weightedAverageLifeYears: input.weightedAverageLifeYears,
+      ticket: target.amount,
+    });
+    return {...component, annualizedBps: presentationNumber(annualized.value).value};
   });
   const annualizedCostBps = costComponents.length && costComponents.every((component) => component.annualizedBps !== null)
-    ? Number(costComponents.reduce((sum, component) => sum.plus(component.annualizedBps!), new Decimal(0)).toFixed(2))
+    ? presentationNumber(presentationFigure({value: sumBasisPoints({values: costComponents.map((component) => component.annualizedBps!)}).value, decimals: 2}).value).value
     : null;
   if ((input.costs?.length ?? 0) > 0 && annualizedCostBps === null) missing.add("pricing.weighted_average_life_and_valid_cost_sources");
   // Annualized costs join the spread before the composition with the CDI, as the cost catalogue
   // states: all-in = (1 + CDI) × (1 + spread + annualized costs) - 1.
-  const totalRate = indicativePrice && annualizedCostBps !== null
-    ? {
-        min: cdiPlus(new Decimal(indicativePrice.allIn.cdi), new Decimal(indicativePrice.bps.min).plus(annualizedCostBps)).toFixed(6),
-        max: cdiPlus(new Decimal(indicativePrice.allIn.cdi), new Decimal(indicativePrice.bps.max).plus(annualizedCostBps)).toFixed(6),
-      }
+  const loaded = indicativePrice && annualizedCostBps !== null
+    ? shiftSpreadBand({minBps: indicativePrice.bps.min, maxBps: indicativePrice.bps.max, adjustmentsBps: [annualizedCostBps]})
+    : null;
+  const totalRate = indicativePrice && loaded
+    ? {min: cdiPlus(indicativePrice.allIn.cdi, loaded.min), max: cdiPlus(indicativePrice.allIn.cdi, loaded.max)}
     : null;
 
   const result = (procedureId: `PR-${string}`, status: Status, value: Record<string, unknown> | null, procedureMissing: string[] = [], procedureExceptions: string[] = [], evidenceCount = 0): PricingProcedureResult => ({
@@ -409,7 +419,11 @@ export function buildPricingTruthSet(input: {
     expectation: target.expectedSpreadBps,
     supportedMin: indicativePrice.bps.min,
     supportedMax: indicativePrice.bps.max,
-    gapToNearest: target.expectedSpreadBps < indicativePrice.bps.min ? indicativePrice.bps.min - target.expectedSpreadBps : target.expectedSpreadBps > indicativePrice.bps.max ? target.expectedSpreadBps - indicativePrice.bps.max : 0,
+    gapToNearest: compareFigures(target.expectedSpreadBps, indicativePrice.bps.min) < 0
+      ? presentationNumber(calculateSpreadDifference({spreadBps: indicativePrice.bps.min, referenceBps: target.expectedSpreadBps}).value).value
+      : compareFigures(target.expectedSpreadBps, indicativePrice.bps.max) > 0
+        ? presentationNumber(calculateSpreadDifference({spreadBps: target.expectedSpreadBps, referenceBps: indicativePrice.bps.max}).value).value
+        : 0,
   } : null;
   const currentComparison = target?.currentAllIn && indicativePrice ? {
     current: target.currentAllIn,
@@ -428,7 +442,7 @@ export function buildPricingTruthSet(input: {
     result("PR-06", target?.indexerRationale && target.targetBuyer ? "completed" : target ? "partial" : "not_computable", target ? {indexer: target.indexer, rationale: target.indexerRationale ?? null, targetBuyer: target.targetBuyer ?? null} : null, target ? [!target.indexerRationale ? "indexer rationale" : "", !target.targetBuyer ? "target buyer" : ""].filter(Boolean) : ["pricing target"], exceptionIds("PR-06"), 0),
     result("PR-07", indicativePrice ? "completed" : "blocked", policy ? {policyVersion: policy.version, regime: policy.regime, sample: eligible.length, sources: distinctSources, latestObservation} : null, policy ? indicativePrice ? [] : ["valid house-grid cell"] : ["pricing policy"], exceptionIds("PR-07"), eligible.length),
     result("PR-08", expectedGap ? expectedGap.gapToNearest === 0 ? "not_applicable" : "completed" : "not_computable", expectedGap, expectedGap ? [] : ["borrower cost expectation and supported band"], exceptionIds("PR-08"), 0),
-    result("PR-09", indicativePrice ? "completed" : "blocked", indicativePrice ? {sentence: indicativePrice.sentence, widthBps: indicativePrice.bps.max - indicativePrice.bps.min} : null, indicativePrice ? [] : ["supported pricing band"], exceptionIds("PR-09"), eligible.length),
+    result("PR-09", indicativePrice ? "completed" : "blocked", indicativePrice ? {sentence: indicativePrice.sentence, widthBps: publishedWidthBps} : null, indicativePrice ? [] : ["supported pricing band"], exceptionIds("PR-09"), eligible.length),
     result("PR-10", annualizedCostBps !== null && indicativePrice ? "completed" : input.costs?.length ? "partial" : "not_computable", input.costs?.length ? {components: costComponents, annualizedCostBps, spread: indicativePrice?.bps ?? null} : null, annualizedCostBps !== null ? [] : ["valid costs and weighted average life"], exceptionIds("PR-10"), input.costs?.length ?? 0),
     result("PR-11", currentComparison ? "completed" : "not_computable", currentComparison, currentComparison ? [] : ["current all-in cost and supported band"], exceptionIds("PR-11"), 0),
     result("PR-12", policy ? rejected.some((entry) => entry.reasons.includes("expired")) ? "completed" : observations.length ? "completed" : "not_computable" : "not_computable", policy ? {asOf: policy.asOf, active: eligible.length, expired: rejected.filter((entry) => entry.reasons.includes("expired")).map((entry) => entry.id)} : null, policy ? [] : ["pricing policy"], exceptionIds("PR-12"), observations.length),

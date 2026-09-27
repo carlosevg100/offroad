@@ -226,3 +226,85 @@ O perfil e o pacote não mudaram em português. Os 12 pinos do veredito mudaram 
 5. Em `market-reference`, a soma dos ajustes em pontos-base (inteiros em número binário), a conversão de pontos-base em taxa e as comparações com limites ainda são contas locais, e `pricing-truth.ts` converte o custo anualizado com `Number(...)`.
 6. Identificadores internos já visíveis antes desta PR: a coluna "Base" dos termos do pacote (`capacity`, `playbook`) e os rótulos dos ajustes de preço do memorando (`Ajuste: tenor`). Os textos de prazo do term sheet em `deal-structure` separam os limites da banda com traço meia-risca, também anterior a esta PR.
 7. O manifesto de métodos precisa ser regenerado de novo pela PR que for mesclada depois de outra que também o regenere.
+
+## Acabamento depois do fechamento
+
+Uma PR (`fix/19-polish-6c-open-questions`) sobre `main` `3bec98e3`, que já tem o incremento 6C (PR #825). Sem migração, sem banco, sem decisão de produto: resolve as perguntas abertas 3 a 6 do 6C pelas invariantes 4 e 9 e pelas regras de texto do produto, como a PR #802 fez depois do fechamento da etapa 18. Ficam de fora, como decisões do fundador, o texto em português citado nos documentos em inglês (pede um brief bilíngue) e uma regra LC-07 sensível à língua (pede `conductPolicyVersion` novo).
+
+### 1. Perguntas à companhia (invariante 9)
+
+**Antes.** `packages/credit-analysis/src/questions.ts` imprimia todo valor em milhões com vírgula decimal também no inglês (`brlM`), sem a regra de valores pequenos, juntava os dois valores divergentes com "e" no inglês, e nomeava a informação que falta pelo caminho do campo ("Falta historical_financials.{ano}.ebitda para completar a análise") nas duas línguas.
+
+**Agora.** Cada número da pergunta sai de `financial-core` na língua da pergunta: valores por `presentationAmount` (a regra única dos materiais, milhares abaixo de um milhão), múltiplos, meses e percentuais por `presentationFigure`, e a diferença entre o mapa de dívida e o balanço pelo núcleo da conciliação (`testScheduleTieOut`); o inglês junta os valores com "and". A informação que falta é nomeada em palavras nas duas línguas, por um rótulo para cada caminho que `buildDeskInputs` pode reportar ("Para completar a análise, falta este dado: EBITDA do último exercício."); o `findingId` continua `missing:<caminho>`, que não é texto visível.
+
+**O teste.** `credit-analysis/src/bilingual-identity.test.ts` passou a cobrir toda pergunta, sobre todos os casos que os pinos do desk usam (`desk-cases.test-support.ts`, que contém os seis desks das doze execuções dos pinos do veredito). Rodado sobre as perguntas de `main`, ele achou seis tipos de pergunta com valor em formato português no texto em inglês: principal a vencer em 12 meses contra o caixa (11 ocorrências nos casos), espaço de dívida nova sob o covenant (8), diferença entre mapa e balanço (9), recebíveis livres (7), os dois valores divergentes, também com "e" (6), e necessidade e pedido de capital de giro (7). Todas foram corrigidas pelos formatadores acima; nenhuma divergência resta. `questions.test.ts` prova a regra de valores ("O mapa de dívida soma R$ 450 mil a mais", antes "R$ 0,5M") e que nenhuma pergunta, em nenhum caso, imprime caminho de campo, identificador ou traço.
+
+### 2. Aritmética fora do núcleo (invariante 4)
+
+**Pinos antes da mudança.** O primeiro commit da PR, antes de qualquer mudança, fixou o sha256 da saída inteira de `analyzeCreditPosition` (18 casos), de `projectLeverageTrajectory` (17 casos, com as trajetórias que o veredito refaz para o tíquete maior) e de `questionsForCompany` (19 casos) em `credit-analysis/src/desk-parity.test.ts`, sobre os seis desks das execuções do veredito, os fixtures dos testes do pacote e variantes sintéticas que alcançam todo achado e todo ramo das frases (o teste exige esse alcance). Em `market-reference/src/price-output-parity.test.ts` fixou a saída inteira de `indicativePrice` sobre toda a grade (15.360 saídas) e sobre cada limite no valor exato e dos dois lados (42 saídas), e a de `buildPricingTruthSet` sobre 636 conjuntos, com custos anualizados, economia de observações e faixas abaixo do piso e acima do teto. Os pinos existentes só fixavam frases.
+
+**Núcleos novos.** `analyze.ts` e `trajectory.ts` não importam mais `decimal.js`. Os núcleos novos estão em `packages/financial-core/src/desk-arithmetic.ts` (`deskArithmeticVersion` `2026.09.27-v1`) e `price-arithmetic.ts` (`priceArithmeticVersion` `2026.09.27-v1`), com rastro, testes (`desk-arithmetic.test.ts` e `price-arithmetic.test.ts`, sobre números conferidos à mão) e entrada em `financialCalculationRegistry`:
+
+| Conta | Núcleo | Registro |
+|---|---|---|
+| mapa em centavos, soma, diferença para o balanço, custo médio ponderado, vencimentos em 12 e 24 meses (com o perfil de vencimentos quando linhas não têm data), cobertura de liquidez, parcela de 24 meses | `calculateDeskDebtStack` | `desk.debt_stack` |
+| dívida líquida, alavancagem antes e depois de cada valor pedido, covenant mais apertado, dívida nova admitida, rompimento | `calculateDeskLeverage` | `desk.leverage` |
+| cobertura de juros hoje e com o pedido | `calculateInterestCoverage` | `desk.interest_coverage` |
+| runway antes, com o tíquete e depois dos juros dele, dívida sobre ARR, distância do runway declarado | `calculateVentureRunway` | `desk.runway` |
+| prazos de recebimento, estoque e fornecedores, ciclo, capital de giro que o crescimento absorve, pedido acima do dobro | `calculateWorkingCapitalCycle` | `desk.working_capital_cycle` |
+| recebíveis comprometidos, livres e o pedido contra eles | `calculateReceivablesEncumbrance` | `desk.receivables_encumbrance` |
+| taxa pedida contra o custo do estoque mais a tolerância | `testRateAskAgainstStack` | `desk.rate_ask_vs_stack` |
+| refinanciamento resgatado do vencimento mais próximo | `allocateRefinancingNearestFirst` | `desk.refinancing_redemption` |
+| trajetória ano a ano, pico, anos de travessia e covenant proposto | `projectLeveragePath` | `desk.leverage_path` |
+| dinheiro novo e alavancagem depois da troca de passivo | `calculateLiabilityManagement` | `desk.liability_management` |
+| soma exata de pontos-base | `sumBasisPoints` | `price.basis_points_sum` |
+| faixa deslocada pelos ajustes e sua largura | `shiftSpreadBand` | `price.spread_band` |
+| CDI mais pontos-base como uma taxa anual composta | `composeCdiPlusBasisPoints` | `price.cdi_plus_basis_points` |
+| identidade entre a economia de uma observação e o spread normalizado | `testSpreadNormalization` | `price.normalization_identity` |
+| custo anualizado em pontos-base (antes convertido com `Number(...)`) | `annualizeCostInBasisPoints` | `price.annualized_cost` |
+
+O ano mais pesado do cronograma da trajetória passa pelo núcleo que o veredito já usava (`selectHeaviestScheduleYear`, limite 0,8). As comparações com limites (cobertura de liquidez, alavancagem, cobertura de garantias, tamanho do tíquete, largura da faixa, diferença para a expectativa) passam por `compareFigures`, e a distância entre a expectativa e a faixa por `calculateSpreadDifference`. A regra de leitura dos núcleos saiu para um módulo interno comum (`figure-input.ts`), e `presentationRatio` (conversão de apresentação, fora do registro como as demais) imprime uma razão como a mesa sempre publicou: igual a `presentationFigure` quando é número, e como a divisão por zero imprime (`Infinity`, `NaN`) quando não é. `materialArithmeticVersion` passa a `2026.09.27-v4` por ela; `financialCoreVersion` segue `2026.09.20-v24`, porque nenhum núcleo existente mudou de resultado.
+
+**Paridade.** O commit que moveu as contas manteve todos os pinos: os 54 do desk, da trajetória e das perguntas, os três de saída inteira de preço, os dois das frases de preço, os 12 do veredito e os 22 dos materiais.
+
+**Diferenças deliberadas, fora de toda fixture,** cada uma com teste que falha no código anterior (`credit-analysis/src/desk-kernels.test.ts` e `market-reference/src/price-kernels.test.ts`, conferidos contra as fontes do primeiro commit):
+
+- valor que não é número decimal finito é recusado com `RangeError` (o `decimal.js` lia "0x10" como 16 e "Infinity" como infinito, e a análise seguia);
+- um ano de EBITDA projetado zero fica fora da classificação do ano mais pesado, como no veredito, em vez de "Infinity% do EBITDA";
+- trajetória sem ano projetado é recusada pelo nome, em vez de falhar num pico indefinido;
+- pontos-base fracionários somam e subtraem como decimais: ajustes de 0,1 e 0,2 dão faixa a partir de 0,3 e, para uma expectativa de 0,1, distância de 0,2, e não 0,30000000000000004 e 0,20000000000000004;
+- a economia de uma observação exatamente na tolerância de 0,01 ponto-base mantém a observação (a soma binária dava 0,010000000000000064 e a recusava);
+- custo sobre um tíquete que não é positivo não é anualizado (antes, custo infinito);
+- limite do preço informado em notação hexadecimal é recusado.
+
+A soma da dívida depois da troca de passivo é feita numa ordem só para as duas formas da trajetória; como todo termo é valor em centavos, a soma é exata com 40 dígitos significativos em qualquer ordem, e os pinos confirmam.
+
+### 3. Identificadores internos e traços no texto visível
+
+Uma varredura de todo item de todo material (as três variantes do caso Aurora), do term sheet de `deal-structure` sobre todo arquétipo e todo ramo (prazo e carência não informados, dentro, abaixo e acima da banda, cada restrição limitante e banda observada) e de toda pergunta achou exatamente:
+
+| Onde | Antes | Agora |
+|---|---|---|
+| Coluna "Base" dos termos do pacote | `capacity`, `playbook`, `company_request`, `reconciled_fact` | "Capacidade de endividamento calculada" e "Computed debt capacity"; "Prática de mercado para esta estrutura" e "Market practice for this structure"; "Pedido da companhia" e "Company request"; "Dado conciliado da companhia" e "Reconciled company data" (`termBasisLabels` de `deal-structure`) |
+| Linhas de ajuste do preço no memorando | "Ajuste: security" e os demais ids | "Ajuste pelo prazo", "Ajuste pelas garantias", "Ajuste pela alavancagem pós-operação", "Ajuste pelo tamanho do tíquete" e "Ajuste pela cobertura de juros", com o inglês "Tenor adjustment", "Security adjustment", "Post-transaction leverage adjustment", "Ticket size adjustment" e "Interest coverage adjustment" (`priceAdjustmentLabels` de `market-reference`; nenhuma regra da grade produz o ajuste de cobertura, e ele leva o nome que a casa dá a esse fator) |
+| Base do preço no memorando | "Base: banda watch para ccb, 400 a 550 bps." | "Base: Cédula de Crédito Bancário (CCB); perfil analítico: atenção; faixa de 400 a 550 bps.", com o nome do instrumento no catálogo do playbook e a banda nos rótulos dos termos-chave |
+| Prazo e carência do term sheet | os limites da banda ligados por meia-risca, nas notas de prazo, em "Banda típica" e nas divergências de carência | "(entre 48 e 84 meses)" e "(between 48 and 84 months)", "A banda usual desta operação fica entre 12 e 24 meses", "Banda típica: entre 12 e 24 meses", "Mais longa que o usual (entre 12 e 24 meses)" |
+| Perguntas à companhia | caminhos de campo | rótulos em palavras (seção 1) |
+
+Nada mais apareceu: nenhum travessão ou meia-risca e nenhum outro identificador. Palavras inglesas que coincidem com valores internos ("watch" no perfil analítico em inglês, "leasing" no nome do arrendamento mercantil) são os rótulos em inglês e ficam. Os testes novos `case-materials/src/visible-text.test.ts` e `deal-structure/src/termsheet-text.test.ts` mantêm a regra.
+
+### 4. Versão, pinos e manifesto
+
+`caseMaterialsVersion` passa de `2026.09.26-v6` para `2026.09.27-v7`. Dos 22 pinos de `material-parity.test.ts`, mudaram 9: memorando, term sheet e pacote nas três variantes. A comparação item a item do JSON da v6 com o da v7 mostra, em cada variante, só estas mudanças: no memorando, a nota da base do preço e o rótulo do ajuste (nas duas línguas); no term sheet, as notas de prazo e de carência; no pacote, as cinco células da coluna "Base"; e, no memorando e no term sheet, o fingerprint da auditoria de conduta em sombra, com os mesmos achados. Os outros 13 (Q&A, teaser e perfil nas três variantes, a entrada do modelo e as três demonstrações) passam com os valores da v6, e o teste econômico de renderização da web continua verde em todos os formatos e nas duas línguas.
+
+Das 19 perguntas fixadas no primeiro commit, 15 mudaram de pino, pela seção 1: comparadas pergunta a pergunta, nenhuma entrou, saiu, mudou de ordem ou de severidade; o português mudou só nas perguntas de informação que falta, e o inglês nos seis tipos da seção 1 e nas mesmas perguntas de informação que falta. As quatro variantes da Nimbus não perguntam valor nem informação que falta e mantêm o pino. Os pinos do desk, da trajetória, do veredito, das frases de preço e da saída inteira de preço não mudaram.
+
+O manifesto de métodos foi regenerado por `pnpm --filter @offroad/credit-playbook manifest:generate` em cada commit que mudou fonte fixada; R01 publicado segue com `manifestHash` `17ee80ac7cd3ac22b8c0d5d90893cf89ad67eb129ad1fe1b6f26aa3b73d6d090`, e os 496 testes de `credit-playbook` passam. O instantâneo publicado do executor de capital (#723) guarda a própria cópia das fontes e não muda.
+
+### Limites e perguntas abertas do acabamento
+
+1. Decisões do fundador, fora desta PR: o texto em português citado nos documentos em inglês (a taxa que a companhia pediu no term sheet, as premissas das projeções no Q&A) e a regra LC-07 sensível à língua.
+2. Aritmética local que continua fora de `financial-core`, fora do escopo pedido: em `credit-analysis`, a leitura de taxas em `parse.ts` (conversões de texto e a capitalização mensal), `rating.ts`, `stress.ts` (cujos números chegam à tabela de choques do memorando) e `from-facts.ts`; em `market-reference`, a estatística da amostra governada (recência, comparabilidade, quantis ponderados, janela de prazo, razão de valores) e as diferenças contra o custo atual; em `deal-structure`, capacidade, garantias, estrutura, alternativas, operação e a comparação do montante no term sheet.
+3. Fora dos materiais, do term sheet e das perguntas, dois textos visíveis ainda mostram identificadores: a frase de preço da mesa de `indicativePrice` na tela de comitê da entrada do caso ("Base: banda adequate para ccb"), cujo pino muda se ela mudar, e a lista de informações que faltam na tela da mesa (`intake-desk.tsx`), que mostra o caminho do campo em código ao lado do rótulo.
+4. Uma razão sobre EBITDA zero continua publicada como a divisão imprime ("Infinity", "NaN") nos campos do desk e da trajetória, para não mudar bytes publicados; os materiais não compilam esse caso, como antes. Publicar a razão como ausente muda o contrato do desk.
+5. O manifesto de métodos precisa ser regenerado de novo pela PR que for mesclada depois de outra que também o regenere.

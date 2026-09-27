@@ -1,5 +1,7 @@
-import {presentationAmount, presentationFigure} from "@offroad/financial-core";
-import Decimal from "decimal.js";
+import {
+  allocateRefinancingNearestFirst, calculateLiabilityManagement, compareFigures, presentationAmount, presentationFigure,
+  presentationRatio, projectLeveragePath, selectHeaviestScheduleYear, type DecimalInput,
+} from "@offroad/financial-core";
 
 import type {Finding} from "./analyze";
 
@@ -130,50 +132,27 @@ export type Trajectory = {
   findings: Finding[];
 };
 
-const d = (value: string | number): Decimal => new Decimal(value);
-// Amounts and multiples print through financial-core, each language with its own separators.
+// Every figure comes from a financial-core kernel; amounts and multiples print through financial-core,
+// each language with its own separators.
 type Locale = "pt-BR" | "en-US";
-const brlM = (value: Decimal.Value, locale: Locale = "pt-BR"): string => presentationAmount({value, locale, style: "abbreviated"}).text;
-const turns = (value: Decimal.Value, locale: Locale = "pt-BR"): string => {
-  const figure = presentationFigure({value, decimals: 2}).value;
-  return `${locale === "pt-BR" ? figure.replace(".", ",") : figure}x`;
-};
+const local = (figure: string, locale: Locale) => (locale === "pt-BR" ? figure.replace(".", ",") : figure);
+const brlM = (value: DecimalInput, locale: Locale = "pt-BR"): string => presentationAmount({value, locale, style: "abbreviated"}).text;
+const turns = (value: DecimalInput, locale: Locale = "pt-BR"): string => `${local(presentationFigure({value, decimals: 2}).value, locale)}x`;
+/** A figure at the precision the trajectory publishes it; a ratio over a zero denominator as the division prints it. */
+const at = (value: DecimalInput, decimals: number): string => presentationFigure({value, decimals}).value;
+const ratioAt = (value: string, decimals: number): string => presentationRatio({value, decimals}).value;
+const percentAt = (value: DecimalInput, decimals: number): string => presentationFigure({value, scale: "percent", decimals}).value;
 
 const yearMonth = (iso: string): number => {
   const [year, month] = iso.split("-").map(Number);
   return year! * 12 + (month! - 1);
 };
 
-/** Outstanding balance of an existing line at a year-end, on its own schedule. */
-const existingAt = (line: TrajectoryDebtLine, referenceYm: number, atYm: number): Decimal => {
-  if (atYm <= referenceYm) return d(line.balance);
-  if (!line.maturity) return d(line.balance);
-  const maturityYm = yearMonth(line.maturity);
-  if (atYm >= maturityYm) return new Decimal(0);
-  const amortizes = /mensal|sac|price/i.test(line.amortization ?? "");
-  if (!amortizes) return d(line.balance);
-  const total = maturityYm - referenceYm;
-  const elapsed = atYm - referenceYm;
-  return d(line.balance).times(total - elapsed).div(total);
-};
-
-/** Outstanding of the new loan at a year-end: flat through grace, SAC afterwards. */
-const newDebtAt = (amount: Decimal, disbursementYm: number, graceMonths: number, termMonths: number, atYm: number): Decimal => {
-  if (atYm <= disbursementYm) return amount;
-  const amortMonths = termMonths - graceMonths;
-  const amortised = Math.min(Math.max(atYm - disbursementYm - graceMonths, 0), amortMonths);
-  return amount.times(amortMonths - amortised).div(amortMonths);
-};
-
 export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
   const findings: Finding[] = [];
-  const referenceYm = yearMonth(input.referenceDate);
-  const cash = d(input.cash);
-  const amount = d(input.newDebt.amount);
-  const haircut = d(input.growthHaircut ?? "0.25");
-  const cushion = d(input.covenantCushion ?? "0.5");
-  const floor = d(input.covenantFloor ?? "2.5");
-  const audited = d(input.auditedEbitda);
+  const haircut = input.growthHaircut ?? "0.25";
+  const cushion = input.covenantCushion ?? "0.5";
+  const floor = input.covenantFloor ?? "2.5";
 
   // Proceeds that repay existing debt leave the stack on day one, nearest maturity first.
   //
@@ -182,134 +161,113 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
   // 2030 by the same factor, so the schedule after the operation looked better everywhere and
   // the desk could not say what the money actually bought. Nobody redeems pro rata. A company
   // pays down what is about to fall due, which is why it is raising in the first place.
-  const existingTotalAtStart = input.existing.reduce((sum, line) => sum.plus(line.balance), new Decimal(0));
-  const refinancing = Decimal.min(d(input.newDebt.refinancing ?? "0"), existingTotalAtStart);
-  const byMaturity = [...input.existing].sort((a, b) => (a.maturity ?? "9999-12-31").localeCompare(b.maturity ?? "9999-12-31"));
-  let toRedeem = refinancing;
-  const redeemed = new Map<TrajectoryDebtLine, Decimal>();
-  for (const line of byMaturity) {
-    if (toRedeem.lte(0)) break;
-    const take = Decimal.min(toRedeem, d(line.balance));
-    redeemed.set(line, take);
-    toRedeem = toRedeem.minus(take);
-  }
-  const existing: TrajectoryDebtLine[] = input.existing.map((line) => ({
-    ...line,
-    balance: d(line.balance).minus(redeemed.get(line) ?? 0).toFixed(2),
-  }));
-
-  const years: TrajectoryYear[] = input.projectedEbitda.map(({year, ebitda}) => {
-    const atYm = year * 12 + 11; // December of the year.
-    const prevYm = (year - 1) * 12 + 11;
-
-    const existingNow = existing.reduce((sum, line) => sum.plus(existingAt(line, referenceYm, atYm)), new Decimal(0));
-    const existingPrev = existing.reduce((sum, line) => sum.plus(existingAt(line, referenceYm, Math.max(prevYm, referenceYm))), new Decimal(0));
-    const newNow = newDebtAt(amount, referenceYm, input.newDebt.graceMonths, input.newDebt.termMonths, atYm);
-    const newPrev = newDebtAt(amount, referenceYm, input.newDebt.graceMonths, input.newDebt.termMonths, Math.max(prevYm, referenceYm));
-
-    const netDebt = existingNow.plus(newNow).minus(cash);
-    const base = d(ebitda);
-    const stressed = audited.plus(Decimal.max(base.minus(audited), 0).times(new Decimal(1).minus(haircut)));
-    const principalDue = existingPrev.minus(existingNow).plus(newPrev.minus(newNow));
-
-    return {
-      year,
-      existingDebt: existingNow.toFixed(2),
-      newDebt: newNow.toFixed(2),
-      netDebt: netDebt.toFixed(2),
-      ebitdaBase: base.toFixed(2),
-      ebitdaStressed: stressed.toFixed(2),
-      leverageBase: netDebt.div(base).toFixed(4),
-      leverageStressed: netDebt.div(stressed).toFixed(4),
-      principalDue: principalDue.toFixed(2),
-      scheduleStrain: principalDue.div(base).toFixed(4),
-    };
+  const redemption = allocateRefinancingNearestFirst({
+    lines: input.existing.map((line) => ({balance: line.balance, maturity: line.maturity ?? null})),
+    refinancing: input.newDebt.refinancing ?? "0",
   });
+  const refinancing = redemption.refinancing;
+  const existing: TrajectoryDebtLine[] = input.existing.map((line, index) => ({...line, balance: redemption.remaining[index]!}));
 
-  const peakYear = years.reduce((max, row) => (d(row.leverageStressed).gt(max.leverageStressed) ? row : max), years[0]!);
-
-  const ceilings = [...new Set(input.existingCovenants.map((c) => d(c.maximum).toFixed(4)))].sort((a, b) => d(a).minus(b).toNumber());
-  const crossings = ceilings.map((maximum) => ({
-    maximum,
-    yearBase: years.find((row) => d(row.leverageBase).lte(maximum))?.year ?? null,
-    yearStressed: years.find((row) => d(row.leverageStressed).lte(maximum))?.year ?? null,
-  }));
+  const path = projectLeveragePath({
+    referenceMonth: yearMonth(input.referenceDate),
+    cash: input.cash,
+    newDebt: {amount: input.newDebt.amount, termMonths: input.newDebt.termMonths, graceMonths: input.newDebt.graceMonths},
+    // "mensal"/"sac"/"price" amortises linearly to maturity; otherwise bullet; no maturity, held flat.
+    lines: existing.map((line) => ({
+      balance: line.balance,
+      maturityMonth: line.maturity ? yearMonth(line.maturity) : null,
+      amortizes: /mensal|sac|price/i.test(line.amortization ?? ""),
+    })),
+    auditedEbitda: input.auditedEbitda,
+    growthHaircut: haircut,
+    covenantCushion: cushion,
+    covenantFloor: floor,
+    years: input.projectedEbitda,
+    ceilings: input.existingCovenants.map((covenant) => covenant.maximum),
+  });
+  const years: TrajectoryYear[] = path.years.map((row) => ({...row}));
+  const peakYear = years[path.peakIndex]!;
+  const ceilings = path.ceilings;
+  const crossings = path.crossings.map((crossing) => ({...crossing}));
 
   // ---- liability management: take out the covenanted lines inside the ticket ------------------
   const covenanted = input.existing.filter((line) => line.hasCovenant);
   let liabilityManagement: LiabilityManagement | null = null;
-  if (covenanted.length === 0 && refinancing.gt(0)) {
+  if (covenanted.length === 0 && compareFigures(refinancing, 0) > 0) {
     // No single contract to take out: the covenant binds the whole stack and the room states how
     // much of it the proceeds repay. The arithmetic is the same, the lenders are "the schedule".
-    const netNewMoney = amount.minus(refinancing);
-    const grossPre = input.balanceGrossDebt ? d(input.balanceGrossDebt) : existingTotalAtStart;
-    const postDebt = grossPre.plus(netNewMoney);
-    const postLeverage = postDebt.minus(cash).div(audited);
+    const swap = calculateLiabilityManagement({
+      ticket: input.newDebt.amount,
+      redeemed: [refinancing],
+      grossDebtBefore: input.balanceGrossDebt ? input.balanceGrossDebt : redemption.existingTotal,
+      cash: input.cash,
+      ebitda: input.auditedEbitda,
+    });
     liabilityManagement = {
-      covenantedBalance: refinancing.toFixed(2),
-      netNewMoney: netNewMoney.toFixed(2),
-      postLeverageAfterRefi: postLeverage.toFixed(4),
+      covenantedBalance: at(refinancing, 2),
+      netNewMoney: at(swap.netNewMoney, 2),
+      postLeverageAfterRefi: ratioAt(swap.leverageAfter, 4),
       lendersTakenOut: [],
     };
     findings.push({
       id: "refinancing-inside-ticket",
       severity: "high",
-      pt: `A captação é, em ${brlM(refinancing)}, troca de passivo: esse valor resgata dívida existente no desembolso e sobra ${brlM(netNewMoney)} de dinheiro efetivamente novo. A alavancagem pós-operação é ${turns(postLeverage)} sobre o EBITDA reportado, não a soma ingênua do tíquete ao estoque. O que a operação compra é prazo e carência, e é contra isso que o fundo precifica.`,
-      en: `${brlM(refinancing, "en-US")} of the raise is a liability swap: it repays existing debt at disbursement, leaving ${brlM(netNewMoney, "en-US")} of genuinely new money. Post-transaction leverage is ${turns(postLeverage, "en-US")} on reported EBITDA, not the naive sum of ticket and stock. What the deal buys is tenor and grace, and that is what the fund prices.`,
-      values: {refinancing: refinancing.toFixed(2), netNewMoney: netNewMoney.toFixed(2), postLeverage: postLeverage.toFixed(4)},
+      pt: `A captação é, em ${brlM(refinancing)}, troca de passivo: esse valor resgata dívida existente no desembolso e sobra ${brlM(swap.netNewMoney)} de dinheiro efetivamente novo. A alavancagem pós-operação é ${turns(swap.leverageAfter)} sobre o EBITDA reportado, não a soma ingênua do tíquete ao estoque. O que a operação compra é prazo e carência, e é contra isso que o fundo precifica.`,
+      en: `${brlM(refinancing, "en-US")} of the raise is a liability swap: it repays existing debt at disbursement, leaving ${brlM(swap.netNewMoney, "en-US")} of genuinely new money. Post-transaction leverage is ${turns(swap.leverageAfter, "en-US")} on reported EBITDA, not the naive sum of ticket and stock. What the deal buys is tenor and grace, and that is what the fund prices.`,
+      values: {refinancing: at(refinancing, 2), netNewMoney: at(swap.netNewMoney, 2), postLeverage: ratioAt(swap.leverageAfter, 4)},
       inputs: ["transaction.refinancing", "transaction.requested_amount", "debt.instruments"],
     });
   }
   if (covenanted.length > 0) {
-    const covenantedBalance = covenanted.reduce((sum, line) => sum.plus(line.balance), new Decimal(0));
-    const netNewMoney = amount.minus(covenantedBalance);
-    const existingTotal = input.existing.reduce((sum, line) => sum.plus(line.balance), new Decimal(0));
-    const postDebt = existingTotal.minus(covenantedBalance).plus(amount);
-    const postLeverage = postDebt.minus(cash).div(audited);
+    const takeout = calculateLiabilityManagement({
+      ticket: input.newDebt.amount,
+      redeemed: covenanted.map((line) => line.balance),
+      grossDebtBefore: redemption.existingTotal,
+      cash: input.cash,
+      ebitda: input.auditedEbitda,
+    });
     liabilityManagement = {
-      covenantedBalance: covenantedBalance.toFixed(2),
-      netNewMoney: netNewMoney.toFixed(2),
-      postLeverageAfterRefi: postLeverage.toFixed(4),
+      covenantedBalance: at(takeout.redeemed, 2),
+      netNewMoney: at(takeout.netNewMoney, 2),
+      postLeverageAfterRefi: ratioAt(takeout.leverageAfter, 4),
       lendersTakenOut: covenanted.map((line) => line.lender),
     };
 
     findings.push({
       id: "liability-management",
       severity: "high",
-      pt: `A estrutura que destrava a operação é quitar as linhas com covenant dentro do tíquete: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance)})`).join(" e ")}, ${brlM(covenantedBalance)} no total. O rompimento no dia um deixa de existir porque o contrato que testaria deixa de existir; sobra ${brlM(netNewMoney)} de dinheiro efetivamente novo, a alavancagem pós fica em ${turns(postLeverage)} sobre o EBITDA reportado, e quem passa a testar é o covenant do novo instrumento, desenhado sobre a trajetória abaixo. É assim que uma empresa nesta posição capta: reestruturação e dinheiro novo no mesmo instrumento, não dinheiro novo por cima do estoque.`,
-      en: `The structure that unlocks the deal is refinancing the covenanted lines inside the ticket: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance, "en-US")})`).join(" and ")}, ${brlM(covenantedBalance, "en-US")} in total. The day-one breach ceases to exist because the contract that would test it does; ${brlM(netNewMoney, "en-US")} of genuinely new money remains, post leverage stands at ${turns(postLeverage, "en-US")} on reported EBITDA, and what binds is the new instrument's covenant, written to the trajectory below. That is how a company in this position raises: restructuring and new money in one instrument, not new money on top of the stock.`,
-      values: {covenantedBalance: covenantedBalance.toFixed(2), netNewMoney: netNewMoney.toFixed(2), postLeverage: postLeverage.toFixed(4)},
+      pt: `A estrutura que destrava a operação é quitar as linhas com covenant dentro do tíquete: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance)})`).join(" e ")}, ${brlM(takeout.redeemed)} no total. O rompimento no dia um deixa de existir porque o contrato que testaria deixa de existir; sobra ${brlM(takeout.netNewMoney)} de dinheiro efetivamente novo, a alavancagem pós fica em ${turns(takeout.leverageAfter)} sobre o EBITDA reportado, e quem passa a testar é o covenant do novo instrumento, desenhado sobre a trajetória abaixo. É assim que uma empresa nesta posição capta: reestruturação e dinheiro novo no mesmo instrumento, não dinheiro novo por cima do estoque.`,
+      en: `The structure that unlocks the deal is refinancing the covenanted lines inside the ticket: ${covenanted.map((line) => `${line.lender} (${brlM(line.balance, "en-US")})`).join(" and ")}, ${brlM(takeout.redeemed, "en-US")} in total. The day-one breach ceases to exist because the contract that would test it does; ${brlM(takeout.netNewMoney, "en-US")} of genuinely new money remains, post leverage stands at ${turns(takeout.leverageAfter, "en-US")} on reported EBITDA, and what binds is the new instrument's covenant, written to the trajectory below. That is how a company in this position raises: restructuring and new money in one instrument, not new money on top of the stock.`,
+      values: {covenantedBalance: at(takeout.redeemed, 2), netNewMoney: at(takeout.netNewMoney, 2), postLeverage: ratioAt(takeout.leverageAfter, 4)},
       inputs: ["debt.instruments", "debt.covenants", "transaction.requested_amount"],
     });
   }
 
   // ---- the schedule the current stack already demands -----------------------------------------
-  const strained = years.filter((row) => d(row.scheduleStrain).gt("0.8"));
-  if (strained.length > 0) {
-    const worst = strained.reduce((max, row) => (d(row.scheduleStrain).gt(max.scheduleStrain) ? row : max));
+  // The heaviest year above 0,8x of its EBITDA, by the rule the verdict ranks years with: strains
+  // compare exactly, the first year among equals, and a year whose EBITDA is zero is not ranked.
+  const heaviest = selectHeaviestScheduleYear({years: years.map((row, index) => ({id: String(index), strain: row.scheduleStrain})), threshold: "0.8"});
+  const worst = heaviest.id !== null ? years[Number(heaviest.id)] : undefined;
+  if (worst) {
     findings.push({
       id: "amortization-outruns-cash",
       severity: "critical",
-      pt: `O cronograma contratado exige ${brlM(worst.principalDue)} de amortização em ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% do EBITDA projetado do ano, antes de juros e de qualquer investimento. Esse ano não se paga com o caixa da operação, então ele será rolado: a pergunta não é se rola, é a que preço e com que prazo. Alongar resolve e custa spread e garantia; dimensionar a captação para cobrir ${worst.year} agora custa tíquete maior e alavancagem de pico mais alta. As duas saídas são defensáveis, e a escolha entre elas é o que o material precisa mostrar ao investidor.`,
-      en: `The contracted schedule demands ${brlM(worst.principalDue, "en-US")} of amortisation in ${worst.year}, ${d(worst.scheduleStrain).times(100).toFixed(0)}% of that year's projected EBITDA, before interest and any investment. That year will not be paid out of operating cash, so it will be rolled: the question is not whether, but at what price and tenor. Terming it out works and costs spread and security; sizing the raise to cover ${worst.year} now costs a larger ticket and a higher peak leverage. Both are defensible, and choosing between them is what the material has to show the investor.`,
+      pt: `O cronograma contratado exige ${brlM(worst.principalDue)} de amortização em ${worst.year}, ${percentAt(worst.scheduleStrain, 0)}% do EBITDA projetado do ano, antes de juros e de qualquer investimento. Esse ano não se paga com o caixa da operação, então ele será rolado: a pergunta não é se rola, é a que preço e com que prazo. Alongar resolve e custa spread e garantia; dimensionar a captação para cobrir ${worst.year} agora custa tíquete maior e alavancagem de pico mais alta. As duas saídas são defensáveis, e a escolha entre elas é o que o material precisa mostrar ao investidor.`,
+      en: `The contracted schedule demands ${brlM(worst.principalDue, "en-US")} of amortisation in ${worst.year}, ${percentAt(worst.scheduleStrain, 0)}% of that year's projected EBITDA, before interest and any investment. That year will not be paid out of operating cash, so it will be rolled: the question is not whether, but at what price and tenor. Terming it out works and costs spread and security; sizing the raise to cover ${worst.year} now costs a larger ticket and a higher peak leverage. Both are defensible, and choosing between them is what the material has to show the investor.`,
       values: {year: String(worst.year), principalDue: worst.principalDue, strain: worst.scheduleStrain},
       inputs: ["debt.instruments", "projections.ebitda"],
     });
   }
 
   // ---- trajectory and the covenant that follows it --------------------------------------------
-  const covenantProposal: CovenantStep[] = years.map((row) => {
-    const stepped = d(row.leverageStressed).plus(cushion);
-    const rounded = stepped.times(4).ceil().div(4); // to the nearest upper quarter turn
-    return {year: row.year, maximum: Decimal.max(rounded, floor).toFixed(2)};
-  });
+  const covenantProposal: CovenantStep[] = path.covenantProposal.map((step) => ({...step}));
 
-  const back = crossings.find((crossing) => d(crossing.maximum).eq(ceilings[0] ?? "3"));
+  const back = crossings.find((crossing) => compareFigures(crossing.maximum, ceilings[0]!) === 0);
   findings.push({
     id: "leverage-trajectory",
     severity: "info",
-    pt: `Trajetória${input.ebitdaHeldFlat ? " (sem projeção da companhia: EBITDA mantido no nível do último exercício, premissa da mesa)" : ""}: pico de ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} no cenário com corte de ${haircut.times(100).toFixed(0)}% do crescimento) em ${peakYear.year}, desalavancando pela amortização SAC${input.ebitdaHeldFlat ? "" : " e pela rampa do projeto"}${back && back.yearStressed ? `, e voltando abaixo de ${turns(back.maximum)} em ${back.yearStressed} mesmo no cenário cortado` : ""}. Covenant proposto para o novo instrumento, com folga de ${cushion.toFixed(2).replace(".", ",")}x sobre o cenário cortado e teste anual: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum.replace(".", ",")}x`).join("; ")}. Primeira aferição no primeiro exercício completo após o desembolso.`,
-    en: `Trajectory${input.ebitdaHeldFlat ? " (no company projection: EBITDA held at the latest audited level, a desk assumption)" : ""}: peak of ${turns(peakYear.leverageBase, "en-US")} (${turns(peakYear.leverageStressed, "en-US")} with ${haircut.times(100).toFixed(0)}% of the growth cut) in ${peakYear.year}, deleveraging through SAC amortisation${input.ebitdaHeldFlat ? "" : " and the project ramp"}${back && back.yearStressed ? `, and back under ${turns(back.maximum, "en-US")} by ${back.yearStressed} even in the cut scenario` : ""}. Proposed covenant for the new instrument, ${cushion.toFixed(2)}x of cushion over the cut scenario, tested annually: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum}x`).join("; ")}. First test at the first full year after disbursement.`,
+    pt: `Trajetória${input.ebitdaHeldFlat ? " (sem projeção da companhia: EBITDA mantido no nível do último exercício, premissa da mesa)" : ""}: pico de ${turns(peakYear.leverageBase)} (${turns(peakYear.leverageStressed)} no cenário com corte de ${percentAt(haircut, 0)}% do crescimento) em ${peakYear.year}, desalavancando pela amortização SAC${input.ebitdaHeldFlat ? "" : " e pela rampa do projeto"}${back && back.yearStressed ? `, e voltando abaixo de ${turns(back.maximum)} em ${back.yearStressed} mesmo no cenário cortado` : ""}. Covenant proposto para o novo instrumento, com folga de ${local(at(cushion, 2), "pt-BR")}x sobre o cenário cortado e teste anual: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum.replace(".", ",")}x`).join("; ")}. Primeira aferição no primeiro exercício completo após o desembolso.`,
+    en: `Trajectory${input.ebitdaHeldFlat ? " (no company projection: EBITDA held at the latest audited level, a desk assumption)" : ""}: peak of ${turns(peakYear.leverageBase, "en-US")} (${turns(peakYear.leverageStressed, "en-US")} with ${percentAt(haircut, 0)}% of the growth cut) in ${peakYear.year}, deleveraging through SAC amortisation${input.ebitdaHeldFlat ? "" : " and the project ramp"}${back && back.yearStressed ? `, and back under ${turns(back.maximum, "en-US")} by ${back.yearStressed} even in the cut scenario` : ""}. Proposed covenant for the new instrument, ${at(cushion, 2)}x of cushion over the cut scenario, tested annually: ${covenantProposal.map((step) => `${step.year} ≤ ${step.maximum}x`).join("; ")}. First test at the first full year after disbursement.`,
     values: {peakBase: peakYear.leverageBase, peakStressed: peakYear.leverageStressed, peakYear: String(peakYear.year)},
     inputs: ["projections.ebitda", "debt.instruments", "transaction.requested_amount"],
   });
@@ -319,12 +277,12 @@ export function projectLeverageTrajectory(input: TrajectoryInput): Trajectory {
 
   return {
     assumptions: {
-      cashHeldFlat: cash.toFixed(2),
-      growthHaircut: haircut.toFixed(4),
-      covenantCushion: cushion.toFixed(4),
+      cashHeldFlat: at(input.cash, 2),
+      growthHaircut: at(haircut, 4),
+      covenantCushion: at(cushion, 4),
       disbursement: input.referenceDate,
       ebitdaHeldFlat: input.ebitdaHeldFlat ?? false,
-      refinancing: refinancing.toFixed(2),
+      refinancing: at(refinancing, 2),
     },
     years,
     peak: {year: peakYear.year, leverageBase: peakYear.leverageBase, leverageStressed: peakYear.leverageStressed},

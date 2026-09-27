@@ -11,7 +11,7 @@ import type {IndicativePrice} from "@offroad/market-reference";
 
 import {diligenceQa} from "./diligence";
 import {creditMemo, termSheetDocument} from "./institutional";
-import type {IndicativeTermSheet} from "@offroad/deal-structure";
+import {termBasisLabels, type IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 import type {ConductAudit, ConductClaimKind} from "@offroad/credit-playbook";
 
@@ -322,7 +322,8 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
         {pt: "Indicativo", en: "Indicative"},
         {pt: "Base", en: "Basis"},
       ],
-      rows: input.termSheet.terms.map((term) => [term.labels, term.value, term.basis]),
+      // Where each term came from, in words: never the internal value of the basis.
+      rows: input.termSheet.terms.map((term) => [term.labels, term.value, termBasisLabels[term.basis]]),
     });
     packageBlocks.splice(packageBlocks.length - 1, 0, {
       type: "list",
