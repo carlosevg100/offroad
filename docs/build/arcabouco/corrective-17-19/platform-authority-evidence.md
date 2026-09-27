@@ -13,3 +13,8 @@ Staging migration `20260927133313`; production `20260927133737`. The first stagi
 The CI concurrency harness retains simultaneous-publication proof and adds both orders of founder revocation/suspension versus publication, with observed lock waits and exact publication counts. The independent review approved the implementation and requested these additional concurrency cases.
 
 Local `pnpm check`: 44 tasks passed on Node 24.19.0. CI results will be recorded after the remote run.
+
+
+Full database job 108630943027 in run 36323218921 passed. At 13:45:50 UTC, `platform_founder_revoke_revocation_first`, `platform_founder_revoke_publication_first`, `platform_founder_ban_revocation_first` and `platform_founder_ban_publication_first` all passed with observed lock waits and verified publication counts. Final independent static review found no blocker in this harness.
+
+Live journal verification at 13:53 UTC confirmed exact file SQL in both environments for all three corrective migrations. Final catalogues retained 2,640 production and 2,701 staging objects with no unexpected contract change; security advisors remained empty in both environments.
