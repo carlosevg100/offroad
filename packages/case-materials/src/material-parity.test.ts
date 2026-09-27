@@ -37,6 +37,12 @@ import {syntheticMaterials, type SyntheticMaterialsVariant} from "./synthetic-ma
  * words ("Pedido da companhia", not "company_request"). Compared item by item, nothing else changed
  * but the fingerprint of the shadow conduct audit of the memo and the term sheet, whose findings are
  * the same. The move of the desk, trajectory and price arithmetic into financial-core kept every pin.
+ *
+ * `case-materials` 2026.09.27-v8 (stage 19, second polish) moved no pin. A ratio of the desk or of the
+ * trajectory over a zero denominator is now absent, and every material names its gap in words where
+ * it printed the ratio (`absent-ratios.test.ts`); before, such a case compiled no material. No pinned
+ * case has a zero denominator. The memorandum names the price basis through the labels the price
+ * reference now exports, with the same bytes.
  */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 

@@ -159,6 +159,10 @@ describe("the operation verdict's computations", () => {
       expect(test, leverage).toMatchObject({outcome: "not_computable", excess: null});
       expect(test.trace.operands.leverage).toBe(leverage);
     }
+    // The desk now publishes that ratio as absent (null): not computable, never compared.
+    const absent = testCovenantCeiling({leverage: null, ceiling: "3.0"});
+    expect(absent).toMatchObject({outcome: "not_computable", excess: null});
+    expect(absent.trace.operands.leverage).toBe("absent");
     expect(() => testCovenantCeiling({leverage: "2", ceiling: "n/d"})).toThrow(RangeError);
   });
 
@@ -180,6 +184,11 @@ describe("the operation verdict's computations", () => {
     const unranked = selectHeaviestScheduleYear({years: [{id: "2027", strain: "Infinity"}, {id: "2028", strain: "NaN"}, {id: "2029", strain: "1.2"}], threshold: 1});
     expect(unranked).toMatchObject({id: "2029", strain: "1.2"});
     expect(unranked.trace.result).toBe("2029:1.2; not ranked: 2027, 2028");
+    // The trajectory now publishes that strain as absent (null): left out the same way.
+    const absent = selectHeaviestScheduleYear({years: [{id: "2027", strain: null}, {id: "2029", strain: "1.2"}], threshold: 1});
+    expect(absent).toMatchObject({id: "2029", strain: "1.2"});
+    expect(absent.trace.operands["2027"]).toBe("absent");
+    expect(absent.trace.result).toBe("2029:1.2; not ranked: 2027");
     expect(() => selectHeaviestScheduleYear({years, threshold: "n/d"})).toThrow(RangeError);
   });
 

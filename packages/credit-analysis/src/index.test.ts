@@ -82,9 +82,9 @@ describe("what a desk head sees in Aurora in five minutes", () => {
   });
 
   it("takes leverage from ~2,19x to past 4,5x under either stated amount", () => {
-    expect(new Decimal(analysis.leverage.preTurns).toNumber()).toBeCloseTo(2.19, 2);
+    expect(new Decimal(analysis.leverage.preTurns!).toNumber()).toBeCloseTo(2.19, 2);
     for (const scenario of analysis.leverage.scenarios) {
-      expect(new Decimal(scenario.postTurns).toNumber()).toBeGreaterThan(4.5);
+      expect(new Decimal(scenario.postTurns!).toNumber()).toBeGreaterThan(4.5);
     }
   });
 

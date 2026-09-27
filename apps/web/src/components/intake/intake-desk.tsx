@@ -1,7 +1,7 @@
 import {AlertTriangle, CircleHelp, MessageSquareText} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
-import {deskInputLabel, type ClientQuestion, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
+import {absentRatioGap, deskInputLabel, publishedRatio, type AbsentRatio, type ClientQuestion, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
 
 type Props = {
   locale: string;
@@ -23,9 +23,29 @@ const millions = (value: string | null, locale: string) => {
 };
 const turns = (value: string | null, locale: string) =>
   value === null ? null : `${Number(value).toLocaleString(intl(locale), {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
-const ratePct = (value: string | null, locale: string) =>
-  value === null ? null : `${(Number(value) * 100).toLocaleString(intl(locale), {minimumFractionDigits: 1, maximumFractionDigits: 1})}% a.a.`;
+/** A rate in percent, without the period: the catalog states "a.a." or "p.a." in the language of the screen. */
+const percent = (value: string | null, locale: string) =>
+  value === null ? null : `${(Number(value) * 100).toLocaleString(intl(locale), {minimumFractionDigits: 1, maximumFractionDigits: 1})}%`;
 const days = (value: string | null) => (value === null ? null : `${Math.round(Number(value))}`);
+
+/**
+ * A ratio of the desk or of the trajectory as the screen prints it: the figure when it is a number,
+ * the gap in words when it is absent (a ratio over a zero denominator), null when it was not computed
+ * for another reason. A division by zero is never printed as a number, even from a desk stored
+ * before absent ratios were published.
+ */
+const ratioOrGap = (
+  output: {readonly absentRatios?: readonly AbsentRatio[]} | null,
+  field: string,
+  value: string | null,
+  lang: "pt" | "en",
+  print: (value: string) => string | null,
+): {text: string | null; absent: boolean} => {
+  const stated = publishedRatio(value);
+  if (stated !== null) return {text: print(stated), absent: false};
+  const gap = absentRatioGap(output, field, value);
+  return gap ? {text: gap[lang], absent: true} : {text: null, absent: false};
+};
 
 /**
  * An input the desk lacks, in the words the questions to the company use for it, never its field
@@ -57,27 +77,37 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
   if (!desk && deskMissing.length === 0 && clientQuestions.length === 0) return null;
 
   const requestedScenario = desk?.leverage.scenarios[0] ?? null;
+  const ratePct = (value: string | null) => (value === null ? null : t("perYear", {rate: percent(value, locale) ?? ""}));
   const monthsLabel = (value: string) => t("months", {count: Number(value).toLocaleString(intl(locale), {minimumFractionDigits: 1, maximumFractionDigits: 1})});
-  const runwayMetrics: Array<{id: string; label: string; value: string | null; hint?: string}> = desk?.runway
+  const ratio = (output: {readonly absentRatios?: readonly AbsentRatio[]} | null, field: string, value: string | null, print: (value: string) => string | null) =>
+    ratioOrGap(output, field, value, lang, print);
+  const runwayAfterService = desk?.runway ? ratio(desk, "runway.monthsPostAfterService", desk.runway.monthsPostAfterService, monthsLabel) : null;
+  const runwayMetrics: Array<{id: string; label: string; value: string | null; hint?: string; absent?: boolean}> = desk?.runway
     ? [
         {id: "burn", label: t("monthlyBurn"), value: millions(desk.runway.monthlyBurn, locale)},
         {id: "runwayPre", label: t("runwayPre"), value: monthsLabel(desk.runway.monthsPre)},
-        {id: "runwayPost", label: t("runwayPost"), value: monthsLabel(desk.runway.monthsPostAfterService), hint: t("runwayPostHint", {rate: ratePct(desk.runway.assumedRate, locale) ?? ""})},
+        {id: "runwayPost", label: t("runwayPost"), value: runwayAfterService!.text, absent: runwayAfterService!.absent, hint: t("runwayPostHint", {rate: ratePct(desk.runway.assumedRate) ?? ""})},
         {id: "arr", label: t("arr"), value: millions(desk.runway.arr, locale)},
         {id: "debtToArr", label: t("debtToArr"), value: desk.runway.debtToArr ? `${(Number(desk.runway.debtToArr) * 100).toFixed(0)}%` : null},
         {id: "nrr", label: t("nrr"), value: desk.runway.nrr ? `${(Number(desk.runway.nrr) * 100).toFixed(0)}%` : null},
       ]
     : [];
-  const metrics: Array<{id: string; label: string; value: string | null; hint?: string}> = desk
+  // Over a zero EBITDA leverage is absent and the gap is named; over a negative one it is a number without meaning.
+  const leveragePre = desk ? ratio(desk, "leverage.preTurns", desk.leverage.preTurns, (value) => turns(value, locale)) : null;
+  const leveragePost = desk && requestedScenario ? ratio(desk, "leverage.scenarios.0.postTurns", requestedScenario.postTurns, (value) => turns(value, locale)) : null;
+  const coveragePost = desk ? ratio(desk, "leverage.interestCoveragePost", desk.leverage.interestCoveragePost, (value) => turns(value, locale)) : null;
+  const cycle = desk ? ratio(desk, "workingCapital.cycleDays", desk.workingCapital.cycleDays, (value) => t("days", {count: days(value) ?? ""})) : null;
+  const metrics: Array<{id: string; label: string; value: string | null; hint?: string; absent?: boolean}> = desk
     ? [
         ...runwayMetrics,
         {id: "netDebt", label: t("netDebt"), value: millions(desk.leverage.netDebtPre, locale)},
         {id: "ebitda", label: t("ebitda"), value: millions(desk.leverage.ebitda, locale)},
-        {id: "leveragePre", label: t("leveragePre"), value: desk.profile === "cash_burning" ? t("notMeaningful") : turns(desk.leverage.preTurns, locale)},
+        {id: "leveragePre", label: t("leveragePre"), value: leveragePre!.absent ? leveragePre!.text : desk.profile === "cash_burning" ? t("notMeaningful") : leveragePre!.text, absent: leveragePre!.absent},
         {
           id: "leveragePost",
           label: t("leveragePost"),
-          value: desk.profile === "cash_burning" ? t("notMeaningful") : requestedScenario ? turns(requestedScenario.postTurns, locale) : null,
+          value: leveragePost?.absent ? leveragePost.text : desk.profile === "cash_burning" ? t("notMeaningful") : leveragePost ? leveragePost.text : null,
+          absent: leveragePost?.absent ?? false,
           ...(requestedScenario ? {hint: t("leveragePostHint", {amount: millions(requestedScenario.amount, locale) ?? ""})} : {}),
         },
         {
@@ -92,14 +122,14 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
           id: "coverage",
           label: t("interestCoverage"),
           value: desk.profile === "cash_burning" ? t("notMeaningful") : turns(desk.leverage.interestCoverage, locale),
-          ...(desk.leverage.interestCoveragePost ? {hint: t("interestCoveragePostHint", {coverage: turns(desk.leverage.interestCoveragePost, locale) ?? ""})} : {}),
+          ...(coveragePost!.text ? {hint: t("interestCoveragePostHint", {coverage: coveragePost!.text})} : {}),
         },
-        {id: "weightedCost", label: t("weightedCost"), value: ratePct(desk.stack.weightedCost, locale)},
+        {id: "weightedCost", label: t("weightedCost"), value: ratePct(desk.stack.weightedCost)},
         {
           id: "spread",
           label: t("spreadOverCdi"),
           value: desk.stack.weightedSpreadOverCdi
-            ? `CDI ${Number(desk.stack.weightedSpreadOverCdi) < 0 ? "-" : "+"} ${ratePct(String(Math.abs(Number(desk.stack.weightedSpreadOverCdi))), locale)}`
+            ? `CDI ${Number(desk.stack.weightedSpreadOverCdi) < 0 ? "-" : "+"} ${ratePct(String(Math.abs(Number(desk.stack.weightedSpreadOverCdi))))}`
             : null,
         },
         {
@@ -109,7 +139,7 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
           ...(desk.stack.liquidityCoverage12 ? {hint: t("coverage12Hint", {coverage: turns(desk.stack.liquidityCoverage12, locale) ?? ""})} : {}),
         },
         {id: "maturing", label: t("maturing24"), value: millions(desk.stack.maturingWithin24Months, locale)},
-        {id: "cycle", label: t("cashCycle"), value: desk.workingCapital.cycleDays ? t("days", {count: days(desk.workingCapital.cycleDays) ?? ""}) : null},
+        {id: "cycle", label: t("cashCycle"), value: cycle!.text, absent: cycle!.absent},
         {id: "freeReceivables", label: t("freeReceivables"), value: millions(desk.encumbrance.free, locale)},
       ]
     : [];
@@ -120,14 +150,14 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
     <div className="case-desk">
       <header className="case-desk__head">
         <h3>{t("title")}</h3>
-        {desk ? <span className="case-desk__assumptions">{t("assumptions", {cdi: ratePct(desk.assumptions.cdi, locale) ?? "", date: desk.assumptions.referenceDate})}</span> : null}
+        {desk ? <span className="case-desk__assumptions">{t("assumptions", {cdi: ratePct(desk.assumptions.cdi) ?? "", date: desk.assumptions.referenceDate})}</span> : null}
       </header>
 
       {desk ? (
         <>
           <dl className="case-desk__metrics">
             {metrics.map((metric) => (
-              <div key={metric.id} className={metric.value === null ? "is-unavailable" : ""}>
+              <div key={metric.id} className={metric.value === null || metric.absent ? "is-unavailable" : ""}>
                 <dt>{metric.label}</dt>
                 <dd>{metric.value ?? t("notComputed")}</dd>
                 {metric.hint ? <span>{metric.hint}</span> : null}
@@ -176,16 +206,18 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
               <tbody>
                 {trajectory.years.map((year) => {
                   const step = trajectory.covenantProposal.find((entry) => entry.year === year.year);
-                  const isPeak = year.year === trajectory.peak.year;
+                  // No peak is marked when the trajectory cannot state one (a year's leverage in the cut case is absent).
+                  const isPeak = trajectory.peak !== null && year.year === trajectory.peak.year;
+                  const print = (value: string) => turns(value, locale);
                   return (
                     <tr key={year.year} className={isPeak ? "is-peak" : ""}>
                       <th scope="row">{year.year}{isPeak ? <span className="case-desk__peak">{t("peak")}</span> : null}</th>
                       <td>{millions(year.netDebt, locale)}</td>
                       <td>{millions(year.ebitdaBase, locale)}</td>
-                      <td>{turns(year.leverageBase, locale)}</td>
-                      <td>{turns(year.leverageStressed, locale)}</td>
+                      <td>{ratio(trajectory, `years.${year.year}.leverageBase`, year.leverageBase, print).text}</td>
+                      <td>{ratio(trajectory, `years.${year.year}.leverageStressed`, year.leverageStressed, print).text}</td>
                       <td>{millions(year.principalDue, locale)}</td>
-                      <td>{step ? turns(step.maximum, locale) : ""}</td>
+                      <td>{step ? ratio(trajectory, `covenantProposal.${step.year}.maximum`, step.maximum, print).text : ""}</td>
                     </tr>
                   );
                 })}
@@ -201,7 +233,7 @@ export async function IntakeDesk({locale, desk, trajectory, deskMissing, clientQ
                   lenders: trajectory.liabilityManagement.lendersTakenOut.join(", "),
                   balance: millions(trajectory.liabilityManagement.covenantedBalance, locale) ?? "",
                   newMoney: millions(trajectory.liabilityManagement.netNewMoney, locale) ?? "",
-                  leverage: turns(trajectory.liabilityManagement.postLeverageAfterRefi, locale) ?? "",
+                  leverage: ratio(trajectory, "liabilityManagement.postLeverageAfterRefi", trajectory.liabilityManagement.postLeverageAfterRefi, (value) => turns(value, locale)).text ?? "",
                 })}
               </span>
             </div>

@@ -27,7 +27,7 @@ import {finiteFigure, fullFigure, parseFigure} from "./figure-input";
  * kernel is a rounding one. A value that is not a finite decimal number is refused, never read as
  * zero.
  */
-export const materialArithmeticVersion = "2026.09.27-v4";
+export const materialArithmeticVersion = "2026.09.27-v5";
 
 // The same arithmetic contract the package root declares, so a kernel imported on its own computes
 // exactly what it computes inside a published material.
@@ -223,21 +223,21 @@ export function calculateLeverageAfterStructure(input: {netDebt: Decimal.Value; 
 
 /**
  * The first test of the verdict: whether leverage today sits above the tightest covenant's ceiling,
- * and by how much. A leverage that is not a finite number (the ratio over a zero EBITDA) is not
- * computable and is never compared with a ceiling.
+ * and by how much. A leverage that is absent or not a finite number (the ratio over a zero EBITDA)
+ * is not computable and is never compared with a ceiling.
  */
-export function testCovenantCeiling(input: {leverage: Decimal.Value; ceiling: Decimal.Value}): {
+export function testCovenantCeiling(input: {leverage: Decimal.Value | null; ceiling: Decimal.Value}): {
   readonly outcome: "above_ceiling" | "within_ceiling" | "not_computable";
   /** Leverage minus the ceiling, when above it. */
   readonly excess: string | null;
   readonly trace: CalculationTrace;
 } {
   const ceiling = finite("covenant ceiling", input.ceiling);
-  const leverage = parse(input.leverage);
+  const leverage = input.leverage === null ? null : parse(input.leverage);
   const trace = (result: string) => ({
     id: "material.covenant_ceiling",
     formula: "above when leverage > ceiling; excess = leverage - ceiling",
-    operands: {leverage: leverage ? full(leverage) : String(input.leverage), ceiling: full(ceiling)},
+    operands: {leverage: leverage ? full(leverage) : input.leverage === null ? "absent" : String(input.leverage), ceiling: full(ceiling)},
     result,
   });
   if (!leverage) return {outcome: "not_computable", excess: null, trace: trace("not computable: leverage is not a finite number")};
@@ -249,15 +249,16 @@ export function testCovenantCeiling(input: {leverage: Decimal.Value; ceiling: De
 /**
  * The heaviest year of an amortisation schedule: the largest strain (principal due over the year's
  * EBITDA) above the threshold, the first listed among equals. Strains compare exactly, never as
- * binary numbers. A strain that is not a finite number (the principal over a zero projected EBITDA)
- * cannot be ranked and is left out, named in the trace.
+ * binary numbers. A strain that is absent or not a finite number (the principal over a zero projected
+ * EBITDA) cannot be ranked and is left out, named in the trace.
  */
-export function selectHeaviestScheduleYear(input: {years: ReadonlyArray<{id: string; strain: Decimal.Value}>; threshold: Decimal.Value}): {
+export function selectHeaviestScheduleYear(input: {years: ReadonlyArray<{id: string; strain: Decimal.Value | null}>; threshold: Decimal.Value}): {
   readonly id: string | null;
   readonly strain: string | null;
   readonly trace: CalculationTrace;
 } {
   const threshold = finite("strain threshold", input.threshold);
+  const parse = (value: Decimal.Value | null) => (value === null ? null : parseFigure(value));
   const unranked = input.years.filter((year) => !parse(year.strain)).map((year) => year.id);
   let heaviest: {id: string; strain: Decimal} | null = null;
   for (const year of input.years) {
@@ -271,7 +272,7 @@ export function selectHeaviestScheduleYear(input: {years: ReadonlyArray<{id: str
     trace: {
       id: "material.heaviest_schedule_year",
       formula: "heaviest = largest strain above the threshold, the first listed among equals; a strain that is not a finite number is not ranked",
-      operands: {threshold: full(threshold), ...Object.fromEntries(input.years.map((year) => [year.id, parse(year.strain) ? full(parse(year.strain)!) : String(year.strain)]))},
+      operands: {threshold: full(threshold), ...Object.fromEntries(input.years.map((year) => [year.id, parse(year.strain) ? full(parse(year.strain)!) : year.strain === null ? "absent" : String(year.strain)]))},
       result: `${heaviest ? `${heaviest.id}:${full(heaviest.strain)}` : "none"}${unranked.length ? `; not ranked: ${unranked.join(", ")}` : ""}`,
     },
   };
@@ -344,14 +345,15 @@ export function presentationFigure(input: {value: Decimal.Value; scale?: Present
 
 /**
  * A ratio at the precision the desk publishes it. A finite ratio prints exactly as
- * `presentationFigure` prints it. A ratio over a zero denominator is not a number: the desk has
- * always published it as a division by zero prints (`Infinity`, `-Infinity`, `NaN`) and never
- * compares it or states it in a sentence, so that text is handed on as it is, neither refused nor
- * read as zero.
+ * `presentationFigure` prints it. A ratio over a zero denominator is absent (stage 19, second
+ * polish): null stays null, and the text a division by zero printed before (`Infinity`,
+ * `-Infinity`, `NaN`, as a desk stored until then publishes it) is read as absent too, so it is
+ * never printed, compared or read as zero. Any other text that is not a decimal number is refused.
  */
-export function presentationRatio(input: {value: string; decimals: number}): MaterialFigure {
-  if (/^(?:-?Infinity|NaN)$/.test(input.value)) {
-    return {value: input.value, trace: {id: "material.presentation_ratio", formula: "a ratio over a zero denominator is not a number and prints as the division gives it", operands: {value: input.value}, result: input.value}};
+export function presentationRatio(input: {value: string | null; decimals: number}): {readonly value: string | null; readonly trace: CalculationTrace} {
+  if (input.value === null || /^(?:-?Infinity|NaN)$/.test(input.value)) {
+    const stated = input.value ?? "absent";
+    return {value: null, trace: {id: "material.presentation_ratio", formula: "a ratio over a zero denominator is absent", operands: {value: stated}, result: "absent"}};
   }
   const figure = presentationFigure({value: input.value, decimals: input.decimals});
   return {value: figure.value, trace: {...figure.trace, id: "material.presentation_ratio"}};

@@ -1,4 +1,4 @@
-import type {DeskAnalysis, Finding, Trajectory} from "@offroad/credit-analysis";
+import {absentRatioGap, publishedRatio, type DeskAnalysis, type Finding, type Trajectory} from "@offroad/credit-analysis";
 import type {TracedCalculation} from "@offroad/reconciliation";
 
 /**
@@ -82,7 +82,14 @@ export function deskEvidence(desk: DeskAnalysis | null, trajectory: Trajectory |
       ? [
           "",
           "### Trajetória de alavancagem (ids trajetoria.<ano>.alavancagem)",
-          ...trajectory.years.map((year) => `${year.year}: ${year.leverageBase}x (cenário cortado ${year.leverageStressed}x)`),
+          // An absent leverage (over a zero EBITDA) is named for the model, never handed on as a number.
+          ...trajectory.years.map((year) => {
+            const leverage = (field: "leverageBase" | "leverageStressed") => {
+              const value = publishedRatio(year[field]);
+              return value !== null ? `${value}x` : absentRatioGap(trajectory, `years.${year.year}.${field}`, year[field])?.pt ?? "não calculada";
+            };
+            return `${year.year}: ${leverage("leverageBase")} (cenário cortado ${leverage("leverageStressed")})`;
+          }),
           ...trajectory.findings.map((finding) => `[${finding.severity.toUpperCase()}] ${finding.pt} · ids: ${Object.keys(finding.values).map((key) => `desk.${finding.id}.${key}`).join(", ")}`),
         ]
       : []),

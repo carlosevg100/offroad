@@ -1,4 +1,4 @@
-import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+import {absentRatioGap, listYears, publishedRatio, ratioGapLabels, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
 import {
   calculateCustomerConcentration,
   calculateEbitdaAdjustments,
@@ -108,8 +108,20 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
     return {answer: bi(parts("pt-BR") + ".", parts("en-US") + "."), supportIds: [revenue, cash, receivables].filter((fact): fact is ReconciledFact => Boolean(fact)).map((fact) => fact.key.fieldPath)};
   }},
   {id: "q09", section: bi("Financeiro", "Financials"), question: bi("Qual o ciclo de caixa (DSO, DIO, DPO)?", "What is the cash cycle (DSO, DIO, DPO)?"), resolve: ({desk}) => {
-    if (!desk?.workingCapital.cycleDays) return null;
+    if (!desk) return null;
     const w = desk.workingCapital;
+    // A cycle over a zero cost of goods sold is absent: the answer names the gap, never a number of days.
+    if (absentRatioGap(desk, "workingCapital.cycleDays", w.cycleDays)) {
+      const dso = publishedRatio(w.dso);
+      return {
+        answer: bi(
+          `${dso !== null ? `DSO ${count(dso, "pt-BR")} dias. ` : ""}DIO, DPO e o ciclo de caixa não são calculáveis, porque o custo das mercadorias vendidas do último exercício é zero.`,
+          `${dso !== null ? `DSO ${count(dso, "en-US")} days. ` : ""}DIO, DPO and the cash cycle are not computable, because cost of goods sold for the latest financial year is zero.`,
+        ),
+        supportIds: ["desk.ciclo_de_caixa_dias"],
+      };
+    }
+    if (!w.cycleDays) return null;
     const days = (value: string | null, locale: Locale) => (value === null ? (locale === "pt-BR" ? "n/d" : "n/a") : count(value, locale));
     return {answer: bi(`DSO ${days(w.dso, "pt-BR")} dias, DIO ${days(w.dio, "pt-BR")} dias, DPO ${days(w.dpo, "pt-BR")} dias: ciclo de ${count(w.cycleDays!, "pt-BR")} dias.`, `DSO ${days(w.dso, "en-US")} days, DIO ${days(w.dio, "en-US")} days, DPO ${days(w.dpo, "en-US")} days: a ${count(w.cycleDays!, "en-US")}-day cycle.`), supportIds: ["desk.ciclo_de_caixa_dias"]};
   }},
@@ -149,7 +161,12 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   {id: "q13", section: bi("Dívida", "Debt"), question: bi("Quais covenants existem hoje e qual a folga?", "Which covenants exist today and what is the headroom?"), resolve: ({desk}) => {
     if (!desk?.leverage.tightestCovenant) return null;
     const c = desk.leverage.tightestCovenant;
-    return {answer: bi(`O mais apertado: ${turns(c.maximum, "pt-BR")} de dívida líquida/EBITDA (${c.lender}); alavancagem atual ${turns(desk.leverage.preTurns, "pt-BR")}${desk.leverage.maxNewDebtUnderCovenants ? `, cabem ${money(desk.leverage.maxNewDebtUnderCovenants, "pt-BR")} de dívida nova` : ""}.`, `Tightest: ${turns(c.maximum, "en-US")} net debt/EBITDA (${c.lender}); current leverage ${turns(desk.leverage.preTurns, "en-US")}${desk.leverage.maxNewDebtUnderCovenants ? `, ${money(desk.leverage.maxNewDebtUnderCovenants, "en-US")} of new debt fits` : ""}.`), supportIds: ["desk.alavancagem_pre", "desk.divida_nova_que_cabe"]};
+    // Over a zero EBITDA the current leverage is absent: named, never compared with the ceiling.
+    const pre = publishedRatio(desk.leverage.preTurns);
+    const current = pre !== null
+      ? {pt: turns(pre, "pt-BR"), en: turns(pre, "en-US")}
+      : absentRatioGap(desk, "leverage.preTurns", desk.leverage.preTurns) ?? ratioGapLabels.ebitda;
+    return {answer: bi(`O mais apertado: ${turns(c.maximum, "pt-BR")} de dívida líquida/EBITDA (${c.lender}); alavancagem atual ${current.pt}${desk.leverage.maxNewDebtUnderCovenants ? `, cabem ${money(desk.leverage.maxNewDebtUnderCovenants, "pt-BR")} de dívida nova` : ""}.`, `Tightest: ${turns(c.maximum, "en-US")} net debt/EBITDA (${c.lender}); current leverage ${current.en}${desk.leverage.maxNewDebtUnderCovenants ? `, ${money(desk.leverage.maxNewDebtUnderCovenants, "en-US")} of new debt fits` : ""}.`), supportIds: ["desk.alavancagem_pre", "desk.divida_nova_que_cabe"]};
   }},
   {id: "q14", section: bi("Dívida", "Debt"), question: bi("Quanto vence nos próximos 12 e 24 meses, e como será pago?", "How much matures in the next 12 and 24 months, and how will it be paid?"), resolve: ({desk}) => {
     if (!desk) return null;
@@ -159,14 +176,37 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
     if (!desk) return null;
     const post = desk.leverage.scenarios[0];
     if (!post) return null;
-    const peak = trajectory ? ` Pico de ${turns(trajectory.peak.leverageBase, "pt-BR")} em ${trajectory.peak.year}.` : "";
-    return {answer: bi(`De ${turns(desk.leverage.preTurns, "pt-BR")} para ${turns(post.postTurns, "pt-BR")} com o pedido.${peak}`, `From ${turns(desk.leverage.preTurns, "en-US")} to ${turns(post.postTurns, "en-US")} with the ask.${trajectory ? ` Peak of ${turns(trajectory.peak.leverageBase, "en-US")} in ${trajectory.peak.year}.` : ""}`), supportIds: ["desk.alavancagem_pre", ...(trajectory ? [`trajetoria.${trajectory.peak.year}.alavancagem`] : [])]};
+    // An absent leverage (over a zero EBITDA) and an absent peak are named, never printed as numbers.
+    const pre = publishedRatio(desk.leverage.preTurns);
+    const after = publishedRatio(post.postTurns);
+    const move = pre !== null && after !== null
+      ? bi(`De ${turns(pre, "pt-BR")} para ${turns(after, "pt-BR")} com o pedido.`, `From ${turns(pre, "en-US")} to ${turns(after, "en-US")} with the ask.`)
+      : bi("A alavancagem antes e depois do pedido não é calculável, porque o EBITDA do último exercício é zero.", "Leverage before and after the ask is not computable, because EBITDA for the latest financial year is zero.");
+    const peakYear = trajectory?.peak ?? null;
+    const peakBase = peakYear ? publishedRatio(peakYear.leverageBase) : null;
+    const peak = !trajectory
+      ? bi("", "")
+      : !peakYear
+        ? bi(" O pico da trajetória não pode ser afirmado, porque o EBITDA de um ano no cenário cortado é zero.", " The trajectory's peak cannot be stated, because a year's EBITDA in the cut case is zero.")
+        : peakBase !== null
+          ? bi(` Pico de ${turns(peakBase, "pt-BR")} em ${peakYear.year}.`, ` Peak of ${turns(peakBase, "en-US")} in ${peakYear.year}.`)
+          : bi(
+            ` Pico de ${turns(peakYear.leverageStressed, "pt-BR")} no cenário cortado em ${peakYear.year}; sem o corte, a alavancagem desse ano não é calculável, porque o EBITDA projetado é zero.`,
+            ` Peak of ${turns(peakYear.leverageStressed, "en-US")} in the cut case in ${peakYear.year}; without the cut, that year's leverage is not computable, because its projected EBITDA is zero.`,
+          );
+    return {answer: bi(`${move.pt}${peak.pt}`, `${move.en}${peak.en}`), supportIds: ["desk.alavancagem_pre", ...(peakYear ? [`trajetoria.${peakYear.year}.alavancagem`] : [])]};
   }},
   {id: "q16", section: bi("Dívida", "Debt"), question: bi("A despesa financeira é coberta pelo EBITDA com que folga?", "How comfortably does EBITDA cover interest expense?"), resolve: ({desk}) => {
     // Coverage joins the battery in a parallel change; read it when present, stay open otherwise.
     const leverage = desk?.leverage as (DeskAnalysis["leverage"] & {interestCoverage?: string | null; interestCoveragePost?: string | null}) | undefined;
     if (!leverage?.interestCoverage) return null;
-    return {answer: bi(`${turns(leverage.interestCoverage, "pt-BR")} hoje${leverage.interestCoveragePost ? `, ${turns(leverage.interestCoveragePost, "pt-BR")} com a operação` : ""}.`, `${turns(leverage.interestCoverage, "en-US")} today${leverage.interestCoveragePost ? `, ${turns(leverage.interestCoveragePost, "en-US")} with the deal` : ""}.`), supportIds: ["desk.cobertura_de_juros"]};
+    // The coverage with the deal is absent when the interest it divides by sums to zero: named, never a number.
+    const post = publishedRatio(leverage.interestCoveragePost);
+    const postGap = post === null ? absentRatioGap(desk, "leverage.interestCoveragePost", leverage.interestCoveragePost) : null;
+    return {answer: bi(
+      `${turns(leverage.interestCoverage, "pt-BR")} hoje${post ? `, ${turns(post, "pt-BR")} com a operação` : postGap ? `; com a operação, ${postGap.pt}` : ""}.`,
+      `${turns(leverage.interestCoverage, "en-US")} today${post ? `, ${turns(post, "en-US")} with the deal` : postGap ? `; with the deal, ${postGap.en}` : ""}.`,
+    ), supportIds: ["desk.cobertura_de_juros"]};
   }},
   // ---- the transaction ----------------------------------------------------------------------
   {id: "q17", section: bi("Operação", "Transaction"), question: bi("Quanto, por quanto tempo, com que carência, para quê?", "How much, for how long, with what grace, for what?"), resolve: ({facts}) => {
@@ -204,14 +244,44 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
     return dscr ? {answer: bi(`${turns(dscr.value, "pt-BR")}.`, `${turns(dscr.value, "en-US")}.`), supportIds: [dscr.key.fieldPath]} : null;
   }},
   {id: "q24", section: bi("Projeções", "Projections"), question: bi("Quanto capital de giro o crescimento projetado absorve?", "How much working capital does projected growth absorb?"), resolve: ({desk}) => {
-    if (!desk?.workingCapital.growthAbsorption) return null;
+    if (!desk) return null;
+    // What growth absorbs is absent over a zero cost of goods sold, with the cycle it depends on.
+    if (absentRatioGap(desk, "workingCapital.growthAbsorption", desk.workingCapital.growthAbsorption)) {
+      return {
+        answer: bi(
+          "Não calculável, porque o custo das mercadorias vendidas do último exercício é zero e, sem ele, não há ciclo de caixa.",
+          "Not computable, because cost of goods sold for the latest financial year is zero and, without it, there is no cash cycle.",
+        ),
+        supportIds: ["desk.ciclo_de_caixa_dias"],
+      };
+    }
+    if (!desk.workingCapital.growthAbsorption) return null;
     const cycle = desk.workingCapital.cycleDays!;
     return {answer: bi(`${money(desk.workingCapital.growthAbsorption, "pt-BR")} ao ciclo atual de ${count(cycle, "pt-BR")} dias.`, `${money(desk.workingCapital.growthAbsorption, "en-US")} at the current ${count(cycle, "en-US")}-day cycle.`), supportIds: ["desk.ciclo_de_caixa_dias"]};
   }},
   {id: "q25", section: bi("Projeções", "Projections"), question: bi("Qual o covenant de alavancagem que a trajetória suporta?", "What leverage covenant does the trajectory support?"), resolve: ({trajectory}) => {
     if (!trajectory || trajectory.covenantProposal.length === 0) return null;
-    const steps = trajectory.covenantProposal.map((step) => `${step.year} ≤ ${turns(step.maximum, "pt-BR")}`).join("; ");
-    return {answer: bi(`${steps}, com folga de ${turns(trajectory.assumptions.covenantCushion, "pt-BR")} sobre o cenário cortado.`, `${trajectory.covenantProposal.map((step) => `${step.year} ≤ ${turns(step.maximum, "en-US")}`).join("; ")}, with ${turns(trajectory.assumptions.covenantCushion, "en-US")} of cushion over the cut case.`), supportIds: trajectory.covenantProposal.map((step) => `trajetoria.${step.year}.alavancagem_cortada`)};
+    // A year whose leverage in the cut case is absent gets no step, and the answer says why.
+    const stated = trajectory.covenantProposal.flatMap((step) => {
+      const maximum = publishedRatio(step.maximum);
+      return maximum === null ? [] : [{year: step.year, maximum}];
+    });
+    const untested = trajectory.covenantProposal.filter((step) => publishedRatio(step.maximum) === null).map((step) => step.year);
+    const steps = (locale: Locale) => stated.map((step) => `${step.year} ≤ ${turns(step.maximum, locale)}`).join("; ");
+    const one = untested.length === 1;
+    const untestedText = untested.length === 0
+      ? bi("", "")
+      : bi(
+        `; sem teste proposto para ${listYears(untested, "pt-BR")}, porque o EBITDA ${one ? "do ano" : "desses anos"} no cenário cortado é zero`,
+        `; no test proposed for ${listYears(untested, "en-US")}, because ${one ? "that year's" : "those years'"} EBITDA in the cut case is zero`,
+      );
+    const answer = stated.length === 0
+      ? bi("Nenhum teste anual pode ser proposto, porque o EBITDA de todos os anos no cenário cortado é zero.", "No annual test can be proposed, because every year's EBITDA in the cut case is zero.")
+      : bi(
+        `${steps("pt-BR")}, com folga de ${turns(trajectory.assumptions.covenantCushion, "pt-BR")} sobre o cenário cortado${untestedText.pt}.`,
+        `${steps("en-US")}, with ${turns(trajectory.assumptions.covenantCushion, "en-US")} of cushion over the cut case${untestedText.en}.`,
+      );
+    return {answer, supportIds: trajectory.covenantProposal.map((step) => `trajetoria.${step.year}.alavancagem_cortada`)};
   }},
   // ---- governance, legal, tax ---------------------------------------------------------------
   {id: "q26", section: bi("Governança e jurídico", "Governance and legal"), question: bi("Qual a forma societária e ela permite o instrumento pretendido?", "What is the legal form and does it allow the intended instrument?"), resolve: ({facts}) => {
@@ -248,7 +318,13 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
   {id: "q36", section: bi("Startup", "Startup"), question: bi("Qual o runway hoje e com a operação?", "What is runway today and with the deal?"), resolve: ({desk}) => {
     if (!desk?.runway) return null;
     const r = desk.runway;
-    return {answer: bi(`${count(r.monthsPre, "pt-BR")} meses hoje; ${count(r.monthsPostAfterService, "pt-BR")} com a captação, pagando os juros dela.`, `${count(r.monthsPre, "en-US")} months today; ${count(r.monthsPostAfterService, "en-US")} with the raise, paying its interest.`), supportIds: ["desk.runway_pre_meses", "desk.runway_pos_meses"]};
+    // The runway after service is absent when the burn and the raise's interest sum to zero: named, never a number.
+    const after = publishedRatio(r.monthsPostAfterService);
+    const gap = after === null ? absentRatioGap(desk, "runway.monthsPostAfterService", r.monthsPostAfterService) ?? ratioGapLabels.burn_with_service : null;
+    return {answer: bi(
+      after !== null ? `${count(r.monthsPre, "pt-BR")} meses hoje; ${count(after, "pt-BR")} com a captação, pagando os juros dela.` : `${count(r.monthsPre, "pt-BR")} meses hoje; com a captação, pagando os juros dela, ${gap!.pt}.`,
+      after !== null ? `${count(r.monthsPre, "en-US")} months today; ${count(after, "en-US")} with the raise, paying its interest.` : `${count(r.monthsPre, "en-US")} months today; with the raise, paying its interest, ${gap!.en}.`,
+    ), supportIds: ["desk.runway_pre_meses", "desk.runway_pos_meses"]};
   }},
   {id: "q37", section: bi("Startup", "Startup"), question: bi("Qual o ARR e a retenção líquida?", "What are ARR and net revenue retention?"), resolve: ({desk}) => {
     if (!desk?.runway?.arr) return null;

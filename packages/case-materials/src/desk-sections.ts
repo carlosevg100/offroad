@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import type {DeskAnalysis, Trajectory} from "@offroad/credit-analysis";
+import {absentRatioGap, publishedRatio, type AbsentRatio, type DeskAnalysis, type Trajectory} from "@offroad/credit-analysis";
 import {calculateNewInstrumentAmount, presentationAmount, presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
 
 import type {MaterialBlock, MaterialTableCell} from "./compile";
@@ -26,6 +26,20 @@ const turns = (value: DecimalInput, locale: Locale) =>
   `${presentationNumber(value).value.toLocaleString(locale, {minimumFractionDigits: 2, maximumFractionDigits: 2})}x`;
 /** A table cell in each language: a figure prints with the separators of the language that reads it (invariant 9). */
 const cell = (value: (locale: Locale) => string): MaterialTableCell => ({pt: value("pt-BR"), en: value("en-US")});
+/**
+ * A ratio of the desk or of the trajectory in each language, or, when it is absent (a ratio over a
+ * zero denominator, stage 19, second polish), the gap in words: never a division printed as a number.
+ */
+const ratioText = (
+  output: {readonly absentRatios?: readonly AbsentRatio[]} | null,
+  field: string,
+  value: string | null,
+  print: (value: string, locale: Locale) => string,
+): {pt: string; en: string} => {
+  const stated = publishedRatio(value);
+  if (stated !== null) return {pt: print(stated, "pt-BR"), en: print(stated, "en-US")};
+  return absentRatioGap(output, field, value) ?? {pt: "não calculado", en: "not computed"};
+};
 
 /** Preserve the exact threshold: only Decimal normalizes insignificant fractional zeroes. */
 function covenantTurns(value: string, locale: Locale): string {
@@ -79,7 +93,7 @@ export function runwayAndRecurring(desk: DeskAnalysis): MaterialBlock | null {
   const rows: Array<{label: {pt: string; en: string}; value: {pt: string; en: string}; supportIds?: string[]}> = [
     {label: {pt: "Queima de caixa mensal", en: "Monthly cash burn"}, value: {pt: money(runway.monthlyBurn, "pt-BR"), en: money(runway.monthlyBurn, "en-US")}, supportIds: ["desk.queima_mensal"]},
     {label: {pt: "Runway antes da operação", en: "Runway before the deal"}, value: {pt: months(runway.monthsPre, "pt-BR"), en: months(runway.monthsPre, "en-US")}, supportIds: ["desk.runway_pre_meses"]},
-    {label: {pt: "Runway após a operação, com o serviço", en: "Runway after the deal, with service"}, value: {pt: months(runway.monthsPostAfterService, "pt-BR"), en: months(runway.monthsPostAfterService, "en-US")}, supportIds: ["desk.runway_pos_meses"]},
+    {label: {pt: "Runway após a operação, com o serviço", en: "Runway after the deal, with service"}, value: ratioText(desk, "runway.monthsPostAfterService", runway.monthsPostAfterService, months), supportIds: ["desk.runway_pos_meses"]},
     {label: {pt: "Taxa assumida para o serviço", en: "Rate assumed for service"}, value: {pt: pct(runway.assumedRate, "pt-BR"), en: pct(runway.assumedRate, "en-US")}},
   ];
   if (runway.arr) rows.push({label: {pt: "ARR", en: "ARR"}, value: {pt: money(runway.arr, "pt-BR"), en: money(runway.arr, "en-US")}, supportIds: ["desk.arr"]});
@@ -128,20 +142,19 @@ export function capitalStructure(desk: DeskAnalysis, trajectory: Trajectory | nu
         },
         {
           label: {pt: "Alavancagem pré-operação", en: "Pre-transaction leverage"},
-          value: desk.leverage.preTurns,
-          formatted: desk.profile === "cash_burning"
-            ? {pt: "não se aplica (EBITDA negativo)", en: "not applicable (negative EBITDA)"}
-            : {pt: turns(desk.leverage.preTurns, "pt-BR"), en: turns(desk.leverage.preTurns, "en-US")},
+          value: publishedRatio(desk.leverage.preTurns) ?? "",
+          // Over a zero EBITDA the leverage is absent and the gap is named; over a negative one it is a number without meaning.
+          formatted: absentRatioGap(desk, "leverage.preTurns", desk.leverage.preTurns)
+            ?? (desk.profile === "cash_burning"
+              ? {pt: "não se aplica (EBITDA negativo)", en: "not applicable (negative EBITDA)"}
+              : ratioText(desk, "leverage.preTurns", desk.leverage.preTurns, turns)),
           supportIds: ["desk.alavancagem_pre"],
         },
         ...(trajectory?.liabilityManagement
           ? [{
               label: {pt: "Alavancagem pós, com quitação das linhas com covenant", en: "Post-transaction leverage, covenanted lines taken out"},
-              value: trajectory.liabilityManagement.postLeverageAfterRefi,
-              formatted: {
-                pt: turns(trajectory.liabilityManagement.postLeverageAfterRefi, "pt-BR"),
-                en: turns(trajectory.liabilityManagement.postLeverageAfterRefi, "en-US"),
-              },
+              value: publishedRatio(trajectory.liabilityManagement.postLeverageAfterRefi) ?? "",
+              formatted: ratioText(trajectory, "liabilityManagement.postLeverageAfterRefi", trajectory.liabilityManagement.postLeverageAfterRefi, turns),
               supportIds: ["trajetoria.alavancagem_pos_refi"],
             }]
           : []),
@@ -171,8 +184,8 @@ export function trajectoryTable(trajectory: Trajectory): MaterialBlock {
       String(year.year),
       cell((locale) => money(year.netDebt, locale)),
       cell((locale) => money(year.ebitdaBase, locale)),
-      cell((locale) => turns(year.leverageBase, locale)),
-      cell((locale) => turns(year.leverageStressed, locale)),
+      ratioText(trajectory, `years.${year.year}.leverageBase`, year.leverageBase, turns),
+      ratioText(trajectory, `years.${year.year}.leverageStressed`, year.leverageStressed, turns),
     ]),
   };
 }
@@ -189,7 +202,7 @@ export function covenantSchedule(trajectory: Trajectory): MaterialBlock {
       {pt: "Exercício", en: "Year"},
       {pt: "Máximo", en: "Maximum"},
     ],
-    rows: trajectory.covenantProposal.map((step) => [String(step.year), cell((locale) => turns(step.maximum, locale))]),
+    rows: trajectory.covenantProposal.map((step) => [String(step.year), ratioText(trajectory, `covenantProposal.${step.year}.maximum`, step.maximum, turns)]),
   };
 }
 

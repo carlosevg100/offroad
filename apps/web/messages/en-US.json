@@ -4728,11 +4728,12 @@
       "arr": "ARR",
       "debtToArr": "Post-deal debt over ARR",
       "nrr": "Net revenue retention (NRR)",
-      "notMeaningful": "not meaningful with negative EBITDA",
+      "notMeaningful": "not meaningful with zero or negative EBITDA",
       "maturing12": "Maturing within 12 months",
       "coverage12Hint": "cash covers {coverage}",
       "interestCoverage": "Interest coverage",
-      "interestCoveragePostHint": "with the deal: {coverage}"
+      "interestCoveragePostHint": "with the deal: {coverage}",
+      "perYear": "{rate} p.a."
     },
     "deliveryMap": {
       "kicker": "Delivery map",
