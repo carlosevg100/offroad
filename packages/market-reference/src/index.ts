@@ -58,6 +58,19 @@ export const spreadBands: readonly SpreadBand[] = [
 
 export type PriceAdjustment = {id: "tenor" | "security" | "coverage" | "size" | "leverage"; bps: number; rationale: {pt: string; en: string}};
 
+/**
+ * What each adjustment of a price is, in the words a memorandum prints: never the internal id of
+ * `PriceAdjustment`. The grid applies the tenor, security, size and leverage adjustments; interest
+ * coverage is named as the house names that factor, for a governed adjustment that carries it.
+ */
+export const priceAdjustmentLabels: Readonly<Record<PriceAdjustment["id"], {pt: string; en: string}>> = {
+  tenor: {pt: "Ajuste pelo prazo", en: "Tenor adjustment"},
+  security: {pt: "Ajuste pelas garantias", en: "Security adjustment"},
+  coverage: {pt: "Ajuste pela cobertura de juros", en: "Interest coverage adjustment"},
+  size: {pt: "Ajuste pelo tamanho do tíquete", en: "Ticket size adjustment"},
+  leverage: {pt: "Ajuste pela alavancagem pós-operação", en: "Post-transaction leverage adjustment"},
+};
+
 export type IndicativePrice = {
   instrument: PricedInstrument;
   rating: RatingBand;

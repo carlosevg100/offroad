@@ -23030,7 +23030,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/deal-structure/src/termsheet.ts",
-              "hash": "91972656b9801fa282ab919bad28795830ce5fb46ae18dd15da8a562d11ea4a4"
+              "hash": "7b7ba62b4c331ce6e3b96561ebd9bf87589b068f35213953caeac6feba441e60"
             },
             {
               "path": "packages/domain-contracts/package.json",
@@ -23494,7 +23494,7 @@ export const procedureBuildProvenance = [
             },
             {
               "path": "packages/market-reference/src/index.ts",
-              "hash": "08e792990326222f10e1860a298e3548c1111ecbf37bb3afb38becef8b73b0fb"
+              "hash": "5980ca0f67e8eb8af2e764acda6a632ca200ea9af620b0b4a21c5f73e66ba1f7"
             },
             {
               "path": "packages/market-reference/src/pricing-truth.ts",
@@ -23661,7 +23661,7 @@ export const procedureBuildProvenance = [
               "hash": "0b80c49c86ed761d3e51788378c8e43cbcabebf8ccfbdd520c147223e9d543da"
             }
           ],
-          "hash": "24afa60ba4f59a7dd65142aac50c556c298154565593615fb24d3050cc3f4b09"
+          "hash": "34719eb9adc3da7fcb8d11f2a9c9e3aca13dfc594a06d9b4fafc6ad36c45f24a"
         },
         "evidence": [
           {
@@ -23687,7 +23687,7 @@ export const procedureBuildProvenance = [
         ]
       }
     ],
-    "manifestHash": "ce1be43ca513469c2a80ddf66071e2bc8636ce23629674a1e2cfd46f8ef117d0"
+    "manifestHash": "32d3b9cb2b70fc08f49d58661f861170e261457f8489f424556dbde0ce5352e6"
   },
   {
     "schemaVersion": "legacy-procedure-adapter.v1",

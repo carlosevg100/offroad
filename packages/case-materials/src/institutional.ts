@@ -1,9 +1,9 @@
 import type {CaseBrief} from "@offroad/case-understanding";
-import {covenantsFor, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
+import {covenantsFor, instruments, materialTemplateReference, type InstrumentVerdict} from "@offroad/credit-playbook";
 import type {DeskAnalysis, InternalRating, OperationVerdict, StressScenario, Trajectory} from "@offroad/credit-analysis";
 import type {CollateralPackage} from "@offroad/deal-structure";
 import {presentationAmount, presentationFigure, presentationNumber, type DecimalInput} from "@offroad/financial-core";
-import type {IndicativePrice} from "@offroad/market-reference";
+import {priceAdjustmentLabels, type IndicativePrice} from "@offroad/market-reference";
 import type {IndicativeTermSheet} from "@offroad/deal-structure";
 import type {ReconciledFact, ReconciliationException, TracedCalculation} from "@offroad/reconciliation";
 
@@ -38,6 +38,16 @@ const spreadPercent = (bps: number) => presentationFigure({value: bps, scale: "b
 const bi = (pt: string, en: string) => ({pt, en});
 /** A table cell in each language. */
 const cell = (value: (locale: "pt-BR" | "en-US") => string) => ({pt: value("pt-BR"), en: value("en-US")});
+/** The band of the indicative analytical profile, in the words each language prints. */
+const ratingBandLabels = {
+  strong: bi("forte", "strong"),
+  adequate: bi("adequado", "adequate"),
+  watch: bi("atenção", "watch"),
+  weak: bi("fraco", "weak"),
+  distressed: bi("crítico", "distressed"),
+} as const;
+/** An instrument of the price reference by its name in the playbook catalog, never by its key. */
+const instrumentLabel = (id: string) => instruments.find((entry) => entry.id === id)?.labels ?? bi("instrumento indicado", "instrument indicated");
 
 export type InstitutionalInput = {
   brief: CaseBrief;
@@ -139,8 +149,8 @@ export function creditConsiderationsSection(input: InstitutionalInput): Material
     const p = input.price;
     blocks.push({type: "heading", text: bi("Referência indicativa de preço", "Indicative pricing reference")});
     blocks.push({type: "kv", rows: [
-      {label: bi("Faixa", "Range"), value: bi(`CDI + ${spreadPercent(p.bps.min).replace(".", ",")}% a CDI + ${spreadPercent(p.bps.max).replace(".", ",")}% a.a.`, `CDI + ${spreadPercent(p.bps.min)}% to CDI + ${spreadPercent(p.bps.max)}% p.a.`), note: bi(`Base: banda ${p.rating} para ${p.instrument}, ${p.base.bps.min} a ${p.base.bps.max} bps.`, `Base: ${p.rating} band for ${p.instrument}, ${p.base.bps.min} to ${p.base.bps.max} bps.`)},
-      ...p.adjustments.map((adjustment) => ({label: bi(`Ajuste: ${adjustment.id}`, `Adjustment: ${adjustment.id}`), value: bi(`${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`, `${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`), note: adjustment.rationale})),
+      {label: bi("Faixa", "Range"), value: bi(`CDI + ${spreadPercent(p.bps.min).replace(".", ",")}% a CDI + ${spreadPercent(p.bps.max).replace(".", ",")}% a.a.`, `CDI + ${spreadPercent(p.bps.min)}% to CDI + ${spreadPercent(p.bps.max)}% p.a.`), note: bi(`Base: ${instrumentLabel(p.instrument).pt}; perfil analítico: ${ratingBandLabels[p.rating].pt}; faixa de ${p.base.bps.min} a ${p.base.bps.max} bps.`, `Base: ${instrumentLabel(p.instrument).en}; analytical profile: ${ratingBandLabels[p.rating].en}; range of ${p.base.bps.min} to ${p.base.bps.max} bps.`)},
+      ...p.adjustments.map((adjustment) => ({label: priceAdjustmentLabels[adjustment.id] ?? bi("Ajuste", "Adjustment"), value: bi(`${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`, `${adjustment.bps >= 0 ? "+" : ""}${adjustment.bps} bps`), note: adjustment.rationale})),
       {label: bi("Proveniência", "Provenance"), value: bi(p.provenance.kind === "desk_practice" ? `Prática da mesa, declarada em ${p.provenance.statedOn}; não é observação de operações fechadas.` : `Observada em ${p.provenance.sample} operações nos últimos ${p.provenance.windowMonths} meses.`, p.provenance.kind === "desk_practice" ? `Desk practice, stated on ${p.provenance.statedOn}; not an observation of closed deals.` : `Observed across ${p.provenance.sample} deals in the last ${p.provenance.windowMonths} months.`)},
     ]});
   }
@@ -201,7 +211,7 @@ function keyTerms(input: InstitutionalInput): MaterialBlock {
       ...(tenor ? [{label: tenor.labels, value: tenor.value, material: true, claimKind: "premise" as const, supportIds: tenor.supportIds}] : []),
       ...(grace ? [{label: grace.labels, value: grace.value, material: true, claimKind: "premise" as const, supportIds: grace.supportIds}] : []),
       ...(pricing ? [{label: pricing.labels, value: pricing.value, material: true, claimKind: "premise" as const, supportIds: pricing.supportIds}] : []),
-      ...(input.rating ? [{label: bi("Perfil analítico indicativo", "Indicative analytical profile"), value: bi(`${input.rating.grade} de 10 (${({strong: "forte", adequate: "adequado", watch: "atenção", weak: "fraco", distressed: "crítico"})[input.rating.band]})`, `${input.rating.grade} of 10 (${input.rating.band})`), material: true, claimKind: "calculation" as const, supportIds: ["analysis.internal_rating"]}] : []),
+      ...(input.rating ? [{label: bi("Perfil analítico indicativo", "Indicative analytical profile"), value: bi(`${input.rating.grade} de 10 (${ratingBandLabels[input.rating.band].pt})`, `${input.rating.grade} of 10 (${ratingBandLabels[input.rating.band].en})`), material: true, claimKind: "calculation" as const, supportIds: ["analysis.internal_rating"]}] : []),
       {
         label: bi("Alavancagem pré / pós", "Leverage pre / post"),
         value: bi(
