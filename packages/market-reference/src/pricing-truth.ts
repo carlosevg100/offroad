@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import {composeIndexAndSpread} from "@offroad/financial-core";
+import {composeIndexAndSpread, presentationNumber, presentationSpread} from "@offroad/financial-core";
 
 import type {IndicativePrice, PriceAdjustment, PricedInstrument, RatingBand, SpreadBand} from "./index";
 
@@ -247,7 +247,12 @@ function abstentionFor(input: {target: PricingTarget | null; policy: PricingPoli
  */
 const cdiPlus = (cdi: Decimal, spreadBps: Decimal.Value) =>
   new Decimal(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: new Decimal(spreadBps).div(10_000).toString()}).value);
-const fmt = (value: number, locale: "pt" | "en") => `${value >= 0 ? "+" : "-"} ${Math.abs(value / 100).toLocaleString(locale === "pt" ? "pt-BR" : "en-US", {maximumFractionDigits: 2})}%`;
+// A spread in basis points as the signed percentage the sentence states, rounded half-up on the
+// decimal value by the financial-core kernel; Intl only prints the rounded figure in the locale.
+const fmt = (value: number, locale: "pt" | "en") => {
+  const spread = presentationSpread({bps: value, decimals: 2});
+  return `${spread.sign} ${presentationNumber(spread.magnitude).value.toLocaleString(locale === "pt" ? "pt-BR" : "en-US", {maximumFractionDigits: 2})}%`;
+};
 
 export function buildPricingTruthSet(input: {
   target: PricingTarget | null;

@@ -90,6 +90,33 @@ describe("the supportability analysis of the requested structure", () => {
     expect(() => judgeOperation({desk: desk(), trajectory: trajectory([{year: 2027, principalDue: "0", scheduleStrain: "0"}]), operation, priceFor})).toThrow(RangeError);
   });
 
+  it("never compares, prices or ranks a ratio over a zero EBITDA as if it were a number", () => {
+    // Over a zero EBITDA the desk prints leverage as Infinity. The Decimal path read it as above
+    // the covenant and wrote "A companhia está em Infinityx"; it priced the structure at an infinite
+    // leverage; and a year whose projected EBITDA is zero became the heaviest with "Infinity%".
+    const zero = desk({ebitda: "0.00", preTurns: "Infinity"});
+    const asked: Array<{leveragePost: string}> = [];
+    const priceFor = (structure: {leveragePost: string}): StructurePrice => {
+      asked.push(structure);
+      return {bps: {min: 400, max: 550}, allIn: {min: "0", max: "0"}};
+    };
+    const verdict = judgeOperation({desk: zero, trajectory: null, operation: {...operation, termMonths: 84}, priceFor});
+    expect(verdict.conditions.map((condition) => condition.id)).not.toContain("waiver-before-anything");
+    expect(JSON.stringify(verdict)).not.toContain("Infinity");
+    // Nothing was priced: the leverage a price reads does not exist.
+    expect(asked).toEqual([]);
+    expect(verdict.price).toBeNull();
+    expect(verdict.alternatives.find((entry) => entry.id === "shorter-cheaper")?.price).toBeNull();
+
+    const strained = judgeOperation({
+      desk: desk(),
+      trajectory: trajectory([{year: 2027, principalDue: "58333333", scheduleStrain: "Infinity"}, {year: 2030, principalDue: "1099200000", scheduleStrain: "1.20"}]),
+      operation,
+    });
+    expect(strained.leaves[0]!.pt).toContain("2030 continua exigindo R$ 1099,2M de amortização, 120% do EBITDA daquele ano");
+    expect(JSON.stringify(strained)).not.toContain("Infinity");
+  });
+
   it("stands without conditions when nothing binds", () => {
     const clean = desk({tightestCovenant: {lender: "escrituras", maximum: "5.0000"}}, {liquidityCoverage12: "3.0"});
     const verdict = judgeOperation({desk: clean, trajectory: trajectory([{year: 2027, principalDue: "10000000", scheduleStrain: "0.01"}]), operation});

@@ -16,8 +16,17 @@
  * belongs in the first line and not in a footnote.
  */
 
-import {calculateSpreadDifference, presentationFigure} from "@offroad/financial-core";
-import Decimal from "decimal.js";
+import {
+  calculateEnlargedTicket,
+  calculateLeverageAfterStructure,
+  calculateNetNewMoney,
+  calculateSpreadDifference,
+  compareFigures,
+  presentationFigure,
+  selectHeaviestScheduleYear,
+  testCovenantCeiling,
+  type DecimalInput,
+} from "@offroad/financial-core";
 
 import type {DeskAnalysis} from "./analyze";
 import type {Trajectory} from "./trajectory";
@@ -65,14 +74,17 @@ export type OperationVerdict = {
   price: StructurePrice | null;
 };
 
-const d = (value: string | number): Decimal => new Decimal(value);
-const brlM = (value: Decimal.Value): string => `R$ ${new Decimal(value).div(1_000_000).toFixed(1).replace(".", ",")}M`;
-const turns = (value: Decimal.Value): string => `${new Decimal(value).toFixed(2).replace(".", ",")}x`;
+// Every figure the verdict states or compares is a financial-core kernel: the net new money, the
+// enlarged ticket, the leverage after a structure, the covenant test, the heaviest schedule year
+// and the conversions to millions, multiples, percent and basis points, all on the decimal value.
+const brlM = (value: DecimalInput): string => `R$ ${presentationFigure({value, scale: "millions", decimals: 1}).value.replace(".", ",")}M`;
+const turns = (value: DecimalInput): string => `${presentationFigure({value, decimals: 2}).value.replace(".", ",")}x`;
 const months = (count: number) => `${count} meses`;
-// Spreads arrive in basis points and print as percentages: the conversion and the difference
-// between two spreads are financial-core kernels, rounded half-up on the decimal value.
-const bpsAsPercent = (bps: Decimal.Value): string => presentationFigure({value: bps, scale: "basis_points_as_percent", decimals: 2}).value.replace(".", ",");
+const bpsAsPercent = (bps: DecimalInput): string => presentationFigure({value: bps, scale: "basis_points_as_percent", decimals: 2}).value.replace(".", ",");
 const spreadGap = (spreadBps: number, referenceBps: number): string => bpsAsPercent(calculateSpreadDifference({spreadBps, referenceBps}).value);
+/** Two decimals, as the verdict's amounts are stated in the alternatives it hands on. */
+const cents = (value: DecimalInput): string => presentationFigure({value, decimals: 2}).value;
+const isPositive = (value: DecimalInput) => compareFigures(value, 0) > 0;
 
 export function judgeOperation(input: {
   desk: DeskAnalysis;
@@ -99,16 +111,21 @@ export function judgeOperation(input: {
 }): OperationVerdict {
   const {desk, trajectory, operation} = input;
   const priceFor = input.priceFor ?? (() => null);
-  // Leverage after this structure lands: the stack plus what the ticket does not repay.
-  const leverageAfter = (ticket: Decimal, redeemed: Decimal) =>
-    d(desk.leverage.netDebtPre).plus(ticket.minus(redeemed)).div(desk.leverage.ebitda).toFixed(4);
+  // Leverage after this structure lands: the stack plus what the ticket does not repay, at the four
+  // decimals the price reference reads. Null over a zero EBITDA, where there is no leverage to price.
+  const leverageAfter = (ticket: DecimalInput, redeemed: DecimalInput) =>
+    calculateLeverageAfterStructure({netDebt: desk.leverage.netDebtPre, ticket, redeemed, ebitda: desk.leverage.ebitda, decimals: 4}).value;
   const simulate = input.simulate ?? (() => null);
-  const peakOf = (result: Trajectory | null) => (result ? d(result.peak.leverageStressed) : null);
-  const price = priceFor({
-    amount: operation.amount,
-    termMonths: operation.termMonths,
-    leveragePost: (peakOf(trajectory) ?? d(leverageAfter(d(operation.amount), d(operation.refinancing ?? "0")))).toFixed(4),
-  });
+  const peakOf = (result: Trajectory | null) => (result ? result.peak.leverageStressed : null);
+  const fourDecimals = (value: DecimalInput) => presentationFigure({value, decimals: 4}).value;
+  /** Prices a structure at the leverage it leaves, the stressed peak of its trajectory when there is one. */
+  const priceAt = (structure: {amount: string; termMonths: number}, peak: string | null, leverage: () => string | null) => {
+    const leveragePost = peak !== null ? fourDecimals(peak) : leverage();
+    return leveragePost === null ? null : priceFor({...structure, leveragePost});
+  };
+  const amount = operation.amount;
+  const refinancing = operation.refinancing ?? "0";
+  const price = priceAt({amount, termMonths: operation.termMonths}, peakOf(trajectory), () => leverageAfter(amount, refinancing));
   const spread = (value: StructurePrice | null) =>
     value ? `CDI + ${bpsAsPercent(value.bps.min)}% a ${bpsAsPercent(value.bps.max)}%` : null;
   const conditions: VerdictNote[] = [];
@@ -116,26 +133,22 @@ export function judgeOperation(input: {
   const leaves: VerdictNote[] = [];
   const alternatives: AlternativeStructure[] = [];
 
-  const amount = d(operation.amount);
-  const refinancing = d(operation.refinancing ?? "0");
-  const netNewMoney = amount.minus(refinancing);
-  const pre = d(desk.leverage.preTurns);
+  const netNewMoney = calculateNetNewMoney({ticket: amount, refinancing}).value;
+  const pre = desk.leverage.preTurns;
   const covenant = desk.leverage.tightestCovenant;
 
   // ---- what has to be true for the operation to exist ----------------------------------------
-  if (covenant && pre.gt(covenant.maximum)) {
-    const excess = pre.minus(covenant.maximum);
+  if (covenant && testCovenantCeiling({leverage: pre, ceiling: covenant.maximum}).outcome === "above_ceiling") {
     conditions.push({
       id: "waiver-before-anything",
-      pt: `A companhia está em ${turns(pre)} contra o teto de ${turns(covenant.maximum)} (${covenant.lender}). Nenhuma dívida nova é contratável antes de um waiver ou da renegociação desse covenant. Esta é a primeira condição precedente da estrutura indicativa. ${netNewMoney.gt(0) ? `Os ${brlM(netNewMoney)} de dinheiro novo dependem dela; a parte de troca de passivo, ${brlM(refinancing)}, é discutível com os credores atuais como alongamento.` : `Por ser troca pura de passivo, a conversa com os credores atuais é de alongamento e não de dívida nova, o que é o argumento mais forte para o waiver.`}`,
-      en: `The company sits at ${turns(pre)} against a ${turns(covenant.maximum)} ceiling (${covenant.lender}). No new debt is contractable before a waiver or a renegotiation of that covenant, and this is not a caveat: it is the operation's first condition precedent. ${netNewMoney.gt(0) ? `The ${brlM(netNewMoney)} of new money depends on it; the ${brlM(refinancing)} liability swap is arguable with the existing lenders as a maturity extension.` : `Being a pure liability swap, the conversation with existing lenders is about extension rather than new debt, which is the strongest argument for the waiver.`}`,
+      pt: `A companhia está em ${turns(pre)} contra o teto de ${turns(covenant.maximum)} (${covenant.lender}). Nenhuma dívida nova é contratável antes de um waiver ou da renegociação desse covenant. Esta é a primeira condição precedente da estrutura indicativa. ${isPositive(netNewMoney) ? `Os ${brlM(netNewMoney)} de dinheiro novo dependem dela; a parte de troca de passivo, ${brlM(refinancing)}, é discutível com os credores atuais como alongamento.` : `Por ser troca pura de passivo, a conversa com os credores atuais é de alongamento e não de dívida nova, o que é o argumento mais forte para o waiver.`}`,
+      en: `The company sits at ${turns(pre)} against a ${turns(covenant.maximum)} ceiling (${covenant.lender}). No new debt is contractable before a waiver or a renegotiation of that covenant, and this is not a caveat: it is the operation's first condition precedent. ${isPositive(netNewMoney) ? `The ${brlM(netNewMoney)} of new money depends on it; the ${brlM(refinancing)} liability swap is arguable with the existing lenders as a maturity extension.` : `Being a pure liability swap, the conversation with existing lenders is about extension rather than new debt, which is the strongest argument for the waiver.`}`,
     });
-    void excess;
   }
 
-  const wall12 = d(desk.stack.maturingWithin12Months);
-  const coverage = desk.stack.liquidityCoverage12 ? d(desk.stack.liquidityCoverage12) : null;
-  if (coverage && coverage.lt("1.3") && refinancing.lt(wall12)) {
+  const wall12 = desk.stack.maturingWithin12Months;
+  const coverage = desk.stack.liquidityCoverage12;
+  if (coverage && compareFigures(coverage, "1.3") < 0 && compareFigures(refinancing, wall12) < 0) {
     conditions.push({
       id: "near-wall-not-fully-covered",
       pt: `O tíquete resgata ${brlM(refinancing)} dos ${brlM(wall12)} que vencem em 12 meses, e o que sobra depende de caixa que cobre ${turns(coverage)} do total. A operação precisa vir com a renovação já acertada das parcelas remanescentes, ou com tíquete maior.`,
@@ -144,7 +157,7 @@ export function judgeOperation(input: {
   }
 
   // ---- what the money buys -------------------------------------------------------------------
-  if (refinancing.gt(0) && trajectory) {
+  if (isPositive(refinancing) && trajectory) {
     const first = trajectory.years[0];
     if (first) {
       solves.push({
@@ -154,7 +167,7 @@ export function judgeOperation(input: {
       });
     }
   }
-  if (netNewMoney.gt(0)) {
+  if (isPositive(netNewMoney)) {
     solves.push({
       id: "new-money",
       pt: `${brlM(netNewMoney)} entram como dinheiro novo${operation.purpose ? ` para ${operation.purpose}` : ""}.`,
@@ -163,22 +176,19 @@ export function judgeOperation(input: {
   }
 
   // ---- what it leaves, and the second road ---------------------------------------------------
-  const heavy = trajectory?.years.filter((year) => d(year.scheduleStrain).gt(1)) ?? [];
-  const worst = heavy.sort((a, b) => d(b.scheduleStrain).minus(a.scheduleStrain).toNumber())[0];
+  const heaviest = trajectory ? selectHeaviestScheduleYear({years: trajectory.years.map((year) => ({id: String(year.year), strain: year.scheduleStrain})), threshold: 1}) : null;
+  const worst = heaviest?.id ? trajectory!.years.find((year) => String(year.year) === heaviest.id) : undefined;
   if (worst) {
+    const strain = presentationFigure({value: worst.scheduleStrain, scale: "percent", decimals: 0}).value;
     leaves.push({
       id: "later-wall-untouched",
-      pt: `${worst.year} continua exigindo ${brlM(worst.principalDue)} de amortização, ${d(worst.scheduleStrain).times(100).toFixed(0)}% do EBITDA daquele ano. Esta operação não passa por lá, e esse ano será rolado de novo.`,
-      en: `${worst.year} still demands ${brlM(worst.principalDue)} of amortisation, ${d(worst.scheduleStrain).times(100).toFixed(0)}% of that year's EBITDA. This operation does not reach it, and that year will be rolled again.`,
+      pt: `${worst.year} continua exigindo ${brlM(worst.principalDue)} de amortização, ${strain}% do EBITDA daquele ano. Esta operação não passa por lá, e esse ano será rolado de novo.`,
+      en: `${worst.year} still demands ${brlM(worst.principalDue)} of amortisation, ${strain}% of that year's EBITDA. This operation does not reach it, and that year will be rolled again.`,
     });
-    const biggerTicket = amount.plus(worst.principalDue);
-    const biggerRun = simulate({amount: biggerTicket.toFixed(2), termMonths: operation.termMonths, graceMonths: operation.graceMonths, refinancing: refinancing.plus(worst.principalDue).toFixed(2)});
+    const bigger = calculateEnlargedTicket({ticket: amount, refinancing, principalDue: worst.principalDue});
+    const biggerRun = simulate({amount: cents(bigger.ticket), termMonths: operation.termMonths, graceMonths: operation.graceMonths, refinancing: cents(bigger.refinancing)});
     const biggerPeak = peakOf(biggerRun);
-    const biggerPrice = priceFor({
-      amount: biggerTicket.toFixed(2),
-      termMonths: operation.termMonths,
-      leveragePost: (biggerPeak ?? d(leverageAfter(biggerTicket, refinancing.plus(worst.principalDue)))).toFixed(4),
-    });
+    const biggerPrice = priceAt({amount: cents(bigger.ticket), termMonths: operation.termMonths}, biggerPeak, () => leverageAfter(bigger.ticket, bigger.refinancing));
     const ownPeak = peakOf(trajectory);
     const biggerTradeoff = {
       pt: `${biggerPeak && ownPeak ? `O pico de alavancagem vai de ${turns(ownPeak)} para ${turns(biggerPeak)}` : "Custa alavancagem de pico mais alta"} e o livro fica maior.${biggerPrice && price ? ` No preço: ${spread(biggerPrice)} contra ${spread(price)} da estrutura pedida${biggerPrice.bps.min === price.bps.min ? ", o mesmo spread, porque em ambas o dinheiro novo é zero e o que muda é o prazo do passivo" : `, ${spreadGap(biggerPrice.bps.min, price.bps.min)} ponto percentual na ponta baixa`}.` : ""}`,
@@ -186,12 +196,12 @@ export function judgeOperation(input: {
     };
     alternatives.push({
       id: "size-to-cover-the-later-wall",
-      amount: amount.plus(worst.principalDue).toFixed(2),
+      amount: cents(bigger.ticket),
       termMonths: operation.termMonths,
       graceMonths: operation.graceMonths,
       why: {
-        pt: `Um tíquete de ${brlM(amount.plus(worst.principalDue))} resolve ${worst.year} junto com a janela curta, e a companhia deixa de voltar ao mercado no pior ano do cronograma.`,
-        en: `A ${brlM(amount.plus(worst.principalDue))} ticket clears ${worst.year} together with the near window, and the company stops returning to market in the worst year of its schedule.`,
+        pt: `Um tíquete de ${brlM(bigger.ticket)} resolve ${worst.year} junto com a janela curta, e a companhia deixa de voltar ao mercado no pior ano do cronograma.`,
+        en: `A ${brlM(bigger.ticket)} ticket clears ${worst.year} together with the near window, and the company stops returning to market in the worst year of its schedule.`,
       },
       tradeoff: biggerTradeoff,
       price: biggerPrice,
@@ -200,6 +210,8 @@ export function judgeOperation(input: {
 
   // A shorter, cheaper road is worth naming whenever the ask is long for private credit.
   if (operation.termMonths > 72) {
+    // Priced at the leverage the requested ticket leaves, as the requested structure is when it has no trajectory.
+    const shorterPrice = () => priceAt({amount, termMonths: 60}, null, () => leverageAfter(amount, refinancing));
     alternatives.push({
       id: "shorter-cheaper",
       amount: operation.amount,
@@ -211,17 +223,17 @@ export function judgeOperation(input: {
       },
       tradeoff: {
         pt: `Amortiza mais cedo, então exige geração de caixa antes.${(() => {
-          const shorter = priceFor({amount: operation.amount, termMonths: 60, leveragePost: leverageAfter(d(operation.amount), d(operation.refinancing ?? "0"))});
+          const shorter = shorterPrice();
           return shorter && price
             ? ` No preço: ${spread(shorter)} contra ${spread(price)}, ${spreadGap(price.bps.min, shorter.bps.min)} ponto percentual economizado ao encurtar.`
             : " Em troca sai mais barato e com menos condições.";
         })()}`,
         en: `It amortises earlier, so it demands cash generation sooner.${(() => {
-          const shorter = priceFor({amount: operation.amount, termMonths: 60, leveragePost: leverageAfter(d(operation.amount), d(operation.refinancing ?? "0"))});
+          const shorter = shorterPrice();
           return shorter && price ? ` On price: ${spread(shorter)} against ${spread(price)}.` : " In exchange it prices tighter and carries fewer conditions.";
         })()}`,
       },
-      price: priceFor({amount: operation.amount, termMonths: 60, leveragePost: leverageAfter(d(operation.amount), d(operation.refinancing ?? "0"))}),
+      price: shorterPrice(),
     });
   }
 

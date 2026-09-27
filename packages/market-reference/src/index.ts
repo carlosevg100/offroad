@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import {composeIndexAndSpread} from "@offroad/financial-core";
+import {composeIndexAndSpread, presentationFigure, presentationSpread} from "@offroad/financial-core";
 
 export const marketReferenceVersion = "2026.09.24-v1";
 
@@ -124,8 +124,18 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
   // DI plus spread compounds: (1 + CDI) × (1 + spread) - 1, the B3 convention, never the sum.
   const composed = (spreadBps: number) => new Decimal(composeIndexAndSpread({index: "DI", annualIndex: cdi.toString(), annualSpread: new Decimal(spreadBps).div(10_000).toString()}).value);
   const allIn = {min: composed(bps.min).toFixed(4), max: composed(bps.max).toFixed(4), cdi: cdi.toFixed(4)};
-  const fmtBps = (value: number) => `${value >= 0 ? "+" : "-"} ${Math.abs(value) / 100}`.replace(".", ",");
-  const fmtBpsEn = (value: number) => `${value >= 0 ? "+" : "-"} ${Math.abs(value) / 100}`;
+  // The sentence's conversions are financial-core kernels on the decimal value: the spread in basis
+  // points as a signed percentage, and the all-in rates as percentages at two decimals.
+  const spreadText = (value: number, locale: "pt" | "en") => {
+    const spread = presentationSpread({bps: value});
+    return `${spread.sign} ${locale === "pt" ? spread.magnitude.replace(".", ",") : spread.magnitude}`;
+  };
+  const fmtBps = (value: number) => spreadText(value, "pt");
+  const fmtBpsEn = (value: number) => spreadText(value, "en");
+  const percent = (rate: string, locale: "pt" | "en") => {
+    const figure = presentationFigure({value: rate, scale: "percent", decimals: 2}).value;
+    return locale === "pt" ? figure.replace(".", ",") : figure;
+  };
   const prov = provenance.kind === "desk_practice"
     ? {pt: `Faixa de prática da mesa, declarada em ${provenance.statedOn}; não é observação de operações fechadas.`, en: `The desk's practice band, stated on ${provenance.statedOn}; not an observation of closed transactions.`}
     : {pt: `Faixa observada em ${provenance.sample} operações nos últimos ${provenance.windowMonths} meses.`, en: `Band observed across ${provenance.sample} transactions in the last ${provenance.windowMonths} months.`};
@@ -138,8 +148,8 @@ export function indicativePrice(input: PriceInput): IndicativePrice | null {
     adjustments,
     provenance,
     sentence: {
-      pt: `CDI ${fmtBps(bps.min)}% a CDI ${fmtBps(bps.max)}% a.a. (${(Number(allIn.min) * 100).toFixed(2).replace(".", ",")}% a ${(Number(allIn.max) * 100).toFixed(2).replace(".", ",")}% a.a. com CDI a ${(Number(allIn.cdi) * 100).toFixed(2).replace(".", ",")}%). Base: banda ${input.rating} para ${input.instrument}, ${base.bps.min} a ${base.bps.max} bps${adjustments.length ? `; ajustes: ${adjustments.map((a) => `${a.bps >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.pt})`).join(", ")}` : ""}. ${prov.pt}`,
-      en: `CDI ${fmtBpsEn(bps.min)}% to CDI ${fmtBpsEn(bps.max)}% p.a. (${(Number(allIn.min) * 100).toFixed(2)}% to ${(Number(allIn.max) * 100).toFixed(2)}% p.a. at CDI ${(Number(allIn.cdi) * 100).toFixed(2)}%). Base: ${input.rating} band for ${input.instrument}, ${base.bps.min} to ${base.bps.max} bps${adjustments.length ? `; adjustments: ${adjustments.map((a) => `${a.bps >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.en})`).join(", ")}` : ""}. ${prov.en}`,
+      pt: `CDI ${fmtBps(bps.min)}% a CDI ${fmtBps(bps.max)}% a.a. (${percent(allIn.min, "pt")}% a ${percent(allIn.max, "pt")}% a.a. com CDI a ${percent(allIn.cdi, "pt")}%). Base: banda ${input.rating} para ${input.instrument}, ${base.bps.min} a ${base.bps.max} bps${adjustments.length ? `; ajustes: ${adjustments.map((a) => `${a.bps >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.pt})`).join(", ")}` : ""}. ${prov.pt}`,
+      en: `CDI ${fmtBpsEn(bps.min)}% to CDI ${fmtBpsEn(bps.max)}% p.a. (${percent(allIn.min, "en")}% to ${percent(allIn.max, "en")}% p.a. at CDI ${percent(allIn.cdi, "en")}%). Base: ${input.rating} band for ${input.instrument}, ${base.bps.min} to ${base.bps.max} bps${adjustments.length ? `; adjustments: ${adjustments.map((a) => `${a.bps >= 0 ? "+" : ""}${a.bps} bps (${a.rationale.en})`).join(", ")}` : ""}. ${prov.en}`,
     },
   };
 }

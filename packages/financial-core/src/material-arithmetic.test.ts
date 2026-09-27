@@ -1,12 +1,21 @@
 import {describe, expect, it} from "vitest";
 
+import Decimal from "decimal.js";
+
 import {
   calculateCustomerConcentration,
   calculateEbitdaAdjustments,
+  calculateEnlargedTicket,
+  calculateLeverageAfterStructure,
+  calculateNetNewMoney,
   calculateNewInstrumentAmount,
   calculateSpreadDifference,
+  compareFigures,
   presentationFigure,
   presentationNumber,
+  presentationSpread,
+  selectHeaviestScheduleYear,
+  testCovenantCeiling,
   testScheduleTieOut,
   tryPresentationNumber,
 } from "./material-arithmetic";
@@ -85,6 +94,104 @@ describe("material computations", () => {
   });
 });
 
+describe("the operation verdict's computations", () => {
+  it("states the net new money as the ticket less the debt it redeems, with its trace", () => {
+    expect(calculateNetNewMoney({ticket: "42300000", refinancing: "0"})).toEqual({
+      value: "42300000",
+      trace: {id: "material.net_new_money", formula: "net new money = ticket - existing debt redeemed at disbursement", operands: {ticket: "42300000", refinancing: "0"}, result: "42300000"},
+    });
+    expect(calculateNetNewMoney({ticket: "800000000", refinancing: "600000000"}).value).toBe("200000000");
+    expect(calculateNetNewMoney({ticket: "700000000", refinancing: "700000000"}).value).toBe("0");
+    // A refinancing larger than the ticket is stated, not hidden.
+    expect(calculateNetNewMoney({ticket: "1", refinancing: "1.5"}).value).toBe("-0.5");
+    expect(() => calculateNetNewMoney({ticket: "42300000", refinancing: ""})).toThrow(RangeError);
+  });
+
+  it("enlarges the ticket and the debt it redeems by the principal of the year it clears", () => {
+    const bigger = calculateEnlargedTicket({ticket: "42300000", refinancing: "0", principalDue: "29011238.05"});
+    expect(bigger).toMatchObject({ticket: "71311238.05", refinancing: "29011238.05"});
+    expect(bigger.trace).toEqual({
+      id: "material.enlarged_ticket",
+      formula: "enlarged ticket = ticket + principal due; enlarged refinancing = refinancing + principal due",
+      operands: {ticket: "42300000", refinancing: "0", principalDue: "29011238.05"},
+      result: "ticket=71311238.05; refinancing=29011238.05",
+    });
+    expect(() => calculateEnlargedTicket({ticket: "1", refinancing: "0", principalDue: "n/d"})).toThrow(RangeError);
+  });
+
+  it("measures leverage after a structure, half-up at the stated decimals, and refuses to invent it over a zero EBITDA", () => {
+    const leverage = calculateLeverageAfterStructure({netDebt: "37360000", ticket: "42300000", redeemed: "0", ebitda: "16848000", decimals: 4});
+    expect(leverage.value).toBe("4.7282");
+    expect(leverage.trace).toEqual({
+      id: "material.leverage_after_structure",
+      formula: "leverage = (net debt + ticket - redeemed) / EBITDA, half-up to 4 decimals",
+      operands: {netDebt: "37360000", ticket: "42300000", redeemed: "0", ebitda: "16848000"},
+      result: "4.7282",
+    });
+    expect(calculateLeverageAfterStructure({netDebt: "1", ticket: "0", redeemed: "0", ebitda: "8"}).value).toBe("0.125");
+    // A tie on the fifth decimal rounds up, as the decimal value says.
+    expect(calculateLeverageAfterStructure({netDebt: "1.00005", ticket: "0", redeemed: "0", ebitda: "1", decimals: 4}).value).toBe("1.0001");
+    // The same text the verdict's Decimal expression printed, on a grid of structures.
+    for (const [netDebt, ticket, redeemed, ebitda] of [["4239486000", "800000000", "600000000", "915300000"], ["-120000", "5000000", "0", "3100000"], ["37360000", "71311238.05", "29011238.05", "16848000"], ["10", "3", "1", "-7"]]) {
+      expect(calculateLeverageAfterStructure({netDebt: netDebt!, ticket: ticket!, redeemed: redeemed!, ebitda: ebitda!, decimals: 4}).value)
+        .toBe(new Decimal(netDebt!).plus(new Decimal(ticket!).minus(redeemed!)).div(ebitda!).toFixed(4));
+    }
+    const zero = calculateLeverageAfterStructure({netDebt: "37360000", ticket: "42300000", redeemed: "0", ebitda: "0.00", decimals: 4});
+    expect(zero.value).toBeNull();
+    expect(zero.trace.result).toBe("not computable: zero EBITDA");
+    expect(() => calculateLeverageAfterStructure({netDebt: "1", ticket: "1", redeemed: "0", ebitda: "1", decimals: 1.5})).toThrow(RangeError);
+    expect(() => calculateLeverageAfterStructure({netDebt: "Infinity", ticket: "1", redeemed: "0", ebitda: "1"})).toThrow(RangeError);
+  });
+
+  it("tests leverage against the covenant ceiling, never comparing a leverage that is not a number", () => {
+    expect(testCovenantCeiling({leverage: "4.6318", ceiling: "4.0000"})).toMatchObject({outcome: "above_ceiling", excess: "0.6318"});
+    expect(testCovenantCeiling({leverage: "2.1918", ceiling: "3.0"})).toMatchObject({outcome: "within_ceiling", excess: null});
+    // At the ceiling is within it: the covenant is breached above the maximum.
+    expect(testCovenantCeiling({leverage: "3.0000", ceiling: "3"}).outcome).toBe("within_ceiling");
+    expect(testCovenantCeiling({leverage: "4.6318", ceiling: "4.0000"}).trace).toEqual({
+      id: "material.covenant_ceiling", formula: "above when leverage > ceiling; excess = leverage - ceiling",
+      operands: {leverage: "4.6318", ceiling: "4"}, result: "above_ceiling; excess=0.6318",
+    });
+    // The ratio over a zero EBITDA prints as Infinity or NaN upstream; it is not a leverage to compare.
+    for (const leverage of ["Infinity", "-Infinity", "NaN"]) {
+      const test = testCovenantCeiling({leverage, ceiling: "3.0"});
+      expect(test, leverage).toMatchObject({outcome: "not_computable", excess: null});
+      expect(test.trace.operands.leverage).toBe(leverage);
+    }
+    expect(() => testCovenantCeiling({leverage: "2", ceiling: "n/d"})).toThrow(RangeError);
+  });
+
+  it("selects the heaviest schedule year above the threshold, the first listed among equals, exactly", () => {
+    const years = [{id: "2026", strain: "0.4200"}, {id: "2027", strain: "1.3000"}, {id: "2028", strain: "1.3000"}, {id: "2029", strain: "1.0000"}];
+    const heaviest = selectHeaviestScheduleYear({years, threshold: 1});
+    expect(heaviest).toMatchObject({id: "2027", strain: "1.3"});
+    expect(heaviest.trace).toEqual({
+      id: "material.heaviest_schedule_year",
+      formula: "heaviest = largest strain above the threshold, the first listed among equals; a strain that is not a finite number is not ranked",
+      operands: {threshold: "1", 2026: "0.42", 2027: "1.3", 2028: "1.3", 2029: "1"},
+      result: "2027:1.3",
+    });
+    // The threshold itself is not above it.
+    expect(selectHeaviestScheduleYear({years: [{id: "2029", strain: "1.0000"}], threshold: 1})).toMatchObject({id: null, strain: null});
+    // Strains that binary floating point cannot tell apart are still ordered exactly.
+    expect(selectHeaviestScheduleYear({years: [{id: "a", strain: "1.30000000000000000001"}, {id: "b", strain: "1.30000000000000000002"}], threshold: 1}).id).toBe("b");
+    // A strain over a zero projected EBITDA is not a number: not ranked, named in the trace.
+    const unranked = selectHeaviestScheduleYear({years: [{id: "2027", strain: "Infinity"}, {id: "2028", strain: "NaN"}, {id: "2029", strain: "1.2"}], threshold: 1});
+    expect(unranked).toMatchObject({id: "2029", strain: "1.2"});
+    expect(unranked.trace.result).toBe("2029:1.2; not ranked: 2027, 2028");
+    expect(() => selectHeaviestScheduleYear({years, threshold: "n/d"})).toThrow(RangeError);
+  });
+
+  it("compares figures exactly, for the thresholds a decision tests", () => {
+    expect(compareFigures("1.1633", "1.3")).toBe(-1);
+    expect(compareFigures("0", 0)).toBe(0);
+    expect(compareFigures("600000000", "1229828000")).toBe(-1);
+    expect(compareFigures("0.30000000000000000002", "0.30000000000000000001")).toBe(1);
+    expect(() => compareFigures("Infinity", 0)).toThrow(RangeError);
+    expect(() => compareFigures(0, "")).toThrow(RangeError);
+  });
+});
+
 describe("material presentation conversions", () => {
   it("scales exactly and rounds half away from zero on the decimal value", () => {
     expect(presentationFigure({value: "0.627", scale: "percent", decimals: 1}).value).toBe("62.7");
@@ -124,6 +231,35 @@ describe("material presentation conversions", () => {
     // A tie the binary float stores high agrees with it.
     expect(presentationFigure({value: 0.5, scale: "basis_points_as_percent", decimals: 2}).value).toBe((0.5 / 100).toFixed(2));
     expect(() => presentationFigure({value: Number.NaN, scale: "basis_points_as_percent", decimals: 2})).toThrow(RangeError);
+  });
+
+  it("states a spread as a signed percentage, and prints every whole basis point as both price sentences printed it", () => {
+    expect(presentationSpread({bps: 250})).toEqual({sign: "+", magnitude: "2.5", trace: {id: "material.presentation_spread", formula: "sign of the spread; |basis points| / 100", operands: {bps: "250"}, result: "+2.5"}});
+    expect(presentationSpread({bps: -100})).toMatchObject({sign: "-", magnitude: "1"});
+    expect(presentationSpread({bps: 0})).toMatchObject({sign: "+", magnitude: "0"});
+    expect(presentationSpread({bps: -0})).toMatchObject({sign: "+", magnitude: "0"});
+    expect(presentationSpread({bps: 370, decimals: 2})).toMatchObject({sign: "+", magnitude: "3.70"});
+    // The desk sentence printed `Math.abs(bps) / 100`; the observed sentence printed `Math.abs(bps / 100)`
+    // through Intl with at most two decimals. For every whole basis point both texts are unchanged.
+    const differing: number[] = [];
+    for (let bps = -10_000; bps <= 10_000; bps += 1) {
+      const exact = presentationSpread({bps});
+      const rounded = presentationSpread({bps, decimals: 2});
+      const desk = `${exact.sign} ${exact.magnitude}` === `${bps >= 0 ? "+" : "-"} ${Math.abs(bps) / 100}`;
+      const observed = `${rounded.sign} ${presentationNumber(rounded.magnitude).value.toLocaleString("pt-BR", {maximumFractionDigits: 2})}`
+        === `${bps >= 0 ? "+" : "-"} ${Math.abs(bps / 100).toLocaleString("pt-BR", {maximumFractionDigits: 2})}`;
+      if (!desk || !observed) differing.push(bps);
+    }
+    expect(differing).toEqual([]);
+    // Intl rounds the shortest decimal of the quotient, so the observed sentence already agreed on
+    // half basis points; the kernel keeps that on the decimal value.
+    expect(presentationSpread({bps: 100.5, decimals: 2}).magnitude).toBe("1.01");
+    expect(Math.abs(100.5 / 100).toLocaleString("en-US", {maximumFractionDigits: 2})).toBe("1.01");
+    // A fractional basis point divided in binary printed its representation error in the desk
+    // sentence; the kernel prints the exact quotient. The desk grid quotes whole basis points only.
+    expect(presentationSpread({bps: 1998.7}).magnitude).toBe("19.987");
+    expect(`${Math.abs(1998.7) / 100}`).toBe("19.987000000000002");
+    expect(() => presentationSpread({bps: Number.NaN})).toThrow(RangeError);
   });
 
   it("hands the exact decimal to the binary number the display needs, as Number reads decimal text", () => {

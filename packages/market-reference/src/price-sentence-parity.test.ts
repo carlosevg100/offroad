@@ -69,8 +69,7 @@ const adjustment = (bps: number): GovernedPriceAdjustment => ({
 });
 
 const observedSentences = () => {
-  // Half basis points only where the binary float holds the tie exactly (312.5 is 3.125%): a tie the
-  // float stores low is a deliberate difference of the kernels, pinned in its own test.
+  // Whole, quarter and half basis points; 312.5 sits on a tie at two decimals (3.125%).
   const samples = [[310, 370, 410], [250, 312.5, 380], [180.25, 240, 305.75], [95, 160, 222], [-150, -90, -20], [-40, 0, 45], [0.25, 60, 120]];
   const shifts = [[], [-30], [45, -12], [-100]];
   return samples.flatMap((spreads) => shifts.flatMap((bps) => ["0.105", "0.1365"].map((cdi) => {
