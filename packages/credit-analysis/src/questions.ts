@@ -180,12 +180,20 @@ export function questionsForCompany(
 
   if (has("wc-ask-vs-need")) {
     const values = finding("wc-ask-vs-need")!.values;
-    questions.push({
-      findingId: "wc-ask-vs-need",
-      severity: "high",
-      pt: `O crescimento projetado absorve ${brl(values.need!, "pt-BR")} de capital de giro, mas o pedido rotula ${brl(values.ask!, "pt-BR")} como giro. O que a diferença financia: alongamento do ciclo, recomposição de caixa, substituição de linhas? O fundo vai perguntar, e a resposta muda a estrutura.`,
-      en: `Projected growth absorbs ${brl(values.need!, "en-US")} of working capital, yet the ask labels ${brl(values.ask!, "en-US")} as working capital. What does the difference fund: a longer cycle, cash rebuild, line replacement? The fund will ask, and the answer changes the structure.`,
-    });
+    // A negative cash cycle releases working capital as revenue grows: the question names what is released, never a negative absorption.
+    questions.push(values.released !== undefined
+      ? {
+          findingId: "wc-ask-vs-need",
+          severity: "high",
+          pt: `O crescimento projetado libera ${brl(values.released, "pt-BR")} de capital de giro, porque o ciclo de caixa é negativo, mas o pedido rotula ${brl(values.ask!, "pt-BR")} como giro. O que esse valor financia: alongamento do ciclo, recomposição de caixa, substituição de linhas? O fundo vai perguntar, e a resposta muda a estrutura.`,
+          en: `Projected growth releases ${brl(values.released, "en-US")} of working capital, because the cash cycle is negative, yet the ask labels ${brl(values.ask!, "en-US")} as working capital. What does that amount fund: a longer cycle, cash rebuild, line replacement? The fund will ask, and the answer changes the structure.`,
+        }
+      : {
+          findingId: "wc-ask-vs-need",
+          severity: "high",
+          pt: `O crescimento projetado absorve ${brl(values.need!, "pt-BR")} de capital de giro, mas o pedido rotula ${brl(values.ask!, "pt-BR")} como giro. O que a diferença financia: alongamento do ciclo, recomposição de caixa, substituição de linhas? O fundo vai perguntar, e a resposta muda a estrutura.`,
+          en: `Projected growth absorbs ${brl(values.need!, "en-US")} of working capital, yet the ask labels ${brl(values.ask!, "en-US")} as working capital. What does the difference fund: a longer cycle, cash rebuild, line replacement? The fund will ask, and the answer changes the structure.`,
+        });
   }
 
   if (has("rate-ask-vs-stack")) {

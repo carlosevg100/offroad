@@ -1,3 +1,5 @@
+import {compareFigures, readDocumentFigure, readFactFigure, readMonthCount, selectLargestAmount} from "@offroad/financial-core";
+
 import type {DebtLineInput, DeskInput} from "./analyze";
 import type {TrajectoryInput} from "./trajectory";
 
@@ -9,6 +11,10 @@ import type {TrajectoryInput} from "./trajectory";
  * bridge, and it is deliberately dumb: it groups, it picks the latest year, it never fills a
  * hole with a guess. What cannot be built is reported in `missing`, in field-path language,
  * so the gap surfaces as a question to the company instead of as a silently absent analysis.
+ *
+ * The figures it reads (whether EBITDA is positive, the larger of two stated amounts, a count of
+ * months, a covenant multiple written in a contract) are read by `@offroad/financial-core`
+ * (stage 19, third polish): a text that is not a figure is no figure, never zero.
  */
 
 export type Fact = {fieldPath: string; value: string};
@@ -250,8 +256,9 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
 
   // A leverage trajectory over a negative EBITDA is arithmetic without meaning; the cash-burning
   // company is read through its runway, inside the desk analysis.
+  const ebitdaFigure = ebitda ? readFactFigure({text: ebitda}).value : null;
   const canTrajectory = Boolean(
-    desk && ebitda && Number(ebitda) > 0 && projectedEbitda.length > 0 && amounts.length > 0 && termMonths !== undefined && graceMonths !== undefined,
+    desk && ebitdaFigure !== null && compareFigures(ebitdaFigure, 0) > 0 && projectedEbitda.length > 0 && amounts.length > 0 && termMonths !== undefined && graceMonths !== undefined,
   );
   // Still asked for, even when the trajectory ran on the fallback: the company's own ramp is
   // the number the fund will underwrite, and the desk's flat line is a placeholder, not an answer.
@@ -275,7 +282,7 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
         // The larger stated amount, because sizing against the smaller one understates the risk
         // the fund will price, and the divergence itself is already a finding.
         newDebt: {
-          amount: amounts.map((entry) => entry.value).sort((a, b) => Number(b) - Number(a))[0]!,
+          amount: amounts[selectLargestAmount({amounts: amounts.map((entry) => entry.value)}).index]!.value,
           termMonths: termMonths!,
           graceMonths: graceMonths!,
           ...(refinancing !== undefined ? {refinancing} : {}),
@@ -287,14 +294,14 @@ export function buildDeskInputs(facts: Fact[], options: DeskInputsOptions): Desk
           ...debt
             .filter((line) => line.covenant !== undefined)
             .map((line) => {
-              const match = line.covenant!.match(/([\d.,]+)\s*x/);
-              return match ? {lender: line.lender, maximum: match[1]!.replace(",", ".")} : null;
+              const maximum = covenantMultiple(line.covenant!);
+              return maximum !== null ? {lender: line.lender, maximum} : null;
             })
             .filter((entry): entry is {lender: string; maximum: string} => entry !== null),
           ...companyCovenants
             .map((entry) => {
-              const match = entry.text.match(/([\d.,]+)\s*x/);
-              return match ? {lender: entry.scope, maximum: match[1]!.replace(",", ".")} : null;
+              const maximum = covenantMultiple(entry.text);
+              return maximum !== null ? {lender: entry.scope, maximum} : null;
             })
             .filter((entry): entry is {lender: string; maximum: string} => entry !== null),
         ],
@@ -325,8 +332,14 @@ export const windowEnd = (window: string): string | undefined => {
   return undefined;
 };
 
-const numberOf = (raw: string | undefined): number | undefined => {
-  if (raw === undefined) return undefined;
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? parsed : undefined;
+/** A count of months a fact states; undefined when the fact is absent or its text is not a figure. */
+const numberOf = (raw: string | undefined): number | undefined => (raw === undefined ? undefined : readMonthCount({text: raw}).value ?? undefined);
+
+/**
+ * The first multiple a covenant text states ("<= 3,0x"), as the figure the trajectory reads ("3.0"):
+ * digits at both ends, read as a Brazilian document writes them; null when there is none.
+ */
+const covenantMultiple = (text: string): string | null => {
+  const match = text.match(/(\d(?:[\d.,]*\d)?)\s*x/);
+  return match ? readDocumentFigure({text: match[1]!}).value : null;
 };
