@@ -7,7 +7,10 @@
  * Nothing is restyled per language beyond the words themselves.
  */
 
-import type {Material, MaterialBlock} from "@offroad/case-materials";
+import type {Material, MaterialBlock, MaterialTableCell} from "@offroad/case-materials";
+
+/** A table cell in the document's language: a bilingual cell prints its own, a plain one as written. */
+const tableCellText = (cell: MaterialTableCell, lang: "pt" | "en") => (typeof cell === "string" ? cell : cell[lang]);
 
 import {offroadHouseTemplateDefinition, presentationTemplateManifest, type InstitutionalPresentationTemplate} from "./presentation-template";
 import {zipStored} from "./zip";
@@ -138,7 +141,7 @@ function blockXml(block: MaterialBlock, lang: DocxLang, references: Map<string, 
             row(block.head.map((head) => cell(paragraph(run(head[lang], {bold: true, size: 18})), {shade: true})), true),
             ...block.rows.map((cells, rowIndex) => row(cells.map((text, cellIndex) => {
               const target = cellIndex === 0 ? targets.get(rowIndex) : undefined;
-              const content = run(text, {size: 18});
+              const content = run(tableCellText(text, lang), {size: 18});
               return cell(paragraph(target === undefined ? content : `<w:bookmarkStart w:id="${target}" w:name="offroad_ref_${target}"/>${content}<w:bookmarkEnd w:id="${target}"/>`));
             }))),
           ],

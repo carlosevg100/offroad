@@ -120,7 +120,7 @@ function materialStrings(material: Material, lang: "pt" | "en"): string[] {
       case "metrics": values.push(...block.items.flatMap(item => [item.label[lang], item.formatted[lang]])); break;
       case "kv": values.push(...block.rows.flatMap(row => [row.label[lang], row.value[lang]])); break;
       case "callout": values.push(block.title[lang], ...block.items.flatMap(item => [item.label[lang], item.value[lang]])); break;
-      case "table": values.push(block.caption[lang], ...block.head.map(head => head[lang]), ...block.rows.flat()); break;
+      case "table": values.push(block.caption[lang], ...block.head.map(head => head[lang]), ...block.rows.flat().map(cell => (typeof cell === "string" ? cell : cell[lang]))); break;
     }
   }
   return values.filter(value => value.trim().length > 0);

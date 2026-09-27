@@ -6,7 +6,7 @@ import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, traject
 import type {InternalRating, StressScenario} from "@offroad/credit-analysis";
 import {materialTemplateReference, type InstrumentVerdict, type MaterialTemplateReference} from "@offroad/credit-playbook";
 import type {CollateralPackage} from "@offroad/deal-structure";
-import {tryPresentationNumber} from "@offroad/financial-core";
+import {presentationAmount, tryPresentationNumber} from "@offroad/financial-core";
 import type {IndicativePrice} from "@offroad/market-reference";
 
 import {diligenceQa} from "./diligence";
@@ -49,11 +49,21 @@ type MaterialClaimMetadata = {
   approvedFingerprint?: string;
 };
 
+/**
+ * A table cell: one string printed as written in both languages (a name, an identifier, a code),
+ * or the cell in each language when it states a figure or prose, so that each document prints the
+ * figure with its own separators (invariant 9).
+ */
+export type MaterialTableCell = string | {pt: string; en: string};
+
+/** The text of a cell in one language. */
+export const tableCellText = (cell: MaterialTableCell, lang: "pt" | "en"): string => (typeof cell === "string" ? cell : cell[lang]);
+
 export type MaterialBlock =
   | {type: "heading"; text: {pt: string; en: string}}
   | ({type: "paragraph"; text: {pt: string; en: string}} & MaterialClaimMetadata)
   | {type: "metrics"; items: Array<{label: {pt: string; en: string}; value: string; formatted: {pt: string; en: string}; supportIds: string[]}>}
-  | {type: "table"; caption: {pt: string; en: string}; head: Array<{pt: string; en: string}>; rows: string[][]}
+  | {type: "table"; caption: {pt: string; en: string}; head: Array<{pt: string; en: string}>; rows: MaterialTableCell[][]}
   | {type: "list"; items: Array<{pt: string; en: string}>}
   | {type: "disclaimer"; text: {pt: string; en: string}}
   /** Two-column terms a lawyer can mark up: label, value, and the basis beside it. */
@@ -109,12 +119,10 @@ export type CompileOutcome =
   | {ok: true; materials: Material[]}
   | {ok: false; reason: "blocked_by_exception" | "audit_failed" | "not_ready"; detail: string[]};
 
-// A value that is not a decimal number is printed as written, never as zero.
-const formatMoney = (value: string, currency: string, locale: "pt-BR" | "en-US") => {
-  const parsed = tryPresentationNumber(value);
-  if (!parsed) return value;
-  return `${currency} ${parsed.value.toLocaleString(locale, {maximumFractionDigits: 0})}`;
-};
+// A value that is not a decimal number is printed as written, never as zero; an amount is printed
+// by the one rule of the materials (financial-core), in whole units grouped by the locale.
+const formatMoney = (value: string, currency: string, locale: "pt-BR" | "en-US") =>
+  tryPresentationNumber(value) ? presentationAmount({value, locale, style: "whole", currency}).text : value;
 
 const formatMultiple = (value: string, locale: "pt-BR" | "en-US") => {
   const parsed = tryPresentationNumber(value);
@@ -149,11 +157,11 @@ function historyTable(facts: readonly ReconciledFact[], currency: string): Mater
   const periods = [...new Set(facts.map((fact) => fact.key.periodEnd).filter((period): period is string => Boolean(period)))].sort();
   if (periods.length === 0) return null;
 
-  const rows = periods.map((period) => {
+  const rows = periods.map((period): MaterialTableCell[] => {
     const year = period.slice(0, 4);
     const cells = metrics.map((metric) => {
       const fact = facts.find((candidate) => candidate.key.periodEnd === period && candidate.key.fieldPath.endsWith(`.${metric}`));
-      return fact ? formatMoney(fact.value, currency, "pt-BR") : "não informado";
+      return fact ? {pt: formatMoney(fact.value, currency, "pt-BR"), en: formatMoney(fact.value, currency, "en-US")} : {pt: "não informado", en: "not stated"};
     });
     return [year, ...cells];
   });
@@ -314,7 +322,7 @@ export function compileMaterials(input: CompileInput): CompileOutcome {
         {pt: "Indicativo", en: "Indicative"},
         {pt: "Base", en: "Basis"},
       ],
-      rows: input.termSheet.terms.map((term) => [term.labels.pt, term.value.pt, term.basis]),
+      rows: input.termSheet.terms.map((term) => [term.labels, term.value, term.basis]),
     });
     packageBlocks.splice(packageBlocks.length - 1, 0, {
       type: "list",

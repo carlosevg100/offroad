@@ -517,12 +517,16 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
     ? sectionHeading
     : lang === "pt" ? "ANÁLISE" : "ANALYSIS";
   let tableIntroduction: string | undefined;
-  material.blocks.forEach((block, index) => {
+  // A table prints each cell in the deck's language: a bilingual cell its own, a plain one as written.
+  const blocks = material.blocks.map((block) => block.type === "table"
+    ? {...block, rows: block.rows.map((row) => row.map((cell) => (typeof cell === "string" ? cell : cell[lang])))}
+    : block);
+  blocks.forEach((block, index) => {
     if (block.type === "heading") {section = block.text[lang]; sectionHeading = block.text[lang]; return;}
     if(index===0 && block.type==="paragraph" && material.presentationCharts?.length && block.text[lang].length<320) {
       slides[0]!.lines.push({label:block.text[lang],traceId:"material-block-0"});return;
     }
-    const nextBlock = material.blocks[index + 1];
+    const nextBlock = blocks[index + 1];
     if (block.type === "paragraph" && block.text[lang].length <= 320 && nextBlock?.type === "table"
       && nextBlock.head.length <= 8 && nextBlock.rows.length > 0
       && nextBlock.rows.every(row => row.length === nextBlock.head.length && row.every(cell => cell.length <= 200))) {

@@ -22,6 +22,7 @@ import {
   calculateNetNewMoney,
   calculateSpreadDifference,
   compareFigures,
+  presentationAmount,
   presentationFigure,
   selectHeaviestScheduleYear,
   testCovenantCeiling,
@@ -76,12 +77,15 @@ export type OperationVerdict = {
 
 // Every figure the verdict states or compares is a financial-core kernel: the net new money, the
 // enlarged ticket, the leverage after a structure, the covenant test, the heaviest schedule year
-// and the conversions to millions, multiples, percent and basis points, all on the decimal value.
-const brlM = (value: DecimalInput): string => `R$ ${presentationFigure({value, scale: "millions", decimals: 1}).value.replace(".", ",")}M`;
-const turns = (value: DecimalInput): string => `${presentationFigure({value, decimals: 2}).value.replace(".", ",")}x`;
+// and the conversions to amounts, multiples, percent and basis points, all on the decimal value.
+// Each language prints the same figures with its own separators (invariant 9).
+type Locale = "pt-BR" | "en-US";
+const local = (figure: string, locale: Locale) => (locale === "pt-BR" ? figure.replace(".", ",") : figure);
+const brlM = (value: DecimalInput, locale: Locale = "pt-BR"): string => presentationAmount({value, locale, style: "abbreviated"}).text;
+const turns = (value: DecimalInput, locale: Locale = "pt-BR"): string => `${local(presentationFigure({value, decimals: 2}).value, locale)}x`;
 const months = (count: number) => `${count} meses`;
-const bpsAsPercent = (bps: DecimalInput): string => presentationFigure({value: bps, scale: "basis_points_as_percent", decimals: 2}).value.replace(".", ",");
-const spreadGap = (spreadBps: number, referenceBps: number): string => bpsAsPercent(calculateSpreadDifference({spreadBps, referenceBps}).value);
+const bpsAsPercent = (bps: DecimalInput, locale: Locale = "pt-BR"): string => local(presentationFigure({value: bps, scale: "basis_points_as_percent", decimals: 2}).value, locale);
+const spreadGap = (spreadBps: number, referenceBps: number, locale: Locale = "pt-BR"): string => bpsAsPercent(calculateSpreadDifference({spreadBps, referenceBps}).value, locale);
 /** Two decimals, as the verdict's amounts are stated in the alternatives it hands on. */
 const cents = (value: DecimalInput): string => presentationFigure({value, decimals: 2}).value;
 const isPositive = (value: DecimalInput) => compareFigures(value, 0) > 0;
@@ -126,8 +130,8 @@ export function judgeOperation(input: {
   const amount = operation.amount;
   const refinancing = operation.refinancing ?? "0";
   const price = priceAt({amount, termMonths: operation.termMonths}, peakOf(trajectory), () => leverageAfter(amount, refinancing));
-  const spread = (value: StructurePrice | null) =>
-    value ? `CDI + ${bpsAsPercent(value.bps.min)}% a ${bpsAsPercent(value.bps.max)}%` : null;
+  const spread = (value: StructurePrice | null, locale: Locale = "pt-BR") =>
+    value ? `CDI + ${bpsAsPercent(value.bps.min, locale)}% ${locale === "pt-BR" ? "a" : "to"} ${bpsAsPercent(value.bps.max, locale)}%` : null;
   const conditions: VerdictNote[] = [];
   const solves: VerdictNote[] = [];
   const leaves: VerdictNote[] = [];
@@ -142,7 +146,7 @@ export function judgeOperation(input: {
     conditions.push({
       id: "waiver-before-anything",
       pt: `A companhia está em ${turns(pre)} contra o teto de ${turns(covenant.maximum)} (${covenant.lender}). Nenhuma dívida nova é contratável antes de um waiver ou da renegociação desse covenant. Esta é a primeira condição precedente da estrutura indicativa. ${isPositive(netNewMoney) ? `Os ${brlM(netNewMoney)} de dinheiro novo dependem dela; a parte de troca de passivo, ${brlM(refinancing)}, é discutível com os credores atuais como alongamento.` : `Por ser troca pura de passivo, a conversa com os credores atuais é de alongamento e não de dívida nova, o que é o argumento mais forte para o waiver.`}`,
-      en: `The company sits at ${turns(pre)} against a ${turns(covenant.maximum)} ceiling (${covenant.lender}). No new debt is contractable before a waiver or a renegotiation of that covenant, and this is not a caveat: it is the operation's first condition precedent. ${isPositive(netNewMoney) ? `The ${brlM(netNewMoney)} of new money depends on it; the ${brlM(refinancing)} liability swap is arguable with the existing lenders as a maturity extension.` : `Being a pure liability swap, the conversation with existing lenders is about extension rather than new debt, which is the strongest argument for the waiver.`}`,
+      en: `The company sits at ${turns(pre, "en-US")} against a ${turns(covenant.maximum, "en-US")} ceiling (${covenant.lender}). No new debt is contractable before a waiver or a renegotiation of that covenant, and this is not a caveat: it is the operation's first condition precedent. ${isPositive(netNewMoney) ? `The ${brlM(netNewMoney, "en-US")} of new money depends on it; the ${brlM(refinancing, "en-US")} liability swap is arguable with the existing lenders as a maturity extension.` : `Being a pure liability swap, the conversation with existing lenders is about extension rather than new debt, which is the strongest argument for the waiver.`}`,
     });
   }
 
@@ -152,7 +156,7 @@ export function judgeOperation(input: {
     conditions.push({
       id: "near-wall-not-fully-covered",
       pt: `O tíquete resgata ${brlM(refinancing)} dos ${brlM(wall12)} que vencem em 12 meses, e o que sobra depende de caixa que cobre ${turns(coverage)} do total. A operação precisa vir com a renovação já acertada das parcelas remanescentes, ou com tíquete maior.`,
-      en: `The ticket redeems ${brlM(refinancing)} of the ${brlM(wall12)} due within twelve months, and the remainder depends on cash covering ${turns(coverage)} of the total. The operation needs the rollover of the remaining parcels already agreed, or a larger ticket.`,
+      en: `The ticket redeems ${brlM(refinancing, "en-US")} of the ${brlM(wall12, "en-US")} due within 12 months, and the remainder depends on cash covering ${turns(coverage, "en-US")} of the total. The operation needs the rollover of the remaining parcels already agreed, or a larger ticket.`,
     });
   }
 
@@ -163,7 +167,7 @@ export function judgeOperation(input: {
       solves.push({
         id: "near-wall-termed-out",
         pt: `Os ${brlM(refinancing)} resgatam as parcelas mais próximas no desembolso: o principal a vencer em ${first.year} cai para ${brlM(first.principalDue)}, e o que era exigência de caixa vira ${months(operation.graceMonths)} de carência e ${months(operation.termMonths)} de prazo.`,
-        en: `The ${brlM(refinancing)} redeems the nearest parcels at disbursement: principal falling due in ${first.year} drops to ${brlM(first.principalDue)}, and what was a cash demand becomes ${operation.graceMonths} months of grace over a ${operation.termMonths}-month tenor.`,
+        en: `The ${brlM(refinancing, "en-US")} redeems the nearest parcels at disbursement: principal falling due in ${first.year} drops to ${brlM(first.principalDue, "en-US")}, and what was a cash demand becomes ${operation.graceMonths} months of grace over a ${operation.termMonths}-month tenor.`,
       });
     }
   }
@@ -171,7 +175,7 @@ export function judgeOperation(input: {
     solves.push({
       id: "new-money",
       pt: `${brlM(netNewMoney)} entram como dinheiro novo${operation.purpose ? ` para ${operation.purpose}` : ""}.`,
-      en: `${brlM(netNewMoney)} lands as new money${operation.purpose ? ` for ${operation.purpose}` : ""}.`,
+      en: `${brlM(netNewMoney, "en-US")} lands as new money${operation.purpose ? ` for ${operation.purpose}` : ""}.`,
     });
   }
 
@@ -183,7 +187,7 @@ export function judgeOperation(input: {
     leaves.push({
       id: "later-wall-untouched",
       pt: `${worst.year} continua exigindo ${brlM(worst.principalDue)} de amortização, ${strain}% do EBITDA daquele ano. Esta operação não passa por lá, e esse ano será rolado de novo.`,
-      en: `${worst.year} still demands ${brlM(worst.principalDue)} of amortisation, ${strain}% of that year's EBITDA. This operation does not reach it, and that year will be rolled again.`,
+      en: `${worst.year} still demands ${brlM(worst.principalDue, "en-US")} of amortisation, ${strain}% of that year's EBITDA. This operation does not reach it, and that year will be rolled again.`,
     });
     const bigger = calculateEnlargedTicket({ticket: amount, refinancing, principalDue: worst.principalDue});
     const biggerRun = simulate({amount: cents(bigger.ticket), termMonths: operation.termMonths, graceMonths: operation.graceMonths, refinancing: cents(bigger.refinancing)});
@@ -192,7 +196,7 @@ export function judgeOperation(input: {
     const ownPeak = peakOf(trajectory);
     const biggerTradeoff = {
       pt: `${biggerPeak && ownPeak ? `O pico de alavancagem vai de ${turns(ownPeak)} para ${turns(biggerPeak)}` : "Custa alavancagem de pico mais alta"} e o livro fica maior.${biggerPrice && price ? ` No preço: ${spread(biggerPrice)} contra ${spread(price)} da estrutura pedida${biggerPrice.bps.min === price.bps.min ? ", o mesmo spread, porque em ambas o dinheiro novo é zero e o que muda é o prazo do passivo" : `, ${spreadGap(biggerPrice.bps.min, price.bps.min)} ponto percentual na ponta baixa`}.` : ""}`,
-      en: `${biggerPeak && ownPeak ? `Peak leverage moves from ${turns(ownPeak)} to ${turns(biggerPeak)}` : "It costs a higher peak leverage"} and the book grows.${biggerPrice && price ? ` On price: ${spread(biggerPrice)} against ${spread(price)} for the requested structure${biggerPrice.bps.min === price.bps.min ? ", the same spread, because in both the new money is zero and what changes is the maturity of the liability" : ""}.` : ""}`,
+      en: `${biggerPeak && ownPeak ? `Peak leverage moves from ${turns(ownPeak, "en-US")} to ${turns(biggerPeak, "en-US")}` : "It costs a higher peak leverage"} and the book grows.${biggerPrice && price ? ` On price: ${spread(biggerPrice, "en-US")} against ${spread(price, "en-US")} for the requested structure${biggerPrice.bps.min === price.bps.min ? ", the same spread, because in both the new money is zero and what changes is the maturity of the liability" : `, ${spreadGap(biggerPrice.bps.min, price.bps.min, "en-US")} percentage point at the low end`}.` : ""}`,
     };
     alternatives.push({
       id: "size-to-cover-the-later-wall",
@@ -201,7 +205,7 @@ export function judgeOperation(input: {
       graceMonths: operation.graceMonths,
       why: {
         pt: `Um tíquete de ${brlM(bigger.ticket)} resolve ${worst.year} junto com a janela curta, e a companhia deixa de voltar ao mercado no pior ano do cronograma.`,
-        en: `A ${brlM(bigger.ticket)} ticket clears ${worst.year} together with the near window, and the company stops returning to market in the worst year of its schedule.`,
+        en: `A ${brlM(bigger.ticket, "en-US")} ticket clears ${worst.year} together with the near window, and the company stops returning to market in the worst year of its schedule.`,
       },
       tradeoff: biggerTradeoff,
       price: biggerPrice,
@@ -219,7 +223,7 @@ export function judgeOperation(input: {
       graceMonths: Math.min(operation.graceMonths, 12),
       why: {
         pt: `Prazo de 60 meses com até 12 de carência é onde o crédito privado brasileiro tem livro de verdade; ${months(operation.termMonths)} restringe a lista de investidores e cobra prêmio por isso.`,
-        en: `Sixty months with up to twelve of grace is where Brazilian private credit has a real book; ${operation.termMonths} months narrows the investor list and is charged a premium for it.`,
+        en: `A 60-month tenor with up to 12 of grace is where Brazilian private credit has a real book; ${operation.termMonths} months narrows the investor list and is charged a premium for it.`,
       },
       tradeoff: {
         pt: `Amortiza mais cedo, então exige geração de caixa antes.${(() => {
@@ -230,7 +234,9 @@ export function judgeOperation(input: {
         })()}`,
         en: `It amortises earlier, so it demands cash generation sooner.${(() => {
           const shorter = shorterPrice();
-          return shorter && price ? ` On price: ${spread(shorter)} against ${spread(price)}.` : " In exchange it prices tighter and carries fewer conditions.";
+          return shorter && price
+            ? ` On price: ${spread(shorter, "en-US")} against ${spread(price, "en-US")}, ${spreadGap(price.bps.min, shorter.bps.min, "en-US")} percentage point saved by shortening.`
+            : " In exchange it prices tighter and carries fewer conditions.";
         })()}`,
       },
       price: shorterPrice(),
@@ -252,9 +258,9 @@ export function judgeOperation(input: {
         ? `As evidências e premissas analisadas suportam a estrutura de ${brlM(amount)} em ${months(operation.termMonths)} com ${months(operation.graceMonths)} de carência, ${operation.instrument}, com os ajustes e condições indicativas descritos abaixo.`
         : `As evidências disponíveis não suportam a configuração solicitada. As alternativas abaixo preservam o objetivo econômico sempre que possível.`,
     en: standing === "stands"
-      ? `The evidence and assumptions analyzed indicatively support a ${brlM(amount)} structure over ${operation.termMonths} months with ${operation.graceMonths} of grace, ${operation.instrument}.`
+      ? `The evidence and assumptions analyzed indicatively support a ${brlM(amount, "en-US")} structure over ${operation.termMonths} months with ${operation.graceMonths} of grace, ${operation.instrument}.`
       : standing === "stands_with_conditions"
-        ? `The evidence and assumptions analyzed support a ${brlM(amount)} structure over ${operation.termMonths} months with ${operation.graceMonths} of grace, ${operation.instrument}, with the indicative adjustments and conditions described below.`
+        ? `The evidence and assumptions analyzed support a ${brlM(amount, "en-US")} structure over ${operation.termMonths} months with ${operation.graceMonths} of grace, ${operation.instrument}, with the indicative adjustments and conditions described below.`
         : `The available evidence does not support the requested configuration. The alternatives below preserve the economic objective wherever possible.`,
   };
 
@@ -262,7 +268,7 @@ export function judgeOperation(input: {
     solves.push({
       id: "price",
       pt: `No mercado de hoje esta estrutura sai a ${spread(price)} ao ano, e é contra essa faixa que o investidor compara o risco descrito acima.`,
-      en: `In today's market this structure prices at ${spread(price)} per year, and that is the band against which an investor weighs the risk described above.`,
+      en: `In today's market this structure prices at ${spread(price, "en-US")} per year, and that is the band against which an investor weighs the risk described above.`,
     });
   }
 

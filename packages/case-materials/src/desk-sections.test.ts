@@ -2,7 +2,11 @@ import Decimal from "decimal.js";
 import {describe, expect, it} from "vitest";
 import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, type Fact} from "@offroad/credit-analysis";
 
+import {tableCellText, type MaterialTableCell} from "./compile";
 import {capitalStructure, covenantSchedule, riskFactors, sourcesAndUses, trajectoryTable} from "./desk-sections";
+
+const pt = (cell: MaterialTableCell | undefined) => tableCellText(cell ?? "", "pt");
+const en = (cell: MaterialTableCell | undefined) => tableCellText(cell ?? "", "en");
 
 const auroraFacts: Fact[] = [
   {fieldPath: "historical_financials.2025.revenue", value: "191200000"},
@@ -45,12 +49,16 @@ describe("the sections a fund underwrites from", () => {
     const block = sourcesAndUses(desk, trajectory)!;
     expect(block.type).toBe("table");
     if (block.type !== "table") return;
-    const amountOf = (row: string[]) => new Decimal(row[1]!.replace(/[^\d]/g, ""));
+    const amountOf = (row: MaterialTableCell[]) => new Decimal(pt(row[1]).replace(/[^\d]/g, ""));
     const source = amountOf(block.rows[0]!);
     const uses = amountOf(block.rows[1]!).plus(amountOf(block.rows[2]!));
     expect(source.eq(uses)).toBe(true);
-    expect(block.rows[1]![0]).toContain("quitação das linhas com covenant");
-    expect(block.rows[1]![0]).toContain("Banco Itaú");
+    expect(pt(block.rows[1]![0])).toContain("quitação das linhas com covenant");
+    expect(pt(block.rows[1]![0])).toContain("Banco Itaú");
+    // Each document prints the amount with its own separators.
+    expect(pt(block.rows[0]![1])).toBe("R$ 42.300.000");
+    expect(en(block.rows[0]![1])).toBe("R$ 42,300,000");
+    expect(en(block.rows[1]![0])).toContain("takeout of the covenanted lines");
   });
 
   it("marks each line kept or taken out in the capital structure", () => {
@@ -58,8 +66,10 @@ describe("the sections a fund underwrites from", () => {
     if (table!.type !== "table") throw new Error("expected table");
     const itau = table!.rows.find((row) => row[0] === "Banco Itaú")!;
     const santander = table!.rows.find((row) => row[0] === "Banco Santander")!;
-    expect(itau.at(-1)).toBe("quitada na operação");
-    expect(santander.at(-1)).toBe("mantida");
+    expect(pt(itau.at(-1))).toBe("quitada na operação");
+    expect(pt(santander.at(-1))).toBe("mantida");
+    expect(en(itau.at(-1))).toBe("taken out in the transaction");
+    expect(en(itau[4])).toBe("Net debt/EBITDA ≤ 3.0x");
   });
 
   it("pairs every critical and high finding with a treatment", () => {
@@ -67,10 +77,14 @@ describe("the sections a fund underwrites from", () => {
     const table = blocks.find((block) => block.type === "table");
     if (!table || table.type !== "table") throw new Error("expected table");
     for (const row of table.rows) {
-      expect(row[1]!.length).toBeGreaterThan(20);
+      expect(pt(row[1]).length).toBeGreaterThan(20);
+      expect(en(row[1]).length).toBeGreaterThan(20);
     }
-    const breach = table.rows.find((row) => row[0]!.includes("rompe covenant"));
-    expect(breach?.[1]).toContain("quitadas na operação");
+    const breach = table.rows.find((row) => pt(row[0]).includes("rompe covenant"));
+    expect(pt(breach?.[1])).toContain("quitadas na operação");
+    // The English document states the risk and its treatment in English, figures in its own separators.
+    expect(en(breach?.[0])).toContain("breaches an existing covenant");
+    expect(en(breach?.[1])).toContain("taken out in the transaction");
   });
 
   it("renders the trajectory and the proposed covenant as tables", () => {
@@ -93,7 +107,7 @@ function renderCovenant(maximum: string): string | undefined {
   desk.stack.lines[0]!.covenant = {metric: "net_debt_ebitda", maximum, original: maximum};
   const table = capitalStructure(desk, null)[0];
   if (table?.type !== "table") throw new Error("Expected capital structure table");
-  return table.rows[0]?.[4];
+  return pt(table.rows[0]?.[4]);
 }
 
 describe("capital structure covenant precision", () => {

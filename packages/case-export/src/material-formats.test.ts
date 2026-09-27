@@ -73,7 +73,7 @@ describe("approved material delivery formats", () => {
   it.each(["pt", "en"] as const)("rounds displayed ratios and keeps table introductions with evidence in %s", async lang => {
     const period = {period:"2027",revenue:"365",ebitda:"182.5",netIncome:"132.5",totalAssets:"1182.5",totalLiabilitiesAndEquity:"1182.5",cfads:"82.5",closingGrossDebt:"100",unrestrictedCash:"182.5",balanceCheck:"0",netDebtToEbitda:"-0.45205479",dscr:null};
     const report = institutionalFinancialModelMaterial({artifactFingerprint:"a".repeat(64),supportIds:[],lang,scenarios:[{name:"Reviewed",currency:"BRL",periods:[period]}]});
-    const ratioTable = report.blocks.find(block => block.type === "table" && block.rows.some(row => row[0]?.includes("EBITDA (x)")));
+    const ratioTable = report.blocks.find(block => block.type === "table" && block.rows.some(row => typeof row[0] === "string" && row[0].includes("EBITDA (x)")));
     expect(ratioTable?.type === "table" && ratioTable.rows[0]?.[1]).toBe(lang === "pt" ? "-0,45" : "-0.45");
     expect(period.netDebtToEbitda).toBe("-0.45205479");
     const intro = {pt:"Premissas aprovadas para este cenário.",en:"Reviewed assumptions for this scenario."};

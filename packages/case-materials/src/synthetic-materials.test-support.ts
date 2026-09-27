@@ -96,5 +96,7 @@ export function syntheticMaterials(variant: SyntheticMaterialsVariant = "balance
     desk,
     trajectory,
     facts: reconciled,
+    /** The texts the materials quote as written from the case: the brief's claims and the text facts, Portuguese in both languages. */
+    quotes: [brief.executiveSummary, ...claims.map((claim) => claim.text), ...facts.filter((fact) => !/^-?\d+(?:\.\d+)?$/.test(fact.value)).map((fact) => fact.value)],
   };
 }

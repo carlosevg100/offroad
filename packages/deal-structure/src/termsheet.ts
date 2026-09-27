@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 import {archetype, type ArchetypeId} from "@offroad/credit-playbook";
+import {presentationAmount, tryPresentationNumber} from "@offroad/financial-core";
 
 import type {CapacityAssessment} from "./capacity";
 import {bandProvenanceNote, playbookBand, reconcileTenor, type MarketBand} from "./market";
@@ -108,8 +109,10 @@ export type TermSheetInput = {
   market?: MarketBand;
 };
 
+// An amount of the term sheet by the one rule of the materials (financial-core): whole units grouped
+// by the locale, never a zero for an amount that is not; a value that is not a number as written.
 const formatMoney = (value: string, currency: string, locale: "pt-BR" | "en-US") =>
-  `${currency} ${Number(value).toLocaleString(locale, {maximumFractionDigits: 0})}`;
+  tryPresentationNumber(value) ? presentationAmount({value, locale, style: "whole", currency}).text : value;
 
 /** Clamps a requested figure into a band, and says which end it hit. */
 function withinBand(requested: number | undefined, band: [number, number]): {value: number; clamped: "low" | "high" | null} {

@@ -103,17 +103,19 @@ function renderBlock(block: MaterialBlock, lang: Lang, order: Map<string, number
         .join("")}</div>`;
 
     case "table": {
+      // Each cell in the document's language: a bilingual cell prints its own, a plain one as written.
+      const rows = block.rows.map((row) => row.map((cell) => (typeof cell === "string" ? cell : cell[lang])));
       // A column whose every cell reads as a number is set right-aligned in tabular figures,
       // which is how a desk reads a table: the eye runs down the digits, not across the text.
       const numeric = block.head.map((_, column) =>
-        block.rows.length > 0 && block.rows.every((row) => /^([R$€US\s]*[-+]?[\d.,]+\s*(%|x|dias|meses)?|\d{4}-\d{2}-\d{2})$/.test((row[column] ?? "").trim())),
+        rows.length > 0 && rows.every((row) => /^([R$€US\s]*[-+]?[\d.,]+\s*(%|x|dias|meses|days|months)?|\d{4}-\d{2}-\d{2})$/.test((row[column] ?? "").trim())),
       );
       const cellClass = (column: number) => (numeric[column] ? ' class="num"' : "");
       return (
         `<figure class="table"><figcaption>${escapeHtml(block.caption[lang])}</figcaption><table><thead><tr>` +
         block.head.map((cell, column) => `<th${cellClass(column)}>${escapeHtml(cell[lang])}</th>`).join("") +
         `</tr></thead><tbody>` +
-        block.rows
+        rows
           .map((row) => `<tr>${row.map((cell, column) => `<td${cellClass(column)}>${escapeHtml(cell)}</td>`).join("")}</tr>`)
           .join("") +
         `</tbody></table></figure>`

@@ -85,6 +85,12 @@ export function syntheticPackage(): {materials: Material[]; desk: ReturnType<typ
   return {materials: [...materials, dataRoomIndex(plan)], desk, trajectory};
 }
 
+/** The texts the materials quote as written from the case: the brief's claims and the text facts, Portuguese in both languages. */
+export const syntheticQuotes: readonly string[] = [
+  brief.executiveSummary, ...claims.map((claim) => claim.text),
+  ...fixture.facts.filter((fact) => !/^-?\d+(?:\.\d+)?$/.test(fact.value)).map((fact) => fact.value),
+];
+
 export const syntheticIssuedOn = fixture.issuedOn;
 export const syntheticCompanyName = fixture.companyName;
 export const syntheticStatements = fixture.institutionalScenario;
@@ -99,7 +105,7 @@ export function materialFigureTexts(material: Material, lang: "pt" | "en"): stri
       case "metrics": for (const item of block.items) texts.push(item.formatted[lang]); break;
       case "kv": for (const row of block.rows) texts.push(row.value[lang], ...(row.note ? [row.note[lang]] : [])); if (block.caption) texts.push(block.caption[lang]); break;
       case "callout": texts.push(block.title[lang]); for (const item of block.items) texts.push(item.value[lang]); break;
-      case "table": texts.push(block.caption[lang], ...block.rows.flat()); break;
+      case "table": texts.push(block.caption[lang], ...block.rows.flat().map((cell) => (typeof cell === "string" ? cell : cell[lang]))); break;
       case "paragraph": case "list": case "disclaimer":
         if (block.type === "list") texts.push(...block.items.map((item) => item[lang])); else texts.push(block.text[lang]);
         break;
@@ -208,8 +214,13 @@ export function htmlText(html: string): string {
 export function pdfText(bytes: Uint8Array): string {
   const raw = Buffer.from(bytes).toString("latin1");
   const streams: string[] = [];
-  for (const match of raw.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
-    try { streams.push(inflateSync(Buffer.from(match[1]!, "latin1")).toString("latin1")); } catch { /* not a Flate stream: an image or a font program */ }
+  // Each stream is read for exactly the /Length its dictionary declares: compressed bytes may end in
+  // a carriage return, which a pattern up to "endstream" would take for the line break before it.
+  for (const match of raw.matchAll(/(?<!end)stream\r?\n/g)) {
+    const start = match.index! + match[0].length;
+    const length = Number(raw.slice(raw.lastIndexOf("obj", match.index!), match.index!).match(/\/Length (\d+)/)?.[1]);
+    if (!Number.isSafeInteger(length)) continue;
+    try { streams.push(inflateSync(Buffer.from(raw.slice(start, start + length), "latin1")).toString("latin1")); } catch { /* not a Flate stream: an image or a font program */ }
   }
   const unicode = new Map<number, string>();
   for (const cmap of streams.filter((stream) => stream.includes("begincmap"))) {

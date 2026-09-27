@@ -1,7 +1,7 @@
 import {calculateCustomerConcentration, calculateEbitdaAdjustments, calculateNewInstrumentAmount, presentationNumber, testScheduleTieOut} from "@offroad/financial-core";
 import {describe, expect, it} from "vitest";
 
-import {institutionalFinancialModelMaterial, type Material} from "./index";
+import {institutionalFinancialModelMaterial, tableCellText, type Material} from "./index";
 import {syntheticMaterials} from "./synthetic-materials.test-support";
 
 const tableRows = (material: Material, caption: string) => {
@@ -19,7 +19,10 @@ describe("the materials print what the financial-core kernels compute", () => {
     const lm = trajectory.liabilityManagement!;
     const amount = calculateNewInstrumentAmount({covenantedBalance: lm.covenantedBalance, netNewMoney: lm.netNewMoney});
     expect(amount.value).toBe("42300000");
-    expect(tableRows(byKind("package"), "Fontes e usos")[0]).toEqual(["Fonte: novo instrumento", "R$ 42.300.000"]);
+    expect(tableRows(byKind("package"), "Fontes e usos")[0]).toEqual([
+      {pt: "Fonte: novo instrumento", en: "Source: new instrument"},
+      {pt: "R$ 42.300.000", en: "R$ 42,300,000"},
+    ]);
   });
 
   it("answers concentration and the schedule tie-out from the kernels, supports in the kernel's ranking", () => {
@@ -40,9 +43,11 @@ describe("the materials print what the financial-core kernels compute", () => {
     const adjustments = calculateEbitdaAdjustments({adjustedEbitda: value("historical_financials.2025.adjusted_ebitda"), reportedEbitda: value("historical_financials.2025.ebitda")});
     expect(adjustments).toMatchObject({value: "572000", magnitude: "572000"});
     const qa = byKind("diligence_qa");
+    // Under a million the amount is stated in thousands (case-materials 2026.09.26-v6), so an
+    // adjustment under R$ 50 thousand can no longer read "R$ 0,0M".
     expect(kvValue(qa, "Há itens não recorrentes no EBITDA? Quais?")).toEqual({
-      pt: "EBITDA ajustado de R$ 17,4M contra reportado de R$ 16,8M: R$ 0,6M de ajustes, a detalhar item a item.",
-      en: "Adjusted EBITDA of R$ 17.4M against reported R$ 16.8M: R$ 0.6M of adjustments, to be detailed item by item.",
+      pt: "EBITDA ajustado de R$ 17,4M contra reportado de R$ 16,8M: R$ 572 mil de ajustes, a detalhar item a item.",
+      en: "Adjusted EBITDA of R$ 17.4M against reported R$ 16.8M: R$ 572 thousand of adjustments, to be detailed item by item.",
     });
     expect(qa.blocks[0]?.type === "paragraph" && qa.blocks[0].text.pt).toContain("27 respondidas a partir da sala e 8 em aberto");
     expect(qa.dependsOn).toContain("historical_financials.2025.adjusted_ebitda");
@@ -52,7 +57,7 @@ describe("the materials print what the financial-core kernels compute", () => {
     const period = {period: "2026", revenue: "100", ebitda: "40", netIncome: "10", totalAssets: "200", totalLiabilitiesAndEquity: "200", cfads: "30",
       closingGrossDebt: "50", unrestrictedCash: "20", balanceCheck: "0", netDebtToEbitda: "2.675", dscr: "1.005", interestCoverage: "-0.125"};
     const statements = institutionalFinancialModelMaterial({artifactFingerprint: "a".repeat(64), supportIds: [], lang: "pt", scenarios: [{name: "Empate", currency: "BRL", periods: [period]}]});
-    const ratios = statements.blocks.find((block) => block.type === "table" && block.rows.some((row) => row[0]?.includes("(x)")));
+    const ratios = statements.blocks.find((block) => block.type === "table" && block.rows.some((row) => tableCellText(row[0] ?? "", "pt").includes("(x)")));
     if (ratios?.type !== "table") throw new Error("missing ratio table");
     // `Number("1.005").toFixed(2)` is 1.00 and `Number("2.675").toFixed(2)` is 2.67: the float path printed them low.
     expect(ratios.rows.map((row) => row[1])).toEqual(["2,68", "1,01", "-0,13"]);

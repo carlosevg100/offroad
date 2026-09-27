@@ -1,7 +1,7 @@
 import {presentationFigure, presentationNumber} from "@offroad/financial-core";
 
 import {auditCompiledMaterial} from "./conduct";
-import type {Material} from "./compile";
+import type {Material, MaterialTableCell} from "./compile";
 
 export type FinancialModelMaterialInput = {
   artifactFingerprint: string;
@@ -93,15 +93,19 @@ export function institutionalFinancialModelMaterial(input: {artifactFingerprint:
     {title: labels("Fluxo de caixa e dívida", "Cash flow and debt"), metrics: [["netWorkingCapital","Capital de giro líquido","Net working capital"],["changeInNetWorkingCapital","Variação do capital de giro","Change in working capital"],["maintenanceCapex","Investimentos de manutenção","Maintenance capex"],["growthCapex","Investimentos de expansão","Growth capex"],["totalCapex","Investimentos totais","Total capex"],["cfads","Caixa disponível para serviço da dívida","Cash available for debt service"],["debtDrawdown","Liberações de dívida","Debt drawdowns"],["principalPaid","Amortização de principal","Principal repayments"],["cashCoupon","Juros pagos","Cash coupon"],["cashIndexation","Correção monetária paga","Cash indexation"],["debtService","Serviço da dívida","Debt service"],["distributions","Distribuições","Distributions"],["netDebt","Dívida líquida","Net debt"]]},
     {title: labels("Indicadores e liquidez", "Coverage and liquidity"), metrics: [["netDebtToEbitda","Dívida líquida / EBITDA (x)","Net debt / EBITDA (x)"],["dscr","Cobertura do serviço da dívida (x)","Debt service coverage (x)"],["interestCoverage","Cobertura de juros (x)","Interest coverage (x)"],["liquidityHeadroom","Folga de liquidez","Liquidity headroom"],["taxLossCarryforward","Prejuízos fiscais acumulados","Tax loss carryforward"],["disallowedInterestCarryforward","Juros não deduzidos acumulados","Disallowed interest carryforward"]]},
   ];
-  const format = (value: string | null | undefined, ratio = false) => {
-    if (value === null || value === undefined) return input.lang === "en" ? "Not computable" : "Não calculável";
-    if (!input.lang) return value;
+  const formatIn = (lang: "pt" | "en", value: string | null | undefined, ratio: boolean) => {
+    if (value === null || value === undefined) return lang === "en" ? "Not computable" : "Não calculável";
     // Presentation precision only, half-up on the decimal value; approved inputs, calculations and registers stay exact.
     if (ratio) value = presentationFigure({value, decimals: 2}).value;
     const [whole = "", fraction] = value.split(".");
-    const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, input.lang === "pt" ? "." : ",");
-    return grouped + (fraction ? `${input.lang === "pt" ? "," : "."}${fraction}` : "");
+    const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, lang === "pt" ? "." : ",");
+    return grouped + (fraction ? `${lang === "pt" ? "," : "."}${fraction}` : "");
   };
+  // A statement in one language prints its figures in that language, ratios at two decimals. The
+  // bilingual statement keeps every figure exact, as it always did, and carries each cell in both
+  // languages, so each document prints the same digits with its own separators.
+  const format = (value: string | null | undefined, ratio = false): MaterialTableCell =>
+    input.lang ? formatIn(input.lang, value, ratio) : {pt: formatIn("pt", value, false), en: formatIn("en", value, false)};
   const material: Material = {kind: "financial_model", title: labels("Demonstrações e cenários aprovados", "Approved financial statements and scenarios"), artifactFingerprint: input.artifactFingerprint, dependsOn: [...input.supportIds], blocks: [
     {type: "paragraph", text: labels("Resultados do cenário aprovado, organizados em resultados, balanço, fluxo de caixa e indicadores. Os históricos e as premissas estão vinculados à revisão que originou esta entrega.", "Approved scenario results, organized into income statement, balance sheet, cash flow and coverage. Historical inputs and assumptions are bound to the review that produced this delivery.")},
     ...input.scenarios.flatMap(scenario => [
@@ -109,7 +113,7 @@ export function institutionalFinancialModelMaterial(input: {artifactFingerprint:
       ...sections.filter(section => section.metrics.some(([key]) => scenario.periods.some(period => period[key] !== undefined))).map(section => ({type: "table" as const,
         caption: labels(`${section.title.pt} · valores em unidades monetárias, salvo indicadores`, `${section.title.en} · monetary units, except ratios`),
         head: [labels("Indicador", "Metric"), ...scenario.periods.map(period => labels(period.period, period.period))],
-        rows: section.metrics.filter(([key]) => scenario.periods.some(period => period[key] !== undefined)).map(([key, pt, en]) => [input.lang ? (input.lang === "pt" ? pt : en) : `${pt} / ${en}`, ...scenario.periods.map(period => format(period[key], ["netDebtToEbitda", "dscr", "interestCoverage"].includes(key)))]),
+        rows: section.metrics.filter(([key]) => scenario.periods.some(period => period[key] !== undefined)).map(([key, pt, en]): MaterialTableCell[] => [input.lang ? (input.lang === "pt" ? pt : en) : {pt, en}, ...scenario.periods.map(period => format(period[key], ["netDebtToEbitda", "dscr", "interestCoverage"].includes(key)))]),
       })),
     ]),
     {type: "disclaimer", text: labels("Exportação dos resultados aprovados. Para alterar premissas e recalcular, submeta uma nova revisão na plataforma. Este arquivo não recalcula localmente e não constitui proposta ou compromisso de financiamento.", "Approved results export. To change assumptions and recalculate, submit a new review in the platform. This file does not recalculate locally and is not a financing offer or commitment.")},

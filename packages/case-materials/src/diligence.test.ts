@@ -107,14 +107,25 @@ describe("question 10: non-recurring items in EBITDA", () => {
     expect(calculateEbitdaAdjustments({adjustedEbitda: "17420000", reportedEbitda: "16848000"}).magnitude).toBe("572000");
     expect(q10(aurora)).toMatchObject({
       answer: {
-        pt: "EBITDA ajustado de R$ 17,4M contra reportado de R$ 16,8M: R$ 0,6M de ajustes, a detalhar item a item.",
-        en: "Adjusted EBITDA of R$ 17.4M against reported R$ 16.8M: R$ 0.6M of adjustments, to be detailed item by item.",
+        pt: "EBITDA ajustado de R$ 17,4M contra reportado de R$ 16,8M: R$ 572 mil de ajustes, a detalhar item a item.",
+        en: "Adjusted EBITDA of R$ 17.4M against reported R$ 16.8M: R$ 572 thousand of adjustments, to be detailed item by item.",
       },
       supportIds: ["historical_financials.2025.adjusted_ebitda", "historical_financials.2025.ebitda"],
     });
     // Adjustments that lower EBITDA print their magnitude beside the two figures that show the direction.
     expect(q10([fact("historical_financials.2025.ebitda", "16848000"), fact("historical_financials.2025.adjusted_ebitda", "16000000.5")]).answer?.pt)
-      .toBe("EBITDA ajustado de R$ 16,0M contra reportado de R$ 16,8M: R$ 0,8M de ajustes, a detalhar item a item.");
+      .toBe("EBITDA ajustado de R$ 16,0M contra reportado de R$ 16,8M: R$ 848 mil de ajustes, a detalhar item a item.");
+  });
+
+  it("never prints an adjustment that is not zero as zero: under a million it is stated in thousands", () => {
+    // In millions with one decimal, R$ 42 thousand printed "R$ 0,0M de ajustes" (case-materials 2026.09.26-v5).
+    expect(q10([fact("historical_financials.2025.ebitda", "16848000"), fact("historical_financials.2025.adjusted_ebitda", "16890000")]).answer).toEqual({
+      pt: "EBITDA ajustado de R$ 16,9M contra reportado de R$ 16,8M: R$ 42 mil de ajustes, a detalhar item a item.",
+      en: "Adjusted EBITDA of R$ 16.9M against reported R$ 16.8M: R$ 42 thousand of adjustments, to be detailed item by item.",
+    });
+    // Below a thousand, the exact amount.
+    expect(q10([fact("historical_financials.2025.ebitda", "16848000"), fact("historical_financials.2025.adjusted_ebitda", "16848450")]).answer?.pt)
+      .toBe("EBITDA ajustado de R$ 16,8M contra reportado de R$ 16,8M: R$ 450 de ajustes, a detalhar item a item.");
   });
 
   it("says there are no declared adjustments when the adjusted EBITDA equals the reported one", () => {
@@ -130,7 +141,7 @@ describe("question 10: non-recurring items in EBITDA", () => {
       fact("historical_financials.2025.adjusted_ebitda", "17420000"), fact("historical_financials.2025.ebitda", "16848000"),
     ]);
     expect(answer.supportIds).toEqual(["historical_financials.2025.adjusted_ebitda", "historical_financials.2025.ebitda"]);
-    expect(answer.answer?.pt).toContain("R$ 0,6M de ajustes");
+    expect(answer.answer?.pt).toContain("R$ 572 mil de ajustes");
   });
 
   it("stays open, addressed to the company, when the pair is not in the case", () => {
