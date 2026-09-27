@@ -183,7 +183,7 @@ describe("renderer, bytes and headers", () => {
     const verified = artifactResponseHeaders(served(pinned()), {status: "verified", sha256: bytesSha, byteLength: 7});
     expect(verified["x-artifact-content-sha256"]).toBe(bytesSha);
     expect(verified["x-artifact-release"]).toBe("released");
-    expect(verified).not.toHaveProperty("x-artifact-bytes");
+    expect(verified["x-artifact-bytes"]).toBe("pinned");
     expect(verified).not.toHaveProperty("x-artifact-legacy");
   });
   it("takes the issue date from the version, never from the clock", () => {
