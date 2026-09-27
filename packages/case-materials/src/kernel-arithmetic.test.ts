@@ -1,4 +1,4 @@
-import {calculateCustomerConcentration, calculateNewInstrumentAmount, presentationNumber, testScheduleTieOut} from "@offroad/financial-core";
+import {calculateCustomerConcentration, calculateEbitdaAdjustments, calculateNewInstrumentAmount, presentationNumber, testScheduleTieOut} from "@offroad/financial-core";
 import {describe, expect, it} from "vitest";
 
 import {institutionalFinancialModelMaterial, type Material} from "./index";
@@ -33,6 +33,19 @@ describe("the materials print what the financial-core kernels compute", () => {
     const tieOut = testScheduleTieOut({scheduleGap: desk.stack.scheduleGap, totalOnBalance: desk.stack.totalOnBalance, tolerance: "0.02"});
     expect(tieOut).toMatchObject({outcome: "outside_tolerance", magnitude: "6820000", side: "balance_above_schedule"});
     expect(kvValue(qa, "O mapa de dívida bate com o balanço?")?.pt).toBe("Não: R$ 6,8M no balanço e fora do mapa; a companhia precisa explicar.");
+  });
+
+  it("answers the non-recurring EBITDA question from the adjustments kernel, and counts it as answered", () => {
+    const value = (path: string) => facts.find((fact) => fact.key.fieldPath === path)!.value;
+    const adjustments = calculateEbitdaAdjustments({adjustedEbitda: value("historical_financials.2025.adjusted_ebitda"), reportedEbitda: value("historical_financials.2025.ebitda")});
+    expect(adjustments).toMatchObject({value: "572000", magnitude: "572000"});
+    const qa = byKind("diligence_qa");
+    expect(kvValue(qa, "Há itens não recorrentes no EBITDA? Quais?")).toEqual({
+      pt: "EBITDA ajustado de R$ 17,4M contra reportado de R$ 16,8M: R$ 0,6M de ajustes, a detalhar item a item.",
+      en: "Adjusted EBITDA of R$ 17.4M against reported R$ 16.8M: R$ 0.6M of adjustments, to be detailed item by item.",
+    });
+    expect(qa.blocks[0]?.type === "paragraph" && qa.blocks[0].text.pt).toContain("27 respondidas a partir da sala e 8 em aberto");
+    expect(qa.dependsOn).toContain("historical_financials.2025.adjusted_ebitda");
   });
 
   it("rounds a ratio on its decimal value: a tie the binary float would print low now rounds up", () => {

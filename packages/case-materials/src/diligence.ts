@@ -45,8 +45,10 @@ export type DiligenceAnswer = {
   supportIds: string[];
 };
 
-const find = (facts: readonly ReconciledFact[], pattern: RegExp): ReconciledFact | undefined =>
-  facts.filter((fact) => pattern.test(fact.key.fieldPath)).sort((a, b) => (b.key.periodEnd ?? "").localeCompare(a.key.periodEnd ?? ""))[0];
+const latest = (matches: ReconciledFact[]): ReconciledFact | undefined => matches.sort((a, b) => (b.key.periodEnd ?? "").localeCompare(a.key.periodEnd ?? ""))[0];
+const find = (facts: readonly ReconciledFact[], pattern: RegExp): ReconciledFact | undefined => latest(facts.filter((fact) => pattern.test(fact.key.fieldPath)));
+/** The fact at exactly this path: a path built from another fact is compared as text, never turned into a pattern to escape. */
+const at = (facts: readonly ReconciledFact[], path: string): ReconciledFact | undefined => latest(facts.filter((fact) => fact.key.fieldPath === path));
 const indexed = (facts: readonly ReconciledFact[], prefix: string): ReconciledFact[] => facts.filter((fact) => fact.key.fieldPath.startsWith(`${prefix}.`));
 
 type Resolver = (context: DiligenceContext) => {answer: Bi; supportIds: string[]} | null;
@@ -106,10 +108,23 @@ const questions: Array<{id: string; section: Bi; question: Bi; resolve: Resolver
     return {answer: bi(`DSO ${w.dso} dias, DIO ${w.dio} dias, DPO ${w.dpo} dias: ciclo de ${w.cycleDays} dias.`, `DSO ${w.dso} days, DIO ${w.dio} days, DPO ${w.dpo} days: a ${w.cycleDays}-day cycle.`), supportIds: ["desk.ciclo_de_caixa_dias"]};
   }},
   {id: "q10", section: bi("Financeiro", "Financials"), question: bi("Há itens não recorrentes no EBITDA? Quais?", "Are there non-recurring items in EBITDA? Which?"), resolve: ({facts}) => {
-    const adjusted = find(facts, /^historical_financials\.\d{4}\.adjusted_ebitda$/); const reported = adjusted ? find(facts, new RegExp(`^${adjusted.key.fieldPath.replace("adjusted_ebitda", "ebitda").replace(/\./g, "\\\\.")}$`)) : undefined;
+    // The latest adjusted EBITDA against the reported EBITDA of the same year, read at its exact path.
+    // Without both, or with a value that is not a number, the question stays open for the company.
+    const adjusted = find(facts, /^historical_financials\.\d{4}\.adjusted_ebitda$/);
+    const reported = adjusted ? at(facts, adjusted.key.fieldPath.replace(/\.adjusted_ebitda$/, ".ebitda")) : undefined;
     if (!adjusted || !reported) return null;
-    const adjustments = calculateEbitdaAdjustments({adjustedEbitda: adjusted.value, reportedEbitda: reported.value}).magnitude;
-    return {answer: bi(`EBITDA ajustado de ${money(adjusted.value, "pt-BR")} contra reportado de ${money(reported.value, "pt-BR")}: ${money(adjustments, "pt-BR")} de ajustes, a detalhar item a item.`, `Adjusted EBITDA of ${money(adjusted.value, "en-US")} against reported ${money(reported.value, "en-US")}: ${money(adjustments, "en-US")} of adjustments, to be detailed item by item.`), supportIds: [adjusted.key.fieldPath, reported.key.fieldPath]};
+    let adjustments: ReturnType<typeof calculateEbitdaAdjustments>;
+    try {
+      adjustments = calculateEbitdaAdjustments({adjustedEbitda: adjusted.value, reportedEbitda: reported.value});
+    } catch (error) {
+      if (error instanceof RangeError) return null;
+      throw error;
+    }
+    const supportIds = [adjusted.key.fieldPath, reported.key.fieldPath];
+    if (adjustments.magnitude === "0") {
+      return {answer: bi(`EBITDA ajustado igual ao reportado, de ${money(reported.value, "pt-BR")}: a companhia não declara ajustes.`, `Adjusted EBITDA equals reported EBITDA, at ${money(reported.value, "en-US")}: the company declares no adjustments.`), supportIds};
+    }
+    return {answer: bi(`EBITDA ajustado de ${money(adjusted.value, "pt-BR")} contra reportado de ${money(reported.value, "pt-BR")}: ${money(adjustments.magnitude, "pt-BR")} de ajustes, a detalhar item a item.`, `Adjusted EBITDA of ${money(adjusted.value, "en-US")} against reported ${money(reported.value, "en-US")}: ${money(adjustments.magnitude, "en-US")} of adjustments, to be detailed item by item.`), supportIds};
   }},
   // ---- debt ---------------------------------------------------------------------------------
   {id: "q11", section: bi("Dívida", "Debt"), question: bi("Qual o estoque de dívida, por credor, custo e vencimento?", "What is the debt stack, by lender, cost and maturity?"), resolve: ({desk}) => {

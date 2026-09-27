@@ -4,6 +4,7 @@ import {
   calculateCustomerConcentration,
   calculateEbitdaAdjustments,
   calculateNewInstrumentAmount,
+  calculateSpreadDifference,
   presentationFigure,
   presentationNumber,
   testScheduleTieOut,
@@ -65,6 +66,23 @@ describe("material computations", () => {
     expect(atLimit.trace).toMatchObject({id: "material.schedule_tie_out", result: "within_tolerance"});
     expect(() => testScheduleTieOut({scheduleGap: "1", totalOnBalance: "1", tolerance: "-0.02"})).toThrow(RangeError);
   });
+
+  it("measures how far one spread sits from another in basis points, exactly and with its trace", () => {
+    expect(calculateSpreadDifference({spreadBps: 475, referenceBps: 440})).toEqual({
+      value: "35",
+      trace: {id: "material.spread_difference", formula: "difference = spread - reference spread, in basis points", operands: {spreadBps: "475", referenceBps: "440"}, result: "35"},
+    });
+    expect(calculateSpreadDifference({spreadBps: 375, referenceBps: 415}).value).toBe("-40");
+    expect(calculateSpreadDifference({spreadBps: 415, referenceBps: 415}).value).toBe("0");
+    // Fractional basis points subtract exactly: binary floating point makes 372.3 - 370.1 into 2.1999999999999886.
+    expect(calculateSpreadDifference({spreadBps: 372.3, referenceBps: 370.1}).value).toBe("2.2");
+    expect(372.3 - 370.1).not.toBe(2.2);
+    expect(calculateSpreadDifference({spreadBps: "500.5", referenceBps: "400"}).value).toBe("100.5");
+    for (const invalid of [Number.NaN, Number.POSITIVE_INFINITY, "", "n/d"]) {
+      expect(() => calculateSpreadDifference({spreadBps: invalid, referenceBps: 400}), String(invalid)).toThrow(RangeError);
+      expect(() => calculateSpreadDifference({spreadBps: 400, referenceBps: invalid}), String(invalid)).toThrow(RangeError);
+    }
+  });
 });
 
 describe("material presentation conversions", () => {
@@ -89,6 +107,23 @@ describe("material presentation conversions", () => {
     });
     expect(() => presentationFigure({value: "1", decimals: -1})).toThrow(RangeError);
     expect(() => presentationFigure({value: "abc", decimals: 2})).toThrow(RangeError);
+  });
+
+  it("prints every whole basis point as a percentage exactly as the floating-point path printed it", () => {
+    // The market reference quotes whole basis points. For every one of them the kernel and
+    // `(bps / 100).toFixed(2)` print the same text, so moving a quote to the kernel changes no byte.
+    const differing: number[] = [];
+    for (let bps = -10_000; bps <= 10_000; bps += 1) {
+      if (presentationFigure({value: bps, scale: "basis_points_as_percent", decimals: 2}).value !== (bps / 100).toFixed(2)) differing.push(bps);
+    }
+    expect(differing).toEqual([]);
+    // Half a basis point on a tie the binary float stores low now rounds up, as the value says.
+    expect(presentationFigure({value: 100.5, scale: "basis_points_as_percent", decimals: 2}).value).toBe("1.01");
+    expect((100.5 / 100).toFixed(2)).toBe("1.00");
+    expect(presentationFigure({value: -100.5, scale: "basis_points_as_percent", decimals: 2}).value).toBe("-1.01");
+    // A tie the binary float stores high agrees with it.
+    expect(presentationFigure({value: 0.5, scale: "basis_points_as_percent", decimals: 2}).value).toBe((0.5 / 100).toFixed(2));
+    expect(() => presentationFigure({value: Number.NaN, scale: "basis_points_as_percent", decimals: 2})).toThrow(RangeError);
   });
 
   it("hands the exact decimal to the binary number the display needs, as Number reads decimal text", () => {

@@ -241,6 +241,7 @@ export const financialCalculationRegistry = {
   "material.customer_concentration": "calculateCustomerConcentration",
   "material.ebitda_adjustments": "calculateEbitdaAdjustments",
   "material.schedule_tie_out": "testScheduleTieOut",
+  "material.spread_difference": "calculateSpreadDifference",
 } as const;
 
 export type FinancialCalculationId = keyof typeof financialCalculationRegistry;

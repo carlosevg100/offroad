@@ -3,15 +3,17 @@ import Decimal from "decimal.js";
 import type {CalculationTrace} from "./credit-math";
 
 /**
- * The arithmetic of the governed credit materials (stage 19, increment 6).
+ * The arithmetic of the governed credit materials (stage 19, increments 6 and 6B).
  *
  * `@offroad/case-materials` assembles the documents a company takes to market; every number it
  * prints that is not a value it received (a sum, a difference, a share, a tolerance test, a unit or
  * precision conversion) is computed here, in Decimal, with a trace naming the formula and the
- * operands. Two kinds of kernel live in this file:
+ * operands. The operation verdict of `@offroad/credit-analysis`, which the credit memo carries,
+ * prints its spreads through the same kernels. Two kinds of kernel live in this file:
  *
  * - computations, which create a financial figure (the new instrument's amount, the concentration
- *   of the leading customers, the EBITDA adjustments, the tie-out of the debt schedule); and
+ *   of the leading customers, the EBITDA adjustments, the tie-out of the debt schedule, the
+ *   difference between two spreads); and
  * - presentation conversions, which print a figure in another unit or at a stated precision
  *   (percent, millions, basis points as percent, half-up rounding) and, at the very edge, hand an
  *   exact decimal to the binary number that `Intl.NumberFormat` and a chart point require.
@@ -20,7 +22,7 @@ import type {CalculationTrace} from "./credit-math";
  * kernel is a rounding one. A value that is not a finite decimal number is refused, never read as
  * zero.
  */
-export const materialArithmeticVersion = "2026.09.26-v1";
+export const materialArithmeticVersion = "2026.09.26-v2";
 
 // The same arithmetic contract the package root declares, so a kernel imported on its own computes
 // exactly what it computes inside a published material.
@@ -153,6 +155,26 @@ export function testScheduleTieOut(input: {scheduleGap: Decimal.Value; totalOnBa
       formula: "within when |balance - schedule| <= tolerance x debt on the balance sheet",
       operands: {scheduleGap: full(gap), totalOnBalance: full(balance), tolerance: full(tolerance)},
       result: within ? "within_tolerance" : "outside_tolerance",
+    },
+  };
+}
+
+/**
+ * How far one spread sits from another, both in basis points, as the verdict compares an
+ * alternative's price with the requested structure's: the signed difference, in basis points.
+ * Fractional basis points subtract exactly (372.3 - 370.1 is 2.2).
+ */
+export function calculateSpreadDifference(input: {spreadBps: Decimal.Value; referenceBps: Decimal.Value}): MaterialFigure {
+  const spread = finite("spread in basis points", input.spreadBps);
+  const reference = finite("reference spread in basis points", input.referenceBps);
+  const difference = spread.minus(reference);
+  return {
+    value: full(difference),
+    trace: {
+      id: "material.spread_difference",
+      formula: "difference = spread - reference spread, in basis points",
+      operands: {spreadBps: full(spread), referenceBps: full(reference)},
+      result: full(difference),
     },
   };
 }

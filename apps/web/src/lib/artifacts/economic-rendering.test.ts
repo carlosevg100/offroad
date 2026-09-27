@@ -3,8 +3,9 @@ import {resolve} from "node:path";
 
 import {institutionalFinancialModelMaterial, type Material} from "@offroad/case-materials";
 import {capitalProcedurePacketBlocks, type CapitalProcedurePacketLike} from "@offroad/domain-contracts";
-import {calculateCustomerConcentration, calculateNewInstrumentAmount, presentationFigure, presentationNumber, testScheduleTieOut} from "@offroad/financial-core";
+import {calculateCustomerConcentration, calculateEbitdaAdjustments, calculateNewInstrumentAmount, presentationFigure, presentationNumber, testScheduleTieOut} from "@offroad/financial-core";
 import {buildInstitutionalFinancialModel, institutionalWorkbookArtifactSchema, renderApprovedInstitutionalFinancialWorkbook} from "@offroad/financial-model";
+import {syntheticCreditMaterialsCase} from "@offroad/testing-fixtures/credit-materials-case";
 import {describe, expect, it, vi} from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -128,10 +129,15 @@ describe("the material kinds of one package", () => {
     const tieOut = testScheduleTieOut({scheduleGap: desk.stack.scheduleGap, totalOnBalance: desk.stack.totalOnBalance, tolerance: "0.02"});
     const shares = ["0.181", "0.12", "0.095", "0.181", "0.05", "0.04"].map((share, index) => ({id: `c${index + 1}`, share}));
     const concentration = calculateCustomerConcentration({shares, leading: 5});
+    const fact = (path: string) => syntheticCreditMaterialsCase.facts.find((entry) => entry.fieldPath === path)!.value;
+    const adjustments = calculateEbitdaAdjustments({adjustedEbitda: fact("historical_financials.2025.adjusted_ebitda"), reportedEbitda: fact("historical_financials.2025.ebitda")});
+    const adjustmentsInMillions = presentationFigure({value: adjustments.magnitude, scale: "millions", decimals: 1}).value;
     const expectations: Array<{kind: Material["kind"]; pt: string; en: string}> = [
       {kind: "package", pt: `R$ ${localized(source, "pt")}`, en: `R$ ${localized(source, "pt")}`},
       {kind: "diligence_qa", pt: `${localized(presentationFigure({value: concentration.leadingTotal, scale: "percent", decimals: 1}).value, "pt")}% da receita`, en: `${presentationFigure({value: concentration.leadingTotal, scale: "percent", decimals: 1}).value}% of revenue`},
       {kind: "diligence_qa", pt: `R$ ${localized(presentationFigure({value: tieOut.magnitude, scale: "millions", decimals: 1}).value, "pt")}M no balanço`, en: `R$ ${presentationFigure({value: tieOut.magnitude, scale: "millions", decimals: 1}).value}M on the balance sheet`},
+      // Question 10 answers from the adjustments kernel since case-materials 2026.09.26-v5.
+      {kind: "diligence_qa", pt: `R$ ${localized(adjustmentsInMillions, "pt")}M de ajustes`, en: `R$ ${adjustmentsInMillions}M of adjustments`},
       {kind: "credit_memo", pt: "CDI + 3,70% a CDI + 5,20% a.a.", en: "CDI + 3.70% to CDI + 5.20% p.a."},
       {kind: "credit_memo", pt: "Alternativa: R$ 71M em 48 meses", en: "Alternative: R$ 71M over 48 months"},
     ];

@@ -1,5 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {analyzeCreditPosition, buildDeskInputs, projectLeverageTrajectory, type Fact} from "@offroad/credit-analysis";
+import {calculateEbitdaAdjustments} from "@offroad/financial-core";
 import type {ReconciledFact} from "@offroad/reconciliation";
 
 import {answerDiligence, diligenceQa, diligenceQuestionCount} from "./diligence";
@@ -81,5 +82,85 @@ describe("the diligence Q&A", () => {
     expect(openRow?.material).toBe(false);
     expect(answeredRow).toMatchObject({material: true, claimKind: "fact"});
     expect(answeredRow?.supportIds?.length).toBeGreaterThan(0);
+  });
+});
+
+describe("question 10: non-recurring items in EBITDA", () => {
+  const fact = (fieldPath: string, value: string): ReconciledFact => {
+    const periodEnd = `${fieldPath.split(".")[1]}-12-31`;
+    return {
+      key: {fieldPath, periodEnd},
+      value,
+      valueType: "number",
+      accepted: {fieldPath, normalizedValue: value, valueType: "number", sourceDocument: "doc", evidenceRank: 1, informationClass: "audited", confidence: 1, anchorVerified: true, periodEnd},
+      conflicts: [],
+      disputed: false,
+    };
+  };
+  const q10 = (facts: ReconciledFact[]) => answerDiligence({facts, calculations: [], desk: null, trajectory: null}).find((entry) => entry.id === "q10")!;
+  const q10Row = (facts: ReconciledFact[]) => diligenceQa({facts, calculations: [], desk: null, trajectory: null}).blocks
+    .flatMap((block) => block.type === "kv" ? block.rows : [])
+    .find((row) => row.label.pt === "Há itens não recorrentes no EBITDA? Quais?");
+  const aurora = [fact("historical_financials.2025.ebitda", "16848000"), fact("historical_financials.2025.adjusted_ebitda", "17420000")];
+
+  it("answers from the adjusted and the reported EBITDA of the same year, through the adjustments kernel", () => {
+    expect(calculateEbitdaAdjustments({adjustedEbitda: "17420000", reportedEbitda: "16848000"}).magnitude).toBe("572000");
+    expect(q10(aurora)).toMatchObject({
+      answer: {
+        pt: "EBITDA ajustado de R$ 17,4M contra reportado de R$ 16,8M: R$ 0,6M de ajustes, a detalhar item a item.",
+        en: "Adjusted EBITDA of R$ 17.4M against reported R$ 16.8M: R$ 0.6M of adjustments, to be detailed item by item.",
+      },
+      supportIds: ["historical_financials.2025.adjusted_ebitda", "historical_financials.2025.ebitda"],
+    });
+    // Adjustments that lower EBITDA print their magnitude beside the two figures that show the direction.
+    expect(q10([fact("historical_financials.2025.ebitda", "16848000"), fact("historical_financials.2025.adjusted_ebitda", "16000000.5")]).answer?.pt)
+      .toBe("EBITDA ajustado de R$ 16,0M contra reportado de R$ 16,8M: R$ 0,8M de ajustes, a detalhar item a item.");
+  });
+
+  it("says there are no declared adjustments when the adjusted EBITDA equals the reported one", () => {
+    expect(q10([fact("historical_financials.2025.ebitda", "16848000"), fact("historical_financials.2025.adjusted_ebitda", "16848000.00")]).answer).toEqual({
+      pt: "EBITDA ajustado igual ao reportado, de R$ 16,8M: a companhia não declara ajustes.",
+      en: "Adjusted EBITDA equals reported EBITDA, at R$ 16.8M: the company declares no adjustments.",
+    });
+  });
+
+  it("reads the latest adjusted EBITDA against the reported EBITDA of that same year", () => {
+    const answer = q10([
+      fact("historical_financials.2024.ebitda", "14924000"), fact("historical_financials.2024.adjusted_ebitda", "15100000"),
+      fact("historical_financials.2025.adjusted_ebitda", "17420000"), fact("historical_financials.2025.ebitda", "16848000"),
+    ]);
+    expect(answer.supportIds).toEqual(["historical_financials.2025.adjusted_ebitda", "historical_financials.2025.ebitda"]);
+    expect(answer.answer?.pt).toContain("R$ 0,6M de ajustes");
+  });
+
+  it("stays open, addressed to the company, when the pair is not in the case", () => {
+    const cases: Record<string, ReconciledFact[]> = {
+      "no EBITDA at all": [],
+      "reported without adjusted": [fact("historical_financials.2025.ebitda", "16848000")],
+      "adjusted without reported": [fact("historical_financials.2025.adjusted_ebitda", "17420000")],
+      "reported only for an earlier year": [fact("historical_financials.2024.ebitda", "14924000"), fact("historical_financials.2025.adjusted_ebitda", "17420000")],
+      "a value that is not a number": [fact("historical_financials.2025.ebitda", "16848000"), fact("historical_financials.2025.adjusted_ebitda", "n/d")],
+    };
+    for (const [name, facts] of Object.entries(cases)) {
+      expect(q10(facts), name).toMatchObject({answer: null, supportIds: []});
+      expect(q10Row(facts), name).toEqual({
+        label: {pt: "Há itens não recorrentes no EBITDA? Quais?", en: "Are there non-recurring items in EBITDA? Which?"},
+        value: {pt: "Em aberto: pedido à companhia.", en: "Open: requested from the company."},
+        material: false,
+      });
+    }
+  });
+
+  it("regression: finds the reported EBITDA that the double-escaped pattern never matched", () => {
+    // Until 2026.09.26-v5 the lookup turned the reported path into a pattern and escaped each dot
+    // twice, so the pattern demanded a backslash before every dot and no field path matched it:
+    // the question stayed open even with both figures in the case.
+    const path = "historical_financials.2025.ebitda";
+    // The pattern the old lookup built for this path: each `\\.` is a literal backslash followed by any character.
+    const doubleEscaped = /^historical_financials\\.2025\\.ebitda$/;
+    expect(doubleEscaped.test(path)).toBe(false);
+    expect(doubleEscaped.test(String.raw`historical_financials\.2025\.ebitda`)).toBe(true);
+    expect(q10(aurora).answer).not.toBeNull();
+    expect(q10Row(aurora)).toMatchObject({material: true, claimKind: "fact", supportIds: ["historical_financials.2025.adjusted_ebitda", path]});
   });
 });

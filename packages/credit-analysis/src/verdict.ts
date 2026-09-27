@@ -16,6 +16,7 @@
  * belongs in the first line and not in a footnote.
  */
 
+import {calculateSpreadDifference, presentationFigure} from "@offroad/financial-core";
 import Decimal from "decimal.js";
 
 import type {DeskAnalysis} from "./analyze";
@@ -68,6 +69,10 @@ const d = (value: string | number): Decimal => new Decimal(value);
 const brlM = (value: Decimal.Value): string => `R$ ${new Decimal(value).div(1_000_000).toFixed(1).replace(".", ",")}M`;
 const turns = (value: Decimal.Value): string => `${new Decimal(value).toFixed(2).replace(".", ",")}x`;
 const months = (count: number) => `${count} meses`;
+// Spreads arrive in basis points and print as percentages: the conversion and the difference
+// between two spreads are financial-core kernels, rounded half-up on the decimal value.
+const bpsAsPercent = (bps: Decimal.Value): string => presentationFigure({value: bps, scale: "basis_points_as_percent", decimals: 2}).value.replace(".", ",");
+const spreadGap = (spreadBps: number, referenceBps: number): string => bpsAsPercent(calculateSpreadDifference({spreadBps, referenceBps}).value);
 
 export function judgeOperation(input: {
   desk: DeskAnalysis;
@@ -105,7 +110,7 @@ export function judgeOperation(input: {
     leveragePost: (peakOf(trajectory) ?? d(leverageAfter(d(operation.amount), d(operation.refinancing ?? "0")))).toFixed(4),
   });
   const spread = (value: StructurePrice | null) =>
-    value ? `CDI + ${(value.bps.min / 100).toFixed(2).replace(".", ",")}% a ${(value.bps.max / 100).toFixed(2).replace(".", ",")}%` : null;
+    value ? `CDI + ${bpsAsPercent(value.bps.min)}% a ${bpsAsPercent(value.bps.max)}%` : null;
   const conditions: VerdictNote[] = [];
   const solves: VerdictNote[] = [];
   const leaves: VerdictNote[] = [];
@@ -176,7 +181,7 @@ export function judgeOperation(input: {
     });
     const ownPeak = peakOf(trajectory);
     const biggerTradeoff = {
-      pt: `${biggerPeak && ownPeak ? `O pico de alavancagem vai de ${turns(ownPeak)} para ${turns(biggerPeak)}` : "Custa alavancagem de pico mais alta"} e o livro fica maior.${biggerPrice && price ? ` No preço: ${spread(biggerPrice)} contra ${spread(price)} da estrutura pedida${biggerPrice.bps.min === price.bps.min ? ", o mesmo spread, porque em ambas o dinheiro novo é zero e o que muda é o prazo do passivo" : `, ${((biggerPrice.bps.min - price.bps.min) / 100).toFixed(2).replace(".", ",")} ponto percentual na ponta baixa`}.` : ""}`,
+      pt: `${biggerPeak && ownPeak ? `O pico de alavancagem vai de ${turns(ownPeak)} para ${turns(biggerPeak)}` : "Custa alavancagem de pico mais alta"} e o livro fica maior.${biggerPrice && price ? ` No preço: ${spread(biggerPrice)} contra ${spread(price)} da estrutura pedida${biggerPrice.bps.min === price.bps.min ? ", o mesmo spread, porque em ambas o dinheiro novo é zero e o que muda é o prazo do passivo" : `, ${spreadGap(biggerPrice.bps.min, price.bps.min)} ponto percentual na ponta baixa`}.` : ""}`,
       en: `${biggerPeak && ownPeak ? `Peak leverage moves from ${turns(ownPeak)} to ${turns(biggerPeak)}` : "It costs a higher peak leverage"} and the book grows.${biggerPrice && price ? ` On price: ${spread(biggerPrice)} against ${spread(price)} for the requested structure${biggerPrice.bps.min === price.bps.min ? ", the same spread, because in both the new money is zero and what changes is the maturity of the liability" : ""}.` : ""}`,
     };
     alternatives.push({
@@ -208,7 +213,7 @@ export function judgeOperation(input: {
         pt: `Amortiza mais cedo, então exige geração de caixa antes.${(() => {
           const shorter = priceFor({amount: operation.amount, termMonths: 60, leveragePost: leverageAfter(d(operation.amount), d(operation.refinancing ?? "0"))});
           return shorter && price
-            ? ` No preço: ${spread(shorter)} contra ${spread(price)}, ${((price.bps.min - shorter.bps.min) / 100).toFixed(2).replace(".", ",")} ponto percentual economizado ao encurtar.`
+            ? ` No preço: ${spread(shorter)} contra ${spread(price)}, ${spreadGap(price.bps.min, shorter.bps.min)} ponto percentual economizado ao encurtar.`
             : " Em troca sai mais barato e com menos condições.";
         })()}`,
         en: `It amortises earlier, so it demands cash generation sooner.${(() => {

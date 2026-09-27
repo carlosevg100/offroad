@@ -2,7 +2,7 @@ import {describe, expect, it} from "vitest";
 
 import type {DeskAnalysis} from "./analyze";
 import type {Trajectory} from "./trajectory";
-import {judgeOperation, type Operation} from "./verdict";
+import {judgeOperation, type Operation, type StructurePrice} from "./verdict";
 
 /** Camil's shape: leverage above the covenant, a wall inside twelve months, another in 2030. */
 const desk = (overrides: Partial<DeskAnalysis["leverage"]> = {}, stack: Partial<DeskAnalysis["stack"]> = {}): DeskAnalysis =>
@@ -61,6 +61,33 @@ describe("the supportability analysis of the requested structure", () => {
     const shorter = verdict.alternatives.find((entry) => entry.id === "shorter-cheaper")!;
     expect(shorter.termMonths).toBe(60);
     expect(shorter.graceMonths).toBe(12);
+  });
+
+  it("prints spreads and the gaps between them on the decimal value, through financial-core", () => {
+    // Half basis points on ties that binary floating point stores low: 500.5 bps is 5.005%, and the
+    // float path printed `(500.5 / 100).toFixed(2)` as 5.00, the bigger ticket's gap of 99.5 bps as
+    // 0,99 and the shorter road's saving of 100.5 bps as 1,00. No market reference quotes half basis
+    // points; the kernels print what the value says.
+    const quote = (min: number, max: number): StructurePrice => ({bps: {min, max}, allIn: {min: "0", max: "0"}});
+    const priceFor = ({amount, termMonths}: {amount: string; termMonths: number}) =>
+      termMonths === 60 ? quote(400, 550) : amount === "700000000" ? quote(500.5, 650.5) : quote(600, 750);
+    const verdict = judgeOperation({
+      desk: desk(),
+      trajectory: trajectory([{year: 2027, principalDue: "0", scheduleStrain: "0"}, {year: 2030, principalDue: "1099200000", scheduleStrain: "1.20"}]),
+      operation: {...operation, termMonths: 84, graceMonths: 24},
+      priceFor,
+    });
+    expect(verdict.solves.find((note) => note.id === "price")?.pt).toContain("CDI + 5,01% a 6,51% ao ano");
+    expect(verdict.alternatives.find((entry) => entry.id === "size-to-cover-the-later-wall")?.tradeoff.pt)
+      .toContain("No preço: CDI + 6,00% a 7,50% contra CDI + 5,01% a 6,51% da estrutura pedida, 1,00 ponto percentual na ponta baixa.");
+    expect(verdict.alternatives.find((entry) => entry.id === "shorter-cheaper")?.tradeoff.pt)
+      .toContain("No preço: CDI + 4,00% a 5,50% contra CDI + 5,01% a 6,51%, 1,01 ponto percentual economizado ao encurtar.");
+  });
+
+  it("refuses a spread that is not a number instead of printing it", () => {
+    // The float path printed `CDI + NaN%`; the kernel refuses the quote.
+    const priceFor = (): StructurePrice => ({bps: {min: Number.NaN, max: 550}, allIn: {min: "0", max: "0"}});
+    expect(() => judgeOperation({desk: desk(), trajectory: trajectory([{year: 2027, principalDue: "0", scheduleStrain: "0"}]), operation, priceFor})).toThrow(RangeError);
   });
 
   it("stands without conditions when nothing binds", () => {
