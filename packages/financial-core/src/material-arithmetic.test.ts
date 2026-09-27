@@ -11,6 +11,7 @@ import {
   calculateNewInstrumentAmount,
   calculateSpreadDifference,
   compareFigures,
+  presentationAmount,
   presentationFigure,
   presentationNumber,
   presentationSpread,
@@ -231,6 +232,62 @@ describe("material presentation conversions", () => {
     // A tie the binary float stores high agrees with it.
     expect(presentationFigure({value: 0.5, scale: "basis_points_as_percent", decimals: 2}).value).toBe((0.5 / 100).toFixed(2));
     expect(() => presentationFigure({value: Number.NaN, scale: "basis_points_as_percent", decimals: 2})).toThrow(RangeError);
+  });
+
+  it("prints an amount in a sentence by one rule: millions from 999,500, thousands from one thousand, the exact amount below", () => {
+    const text = (value: string, locale: "pt-BR" | "en-US" = "pt-BR") => presentationAmount({value, locale, style: "abbreviated"}).text;
+    expect(text("17420000")).toBe("R$ 17,4M");
+    expect(text("17420000", "en-US")).toBe("R$ 17.4M");
+    expect(text("1099200000")).toBe("R$ 1099,2M");
+    // Under a million, thousands without decimals: never "R$ 0,0M" for an amount that is not zero.
+    expect(text("45000")).toBe("R$ 45 mil");
+    expect(text("45000", "en-US")).toBe("R$ 45 thousand");
+    expect(text("49999")).toBe("R$ 50 mil");
+    expect(text("572000")).toBe("R$ 572 mil");
+    expect(text("999499.99")).toBe("R$ 999 mil");
+    // Where thousands would round to a thousand thousand, the amount is stated in millions.
+    expect(text("999500")).toBe("R$ 1,0M");
+    expect(text("1000")).toBe("R$ 1 mil");
+    // Below a thousand, the exact amount.
+    expect(text("999.99")).toBe("R$ 999,99");
+    expect(text("0.3", "en-US")).toBe("R$ 0.3");
+    expect(text("0")).toBe("R$ 0");
+    expect(text("-45000")).toBe("R$ -45 mil");
+    expect(text("-17420000", "en-US")).toBe("R$ -17.4M");
+    expect(presentationAmount({value: "45000", locale: "pt-BR", style: "abbreviated"})).toEqual({
+      text: "R$ 45 mil", figure: "45", unit: "thousands",
+      trace: {
+        id: "material.presentation_amount", formula: "millions, half-up to 1 decimal, from 999500; thousands, half-up to 0 decimals, from 1000; below, the exact amount",
+        operands: {value: "45000", style: "abbreviated", locale: "pt-BR"}, result: "R$ 45 mil",
+      },
+    });
+    // No amount that is not zero prints as zero, from a cent to R$ 2 million.
+    const zeroes: string[] = [];
+    for (const step of ["0.01", "0.49", "1", "37", "499", "500", "999", "49999", "50000", "999499", "999500", "1049999", "1950000"]) {
+      for (const locale of ["pt-BR", "en-US"] as const) {
+        const printed = presentationAmount({value: step, locale, style: "abbreviated"});
+        if (/^R\$ -?0(?:[.,]0+)?(?:M| mil| thousand)?$/.test(printed.text)) zeroes.push(`${step} ${printed.text}`);
+      }
+    }
+    expect(zeroes).toEqual([]);
+    expect(() => presentationAmount({value: "n/d", locale: "pt-BR", style: "abbreviated"})).toThrow(RangeError);
+  });
+
+  it("prints an amount in a table in whole units grouped by the locale, exact below one unit", () => {
+    const text = (value: string, locale: "pt-BR" | "en-US" = "pt-BR") => presentationAmount({value, locale, style: "whole"}).text;
+    expect(text("42300000")).toBe("R$ 42.300.000");
+    expect(text("42300000", "en-US")).toBe("R$ 42,300,000");
+    expect(text("-8420000")).toBe("R$ -8.420.000");
+    expect(text("1.5")).toBe("R$ 2");
+    expect(text("0.4")).toBe("R$ 0,4");
+    expect(text("0")).toBe("R$ 0");
+    expect(presentationAmount({value: "500476", locale: "en-US", style: "whole", currency: "US$"}).text).toBe("US$ 500,476");
+    // The text the Intl path printed for every whole amount the materials carry.
+    for (const value of ["58576524", "500476", "-8420000", "1820000", "0", "999", "1000", "123456789012"]) {
+      for (const locale of ["pt-BR", "en-US"] as const) {
+        expect(text(value, locale)).toBe(`R$ ${Number(value).toLocaleString(locale, {maximumFractionDigits: 0})}`);
+      }
+    }
   });
 
   it("states a spread as a signed percentage, and prints every whole basis point as both price sentences printed it", () => {

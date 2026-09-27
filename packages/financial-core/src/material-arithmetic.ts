@@ -17,9 +17,9 @@ import type {CalculationTrace} from "./credit-math";
  *   difference between two spreads, and for the verdict the net new money, the enlarged ticket,
  *   the leverage after a structure, the covenant ceiling test and the heaviest schedule year); and
  * - presentation conversions, which print a figure in another unit or at a stated precision
- *   (percent, millions, basis points as percent, a signed spread, half-up rounding) and, at the
- *   very edge, hand an exact decimal to the binary number that `Intl.NumberFormat` and a chart
- *   point require.
+ *   (percent, millions, basis points as percent, a signed spread, an amount by the one rule every
+ *   material prints amounts with, half-up rounding) and, at the very edge, hand an exact decimal
+ *   to the binary number that `Intl.NumberFormat` and a chart point require.
  *
  * Figures are full-precision decimal strings (`Decimal#toFixed()` without rounding) unless the
  * kernel is a rounding one. A value that is not a finite decimal number is refused, never read as
@@ -349,6 +349,75 @@ export function presentationFigure(input: {value: Decimal.Value; scale?: Present
       formula: input.decimals === undefined ? scales[scale].formula : `${scales[scale].formula}, half-up to ${input.decimals} decimals`,
       operands: {value: full(value), scale},
       result: printed,
+    },
+  };
+}
+
+export type AmountLocale = "pt-BR" | "en-US";
+
+export type PresentationAmount = {
+  /** The amount as a document prints it: "R$ 17,4M", "R$ 45 mil", "R$ 45 thousand", "R$ 42.300.000". */
+  readonly text: string;
+  /** The printed figure as a decimal string, before the separators of the locale. */
+  readonly figure: string;
+  readonly unit: "millions" | "thousands" | "units";
+  readonly trace: CalculationTrace;
+};
+
+// From here, thousands without decimals would print 1,000 thousand: the amount is stated in millions.
+const MILLIONS_FROM = new Decimal("999500");
+
+/**
+ * The one rule by which every material prints an amount, so that no amount that is not zero ever
+ * prints as zero. Two styles:
+ *
+ * - `abbreviated`, for amounts in a sentence: millions with one decimal from R$ 999,500 (where
+ *   thousands would round to a thousand thousand), "R$ 17,4M" and "R$ 17.4M"; thousands without
+ *   decimals from R$ 1 thousand, "R$ 45 mil" and "R$ 45 thousand"; below that, the exact amount in
+ *   units, "R$ 450".
+ * - `whole`, for amounts in a table or a term: whole units grouped as the locale groups them,
+ *   "R$ 42.300.000" and "R$ 42,300,000"; an amount under one unit that is not zero, exact, "R$ 0,3".
+ *
+ * Rounding is half away from zero on the decimal value; zero prints as zero, "R$ 0".
+ */
+export function presentationAmount(input: {value: Decimal.Value; locale: AmountLocale; style: "abbreviated" | "whole"; currency?: string}): PresentationAmount {
+  const value = finite("amount", input.value);
+  const currency = input.currency ?? "R$";
+  const separator = input.locale === "pt-BR" ? "," : ".";
+  const local = (figure: string) => figure.replace(".", separator);
+  const magnitude = value.abs();
+  let unit: PresentationAmount["unit"];
+  let figure: string;
+  let text: string;
+  if (input.style === "abbreviated" && magnitude.gte(MILLIONS_FROM)) {
+    unit = "millions";
+    figure = value.div(1_000_000).toFixed(1, Decimal.ROUND_HALF_UP);
+    text = `${currency} ${local(figure)}M`;
+  } else if (input.style === "abbreviated" && magnitude.gte(1000)) {
+    unit = "thousands";
+    figure = value.div(1000).toFixed(0, Decimal.ROUND_HALF_UP);
+    text = `${currency} ${figure} ${input.locale === "pt-BR" ? "mil" : "thousand"}`;
+  } else if (input.style === "whole" && (magnitude.gte(1) || value.isZero())) {
+    unit = "units";
+    figure = value.toFixed(0, Decimal.ROUND_HALF_UP);
+    // The figure is already a whole number; Intl only groups its digits in the locale.
+    text = `${currency} ${presentationNumber(figure).value.toLocaleString(input.locale, {maximumFractionDigits: 0})}`;
+  } else {
+    unit = "units";
+    figure = full(value);
+    text = `${currency} ${local(figure)}`;
+  }
+  return {
+    text,
+    figure,
+    unit,
+    trace: {
+      id: "material.presentation_amount",
+      formula: input.style === "abbreviated"
+        ? "millions, half-up to 1 decimal, from 999500; thousands, half-up to 0 decimals, from 1000; below, the exact amount"
+        : "whole units, half-up; below one unit and not zero, the exact amount",
+      operands: {value: full(value), style: input.style, locale: input.locale},
+      result: text,
     },
   };
 }
