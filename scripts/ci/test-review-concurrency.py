@@ -79,8 +79,11 @@ def compete(first_sql, second_sql, expected_error=None, second_actor=actor):
 
 # Isolated synthetic tenant; immutable rows remain only until the disposable CI stack ends.
 fixture = expand(ROOT / 'supabase/tests/support/artifact_revision_setup.sql')
-fixture = fixture.replace('a11b0000', 'a520c000').replace('a4192000', 'a520d000').replace('a4191000', 'a520e000').replace('a4171000', 'a520f000')
+fixture = fixture.replace('a11b0000', 'a520c000').replace('a4192000', 'a520d000').replace('a4191000', 'a520e000').replace('a4171000', 'a520f000').replace('a9990000', 'a520b000').replace('a3300000', 'a520a000')
 fixture = fixture.replace('a11b-', 'a520c-').replace('synthetic-artifact', 'synthetic-review-concurrency').replace('synthetic-execution', 'synthetic-review-method')
+fixture = fixture.replace('synthetic-policy-worker-fixture-token-v1', 'synthetic-review-policy-worker-token-v1')
+fixture = fixture.replace('offroad:test:artifact-source:', 'offroad:test:review-concurrency-source:')
+fixture = fixture.replace('artifact-foreign@example.invalid', 'review-foreign@example.invalid')
 setup = f"""
 insert into public.organization_review_policies(organization_id,self_approval_allowed,updated_by) values('{org}',true,'{actor}');
 select public.set_capital_project_review_assignment_v1('{work}','{actor}','approver',true);
