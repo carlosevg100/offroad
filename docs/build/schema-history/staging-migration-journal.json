@@ -1695,6 +1695,10 @@
   {
    "version": "20260928174845",
    "name": "institutional_setup_input_snapshots"
+  },
+  {
+   "version": "20260928202018",
+   "name": "institutional_contribution_receipts"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",

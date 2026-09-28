@@ -2,7 +2,7 @@
 
 ## Etapa 20, incremento 3E: comprovação prospectiva de contribuições, 28/09/2026
 
-3D fechado na PR 840/main `d6cc9df9b7d2e814975e715ed69b5e7bca062061`: CI de main 36466173532 aprovada; web e worker 491 verificados nesse commit. O 3E acrescenta receipt privado imutável à mesma transação da candidata derivada de resposta humana, conserva pai exato e revalida replay. Staging `20260928202018`, contratos SQL e 51 testes direcionados aprovados; concorrência na CI, produção, merge e deployments ainda pendentes. Sem fechamento de fontes ou promoção de liberação. Detalhes em `docs/build/arcabouco/etapa-20-3e-contribuicoes.md`. Etapa 20 aberta; 21–24 não iniciadas.
+3D fechado na PR 840/main `d6cc9df9b7d2e814975e715ed69b5e7bca062061`: CI de main 36466173532 aprovada; web e worker 491 verificados nesse commit. O 3E acrescenta receipt privado imutável à mesma transação da candidata derivada de resposta humana, conserva pai exato e revalida replay. Migração staging `20260928202018` e produção `20260928203811`: SQL e definição instalada idênticos. Contratos SQL, 51 testes direcionados, gate local completo e sete corridas reais na CI 36479713715 aprovados. Catálogos 2.807/2.868 objetos, nove novos por ambiente sem drift; checkers e advisors conferidos. CI final, merge e deployments ainda pendentes. Sem fechamento de fontes ou promoção de liberação. Detalhes em `docs/build/arcabouco/etapa-20-3e-contribuicoes.md`. Etapa 20 aberta; 21–24 não iniciadas.
 
 
 O incremento 3C está fechado: PR 839/main `d3786655`, CI e deployments aprovados; task 490 com boot, 25 capacidades, dois executores e um preparador conferidos. Relatório externo em `outputs/etapa-20-2026-09-27/ETAPA-20-3C-COMPLETION.md` na raiz do workspace.

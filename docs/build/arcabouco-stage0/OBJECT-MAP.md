@@ -3071,3 +3071,16 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 ## Etapa 20, captura prospectiva do setup institucional
 
 34 objetos novos: três tabelas privadas, sete funções, doze políticas negativas e doze gatilhos. Loaders v1/v2 e writer v1 negam submissões capturadas. Captura de setup, direitos atuais e fixados, vínculo atômico e classificação privada somente de raiz sem pai. Carimbo de produção: `20260928180833`; staging: `20260928174845`.
+
+## Etapa 20 / 3E: comprovante de contribuição
+
+9 objetos novos e 0 atualizados. Preservar a prova prospectiva e imutável da transformação humana, sem promover ancestralidade desconhecida.
+- `policy:private.institutional_contribution_receipts.institutional_contribution_deny_delete`
+- `policy:private.institutional_contribution_receipts.institutional_contribution_deny_insert`
+- `policy:private.institutional_contribution_receipts.institutional_contribution_deny_select`
+- `policy:private.institutional_contribution_receipts.institutional_contribution_deny_update`
+- `r:private.institutional_contribution_receipts`
+- `trigger:private.institutional_contribution_receipts.institutional_contribution_audit`
+- `trigger:private.institutional_contribution_receipts.institutional_contribution_immutable`
+- `trigger:private.institutional_contribution_receipts.institutional_contribution_no_truncate`
+- `trigger:private.institutional_contribution_receipts.institutional_contribution_updated`
