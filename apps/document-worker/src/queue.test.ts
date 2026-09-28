@@ -2,7 +2,7 @@ import {createHash} from "node:crypto";
 
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {describe, expect, it, vi} from "vitest";
-import {claimedJobSchema, createQueueClient, type AgentOperationBriefJob, type CapitalProjectAnalysisJob, type CaseAnalysisJob} from "./queue";
+import {InstitutionalCaptureRetryError, claimedJobSchema, createQueueClient, type AgentOperationBriefJob, type CapitalProjectAnalysisJob, type CaseAnalysisJob} from "./queue";
 
 const job: CaseAnalysisJob = {
   claimed: true,
@@ -866,4 +866,38 @@ it("uses only capability-scoped proposal RPCs and forwards the loaded input fing
     ["worker_load_execution_brief_proposal_v4", {p_job_id: job.job_id, p_capability_token: job.capability_token}],
     ["worker_record_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: {internal: true}, p_visible_snapshot: {visible: true}, p_expected_input_fingerprint: "a".repeat(64), p_plan: null}],
   ]);
+});
+
+describe("institutional input capture commands",()=>{
+ it("loads through v2 and sends the exact loader pin with the result without v1 fallback",async()=>{
+  const rpc=vi.fn().mockResolvedValue({data:{id:"10000000-0000-4000-8000-000000000001",status:"blocked",replayed:false},error:null});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  const result={status:"blocked" as const,blockers:["missing_inputs"],inputSnapshot:{id:"95000000-0000-4000-8000-000000000881",fingerprint:"c".repeat(64)}};
+  const institutionalJob={...job,kind:"agent_operation_brief" as const,payload:{message_id:"90000000-0000-4000-8000-000000000881",locale:"pt-BR" as const}};
+  await queue.loadInstitutionalModelContext!(institutionalJob);
+  await queue.recordInstitutionalModelResult!(institutionalJob,result);
+  expect(rpc).toHaveBeenNthCalledWith(1,"worker_load_institutional_model_context_v2",{p_job_id:job.job_id,p_capability_token:job.capability_token});
+  expect(rpc).toHaveBeenNthCalledWith(2,"worker_record_institutional_model_result_v2",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_result:result});
+ });
+});
+
+describe("institutional capture contention",()=>{
+ it("retries only an explicit atomic capture abort and preserves the exact arguments",async()=>{
+  const rpc=vi.fn().mockResolvedValueOnce({data:null,error:{code:"40001",message:"institutional_capture_retry"}}).mockResolvedValue({data:{inputSnapshot:{id:"pin"}},error:null});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  expect(await queue.loadInstitutionalModelContext!(job)).toEqual({inputSnapshot:{id:"pin"}});
+  expect(rpc).toHaveBeenCalledTimes(2);expect(rpc.mock.calls[0]).toEqual(rpc.mock.calls[1]);
+ });
+ it("returns a typed retry after bounded capture contention instead of falling back to v1",async()=>{
+  const rpc=vi.fn().mockResolvedValue({data:null,error:{code:"40001",message:"institutional_capture_retry"}});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  await expect(queue.loadInstitutionalModelContext!(job)).rejects.toBeInstanceOf(InstitutionalCaptureRetryError);
+  expect(rpc).toHaveBeenCalledTimes(3);
+ });
+ it.each([{code:"42501",message:"institutional_capture_rights_revoked"},{code:"40001",message:"other_serialization_error"},{code:"NETWORK",message:"ambiguous delivery"}])("does not automatically repeat other failures: $code/$message",async(error)=>{
+  const rpc=vi.fn().mockResolvedValue({data:null,error});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  await expect(queue.loadInstitutionalModelContext!(job)).rejects.toThrow(error.message);
+  expect(rpc).toHaveBeenCalledOnce();
+ });
 });

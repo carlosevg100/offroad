@@ -13538,6 +13538,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
+      worker_load_institutional_model_context_v2: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_load_intake_events: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
@@ -13854,6 +13858,10 @@ export type Database = {
         Returns: Json
       }
       worker_record_institutional_model_result_v1: {
+        Args: { p_capability_token: string; p_job_id: string; p_result: Json }
+        Returns: Json
+      }
+      worker_record_institutional_model_result_v2: {
         Args: { p_capability_token: string; p_job_id: string; p_result: Json }
         Returns: Json
       }

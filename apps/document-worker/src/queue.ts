@@ -1,3 +1,4 @@
+import type {InstitutionalResultInput} from "./institutional-model-runtime";
 import {retrieveGoverned} from "@offroad/governed-retrieval";
 import type {InstitutionalModelConfiguration} from "@offroad/financial-model";
 import {createHash} from "node:crypto";
@@ -259,7 +260,7 @@ export type QueueClient = {
     draftFingerprint: string;
     replayed: boolean;
   }>;
-  recordInstitutionalModelResult?(job: AgentOperationBriefJob, result: {status: "completed"; artifact: unknown} | {status: "blocked"; blockers: string[]}): Promise<{id: string; status: string; replayed: boolean}>;
+  recordInstitutionalModelResult?(job: AgentOperationBriefJob, result: InstitutionalResultInput): Promise<{id: string; status: string; replayed: boolean}>;
   loadInstitutionalModelContext?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<unknown>;
   recordInitialInstitutionalConfigurationCandidate?(job: AgentOperationBriefJob, input: {submissionId: string; candidate: unknown}): Promise<{candidateId: string | null; revision: number | null; replayed: boolean}>;
   loadInstitutionalConfiguration?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<{configuration:InstitutionalModelConfiguration|null;configurationFingerprint:string|null;revision:number|null}>;
@@ -467,6 +468,11 @@ export type ArtifactRevisionWrite = {
 };
 export type ArtifactRevisionWritten = {artifactId: string; revisionId: string; revisionNo: number; manifestFingerprint: string; replayed: boolean};
 
+/** Only this exact database abort authorizes retrying institutional capture. */
+export class InstitutionalCaptureRetryError extends Error {
+  constructor() {super("institutional_capture_retry");this.name="InstitutionalCaptureRetryError";}
+}
+
 export function createQueueClient(
   supabase: SupabaseClient,
   options: {workerToken: string; leaseSeconds: number},
@@ -478,6 +484,12 @@ export function createQueueClient(
     for (let attempt = 0; ; attempt += 1) {
       const {data, error} = await supabase.rpc(name, args);
       if (!error) return data;
+      if ((name==="worker_load_institutional_model_context_v2"||name==="worker_record_institutional_model_result_v2")
+        && error.code==="40001" && error.message==="institutional_capture_retry") {
+        if (attempt>=2) throw new InstitutionalCaptureRetryError();
+        await delay(50 * (2 ** attempt) + Math.floor(Math.random() * 50));
+        continue;
+      }
       if (name !== "worker_record_capital_project_artifact" || error.code !== "40P01" || attempt >= 2) {
         throw new Error(`${name} failed: ${error.message}`);
       }
@@ -769,11 +781,11 @@ export function createQueueClient(
     },
 
     async recordInstitutionalModelResult(job, result) {
-      const data = await call("worker_record_institutional_model_result_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_result: result});
+      const data = await call("worker_record_institutional_model_result_v2", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_result: result});
       return z.object({id: z.uuid(), status: z.string(), replayed: z.boolean()}).parse(data);
     },
     async loadInstitutionalModelContext(job) {
-      return call("worker_load_institutional_model_context_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+      return call("worker_load_institutional_model_context_v2", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
     async recordInitialInstitutionalConfigurationCandidate(job, input) {
       const data = await call("worker_record_initial_institutional_candidate_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_submission_id: input.submissionId, p_candidate: input.candidate});

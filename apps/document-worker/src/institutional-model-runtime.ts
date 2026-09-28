@@ -1,3 +1,4 @@
+import {z} from "zod";
 import {institutionalWorkbookArtifactSchema,calculateApprovedInstitutionalScenarios,buildInstitutionalWorkbookArtifact,buildInitialInstitutionalConfigurationCandidate,buildInstitutionalModelInformationRequests,institutionalModelRuntimeContextSchema} from "@offroad/financial-model";
 import {reconcileFacts,type FactCandidate} from "@offroad/reconciliation";
 import type {AgentOperationBriefJob} from "./queue";
@@ -25,19 +26,26 @@ export async function processInstitutionalModelSetup(input:{job:AgentOperationBr
  return {status:candidate.status,...stored};
 }
 
-export type InstitutionalResultQueue={loadInstitutionalModelContext:(job:AgentOperationBriefJob)=>Promise<unknown>;recordInstitutionalModelResult:(job:AgentOperationBriefJob,result:{status:"completed";artifact:unknown}|{status:"blocked";blockers:string[]})=>Promise<{id:string;status:string;replayed:boolean}>};
+export const institutionalInputSnapshotSchema=z.object({id:z.uuid(),fingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
+export type InstitutionalInputSnapshot=z.infer<typeof institutionalInputSnapshotSchema>;
+export type InstitutionalResultInput=({status:"completed";artifact:unknown}|{status:"blocked";blockers:string[]})&{inputSnapshot:InstitutionalInputSnapshot};
+export type InstitutionalResultQueue={loadInstitutionalModelContext:(job:AgentOperationBriefJob)=>Promise<unknown>;recordInstitutionalModelResult:(job:AgentOperationBriefJob,result:InstitutionalResultInput)=>Promise<{id:string;status:string;replayed:boolean}>};
 export async function processInstitutionalModelResult(input:{job:AgentOperationBriefJob;queue:InstitutionalResultQueue}){
- const context=institutionalModelRuntimeContextSchema.parse(await input.queue.loadInstitutionalModelContext(input.job));
+ const loaded=await input.queue.loadInstitutionalModelContext(input.job);
+ const context=institutionalModelRuntimeContextSchema.parse(loaded);
  const request=context.modelResultRequest;
  if(!request||request.id!==input.job.payload.message_id)throw new Error("institutional_result_request_unbound");
  if(request.status!=="queued"){
   if(request.status==="completed"&&!institutionalWorkbookArtifactSchema.safeParse(request.artifact).success)throw new Error("institutional_completed_result_missing");
   return {id:request.id,status:request.status,replayed:true};
  }
+ // Completed legacy results remain replayable without fabricating a historical capture.
+ // Every new completion or blocker must carry the pin the v2 loader actually returned.
+ const {inputSnapshot}=z.object({inputSnapshot:institutionalInputSnapshotSchema}).parse(loaded);
  const latest=[...context.approvedConfigurations].sort((a,b)=>b.revision-a.revision)[0];
- if(request.sourceManifestFingerprint!==context.sourceManifestFingerprint||!latest||latest.id!==request.configurationId||latest.fingerprint!==request.configurationFingerprint)return input.queue.recordInstitutionalModelResult(input.job,{status:"blocked",blockers:["institutional_result_approval_or_sources_changed"]});
+ if(request.sourceManifestFingerprint!==context.sourceManifestFingerprint||!latest||latest.id!==request.configurationId||latest.fingerprint!==request.configurationFingerprint)return input.queue.recordInstitutionalModelResult(input.job,{status:"blocked",inputSnapshot,blockers:["institutional_result_approval_or_sources_changed"]});
  const calculation=calculateApprovedInstitutionalScenarios({context,facts:institutionalReconciledFacts(context.candidates)});
- if(calculation.status!=="ready")return input.queue.recordInstitutionalModelResult(input.job,{status:"blocked",blockers:calculation.blockers.slice(0,100)});
+ if(calculation.status!=="ready")return input.queue.recordInstitutionalModelResult(input.job,{status:"blocked",inputSnapshot,blockers:calculation.blockers.slice(0,100)});
  const artifact=await buildInstitutionalWorkbookArtifact(calculation.scenarios,context.sourceManifestFingerprint);
- return input.queue.recordInstitutionalModelResult(input.job,{status:"completed",artifact});
+ return input.queue.recordInstitutionalModelResult(input.job,{status:"completed",inputSnapshot,artifact});
 }

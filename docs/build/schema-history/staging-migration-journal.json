@@ -1685,10 +1685,14 @@
    "name": "revision_bound_reviews_and_decisions"
   },
   {
-   "name": "execution_artifact_recovery",
-   "version": "20260928140015"
+   "version": "20260928140015",
+   "name": "execution_artifact_recovery"
+  },
+  {
+   "version": "20260928162315",
+   "name": "institutional_input_snapshots"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-28 14:00:30.796418+00"
+ "captured_at": "2026-09-28 16:37:20.446698+00"
 }

@@ -6290,3 +6290,19 @@ do $$ declare tab text; api_role text; sig text; begin
   end loop;
  end loop;
 end $$;
+
+-- Stage 20: input captures are never a client-side history/read/write surface.
+do $$declare tab text;api_role text;sig text;begin
+ foreach tab in array array['private.institutional_input_snapshots','private.institutional_input_source_links','private.institutional_result_input_bindings'] loop
+  if not exists(select 1 from pg_class where oid=tab::regclass and relrowsecurity and relforcerowsecurity)
+   or (select count(distinct polcmd) from pg_policy where polrelid=tab::regclass)<>4 then raise exception 'Capture RLS missing: %',tab;end if;
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_table_privilege(api_role,tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') then raise exception 'Capture table exposed: %, %',tab,api_role;end if;
+  end loop;
+ end loop;
+ foreach sig in array array['private.institutional_job_for_capture_v1(uuid,text)','private.institutional_snapshot_authorized_v1(uuid,uuid)','private.persist_institutional_model_result_v1(uuid,text,jsonb,uuid)'] loop
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_function_privilege(api_role,sig,'EXECUTE') then raise exception 'Capture helper exposed: %, %',sig,api_role;end if;
+  end loop;
+ end loop;
+end $$;

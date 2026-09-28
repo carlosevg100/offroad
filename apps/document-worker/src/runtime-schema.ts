@@ -36,6 +36,8 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   // that migration A (2b) installed and the preview material producer now calls. Announced by 2a so
   // the image could be deployed before migration A; required from this image on.
   "artifact-revision.v1",
+  // Stage 20 / 3C: capture actual institutional inputs before producing their result.
+  "institutional-input-snapshot.v1",
 ] as const;
 
 /**
