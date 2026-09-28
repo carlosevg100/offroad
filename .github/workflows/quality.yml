@@ -179,6 +179,11 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-setup-capture-concurrency.py
 
+      - name: Institutional contribution concurrency
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-institutional-contribution-concurrency.py
+
       - name: Verify effective function bodies match the committed snapshot
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}

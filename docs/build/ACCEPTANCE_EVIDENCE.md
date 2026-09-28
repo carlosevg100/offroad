@@ -1,8 +1,13 @@
 ## Etapa 20 / 3D: captura prospectiva do setup, 28/09/2026
 
+## Etapa 20, incremento 3E: comprovação prospectiva de contribuições, 28/09/2026
+
+3D fechado na PR 840/main `d6cc9df9b7d2e814975e715ed69b5e7bca062061`: CI de main 36466173532 aprovada; web e worker 491 verificados nesse commit. O 3E acrescenta receipt privado imutável à mesma transação da candidata derivada de resposta humana, conserva pai exato e revalida replay. Staging `20260928202018`, contratos SQL e 51 testes direcionados aprovados; concorrência na CI, produção, merge e deployments ainda pendentes. Sem fechamento de fontes ou promoção de liberação. Detalhes em `docs/build/arcabouco/etapa-20-3e-contribuicoes.md`. Etapa 20 aberta; 21–24 não iniciadas.
+
+
 O incremento 3C está fechado: PR 839/main `d3786655`, CI e deployments aprovados; task 490 com boot, 25 capacidades, dois executores e um preparador conferidos. Relatório externo em `outputs/etapa-20-2026-09-27/ETAPA-20-3C-COMPLETION.md` na raiz do workspace.
 
-3D adiciona captura imutável do contexto entregue para construir a configuração inicial, fontes/direitos fixados e vínculo atômico da candidata/avaliação. Loader v3, writer de candidata v2 e bloqueio de downgrade; replay legado não fabrica história. Classificação privada reconhece apenas raiz prospectiva sem pai; respostas, importações, pais e históricos sem prova continuam unresolved. Migrações aplicadas em staging `20260928174845` e produção `20260928180833`, SQL e 15 definições idênticos; 34 objetos novos por ambiente e zero drift anterior. SQL e oito corridas passaram na CI de preflight `36462471183`; checkers locais de catálogo/journal aprovados após incorporar o recibo real de produção, security advisors zero. CI final, merge e deployments pendentes. Não muda release nem inicia 21–24. Contrato e riscos: `docs/build/arcabouco/etapa-20-3d-origem-do-setup.md`.
+3D adiciona captura imutável do contexto entregue para construir a configuração inicial, fontes/direitos fixados e vínculo atômico da candidata/avaliação. Loader v3, writer de candidata v2 e bloqueio de downgrade; replay legado não fabrica história. Classificação privada reconhece apenas raiz prospectiva sem pai; respostas, importações, pais e históricos sem prova continuam unresolved. Migrações aplicadas em staging `20260928174845` e produção `20260928180833`, SQL e 15 definições idênticos; 34 objetos novos por ambiente e zero drift anterior. SQL e oito corridas passaram na CI de preflight `36462471183`; checkers locais de catálogo/journal aprovados após incorporar o recibo real de produção, security advisors zero. Fechado na PR 840/main `d6cc9df9`, com CI de main 36466173532 aprovada e web/worker 491 verificados. Não muda release nem inicia 21–24. Contrato e riscos: `docs/build/arcabouco/etapa-20-3d-origem-do-setup.md`.
 
 
 ## Etapa 20, incremento 3C: captura dos insumos institucionais, 28/09/2026
