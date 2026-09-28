@@ -131,11 +131,8 @@ run(f"update public.capital_project_review_policies set self_approval='allowed' 
 source_revision = run(f"select r.id from public.artifact_revisions r join public.artifacts a on a.id=r.artifact_id where a.work_id='{work}' and a.subject='synthetic-source-concurrency';")
 source_fp = run(f"select manifest_fingerprint from public.artifact_revisions where id='{source_revision}';")
 source = run(f"select source_version_id from private.artifact_dependency_links where revision_id='{source_revision}' and link_kind='source_version';")
-source_revoke = f"""
-insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
-select '{org}','{source}',max(revision)+1,array['process'],array['analysis'],'authorized_workspace',now(),'human_declaration','{source}',repeat('a',64),'{actor}'
-from private.source_rights_versions where organization_id='{org}' and source_version_id='{source}';
-"""
+rights_revision = run(f"select max(revision) from private.source_rights_versions where organization_id='{org}' and source_version_id='{source}';")
+source_revoke = f"set local role authenticated;select public.set_source_rights_v1('{source}',{rights_revision},array['process'],array['analysis'],null,null,'{source}',repeat('a',64));"
 source_review = f"select public.review_artifact_revision_v1('{source_revision}','{source_fp}','approve',null,null,true,gen_random_uuid());"
 compete(source_revoke, 'set local role authenticated;' + source_review, 'review_source_access_required')
 assert run(f"select count(*) from public.artifact_reviews where revision_id='{source_revision}';") == '0'

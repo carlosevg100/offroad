@@ -353,12 +353,12 @@ insert into public.capital_project_review_policies(organization_id,capital_proje
 
 -- Pure mirror of describeRevisionChange, exercised from the same JSON fixtures as TypeScript.
 create function private.artifact_review_change_report_v1(p_previous jsonb,p_next jsonb) returns jsonb
-language plpgsql immutable set search_path='' as $$
+language plpgsql stable set search_path='' as $$
 declare
  before_blocks jsonb:=p_previous->'blocks'; after_blocks jsonb:=p_next->'blocks';
  before_revision jsonb:=p_previous->'revision'; after_revision jsonb:=p_next->'revision';
  before_manifest jsonb:=before_revision->'manifest'; after_manifest jsonb:=after_revision->'manifest';
- reasons text[]:='{}'; a jsonb; b jsonb; snap jsonb; field text;
+ reasons text[]:='{}'::text[]; a jsonb; b jsonb; snap jsonb; field text;
 begin
  foreach snap in array array[p_previous,p_next] loop
   if (select count(*)<>count(distinct x->>'blockKey') from jsonb_array_elements(snap->'blocks') x)
@@ -497,7 +497,7 @@ revoke all on function private.artifact_revision_change_v1(uuid,uuid) from publi
 
 create function private.artifact_review_is_active_v1(p_org uuid,p_review uuid) returns boolean
 language plpgsql stable security definer set search_path='' as $$
-declare current_review public.artifact_reviews; target public.artifact_reviews; visited uuid[]:='{}';
+declare current_review public.artifact_reviews; target public.artifact_reviews; visited uuid[]:='{}'::uuid[];
 begin
  select * into target from public.artifact_reviews where organization_id=p_org and id=p_review;
  current_review:=target;
@@ -688,7 +688,7 @@ revoke all on function private.validate_work_decision_basis_v1(jsonb) from publi
 -- Precedence is computed from all immutable rows, never from MAX(revision) alone.
 create function private.work_decision_precedence_v1(p_org uuid,p_work uuid,p_key text) returns jsonb
 language plpgsql stable security definer set search_path='' as $$
-declare d public.work_decisions; current_id uuid;preceding_id uuid;tips uuid[]:='{}';n integer:=0;resolves boolean;ref jsonb;
+declare d public.work_decisions; current_id uuid;preceding_id uuid;tips uuid[]:='{}'::uuid[];n integer:=0;resolves boolean;ref jsonb;
 begin
  for d in select * from public.work_decisions where organization_id=p_org and work_id=p_work and decision_key=p_key order by revision loop
   if d.revision<>n+1 or (n=0 and d.contested) then raise exception 'decision_history_invalid' using errcode='23514'; end if;
@@ -834,7 +834,7 @@ create trigger review_basis_receipts_audit after insert on private.review_basis_
 create trigger review_basis_source_links_audit after insert on private.review_basis_source_links for each row execute function private.capture_audit_event();
 
 create function private.review_basis_receipt_authority_v1(p_org uuid,p_work uuid,p_kind text,p_reference jsonb,p_actor uuid) returns text
-language plpgsql stable security definer set search_path='' as $$
+language plpgsql volatile security definer set search_path='' as $$
 declare receipt private.review_basis_receipts;
 begin
  select * into receipt from private.review_basis_receipts where organization_id=p_org and work_id=p_work and basis_kind=p_kind
@@ -850,7 +850,7 @@ revoke all on function private.review_basis_receipt_authority_v1(uuid,uuid,text,
 -- Closed inherited-source traversal. This checks content authority independently of release:
 -- reviewers must inspect unreleased external revisions before they can approve them.
 create function private.artifact_review_sources_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid) returns boolean
-language sql stable security definer set search_path='' as $$
+language sql volatile security definer set search_path='' as $$
  with recursive ancestry(revision_id,depth) as (
   select p_revision,0
   union
@@ -872,7 +872,7 @@ $$;
 revoke all on function private.artifact_review_sources_allowed_v1(uuid,uuid,uuid) from public,anon,authenticated,service_role;
 
 create function private.work_decision_basis_authority_v1(p_org uuid,p_work uuid,p_basis jsonb,p_report jsonb,p_actor uuid,p_seen uuid[] default '{}') returns text
-language plpgsql stable security definer set search_path='' as $$
+language plpgsql volatile security definer set search_path='' as $$
 declare ref jsonb;r public.artifact_revisions;d public.work_decisions;status text;result text:='allowed';kind text;
 begin
  if cardinality(p_seen)>=64 then return 'unresolved'; end if;
@@ -1112,7 +1112,7 @@ insert into private.review_assignment_history(organization_id,work_id,user_id,re
 create function private.reassign_pending_review_v1(p_project_id uuid,p_from_user uuid,p_to_user uuid,p_reason text,p_command_id uuid,p_organization_id uuid default null) returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare actor uuid:=auth.uid();org uuid:=p_organization_id;work uuid;works uuid[];roles text[];r public.artifact_revisions;
- policy jsonb;command private.review_reassignment_commands;result jsonb:='[]';act_id uuid;
+ policy jsonb;command private.review_reassignment_commands;result jsonb:='[]'::jsonb;act_id uuid;
 begin
  if actor is null or p_from_user is null or p_to_user is null or p_from_user=p_to_user or p_command_id is null or length(btrim(coalesce(p_reason,''))) not between 1 and 2000
  then raise exception 'review_reassignment_invalid' using errcode='22023'; end if;
