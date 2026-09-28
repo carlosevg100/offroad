@@ -1,6 +1,10 @@
-## Etapa 20, fundação aditiva aplicada; publicação em verificação, 28/09/2026
+## Etapa 20, recuperação de artefato de resultado persistido em preparação, 28/09/2026
 
-Reagrupamento autorizado em `FOUNDER-ACTS.md`: persistência e comandos novos antes do corte integrado de liberação. Migração staging `20260928114813` e produção `20260928115102`; seis testes no staging instalado, 29 definições iguais entre ambientes, advisors de segurança sem alertas e catálogos conciliados. CI pré-aplicação `36415822103`: qualidade e E2E passaram; banco passou nos testes, pendente apenas do inventário então ainda não aplicado. CI final, merge e deployments ainda pendentes. Evidências em `docs/build/arcabouco/etapa-20-2-fundacao.md`. Isto não fecha a etapa 20 nem inicia a 21.
+Incremento backend dentro da preparação do corte aprovado: um construtor privado compartilhado entre commit e recuperação, comando autorizado por identidade atual/fingerprint exato e estado de projeção no leitor de execução. Nenhum cálculo, job ou gasto novo; origem do resultado preservada, recuperador registrado em auditoria. Testes sequenciais em staging com rollback aprovados; revisão independente, concorrência, CI e publicação ainda pendentes. Escopo e provas em `docs/build/arcabouco/etapa-20-3a-recuperacao.md`. Interface e corte integrado continuam na etapa 20; 21 não iniciada.
+
+## Etapa 20, fundação aditiva publicada, 28/09/2026
+
+PR 836 mesclada em `e01f65e7624dcc72d7b016d4af687b4fa8e8e819`. Migração staging `20260928114813`, produção `20260928115102`, SQL/journals e 29 definições conferidos. CI final da PR `36418873318` e de main `36421041239` aprovadas; E2E 44 aprovados e 16 pulados, oito disputas concorrentes aprovadas. Web deployment `6709697768` e worker run `36421041210`, tarefa 487/imagem `e01f65e7624d`, verificados em produção. Boot com política de dados ativa, 24 capacidades e dois executores fixados. Catálogos conciliados e advisors de segurança sem alertas. A função atual de liberação permanece inalterada. Isto fecha somente o incremento 2, não a etapa 20.
 
 ## Etapa 19, segundo acabamento, parte 2A: a aritmética da análise de crédito e da referência de preço pelo núcleo, 27/09/2026
 

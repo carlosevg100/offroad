@@ -165,6 +165,10 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-review-concurrency.py
+      - name: Execution artifact recovery concurrency
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-execution-artifact-recovery-concurrency.py
 
       - name: Verify effective function bodies match the committed snapshot
         env:
