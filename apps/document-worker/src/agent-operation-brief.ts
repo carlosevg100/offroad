@@ -1,3 +1,4 @@
+import {InstitutionalCaptureRetryError} from "./queue";
 import {processInstitutionalModelSetup,processInstitutionalModelResult} from "./institutional-model-runtime";
 import {applyInstitutionalAssumptionAnswer,institutionalAssumptionAnswerNamespace} from "@offroad/financial-model";
 import {receivablesEvidenceScopeContextSchema} from "@offroad/receivables-analysis";
@@ -291,6 +292,10 @@ export async function processInstitutionalRecomputeJob(
     await queue.complete(job, {mode: "institutional_model_recompute", resultId: result.id, candidateId, state: result.status, modelCalls: 0});
     return {status: "succeeded"};
   } catch (error) {
+    if (error instanceof InstitutionalCaptureRetryError) {
+      await queue.fail(job,{code:"institutional_capture_retry",stage:"institutional_model_recompute"},{retryable:true,retryInSeconds:2});
+      return {status:"failed"};
+    }
     const message = error instanceof Error ? error.message : "unknown recompute failure";
     log("institutional_model_recompute.failed", {job: job.job_id, message: message.slice(0, 300)});
     await queue.fail(job, describeJobFailure(error, {code: "institutional_recompute_failed", stage: "institutional_model_recompute", retryable: false}), {retryable: false});
@@ -851,6 +856,10 @@ export async function processAgentOperationBriefJob(
     });
     return proposal ? {status: "succeeded", proposalId: proposal.id} : {status: "succeeded"};
   } catch (error) {
+    if (error instanceof InstitutionalCaptureRetryError) {
+      await queue.fail(job,{code:"institutional_capture_retry",stage:"institutional_model_refresh"},{retryable:true,retryInSeconds:2});
+      return {status:"failed"};
+    }
     const message = error instanceof Error ? error.message : "unknown agent failure";
     log("agent_operation_brief.failed", {job: job.job_id, message: message.slice(0, 300)});
     try {

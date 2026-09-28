@@ -1,3 +1,9 @@
+## Etapa 20, incremento 3C: captura dos insumos institucionais, 28/09/2026
+
+O incremento 3B está publicado em `979015514fadb4074c1e792700cd39024bc6097c`: Quality de main `36444061438` passou, web em produção e worker na definição 489, imagem `979015514fad`, boot verificado com 24 capacidades, dois executores e um preparador.
+
+O 3C registra o contexto efetivamente entregue ao cálculo e exige seu ID/hash na gravação, sem emitir recibo de fechamento completo de fontes. Comandos v2 preservam setup e resultados legados; v1 nega jobs já capturados. Direitos fixados e atuais, identidade, concorrência e expiração são revalidados. Migração aplicada em staging; ensaio transacional passou. Produção, CI e deployments deste candidato ainda pendentes. Detalhes em `docs/build/arcabouco/etapa-20-3c-captura-institucional.md`. Etapas 21–24 não iniciadas.
+
 ## Etapa 20, recuperação publicada e conteúdo institucional em preparação, 28/09/2026
 
 Incremento 3A concluído: PR 837 mesclada em `56ce9dd5b229126600a24a5ed991699a8840c5a3`. Quality de main `36436921407` e Security `36436921321` aprovadas; web deployment `6712575056`; worker run `36436947627`, tarefa 488/imagem `56ce9dd5b229`, boot e 24 capacidades conferidos. Migrações staging `20260928140015` e produção `20260928140508`, sem alteração de dados de cliente. Registro completo em `docs/build/arcabouco/etapa-20-3a-recuperacao.md`.
