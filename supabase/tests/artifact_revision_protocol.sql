@@ -33,12 +33,13 @@ begin
  raise notice 'PASS: person write of an answer derived from A and B, read whole with release, freshness, blocks and links';
 end $$;
 
--- 2. Replay by manifest fingerprint: the same manifest returns the existing revision and adds nothing.
+-- 2. Replay requires the same manifest, ordered blocks and dependency edges; it adds nothing.
 do $$ declare r jsonb;before bigint:=(select count(*) from public.artifact_revisions);b jsonb;
 begin
  b:=jsonb_build_array(pg_temp.block('lead','paragraph','{"text":"Alavancagem dentro do limite do covenant."}'),
   pg_temp.block('leverage','number','{"label":"Dívida líquida / EBITDA","value":"2,1x"}',jsonb_build_array(pg_temp.claim('leverage-2026','2.1'))));
- r:=pg_temp.person_write('answer','q1','internal',(select value from arp where name='m1'),b);
+ r:=pg_temp.person_write('answer','q1','internal',(select value from arp where name='m1'),b,
+  jsonb_build_array(jsonb_build_object('kind','source_version','blockKey','leverage','sourceVersionId',pg_temp.val('source_a','')::uuid,'rightsVersionId',pg_temp.rights_of(pg_temp.val('source_a','')::uuid))));
  if not (r->>'replayed')::boolean or r->>'revision_id'<>pg_temp.val('r1','revision_id') or (select count(*) from public.artifact_revisions)<>before then
   raise exception 'replay wrote or returned another revision: %',r; end if;
  raise notice 'PASS: the same manifest replays the existing revision';

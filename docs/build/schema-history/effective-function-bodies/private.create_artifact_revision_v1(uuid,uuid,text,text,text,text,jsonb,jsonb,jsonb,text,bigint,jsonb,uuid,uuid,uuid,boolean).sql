@@ -156,6 +156,41 @@ begin
   if existing.artifact_id<>a.id then raise exception 'artifact_revision_manifest_conflict' using errcode='23505'; end if;
   if existing.content_sha256 is distinct from p_content_sha256 or existing.byte_length is distinct from p_byte_length then
    raise exception 'artifact_revision_replay_mismatch' using errcode='23505'; end if;
+  -- A manifest is not a digest of the blocks or of extra dependency edges. Replay is
+  -- valid only for the identical ordered blocks and the identical normalized edge set.
+  if blocks is distinct from (select coalesce(jsonb_agg(jsonb_build_object(
+    'blockKey',b.block_key,'kind',b.kind,'content',b.content,'claims',b.claims) order by b.block_no),'[]'::jsonb)
+    from public.artifact_blocks b where b.organization_id=p_org and b.revision_id=existing.id)
+  then raise exception 'artifact_revision_replay_mismatch' using errcode='23505'; end if;
+  if exists (
+   with requested as (
+    select distinct jsonb_strip_nulls(jsonb_build_object(
+     'kind',l->>'kind','blockKey',l->>'blockKey',
+     'sourceVersionId',nullif(l->>'sourceVersionId','')::uuid,
+     'rightsVersionId',nullif(l->>'rightsVersionId','')::uuid,
+     'executionId',nullif(l->>'executionId','')::uuid,
+     'resultId',nullif(l->>'resultId','')::uuid,
+     'platformReleaseId',l->>'platformReleaseId',
+     'houseReleaseId',nullif(l->>'houseReleaseId','')::uuid,
+     'assumptionVersionId',nullif(l->>'assumptionVersionId','')::uuid,
+     'slotKey',l->>'slotKey','derivedFromRevisionId',nullif(l->>'derivedFromRevisionId','')::uuid)) edge
+    from jsonb_array_elements(all_links) l
+   ), stored as (
+    select jsonb_strip_nulls(jsonb_build_object(
+     'kind',d.link_kind,'blockKey',b.block_key,
+     'sourceVersionId',d.source_version_id,'rightsVersionId',d.source_rights_version_id,
+     'executionId',d.execution_id,'resultId',d.institutional_result_id,
+     'platformReleaseId',d.platform_release_id,'houseReleaseId',d.house_release_id,
+     'assumptionVersionId',d.assumption_version_id,'slotKey',d.slot_key,
+     'derivedFromRevisionId',d.derived_from_revision_id)) edge
+    from private.artifact_dependency_links d left join public.artifact_blocks b
+     on b.organization_id=d.organization_id and b.revision_id=d.revision_id and b.id=d.block_id
+    where d.organization_id=p_org and d.revision_id=existing.id
+   )
+   (select edge from requested except select edge from stored)
+   union all
+   (select edge from stored except select edge from requested)
+  ) then raise exception 'artifact_revision_replay_mismatch' using errcode='23505'; end if;
   return jsonb_build_object('artifact_id',a.id,'revision_id',existing.id,'revision_no',existing.revision_no,'manifest_fingerprint',existing.manifest_fingerprint,'replayed',true);
  end if;
  select * into head from public.artifact_revisions r where r.organization_id=p_org and r.artifact_id=a.id order by r.revision_no desc limit 1;
