@@ -1,6 +1,6 @@
 ## Etapa 20, recuperação de artefato de resultado persistido em preparação, 28/09/2026
 
-Incremento backend dentro da preparação do corte aprovado: um construtor privado compartilhado entre commit e recuperação, comando autorizado por identidade atual/fingerprint exato e estado de projeção no leitor de execução. Nenhum cálculo, job ou gasto novo; origem do resultado preservada, recuperador registrado em auditoria. Testes sequenciais em staging com rollback aprovados; revisão independente, concorrência, CI e publicação ainda pendentes. Escopo e provas em `docs/build/arcabouco/etapa-20-3a-recuperacao.md`. Interface e corte integrado continuam na etapa 20; 21 não iniciada.
+Incremento backend dentro da preparação do corte aprovado: um construtor privado compartilhado entre commit e recuperação, comando autorizado por identidade atual/fingerprint exato e estado de projeção no leitor de execução. Nenhum cálculo, job ou gasto novo; origem do resultado preservada, recuperador registrado em auditoria. Testes sequenciais em staging instalado e oito resultados concorrentes na CI aprovados; revisão independente sem bloqueador. Migração staging `20260928140015` e produção `20260928140508`, SQL e definições idênticos; tipos, inventário e journals conciliados. Merge e deployments ainda pendentes. Escopo e provas em `docs/build/arcabouco/etapa-20-3a-recuperacao.md`. Interface e corte integrado continuam na etapa 20; 21 não iniciada.
 
 ## Etapa 20, fundação aditiva publicada, 28/09/2026
 

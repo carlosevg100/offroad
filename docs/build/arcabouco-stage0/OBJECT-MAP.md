@@ -3055,3 +3055,11 @@ Nenhum objeto SQL novo ou alterado. `packages/evidence-compiler` saiu do reposit
 - `trigger:public.work_decisions.work_decisions_immutable`
 - `trigger:public.work_decisions.work_decisions_no_truncate`
 - `trigger:public.work_decisions.work_decisions_set_updated_at`
+
+## Etapa 20, recuperação de resultado persistido
+
+Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Estado de projeção explícito, recuperação por autoridade atual, origem preservada e nenhuma nova execução.
+- `function:private.execution_artifact_projection_v1(p_org uuid, p_execution uuid, p_subject uuid)`
+- `function:private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)`
+- `function:private.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)`
+- `function:public.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)`

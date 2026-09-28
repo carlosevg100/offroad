@@ -29084,6 +29084,12 @@
           "line": 237,
           "anchor": "create function private.read_work_execution_v2(p_execution_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928140508_execution_artifact_recovery.sql",
+          "line": 159,
+          "anchor": "create or replace function private.read_work_execution_v2(p_execution_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -30603,6 +30609,12 @@
           "path": "supabase/migrations/20260926203623_artifact_producers.sql",
           "line": 99,
           "anchor": "create function private.record_execution_result_artifact_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928140508_execution_artifact_recovery.sql",
+          "line": 84,
+          "anchor": "create or replace function private.record_execution_result_artifact_v1(p_org uuid,p_execution uuid,p_job uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -183553,6 +183565,242 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.execution_artifact_projection_v1(p_org uuid, p_execution uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.execution_artifact_projection_v1(p_org uuid, p_execution uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "execution_artifact_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.execution_artifact_projection_v1(p_org uuid, p_execution uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "execution_artifact_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3A",
+      "reason": "Recuperar projeção exata de resultado persistido sob autoridade atual, sem recálculo ou novo gasto.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928140508_execution_artifact_recovery.sql",
+          "line": 93,
+          "anchor": "create function private.execution_artifact_projection_v1(p_org uuid,p_execution uuid,p_subject uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
+          "kind": "function",
+          "name": "project_execution_result_artifact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
+          "kind": "function",
+          "name": "project_execution_result_artifact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3A",
+      "reason": "Construtor privado compartilhado, com origem do job preservada, autorização por sujeito explícito e replay exato sem recálculo.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928140508_execution_artifact_recovery.sql",
+          "line": 8,
+          "anchor": "CREATE OR REPLACE FUNCTION private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)",
+          "kind": "function",
+          "name": "recover_execution_result_artifact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid, p_expected_result_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)",
+          "kind": "function",
+          "name": "recover_execution_result_artifact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid, p_expected_result_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3A",
+      "reason": "Recuperar projeção exata de resultado persistido sob autoridade atual, sem recálculo ou novo gasto.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928140508_execution_artifact_recovery.sql",
+          "line": 119,
+          "anchor": "create function private.recover_execution_result_artifact_v1(p_execution_id uuid,p_expected_result_fingerprint text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)",
+          "kind": "function",
+          "name": "recover_execution_result_artifact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid, p_expected_result_fingerprint text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)",
+          "kind": "function",
+          "name": "recover_execution_result_artifact_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_execution_id uuid, p_expected_result_fingerprint text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3A",
+      "reason": "Recuperar projeção exata de resultado persistido sob autoridade atual, sem recálculo ou novo gasto.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928140508_execution_artifact_recovery.sql",
+          "line": 152,
+          "anchor": "create function public.recover_execution_result_artifact_v1(p_execution_id uuid,p_expected_result_fingerprint text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -190430,6 +190678,13 @@
       "decision": "preservar",
       "stage": "20 / 2",
       "reason": "Persistir atos humanos sobre revisões exatas sem antecipar o corte dos escritores legados."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260928140508_execution_artifact_recovery.sql",
+      "decision": "preservar",
+      "stage": "20 / 3A",
+      "reason": "Comando de recuperação, construtor compartilhado e estado observável; sem tabela nem backfill."
     }
   ],
   "staging_archive": [
