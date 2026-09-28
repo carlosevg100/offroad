@@ -1635,8 +1635,12 @@
   {
    "version": "20260928163641",
    "name": "institutional_input_snapshots"
+  },
+  {
+   "version": "20260928180833",
+   "name": "institutional_setup_input_snapshots"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-28 16:37:25.725235+00"
+ "captured_at": "2026-09-28 18:08:51.728781+00"
 }

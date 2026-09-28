@@ -64198,7 +64198,603 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER institutional_result_input_bindings_updated BEFORE UPDATE ON private.institutional_result_input_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.institutional_configuration_capture_state_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "name": "institutional_configuration_capture_state_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_configuration uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_setup_snapshot_authorized_v1(p_snapshot uuid, p_job uuid)",
+      "kind": "function",
+      "name": "institutional_setup_snapshot_authorized_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_snapshot uuid, p_job uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.persist_initial_institutional_candidate_v1(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_snapshot uuid)",
+      "kind": "function",
+      "name": "persist_initial_institutional_candidate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_snapshot uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_load_institutional_model_context_v3(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_institutional_model_context_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_initial_institutional_candidate_v2(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb)",
+      "kind": "function",
+      "name": "worker_record_initial_institutional_candidate_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.worker_load_institutional_model_context_v3(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_institutional_model_context_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_initial_institutional_candidate_v2(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb)",
+      "kind": "function",
+      "name": "worker_record_initial_institutional_candidate_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_delete",
+      "kind": "policy",
+      "name": "institutional_setup_input_bindings_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_input_bindings",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_insert",
+      "kind": "policy",
+      "name": "institutional_setup_input_bindings_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_input_bindings",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_select",
+      "kind": "policy",
+      "name": "institutional_setup_input_bindings_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_input_bindings",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_update",
+      "kind": "policy",
+      "name": "institutional_setup_input_bindings_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_input_bindings",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_delete",
+      "kind": "policy",
+      "name": "institutional_setup_input_snapshots_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_input_snapshots",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_insert",
+      "kind": "policy",
+      "name": "institutional_setup_input_snapshots_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_input_snapshots",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_select",
+      "kind": "policy",
+      "name": "institutional_setup_input_snapshots_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_input_snapshots",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_update",
+      "kind": "policy",
+      "name": "institutional_setup_input_snapshots_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_input_snapshots",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_delete",
+      "kind": "policy",
+      "name": "institutional_setup_source_links_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_source_links",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_insert",
+      "kind": "policy",
+      "name": "institutional_setup_source_links_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_source_links",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_select",
+      "kind": "policy",
+      "name": "institutional_setup_source_links_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_source_links",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_update",
+      "kind": "policy",
+      "name": "institutional_setup_source_links_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "institutional_setup_source_links",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.institutional_setup_input_bindings",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_setup_input_bindings",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.institutional_setup_input_snapshots",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_setup_input_snapshots",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.institutional_setup_source_links",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_setup_source_links",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_audit",
+      "kind": "trigger",
+      "name": "institutional_setup_input_bindings_audit",
+      "table": "institutional_setup_input_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER institutional_setup_input_bindings_audit AFTER INSERT ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_immutable",
+      "kind": "trigger",
+      "name": "institutional_setup_input_bindings_immutable",
+      "table": "institutional_setup_input_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_setup_input_bindings_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_no_truncate",
+      "kind": "trigger",
+      "name": "institutional_setup_input_bindings_no_truncate",
+      "table": "institutional_setup_input_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_setup_input_bindings_no_truncate BEFORE TRUNCATE ON private.institutional_setup_input_bindings FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_updated",
+      "kind": "trigger",
+      "name": "institutional_setup_input_bindings_updated",
+      "table": "institutional_setup_input_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_setup_input_bindings_updated BEFORE UPDATE ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_audit",
+      "kind": "trigger",
+      "name": "institutional_setup_input_snapshots_audit",
+      "table": "institutional_setup_input_snapshots",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER institutional_setup_input_snapshots_audit AFTER INSERT ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_immutable",
+      "kind": "trigger",
+      "name": "institutional_setup_input_snapshots_immutable",
+      "table": "institutional_setup_input_snapshots",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_setup_input_snapshots_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_no_truncate",
+      "kind": "trigger",
+      "name": "institutional_setup_input_snapshots_no_truncate",
+      "table": "institutional_setup_input_snapshots",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_setup_input_snapshots_no_truncate BEFORE TRUNCATE ON private.institutional_setup_input_snapshots FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_updated",
+      "kind": "trigger",
+      "name": "institutional_setup_input_snapshots_updated",
+      "table": "institutional_setup_input_snapshots",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_setup_input_snapshots_updated BEFORE UPDATE ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_audit",
+      "kind": "trigger",
+      "name": "institutional_setup_source_links_audit",
+      "table": "institutional_setup_source_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER institutional_setup_source_links_audit AFTER INSERT ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_immutable",
+      "kind": "trigger",
+      "name": "institutional_setup_source_links_immutable",
+      "table": "institutional_setup_source_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_setup_source_links_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_no_truncate",
+      "kind": "trigger",
+      "name": "institutional_setup_source_links_no_truncate",
+      "table": "institutional_setup_source_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_setup_source_links_no_truncate BEFORE TRUNCATE ON private.institutional_setup_source_links FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_updated",
+      "kind": "trigger",
+      "name": "institutional_setup_source_links_updated",
+      "table": "institutional_setup_source_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_setup_source_links_updated BEFORE UPDATE ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     }
   ],
-  "captured_at": "2026-09-28T16:32:08.356604+00:00"
+  "captured_at": "2026-09-28T18:03:20.888602+00:00"
 }

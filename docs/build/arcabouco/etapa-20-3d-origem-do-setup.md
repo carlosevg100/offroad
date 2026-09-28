@@ -1,6 +1,6 @@
 # Etapa 20 / 3D: origem prospectiva da configuração institucional
 
-Status: implementação e testes iniciais em staging. Produção, CI final, merge e deployments ainda pendentes. Não é conclusão da etapa 20.
+Status: implementado, testado e aplicado nos dois ambientes; CI final, merge e deployments ainda pendentes. Não é conclusão da etapa 20.
 
 ## Problema e contrato
 
@@ -38,3 +38,13 @@ Staging aplicado como `20260928174845`, SQL SHA-256 `cf2eee8567b9278f57bbacfa065
 A mudança de assinatura de tipo atualizou o hash da fonte e o manifesto corrente gerado. Locks, snapshots e bundles dos métodos publicados permanecem fixados; não se promove método novo para acomodar esta alteração. As provas concorrentes e de implantação são condições de fechamento, não presumidas por esta evidência.
 
 `pnpm check` passou integralmente (44/44 tarefas em cada fase). Regressão adicional em staging confirmou que replay de falta de dados só retorna fingerprint e pares targetPath/code, sem detail, e que o banco nega pin com campo extra.
+
+## Aplicação e evidências antes do merge
+
+PR 840, preflight `9e872c1a`, CI `36462471183`, job de banco `109064205354`: todos os contratos SQL e as oito corridas de setup passaram antes da promoção. O gate de inventário desse commit ficou corretamente fechado porque ainda não trazia o recibo de produção. A atualização seguinte incorpora esse recibo real e precisa passar todos os gates novamente.
+
+Produção aplicada como `20260928180833`, staging `20260928174845`; SHA-256 do arquivo coincide com os dois journals. Quinze definições conferidas iguais entre ambientes. Produção: 2.798 objetos e 410 versões; staging: 2.859 objetos e 424 versões; 34 objetos novos em cada, nenhum drift nos anteriores. Dezoito testes do checker de inventário e cinco do histórico passaram; 95 snapshots de funções e inventários dos dois ambientes passaram sem erros. Tipos regenerados de produção.
+
+Security advisors: zero nos dois ambientes. EXPLAIN da FK do vínculo confirmou acesso indexado; índice adicional permanece redundante. O apontamento informativo pode ser consultado em https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys. As tabelas novas estão vazias; nenhum dado descartável ou backfill foi aplicado em produção. As 133 revisões anteriores e a definição de liberação permanecem intactas (MD5 de pg_get_functiondef: `c4b6a8c3730c2de36392023c571b73b2`).
+
+Revisão independente pré-produção favorável no commit `9e872c1a`, incluindo a regeneração limitada do manifesto e a preservação de todos os pins publicados. Merge, CI integral e boot da imagem final com 26 capacidades continuam critérios de fechamento.
