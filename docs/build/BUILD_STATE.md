@@ -1,6 +1,8 @@
-## Etapa 20, recuperação de artefato de resultado persistido em preparação, 28/09/2026
+## Etapa 20, recuperação publicada e conteúdo institucional em preparação, 28/09/2026
 
-Incremento backend dentro da preparação do corte aprovado: um construtor privado compartilhado entre commit e recuperação, comando autorizado por identidade atual/fingerprint exato e estado de projeção no leitor de execução. Nenhum cálculo, job ou gasto novo; origem do resultado preservada, recuperador registrado em auditoria. Testes sequenciais em staging instalado e oito resultados concorrentes na CI aprovados; revisão independente sem bloqueador. Migração staging `20260928140015` e produção `20260928140508`, SQL e definições idênticos; tipos, inventário e journals conciliados. Merge e deployments ainda pendentes. Escopo e provas em `docs/build/arcabouco/etapa-20-3a-recuperacao.md`. Interface e corte integrado continuam na etapa 20; 21 não iniciada.
+Incremento 3A concluído: PR 837 mesclada em `56ce9dd5b229126600a24a5ed991699a8840c5a3`. Quality de main `36436921407` e Security `36436921321` aprovadas; web deployment `6712575056`; worker run `36436947627`, tarefa 488/imagem `56ce9dd5b229`, boot e 24 capacidades conferidos. Migrações staging `20260928140015` e produção `20260928140508`, sem alteração de dados de cliente. Registro completo em `docs/build/arcabouco/etapa-20-3a-recuperacao.md`.
+
+Incremento 3B prepara somente o contrato puro de conversão do workbook institucional: conteúdo integral, todos os cenários, vínculo ao ancestral exato e referências declaradas sem afirmar fechamento de fontes. Sem consumidor runtime, migração ou mudança de liberação. Captura do contexto consumido, recibos transacionais e integração continuam na etapa 20. Escopo e testes em `docs/build/arcabouco/etapa-20-3b-conteudo-institucional.md`. Etapa 21 não iniciada.
 
 ## Etapa 20, fundação aditiva publicada, 28/09/2026
 
