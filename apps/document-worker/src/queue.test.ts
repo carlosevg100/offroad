@@ -912,3 +912,21 @@ describe("institutional setup capture writer",()=>{
   expect(rpc).toHaveBeenCalledWith("worker_record_initial_institutional_candidate_v2",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_submission_id:input.submissionId,p_candidate:input.candidate,p_input_snapshot:input.inputSnapshot});
  });
 });
+
+
+describe("institutional contribution capture writer",()=>{
+ it("repeats the exact contribution only after explicit atomic contention",async()=>{
+  const rpc=vi.fn().mockResolvedValueOnce({data:null,error:{code:"40001",message:"institutional_capture_retry"}}).mockResolvedValue({data:{candidateId:"60000000-0000-4000-8000-000000000881",revision:2,replayed:false},error:null});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  const application={status:"review_required"};
+  await queue.applyInstitutionalAssumptionAnswer!({...job,kind:"agent_operation_brief",payload:{message_id:job.job_id,locale:"pt-BR"}},application);
+  expect(rpc).toHaveBeenCalledTimes(2);expect(rpc.mock.calls[0]).toEqual(rpc.mock.calls[1]);
+  expect(rpc).toHaveBeenCalledWith("worker_apply_institutional_assumption_answer_v1",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_application:application});
+ });
+ it.each([{code:"42501",message:"institutional_capture_denied"},{code:"40001",message:"institutional_configuration_stale"},{code:"NETWORK",message:"ambiguous delivery"}])("does not repeat a rejected or ambiguous contribution: $message",async(error)=>{
+  const rpc=vi.fn().mockResolvedValue({data:null,error});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  await expect(queue.applyInstitutionalAssumptionAnswer!({...job,kind:"agent_operation_brief",payload:{message_id:job.job_id,locale:"pt-BR"}},{})).rejects.toThrow(error.message);
+  expect(rpc).toHaveBeenCalledOnce();
+ });
+});
