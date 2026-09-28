@@ -61795,7 +61795,89 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER work_decisions_set_updated_at BEFORE UPDATE ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.execution_artifact_projection_v1(p_org uuid, p_execution uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "execution_artifact_projection_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)",
+      "kind": "function",
+      "name": "project_execution_result_artifact_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)",
+      "kind": "function",
+      "name": "recover_execution_result_artifact_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_execution_id uuid, p_expected_result_fingerprint text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)",
+      "kind": "function",
+      "name": "recover_execution_result_artifact_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_execution_id uuid, p_expected_result_fingerprint text",
+      "security_definer": false
     }
   ],
-  "captured_at": "2026-09-28T11:51:33.111162+00:00"
+  "captured_at": "2026-09-28T14:05:31.333019+00:00"
 }

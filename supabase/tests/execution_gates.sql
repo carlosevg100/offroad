@@ -172,7 +172,8 @@ do $$declare r1 jsonb;r2 jsonb;g text;begin
  r1:=public.read_work_execution_v1('a4173000-0000-4000-9000-000000000012');
  r2:=public.read_work_execution_v2('a4173000-0000-4000-9000-000000000012');
  if r1->>'schemaVersion'<>'work-execution-read.v1' or r1->>'executionId'<>'a4173000-0000-4000-9000-000000000012' or r1 ? 'gates' then raise exception 'v1 read changed: %',r1;end if;
- if r2->>'schemaVersion'<>'work-execution-read.v2' or r2-'gates'-'schemaVersion'<>r1-'schemaVersion' then raise exception 'v2 read is not the v1 read plus gates: %',r2;end if;
+ if r2->>'schemaVersion'<>'work-execution-read.v2' or r2-'gates'-'artifactProjection'-'schemaVersion'<>r1-'schemaVersion' then raise exception 'v2 read changed original execution fields: %',r2;end if;
+ if r2->'artifactProjection' is distinct from '{"state":"not_committed"}'::jsonb then raise exception 'uncommitted projection state wrong: %',r2->'artifactProjection';end if;
  if r2#>>'{gates,gatesVersion}'<>'2026.09.24-v1' or (r2#>>'{gates,blocked}')::boolean or r2#>>'{gates,fingerprint}'<>'e5ee03da8c031f0188e84879540ece7dc9a476be077338b26ad86fd9e0602074'
  or r2#>'{gates,canonical}'<>g::jsonb or (r2#>>'{gates,createdAt}')::timestamptz is null then raise exception 'v2 read gates wrong: %',r2->'gates';end if;
  raise notice 'PASS: the v2 reader returns the receipt and the v1 reader still works';

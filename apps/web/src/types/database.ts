@@ -12290,6 +12290,10 @@ export type Database = {
         }
         Returns: Json
       }
+      recover_execution_result_artifact_v1: {
+        Args: { p_execution_id: string; p_expected_result_fingerprint: string }
+        Returns: Json
+      }
       register_intake_document_command: {
         Args: {
           p_bucket_id: string
