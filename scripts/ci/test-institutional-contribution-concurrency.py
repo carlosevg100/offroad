@@ -42,7 +42,8 @@ def case(n):
         fixture = fixture.replace(f'-000000000{suffix}', f'-000000{n:03}{suffix}')
     fixture = fixture.replace('binding-owner@', f'contribution-{n}-owner@').replace('binding-worker@', f'contribution-{n}-worker@')
     # IDs in the frozen application change, so regenerate its configuration hash.
-    fixture += "select set_config('test.institutional_application',jsonb_set(current_setting('test.institutional_application')::jsonb,'{nextConfigurationFingerprint}',to_jsonb(private.institutional_config_hash(current_setting('test.institutional_application')::jsonb->'nextConfiguration')))::text,true);"
+    rehash = "select set_config('test.institutional_application',jsonb_set(current_setting('test.institutional_application')::jsonb,'{nextConfigurationFingerprint}',to_jsonb(private.institutional_config_hash(current_setting('test.institutional_application')::jsonb->'nextConfiguration')))::text,true);"
+    fixture = fixture.replace("select pg_temp.fixture_approve_execution(", rehash + "select pg_temp.fixture_approve_execution(", 1)
     cleanup = """do $$declare t record;begin
      for t in select tgname,tgrelid::regclass as rel from pg_trigger join pg_proc on pg_proc.oid=tgfoid
        where pronamespace=pg_my_temp_schema() and not tgisinternal loop
