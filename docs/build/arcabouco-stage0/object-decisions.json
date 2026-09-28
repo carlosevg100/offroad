@@ -188177,6 +188177,60 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.institutional_configuration_ancestry_v1(p_org uuid, p_work uuid, p_configuration uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_configuration_ancestry_v1(p_org uuid, p_work uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_ancestry_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_configuration uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_configuration_ancestry_v1(p_org uuid, p_work uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_ancestry_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_configuration uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3F",
+      "reason": "Resolver privado de integridade histórica; não concede acesso nem libera artefatos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928214516_institutional_configuration_ancestry.sql",
+          "line": 3,
+          "anchor": "create function private.institutional_configuration_ancestry_v1(p_org uuid,p_work uuid,p_configuration uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -195082,6 +195136,13 @@
       "decision": "preservar",
       "stage": "20 / 3E",
       "reason": "Gravar contribuição e candidata atomicamente, com pai exato e autoridade revalidada."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260928214516_institutional_configuration_ancestry.sql",
+      "decision": "preservar",
+      "stage": "20 / 3F",
+      "reason": "Cadeia exata entre raiz capturada e contribuições comprovadas, sem reconstruir histórico."
     }
   ],
   "staging_archive": [

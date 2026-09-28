@@ -3084,3 +3084,8 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 - `trigger:private.institutional_contribution_receipts.institutional_contribution_immutable`
 - `trigger:private.institutional_contribution_receipts.institutional_contribution_no_truncate`
 - `trigger:private.institutional_contribution_receipts.institutional_contribution_updated`
+
+## Etapa 20 / 3F: ancestralidade institucional
+
+1 objetos novos e 0 atualizados. Resolver privado de integridade histórica; não concede acesso nem libera artefatos.
+- `function:private.institutional_configuration_ancestry_v1(p_org uuid, p_work uuid, p_configuration uuid)`

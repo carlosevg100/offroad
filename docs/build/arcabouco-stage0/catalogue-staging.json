@@ -64944,6 +64944,24 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER institutional_contribution_updated BEFORE UPDATE ON private.institutional_contribution_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.institutional_configuration_ancestry_v1(p_org uuid, p_work uuid, p_configuration uuid)",
+      "kind": "function",
+      "name": "institutional_configuration_ancestry_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_configuration uuid",
+      "security_definer": true
     }
   ],
   "captured_at": "2026-09-28T20:26:06.410646+00:00"
