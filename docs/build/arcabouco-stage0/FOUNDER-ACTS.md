@@ -90,3 +90,7 @@ Após a segunda opinião sobre 17–19, o fundador pediu: "entao faz isso.. melh
 ## OK da etapa 20, 27/09/2026
 
 Depois do fechamento da onda corretiva (PRs 828, 831 e 832, migrações nos dois ambientes, CI de main e web/worker em `85191003`), o executor indicou "seu OK para iniciar a etapa 20" e o fundador respondeu: "Ok". Autoriza os incrementos da etapa 20 na ordem do plano; "OK seguinte" nas notas preparatórias significa este OK de onda, não uma aprovação adicional por migração. Permanecem fora etapas 21–24, conteúdo profissional, gastos/contratos novos, efeitos externos e liberação para cliente real. Cada incremento continua sujeito a revisão independente, gates e publicação completa.
+
+## Reagrupamento da etapa 20, 28/09/2026
+
+Depois da reprodução em staging e do relatório `BLOQUEIO-ORDEM-DE-PUBLICACAO.md` de 27/09, o executor propôs publicar primeiro a fundação aditiva e ativar a nova regra de liberação junto dos adaptadores, comprovantes de fontes e declaração explícita na interface. O fundador respondeu: "segue". Autoriza esse reagrupamento dentro da onda 20, preservando os critérios de pronto e o OK separado da etapa 21. Nenhuma declaração ou origem histórica é presumida; não se amplia a política de dados.

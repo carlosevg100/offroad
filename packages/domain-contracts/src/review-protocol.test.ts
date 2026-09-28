@@ -30,6 +30,8 @@ describe("stage 20 review authority", () => {
       preparedBy: null, reviewerId: id(11), selfApprovalDeclared: false, workAccess: true, sourceAccess: true, hasSubstance: true, manageAccess: false};
     expect(reviewActionAllowed({...input, workAccess: false})).toEqual({allowed: false, reason: "review_work_access_required"});
     expect(reviewActionAllowed({...input, hasSubstance: false})).toEqual({allowed: false, reason: "review_substance_required"});
+    expect(reviewActionAllowed({...input, act: "comment", sourceAccess: false})).toEqual({allowed: false, reason: "review_source_access_required"});
+    expect(reviewActionAllowed({...input, act: "return", sourceAccess: false})).toEqual({allowed: false, reason: "review_source_access_required"});
     expect(reviewActionAllowed({...input, act: "reassign"})).toEqual({allowed: false, reason: "review_manage_access_required"});
   });
   it("binds approval to every exact target field, never just shared bytes", () => {
@@ -126,5 +128,28 @@ describe("review change shared SQL parity fixtures", () => {
     expect(describeRevisionChange(base as unknown as RevisionSnapshot, next as unknown as RevisionSnapshot).reasons).toContain("claim_support");
     next.blocks.push({...next.blocks[0], blockKey: "duplicate"});
     expect(describeRevisionChange(base as unknown as RevisionSnapshot, next as unknown as RevisionSnapshot).reasons).toContain("invalid_snapshot");
+  });
+});
+
+
+describe("persistent decision detail", () => {
+  it("records notes and explicit outcomes without turning a report into approval", () => {
+    const d = decision(1, null, {note: "Synthetic rationale", outcome: "rejected"});
+    expect(d.note).toBe("Synthetic rationale");
+    expect(d.outcome).toBe("rejected");
+    expect(workDecisionSchema.safeParse({...d, kind: "authorize_execution", effects: ["queue_execution"]}).success).toBe(false);
+    expect(workDecisionSchema.safeParse({...d, kind: "approve_configuration", effects: ["recompute"]}).success).toBe(false);
+    expect(workDecisionSchema.safeParse({...d, kind: "confirm_assessment", effects: ["freeze_assessment"]}).success).toBe(true);
+    const reported = {...d, kind: "record_report", origin: "reported", report: {
+      decidedBy: "Synthetic CFO", forum: "Synthetic meeting", decidedOn: "2026-09-27", evidenceSourceVersionId: null,
+    }};
+    expect(workDecisionSchema.safeParse({...reported, outcome: "approved"}).success).toBe(false);
+    expect(workDecisionSchema.safeParse({...reported, outcome: "recorded"}).success).toBe(true);
+  });
+  it("does not invent workbook import fingerprints for an ordinary configuration", () => {
+    const d = decision(1, null);
+    const configuration = {configurationFingerprint: fp, structureFingerprint: null, uploadFingerprint: null};
+    expect(workDecisionSchema.safeParse({...d, basis: {...d.basis, configuration}}).success).toBe(true);
+    expect(workDecisionSchema.safeParse({...d, basis: {...d.basis, configuration: {...configuration, uploadFingerprint: fp}}}).success).toBe(false);
   });
 });

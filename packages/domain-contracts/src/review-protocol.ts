@@ -5,6 +5,7 @@ import {artifactAudienceSchema, freezeArtifactValue, type DeepReadonly, type Rev
 const uuid = z.uuid();
 const fingerprint = z.string().regex(/^[a-f0-9]{64}$/);
 const text = z.string().trim().min(1).max(2000);
+const reviewNote = z.string().trim().min(1).max(5000);
 export const reviewActSchema = z.enum(["comment", "return", "approve", "reaffirm", "revoke_approval", "reassign"]);
 export const reviewRoleSchema = z.enum(["preparer", "reviewer", "approver"]);
 export const reviewRegimeSchema = z.strictObject({assignmentRequired: z.boolean(), selfApprovalAllowed: z.boolean()});
@@ -24,9 +25,10 @@ export const reviewChangeReportSchema = z.strictObject({
 export const artifactReviewSchema = z.strictObject({
   id: uuid, target: exactReviewTargetSchema, act: reviewActSchema, reviewerId: uuid, preparedBy: uuid.nullable(),
   selfApprovalDeclared: z.boolean(), reviewMode: z.enum(["individual", "assigned", "open", "legacy"]),
-  policySnapshot: reviewRegimeSchema.extend({roles: z.array(reviewRoleSchema)}).nullable(),
+  policySnapshot: reviewRegimeSchema.extend({roles: z.array(reviewRoleSchema),
+    reassignment: z.strictObject({fromUserId: uuid, toUserId: uuid}).optional()}).nullable(),
   block: z.strictObject({id: uuid, key: text}).nullable(), basisReviewId: uuid.nullable(),
-  changeReport: reviewChangeReportSchema.nullable(), commandId: uuid, note: text.nullable(), createdAt: z.iso.datetime({offset: true}),
+  changeReport: reviewChangeReportSchema.nullable(), commandId: uuid, note: reviewNote.nullable(), createdAt: z.iso.datetime({offset: true}),
 }).superRefine((r, ctx) => {
   const reject = (message: string) => ctx.addIssue({code: "custom", message});
   if (r.reviewMode !== "legacy" && r.policySnapshot === null) reject("review_policy_snapshot_required");
@@ -73,6 +75,7 @@ export function reviewActionAllowed(input: ReviewAuthorization): {readonly allow
   const deny = (reason: string) => ({allowed: false as const, reason});
   if (!input.workAccess) return deny("review_work_access_required");
   if (input.act === "reassign") return input.manageAccess ? {allowed: true} : deny("review_manage_access_required");
+  if (!input.sourceAccess) return deny("review_source_access_required");
   const approving = input.act === "approve" || input.act === "reaffirm";
   if (input.regime.assignmentRequired && input.act !== "comment") {
     const roleAllowed = approving || input.act === "revoke_approval" ? input.roles.includes("approver")
@@ -80,7 +83,6 @@ export function reviewActionAllowed(input: ReviewAuthorization): {readonly allow
     if (!roleAllowed) return deny("review_assignment_required");
   }
   if (approving) {
-    if (!input.sourceAccess) return deny("review_source_access_required");
     if (!input.hasSubstance) return deny("review_substance_required");
     if (input.preparedBy === input.reviewerId && (!input.regime.selfApprovalAllowed || !input.selfApprovalDeclared)) {
       return deny("capital_project_self_approval_forbidden");
@@ -99,19 +101,23 @@ export const workDecisionBasisSchema = z.strictObject({
   assessments: z.array(z.strictObject({decisionKey: text, revision: z.number().int().positive(), decisionFingerprint: fingerprint})).max(100),
   decisions: z.array(workDecisionReferenceSchema).max(100),
   execution: z.strictObject({briefFingerprint: fingerprint, payloadFingerprint: fingerprint, inputFingerprint: fingerprint}).nullable(),
-  configuration: z.strictObject({configurationFingerprint: fingerprint, structureFingerprint: fingerprint, uploadFingerprint: fingerprint}).nullable(),
+  configuration: z.strictObject({configurationFingerprint: fingerprint, structureFingerprint: fingerprint.nullable(), uploadFingerprint: fingerprint.nullable()})
+    .refine((value) => (value.structureFingerprint === null) === (value.uploadFingerprint === null), {message: "configuration_import_basis_incomplete"}).nullable(),
 });
 export const decisionReportSchema = z.strictObject({decidedBy: text, forum: text, decidedOn: z.iso.date(), evidenceSourceVersionId: uuid.nullable()});
 export const workDecisionSchema = z.strictObject({
   id: uuid, organizationId: uuid, workId: uuid, decisionKey: text, revision: z.number().int().positive(), fingerprint,
-  kind: workDecisionKindSchema, basis: workDecisionBasisSchema, effects: z.array(workDecisionEffectSchema).min(1).max(3),
-  origin: z.enum(["in_product", "reported"]), report: decisionReportSchema.nullable(), decidedBy: uuid,
+  kind: workDecisionKindSchema, outcome: z.enum(["approved", "rejected", "recorded"]).default("approved"), basis: workDecisionBasisSchema, effects: z.array(workDecisionEffectSchema).min(1).max(3),
+  origin: z.enum(["in_product", "reported"]), report: decisionReportSchema.nullable(), note: reviewNote.nullable().default(null), decidedBy: uuid,
   expectedPreviousRevision: z.number().int().positive().nullable(), supersedesDecisionId: uuid.nullable(),
   contested: z.boolean(), commandId: uuid, createdAt: z.iso.datetime({offset: true}),
 }).superRefine((d, ctx) => {
   const reject = (message: string) => ctx.addIssue({code: "custom", message});
   if (new Set(d.effects).size !== d.effects.length || (d.effects.includes("none") && d.effects.length !== 1)) reject("decision_effects_invalid");
+  if (d.outcome === "rejected" && !(d.effects.length === 1 && (d.effects[0] === "none"
+    || (d.kind === "confirm_assessment" && d.effects[0] === "freeze_assessment")))) reject("rejected_decision_has_operational_effect");
   if (d.origin === "reported" && (d.report === null || d.effects.length !== 1 || d.effects[0] !== "none")) reject("reported_decision_has_effect");
+  if ((d.origin === "reported") !== (d.outcome === "recorded")) reject("decision_outcome_origin_mismatch");
   if (d.origin === "in_product" && d.report !== null) reject("decision_report_origin_mismatch");
   if (d.kind === "record_report" && d.origin !== "reported") reject("decision_report_required");
   if (d.expectedPreviousRevision !== null && d.expectedPreviousRevision >= d.revision) reject("decision_previous_revision_invalid");

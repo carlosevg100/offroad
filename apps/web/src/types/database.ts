@@ -506,6 +506,117 @@ export type Database = {
           },
         ]
       }
+      artifact_reviews: {
+        Row: {
+          act: string
+          artifact_id: string
+          audience: string
+          basis_review_id: string | null
+          block_id: string | null
+          block_key: string | null
+          change_report: Json | null
+          command_id: string
+          created_at: string
+          id: string
+          legacy_ref: Json | null
+          manifest_fingerprint: string
+          note: string | null
+          organization_id: string
+          policy_snapshot: Json | null
+          prepared_by: string | null
+          review_mode: string
+          reviewer_id: string
+          revision_id: string
+          self_approval_declared: boolean
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          act: string
+          artifact_id: string
+          audience: string
+          basis_review_id?: string | null
+          block_id?: string | null
+          block_key?: string | null
+          change_report?: Json | null
+          command_id: string
+          created_at?: string
+          id?: string
+          legacy_ref?: Json | null
+          manifest_fingerprint: string
+          note?: string | null
+          organization_id: string
+          policy_snapshot?: Json | null
+          prepared_by?: string | null
+          review_mode: string
+          reviewer_id: string
+          revision_id: string
+          self_approval_declared?: boolean
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          act?: string
+          artifact_id?: string
+          audience?: string
+          basis_review_id?: string | null
+          block_id?: string | null
+          block_key?: string | null
+          change_report?: Json | null
+          command_id?: string
+          created_at?: string
+          id?: string
+          legacy_ref?: Json | null
+          manifest_fingerprint?: string
+          note?: string | null
+          organization_id?: string
+          policy_snapshot?: Json | null
+          prepared_by?: string | null
+          review_mode?: string
+          reviewer_id?: string
+          revision_id?: string
+          self_approval_declared?: boolean
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artifact_reviews_organization_id_artifact_id_revision_id_fkey"
+            columns: ["organization_id", "artifact_id", "revision_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_revisions"
+            referencedColumns: ["organization_id", "artifact_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_reviews_organization_id_basis_review_id_fkey"
+            columns: ["organization_id", "basis_review_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_reviews"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_reviews_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifact_reviews_organization_id_revision_id_block_id_fkey"
+            columns: ["organization_id", "revision_id", "block_id"]
+            isOneToOne: false
+            referencedRelation: "artifact_blocks"
+            referencedColumns: ["organization_id", "revision_id", "id"]
+          },
+          {
+            foreignKeyName: "artifact_reviews_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       artifact_revisions: {
         Row: {
           artifact_id: string
@@ -2651,6 +2762,7 @@ export type Database = {
       }
       capital_project_review_policies: {
         Row: {
+          assignment_required: string
           capital_project_id: string
           created_at: string
           id: string
@@ -2660,6 +2772,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          assignment_required?: string
           capital_project_id: string
           created_at?: string
           id?: string
@@ -2669,6 +2782,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          assignment_required?: string
           capital_project_id?: string
           created_at?: string
           id?: string
@@ -7448,6 +7562,7 @@ export type Database = {
       }
       organization_review_policies: {
         Row: {
+          assignment_required: boolean
           created_at: string
           organization_id: string
           self_approval_allowed: boolean
@@ -7455,6 +7570,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          assignment_required?: boolean
           created_at?: string
           organization_id: string
           self_approval_allowed?: boolean
@@ -7462,6 +7578,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          assignment_required?: boolean
           created_at?: string
           organization_id?: string
           self_approval_allowed?: boolean
@@ -10712,6 +10829,106 @@ export type Database = {
           },
         ]
       }
+      work_decisions: {
+        Row: {
+          basis: Json
+          command_id: string
+          contested: boolean
+          created_at: string
+          decided_by: string
+          decision_key: string
+          effects: string[]
+          expected_previous_revision: number | null
+          fingerprint: string
+          id: string
+          kind: string
+          legacy_ref: Json | null
+          note: string | null
+          organization_id: string
+          origin: string
+          outcome: string
+          policy_snapshot: Json | null
+          report: Json | null
+          review_mode: string
+          revision: number
+          supersedes_decision_id: string | null
+          updated_at: string
+          work_id: string
+        }
+        Insert: {
+          basis: Json
+          command_id: string
+          contested?: boolean
+          created_at?: string
+          decided_by: string
+          decision_key: string
+          effects: string[]
+          expected_previous_revision?: number | null
+          fingerprint: string
+          id?: string
+          kind: string
+          legacy_ref?: Json | null
+          note?: string | null
+          organization_id: string
+          origin: string
+          outcome: string
+          policy_snapshot?: Json | null
+          report?: Json | null
+          review_mode: string
+          revision: number
+          supersedes_decision_id?: string | null
+          updated_at?: string
+          work_id: string
+        }
+        Update: {
+          basis?: Json
+          command_id?: string
+          contested?: boolean
+          created_at?: string
+          decided_by?: string
+          decision_key?: string
+          effects?: string[]
+          expected_previous_revision?: number | null
+          fingerprint?: string
+          id?: string
+          kind?: string
+          legacy_ref?: Json | null
+          note?: string | null
+          organization_id?: string
+          origin?: string
+          outcome?: string
+          policy_snapshot?: Json | null
+          report?: Json | null
+          review_mode?: string
+          revision?: number
+          supersedes_decision_id?: string | null
+          updated_at?: string
+          work_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_decisions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_decisions_organization_id_supersedes_decision_id_fkey"
+            columns: ["organization_id", "supersedes_decision_id"]
+            isOneToOne: false
+            referencedRelation: "work_decisions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "work_decisions_organization_id_work_id_fkey"
+            columns: ["organization_id", "work_id"]
+            isOneToOne: false
+            referencedRelation: "capital_projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       work_dossiers: {
         Row: {
           created_at: string
@@ -11741,6 +11958,10 @@ export type Database = {
         Args: { p_kind: string; p_subject: string; p_work_id: string }
         Returns: Json
       }
+      read_artifact_revision_reviews_v1: {
+        Args: { p_revision_id: string }
+        Returns: Json
+      }
       read_artifact_revision_v1: {
         Args: { p_revision_id: string }
         Returns: Json
@@ -11815,6 +12036,7 @@ export type Database = {
         Returns: Json
       }
       read_source_version_v1: { Args: { p_version_id: string }; Returns: Json }
+      read_work_decision_v1: { Args: { p_decision_id: string }; Returns: Json }
       read_work_execution_v1: {
         Args: { p_execution_id: string }
         Returns: Json
@@ -11824,6 +12046,17 @@ export type Database = {
         Returns: Json
       }
       read_workspace_access_v1: { Args: never; Returns: Json }
+      reassign_pending_review_v1: {
+        Args: {
+          p_command_id: string
+          p_from_user: string
+          p_organization_id?: string
+          p_project_id: string
+          p_reason: string
+          p_to_user: string
+        }
+        Returns: Json
+      }
       record_agent_change_proposal: {
         Args: {
           p_organization_id: string
@@ -12041,6 +12274,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_work_decision_v1: {
+        Args: {
+          p_basis: Json
+          p_command_id: string
+          p_decision_key: string
+          p_effects: string[]
+          p_expected_previous_revision: number
+          p_kind: string
+          p_note: string
+          p_origin: string
+          p_outcome?: string
+          p_report: Json
+          p_work_id: string
+        }
+        Returns: Json
+      }
       register_intake_document_command: {
         Args: {
           p_bucket_id: string
@@ -12188,6 +12437,19 @@ export type Database = {
       retire_method_release_v1: {
         Args: { p_reason: string; p_release_id: string }
         Returns: string
+      }
+      review_artifact_revision_v1: {
+        Args: {
+          p_act: string
+          p_basis_review_id?: string
+          p_block_id: string
+          p_command_id: string
+          p_expected_fingerprint: string
+          p_note: string
+          p_revision_id: string
+          p_self_approval_declared: boolean
+        }
+        Returns: Json
       }
       review_case_red_flag: {
         Args: {

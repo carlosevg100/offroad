@@ -6273,3 +6273,20 @@ do $$ declare api_role text; signature text; begin
   end loop;
  end loop;
 end $$;
+
+-- Stage 20 additive foundation: content is never read through raw table grants.
+do $$ declare tab text; api_role text; sig text; begin
+ foreach tab in array array['public.artifact_reviews','public.work_decisions','private.review_basis_receipts','private.review_basis_source_links','private.review_assignment_history','private.review_reassignment_commands'] loop
+  if not exists(select 1 from pg_class where oid=tab::regclass and relrowsecurity and relforcerowsecurity)
+   or (select count(distinct polcmd) from pg_policy where polrelid=tab::regclass)<>4
+  then raise exception 'review table RLS missing: %',tab; end if;
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_table_privilege(api_role,tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') then raise exception 'review raw table exposed: %, %',tab,api_role; end if;
+  end loop;
+ end loop;
+ foreach sig in array array['private.lock_review_work_v1(uuid)','private.record_review_basis_receipt_v1(uuid,uuid,text,jsonb,uuid[],text)','private.artifact_review_sources_allowed_v1(uuid,uuid,uuid)'] loop
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_function_privilege(api_role,sig,'EXECUTE') then raise exception 'review helper exposed: %, %',sig,api_role; end if;
+  end loop;
+ end loop;
+end $$;
