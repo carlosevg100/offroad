@@ -41,15 +41,17 @@ def compete(first_sql, second_sql, expected_error=None, second_actor=actor):
         first.stdin.write('\\o /dev/null\nbegin;' + authorized(first_sql) + '\n\\echo REVIEW_LOCK_HELD\n')
         first.stdin.flush()
         deadline = time.monotonic() + 20
+        barrier_output = []
         while True:
             remaining = deadline - time.monotonic()
             if remaining <= 0 or not select.select([first.stdout], [], [], remaining)[0]:
                 raise AssertionError('First review transaction did not reach its barrier')
             line = first.stdout.readline().strip()
+            barrier_output.append(line)
             if line == 'REVIEW_LOCK_HELD':
                 break
             if first.poll() is not None:
-                raise AssertionError(line)
+                raise AssertionError('\n'.join(barrier_output))
         second = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
         second.stdin.write("set application_name='offroad_recovery_contender';begin;" + authorized(second_sql, second_actor) + 'commit;\n')
         second.stdin.close()
@@ -147,6 +149,9 @@ compete(revoke, recover(executions[4]), 'review_work_access_required', second_ac
 assert revisions(executions[4]) == '0'
 # Reset only these synthetic local rows to test the opposite interleaving; no production path.
 run(f"update private.principals set revoked_at=null where id='{principal}';update public.organization_memberships set status='active' where organization_id='{org}' and user_id='{other}';")
+# Membership suspension also revokes resource grants; restoring identity alone must not restore access.
+assert run('begin;' + authorized(f"select private.can_access_resource_v1('{org}','{work}','work');", other) + 'rollback;').endswith('f')
+run('begin;' + authorized(f"set local role authenticated;select public.grant_resource_access_v1('{work}','{other}','work');") + 'commit;')
 compete(authorized(recover(executions[5]), other), revoke)
 assert revisions(executions[5]) == '1'
 print('recovery_principal_revocation_both_orders: PASS (policy wait, denial or prior projection preserved)')
