@@ -1,6 +1,6 @@
 # Etapa 20 / 3C: insumos realmente entregues ao produtor institucional
 
-Status: implementação e staging verificados; CI, produção e deployments pendentes. Não é fechamento da etapa 20.
+Status: implementação, staging, produção e oito corridas concorrentes verificados; CI final, merge e deployments pendentes. Não é fechamento da etapa 20.
 
 ## Contrato
 
@@ -27,3 +27,12 @@ O v1 permanece sob responsabilidade da engenharia desta etapa, para retirada no 
 - `rls_non_interference.sql`: grants e políticas das três tabelas e helpers privados.
 
 Revisão independente detectou guard pré-lock e vencimento durante persistência; ambos corrigidos antes de staging. Controles APP-02/03/04/09/11, DATA-02/03/07/12, IAM-07/12. Sem provedor/modelo novo, gasto novo, ativação de cliente ou mudança de conteúdo profissional. Documentação Supabase consultada em 28/09: grants/RLS e changelog PostgreSQL 15.19/17.11; a alteração de pgcrypto citada trata cifras PGP antigas, não digest SHA-256 utilizado aqui.
+
+## Provas de aplicação e revisão
+
+- Migração: staging `20260928162315`, produção `20260928163641`; arquivo em main usará o carimbo de produção. SHA-256 idêntico ao texto dos dois journals: `461a149c6256480efbd15ff3109a6e4421b54d52e5e98fc9feae31ae0d8c2ee0`.
+- 409 versões no journal de produção, 423 em staging. Catálogos: 2.764 e 2.825 objetos, 34 novos em cada, nenhum objeto antigo removido ou alterado no contrato de permissões. Definições dos comandos/helper iguais entre ambientes; snapshot de 95 funções conferido.
+- Produção sem fixture ou backfill: zero capturas/vínculos, 133 revisões anteriores preservadas e função de liberação intacta (`7b9e46b1c9257544c196aaaf6cd3a634`, md5 do corpo).
+- Security advisors: zero nos dois ambientes. Advisor informativo de FK com três colunas no vínculo: mantido o índice único `(organization_id,result_id)`, que limita a busca a uma linha, além do índice `(organization_id,snapshot_id)`. EXPLAIN confirmou acesso indexado; terceiro campo é filtro residual. Índice adicional seria redundante; revisor concordou.
+- Revisor independente: sem bloqueador estático residual depois dos guards sob lock e checagem final de prazo. O índice único do job e sua negativa SQL eliminaram a hipótese de dois jobs legítimos para o mesmo pedido.
+- CI de preflight `36451664524`, job `109027670230`: oito corridas novas passaram antes da promoção. O gate final de inventário ficou corretamente fechado nesse commit, que ainda não trazia recibo de produção. Esta atualização incorpora apenas o recibo real posterior e dispara novamente o gate completo.

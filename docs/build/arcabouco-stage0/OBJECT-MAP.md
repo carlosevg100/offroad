@@ -3063,3 +3063,7 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 - `function:private.project_execution_result_artifact_v1(p_org uuid, p_execution uuid, p_job uuid, p_rights_subject uuid)`
 - `function:private.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)`
 - `function:public.recover_execution_result_artifact_v1(p_execution_id uuid, p_expected_result_fingerprint text)`
+
+## Etapa 20, captura de contexto institucional
+
+34 objetos novos: três tabelas privadas, sete funções, doze políticas negativas e doze gatilhos. Dois comandos v1 deixam de aceitar jobs capturados. Captura exata, direitos atuais e fixados, vínculo atômico e nenhum recibo retrospectivo. Carimbo de produção: `20260928163641`; staging: `20260928162315`.

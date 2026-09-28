@@ -1629,10 +1629,14 @@
    "name": "revision_bound_reviews_and_decisions"
   },
   {
-   "name": "execution_artifact_recovery",
-   "version": "20260928140508"
+   "version": "20260928140508",
+   "name": "execution_artifact_recovery"
+  },
+  {
+   "version": "20260928163641",
+   "name": "institutional_input_snapshots"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-28 14:05:25.986928+00"
+ "captured_at": "2026-09-28 16:37:25.725235+00"
 }
