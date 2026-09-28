@@ -869,14 +869,14 @@ it("uses only capability-scoped proposal RPCs and forwards the loaded input fing
 });
 
 describe("institutional input capture commands",()=>{
- it("loads through v2 and sends the exact loader pin with the result without v1 fallback",async()=>{
+ it("loads through v3 and sends the exact loader pin with the result without v1 fallback",async()=>{
   const rpc=vi.fn().mockResolvedValue({data:{id:"10000000-0000-4000-8000-000000000001",status:"blocked",replayed:false},error:null});
   const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
   const result={status:"blocked" as const,blockers:["missing_inputs"],inputSnapshot:{id:"95000000-0000-4000-8000-000000000881",fingerprint:"c".repeat(64)}};
   const institutionalJob={...job,kind:"agent_operation_brief" as const,payload:{message_id:"90000000-0000-4000-8000-000000000881",locale:"pt-BR" as const}};
   await queue.loadInstitutionalModelContext!(institutionalJob);
   await queue.recordInstitutionalModelResult!(institutionalJob,result);
-  expect(rpc).toHaveBeenNthCalledWith(1,"worker_load_institutional_model_context_v2",{p_job_id:job.job_id,p_capability_token:job.capability_token});
+  expect(rpc).toHaveBeenNthCalledWith(1,"worker_load_institutional_model_context_v3",{p_job_id:job.job_id,p_capability_token:job.capability_token});
   expect(rpc).toHaveBeenNthCalledWith(2,"worker_record_institutional_model_result_v2",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_result:result});
  });
 });
@@ -899,5 +899,16 @@ describe("institutional capture contention",()=>{
   const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
   await expect(queue.loadInstitutionalModelContext!(job)).rejects.toThrow(error.message);
   expect(rpc).toHaveBeenCalledOnce();
+ });
+});
+
+describe("institutional setup capture writer",()=>{
+ it("sends candidate and loader pin to v2 and repeats only the explicit atomic abort",async()=>{
+  const rpc=vi.fn().mockResolvedValueOnce({data:null,error:{code:"40001",message:"institutional_capture_retry"}}).mockResolvedValue({data:{candidateId:"60000000-0000-4000-8000-000000000881",revision:1,replayed:false},error:null});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  const input={submissionId:"90000000-0000-4000-8000-000000000881",candidate:{status:"review_required"},inputSnapshot:{id:"95000000-0000-4000-8000-000000000881",fingerprint:"a".repeat(64)}};
+  await queue.recordInitialInstitutionalConfigurationCandidate!({...job,kind:"agent_operation_brief",payload:{message_id:input.submissionId,locale:"pt-BR"}},input);
+  expect(rpc).toHaveBeenCalledTimes(2);expect(rpc.mock.calls[0]).toEqual(rpc.mock.calls[1]);
+  expect(rpc).toHaveBeenCalledWith("worker_record_initial_institutional_candidate_v2",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_submission_id:input.submissionId,p_candidate:input.candidate,p_input_snapshot:input.inputSnapshot});
  });
 });

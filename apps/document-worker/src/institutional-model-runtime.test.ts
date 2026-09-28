@@ -15,7 +15,7 @@ function fixture(){
  return {context:{...context,inputSnapshot:{id:"95000000-0000-4000-8000-000000000881",fingerprint:"c".repeat(64)}},candidate,configuration:data("configuration"),artifact:data("artifact")};
 }
 describe("real institutional setup and result worker adapter",()=>{
- it("persists a review proposal from source-bound fact rows without automatic approval",async()=>{const f=fixture();f.context.pendingSetup={submissionId:id,configuration:f.configuration,sourceReviews:f.candidate.sourceBindings,submittedBy:f.candidate.submission.actorId,submittedAt:f.candidate.submission.submittedAt,sourceManifestFingerprint:f.context.sourceManifestFingerprint};const save=vi.fn(async()=>({candidateId:"60000000-0000-4000-8000-000000000881",revision:1,replayed:false}));const result=await processInstitutionalModelSetup({job,locale:"en-US",queue:{loadInstitutionalModelContext:async()=>f.context,recordInitialInstitutionalConfigurationCandidate:save}});expect(result.status).toBe("review_required");expect(save.mock.calls).toHaveLength(1);});
+ it("persists a review proposal from source-bound fact rows without automatic approval",async()=>{const f=fixture();f.context.pendingSetup={submissionId:id,configuration:f.configuration,sourceReviews:f.candidate.sourceBindings,submittedBy:f.candidate.submission.actorId,submittedAt:f.candidate.submission.submittedAt,sourceManifestFingerprint:f.context.sourceManifestFingerprint};const save=vi.fn(async()=>({candidateId:"60000000-0000-4000-8000-000000000881",revision:1,replayed:false}));const result=await processInstitutionalModelSetup({job,locale:"en-US",queue:{loadInstitutionalModelContext:async()=>({...f.context,setupInputSnapshot:{id:"95000000-0000-4000-8000-000000000881",fingerprint:"a".repeat(64)}}),recordInitialInstitutionalConfigurationCandidate:save}});expect(result.status).toBe("review_required");expect(save.mock.calls).toHaveLength(1);});
  it("calculates and stores actual reproducible workbook bytes with no model gateway dependency",async()=>{const f=fixture();let saved:unknown;const result=await processInstitutionalModelResult({job,queue:{loadInstitutionalModelContext:async()=>f.context,recordInstitutionalModelResult:async (_job,value)=>{saved=value;if(value.status==="completed")expect(await renderApprovedInstitutionalFinancialWorkbook(value.artifact,"en")).not.toBeNull();return {id,status:"completed",replayed:false};}}});expect(result.status).toBe("completed");expect(saved).toEqual(expect.objectContaining({inputSnapshot:f.context.inputSnapshot}));});
  it("routes the persisted refresh before the generic advisor and makes zero model calls",async()=>{
   const f=fixture();const gateway={complete:vi.fn(async()=>{throw new Error("No model call authorized");}),spent:()=>({costUsd:0,calls:0})} as unknown as ModelGateway;
@@ -76,5 +76,37 @@ describe("institutional contention requeue",()=>{
   expect(await processAgentOperationBriefJob(activeJob,{queue,gateway,log:()=>{},shadowRouting:false})).toEqual({status:"failed"});
   expect(queue.fail).toHaveBeenCalledWith(activeJob,expect.objectContaining({code:"institutional_capture_retry"}),{retryable:true,retryInSeconds:2});
   expect(queue.recordAgentFailure).not.toHaveBeenCalled();expect(queue.recordAgentResponse).not.toHaveBeenCalled();expect(queue.complete).not.toHaveBeenCalled();expect(gateway.complete).not.toHaveBeenCalled();
+ });
+});
+
+describe("prospective setup capture",()=>{
+ it.each([undefined,null,{id:"bad",fingerprint:"a".repeat(64)},{id:"95000000-0000-4000-8000-000000000881",fingerprint:"bad"},{id:"95000000-0000-4000-8000-000000000881",fingerprint:"a".repeat(64),extra:true}])("rejects absent or malformed setup pin: %j",async(setupInputSnapshot)=>{
+  const f=fixture();const save=vi.fn();
+  await expect(processInstitutionalModelSetup({job,locale:"en-US",queue:{loadInstitutionalModelContext:async()=>({...f.context,setupInputSnapshot}),recordInitialInstitutionalConfigurationCandidate:save}})).rejects.toThrow();
+  expect(save).not.toHaveBeenCalled();
+ });
+ it("passes the exact setup pin with the real candidate",async()=>{
+  const f=fixture();const pin={id:"95000000-0000-4000-8000-000000000881",fingerprint:"a".repeat(64)};
+  f.context.pendingSetup={submissionId:id,configuration:f.configuration,sourceReviews:f.candidate.sourceBindings,submittedBy:f.candidate.submission.actorId,submittedAt:f.candidate.submission.submittedAt,sourceManifestFingerprint:f.context.sourceManifestFingerprint};
+  const save=vi.fn(async()=>({candidateId:"60000000-0000-4000-8000-000000000881",revision:1,replayed:false}));
+  await processInstitutionalModelSetup({job,locale:"en-US",queue:{loadInstitutionalModelContext:async()=>({...f.context,setupInputSnapshot:pin}),recordInitialInstitutionalConfigurationCandidate:save}});
+  expect(save).toHaveBeenCalledWith(job,expect.objectContaining({submissionId:id,inputSnapshot:pin,candidate:expect.objectContaining({status:"review_required",willExecute:false})}));
+ });
+ it("replays a completed legacy setup without computing or manufacturing capture",async()=>{
+  const save=vi.fn();const replay={submissionId:id,status:"review_required",candidateId:"60000000-0000-4000-8000-000000000881",revision:1,informationRequestBasis:null};
+  expect(await processInstitutionalModelSetup({job,locale:"en-US",queue:{loadInstitutionalModelContext:async()=>({setupReplay:replay}),recordInitialInstitutionalConfigurationCandidate:save}})).toEqual({status:"review_required",candidateId:replay.candidateId,revision:1,replayed:true});
+  expect(save).not.toHaveBeenCalled();
+ });
+ it("resumes missing-input questions from the recorded minimal basis without a new assessment",async()=>{
+  const save=vi.fn();const sync=vi.fn(async()=>({openCount:1}));
+  const replay={submissionId:id,status:"missing_inputs",candidateId:null,revision:null,informationRequestBasis:{configurationFingerprint:"a".repeat(64),missingInputs:[{targetPath:"openingBalanceSheet.cash",code:"fact_missing"}]}};
+  await processInstitutionalModelSetup({job,locale:"en-US",queue:{loadInstitutionalModelContext:async()=>({setupReplay:replay}),recordInitialInstitutionalConfigurationCandidate:save,syncInstitutionalInformationRequests:sync}});
+  expect(sync).toHaveBeenCalledWith(job,{requests:[expect.objectContaining({answerBinding:expect.objectContaining({expectedConfigurationFingerprint:"a".repeat(64)})})]});
+  expect(save).not.toHaveBeenCalled();
+ });
+ it("rejects replay for another submission",async()=>{
+  const save=vi.fn();
+  await expect(processInstitutionalModelSetup({job,locale:"en-US",queue:{loadInstitutionalModelContext:async()=>({setupReplay:{submissionId:"90000000-0000-4000-8000-000000000999",status:"calculation_blocked",candidateId:null,revision:null,informationRequestBasis:null}}),recordInitialInstitutionalConfigurationCandidate:save}})).rejects.toThrow("institutional_setup_replay_unbound");
+  expect(save).not.toHaveBeenCalled();
  });
 });

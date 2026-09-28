@@ -1,6 +1,6 @@
 # Etapa 20 / 3C: insumos realmente entregues ao produtor institucional
 
-Status: implementação, staging, produção e oito corridas concorrentes verificados; CI final, merge e deployments pendentes. Não é fechamento da etapa 20.
+Status: incremento concluído. PR 839/main `d3786655`, CI da PR e de main aprovadas, web/worker no commit e boot da task 490 conferido (25 capacidades, dois executores, um preparador). Não é fechamento da etapa 20.
 
 ## Contrato
 
