@@ -1,3 +1,7 @@
+## Etapa 20 / 3F: integridade da cadeia institucional, 28/09/2026
+
+3E concluído na PR 841/main `6c337cf499bf0930011d6e2fa0f3c5f3199d2774`, CI de main 36483919586 aprovada e web/worker 492 verificados. O 3F acrescenta resolvedor privado da raiz capturada e contribuições com comprovante, sem grant ou mudança de liberação. Importações e históricos sem prova permanecem unresolved; integridade histórica não concede direitos atuais. Testes, migração e publicação ainda em validação. Contrato e riscos: `docs/build/arcabouco/etapa-20-3f-ancestralidade.md`. Etapa 20 aberta; 21–24 não iniciadas.
+
 ## Etapa 20 / 3D: captura prospectiva do setup, 28/09/2026
 
 ## Etapa 20, incremento 3E: comprovação prospectiva de contribuições, 28/09/2026

@@ -6300,7 +6300,7 @@ do $$declare tab text;api_role text;sig text;begin
    if has_table_privilege(api_role,tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') then raise exception 'Capture table exposed: %, %',tab,api_role;end if;
   end loop;
  end loop;
- foreach sig in array array['private.institutional_job_for_capture_v1(uuid,text)','private.institutional_snapshot_authorized_v1(uuid,uuid)','private.persist_institutional_model_result_v1(uuid,text,jsonb,uuid)','private.persist_initial_institutional_candidate_v1(uuid,text,uuid,jsonb,uuid)','private.institutional_setup_snapshot_authorized_v1(uuid,uuid)','private.institutional_configuration_capture_state_v1(uuid,uuid)'] loop
+ foreach sig in array array['private.institutional_job_for_capture_v1(uuid,text)','private.institutional_snapshot_authorized_v1(uuid,uuid)','private.persist_institutional_model_result_v1(uuid,text,jsonb,uuid)','private.persist_initial_institutional_candidate_v1(uuid,text,uuid,jsonb,uuid)','private.institutional_setup_snapshot_authorized_v1(uuid,uuid)','private.institutional_configuration_capture_state_v1(uuid,uuid)','private.institutional_configuration_ancestry_v1(uuid,uuid,uuid)'] loop
   foreach api_role in array array['anon','authenticated','service_role'] loop
    if has_function_privilege(api_role,sig,'EXECUTE') then raise exception 'Capture helper exposed: %, %',sig,api_role;end if;
   end loop;
