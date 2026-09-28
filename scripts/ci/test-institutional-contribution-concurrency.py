@@ -65,7 +65,7 @@ def write(c):
 
 
 def revoke(c):
-    return f"select private.revoke_resource_access_v1('{c['work']}','{c['subject']}');"
+    return auth({"actor": c["subject"]}, f"select private.revoke_resource_access_v1('{c['work']}','{c['subject']}');")
 
 
 def count(c):
