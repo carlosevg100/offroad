@@ -1,6 +1,6 @@
-## Etapa 20, fundação aditiva em preparação, 28/09/2026
+## Etapa 20, fundação aditiva aplicada; publicação em verificação, 28/09/2026
 
-Reagrupamento autorizado em `FOUNDER-ACTS.md`: persistência e comandos novos antes do corte integrado de liberação. Escopo, regressões de staging com rollback, revisão independente e provas concorrentes ligadas à CI em `docs/build/arcabouco/etapa-20-2-fundacao.md`. A aplicação e os gates de publicação ainda serão registrados; isto não fecha a etapa 20 e não inicia a 21.
+Reagrupamento autorizado em `FOUNDER-ACTS.md`: persistência e comandos novos antes do corte integrado de liberação. Migração staging `20260928114813` e produção `20260928115102`; seis testes no staging instalado, 29 definições iguais entre ambientes, advisors de segurança sem alertas e catálogos conciliados. CI pré-aplicação `36415822103`: qualidade e E2E passaram; banco passou nos testes, pendente apenas do inventário então ainda não aplicado. CI final, merge e deployments ainda pendentes. Evidências em `docs/build/arcabouco/etapa-20-2-fundacao.md`. Isto não fecha a etapa 20 nem inicia a 21.
 
 ## Etapa 19, segundo acabamento, parte 2A: a aritmética da análise de crédito e da referência de preço pelo núcleo, 27/09/2026
 

@@ -1623,8 +1623,12 @@
   {
    "version": "20260927133737",
    "name": "platform_publication_authority_hardening"
+  },
+  {
+   "version": "20260928115102",
+   "name": "revision_bound_reviews_and_decisions"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-27T13:38:04.740Z"
+ "captured_at": "2026-09-28 11:51:20.610274+00"
 }

@@ -179065,6 +179065,4494 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.append_work_decision_v1(p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.append_work_decision_v1(p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text)",
+          "kind": "function",
+          "name": "append_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.append_work_decision_v1(p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text)",
+          "kind": "function",
+          "name": "append_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 718,
+          "anchor": "create function private.append_work_decision_v1(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.artifact_review_change_report_v1(p_previous jsonb, p_next jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.artifact_review_change_report_v1(p_previous jsonb, p_next jsonb)",
+          "kind": "function",
+          "name": "artifact_review_change_report_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_previous jsonb, p_next jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.artifact_review_change_report_v1(p_previous jsonb, p_next jsonb)",
+          "kind": "function",
+          "name": "artifact_review_change_report_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_previous jsonb, p_next jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 355,
+          "anchor": "create function private.artifact_review_change_report_v1(p_previous jsonb,p_next jsonb) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.artifact_review_is_active_v1(p_org uuid, p_review uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.artifact_review_is_active_v1(p_org uuid, p_review uuid)",
+          "kind": "function",
+          "name": "artifact_review_is_active_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_review uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.artifact_review_is_active_v1(p_org uuid, p_review uuid)",
+          "kind": "function",
+          "name": "artifact_review_is_active_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_review uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 498,
+          "anchor": "create function private.artifact_review_is_active_v1(p_org uuid,p_review uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.artifact_review_preparer_v1(p_revision artifact_revisions)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.artifact_review_preparer_v1(p_revision artifact_revisions)",
+          "kind": "function",
+          "name": "artifact_review_preparer_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision artifact_revisions",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.artifact_review_preparer_v1(p_revision artifact_revisions)",
+          "kind": "function",
+          "name": "artifact_review_preparer_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision artifact_revisions",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 519,
+          "anchor": "create function private.artifact_review_preparer_v1(p_revision public.artifact_revisions) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.artifact_review_snapshot_v1(p_org uuid, p_revision uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.artifact_review_snapshot_v1(p_org uuid, p_revision uuid)",
+          "kind": "function",
+          "name": "artifact_review_snapshot_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.artifact_review_snapshot_v1(p_org uuid, p_revision uuid)",
+          "kind": "function",
+          "name": "artifact_review_snapshot_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 458,
+          "anchor": "create function private.artifact_review_snapshot_v1(p_org uuid,p_revision uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "artifact_review_sources_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "artifact_review_sources_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 852,
+          "anchor": "create function private.artifact_review_sources_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.artifact_revision_change_v1(p_previous uuid, p_next uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.artifact_revision_change_v1(p_previous uuid, p_next uuid)",
+          "kind": "function",
+          "name": "artifact_revision_change_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_previous uuid, p_next uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.artifact_revision_change_v1(p_previous uuid, p_next uuid)",
+          "kind": "function",
+          "name": "artifact_revision_change_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_previous uuid, p_next uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 471,
+          "anchor": "create function private.artifact_revision_change_v1(p_previous uuid,p_next uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capture_review_assignment_history_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capture_review_assignment_history_v1()",
+          "kind": "function",
+          "name": "capture_review_assignment_history_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capture_review_assignment_history_v1()",
+          "kind": "function",
+          "name": "capture_review_assignment_history_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1087,
+          "anchor": "create function private.capture_review_assignment_history_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.enforce_artifact_review_target_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.enforce_artifact_review_target_v1()",
+          "kind": "function",
+          "name": "enforce_artifact_review_target_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.enforce_artifact_review_target_v1()",
+          "kind": "function",
+          "name": "enforce_artifact_review_target_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1025,
+          "anchor": "create function private.enforce_artifact_review_target_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.lock_review_work_v1(p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_review_work_v1(p_work uuid)",
+          "kind": "function",
+          "name": "lock_review_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_review_work_v1(p_work uuid)",
+          "kind": "function",
+          "name": "lock_review_work_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 431,
+          "anchor": "create function private.lock_review_work_v1(p_work uuid) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.read_artifact_revision_reviews_v1(p_revision_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_artifact_revision_reviews_v1(p_revision_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_revision_reviews_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_artifact_revision_reviews_v1(p_revision_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_revision_reviews_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 606,
+          "anchor": "create function private.read_artifact_revision_reviews_v1(p_revision_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.read_work_decision_v1(p_decision_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_work_decision_v1(p_decision_id uuid)",
+          "kind": "function",
+          "name": "read_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_decision_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_work_decision_v1(p_decision_id uuid)",
+          "kind": "function",
+          "name": "read_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_decision_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 951,
+          "anchor": "create function private.read_work_decision_v1(p_decision_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)",
+          "kind": "function",
+          "name": "reassign_pending_review_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)",
+          "kind": "function",
+          "name": "reassign_pending_review_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1112,
+          "anchor": "create function private.reassign_pending_review_v1(p_project_id uuid,p_from_user uuid,p_to_user uuid,p_reason text,p_command_id uuid,p_organization_id uuid default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.record_review_basis_receipt_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_source_versions uuid[], p_producer text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_review_basis_receipt_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_source_versions uuid[], p_producer text)",
+          "kind": "function",
+          "name": "record_review_basis_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_source_versions uuid[], p_producer text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_review_basis_receipt_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_source_versions uuid[], p_producer text)",
+          "kind": "function",
+          "name": "record_review_basis_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_source_versions uuid[], p_producer text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 975,
+          "anchor": "create function private.record_review_basis_receipt_v1(p_org uuid,p_work uuid,p_kind text,p_reference jsonb,p_source_versions uuid[],p_producer text) returns uuid",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)",
+          "kind": "function",
+          "name": "record_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)",
+          "kind": "function",
+          "name": "record_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 920,
+          "anchor": "create function private.record_work_decision_v1(p_work_id uuid,p_decision_key text,p_kind text,p_basis jsonb,p_effects text[],p_origin text,p_report jsonb,p_note text,p_expected_previous_revision integer,p_command_id uuid,p_outcome text default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.reject_review_history_mutation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.reject_review_history_mutation_v1()",
+          "kind": "function",
+          "name": "reject_review_history_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.reject_review_history_mutation_v1()",
+          "kind": "function",
+          "name": "reject_review_history_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 330,
+          "anchor": "create function private.reject_review_history_mutation_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+          "kind": "function",
+          "name": "review_artifact_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+          "kind": "function",
+          "name": "review_artifact_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 529,
+          "anchor": "create function private.review_artifact_revision_v1(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.review_basis_receipt_authority_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.review_basis_receipt_authority_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid)",
+          "kind": "function",
+          "name": "review_basis_receipt_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.review_basis_receipt_authority_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid)",
+          "kind": "function",
+          "name": "review_basis_receipt_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 836,
+          "anchor": "create function private.review_basis_receipt_authority_v1(p_org uuid,p_work uuid,p_kind text,p_reference jsonb,p_actor uuid) returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.review_policy_snapshot_v1(p_org uuid, p_work uuid, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.review_policy_snapshot_v1(p_org uuid, p_work uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "review_policy_snapshot_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_actor uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.review_policy_snapshot_v1(p_org uuid, p_work uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "review_policy_snapshot_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_actor uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 447,
+          "anchor": "create function private.review_policy_snapshot_v1(p_org uuid,p_work uuid,p_actor uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.serialize_review_policy_change_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.serialize_review_policy_change_v1()",
+          "kind": "function",
+          "name": "serialize_review_policy_change_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.serialize_review_policy_change_v1()",
+          "kind": "function",
+          "name": "serialize_review_policy_change_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 419,
+          "anchor": "create function private.serialize_review_policy_change_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.validate_work_decision_basis_v1(p_basis jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.validate_work_decision_basis_v1(p_basis jsonb)",
+          "kind": "function",
+          "name": "validate_work_decision_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_basis jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.validate_work_decision_basis_v1(p_basis jsonb)",
+          "kind": "function",
+          "name": "validate_work_decision_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_basis jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 637,
+          "anchor": "create function private.validate_work_decision_basis_v1(p_basis jsonb) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.work_decision_basis_authority_v1(p_org uuid, p_work uuid, p_basis jsonb, p_report jsonb, p_actor uuid, p_seen uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_decision_basis_authority_v1(p_org uuid, p_work uuid, p_basis jsonb, p_report jsonb, p_actor uuid, p_seen uuid[])",
+          "kind": "function",
+          "name": "work_decision_basis_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_basis jsonb, p_report jsonb, p_actor uuid, p_seen uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_decision_basis_authority_v1(p_org uuid, p_work uuid, p_basis jsonb, p_report jsonb, p_actor uuid, p_seen uuid[])",
+          "kind": "function",
+          "name": "work_decision_basis_authority_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_basis jsonb, p_report jsonb, p_actor uuid, p_seen uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 874,
+          "anchor": "create function private.work_decision_basis_authority_v1(p_org uuid,p_work uuid,p_basis jsonb,p_report jsonb,p_actor uuid,p_seen uuid[] default '{}') returns text",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.work_decision_precedence_v1(p_org uuid, p_work uuid, p_key text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.work_decision_precedence_v1(p_org uuid, p_work uuid, p_key text)",
+          "kind": "function",
+          "name": "work_decision_precedence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_key text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.work_decision_precedence_v1(p_org uuid, p_work uuid, p_key text)",
+          "kind": "function",
+          "name": "work_decision_precedence_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_key text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 689,
+          "anchor": "create function private.work_decision_precedence_v1(p_org uuid,p_work uuid,p_key text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.read_artifact_revision_reviews_v1(p_revision_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_artifact_revision_reviews_v1(p_revision_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_revision_reviews_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_artifact_revision_reviews_v1(p_revision_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_revision_reviews_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 632,
+          "anchor": "create function public.read_artifact_revision_reviews_v1(p_revision_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.read_work_decision_v1(p_decision_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_work_decision_v1(p_decision_id uuid)",
+          "kind": "function",
+          "name": "read_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_decision_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_work_decision_v1(p_decision_id uuid)",
+          "kind": "function",
+          "name": "read_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_decision_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 968,
+          "anchor": "create function public.read_work_decision_v1(p_decision_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)",
+          "kind": "function",
+          "name": "reassign_pending_review_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)",
+          "kind": "function",
+          "name": "reassign_pending_review_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1179,
+          "anchor": "create function public.reassign_pending_review_v1(p_project_id uuid,p_from_user uuid,p_to_user uuid,p_reason text,p_command_id uuid,p_organization_id uuid default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)",
+          "kind": "function",
+          "name": "record_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)",
+          "kind": "function",
+          "name": "record_work_decision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 944,
+          "anchor": "create function public.record_work_decision_v1(p_work_id uuid,p_decision_key text,p_kind text,p_basis jsonb,p_effects text[],p_origin text,p_report jsonb,p_note text,p_expected_previous_revision integer,p_command_id uuid,p_outcome text default null) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+          "kind": "function",
+          "name": "review_artifact_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+          "kind": "function",
+          "name": "review_artifact_revision_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 595,
+          "anchor": "create function public.review_artifact_revision_v1(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_assignment_history.review_assignment_history_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_assignment_history.review_assignment_history_delete",
+          "kind": "policy",
+          "name": "review_assignment_history_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_assignment_history",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.review_assignment_history.review_assignment_history_delete",
+          "kind": "policy",
+          "name": "review_assignment_history_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_assignment_history",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1073,
+          "anchor": "create policy review_assignment_history_delete on private.review_assignment_history for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_assignment_history.review_assignment_history_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_assignment_history.review_assignment_history_insert",
+          "kind": "policy",
+          "name": "review_assignment_history_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_assignment_history",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.review_assignment_history.review_assignment_history_insert",
+          "kind": "policy",
+          "name": "review_assignment_history_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_assignment_history",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1071,
+          "anchor": "create policy review_assignment_history_insert on private.review_assignment_history for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_assignment_history.review_assignment_history_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_assignment_history.review_assignment_history_select",
+          "kind": "policy",
+          "name": "review_assignment_history_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_assignment_history",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.review_assignment_history.review_assignment_history_select",
+          "kind": "policy",
+          "name": "review_assignment_history_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_assignment_history",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1070,
+          "anchor": "create policy review_assignment_history_select on private.review_assignment_history for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_assignment_history.review_assignment_history_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_assignment_history.review_assignment_history_update",
+          "kind": "policy",
+          "name": "review_assignment_history_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_assignment_history",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.review_assignment_history.review_assignment_history_update",
+          "kind": "policy",
+          "name": "review_assignment_history_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_assignment_history",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1072,
+          "anchor": "create policy review_assignment_history_update on private.review_assignment_history for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_basis_receipts.review_basis_receipts_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_basis_receipts.review_basis_receipts_delete",
+          "kind": "policy",
+          "name": "review_basis_receipts_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.review_basis_receipts.review_basis_receipts_delete",
+          "kind": "policy",
+          "name": "review_basis_receipts_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 821,
+          "anchor": "create policy review_basis_receipts_delete on private.review_basis_receipts for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_basis_receipts.review_basis_receipts_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_basis_receipts.review_basis_receipts_insert",
+          "kind": "policy",
+          "name": "review_basis_receipts_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.review_basis_receipts.review_basis_receipts_insert",
+          "kind": "policy",
+          "name": "review_basis_receipts_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 819,
+          "anchor": "create policy review_basis_receipts_insert on private.review_basis_receipts for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_basis_receipts.review_basis_receipts_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_basis_receipts.review_basis_receipts_select",
+          "kind": "policy",
+          "name": "review_basis_receipts_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.review_basis_receipts.review_basis_receipts_select",
+          "kind": "policy",
+          "name": "review_basis_receipts_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 818,
+          "anchor": "create policy review_basis_receipts_select on private.review_basis_receipts for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_basis_receipts.review_basis_receipts_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_basis_receipts.review_basis_receipts_update",
+          "kind": "policy",
+          "name": "review_basis_receipts_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.review_basis_receipts.review_basis_receipts_update",
+          "kind": "policy",
+          "name": "review_basis_receipts_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 820,
+          "anchor": "create policy review_basis_receipts_update on private.review_basis_receipts for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_basis_source_links.review_basis_source_links_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_basis_source_links.review_basis_source_links_delete",
+          "kind": "policy",
+          "name": "review_basis_source_links_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.review_basis_source_links.review_basis_source_links_delete",
+          "kind": "policy",
+          "name": "review_basis_source_links_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 825,
+          "anchor": "create policy review_basis_source_links_delete on private.review_basis_source_links for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_basis_source_links.review_basis_source_links_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_basis_source_links.review_basis_source_links_insert",
+          "kind": "policy",
+          "name": "review_basis_source_links_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.review_basis_source_links.review_basis_source_links_insert",
+          "kind": "policy",
+          "name": "review_basis_source_links_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 823,
+          "anchor": "create policy review_basis_source_links_insert on private.review_basis_source_links for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_basis_source_links.review_basis_source_links_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_basis_source_links.review_basis_source_links_select",
+          "kind": "policy",
+          "name": "review_basis_source_links_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.review_basis_source_links.review_basis_source_links_select",
+          "kind": "policy",
+          "name": "review_basis_source_links_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 822,
+          "anchor": "create policy review_basis_source_links_select on private.review_basis_source_links for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_basis_source_links.review_basis_source_links_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_basis_source_links.review_basis_source_links_update",
+          "kind": "policy",
+          "name": "review_basis_source_links_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.review_basis_source_links.review_basis_source_links_update",
+          "kind": "policy",
+          "name": "review_basis_source_links_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 824,
+          "anchor": "create policy review_basis_source_links_update on private.review_basis_source_links for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_reassignment_commands.review_reassignment_commands_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_reassignment_commands.review_reassignment_commands_delete",
+          "kind": "policy",
+          "name": "review_reassignment_commands_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.review_reassignment_commands.review_reassignment_commands_delete",
+          "kind": "policy",
+          "name": "review_reassignment_commands_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1077,
+          "anchor": "create policy review_reassignment_commands_delete on private.review_reassignment_commands for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_reassignment_commands.review_reassignment_commands_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_reassignment_commands.review_reassignment_commands_insert",
+          "kind": "policy",
+          "name": "review_reassignment_commands_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.review_reassignment_commands.review_reassignment_commands_insert",
+          "kind": "policy",
+          "name": "review_reassignment_commands_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1075,
+          "anchor": "create policy review_reassignment_commands_insert on private.review_reassignment_commands for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_reassignment_commands.review_reassignment_commands_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_reassignment_commands.review_reassignment_commands_select",
+          "kind": "policy",
+          "name": "review_reassignment_commands_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.review_reassignment_commands.review_reassignment_commands_select",
+          "kind": "policy",
+          "name": "review_reassignment_commands_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1074,
+          "anchor": "create policy review_reassignment_commands_select on private.review_reassignment_commands for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.review_reassignment_commands.review_reassignment_commands_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.review_reassignment_commands.review_reassignment_commands_update",
+          "kind": "policy",
+          "name": "review_reassignment_commands_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.review_reassignment_commands.review_reassignment_commands_update",
+          "kind": "policy",
+          "name": "review_reassignment_commands_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1076,
+          "anchor": "create policy review_reassignment_commands_update on private.review_reassignment_commands for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.artifact_reviews.artifact_reviews_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.artifact_reviews.artifact_reviews_delete",
+          "kind": "policy",
+          "name": "artifact_reviews_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_reviews",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.artifact_reviews.artifact_reviews_delete",
+          "kind": "policy",
+          "name": "artifact_reviews_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_reviews",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 324,
+          "anchor": "create policy artifact_reviews_delete on public.artifact_reviews for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.artifact_reviews.artifact_reviews_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.artifact_reviews.artifact_reviews_insert",
+          "kind": "policy",
+          "name": "artifact_reviews_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_reviews",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.artifact_reviews.artifact_reviews_insert",
+          "kind": "policy",
+          "name": "artifact_reviews_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_reviews",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 322,
+          "anchor": "create policy artifact_reviews_insert on public.artifact_reviews for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.artifact_reviews.artifact_reviews_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.artifact_reviews.artifact_reviews_select",
+          "kind": "policy",
+          "name": "artifact_reviews_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_reviews",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.artifact_reviews.artifact_reviews_select",
+          "kind": "policy",
+          "name": "artifact_reviews_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_reviews",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 321,
+          "anchor": "create policy artifact_reviews_select on public.artifact_reviews for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.artifact_reviews.artifact_reviews_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.artifact_reviews.artifact_reviews_update",
+          "kind": "policy",
+          "name": "artifact_reviews_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_reviews",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.artifact_reviews.artifact_reviews_update",
+          "kind": "policy",
+          "name": "artifact_reviews_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_reviews",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 323,
+          "anchor": "create policy artifact_reviews_update on public.artifact_reviews for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_decisions.work_decisions_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_decisions.work_decisions_delete",
+          "kind": "policy",
+          "name": "work_decisions_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_decisions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_decisions.work_decisions_delete",
+          "kind": "policy",
+          "name": "work_decisions_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_decisions",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 328,
+          "anchor": "create policy work_decisions_delete on public.work_decisions for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_decisions.work_decisions_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_decisions.work_decisions_insert",
+          "kind": "policy",
+          "name": "work_decisions_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_decisions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_decisions.work_decisions_insert",
+          "kind": "policy",
+          "name": "work_decisions_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_decisions",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 326,
+          "anchor": "create policy work_decisions_insert on public.work_decisions for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_decisions.work_decisions_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_decisions.work_decisions_select",
+          "kind": "policy",
+          "name": "work_decisions_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_decisions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:public.work_decisions.work_decisions_select",
+          "kind": "policy",
+          "name": "work_decisions_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_decisions",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 325,
+          "anchor": "create policy work_decisions_select on public.work_decisions for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:public.work_decisions.work_decisions_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:public.work_decisions.work_decisions_update",
+          "kind": "policy",
+          "name": "work_decisions_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_decisions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:public.work_decisions.work_decisions_update",
+          "kind": "policy",
+          "name": "work_decisions_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "work_decisions",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 327,
+          "anchor": "create policy work_decisions_update on public.work_decisions for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.review_assignment_history",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.review_assignment_history",
+          "rls": true,
+          "kind": "table",
+          "name": "review_assignment_history",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.review_assignment_history",
+          "rls": true,
+          "kind": "table",
+          "name": "review_assignment_history",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1045,
+          "anchor": "create table private.review_assignment_history (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.review_basis_receipts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.review_basis_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "review_basis_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.review_basis_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "review_basis_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 794,
+          "anchor": "create table private.review_basis_receipts (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.review_basis_source_links",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.review_basis_source_links",
+          "rls": true,
+          "kind": "table",
+          "name": "review_basis_source_links",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.review_basis_source_links",
+          "rls": true,
+          "kind": "table",
+          "name": "review_basis_source_links",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 806,
+          "anchor": "create table private.review_basis_source_links (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.review_reassignment_commands",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.review_reassignment_commands",
+          "rls": true,
+          "kind": "table",
+          "name": "review_reassignment_commands",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.review_reassignment_commands",
+          "rls": true,
+          "kind": "table",
+          "name": "review_reassignment_commands",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1057,
+          "anchor": "create table private.review_reassignment_commands (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:public.artifact_reviews",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.artifact_reviews",
+          "rls": true,
+          "kind": "table",
+          "name": "artifact_reviews",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.artifact_reviews",
+          "rls": true,
+          "kind": "table",
+          "name": "artifact_reviews",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 232,
+          "anchor": "create table public.artifact_reviews (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:public.work_decisions",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:public.work_decisions",
+          "rls": true,
+          "kind": "table",
+          "name": "work_decisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:public.work_decisions",
+          "rls": true,
+          "kind": "table",
+          "name": "work_decisions",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 275,
+          "anchor": "create table public.work_decisions (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_assignment_history.review_assignment_history_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_assignment_history.review_assignment_history_audit",
+          "kind": "trigger",
+          "name": "review_assignment_history_audit",
+          "table": "review_assignment_history",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER review_assignment_history_audit AFTER INSERT ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.review_assignment_history.review_assignment_history_audit",
+          "kind": "trigger",
+          "name": "review_assignment_history_audit",
+          "table": "review_assignment_history",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER review_assignment_history_audit AFTER INSERT ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1082,
+          "anchor": "create trigger review_assignment_history_audit after insert on private.review_assignment_history for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_assignment_history.review_assignment_history_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_assignment_history.review_assignment_history_immutable",
+          "kind": "trigger",
+          "name": "review_assignment_history_immutable",
+          "table": "review_assignment_history",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_assignment_history_immutable BEFORE DELETE OR UPDATE ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.review_assignment_history.review_assignment_history_immutable",
+          "kind": "trigger",
+          "name": "review_assignment_history_immutable",
+          "table": "review_assignment_history",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_assignment_history_immutable BEFORE DELETE OR UPDATE ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1079,
+          "anchor": "create trigger review_assignment_history_immutable before update or delete on private.review_assignment_history for each row execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_assignment_history.review_assignment_history_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_assignment_history.review_assignment_history_no_truncate",
+          "kind": "trigger",
+          "name": "review_assignment_history_no_truncate",
+          "table": "review_assignment_history",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_assignment_history_no_truncate BEFORE TRUNCATE ON private.review_assignment_history FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.review_assignment_history.review_assignment_history_no_truncate",
+          "kind": "trigger",
+          "name": "review_assignment_history_no_truncate",
+          "table": "review_assignment_history",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_assignment_history_no_truncate BEFORE TRUNCATE ON private.review_assignment_history FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1080,
+          "anchor": "create trigger review_assignment_history_no_truncate before truncate on private.review_assignment_history for each statement execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_assignment_history.review_assignment_history_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_assignment_history.review_assignment_history_updated",
+          "kind": "trigger",
+          "name": "review_assignment_history_updated",
+          "table": "review_assignment_history",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER review_assignment_history_updated BEFORE UPDATE ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.review_assignment_history.review_assignment_history_updated",
+          "kind": "trigger",
+          "name": "review_assignment_history_updated",
+          "table": "review_assignment_history",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER review_assignment_history_updated BEFORE UPDATE ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1081,
+          "anchor": "create trigger review_assignment_history_updated before update on private.review_assignment_history for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_basis_receipts.review_basis_receipts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_basis_receipts.review_basis_receipts_audit",
+          "kind": "trigger",
+          "name": "review_basis_receipts_audit",
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER review_basis_receipts_audit AFTER INSERT ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.review_basis_receipts.review_basis_receipts_audit",
+          "kind": "trigger",
+          "name": "review_basis_receipts_audit",
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER review_basis_receipts_audit AFTER INSERT ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 833,
+          "anchor": "create trigger review_basis_receipts_audit after insert on private.review_basis_receipts for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_basis_receipts.review_basis_receipts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_basis_receipts.review_basis_receipts_immutable",
+          "kind": "trigger",
+          "name": "review_basis_receipts_immutable",
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_basis_receipts_immutable BEFORE DELETE OR UPDATE ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.review_basis_receipts.review_basis_receipts_immutable",
+          "kind": "trigger",
+          "name": "review_basis_receipts_immutable",
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_basis_receipts_immutable BEFORE DELETE OR UPDATE ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 827,
+          "anchor": "create trigger review_basis_receipts_immutable before update or delete on private.review_basis_receipts for each row execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_basis_receipts.review_basis_receipts_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_basis_receipts.review_basis_receipts_no_truncate",
+          "kind": "trigger",
+          "name": "review_basis_receipts_no_truncate",
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_basis_receipts_no_truncate BEFORE TRUNCATE ON private.review_basis_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.review_basis_receipts.review_basis_receipts_no_truncate",
+          "kind": "trigger",
+          "name": "review_basis_receipts_no_truncate",
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_basis_receipts_no_truncate BEFORE TRUNCATE ON private.review_basis_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 828,
+          "anchor": "create trigger review_basis_receipts_no_truncate before truncate on private.review_basis_receipts for each statement execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_basis_receipts.review_basis_receipts_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_basis_receipts.review_basis_receipts_updated",
+          "kind": "trigger",
+          "name": "review_basis_receipts_updated",
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER review_basis_receipts_updated BEFORE UPDATE ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.review_basis_receipts.review_basis_receipts_updated",
+          "kind": "trigger",
+          "name": "review_basis_receipts_updated",
+          "table": "review_basis_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER review_basis_receipts_updated BEFORE UPDATE ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 831,
+          "anchor": "create trigger review_basis_receipts_updated before update on private.review_basis_receipts for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_basis_source_links.review_basis_source_links_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_basis_source_links.review_basis_source_links_audit",
+          "kind": "trigger",
+          "name": "review_basis_source_links_audit",
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER review_basis_source_links_audit AFTER INSERT ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.review_basis_source_links.review_basis_source_links_audit",
+          "kind": "trigger",
+          "name": "review_basis_source_links_audit",
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER review_basis_source_links_audit AFTER INSERT ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 834,
+          "anchor": "create trigger review_basis_source_links_audit after insert on private.review_basis_source_links for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_basis_source_links.review_basis_source_links_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_basis_source_links.review_basis_source_links_immutable",
+          "kind": "trigger",
+          "name": "review_basis_source_links_immutable",
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_basis_source_links_immutable BEFORE DELETE OR UPDATE ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.review_basis_source_links.review_basis_source_links_immutable",
+          "kind": "trigger",
+          "name": "review_basis_source_links_immutable",
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_basis_source_links_immutable BEFORE DELETE OR UPDATE ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 829,
+          "anchor": "create trigger review_basis_source_links_immutable before update or delete on private.review_basis_source_links for each row execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_basis_source_links.review_basis_source_links_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_basis_source_links.review_basis_source_links_no_truncate",
+          "kind": "trigger",
+          "name": "review_basis_source_links_no_truncate",
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_basis_source_links_no_truncate BEFORE TRUNCATE ON private.review_basis_source_links FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.review_basis_source_links.review_basis_source_links_no_truncate",
+          "kind": "trigger",
+          "name": "review_basis_source_links_no_truncate",
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_basis_source_links_no_truncate BEFORE TRUNCATE ON private.review_basis_source_links FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 830,
+          "anchor": "create trigger review_basis_source_links_no_truncate before truncate on private.review_basis_source_links for each statement execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_basis_source_links.review_basis_source_links_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_basis_source_links.review_basis_source_links_updated",
+          "kind": "trigger",
+          "name": "review_basis_source_links_updated",
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER review_basis_source_links_updated BEFORE UPDATE ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.review_basis_source_links.review_basis_source_links_updated",
+          "kind": "trigger",
+          "name": "review_basis_source_links_updated",
+          "table": "review_basis_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER review_basis_source_links_updated BEFORE UPDATE ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 832,
+          "anchor": "create trigger review_basis_source_links_updated before update on private.review_basis_source_links for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_audit",
+          "kind": "trigger",
+          "name": "review_reassignment_commands_audit",
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER review_reassignment_commands_audit AFTER INSERT ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_audit",
+          "kind": "trigger",
+          "name": "review_reassignment_commands_audit",
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER review_reassignment_commands_audit AFTER INSERT ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1086,
+          "anchor": "create trigger review_reassignment_commands_audit after insert on private.review_reassignment_commands for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_immutable",
+          "kind": "trigger",
+          "name": "review_reassignment_commands_immutable",
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_reassignment_commands_immutable BEFORE DELETE OR UPDATE ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_immutable",
+          "kind": "trigger",
+          "name": "review_reassignment_commands_immutable",
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_reassignment_commands_immutable BEFORE DELETE OR UPDATE ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1083,
+          "anchor": "create trigger review_reassignment_commands_immutable before update or delete on private.review_reassignment_commands for each row execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_no_truncate",
+          "kind": "trigger",
+          "name": "review_reassignment_commands_no_truncate",
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_reassignment_commands_no_truncate BEFORE TRUNCATE ON private.review_reassignment_commands FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_no_truncate",
+          "kind": "trigger",
+          "name": "review_reassignment_commands_no_truncate",
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER review_reassignment_commands_no_truncate BEFORE TRUNCATE ON private.review_reassignment_commands FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1084,
+          "anchor": "create trigger review_reassignment_commands_no_truncate before truncate on private.review_reassignment_commands for each statement execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_updated",
+          "kind": "trigger",
+          "name": "review_reassignment_commands_updated",
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER review_reassignment_commands_updated BEFORE UPDATE ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_updated",
+          "kind": "trigger",
+          "name": "review_reassignment_commands_updated",
+          "table": "review_reassignment_commands",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER review_reassignment_commands_updated BEFORE UPDATE ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1085,
+          "anchor": "create trigger review_reassignment_commands_updated before update on private.review_reassignment_commands for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_audit",
+          "kind": "trigger",
+          "name": "artifact_reviews_audit",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER artifact_reviews_audit AFTER INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_audit",
+          "kind": "trigger",
+          "name": "artifact_reviews_audit",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER artifact_reviews_audit AFTER INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 340,
+          "anchor": "create trigger artifact_reviews_audit after insert on public.artifact_reviews for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_exact_target",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_exact_target",
+          "kind": "trigger",
+          "name": "artifact_reviews_exact_target",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.enforce_artifact_review_target_v1()",
+          "definition": "CREATE TRIGGER artifact_reviews_exact_target BEFORE INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.enforce_artifact_review_target_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_exact_target",
+          "kind": "trigger",
+          "name": "artifact_reviews_exact_target",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.enforce_artifact_review_target_v1()",
+          "definition": "CREATE TRIGGER artifact_reviews_exact_target BEFORE INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.enforce_artifact_review_target_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1042,
+          "anchor": "create trigger artifact_reviews_exact_target before insert on public.artifact_reviews for each row execute function private.enforce_artifact_review_target_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_immutable",
+          "kind": "trigger",
+          "name": "artifact_reviews_immutable",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER artifact_reviews_immutable BEFORE DELETE OR UPDATE ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_immutable",
+          "kind": "trigger",
+          "name": "artifact_reviews_immutable",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER artifact_reviews_immutable BEFORE DELETE OR UPDATE ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 334,
+          "anchor": "create trigger artifact_reviews_immutable before update or delete on public.artifact_reviews for each row execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_no_truncate",
+          "kind": "trigger",
+          "name": "artifact_reviews_no_truncate",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER artifact_reviews_no_truncate BEFORE TRUNCATE ON public.artifact_reviews FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_no_truncate",
+          "kind": "trigger",
+          "name": "artifact_reviews_no_truncate",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER artifact_reviews_no_truncate BEFORE TRUNCATE ON public.artifact_reviews FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 336,
+          "anchor": "create trigger artifact_reviews_no_truncate before truncate on public.artifact_reviews for each statement execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_set_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_set_updated_at",
+          "kind": "trigger",
+          "name": "artifact_reviews_set_updated_at",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER artifact_reviews_set_updated_at BEFORE UPDATE ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.artifact_reviews.artifact_reviews_set_updated_at",
+          "kind": "trigger",
+          "name": "artifact_reviews_set_updated_at",
+          "table": "artifact_reviews",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER artifact_reviews_set_updated_at BEFORE UPDATE ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 338,
+          "anchor": "create trigger artifact_reviews_set_updated_at before update on public.artifact_reviews for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.capital_project_review_assignments.review_assignment_history",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.capital_project_review_assignments.review_assignment_history",
+          "kind": "trigger",
+          "name": "review_assignment_history",
+          "table": "capital_project_review_assignments",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_review_assignment_history_v1()",
+          "definition": "CREATE TRIGGER review_assignment_history AFTER INSERT OR DELETE ON public.capital_project_review_assignments FOR EACH ROW EXECUTE FUNCTION private.capture_review_assignment_history_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.capital_project_review_assignments.review_assignment_history",
+          "kind": "trigger",
+          "name": "review_assignment_history",
+          "table": "capital_project_review_assignments",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_review_assignment_history_v1()",
+          "definition": "CREATE TRIGGER review_assignment_history AFTER INSERT OR DELETE ON public.capital_project_review_assignments FOR EACH ROW EXECUTE FUNCTION private.capture_review_assignment_history_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 1108,
+          "anchor": "create trigger review_assignment_history after insert or delete on public.capital_project_review_assignments for each row execute function private.capture_review_assignment_history_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.capital_project_review_policies.project_review_policy_serialization",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.capital_project_review_policies.project_review_policy_serialization",
+          "kind": "trigger",
+          "name": "project_review_policy_serialization",
+          "table": "capital_project_review_policies",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.serialize_review_policy_change_v1()",
+          "definition": "CREATE TRIGGER project_review_policy_serialization BEFORE INSERT OR DELETE OR UPDATE ON public.capital_project_review_policies FOR EACH ROW EXECUTE FUNCTION private.serialize_review_policy_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.capital_project_review_policies.project_review_policy_serialization",
+          "kind": "trigger",
+          "name": "project_review_policy_serialization",
+          "table": "capital_project_review_policies",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.serialize_review_policy_change_v1()",
+          "definition": "CREATE TRIGGER project_review_policy_serialization BEFORE INSERT OR DELETE OR UPDATE ON public.capital_project_review_policies FOR EACH ROW EXECUTE FUNCTION private.serialize_review_policy_change_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 428,
+          "anchor": "create trigger project_review_policy_serialization before insert or update or delete on public.capital_project_review_policies",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.organization_review_policies.organization_review_policy_serialization",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.organization_review_policies.organization_review_policy_serialization",
+          "kind": "trigger",
+          "name": "organization_review_policy_serialization",
+          "table": "organization_review_policies",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.serialize_review_policy_change_v1()",
+          "definition": "CREATE TRIGGER organization_review_policy_serialization BEFORE INSERT OR DELETE OR UPDATE ON public.organization_review_policies FOR EACH ROW EXECUTE FUNCTION private.serialize_review_policy_change_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.organization_review_policies.organization_review_policy_serialization",
+          "kind": "trigger",
+          "name": "organization_review_policy_serialization",
+          "table": "organization_review_policies",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.serialize_review_policy_change_v1()",
+          "definition": "CREATE TRIGGER organization_review_policy_serialization BEFORE INSERT OR DELETE OR UPDATE ON public.organization_review_policies FOR EACH ROW EXECUTE FUNCTION private.serialize_review_policy_change_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 426,
+          "anchor": "create trigger organization_review_policy_serialization before insert or update or delete on public.organization_review_policies",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_decisions.work_decisions_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_decisions.work_decisions_audit",
+          "kind": "trigger",
+          "name": "work_decisions_audit",
+          "table": "work_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER work_decisions_audit AFTER INSERT ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:public.work_decisions.work_decisions_audit",
+          "kind": "trigger",
+          "name": "work_decisions_audit",
+          "table": "work_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER work_decisions_audit AFTER INSERT ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 341,
+          "anchor": "create trigger work_decisions_audit after insert on public.work_decisions for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_decisions.work_decisions_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_decisions.work_decisions_immutable",
+          "kind": "trigger",
+          "name": "work_decisions_immutable",
+          "table": "work_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER work_decisions_immutable BEFORE DELETE OR UPDATE ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_decisions.work_decisions_immutable",
+          "kind": "trigger",
+          "name": "work_decisions_immutable",
+          "table": "work_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER work_decisions_immutable BEFORE DELETE OR UPDATE ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 335,
+          "anchor": "create trigger work_decisions_immutable before update or delete on public.work_decisions for each row execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_decisions.work_decisions_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_decisions.work_decisions_no_truncate",
+          "kind": "trigger",
+          "name": "work_decisions_no_truncate",
+          "table": "work_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER work_decisions_no_truncate BEFORE TRUNCATE ON public.work_decisions FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:public.work_decisions.work_decisions_no_truncate",
+          "kind": "trigger",
+          "name": "work_decisions_no_truncate",
+          "table": "work_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER work_decisions_no_truncate BEFORE TRUNCATE ON public.work_decisions FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 337,
+          "anchor": "create trigger work_decisions_no_truncate before truncate on public.work_decisions for each statement execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:public.work_decisions.work_decisions_set_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:public.work_decisions.work_decisions_set_updated_at",
+          "kind": "trigger",
+          "name": "work_decisions_set_updated_at",
+          "table": "work_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_decisions_set_updated_at BEFORE UPDATE ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:public.work_decisions.work_decisions_set_updated_at",
+          "kind": "trigger",
+          "name": "work_decisions_set_updated_at",
+          "table": "work_decisions",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER work_decisions_set_updated_at BEFORE UPDATE ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+          "line": 339,
+          "anchor": "create trigger work_decisions_set_updated_at before update on public.work_decisions for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -185935,6 +190423,13 @@
       "decision": "preservar",
       "stage": "17 / correções A4-A5",
       "reason": "Publicação exige fundador ativo; replay vincula também o commit do adaptador. Aplicada nos dois ambientes."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
+      "decision": "preservar",
+      "stage": "20 / 2",
+      "reason": "Persistir atos humanos sobre revisões exatas sem antecipar o corte dos escritores legados."
     }
   ],
   "staging_archive": [

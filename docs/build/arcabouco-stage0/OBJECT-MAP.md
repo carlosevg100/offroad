@@ -2965,3 +2965,93 @@ Mais 17 objetos criados em laço pela mesma migração (políticas de negação,
 ## Atualização da etapa 19, incremento 6, 26/09/2026
 
 Nenhum objeto SQL novo ou alterado. `packages/evidence-compiler` saiu do repositório depois da migração das duas regras de afirmação (`materialClaimWithoutSupport` e `materialJudgmentWithoutApproval`, em `packages/case-understanding/src/audit.ts`) e dos testes; a entrada foi para `retired_repository_items` de `object-decisions.json` e a referência dele a `@offroad/domain-contracts` saiu da lista de consumidores, que passa de 26 para 25 referências diretas. As contas de `packages/case-materials` passaram para os núcleos de `packages/financial-core/src/material-arithmetic.ts`.
+
+## Etapa 20 / 2: revisões e decisões
+
+86 objetos novos e 0 atualizados. Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.
+- `function:private.append_work_decision_v1(p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text)`
+- `function:private.artifact_review_change_report_v1(p_previous jsonb, p_next jsonb)`
+- `function:private.artifact_review_is_active_v1(p_org uuid, p_review uuid)`
+- `function:private.artifact_review_preparer_v1(p_revision artifact_revisions)`
+- `function:private.artifact_review_snapshot_v1(p_org uuid, p_revision uuid)`
+- `function:private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)`
+- `function:private.artifact_revision_change_v1(p_previous uuid, p_next uuid)`
+- `function:private.capture_review_assignment_history_v1()`
+- `function:private.enforce_artifact_review_target_v1()`
+- `function:private.lock_review_work_v1(p_work uuid)`
+- `function:private.read_artifact_revision_reviews_v1(p_revision_id uuid)`
+- `function:private.read_work_decision_v1(p_decision_id uuid)`
+- `function:private.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)`
+- `function:private.record_review_basis_receipt_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_source_versions uuid[], p_producer text)`
+- `function:private.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)`
+- `function:private.reject_review_history_mutation_v1()`
+- `function:private.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)`
+- `function:private.review_basis_receipt_authority_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid)`
+- `function:private.review_policy_snapshot_v1(p_org uuid, p_work uuid, p_actor uuid)`
+- `function:private.serialize_review_policy_change_v1()`
+- `function:private.validate_work_decision_basis_v1(p_basis jsonb)`
+- `function:private.work_decision_basis_authority_v1(p_org uuid, p_work uuid, p_basis jsonb, p_report jsonb, p_actor uuid, p_seen uuid[])`
+- `function:private.work_decision_precedence_v1(p_org uuid, p_work uuid, p_key text)`
+- `function:public.read_artifact_revision_reviews_v1(p_revision_id uuid)`
+- `function:public.read_work_decision_v1(p_decision_id uuid)`
+- `function:public.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)`
+- `function:public.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)`
+- `function:public.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)`
+- `policy:private.review_assignment_history.review_assignment_history_delete`
+- `policy:private.review_assignment_history.review_assignment_history_insert`
+- `policy:private.review_assignment_history.review_assignment_history_select`
+- `policy:private.review_assignment_history.review_assignment_history_update`
+- `policy:private.review_basis_receipts.review_basis_receipts_delete`
+- `policy:private.review_basis_receipts.review_basis_receipts_insert`
+- `policy:private.review_basis_receipts.review_basis_receipts_select`
+- `policy:private.review_basis_receipts.review_basis_receipts_update`
+- `policy:private.review_basis_source_links.review_basis_source_links_delete`
+- `policy:private.review_basis_source_links.review_basis_source_links_insert`
+- `policy:private.review_basis_source_links.review_basis_source_links_select`
+- `policy:private.review_basis_source_links.review_basis_source_links_update`
+- `policy:private.review_reassignment_commands.review_reassignment_commands_delete`
+- `policy:private.review_reassignment_commands.review_reassignment_commands_insert`
+- `policy:private.review_reassignment_commands.review_reassignment_commands_select`
+- `policy:private.review_reassignment_commands.review_reassignment_commands_update`
+- `policy:public.artifact_reviews.artifact_reviews_delete`
+- `policy:public.artifact_reviews.artifact_reviews_insert`
+- `policy:public.artifact_reviews.artifact_reviews_select`
+- `policy:public.artifact_reviews.artifact_reviews_update`
+- `policy:public.work_decisions.work_decisions_delete`
+- `policy:public.work_decisions.work_decisions_insert`
+- `policy:public.work_decisions.work_decisions_select`
+- `policy:public.work_decisions.work_decisions_update`
+- `r:private.review_assignment_history`
+- `r:private.review_basis_receipts`
+- `r:private.review_basis_source_links`
+- `r:private.review_reassignment_commands`
+- `r:public.artifact_reviews`
+- `r:public.work_decisions`
+- `trigger:private.review_assignment_history.review_assignment_history_audit`
+- `trigger:private.review_assignment_history.review_assignment_history_immutable`
+- `trigger:private.review_assignment_history.review_assignment_history_no_truncate`
+- `trigger:private.review_assignment_history.review_assignment_history_updated`
+- `trigger:private.review_basis_receipts.review_basis_receipts_audit`
+- `trigger:private.review_basis_receipts.review_basis_receipts_immutable`
+- `trigger:private.review_basis_receipts.review_basis_receipts_no_truncate`
+- `trigger:private.review_basis_receipts.review_basis_receipts_updated`
+- `trigger:private.review_basis_source_links.review_basis_source_links_audit`
+- `trigger:private.review_basis_source_links.review_basis_source_links_immutable`
+- `trigger:private.review_basis_source_links.review_basis_source_links_no_truncate`
+- `trigger:private.review_basis_source_links.review_basis_source_links_updated`
+- `trigger:private.review_reassignment_commands.review_reassignment_commands_audit`
+- `trigger:private.review_reassignment_commands.review_reassignment_commands_immutable`
+- `trigger:private.review_reassignment_commands.review_reassignment_commands_no_truncate`
+- `trigger:private.review_reassignment_commands.review_reassignment_commands_updated`
+- `trigger:public.artifact_reviews.artifact_reviews_audit`
+- `trigger:public.artifact_reviews.artifact_reviews_exact_target`
+- `trigger:public.artifact_reviews.artifact_reviews_immutable`
+- `trigger:public.artifact_reviews.artifact_reviews_no_truncate`
+- `trigger:public.artifact_reviews.artifact_reviews_set_updated_at`
+- `trigger:public.capital_project_review_assignments.review_assignment_history`
+- `trigger:public.capital_project_review_policies.project_review_policy_serialization`
+- `trigger:public.organization_review_policies.organization_review_policy_serialization`
+- `trigger:public.work_decisions.work_decisions_audit`
+- `trigger:public.work_decisions.work_decisions_immutable`
+- `trigger:public.work_decisions.work_decisions_no_truncate`
+- `trigger:public.work_decisions.work_decisions_set_updated_at`

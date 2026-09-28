@@ -62050,7 +62050,1477 @@
       ],
       "schema": "private",
       "force_rls": false
+    },
+    {
+      "id": "function:private.append_work_decision_v1(p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text)",
+      "kind": "function",
+      "name": "append_work_decision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_actor uuid, p_expected_previous_revision integer, p_command uuid, p_review_mode text, p_policy jsonb, p_legacy_ref jsonb, p_created_at timestamp with time zone, p_outcome text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_review_change_report_v1(p_previous jsonb, p_next jsonb)",
+      "kind": "function",
+      "name": "artifact_review_change_report_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_previous jsonb, p_next jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.artifact_review_is_active_v1(p_org uuid, p_review uuid)",
+      "kind": "function",
+      "name": "artifact_review_is_active_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_review uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_review_preparer_v1(p_revision artifact_revisions)",
+      "kind": "function",
+      "name": "artifact_review_preparer_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision artifact_revisions",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_review_snapshot_v1(p_org uuid, p_revision uuid)",
+      "kind": "function",
+      "name": "artifact_review_snapshot_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "artifact_review_sources_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_revision_change_v1(p_previous uuid, p_next uuid)",
+      "kind": "function",
+      "name": "artifact_revision_change_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_previous uuid, p_next uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capture_review_assignment_history_v1()",
+      "kind": "function",
+      "name": "capture_review_assignment_history_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.enforce_artifact_review_target_v1()",
+      "kind": "function",
+      "name": "enforce_artifact_review_target_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.lock_review_work_v1(p_work uuid)",
+      "kind": "function",
+      "name": "lock_review_work_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_artifact_revision_reviews_v1(p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_artifact_revision_reviews_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_work_decision_v1(p_decision_id uuid)",
+      "kind": "function",
+      "name": "read_work_decision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_decision_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)",
+      "kind": "function",
+      "name": "reassign_pending_review_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.record_review_basis_receipt_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_source_versions uuid[], p_producer text)",
+      "kind": "function",
+      "name": "record_review_basis_receipt_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_source_versions uuid[], p_producer text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)",
+      "kind": "function",
+      "name": "record_work_decision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.reject_review_history_mutation_v1()",
+      "kind": "function",
+      "name": "reject_review_history_mutation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+      "kind": "function",
+      "name": "review_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.review_basis_receipt_authority_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid)",
+      "kind": "function",
+      "name": "review_basis_receipt_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.review_policy_snapshot_v1(p_org uuid, p_work uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "review_policy_snapshot_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.serialize_review_policy_change_v1()",
+      "kind": "function",
+      "name": "serialize_review_policy_change_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.validate_work_decision_basis_v1(p_basis jsonb)",
+      "kind": "function",
+      "name": "validate_work_decision_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_basis jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.work_decision_basis_authority_v1(p_org uuid, p_work uuid, p_basis jsonb, p_report jsonb, p_actor uuid, p_seen uuid[])",
+      "kind": "function",
+      "name": "work_decision_basis_authority_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_basis jsonb, p_report jsonb, p_actor uuid, p_seen uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.work_decision_precedence_v1(p_org uuid, p_work uuid, p_key text)",
+      "kind": "function",
+      "name": "work_decision_precedence_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_key text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.read_artifact_revision_reviews_v1(p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_artifact_revision_reviews_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.read_work_decision_v1(p_decision_id uuid)",
+      "kind": "function",
+      "name": "read_work_decision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_decision_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.reassign_pending_review_v1(p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid)",
+      "kind": "function",
+      "name": "reassign_pending_review_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_from_user uuid, p_to_user uuid, p_reason text, p_command_id uuid, p_organization_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.record_work_decision_v1(p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text)",
+      "kind": "function",
+      "name": "record_work_decision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_decision_key text, p_kind text, p_basis jsonb, p_effects text[], p_origin text, p_report jsonb, p_note text, p_expected_previous_revision integer, p_command_id uuid, p_outcome text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.review_artifact_revision_v1(p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+      "kind": "function",
+      "name": "review_artifact_revision_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid, p_expected_fingerprint text, p_act text, p_block_id uuid, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.review_assignment_history.review_assignment_history_delete",
+      "kind": "policy",
+      "name": "review_assignment_history_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_assignment_history",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.review_assignment_history.review_assignment_history_insert",
+      "kind": "policy",
+      "name": "review_assignment_history_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_assignment_history",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.review_assignment_history.review_assignment_history_select",
+      "kind": "policy",
+      "name": "review_assignment_history_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_assignment_history",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.review_assignment_history.review_assignment_history_update",
+      "kind": "policy",
+      "name": "review_assignment_history_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_assignment_history",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.review_basis_receipts.review_basis_receipts_delete",
+      "kind": "policy",
+      "name": "review_basis_receipts_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_basis_receipts",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.review_basis_receipts.review_basis_receipts_insert",
+      "kind": "policy",
+      "name": "review_basis_receipts_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_basis_receipts",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.review_basis_receipts.review_basis_receipts_select",
+      "kind": "policy",
+      "name": "review_basis_receipts_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_basis_receipts",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.review_basis_receipts.review_basis_receipts_update",
+      "kind": "policy",
+      "name": "review_basis_receipts_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_basis_receipts",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.review_basis_source_links.review_basis_source_links_delete",
+      "kind": "policy",
+      "name": "review_basis_source_links_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_basis_source_links",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.review_basis_source_links.review_basis_source_links_insert",
+      "kind": "policy",
+      "name": "review_basis_source_links_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_basis_source_links",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.review_basis_source_links.review_basis_source_links_select",
+      "kind": "policy",
+      "name": "review_basis_source_links_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_basis_source_links",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.review_basis_source_links.review_basis_source_links_update",
+      "kind": "policy",
+      "name": "review_basis_source_links_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_basis_source_links",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.review_reassignment_commands.review_reassignment_commands_delete",
+      "kind": "policy",
+      "name": "review_reassignment_commands_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_reassignment_commands",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.review_reassignment_commands.review_reassignment_commands_insert",
+      "kind": "policy",
+      "name": "review_reassignment_commands_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_reassignment_commands",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.review_reassignment_commands.review_reassignment_commands_select",
+      "kind": "policy",
+      "name": "review_reassignment_commands_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_reassignment_commands",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.review_reassignment_commands.review_reassignment_commands_update",
+      "kind": "policy",
+      "name": "review_reassignment_commands_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "review_reassignment_commands",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.artifact_reviews.artifact_reviews_delete",
+      "kind": "policy",
+      "name": "artifact_reviews_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_reviews",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.artifact_reviews.artifact_reviews_insert",
+      "kind": "policy",
+      "name": "artifact_reviews_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_reviews",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.artifact_reviews.artifact_reviews_select",
+      "kind": "policy",
+      "name": "artifact_reviews_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_reviews",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.artifact_reviews.artifact_reviews_update",
+      "kind": "policy",
+      "name": "artifact_reviews_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "artifact_reviews",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_decisions.work_decisions_delete",
+      "kind": "policy",
+      "name": "work_decisions_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_decisions",
+      "schema": "public",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_decisions.work_decisions_insert",
+      "kind": "policy",
+      "name": "work_decisions_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_decisions",
+      "schema": "public",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:public.work_decisions.work_decisions_select",
+      "kind": "policy",
+      "name": "work_decisions_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_decisions",
+      "schema": "public",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:public.work_decisions.work_decisions_update",
+      "kind": "policy",
+      "name": "work_decisions_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "work_decisions",
+      "schema": "public",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.review_assignment_history",
+      "rls": true,
+      "kind": "table",
+      "name": "review_assignment_history",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.review_basis_receipts",
+      "rls": true,
+      "kind": "table",
+      "name": "review_basis_receipts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.review_basis_source_links",
+      "rls": true,
+      "kind": "table",
+      "name": "review_basis_source_links",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.review_reassignment_commands",
+      "rls": true,
+      "kind": "table",
+      "name": "review_reassignment_commands",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.artifact_reviews",
+      "rls": true,
+      "kind": "table",
+      "name": "artifact_reviews",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "r:public.work_decisions",
+      "rls": true,
+      "kind": "table",
+      "name": "work_decisions",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.review_assignment_history.review_assignment_history_audit",
+      "kind": "trigger",
+      "name": "review_assignment_history_audit",
+      "table": "review_assignment_history",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER review_assignment_history_audit AFTER INSERT ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.review_assignment_history.review_assignment_history_immutable",
+      "kind": "trigger",
+      "name": "review_assignment_history_immutable",
+      "table": "review_assignment_history",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER review_assignment_history_immutable BEFORE DELETE OR UPDATE ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.review_assignment_history.review_assignment_history_no_truncate",
+      "kind": "trigger",
+      "name": "review_assignment_history_no_truncate",
+      "table": "review_assignment_history",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER review_assignment_history_no_truncate BEFORE TRUNCATE ON private.review_assignment_history FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.review_assignment_history.review_assignment_history_updated",
+      "kind": "trigger",
+      "name": "review_assignment_history_updated",
+      "table": "review_assignment_history",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER review_assignment_history_updated BEFORE UPDATE ON private.review_assignment_history FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.review_basis_receipts.review_basis_receipts_audit",
+      "kind": "trigger",
+      "name": "review_basis_receipts_audit",
+      "table": "review_basis_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER review_basis_receipts_audit AFTER INSERT ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.review_basis_receipts.review_basis_receipts_immutable",
+      "kind": "trigger",
+      "name": "review_basis_receipts_immutable",
+      "table": "review_basis_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER review_basis_receipts_immutable BEFORE DELETE OR UPDATE ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.review_basis_receipts.review_basis_receipts_no_truncate",
+      "kind": "trigger",
+      "name": "review_basis_receipts_no_truncate",
+      "table": "review_basis_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER review_basis_receipts_no_truncate BEFORE TRUNCATE ON private.review_basis_receipts FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.review_basis_receipts.review_basis_receipts_updated",
+      "kind": "trigger",
+      "name": "review_basis_receipts_updated",
+      "table": "review_basis_receipts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER review_basis_receipts_updated BEFORE UPDATE ON private.review_basis_receipts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.review_basis_source_links.review_basis_source_links_audit",
+      "kind": "trigger",
+      "name": "review_basis_source_links_audit",
+      "table": "review_basis_source_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER review_basis_source_links_audit AFTER INSERT ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.review_basis_source_links.review_basis_source_links_immutable",
+      "kind": "trigger",
+      "name": "review_basis_source_links_immutable",
+      "table": "review_basis_source_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER review_basis_source_links_immutable BEFORE DELETE OR UPDATE ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.review_basis_source_links.review_basis_source_links_no_truncate",
+      "kind": "trigger",
+      "name": "review_basis_source_links_no_truncate",
+      "table": "review_basis_source_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER review_basis_source_links_no_truncate BEFORE TRUNCATE ON private.review_basis_source_links FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.review_basis_source_links.review_basis_source_links_updated",
+      "kind": "trigger",
+      "name": "review_basis_source_links_updated",
+      "table": "review_basis_source_links",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER review_basis_source_links_updated BEFORE UPDATE ON private.review_basis_source_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_audit",
+      "kind": "trigger",
+      "name": "review_reassignment_commands_audit",
+      "table": "review_reassignment_commands",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER review_reassignment_commands_audit AFTER INSERT ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_immutable",
+      "kind": "trigger",
+      "name": "review_reassignment_commands_immutable",
+      "table": "review_reassignment_commands",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER review_reassignment_commands_immutable BEFORE DELETE OR UPDATE ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_no_truncate",
+      "kind": "trigger",
+      "name": "review_reassignment_commands_no_truncate",
+      "table": "review_reassignment_commands",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER review_reassignment_commands_no_truncate BEFORE TRUNCATE ON private.review_reassignment_commands FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.review_reassignment_commands.review_reassignment_commands_updated",
+      "kind": "trigger",
+      "name": "review_reassignment_commands_updated",
+      "table": "review_reassignment_commands",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER review_reassignment_commands_updated BEFORE UPDATE ON private.review_reassignment_commands FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_audit",
+      "kind": "trigger",
+      "name": "artifact_reviews_audit",
+      "table": "artifact_reviews",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER artifact_reviews_audit AFTER INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_exact_target",
+      "kind": "trigger",
+      "name": "artifact_reviews_exact_target",
+      "table": "artifact_reviews",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.enforce_artifact_review_target_v1()",
+      "definition": "CREATE TRIGGER artifact_reviews_exact_target BEFORE INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.enforce_artifact_review_target_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_immutable",
+      "kind": "trigger",
+      "name": "artifact_reviews_immutable",
+      "table": "artifact_reviews",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_reviews_immutable BEFORE DELETE OR UPDATE ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_no_truncate",
+      "kind": "trigger",
+      "name": "artifact_reviews_no_truncate",
+      "table": "artifact_reviews",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER artifact_reviews_no_truncate BEFORE TRUNCATE ON public.artifact_reviews FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.artifact_reviews.artifact_reviews_set_updated_at",
+      "kind": "trigger",
+      "name": "artifact_reviews_set_updated_at",
+      "table": "artifact_reviews",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER artifact_reviews_set_updated_at BEFORE UPDATE ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.capital_project_review_assignments.review_assignment_history",
+      "kind": "trigger",
+      "name": "review_assignment_history",
+      "table": "capital_project_review_assignments",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_review_assignment_history_v1()",
+      "definition": "CREATE TRIGGER review_assignment_history AFTER INSERT OR DELETE ON public.capital_project_review_assignments FOR EACH ROW EXECUTE FUNCTION private.capture_review_assignment_history_v1()"
+    },
+    {
+      "id": "trigger:public.capital_project_review_policies.project_review_policy_serialization",
+      "kind": "trigger",
+      "name": "project_review_policy_serialization",
+      "table": "capital_project_review_policies",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.serialize_review_policy_change_v1()",
+      "definition": "CREATE TRIGGER project_review_policy_serialization BEFORE INSERT OR DELETE OR UPDATE ON public.capital_project_review_policies FOR EACH ROW EXECUTE FUNCTION private.serialize_review_policy_change_v1()"
+    },
+    {
+      "id": "trigger:public.organization_review_policies.organization_review_policy_serialization",
+      "kind": "trigger",
+      "name": "organization_review_policy_serialization",
+      "table": "organization_review_policies",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.serialize_review_policy_change_v1()",
+      "definition": "CREATE TRIGGER organization_review_policy_serialization BEFORE INSERT OR DELETE OR UPDATE ON public.organization_review_policies FOR EACH ROW EXECUTE FUNCTION private.serialize_review_policy_change_v1()"
+    },
+    {
+      "id": "trigger:public.work_decisions.work_decisions_audit",
+      "kind": "trigger",
+      "name": "work_decisions_audit",
+      "table": "work_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER work_decisions_audit AFTER INSERT ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:public.work_decisions.work_decisions_immutable",
+      "kind": "trigger",
+      "name": "work_decisions_immutable",
+      "table": "work_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER work_decisions_immutable BEFORE DELETE OR UPDATE ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.work_decisions.work_decisions_no_truncate",
+      "kind": "trigger",
+      "name": "work_decisions_no_truncate",
+      "table": "work_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER work_decisions_no_truncate BEFORE TRUNCATE ON public.work_decisions FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:public.work_decisions.work_decisions_set_updated_at",
+      "kind": "trigger",
+      "name": "work_decisions_set_updated_at",
+      "table": "work_decisions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER work_decisions_set_updated_at BEFORE UPDATE ON public.work_decisions FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     }
   ],
-  "captured_at": "2026-09-26T20:37:08.408015+00:00"
+  "captured_at": "2026-09-28T11:51:45.601859+00:00"
 }
