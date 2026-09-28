@@ -6,6 +6,7 @@ CREATE OR REPLACE FUNCTION private.worker_load_institutional_model_context_v1(p_
 AS $function$
 declare j public.processing_jobs:=private.job_for_capability(p_job_id,p_capability_token);project_id uuid;context jsonb;configs jsonb;latest_sources jsonb;
 begin
+ if exists(select 1 from private.institutional_setup_input_snapshots where organization_id=j.organization_id and (job_id=j.id or submission_id::text=j.payload->>'message_id')) then raise exception 'institutional_setup_snapshot_requires_v3' using errcode='42501';end if;
  if exists(select 1 from private.institutional_input_snapshots where organization_id=j.organization_id and (job_id=j.id or result_id::text=j.payload->>'message_id')) then raise exception 'institutional_snapshot_requires_v2' using errcode='42501';end if;
  if j.kind not in ('case_analysis','agent_operation_brief') then raise exception 'institutional_capability_required' using errcode='42501';end if;
  select capital_project_id into project_id from public.document_intake_sessions where organization_id=j.organization_id and id=j.intake_session_id;

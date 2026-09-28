@@ -38,6 +38,7 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "artifact-revision.v1",
   // Stage 20 / 3C: capture actual institutional inputs before producing their result.
   "institutional-input-snapshot.v1",
+  "institutional-setup-input-snapshot.v1",
 ] as const;
 
 /**

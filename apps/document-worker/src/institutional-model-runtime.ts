@@ -4,7 +4,7 @@ import {reconcileFacts,type FactCandidate} from "@offroad/reconciliation";
 import type {AgentOperationBriefJob} from "./queue";
 export type InstitutionalSetupQueue={
  loadInstitutionalModelContext:(job:AgentOperationBriefJob)=>Promise<unknown>;
- recordInitialInstitutionalConfigurationCandidate:(job:AgentOperationBriefJob,input:{submissionId:string;candidate:unknown})=>Promise<{candidateId:string|null;revision:number|null;replayed:boolean}>;
+ recordInitialInstitutionalConfigurationCandidate:(job:AgentOperationBriefJob,input:{submissionId:string;candidate:unknown;inputSnapshot:InstitutionalInputSnapshot})=>Promise<{candidateId:string|null;revision:number|null;replayed:boolean}>;
  syncInstitutionalInformationRequests?:(job:AgentOperationBriefJob,input:{requests:readonly unknown[]})=>Promise<{openCount:number}>;
 };
 /** Reader excludes rejected/stale/unanchored rows. This conversion does not manufacture
@@ -17,11 +17,19 @@ export function institutionalReconciledFacts(rows:readonly Record<string,unknown
  return reconcileFacts(candidates);
 }
 export async function processInstitutionalModelSetup(input:{job:AgentOperationBriefJob;queue:InstitutionalSetupQueue;locale:"pt-BR"|"en-US"}){
- const context=institutionalModelRuntimeContextSchema.parse(await input.queue.loadInstitutionalModelContext(input.job));
+ const loaded=await input.queue.loadInstitutionalModelContext(input.job);
+ const replay=z.object({setupReplay:z.object({submissionId:z.uuid(),status:z.enum(["review_required","missing_inputs","calculation_blocked"]),candidateId:z.uuid().nullable(),revision:z.number().int().positive().nullable(),informationRequestBasis:z.object({configurationFingerprint:z.string().regex(/^[a-f0-9]{64}$/),missingInputs:z.array(z.object({targetPath:z.string(),code:z.enum(["configuration_required","fact_missing","fact_ambiguous","fact_disputed","fact_invalid","source_unbound","period_mismatch","unit_mismatch","configuration_invalid","assumption_invalid"])}))}).nullable()}).optional()}).parse(loaded).setupReplay;
+ if(replay){
+  if(replay.submissionId!==input.job.payload.message_id||(replay.status==="review_required"&&(!replay.candidateId||!replay.revision))||(replay.status==="missing_inputs"&&!replay.informationRequestBasis))throw new Error("institutional_setup_replay_unbound");
+  if(replay.status==="missing_inputs"&&input.queue.syncInstitutionalInformationRequests)await input.queue.syncInstitutionalInformationRequests(input.job,{requests:buildInstitutionalModelInformationRequests(replay.informationRequestBasis!,input.locale).requests});
+  return {status:replay.status,candidateId:replay.candidateId,revision:replay.revision,replayed:true};
+ }
+ const context=institutionalModelRuntimeContextSchema.parse(loaded);
+ const {setupInputSnapshot}=z.object({setupInputSnapshot:institutionalInputSnapshotSchema}).parse(loaded);
  const setup=context.pendingSetup;
  if(!setup||setup.submissionId!==input.job.payload.message_id||setup.sourceManifestFingerprint!==context.sourceManifestFingerprint)throw new Error("institutional_setup_stale_or_unbound");
  const candidate=buildInitialInstitutionalConfigurationCandidate({configuration:setup.configuration,reviewedSources:setup.sourceReviews,currentSources:context.currentSources,facts:institutionalReconciledFacts(context.candidates),actorId:setup.submittedBy,submittedAt:setup.submittedAt,submissionId:setup.submissionId});
- const stored=await input.queue.recordInitialInstitutionalConfigurationCandidate(input.job,{submissionId:setup.submissionId,candidate});
+ const stored=await input.queue.recordInitialInstitutionalConfigurationCandidate(input.job,{submissionId:setup.submissionId,candidate,inputSnapshot:setupInputSnapshot});
  if(candidate.status==="missing_inputs"&&input.queue.syncInstitutionalInformationRequests){await input.queue.syncInstitutionalInformationRequests(input.job,{requests:buildInstitutionalModelInformationRequests(candidate.prepared,input.locale).requests});}
  return {status:candidate.status,...stored};
 }

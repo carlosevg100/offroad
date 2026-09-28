@@ -54148,6 +54148,12 @@
           "line": 2,
           "anchor": "create or replace function private.worker_record_initial_institutional_candidate_v1(p_job_id uuid,p_capability_token text,p_submission_id uuid,p_candidate jsonb) returns jsonb language plpgsql security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 173,
+          "anchor": "create or replace function private.worker_record_initial_institutional_candidate_v1(p_job_id uuid,p_capability_token text,p_submission_id uuid,p_candidate jsonb)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -185755,6 +185761,1954 @@
           "mechanism": "dynamic_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.institutional_configuration_capture_state_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_configuration_capture_state_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_capture_state_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_configuration_capture_state_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_capture_state_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 215,
+          "anchor": "create function private.institutional_configuration_capture_state_v1(p_org uuid,p_configuration uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_setup_snapshot_authorized_v1(p_snapshot uuid, p_job uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_setup_snapshot_authorized_v1(p_snapshot uuid, p_job uuid)",
+          "kind": "function",
+          "name": "institutional_setup_snapshot_authorized_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_snapshot uuid, p_job uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_setup_snapshot_authorized_v1(p_snapshot uuid, p_job uuid)",
+          "kind": "function",
+          "name": "institutional_setup_snapshot_authorized_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_snapshot uuid, p_job uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 67,
+          "anchor": "create function private.institutional_setup_snapshot_authorized_v1(p_snapshot uuid,p_job uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.persist_initial_institutional_candidate_v1(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_snapshot uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.persist_initial_institutional_candidate_v1(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_snapshot uuid)",
+          "kind": "function",
+          "name": "persist_initial_institutional_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_snapshot uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.persist_initial_institutional_candidate_v1(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_snapshot uuid)",
+          "kind": "function",
+          "name": "persist_initial_institutional_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_snapshot uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 88,
+          "anchor": "create or replace function private.persist_initial_institutional_candidate_v1(p_job_id uuid,p_capability_token text,p_submission_id uuid,p_candidate jsonb,p_snapshot uuid) returns jsonb language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_load_institutional_model_context_v3(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_load_institutional_model_context_v3(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_institutional_model_context_v3",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_load_institutional_model_context_v3(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_institutional_model_context_v3",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 125,
+          "anchor": "create function private.worker_load_institutional_model_context_v3(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_record_initial_institutional_candidate_v2(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_record_initial_institutional_candidate_v2(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb)",
+          "kind": "function",
+          "name": "worker_record_initial_institutional_candidate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_record_initial_institutional_candidate_v2(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb)",
+          "kind": "function",
+          "name": "worker_record_initial_institutional_candidate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 180,
+          "anchor": "create function private.worker_record_initial_institutional_candidate_v2(p_job_id uuid,p_capability_token text,p_submission_id uuid,p_candidate jsonb,p_input_snapshot jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_load_institutional_model_context_v3(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_load_institutional_model_context_v3(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_institutional_model_context_v3",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_load_institutional_model_context_v3(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_institutional_model_context_v3",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 245,
+          "anchor": "create function public.worker_load_institutional_model_context_v3(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_record_initial_institutional_candidate_v2(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_record_initial_institutional_candidate_v2(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb)",
+          "kind": "function",
+          "name": "worker_record_initial_institutional_candidate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_record_initial_institutional_candidate_v2(p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb)",
+          "kind": "function",
+          "name": "worker_record_initial_institutional_candidate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_submission_id uuid, p_candidate jsonb, p_input_snapshot jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 247,
+          "anchor": "create function public.worker_record_initial_institutional_candidate_v2(p_job_id uuid,p_capability_token text,p_submission_id uuid,p_candidate jsonb,p_input_snapshot jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_delete",
+          "kind": "policy",
+          "name": "institutional_setup_input_bindings_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_delete",
+          "kind": "policy",
+          "name": "institutional_setup_input_bindings_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 57,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for delete to anon,authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_insert",
+          "kind": "policy",
+          "name": "institutional_setup_input_bindings_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_insert",
+          "kind": "policy",
+          "name": "institutional_setup_input_bindings_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 55,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for insert to anon,authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_select",
+          "kind": "policy",
+          "name": "institutional_setup_input_bindings_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_select",
+          "kind": "policy",
+          "name": "institutional_setup_input_bindings_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 54,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for select to anon,authenticated using(false)',t||'_deny_select',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_update",
+          "kind": "policy",
+          "name": "institutional_setup_input_bindings_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_input_bindings.institutional_setup_input_bindings_deny_update",
+          "kind": "policy",
+          "name": "institutional_setup_input_bindings_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 56,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for update to anon,authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_delete",
+          "kind": "policy",
+          "name": "institutional_setup_input_snapshots_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_delete",
+          "kind": "policy",
+          "name": "institutional_setup_input_snapshots_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 57,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for delete to anon,authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_insert",
+          "kind": "policy",
+          "name": "institutional_setup_input_snapshots_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_insert",
+          "kind": "policy",
+          "name": "institutional_setup_input_snapshots_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 55,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for insert to anon,authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_select",
+          "kind": "policy",
+          "name": "institutional_setup_input_snapshots_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_select",
+          "kind": "policy",
+          "name": "institutional_setup_input_snapshots_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 54,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for select to anon,authenticated using(false)',t||'_deny_select',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_update",
+          "kind": "policy",
+          "name": "institutional_setup_input_snapshots_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_deny_update",
+          "kind": "policy",
+          "name": "institutional_setup_input_snapshots_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 56,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for update to anon,authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_delete",
+          "kind": "policy",
+          "name": "institutional_setup_source_links_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_delete",
+          "kind": "policy",
+          "name": "institutional_setup_source_links_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 57,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for delete to anon,authenticated using(false)',t||'_deny_delete',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_insert",
+          "kind": "policy",
+          "name": "institutional_setup_source_links_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_insert",
+          "kind": "policy",
+          "name": "institutional_setup_source_links_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 55,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for insert to anon,authenticated with check(false)',t||'_deny_insert',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_select",
+          "kind": "policy",
+          "name": "institutional_setup_source_links_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_select",
+          "kind": "policy",
+          "name": "institutional_setup_source_links_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 54,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for select to anon,authenticated using(false)',t||'_deny_select',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_update",
+          "kind": "policy",
+          "name": "institutional_setup_source_links_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_source_links.institutional_setup_source_links_deny_update",
+          "kind": "policy",
+          "name": "institutional_setup_source_links_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 56,
+          "anchor": "  execute format('create policy %I on private.%I as restrictive for update to anon,authenticated using(false) with check(false)',t||'_deny_update',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.institutional_setup_input_bindings",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.institutional_setup_input_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_setup_input_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.institutional_setup_input_bindings",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_setup_input_bindings",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.institutional_setup_input_snapshots",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.institutional_setup_input_snapshots",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_setup_input_snapshots",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.institutional_setup_input_snapshots",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_setup_input_snapshots",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.institutional_setup_source_links",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.institutional_setup_source_links",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_setup_source_links",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.institutional_setup_source_links",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_setup_source_links",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_audit",
+          "kind": "trigger",
+          "name": "institutional_setup_input_bindings_audit",
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_setup_input_bindings_audit AFTER INSERT ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_audit",
+          "kind": "trigger",
+          "name": "institutional_setup_input_bindings_audit",
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_setup_input_bindings_audit AFTER INSERT ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 61,
+          "anchor": "  execute format('create trigger %I after insert on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_immutable",
+          "kind": "trigger",
+          "name": "institutional_setup_input_bindings_immutable",
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_input_bindings_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_immutable",
+          "kind": "trigger",
+          "name": "institutional_setup_input_bindings_immutable",
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_input_bindings_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 58,
+          "anchor": "  execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_review_history_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_setup_input_bindings_no_truncate",
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_input_bindings_no_truncate BEFORE TRUNCATE ON private.institutional_setup_input_bindings FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_setup_input_bindings_no_truncate",
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_input_bindings_no_truncate BEFORE TRUNCATE ON private.institutional_setup_input_bindings FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 59,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.reject_review_history_mutation_v1()',t||'_no_truncate',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_updated",
+          "kind": "trigger",
+          "name": "institutional_setup_input_bindings_updated",
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_setup_input_bindings_updated BEFORE UPDATE ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_input_bindings.institutional_setup_input_bindings_updated",
+          "kind": "trigger",
+          "name": "institutional_setup_input_bindings_updated",
+          "table": "institutional_setup_input_bindings",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_setup_input_bindings_updated BEFORE UPDATE ON private.institutional_setup_input_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 36,
+          "anchor": "create table private.institutional_setup_input_bindings (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 60,
+          "anchor": "  execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_audit",
+          "kind": "trigger",
+          "name": "institutional_setup_input_snapshots_audit",
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_setup_input_snapshots_audit AFTER INSERT ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_audit",
+          "kind": "trigger",
+          "name": "institutional_setup_input_snapshots_audit",
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_setup_input_snapshots_audit AFTER INSERT ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 61,
+          "anchor": "  execute format('create trigger %I after insert on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_immutable",
+          "kind": "trigger",
+          "name": "institutional_setup_input_snapshots_immutable",
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_input_snapshots_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_immutable",
+          "kind": "trigger",
+          "name": "institutional_setup_input_snapshots_immutable",
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_input_snapshots_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 58,
+          "anchor": "  execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_review_history_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_setup_input_snapshots_no_truncate",
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_input_snapshots_no_truncate BEFORE TRUNCATE ON private.institutional_setup_input_snapshots FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_setup_input_snapshots_no_truncate",
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_input_snapshots_no_truncate BEFORE TRUNCATE ON private.institutional_setup_input_snapshots FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 59,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.reject_review_history_mutation_v1()',t||'_no_truncate',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_updated",
+          "kind": "trigger",
+          "name": "institutional_setup_input_snapshots_updated",
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_setup_input_snapshots_updated BEFORE UPDATE ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_input_snapshots.institutional_setup_input_snapshots_updated",
+          "kind": "trigger",
+          "name": "institutional_setup_input_snapshots_updated",
+          "table": "institutional_setup_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_setup_input_snapshots_updated BEFORE UPDATE ON private.institutional_setup_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 8,
+          "anchor": "create table private.institutional_setup_input_snapshots (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 60,
+          "anchor": "  execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_audit",
+          "kind": "trigger",
+          "name": "institutional_setup_source_links_audit",
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_setup_source_links_audit AFTER INSERT ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_audit",
+          "kind": "trigger",
+          "name": "institutional_setup_source_links_audit",
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_setup_source_links_audit AFTER INSERT ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 61,
+          "anchor": "  execute format('create trigger %I after insert on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_immutable",
+          "kind": "trigger",
+          "name": "institutional_setup_source_links_immutable",
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_source_links_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_immutable",
+          "kind": "trigger",
+          "name": "institutional_setup_source_links_immutable",
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_source_links_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 58,
+          "anchor": "  execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_review_history_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_setup_source_links_no_truncate",
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_source_links_no_truncate BEFORE TRUNCATE ON private.institutional_setup_source_links FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_setup_source_links_no_truncate",
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_source_links_no_truncate BEFORE TRUNCATE ON private.institutional_setup_source_links FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 59,
+          "anchor": "  execute format('create trigger %I before truncate on private.%I for each statement execute function private.reject_review_history_mutation_v1()',t||'_no_truncate',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_updated",
+          "kind": "trigger",
+          "name": "institutional_setup_source_links_updated",
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_setup_source_links_updated BEFORE UPDATE ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_source_links.institutional_setup_source_links_updated",
+          "kind": "trigger",
+          "name": "institutional_setup_source_links_updated",
+          "table": "institutional_setup_source_links",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_setup_source_links_updated BEFORE UPDATE ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Negar acesso direto, conservar captura/vínculo imutável e auditar somente operação e identidade.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 27,
+          "anchor": "create table private.institutional_setup_source_links (",
+          "mechanism": "dynamic_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+          "line": 60,
+          "anchor": "  execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -192646,6 +194600,13 @@
       "decision": "preservar",
       "stage": "20 / 3C",
       "reason": "Comandos v2 e guard v1; fonte consumida não citada, retry e expiração seguem autoridade atual."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
+      "decision": "preservar",
+      "stage": "20 / 3D",
+      "reason": "Loader v3, writer v2 e guard v1; fonte entregue não citada, retry e expiração seguem autoridade atual."
     }
   ],
   "staging_archive": [

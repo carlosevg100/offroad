@@ -3067,3 +3067,7 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 ## Etapa 20, captura de contexto institucional
 
 34 objetos novos: três tabelas privadas, sete funções, doze políticas negativas e doze gatilhos. Dois comandos v1 deixam de aceitar jobs capturados. Captura exata, direitos atuais e fixados, vínculo atômico e nenhum recibo retrospectivo. Carimbo de produção: `20260928163641`; staging: `20260928162315`.
+
+## Etapa 20, captura prospectiva do setup institucional
+
+34 objetos novos: três tabelas privadas, sete funções, doze políticas negativas e doze gatilhos. Loaders v1/v2 e writer v1 negam submissões capturadas. Captura de setup, direitos atuais e fixados, vínculo atômico e classificação privada somente de raiz sem pai. Carimbo de produção: `20260928180833`; staging: `20260928174845`.

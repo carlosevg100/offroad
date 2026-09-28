@@ -28,7 +28,7 @@ const unique=(values:readonly string[])=>[...new Set(values)].sort();
  * acceptance, no invented UUID/time, and no technical source identifiers in visible questions.
  */
 export function buildInstitutionalModelInformationRequests(
-  prepared:PreparedInstitutionalModelInput,
+  prepared:PreparedInstitutionalModelInput | {configurationFingerprint:string;missingInputs:readonly Pick<InstitutionalModelInputGap,"targetPath"|"code">[]},
   locale:"pt-BR"|"en-US",
 ):InstitutionalModelInformationRequests {
   if(!/^[a-f0-9]{64}$/.test(prepared.configurationFingerprint))throw new RangeError("a configuration fingerprint is required for answer binding");

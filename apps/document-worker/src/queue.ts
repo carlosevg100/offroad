@@ -262,7 +262,7 @@ export type QueueClient = {
   }>;
   recordInstitutionalModelResult?(job: AgentOperationBriefJob, result: InstitutionalResultInput): Promise<{id: string; status: string; replayed: boolean}>;
   loadInstitutionalModelContext?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<unknown>;
-  recordInitialInstitutionalConfigurationCandidate?(job: AgentOperationBriefJob, input: {submissionId: string; candidate: unknown}): Promise<{candidateId: string | null; revision: number | null; replayed: boolean}>;
+  recordInitialInstitutionalConfigurationCandidate?(job: AgentOperationBriefJob, input: {submissionId: string; candidate: unknown; inputSnapshot: InstitutionalResultInput["inputSnapshot"]}): Promise<{candidateId: string | null; revision: number | null; replayed: boolean}>;
   loadInstitutionalConfiguration?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<{configuration:InstitutionalModelConfiguration|null;configurationFingerprint:string|null;revision:number|null}>;
   syncInstitutionalInformationRequests?(job: FullCaseAnalysisJob | AgentOperationBriefJob, input:{requests:readonly unknown[]}):Promise<{openCount:number}>;
   applyInstitutionalAssumptionAnswer?(job:AgentOperationBriefJob, application:unknown):Promise<{candidateId:string;revision:number;replayed:boolean}>;
@@ -484,7 +484,7 @@ export function createQueueClient(
     for (let attempt = 0; ; attempt += 1) {
       const {data, error} = await supabase.rpc(name, args);
       if (!error) return data;
-      if ((name==="worker_load_institutional_model_context_v2"||name==="worker_record_institutional_model_result_v2")
+      if ((name==="worker_load_institutional_model_context_v3"||name==="worker_record_institutional_model_result_v2"||name==="worker_record_initial_institutional_candidate_v2")
         && error.code==="40001" && error.message==="institutional_capture_retry") {
         if (attempt>=2) throw new InstitutionalCaptureRetryError();
         await delay(50 * (2 ** attempt) + Math.floor(Math.random() * 50));
@@ -785,10 +785,10 @@ export function createQueueClient(
       return z.object({id: z.uuid(), status: z.string(), replayed: z.boolean()}).parse(data);
     },
     async loadInstitutionalModelContext(job) {
-      return call("worker_load_institutional_model_context_v2", {p_job_id: job.job_id, p_capability_token: job.capability_token});
+      return call("worker_load_institutional_model_context_v3", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
     async recordInitialInstitutionalConfigurationCandidate(job, input) {
-      const data = await call("worker_record_initial_institutional_candidate_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_submission_id: input.submissionId, p_candidate: input.candidate});
+      const data = await call("worker_record_initial_institutional_candidate_v2", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_submission_id: input.submissionId, p_candidate: input.candidate, p_input_snapshot: input.inputSnapshot});
       return z.object({candidateId: z.uuid().nullable(), revision: z.number().int().nullable(), replayed: z.boolean()}).parse(data);
     },
     async loadInstitutionalConfiguration(job) {
