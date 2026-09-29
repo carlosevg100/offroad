@@ -430,7 +430,7 @@ end $$;
 -- rights version the work uses today; with a committed execution in the manifest, the pin of that
 -- execution for the source; a source with no rights version at all refuses the write. The result
 -- fingerprint of an execution whose receipt exists is the receipt's, never one of the packet's own,
--- and the committed receipt is the approval fact that releases the execution result.
+-- and the committed receipt fixes the bytes without granting human approval.
 do $$ declare a2 uuid;orphan uuid;c jsonb;req jsonb;claim jsonb;r jsonb;x jsonb;m jsonb;b jsonb;pinned uuid;receipt text;exec uuid:='a4192000-0000-4000-9000-000000000091';
 begin
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
@@ -469,9 +469,9 @@ begin
  if pinned is distinct from (select d.rights_version_id from private.execution_dependencies d where d.execution_id=exec and d.source_version_id=a2) or pinned is null then
   raise exception 'execution result did not take the pin of its execution: %',pinned; end if;
  x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',(r->>'revision_id')::uuid);
- if x->>'release'<>'released' or x->>'freshness'<>'current' or (select count(*) from jsonb_array_elements(x->'links') l where l->>'kind'='execution')<>1
+ if x->>'release'<>'internal' or x->>'freshness'<>'current' or (select count(*) from jsonb_array_elements(x->'links') l where l->>'kind'='execution')<>1
   or x#>>'{revision,manifest,execution,resultFingerprint}'<>receipt then raise exception 'execution result revision: %',x; end if;
- raise notice 'PASS: a source without a rights version pins the one in force or the execution''s, or is refused; the receipt fixes the result fingerprint and releases the execution result';
+ raise notice 'PASS: a source without a rights version pins the one in force or the execution''s, or is refused; the receipt fixes the result fingerprint without approving the execution result';
 end $$;
 
 -- 15. The worker capability sits in the runtime contract; the entry points and predicates are

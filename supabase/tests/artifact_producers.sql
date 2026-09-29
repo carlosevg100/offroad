@@ -24,7 +24,7 @@ end $$;
 -- the commit: origin worker, audience internal, no bytes, the derived id; its manifest names the
 -- receipt's result and input fingerprints, the input snapshot, the release the execution ran, the
 -- pinned source with the pinned rights version (the packet's contract source merged into the same
--- entry), the gate-free traces and the job; its blocks are the contract's; the reader releases it on
+-- entry), the gate-free traces and the job; its blocks are the contract's; the reader keeps it internal despite
 -- the receipt and finds it current.
 do $$ declare exec uuid:='a4194000-0000-4000-9000-000000000101';src uuid;packet text;run jsonb;rev public.artifact_revisions;art public.artifacts;
  receipt private.execution_result_receipts;blocks jsonb;x jsonb;pinned uuid;n integer;
@@ -65,9 +65,9 @@ begin
   or (select count(*) from private.artifact_dependency_links l where l.revision_id=rev.id and l.link_kind='source_version' and l.source_version_id=src and l.source_rights_version_id=pinned)<>1
  then raise exception 'links of the execution result'; end if;
  x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',rev.id);
- if x->>'release'<>'released' or x->>'freshness'<>'current' or jsonb_typeof(x->'restriction')<>'null' or jsonb_array_length(x->'blocks')<>jsonb_array_length(blocks)
+ if x->>'release'<>'internal' or x->>'freshness'<>'current' or jsonb_typeof(x->'restriction')<>'null' or jsonb_array_length(x->'blocks')<>jsonb_array_length(blocks)
   or not (x->>'isHead')::boolean then raise exception 'reader: %',x; end if;
- raise notice 'PASS: the commit writes exactly one execution_result revision with the receipt fingerprint, the pinned source and the contract blocks, released by the receipt';
+ raise notice 'PASS: the commit writes exactly one execution_result revision with the receipt fingerprint, the pinned source and the contract blocks, internal until exact human approval';
 end $$;
 
 -- 3. A replayed commit replays: the same receipt, no second revision, no new row anywhere in the protocol.
