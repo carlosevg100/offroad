@@ -4,6 +4,7 @@ import {useLocale,useTranslations,useFormatter} from "next-intl";
 import {useRouter} from "next/navigation";
 import {reviewActionAllowed} from "@offroad/domain-contracts";
 import {reviewInstitutionalArtifact} from "@/app/[locale]/app/projects/[projectId]/artifact-review-actions";
+import {reviewExecutionArtifact} from "@/app/[locale]/app/projects/[projectId]/execution-review-actions";
 import type {InstitutionalReview} from "@/lib/artifacts/institutional-review";
 import styles from "./project-review-roles.module.css";
 
@@ -19,8 +20,9 @@ export function ArtifactRevisionReview({context,projectId,resultId,userId}:{cont
   const key=JSON.stringify({revisionId:r.id,fingerprint:r.manifestFingerprint,act,declared,note,basisReviewId,blockId});
   if(attempt.current?.key!==key)attempt.current={key,commandId:crypto.randomUUID()};
   const commandId=attempt.current.commandId;setError(null);
-  start(async()=>{try{const result=await reviewInstitutionalArtifact({locale,projectId,resultId,revisionId:r.id,fingerprint:r.manifestFingerprint,act,declared,commandId,
-   note,basisReviewId,blockId:act==="comment"||act==="return"?blockId||null:null});if(!result.ok)setError(result.error);else{attempt.current=null;setNote("");router.refresh();}}catch{setError("save");}});
+  start(async()=>{try{const command={locale,projectId,revisionId:r.id,fingerprint:r.manifestFingerprint,act,declared,commandId,
+   note,basisReviewId,blockId:act==="comment"||act==="return"?blockId||null:null};
+   const result=context.artifact.kind==="execution_result"?await reviewExecutionArtifact({...command,executionId:resultId}):await reviewInstitutionalArtifact({...command,resultId});if(!result.ok)setError(result.error);else{attempt.current=null;setNote("");router.refresh();}}catch{setError("save");}});
  }
  const active=context.reviews.filter(v=>(v.act==="approve"||v.act==="reaffirm")&&!context.reviews.some(x=>x.act==="revoke_approval"&&x.basisReviewId===v.id));
  return <section className={styles.roles} data-testid="artifact-revision-review">

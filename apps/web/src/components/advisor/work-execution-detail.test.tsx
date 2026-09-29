@@ -53,7 +53,7 @@ function registered(canonicalResult: string, freshness: "current" | "stale" | "u
   const packet = JSON.parse(canonicalResult) as CapitalProcedurePacketLike;
   const blocks = readCapitalProcedurePacketBlocks(capitalProcedurePacketBlocks(packet));
   if (!blocks) throw new Error("blocks expected");
-  return {state: "ready", revision: {revisionNo: 1, recordedAt: "2026-09-24T12:05:00.5+00:00", freshness, blocks,
+  return {state: "ready", revision: {revisionId: "30000000-0000-4000-8000-000000000001", revisionNo: 1, recordedAt: "2026-09-24T12:05:00.5+00:00", freshness, blocks,
     pins: {resultFingerprint: hex("d"), packetFingerprint: packet.fingerprint, gatesFingerprint: receipt().fingerprint}}};
 }
 const render = async (locale: "pt-BR" | "en-US", value: ReturnType<typeof view>) => renderToStaticMarkup(await WorkExecutionDetail({locale, projectId: id(2), view: value}));

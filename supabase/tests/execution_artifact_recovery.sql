@@ -107,6 +107,8 @@ begin
  if r->>'recorded'<>'true' or not exists(select 1 from public.audit_events where resource_id=ex::text
   and action='execution_artifact_recovered' and actor_user_id='a11b0000-0000-4000-8000-000000000002')
  then raise exception 'successor could not recover with current authority';end if;
+ if (select private.artifact_review_preparer_v1(a) from public.artifact_revisions a where a.id=pg_temp.revision_of(ex)) is distinct from 'a11b0000-0000-4000-8000-000000000001'::uuid
+ then raise exception 'recovery_replaced_original_human_preparer';end if;
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
  perform pg_temp.refused(format('set local role authenticated;select public.recover_execution_result_artifact_v1(%L,%L)',ex,fp),
   'review_work_access_required','revoked requester cannot use recovery');

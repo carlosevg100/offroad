@@ -178,7 +178,7 @@ export function projectWorkExecution(raw: unknown, registered?: ExecutionRevisio
   const gates = r.gates === null ? null : projectExecutionGates(r.gates);
   let result: WorkExecutionView["result"] = null;
   if (r.result !== null && "withheld" in r.result) result = {withheld: true, reason: "inputs_not_current", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt};
-  else if (r.result !== null && registered?.state === "withheld") result = {withheld: true, reason: "revision_restricted", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt};
+  else if (r.result !== null && registered && ["withheld", "unavailable", "mismatch"].includes(registered.state)) result = {withheld: true, reason: "revision_restricted", resultFingerprint: r.result.resultFingerprint, committedAt: r.result.committedAt};
   else if (r.result !== null && registered?.state === "ready") {
     const {data} = parseCommittedResult(r.result.canonicalResult);
     const {revision} = registered;

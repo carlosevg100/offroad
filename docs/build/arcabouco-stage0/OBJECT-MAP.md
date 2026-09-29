@@ -3143,3 +3143,7 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 - `function:private.execution_closure_read_allowed_v1(p_org uuid, p_closure jsonb, p_actor uuid, p_operation text)`
 - `function:private.execution_result_source_closure_v1(p_org uuid, p_execution uuid)`
 - `function:private.execution_snapshot_reference_closure_v1(p_org uuid, p_payload jsonb, p_declared_sources jsonb)`
+
+## Etapa 20 / 3K: revisão humana de execução
+
+0 objetos novos e 0 atualizados. Resultado e derivado de execução exigem revisão humana exata; recibo de cálculo não concede aprovação.

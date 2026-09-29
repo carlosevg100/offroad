@@ -189,6 +189,24 @@ test("a v4 capital execution is refused until the company under analysis is regi
  // The screen of a registered result names no identifier: not the execution, not a fingerprint.
  await expect(page.locator("main.work-executions")).not.toContainText(executionId);
  await expect(page.locator("main.work-executions")).not.toContainText(copy.detail.contractFingerprint);
+ // Human approval is independent of computation, under the customer's review policy.
+ sql(`insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by)
+ select organization_id,true,false,created_by from public.capital_projects where id='${projectId}'
+ on conflict(organization_id) do update set self_approval_allowed=true,assignment_required=false;`);
+ await page.reload();
+ const humanReview=page.getByTestId("artifact-revision-review");
+ await expect(humanReview).toBeVisible();
+ await expect(humanReview).toContainText(messages.ArtifactRevisionReview.pending);
+ const approve=humanReview.getByRole("button",{name:messages.ArtifactRevisionReview.approve,exact:true});
+ await expect(approve).toBeDisabled();
+ await humanReview.getByRole("checkbox",{name:messages.ArtifactRevisionReview.declaration}).check();
+ await approve.click();
+ await expect(humanReview).toContainText(messages.ArtifactRevisionReview.approved);
+ await page.reload();
+ await expect(humanReview).toContainText(messages.ArtifactRevisionReview.approved);
+ await humanReview.getByRole("button",{name:messages.ArtifactRevisionReview.revoke,exact:true}).click();
+ await expect(humanReview).toContainText(messages.ArtifactRevisionReview.pending);
+ await expect(humanReview).toContainText(messages.ArtifactRevisionReview.acts.revoke_approval);
  await test.info().attach("capital-execution-detail", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 
  // 5. The database agrees: one execution, one receipt of gates with the company registered, a
