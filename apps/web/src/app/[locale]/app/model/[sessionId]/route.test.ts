@@ -23,6 +23,7 @@ import {
   materialSupabase,
 } from "@/lib/artifacts/material-fixtures.test-support";
 import {GET} from "./route";
+import {artifactReadFixture} from "@/lib/artifacts/artifact-read.test-support";
 
 // The committed fixture is emitted by the real reviewed-source/configuration/calculation producer.
 const sql = readFileSync(resolve(process.cwd(), "../../supabase/tests/support/institutional_setup_fixture.sql"), "utf8");
@@ -34,7 +35,7 @@ const verifiedDocuments = bindings.map(source => ({id: source.sourceDocument, do
 const modelPackage = {...governedPackage, plannedArtifacts: ["financial_model" as const], financialModel: artifact};
 let documents: {data: unknown; error: unknown};
 let supabase: ReturnType<typeof materialSupabase>;
-const withReads = (reads = [legacyMaterialRead()]) => materialSupabase(reads, {tables: {source_documents: () => documents}});
+const withReads = (reads = [legacyMaterialRead()]) => materialSupabase(reads, {tables: {source_documents: () => documents}, rpc: () => ({data: {state: "legacy"}, error: null})});
 const request = (locale = "pt-BR", query = "") => GET(new Request(`https://offroad.test/model${query}`), {params: Promise.resolve({locale, sessionId: materialSessionId})});
 const legacyRequest = (locale = "pt-BR") => legacyGET(new Request("https://offroad.test/model"), {params: Promise.resolve({locale, sessionId: materialSessionId})});
 const sha = (bytes: ArrayBuffer) => createHash("sha256").update(Buffer.from(bytes)).digest("hex");
@@ -88,6 +89,26 @@ describe("approved model download", () => {
     supabase = withReads([pinned("c".repeat(64))]);
     expect((await request()).status).toBe(409);
   });
+  it("never attributes legacy pinned bytes to a native unpinned manifest", async () => {
+    const legacy = legacyMaterialRead({legacy: undefined, format: "xlsx", rendered: {sha256: artifact.workbooks.pt.sha256, byteLength: artifact.workbooks.pt.byteSize,
+      renderer: artifact.version, rendererVersion: governedWorkbookRendererVersion, deterministicInputs: {materialFingerprint, materialKind: "financial_model", locale: "pt"}}});
+    const resultId="20000000-0000-4000-8000-000000000123";
+    const native=artifactReadFixture({workId:legacy.artifact.workId,kind:"model_result",subject:`institutional-native:${resultId}`,
+      revisionId:"30000000-0000-4000-8000-000000000123",institutionalResult:{id:resultId,configurationFingerprint:"a".repeat(64)}});
+    supabase=materialSupabase([legacy,native],{tables:{source_documents:()=>documents},rpc:()=>({data:{state:"native",resultId,revisionId:native.revision.id},error:null})});
+    const response=await request();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-artifact-revision")).toBe(native.revision.id);
+    expect(response.headers.get("x-artifact-bytes")).toBe("unpinned");
+    expect(response.headers.get("x-artifact-content-sha256")).toBeNull();
+  });
+  it("denies copied workbooks when native authority disappears during rendering", async () => {
+    let lookups=0;
+    supabase=materialSupabase([legacyMaterialRead()],{tables:{source_documents:()=>documents},rpc:()=> ++lookups===1
+      ? {data:{state:"legacy"},error:null} : {data:null,error:{code:"42501"}}});
+    expect((await request()).status).toBe(409);
+    expect(lookups).toBe(2);
+  });
   it("serves ?revision= exactly and refuses a replaced version or a revision of another subject", async () => {
     const older = legacyMaterialRead({revisionId: "60000000-0000-4000-8000-000000000002", isHead: false,
       legacy: {table: "deal_state_objects", id: "50000000-0000-4000-8000-000000000002", fingerprint: "c".repeat(64)}});
@@ -108,7 +129,7 @@ describe("old and new resolution decide equal for the model", () => {
     expect(before.status).toBe(200);
     expect(after.status).toBe(200);
     expect(sha(await after.arrayBuffer())).toBe(sha(await before.arrayBuffer()));
-    expect(after.headers.get("content-disposition")).toBe(before.headers.get("content-disposition"));
+    expect(after.headers.get("content-disposition")).toBe(`attachment; filename="${locale === "pt-BR" ? "Cenarios" : "Scenarios"}_${governedPackage.issuedOn}.xlsx"`);
   });
   it("refuse the same cases with the same status and text", async () => {
     const cases: Array<() => void> = [

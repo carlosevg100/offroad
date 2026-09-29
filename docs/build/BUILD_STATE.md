@@ -5340,3 +5340,7 @@ Seis casos em `capital-decision-domain-eval.test.ts`: oráculo independente em c
 ## 2026-09-27: etapa 20, incremento 1 em execução
 
 OK do fundador registrado. Contrato puro de revisão/decisão e classificação conservadora de mudança em `domain-contracts`, descritos em `arcabouco/etapa-20-1-contrato.md`. Sem migração ou troca de leitura de release. Publicação e CI deste incremento precisam ser conferidas; etapa 20 permanece em execução.
+
+## Etapa 20 / 3I: revisão institucional e referência entre versões
+
+Migrações instaladas e conferidas em produção (`20260929135457`, `20260929135520`) e staging (`20260929124911`, `20260929131006`), com SQL idêntico nos journals e 14 definições de função iguais entre ambientes. Catálogos conciliados: 2.838 objetos em produção e 2.899 em staging; 14 novos objetos inventariados, nova ação de revisão registrada e tipos regenerados. Os 18 testes do checker passaram; segurança de produção sem alertas. Nenhum dado sintético criado em produção. CI preliminar `36576332203`: check e E2E passaram (44 testes, 16 condicionais não executados); banco recusou somente inventário/journal então pendentes, agora conciliados. Security `36576332018` passou. CI final, merge e deploys ainda pendentes. Ver [registro 3I](arcabouco/etapa-20-3i-revisao-institucional.md). Não inicia etapas 21–24.

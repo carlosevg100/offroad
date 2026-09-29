@@ -10,10 +10,11 @@ import styles from "./deliverable-format-list.module.css";
  * never invents a format and never hides a refusal behind a disabled control: a format that is not
  * offered stays visible with the reason, so the person knows what to do next.
  */
-export function DeliverableFormatList({decisions, basePath, label}: {
+export function DeliverableFormatList({decisions, basePath, label, revisionId}: {
   decisions: readonly DeliverableFormatDecision[];
   /** Download path of this exact delivery; the format is the last segment. */
   basePath: string;
+  revisionId?: string;
   label?: string;
 }) {
   const t = useTranslations("DeliverableFormats");
@@ -23,7 +24,7 @@ export function DeliverableFormatList({decisions, basePath, label}: {
     <ul className={styles.list}>
       {decisions.map(decision => {
         // Reading in the product is not a file, so it never becomes a download link.
-        const href = decision.available && decision.format !== "interactive" ? `${basePath}/${decision.format}` : null;
+        const href = decision.available && decision.format !== "interactive" ? `${basePath}/${decision.format}${revisionId ? `?revision=${encodeURIComponent(revisionId)}` : ""}` : null;
         const name = t(`formats.${decision.format}`);
         const role = t(`roles.${decision.role}`);
         return <li key={decision.format} className={styles.item} data-format={decision.format} data-available={decision.available && href !== null ? "yes" : "no"}>

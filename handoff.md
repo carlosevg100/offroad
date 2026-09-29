@@ -6064,3 +6064,9 @@ Seis casos em `capital-decision-domain-eval.test.ts`: oráculo independente em c
 ## 2026-09-27: retomada da etapa 20
 
 Fundador respondeu "Ok" ao início da 20 após a onda corretiva encerrada em `85191003`. Primeiro incremento cria contrato puro `review-protocol.ts` e endurece classificação de mudança narrativa. Ver `docs/build/arcabouco/etapa-20-1-contrato.md`; ainda sem migração, rotas ou efeito operacional novo. Próximos incrementos permanecem na ordem aprovada; não iniciar 21–24.
+
+## 2026-09-29: etapa 20 / 3I em publicação
+
+Migrações instaladas e conferidas em produção (`20260929135457`, `20260929135520`) e staging (`20260929124911`, `20260929131006`), com SQL idêntico nos journals e 14 definições de função iguais entre ambientes. Catálogos conciliados: 2.838 objetos em produção e 2.899 em staging; 14 novos objetos inventariados, nova ação de revisão registrada e tipos regenerados. Os 18 testes do checker passaram; segurança de produção sem alertas. Nenhum dado sintético criado em produção. CI preliminar `36576332203`: check e E2E passaram (44 testes, 16 condicionais não executados); banco recusou somente inventário/journal então pendentes, agora conciliados. Security `36576332018` passou. CI final, merge e deploys ainda pendentes.
+
+PR 845. Pai editorial fixado na captura, independente da elegibilidade das fontes para cálculo; cadeia mista preserva a união das fontes. Resultado capturado sem prova nativa não recupera leitura, revisão ou download históricos. Não iniciar 21–24. Próxima ação: CI final, squash merge, verificação de main, web e worker no commit exato, incluindo boot AWS, e completion. Fonte: `docs/build/arcabouco/etapa-20-3i-revisao-institucional.md`.

@@ -210,7 +210,7 @@ test("a mixed update of an execution and the financial model is adopted in one a
   const updateLink = panel.getByRole("link", {name: results.openUpdate, exact: true});
   await expect(panel.getByRole("status")).toHaveText(results.status.recalculationWaiting);
   await expect(updateLink).toHaveAttribute("href", `#work-updates/${updateId}`);
-  await expect(page.locator(`a[href$="/financial-results/${r1}/xlsx"]`)).toHaveCount(0);
+  await expect(page.locator(`a[href*="/financial-results/${r1}/xlsx"]`)).toHaveCount(0);
 
   // 5. The person reads available cash from version 2: the execution is recomputed in the same update,
   // which becomes ready with both recomputations. Later events of that one change, which the update
@@ -259,7 +259,13 @@ test("a mixed update of an execution and the financial model is adopted in one a
   await openSection(page, projectId, "work-institutional-model-result");
   await expect(panel.getByRole("status")).toHaveText(results.status.completed);
   await expect(updateLink).toHaveCount(0);
-  await expect(page.locator(`a[href$="/financial-results/${r1}/xlsx"]`)).toHaveCount(1);
+  const nativeRevision = sql(`select revision_id from private.institutional_native_bindings where result_id='${r1}';`);
+  expect(nativeRevision).toMatch(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/);
+  const nativeDownload = page.locator(`a[href$="/financial-results/${r1}/xlsx?revision=${nativeRevision}"]`);
+  await expect(nativeDownload).toHaveCount(1);
+  const download = await page.request.get((await nativeDownload.getAttribute("href"))!);
+  expect(download.status()).toBe(200);
+  expect(download.headers()["x-artifact-revision"]).toBe(nativeRevision);
   await test.info().attach("mixed-update-adopted", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
 
   // 7. A follow-up typed in the conversation from the adopted update waits for an execution. From the

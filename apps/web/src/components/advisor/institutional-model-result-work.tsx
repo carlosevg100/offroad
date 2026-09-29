@@ -1,5 +1,7 @@
 "use client";
 
+import {ArtifactRevisionReview} from "./artifact-revision-review";
+import type {InstitutionalReview} from "@/lib/artifacts/institutional-review";
 import {useFormatter, useLocale, useTranslations} from "next-intl";
 import {deliverableFormatDecisions} from "@offroad/case-export/deliverable-formats";
 import type {InstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
@@ -18,7 +20,8 @@ import {followWorkSectionLink, workSectionHref} from "./advisor-work-links";
  * `recalculation` is the recalculated result that waits in the work's Updates to replace this one
  * (see `recalculationAwaitingAdoption`): only its adoption makes it current, so the panel points to
  * that update instead of asking for a new calculation; the link opens the Updates section on it. */
-export function InstitutionalModelResultWork({projectId, result, calculating = false, recalculation = null}: {
+export function InstitutionalModelResultWork({projectId, result, nativeReview = null, reviewerId, calculating = false, recalculation = null}: {
+  nativeReview?: InstitutionalReview | null; reviewerId?: string;
   projectId: string; result: InstitutionalModelResult; calculating?: boolean; recalculation?: {updateId: string; adoptable: boolean} | null;
 }) {
   const t = useTranslations("InstitutionalModelResult");
@@ -40,8 +43,10 @@ export function InstitutionalModelResultWork({projectId, result, calculating = f
         </article>)}
       </div>
       <InstitutionalScenarioComparison key={result.id} currentId={result.id} comparisons={result.comparisons ?? []} />
+      {nativeReview && reviewerId ? <ArtifactRevisionReview context={nativeReview} projectId={projectId} resultId={result.id} userId={reviewerId} /> : null}
       <div className={styles.downloads}>
         <DeliverableFormatList
+          revisionId={result.nativeRevisionId}
           label={t("downloads")}
           decisions={deliverableFormatDecisions(institutionalResultDeliverableTypes, institutionalResultDeliverableContext(result))}
           basePath={`/${locale}/app/projects/${projectId}/financial-results/${result.id}`}

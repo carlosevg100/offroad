@@ -1713,14 +1713,22 @@
    "name": "institutional_closure_execution_scope"
   },
   {
-   "name": "institutional_native_projection",
-   "version": "20260929015835"
+   "version": "20260929015835",
+   "name": "institutional_native_projection"
   },
   {
-   "name": "institutional_native_read_lock_order",
-   "version": "20260929022817"
+   "version": "20260929022817",
+   "name": "institutional_native_read_lock_order"
+  },
+  {
+   "version": "20260929124911",
+   "name": "institutional_setup_parent_lineage"
+  },
+  {
+   "version": "20260929131006",
+   "name": "institutional_setup_parent_identity"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-29 02:30:19.743141+00"
+ "captured_at": "2026-09-29T13:57:57.076201+00:00"
 }

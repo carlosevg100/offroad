@@ -164,3 +164,25 @@ print('setup_capture_concurrent_result_retry: PASS (NOWAIT then exact replay, on
 c = case(8, captured=False)
 compete(c, load(c), write(c, legacy=True), 'institutional_setup_snapshot_requires_v2')
 print('setup_capture_legacy_downgrade: PASS (v1 waits for job, then denies captured result)')
+
+# Capture a second setup over a contribution, then commit another human approval
+# in one session while persistence runs in the other. Retry must retain the pin.
+fixture = expand(ROOT / 'supabase/tests/institutional_setup_parent_lineage.sql')
+fixture = fixture.split("set local role authenticated;\nselect public.review_institutional_configuration_v1('30000000-0000-4000-8000-000000000881',current_setting('test.intervening')")[0]
+for suffix in ['881', '882', '883']:
+    fixture = fixture.replace(f'-000000000{suffix}', f'-000000029{suffix}')
+fixture = fixture.replace('setup-owner@', 'parent-race-owner@').replace('setup-worker@', 'parent-race-worker@')
+cleanup = """do $$declare t record;begin
+ for t in select tgname,tgrelid::regclass as rel from pg_trigger join pg_proc on pg_proc.oid=tgfoid
+  where pronamespace=pg_my_temp_schema() and not tgisinternal loop
+  execute format('drop trigger %I on %s',t.tgname,t.rel);
+ end loop;end $$;"""
+data = run('\\o /dev/null\n' + fixture + cleanup + "\n\\o\nselect jsonb_build_object('job',current_setting('test.next_job'),'result',current_setting('test.next_submission'),'artifact',current_setting('test.next_candidate')::jsonb,'pin',current_setting('test.next_capture')::jsonb->'setupInputSnapshot','parent',current_setting('test.parent_fp'),'intervening',current_setting('test.intervening'),'intervening_fp',current_setting('test.intervening_fp'));commit;")
+c = json.loads(data)
+c.update(actor='10000000-0000-4000-8000-000000029881', work='30000000-0000-4000-8000-000000029881')
+approval = f"set local role authenticated;select public.review_institutional_configuration_v1('{c['work']}','{c['intervening']}','{c['parent']}','approved','{c['intervening_fp']}');"
+compete(c, approval, write(c), 'institutional_capture_retry', immediate=True)
+run('begin;' + auth(c, write(c)) + 'commit;')
+assert run(f"select parent_fingerprint from private.institutional_model_configurations where answer_message_id='{c['result']}';") == c['parent']
+assert run(f"select count(*) from private.institutional_setup_input_bindings where submission_id='{c['result']}';") == '1'
+print('setup_parent_approval_race: PASS (real project lock conflict, retry preserves captured parent)')

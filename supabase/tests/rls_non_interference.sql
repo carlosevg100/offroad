@@ -6293,14 +6293,14 @@ end $$;
 
 -- Stage 20: input captures are never a client-side history/read/write surface.
 do $$declare tab text;api_role text;sig text;begin
- foreach tab in array array['private.institutional_contribution_receipts','private.institutional_input_snapshots','private.institutional_input_source_links','private.institutional_result_input_bindings','private.institutional_setup_input_snapshots','private.institutional_setup_source_links','private.institutional_setup_input_bindings'] loop
+ foreach tab in array array['private.institutional_setup_parent_pins','private.institutional_contribution_receipts','private.institutional_input_snapshots','private.institutional_input_source_links','private.institutional_result_input_bindings','private.institutional_setup_input_snapshots','private.institutional_setup_source_links','private.institutional_setup_input_bindings'] loop
   if not exists(select 1 from pg_class where oid=tab::regclass and relrowsecurity and relforcerowsecurity)
    or (select count(distinct polcmd) from pg_policy where polrelid=tab::regclass)<>4 then raise exception 'Capture RLS missing: %',tab;end if;
   foreach api_role in array array['anon','authenticated','service_role'] loop
    if has_table_privilege(api_role,tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') then raise exception 'Capture table exposed: %, %',tab,api_role;end if;
   end loop;
  end loop;
- foreach sig in array array['private.institutional_job_for_capture_v1(uuid,text)','private.institutional_snapshot_authorized_v1(uuid,uuid)','private.persist_institutional_model_result_v1(uuid,text,jsonb,uuid)','private.persist_initial_institutional_candidate_v1(uuid,text,uuid,jsonb,uuid)','private.institutional_setup_snapshot_authorized_v1(uuid,uuid)','private.institutional_configuration_capture_state_v1(uuid,uuid)','private.institutional_configuration_ancestry_v1(uuid,uuid,uuid)'] loop
+ foreach sig in array array['private.institutional_revision_missing_native_v1(uuid,uuid)','private.institutional_result_requires_native_v1(uuid,uuid)','private.institutional_job_for_capture_v1(uuid,text)','private.institutional_snapshot_authorized_v1(uuid,uuid)','private.persist_institutional_model_result_v1(uuid,text,jsonb,uuid)','private.persist_initial_institutional_candidate_v1(uuid,text,uuid,jsonb,uuid)','private.institutional_setup_snapshot_authorized_v1(uuid,uuid)','private.institutional_configuration_capture_state_v1(uuid,uuid)','private.institutional_configuration_ancestry_v1(uuid,uuid,uuid)'] loop
   foreach api_role in array array['anon','authenticated','service_role'] loop
    if has_function_privilege(api_role,sig,'EXECUTE') then raise exception 'Capture helper exposed: %, %',sig,api_role;end if;
   end loop;
@@ -6313,4 +6313,15 @@ do $$begin
  or has_function_privilege('authenticated','private.institutional_result_source_closure_v1(uuid,text)','EXECUTE')
  or has_function_privilege('service_role','private.institutional_result_source_closure_v1(uuid,text)','EXECUTE')
  then raise exception 'institutional_closure_client_grant';end if;
+end $$;
+
+-- Stage 20 / 3I exposes only the authenticated work-scoped lookup.
+do $$declare api_role text;begin
+ foreach api_role in array array['anon','authenticated','service_role'] loop
+  if has_function_privilege(api_role,'private.institutional_native_result_content_v1(uuid,uuid)','EXECUTE') then raise exception 'native_review_content_helper_exposed: %',api_role;end if;
+ end loop;
+ foreach api_role in array array['anon','service_role'] loop
+  if has_function_privilege(api_role,'public.read_institutional_workbook_binding_v1(uuid,text)','EXECUTE') or has_function_privilege(api_role,'private.read_institutional_workbook_binding_v1(uuid,text)','EXECUTE') then raise exception 'native_review_binding_grant: %',api_role;end if;
+ end loop;
+ if not has_function_privilege('authenticated','public.read_institutional_workbook_binding_v1(uuid,text)','EXECUTE') then raise exception 'native_review_binding_missing';end if;
 end $$;

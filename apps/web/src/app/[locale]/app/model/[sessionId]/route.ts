@@ -1,3 +1,4 @@
+import {readInstitutionalWorkbookBinding} from "@/lib/artifacts/institutional-binding";
 import {deskEvidence} from "@offroad/case-understanding";
 import type {ArchetypeId} from "@offroad/credit-playbook";
 import {buildFinancialModel, renderApprovedFinancialWorkbook} from "@offroad/financial-model";
@@ -33,6 +34,9 @@ export async function GET(request: Request, {params}: Params) {
   const artifact = governed.plannedArtifacts.includes("financial_model") ? governed.financialModel : null;
   if (!artifact) return artifactUnavailable(copy.model.unavailable);
 
+  const nativeBinding = artifact.modelKind === "institutional"
+    ? await readInstitutionalWorkbookBinding(supabase, resolved.value.projectId, artifact.fingerprint) : {ok:true as const,native:null};
+  if (!nativeBinding.ok || (nativeBinding.native && revision.audience === "external" && nativeBinding.native.release !== "released")) return artifactUnavailable(copy.sourceRestricted);
   let reproduce: () => Promise<Uint8Array | null>;
   let unavailable: string;
   let filename: string;
@@ -45,7 +49,7 @@ export async function GET(request: Request, {params}: Params) {
     }
     reproduce = () => artifactRenderers[artifact.version].produce(artifact, lang);
     unavailable = copy.model.prepareAgain;
-    filename = `${lang === "pt" ? "Cenarios_aprovados" : "Approved_scenarios"}_${issuedOn}.xlsx`;
+    filename = `${lang === "pt" ? "Cenarios" : "Scenarios"}_${issuedOn}.xlsx`;
   } else {
     const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
     const {data: session} = await supabase
@@ -79,17 +83,22 @@ export async function GET(request: Request, {params}: Params) {
   // The workbook is the replay itself: the approved hash of this locale decides, never new bytes.
   const rendered = await renderArtifactRevision({revision: {issuedOn}, format: "xlsx", lang, reproduce});
   if (!rendered.ok) return artifactUnavailable(unavailable);
-  const verification = verifyRenderedBytes(revision, rendered.bytes, {format: "xlsx", selectors: {locale: lang, materialKind: "financial_model"}});
+  const verification = verifyRenderedBytes(nativeBinding.native?.revision ?? revision, rendered.bytes, {format: "xlsx", selectors: {locale: lang, materialKind: "financial_model"}});
   if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
 
   if (!await resourceStillReadable(supabase, organization.id, sessionId, "session")) return artifactNotFound();
 
+  if (artifact.modelKind === "institutional") {
+    const final = await readInstitutionalWorkbookBinding(supabase, resolved.value.projectId, artifact.fingerprint);
+    if (!final.ok || final.native?.summary.id !== nativeBinding.native?.summary.id || final.native?.release !== nativeBinding.native?.release
+      || final.native?.summary.manifestFingerprint !== nativeBinding.native?.summary.manifestFingerprint) return artifactUnavailable(copy.sourceRestricted);
+  }
   return new Response(Buffer.from(rendered.bytes), {
     headers: {
       "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "content-disposition": `attachment; filename="${filename}"`,
       "cache-control": "private, no-store",
-      ...artifactResponseHeaders(read, verification),
+      ...artifactResponseHeaders(nativeBinding.native ?? read, verification),
     },
   });
 }
