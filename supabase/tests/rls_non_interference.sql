@@ -6306,3 +6306,11 @@ do $$declare tab text;api_role text;sig text;begin
   end loop;
  end loop;
 end $$;
+
+-- Stage 20 / 3G has no callable client surface.
+do $$begin
+ if has_function_privilege('anon','private.institutional_result_source_closure_v1(uuid,text)','EXECUTE')
+ or has_function_privilege('authenticated','private.institutional_result_source_closure_v1(uuid,text)','EXECUTE')
+ or has_function_privilege('service_role','private.institutional_result_source_closure_v1(uuid,text)','EXECUTE')
+ then raise exception 'institutional_closure_client_grant';end if;
+end $$;

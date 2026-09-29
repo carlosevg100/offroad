@@ -188231,6 +188231,60 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.institutional_result_source_closure_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_result_source_closure_v1(p_job uuid, p_capability text)",
+          "kind": "function",
+          "name": "institutional_result_source_closure_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_result_source_closure_v1(p_job uuid, p_capability text)",
+          "kind": "function",
+          "name": "institutional_result_source_closure_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job uuid, p_capability text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3G",
+      "reason": "Fechamento privado da união completa de fontes e direitos da execução corrente; não concede acesso nem libera artefatos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929003427_institutional_closure_execution_scope.sql",
+          "line": 4,
+          "anchor": "create or replace function private.institutional_result_source_closure_v1(p_job uuid,p_capability text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -195143,6 +195197,22 @@
       "decision": "preservar",
       "stage": "20 / 3F",
       "reason": "Cadeia exata entre raiz capturada e contribuições comprovadas, sem reconstruir histórico."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260929003415_institutional_source_closure.sql",
+      "decision": "preservar",
+      "stage": "20 / 3G",
+      "reason": "DDL aditivo aplicado em staging e produção; preserva fechamento de fontes e autoridade corrente, sem ativar consumidor.",
+      "owner": "Engenharia de execução, etapa 20"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260929003427_institutional_closure_execution_scope.sql",
+      "decision": "preservar",
+      "stage": "20 / 3G",
+      "reason": "DDL aditivo aplicado em staging e produção; preserva fechamento de fontes e autoridade corrente, sem ativar consumidor.",
+      "owner": "Engenharia de execução, etapa 20"
     }
   ],
   "staging_archive": [

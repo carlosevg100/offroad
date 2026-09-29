@@ -3089,3 +3089,8 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 
 1 objetos novos e 0 atualizados. Resolver privado de integridade histórica; não concede acesso nem libera artefatos.
 - `function:private.institutional_configuration_ancestry_v1(p_org uuid, p_work uuid, p_configuration uuid)`
+
+## Etapa 20 / 3G: fechamento privado de fontes
+
+1 objeto novo e 0 atualizados na superfície de acesso. União completa de fontes do cálculo e ancestralidade, direitos fixados e correntes sob autoridade da execução; sem concessão ou liberação. Produção: `20260929003415` e `20260929003427`; staging: `20260929001830` e `20260929002747`.
+- `function:private.institutional_result_source_closure_v1(p_job uuid, p_capability text)`
