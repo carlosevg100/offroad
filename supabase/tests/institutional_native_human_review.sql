@@ -5,7 +5,37 @@ set local role authenticated;
 select set_config('test.native_capture',public.worker_load_institutional_model_context_v2(current_setting('test.result_job')::uuid,repeat('x',64))::text,true);
 select set_config('test.native_result',public.worker_record_institutional_model_result_v3(current_setting('test.result_job')::uuid,repeat('x',64),jsonb_build_object('status','completed','artifact',current_setting('test.result_artifact')::jsonb,'inputSnapshot',current_setting('test.native_capture')::jsonb->'inputSnapshot'))::text,true);
 reset role;
+\ir support/institutional_closure_clone.sql
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000881","role":"authenticated"}',true);
+do $test$ declare job uuid;result_id uuid;created jsonb;r public.artifact_revisions;native public.artifact_revisions;outcome jsonb;begin
+ begin
+  job:=pg_temp.clone_closure(current_setting('test.native_capture')::jsonb-'inputSnapshot',null,false);
+  select (payload->>'message_id')::uuid into result_id from public.processing_jobs where id=job;
+  outcome:=private.project_institutional_native_result_v1(job,repeat('x',64));
+  if outcome->>'state'<>'ineligible' then raise exception 'unproved_result_projected';end if;
+  select * into strict native from public.artifact_revisions where id=(current_setting('test.native_result')::jsonb#>>'{nativeProjection,revisionId}')::uuid;
+  created:=private.create_artifact_revision_v1(native.organization_id,'30000000-0000-4000-8000-000000000881','model_result','unproved-direct-review','internal','worker',
+   jsonb_set(jsonb_set(jsonb_set(native.manifest,'{institutionalResult,id}',to_jsonb(result_id)),'{sources}','[]'::jsonb),'{provenance,messageId}',to_jsonb(gen_random_uuid()::text)),
+   '[]','[]',null,null,null,null,auth.uid());
+  select * into strict r from public.artifact_revisions where id=(created->>'revision_id')::uuid;
+  if private.artifact_revision_release_v1(r)<>'blocked' or private.artifact_review_sources_allowed_v1(r.organization_id,r.id,auth.uid()) then raise exception 'unproved_result_release_or_review_allowed';end if;
+  insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by) values(r.organization_id,true,false,auth.uid()) on conflict(organization_id) do update set self_approval_allowed=true,assignment_required=false;
+  begin
+   perform public.review_artifact_revision_v1(r.id,r.manifest_fingerprint,'approve',null,null,true,gen_random_uuid());
+   raise exception 'unproved_direct_review_accepted';
+  exception when insufficient_privilege then null;end;
+  if exists(select 1 from public.artifact_reviews where revision_id=r.id) then raise exception 'unproved_review_recorded';end if;
+  begin
+   perform public.read_institutional_workbook_binding_v1('30000000-0000-4000-8000-000000000881',current_setting('test.result_artifact')::jsonb->>'fingerprint');
+   raise exception 'unproved_copy_fallback';
+  exception when insufficient_privilege then null;end;
+  begin
+   perform private.institutional_native_result_content_v1(r.organization_id,result_id);
+   raise exception 'unproved_content_fallback';
+  exception when insufficient_privilege then null;end;
+  raise exception 'rollback_unproved' using errcode='ZX001';
+ exception when sqlstate 'ZX001' then null;end;
+end $test$;
 do $test$
 declare b private.institutional_native_bindings;r public.artifact_revisions;old public.artifact_revisions;ctx jsonb;act jsonb;again jsonb;payload jsonb;derived jsonb;dr public.artifact_revisions;
  cmd uuid:=gen_random_uuid();revoke_cmd uuid:=gen_random_uuid();accepted boolean:=false;

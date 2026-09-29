@@ -1,8 +1,8 @@
 # Etapa 20 / 3I: revisão humana do conteúdo institucional
 
-Status: bloqueado antes da promoção, pela linhagem do segundo setup. Nenhuma migração permanente aplicada. Não inicia etapas 21–24.
+Status: correção da linhagem do segundo setup autorizada pelo fundador e em verificação. Nenhuma migração permanente aplicada. Não inicia etapas 21–24.
 
-O resultado institucional que tem binding nativo é lido dos blocos imutáveis e comparado ao envelope persistido. O leitor retorna a revisão exata; cada resultado de comparação recebe sua própria validação. O resultado histórico sem binding conserva o contrato anterior. O contraponto legado de um resultado nativo e seus derivados ficam bloqueados para impedir recuperação da aprovação histórica.
+O resultado institucional que tem binding nativo é lido dos blocos imutáveis e comparado ao envelope persistido. O leitor retorna a revisão exata; cada resultado de comparação recebe sua própria validação. Somente o resultado histórico sem captura conserva o contrato anterior. Resultado capturado sem binding nega leitura, cópia, liberação e revisão direta, inclusive por derivação. O contraponto legado de um resultado nativo e seus derivados ficam bloqueados para impedir recuperação da aprovação histórica.
 
 A pessoa aprova, comenta, solicita ajustes ou revoga a aprovação sobre revisão, fingerprint e audiência exatos. A autoridade vem da sessão, do acesso ao trabalho e das responsabilidades vigentes no banco. Autoaprovação exige regra permitida e declaração explícita. Tentativa repetida após falha de conexão conserva commandId. O ato não publica nem envia materiais e não aprova outro formato ou versão.
 
@@ -31,4 +31,12 @@ Não reduzir a exigência do teste para aceitar o legado. Recomendação: antes 
 
 Alternativa segura: publicar apenas a contenção da leitura prospectiva inelegível e manter o recálculo governado indisponível até completar a prova. Não recomendada como fechamento de 3I, pois deixa a jornada interrompida.
 
-Responsável: executor desta PR. Próxima ação: OK do fundador para antecipar essa dependência técnica dentro da etapa 20, conforme a regra de avisar antes de mudar a ordem. Nenhum DDL permanente, merge ou deploy deste incremento ocorreu. PR permanece explicitamente em draft bloqueado; não é completion.
+Responsável: executor desta PR. O fundador respondeu "ok" à antecipação desta dependência técnica dentro da etapa 20. A correção está autorizada; próxima ação é concluir os gates e publicar. Nenhum DDL permanente, merge ou deploy deste incremento ocorreu. PR permanece em draft durante a verificação; não é completion.
+
+## Correção autorizada em 29/09/2026
+
+O draft não aplicado foi consolidado em `institutional_setup_parent_lineage`, numa transação única. `private.institutional_setup_parent_pins` fixa o pai no contexto entregue ao preparador, com vínculo exato de trabalho, configuração e fingerprint. A persistência usa esse pai mesmo após outra aprovação; replay não o substitui. A ancestralidade valida todos os setups e contribuições em até 128 nós, reunindo as fontes e versões de direitos de cada setup. Não há backfill de prova histórica.
+
+O predicado privado `institutional_revision_missing_native_v1` é compartilhado pela liberação e pelo controle de revisão. O teste negativo chama a RPC de aprovação diretamente sobre uma revisão sem legado nem fontes, que referencia um resultado capturado inelegível: nenhum ato é gravado. Conteúdo e cópia pelo fingerprint também são negados. O motivo exibido usa a mensagem existente de resultado não verificável.
+
+Provas preliminares em staging, sempre BEGIN/ROLLBACK: `institutional_native_human_review.sql` passou com o negativo de aprovação direta e cópia; `institutional_setup_parent_lineage.sql` passou com aprovação interveniente, cadeia setup/contribuição/setup, replay e imutabilidade do pai. O teste de duas sessões foi acrescentado ao checker de concorrência de captura já ligado na CI; ainda precisa executar na base descartável da CI. Gate local completo em andamento. Nenhuma alteração permanente de ambiente nesta rodada.

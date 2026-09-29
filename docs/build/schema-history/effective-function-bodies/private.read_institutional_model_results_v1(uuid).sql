@@ -11,6 +11,12 @@ begin
  if org_id is null or not private.can_access_capital_project(org_id,p_project_id) then raise exception 'institutional_result_forbidden' using errcode='42501';end if;
  select * into r from private.institutional_model_results x where x.organization_id=org_id and x.capital_project_id=p_project_id and private.institutional_result_established_v1(x.organization_id,x.id) order by x.created_at desc,x.id desc limit 1;
  if r.id is null then return jsonb_build_object('projectId',p_project_id,'latest',null,'comparisonResults','[]'::jsonb);end if;
+ if private.institutional_result_requires_native_v1(org_id,r.id) and r.status='completed'
+  and not exists(select 1 from private.institutional_native_bindings b where b.organization_id=org_id and b.result_id=r.id) then
+  return jsonb_build_object('projectId',p_project_id,'comparisonResults','[]'::jsonb,'latest',jsonb_build_object('id',r.id,'status','blocked',
+   'configurationId',r.configuration_id,'configurationFingerprint',r.configuration_fingerprint,'sourceManifestFingerprint',r.source_manifest_fingerprint,
+   'artifact',null,'blockers',jsonb_build_array('institutional_native_proof_missing'),'createdAt',r.created_at));
+ end if;
  context:=private.institutional_source_context(org_id,r.intake_session_id);
  select id into current_id from private.institutional_model_configurations where organization_id=org_id and capital_project_id=p_project_id and status='approved' order by revision desc limit 1;
  is_current:=coalesce(r.configuration_id=current_id and r.source_manifest_fingerprint=context->>'sourceManifestFingerprint',false);
@@ -23,6 +29,7 @@ begin
  from (select history.* from private.institutional_model_results history
  join private.institutional_model_configurations c on c.organization_id=history.organization_id and c.capital_project_id=history.capital_project_id and c.id=history.configuration_id and c.configuration_fingerprint=history.configuration_fingerprint and c.status='approved'
  where history.organization_id=org_id and history.capital_project_id=p_project_id and private.institutional_result_established_v1(history.organization_id,history.id)
+ and (not private.institutional_result_requires_native_v1(org_id,history.id) or exists(select 1 from private.institutional_native_bindings b where b.organization_id=org_id and b.result_id=history.id))
  and history.intake_session_id=r.intake_session_id and history.status='completed'
  and history.source_manifest_fingerprint=context->>'sourceManifestFingerprint'
  order by history.created_at desc,history.id desc limit 12) h;
