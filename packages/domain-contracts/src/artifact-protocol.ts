@@ -188,7 +188,8 @@ export const artifactManifestSchema = z.strictObject({
   if (manifest.legacy !== null && (manifest.method !== null || manifest.execution !== null || manifest.inputSnapshot !== null)) {
     issue(context, "legacy_with_fabricated_links", ["legacy"]);
   }
-  if (duplicates(manifest.sources.map((source) => source.sourceVersionId))) issue(context, "duplicate_source", ["sources"]);
+  if (duplicates(manifest.sources.map((source) => `${source.sourceVersionId}:${source.rightsVersionId ?? ""}`))) issue(context, "duplicate_source", ["sources"]);
+  if (manifest.sources.some(source => source.rightsVersionId === null && manifest.sources.filter(other => other.sourceVersionId === source.sourceVersionId).length > 1)) issue(context, "ambiguous_source_rights", ["sources"]);
   if (duplicates(manifest.claims.map((entry) => entry.blockKey))) issue(context, "duplicate_claims_block", ["claims"]);
   if (duplicates(manifest.traces)) issue(context, "duplicate_trace", ["traces"]);
 });
@@ -613,11 +614,16 @@ export type ManifestContext = {
   readonly sources?: readonly ManifestSource[];
 };
 
-/** One entry per source version; a rights version the producer resolved refines the contract's unpinned reference. */
+/** Resolved licenses refine an unpinned reference; distinct fixed licenses never replace each other. */
 function mergedSources(context: ManifestContext, own: readonly ManifestSource[] = []): ManifestSource[] {
-  const merged = new Map<string, ManifestSource>();
-  for (const source of [...own, ...(context.sources ?? [])]) merged.set(source.sourceVersionId, source);
-  return [...merged.values()];
+  const merged = new Map<string, Map<string | null, ManifestSource>>();
+  for (const source of [...own, ...(context.sources ?? [])]) {
+    const licenses = merged.get(source.sourceVersionId) ?? new Map<string | null, ManifestSource>();
+    licenses.set(source.rightsVersionId, source);
+    if (licenses.size > 1) licenses.delete(null);
+    merged.set(source.sourceVersionId, licenses);
+  }
+  return [...merged.values()].flatMap(licenses => [...licenses.values()]);
 }
 
 function unique(values: readonly string[]): string[] {

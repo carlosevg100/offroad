@@ -877,7 +877,7 @@ describe("institutional input capture commands",()=>{
   await queue.loadInstitutionalModelContext!(institutionalJob);
   await queue.recordInstitutionalModelResult!(institutionalJob,result);
   expect(rpc).toHaveBeenNthCalledWith(1,"worker_load_institutional_model_context_v3",{p_job_id:job.job_id,p_capability_token:job.capability_token});
-  expect(rpc).toHaveBeenNthCalledWith(2,"worker_record_institutional_model_result_v2",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_result:result});
+  expect(rpc).toHaveBeenNthCalledWith(2,"worker_record_institutional_model_result_v3",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_result:result});
  });
 });
 
@@ -930,3 +930,13 @@ describe("institutional contribution capture writer",()=>{
   expect(rpc).toHaveBeenCalledOnce();
  });
 });
+
+ it.each([
+  {state:"available",revisionId:"95000000-0000-4000-8000-000000000881",replayed:false},
+  {state:"ineligible",reason:"configuration_origin_unresolved"},
+ ])("preserves native projection outcome %j from the atomic result command",async(nativeProjection)=>{
+  const receipt={id:"10000000-0000-4000-8000-000000000001",status:"completed",replayed:false,nativeProjection};
+  const rpc=vi.fn().mockResolvedValue({data:receipt,error:null});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  expect(await queue.recordInstitutionalModelResult!({...job,kind:"agent_operation_brief",payload:{message_id:"90000000-0000-4000-8000-000000000881",locale:"pt-BR"}},{status:"completed",artifact:{},inputSnapshot:{id:"95000000-0000-4000-8000-000000000881",fingerprint:"c".repeat(64)}})).toEqual(receipt);
+ });

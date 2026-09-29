@@ -288,8 +288,8 @@ export async function processInstitutionalRecomputeJob(
     if (!queue.loadInstitutionalModelContext || !queue.recordInstitutionalModelResult) throw new Error("institutional_result_store_unavailable");
     await queue.writeStage(job, "institutional_model_recompute", "started", {resultId: job.payload.message_id, candidateId});
     const result = await processInstitutionalModelResult({job, queue: {loadInstitutionalModelContext: queue.loadInstitutionalModelContext, recordInstitutionalModelResult: queue.recordInstitutionalModelResult}});
-    await queue.writeStage(job, "institutional_model_recompute", "succeeded", {resultId: result.id, candidateId, state: result.status, modelCalls: 0});
-    await queue.complete(job, {mode: "institutional_model_recompute", resultId: result.id, candidateId, state: result.status, modelCalls: 0});
+    await queue.writeStage(job, "institutional_model_recompute", "succeeded", {resultId: result.id, candidateId, state: result.status, ...(result.nativeProjection ? {nativeProjection: result.nativeProjection} : {}), modelCalls: 0});
+    await queue.complete(job, {mode: "institutional_model_recompute", resultId: result.id, candidateId, state: result.status, ...(result.nativeProjection ? {nativeProjection: result.nativeProjection} : {}), modelCalls: 0});
     return {status: "succeeded"};
   } catch (error) {
     if (error instanceof InstitutionalCaptureRetryError) {
@@ -321,8 +321,8 @@ export async function processAgentOperationBriefJob(
        ?result.status==="completed"?"The approved financial statements and scenarios are ready. Open the model results to review the calculations and download the approved snapshot.":"The calculation needs a new review because its source or approval conditions are no longer satisfied. The approved configuration was preserved."
        :result.status==="completed"?"As demonstrações e os cenários aprovados estão prontos. Abra os resultados do modelo para revisar os cálculos e baixar a versão aprovada.":"O cálculo precisa de nova revisão porque as condições das fontes ou da aprovação não estão mais atendidas. A configuração aprovada foi preservada.";
       await queue.recordAgentResponse(job,assistantMessageId,{state:"idle",reply});
-      await queue.writeStage(job,"institutional_model_result","succeeded",{resultId:result.id,state:result.status,modelCalls:0});
-      await queue.complete(job,{mode:"institutional_model_refresh",assistantMessageId,resultId:result.id,state:result.status,modelCalls:0});
+      await queue.writeStage(job,"institutional_model_result","succeeded",{resultId:result.id,state:result.status,...(result.nativeProjection?{nativeProjection:result.nativeProjection}:{}),modelCalls:0});
+      await queue.complete(job,{mode:"institutional_model_refresh",assistantMessageId,resultId:result.id,state:result.status,...(result.nativeProjection?{nativeProjection:result.nativeProjection}:{}),modelCalls:0});
       return {status:"succeeded"};
     }
     if(context.message_metadata?.kind==="institutional_model_setup") {
