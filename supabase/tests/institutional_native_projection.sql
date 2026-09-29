@@ -39,6 +39,21 @@ do $$declare result jsonb:=current_setting('test.native_result')::jsonb;r public
  if not private.artifact_review_sources_allowed_v1(r.organization_id,r.id,'10000000-0000-4000-8000-000000000881') then raise exception 'native_review_authority_missing';end if;
 end $$;
 \ir support/institutional_closure_clone.sql
+do $test$ begin
+ if has_table_privilege('authenticated','private.institutional_native_bindings','SELECT')
+  or has_table_privilege('service_role','private.institutional_native_bindings','INSERT')
+  or has_function_privilege('anon','public.worker_record_institutional_model_result_v3(uuid,text,jsonb)','EXECUTE')
+  or has_function_privilege('authenticated','private.project_institutional_native_result_v1(uuid,text)','EXECUTE')
+ then raise exception 'native_unscoped_privilege';end if;
+ begin
+  perform public.worker_record_institutional_model_result_v3(current_setting('test.result_job')::uuid,repeat('wrong',16),jsonb_build_object('status','completed','artifact',current_setting('test.result_artifact')::jsonb,'inputSnapshot',current_setting('test.native_capture')::jsonb->'inputSnapshot'));
+  raise exception 'native_wrong_capability_accepted';
+ exception when insufficient_privilege then null;end;
+ begin
+  update private.institutional_native_bindings set closure_fingerprint=repeat('f',64);
+  raise exception 'native_binding_mutable';
+ exception when check_violation then if sqlerrm<>'review_history_immutable' then raise;end if;end;
+end $test$;
 -- Structural fixtures exercise lossless fixed-license pairs and inherited access.
 do $test$ declare ctx jsonb:=current_setting('test.native_capture')::jsonb-'inputSnapshot';job uuid;right_id uuid;outcome jsonb;r public.artifact_revisions;b private.institutional_native_bindings;derived jsonb;rr public.artifact_revisions;count_before bigint;begin
  select count(*) into count_before from private.institutional_native_bindings;

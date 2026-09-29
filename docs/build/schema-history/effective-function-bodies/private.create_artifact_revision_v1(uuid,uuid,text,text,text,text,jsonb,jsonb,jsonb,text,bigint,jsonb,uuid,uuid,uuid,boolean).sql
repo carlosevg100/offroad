@@ -98,8 +98,10 @@ begin
    or (lnk_kind='method_release' and (p_manifest#>>'{method,platformReleaseId}' is distinct from lnk->>'platformReleaseId' or p_manifest#>>'{method,houseReleaseId}' is distinct from lnk->>'houseReleaseId'))
   then raise exception 'artifact_link_not_in_manifest' using errcode='22023'; end if;
   if lnk_kind='source_version' then
-   select l->>'rightsVersionId' into rv from jsonb_array_elements(all_links) l where l->>'kind'='source_version' and l->>'sourceVersionId'=lnk->>'sourceVersionId' limit 1;
-   if jsonb_typeof(lnk->'rightsVersionId')='string' and lnk->>'rightsVersionId'<>rv::text then raise exception 'artifact_link_not_in_manifest' using errcode='22023'; end if;
+   if lnk->>'rightsVersionId' is null and (select count(distinct l->>'rightsVersionId') from jsonb_array_elements(all_links) l where l->>'kind'='source_version' and l->>'sourceVersionId'=lnk->>'sourceVersionId')<>1 then raise exception 'ambiguous_source_rights' using errcode='22023';end if;
+   select l->>'rightsVersionId' into rv from jsonb_array_elements(all_links) l where l->>'kind'='source_version' and l->>'sourceVersionId'=lnk->>'sourceVersionId'
+    and (lnk->>'rightsVersionId' is null or l->>'rightsVersionId'=lnk->>'rightsVersionId') limit 1;
+   if rv is null then raise exception 'artifact_link_not_in_manifest' using errcode='22023';end if;
    lnk:=lnk||jsonb_build_object('rightsVersionId',rv);
   end if;
   all_links:=all_links||jsonb_build_array(lnk);
