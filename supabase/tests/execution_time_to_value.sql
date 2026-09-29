@@ -1,4 +1,4 @@
--- Disposable synthetic proof: time to the first useful response and to the verified result, without content. The reader leaves one receipt per reader for the first read without the result bytes and one for the first read with them, and nothing after; another participant's read is recorded and never verifies; a partial marker is not a useful response; a free-text reason never reaches the view; a blocked gate receipt or stale inputs leave a result unverified; the view carries only ids, stamps, intervals, booleans, a bigint and codes, and nothing reaches anon, authenticated or service_role.
+-- Disposable synthetic proof: time to the first useful response and to the verified result, without content. The reader leaves one receipt per reader for the first read per bytes-returned and inputs-current state, and nothing after; another participant's read is recorded and never verifies; a partial marker is not a useful response; a free-text reason never reaches the view; a blocked gate receipt or stale inputs leave a result unverified; the view carries only ids, stamps, intervals, booleans, a bigint and codes, and nothing reaches anon, authenticated or service_role.
 begin;
 \ir support/contextual_adoption_setup.sql
 \ir support/execution_method_fixture.sql
@@ -100,7 +100,7 @@ reset role;
 create temporary table ttv_x1_receipts as select * from private.execution_read_receipts where execution_id='a417d000-0000-4000-9000-000000000001';
 do $$declare requester_bytes private.execution_read_receipts;other private.execution_read_receipts;v private.execution_time_to_value;begin
  if not coalesce((select (response->'result') ? 'canonicalResult' from ttv_reads where step=3),false) or (select response->'gates' from ttv_reads where step=3)='null'::jsonb then raise exception 'v2 read after the commit did not return the bytes and the gates';end if;
- select * into strict requester_bytes from private.execution_read_receipts where execution_id='a417d000-0000-4000-9000-000000000001' and subject_user_id='a11b0000-0000-4000-8000-000000000001' and bytes_returned;
+ select * into strict requester_bytes from private.execution_read_receipts where execution_id='a417d000-0000-4000-9000-000000000001' and subject_user_id='a11b0000-0000-4000-8000-000000000001' and bytes_returned and inputs_current;
  if not requester_bytes.inputs_current then raise exception 'bytes returned on stale inputs';end if;
  select * into strict other from private.execution_read_receipts where execution_id='a417d000-0000-4000-9000-000000000001' and subject_user_id='a11b0000-0000-4000-8000-000000000002';
  if other.bytes_returned is distinct from coalesce((select (response->'result') ? 'canonicalResult' from ttv_reads where step=2),false) or other.first_read_at>=requester_bytes.first_read_at
@@ -128,26 +128,26 @@ do $$begin
  raise notice 'PASS: later reads add no rows and keep the first read';
 end $$;
 
--- 5. Stale inputs: once the source rights no longer allow processing, the requester's first read of x4 is withheld and x1 is read again without bytes.
+-- 5. Historical bytes remain readable without processing rights, with inputsCurrent=false; this first read does not count as verified.
 select private.set_source_rights_v1('a11b0000-0000-4000-9000-000000000004',1,array['read','store'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
 set local role authenticated;
 select pg_temp.ttv_read(9,'x4');
 select pg_temp.ttv_read(10,'x1');
 reset role;
 
--- 6. Every receipt is the first read per reader, execution and bytes state, with the inputs state of that read, and nothing else.
+-- 6. Every receipt is the first read per reader, execution, bytes and inputs state, with the inputs state of that read, and nothing else.
 do $$declare diff integer;begin
- if (select response#>>'{result,withheld}' from ttv_reads where step=9)<>'inputs_not_current' then raise exception 'x4 read was not withheld';end if;
+ if (select response#>>'{result,canonicalResult}' from ttv_reads where step=9) is distinct from '{"calculation":"synthetic"}' or (select (response->>'inputsCurrent')::boolean from ttv_reads where step=9) then raise exception 'x4 historical read or freshness wrong';end if;
  with first_reads as (
-  select distinct on (r.label,r.reader,coalesce((r.response->'result') ? 'canonicalResult',false))
+  select distinct on (r.label,r.reader,coalesce((r.response->'result') ? 'canonicalResult',false),(r.response->>'inputsCurrent')::boolean)
    t.execution_id,r.reader,coalesce((r.response->'result') ? 'canonicalResult',false) bytes,(r.response->>'inputsCurrent')::boolean inputs_current
   from ttv_reads r join ttv_runs t on t.label=r.label
-  order by r.label,r.reader,coalesce((r.response->'result') ? 'canonicalResult',false),r.step),
+  order by r.label,r.reader,coalesce((r.response->'result') ? 'canonicalResult',false),(r.response->>'inputsCurrent')::boolean,r.step),
  receipts as (
   select x.execution_id,x.subject_user_id,x.bytes_returned,x.inputs_current from private.execution_read_receipts x join ttv_runs t on t.execution_id=x.execution_id)
  select count(*) into diff from ((select * from first_reads except select * from receipts) union all (select * from receipts except select * from first_reads)) d;
- if diff<>0 or (select count(*) from private.execution_read_receipts x join ttv_runs t on t.execution_id=x.execution_id)<>6 then raise exception 'receipts are not exactly the first reads';end if;
- raise notice 'PASS: bytes_returned is true exactly when the read carried canonicalResult, and only the first read per reader and bytes state is kept';
+ if diff<>0 or (select count(*) from private.execution_read_receipts x join ttv_runs t on t.execution_id=x.execution_id)<>7 then raise exception 'receipts are not exactly the first reads';end if;
+ raise notice 'PASS: bytes_returned is true exactly when the read carried canonicalResult, and only the first read per reader, bytes and inputs state is kept';
 end $$;
 
 -- 7. The view per execution: the intervals, the partial marker, the blocked gate and the stale read.
@@ -156,7 +156,7 @@ do $$declare v private.execution_time_to_value;e public.work_executions;run publ
  select * into strict e from public.work_executions where id=v.execution_id;
  select * into strict run from public.processing_runs where id=e.processing_run_id;
  select * into strict rr from private.execution_result_receipts where execution_id=v.execution_id;
- select first_read_at into strict verified from private.execution_read_receipts where execution_id=v.execution_id and subject_user_id='a11b0000-0000-4000-8000-000000000001' and bytes_returned;
+ select first_read_at into strict verified from private.execution_read_receipts where execution_id=v.execution_id and subject_user_id='a11b0000-0000-4000-8000-000000000001' and bytes_returned and inputs_current;
  if v.organization_id<>e.organization_id or v.work_id<>e.work_id or v.outcome<>'succeeded' or v.reason<>'calculated' or v.gates_blocked
  or v.requested_at<>e.created_at or v.claimed_at<>run.started_at or v.committed_at<>rr.created_at or v.first_useful_at<>rr.created_at or v.verified_at<>verified
  or v.time_in_queue<>run.started_at-e.created_at or v.time_to_first_useful<>rr.created_at-e.created_at or v.time_to_verified<>verified-e.created_at
@@ -176,9 +176,21 @@ do $$declare v private.execution_time_to_value;e public.work_executions;run publ
  raise notice 'PASS: a blocked gate receipt keeps a read result unverified, and a free-text reason shows as null';
  select * into strict v from private.execution_time_to_value where execution_id='a417d000-0000-4000-9000-000000000004';
  if v.outcome<>'succeeded' or v.first_useful_at is null or v.verified_at is not null
- or not exists(select 1 from private.execution_read_receipts where execution_id=v.execution_id and subject_user_id='a11b0000-0000-4000-8000-000000000001' and not bytes_returned and not inputs_current)
+ or not exists(select 1 from private.execution_read_receipts where execution_id=v.execution_id and subject_user_id='a11b0000-0000-4000-8000-000000000001' and bytes_returned and not inputs_current)
  then raise exception 'x4 stale read wrong: %',to_jsonb(v);end if;
  raise notice 'PASS: a useful response read only on stale inputs is not verified';
+end $$;
+
+-- Restore processing rights: the first historical read must not suppress a later current read.
+select private.set_source_rights_v1('a11b0000-0000-4000-9000-000000000004',2,array['read','process','store','derive'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
+set local role authenticated;
+select pg_temp.ttv_read(11,'x4');
+reset role;
+do $$declare historical timestamptz;fresh timestamptz;begin
+ select first_read_at into strict historical from private.execution_read_receipts where execution_id='a417d000-0000-4000-9000-000000000004' and bytes_returned and not inputs_current;
+ select first_read_at into strict fresh from private.execution_read_receipts where execution_id='a417d000-0000-4000-9000-000000000004' and bytes_returned and inputs_current;
+ if fresh<=historical or (select verified_at from private.execution_time_to_value where execution_id='a417d000-0000-4000-9000-000000000004') is distinct from fresh then raise exception 'restored current read was suppressed or historical read counted as verified';end if;
+ raise notice 'PASS: restored rights record a new current read without overwriting the historical read';
 end $$;
 
 -- 8. The view and the receipts carry ids, stamps, intervals, booleans, a bigint and codes only; each text column takes only values its source constrains.
@@ -237,18 +249,25 @@ end $$;
 reset role;
 do $$begin raise notice 'PASS: neither the receipts nor the view is reachable by anon, authenticated or service_role';end $$;
 
--- 10. A receipt is never updated, deleted or truncated, and bytes on stale inputs are refused.
+-- 10. A receipt is never updated, deleted or truncated. Historical readability does not assert current inputs.
 select pg_temp.expect_ttv_error($q$update private.execution_read_receipts set inputs_current=false$q$,'contribution_revision_immutable','a read receipt cannot be updated');
 select pg_temp.expect_ttv_error($q$delete from private.execution_read_receipts$q$,'contribution_revision_immutable','a read receipt cannot be deleted');
 select pg_temp.expect_ttv_error($q$truncate private.execution_read_receipts$q$,'platform_ledger_immutable','read receipts cannot be truncated');
-do $$declare c text;begin
- begin
-  insert into private.execution_read_receipts(organization_id,execution_id,subject_user_id,inputs_current,bytes_returned)
-  values('a11b0000-0000-4000-9000-000000000001','a417d000-0000-4000-9000-000000000002','a11b0000-0000-4000-8000-000000000002',false,true);
-  raise exception 'bytes on stale inputs accepted';
- exception when check_violation then get stacked diagnostics c=constraint_name;if c<>'execution_read_receipts_bytes_check' then raise;end if;end;
- raise notice 'PASS: a receipt cannot claim bytes returned on stale inputs';
+do $$begin
+ if not exists(select 1 from private.execution_read_receipts where execution_id='a417d000-0000-4000-9000-000000000004' and bytes_returned and not inputs_current) then raise exception 'historical read receipt missing';end if;
+ raise notice 'PASS: authorized historical bytes preserve the stale-input fact without updating earlier receipts';
 end $$;
+
+-- A synthetic insertion hook removes only processing/derivation after the initial gate.
+-- The final check must roll back the optimistic read and its receipt, even though read/store survive.
+create function pg_temp.withdraw_recalculation_during_receipt() returns trigger language plpgsql as $$
+begin
+ perform private.set_source_rights_v1('a11b0000-0000-4000-9000-000000000004',3,array['read','store'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
+ return new;
+end $$;
+create trigger zzz_ttv_withdraw_recalculation before insert on private.execution_read_receipts for each row execute function pg_temp.withdraw_recalculation_during_receipt();
+select pg_temp.expect_ttv_error($q$select public.read_work_execution_v1('a417d000-0000-4000-9000-000000000004')$q$,'execution_access_denied','loss of recalculation eligibility during receipt insertion refuses the optimistic response');
+drop trigger zzz_ttv_withdraw_recalculation on private.execution_read_receipts;
 
 -- 11. The readers keep their grants and security model, and the wrapper parity of rls_non_interference.sql still holds.
 do $$declare role_name text;sig text;begin

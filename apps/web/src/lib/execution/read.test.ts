@@ -67,6 +67,10 @@ describe("work execution read projection", () => {
     const view = projectWorkExecution({...base, gates: receipt(), result: {...committedResult(executionCanonicalText({status: "partial", reason: "budget_exhausted"})), outcome: "partial", reason: "budget_exhausted"}});
     expect(view.state).toBe("partial"); expect(view.result).toMatchObject({withheld: false, packet: null, marker: {reason: "budget_exhausted"}, mdTest: null, decisiveNumbers: null});
   });
+  it("reads authorized historical bytes while preserving the not-current input status", () => {
+    const view = projectWorkExecution({...base, inputsCurrent: false, result: committedResult(packetText())});
+    expect(view).toMatchObject({state: "succeeded", inputsCurrent: false, result: {withheld: false, source: "packet"}});
+  });
   it("withholds bytes the database withheld and says why", () => {
     const view = projectWorkExecution({...base, inputsCurrent: false, gates: receipt(), result: {withheld: "inputs_not_current", outcome: "succeeded", reason: "calculated", resultFingerprint: hex("d"), committedAt: "2026-09-24T12:05:00+00:00"}});
     expect(view.state).toBe("withheld"); expect(view.inputsCurrent).toBe(false);

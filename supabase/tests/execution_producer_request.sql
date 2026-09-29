@@ -92,13 +92,21 @@ do $$declare r jsonb;begin
  raise notice 'PASS: requester reads the committed bytes';
 end $$;
 reset role;
--- 5. A revoked participant loses the result and then the execution itself.
+-- 5. Derive withdrawal prevents recalculation, but preserves historical reading. Read withdrawal hides bytes; participant withdrawal denies the execution.
 select private.set_source_rights_v1('a11b0000-0000-4000-9000-000000000004',1,array['read','store'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
 set local role authenticated;
 do $$declare r jsonb;begin
  r:=public.read_work_execution_v1('a4173000-0000-4000-9000-000000000002');
- if r#>>'{result,withheld}'<>'inputs_not_current' or r#>'{result,canonicalResult}' is not null or (r->>'inputsCurrent')::boolean then raise exception 'stale inputs still deliver bytes: %',r;end if;
- raise notice 'PASS: result withheld once inputs are no longer current';
+ if r#>>'{result,canonicalResult}' is distinct from '{"calculation":"synthetic"}' or (r->>'inputsCurrent')::boolean then raise exception 'historical read or freshness wrong: %',r;end if;
+ raise notice 'PASS: historical bytes remain readable without recalculation rights and are marked not current';
+end $$;
+reset role;
+select private.set_source_rights_v1('a11b0000-0000-4000-9000-000000000004',2,array['store'],array['analysis','retrieval'],null,null,gen_random_uuid(),repeat('c',64));
+set local role authenticated;
+do $$declare r jsonb;begin
+ r:=public.read_work_execution_v1('a4173000-0000-4000-9000-000000000002');
+ if r#>>'{result,withheld}' is distinct from 'inputs_not_current' or r#>'{result,canonicalResult}' is not null then raise exception 'read revocation still delivers bytes: %',r;end if;
+ raise notice 'PASS: withdrawal of read hides historical bytes';
 end $$;
 reset role;
 select private.revoke_resource_access_v1('a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-8000-000000000001');

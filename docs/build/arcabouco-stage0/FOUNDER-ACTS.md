@@ -98,3 +98,7 @@ Depois da reprodução em staging e do relatório `BLOQUEIO-ORDEM-DE-PUBLICACAO.
 ## Correção de fontes da etapa 20, 29/09/2026
 
 Após a reprodução em staging de uma fonte de observação omitida no manifesto do resultado, o fundador respondeu "ok" ao reagrupamento proposto: primeiro o incremento corretivo de fechamento de fontes e autoridade de leitura, revisão, notas e derivados; depois a integração de revisão humana de execução e a retirada da liberação automática por recibo. As etapas 21–24 continuam fora desta autorização. O corretivo preserva os manifestos históricos e exige negativos de revogação, concorrência, CI, migrações conciliadas, merge e deployments antes de fechar.
+
+## Destino de publicação do 3J, 29/09/2026
+
+Após o bloqueio automático do push, o executor perguntou explicitamente: "Autoriza publicar o commit 35322337 (correção SQL, testes sintéticos e documentação do 3J) no repositório público https://github.com/carlosevg100/offroad, para executar a CI e concluir a entrega?" O fundador respondeu: "sim e segue". Autoriza a publicação desse incremento no remoto público verificado, sua validação e a conclusão da entrega. Não autoriza publicar credenciais ou dados de clientes.

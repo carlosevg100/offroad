@@ -10,6 +10,8 @@ Novas projeções registram todas as fontes. Revisões históricas mantêm o man
 
 O dossiê nulo de definição não é um escopo organizacional autorizado: o comando exige dossiê e conserva `dossier_reference`; a FK permite nulo após exclusão. Referência órfã é recusada. Hash nulo de fonte histórica é preservado como nulo; não representa prova de bytes. Fontes diretas continuam conferindo o hash declarado no contrato.
 
+O primeiro run da CI revelou um contrato antigo que confundia leitura com autorização de recalcular. A migração aditiva `20260929163005_execution_result_read_freshness` preserva `inputsCurrent` e separa a autorização para entregar bytes. O recibo imutável distingue os quatro estados de leitura/atualidade; a métrica existente só considera verificação com entradas atuais. Restauração de direitos registra nova leitura sem sobrescrever a histórica. A checagem final também recusa perda de atualidade durante a gravação do recibo.
+
 ## Implementação
 
 - Migração `execution_result_source_closure`: quatro helpers privados, sem grants de cliente, e substituição literal dos leitores, produtor e escritor comum.
