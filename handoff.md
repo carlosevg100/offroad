@@ -1,6 +1,6 @@
 ## Etapa 20 / 3G: fechamento de fontes, 28/09/2026
 
-3F fechado: PR 842/main `9b3e7a16cd0572c3b9366e0bac099e1005d01db6`, CI 36490680949 e Security 36490680986 PASS, web/worker 493 verificados. O 3G acrescenta helper privado para união de fontes e direitos fixados/correntes, ainda sem consumidor ou publicação. Contratos passaram em staging; CI, produção e deployments pendentes. Ver `docs/build/arcabouco/etapa-20-3g-fechamento-fontes.md`. Etapa 20 aberta; 21–24 não iniciadas.
+3F fechado: PR 842/main `9b3e7a16cd0572c3b9366e0bac099e1005d01db6`, CI 36490680949 e Security 36490680986 PASS, web/worker 493 verificados. O 3G acrescenta helper privado para união de fontes e direitos fixados/correntes, ainda sem consumidor ou publicação. Contratos passaram em staging e as cinco corridas reais passaram na CI preliminar 36503289858. Migrações aplicadas em produção `20260929003415`/`20260929003427` e staging `20260929001830`/`20260929002747`; catálogos e journals conferidos, definição idêntica e security advisors zero. Gate local completo PASS. CI final, merge e deployments ainda pendentes. Ver `docs/build/arcabouco/etapa-20-3g-fechamento-fontes.md`. Etapa 20 aberta; 21–24 não iniciadas.
 
 ## Etapa 20 / 3F: integridade da cadeia institucional, 28/09/2026
 

@@ -63237,7 +63237,25 @@
       ],
       "signature": "p_org uuid, p_work uuid, p_configuration uuid",
       "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_result_source_closure_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "name": "institutional_result_source_closure_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text",
+      "security_definer": true
     }
   ],
-  "captured_at": "2026-09-28T20:38:49.158478+00:00"
+  "captured_at": "2026-09-29T00:35:09.846926+00:00"
 }

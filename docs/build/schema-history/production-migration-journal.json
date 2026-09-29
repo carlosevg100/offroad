@@ -1647,8 +1647,16 @@
   {
    "version": "20260928214516",
    "name": "institutional_configuration_ancestry"
+  },
+  {
+   "version": "20260929003415",
+   "name": "institutional_source_closure"
+  },
+  {
+   "version": "20260929003427",
+   "name": "institutional_closure_execution_scope"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-28 18:08:51.728781+00"
+ "captured_at": "2026-09-29T00:34:54.097783+00:00"
 }
