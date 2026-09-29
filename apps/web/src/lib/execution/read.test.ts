@@ -187,7 +187,7 @@ function registered(text: string, overrides: {pins?: Partial<{resultFingerprint:
   const packet = JSON.parse(text) as CapitalProcedurePacketLike;
   const blocks = readCapitalProcedurePacketBlocks(capitalProcedurePacketBlocks(packet));
   if (!blocks) throw new Error("blocks expected");
-  return {state: "ready", revision: {revisionNo: 1, recordedAt: "2026-09-24T12:05:00.5+00:00", freshness: overrides.freshness ?? "current", blocks,
+  return {state: "ready", revision: {revisionId: "30000000-0000-4000-8000-000000000001", revisionNo: 1, recordedAt: "2026-09-24T12:05:00.5+00:00", freshness: overrides.freshness ?? "current", blocks,
     pins: {resultFingerprint: hex("d"), packetFingerprint: packet.fingerprint, gatesFingerprint: receipt().fingerprint, ...overrides.pins}}};
 }
 
@@ -233,12 +233,18 @@ describe("a result read from its registered revision", () => {
     expect(restricted.state).toBe("withheld");
     expect(JSON.stringify(restricted)).not.toContain("canonicalResult");
   });
-  it("shows what it showed before when the execution has no revision or it could not be read", () => {
+  it("shows historical evidence only when absence of a revision is established", () => {
     const text = packetText();
     const before = projectWorkExecution({...base, gates: receipt(), result: committedResult(text)});
-    for (const state of ["absent", "unavailable"] as const) {
+    for (const state of ["absent"] as const) {
       expect(projectWorkExecution({...base, gates: receipt(), result: committedResult(text)}, {state})).toEqual(before);
     }
+  });
+  it.each(["unavailable", "mismatch"] as const)("never falls back to raw bytes for %s revision", state => {
+    const view=projectWorkExecution({...base,gates:receipt(),result:committedResult(packetText())},{state});
+    expect(view.result?.withheld).toBe(true);
+    expect(JSON.stringify(view)).not.toContain("canonicalResult");
+    expect(view.result).not.toHaveProperty("packet");
   });
   it("carries the freshness of the revision", () => {
     const text = packetText();

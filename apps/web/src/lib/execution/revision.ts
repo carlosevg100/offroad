@@ -10,13 +10,14 @@ import type {Database} from "@/types/database";
  * The registered revision of an execution's result (stage 19, increment 4): one artifact of kind
  * `execution_result` per execution, subject `execution:<id>`, written by the commit. The screen reads
  * it only through the authorized reader and only after the execution's own reader returned the
- * result, so the rule of current inputs and the read receipt stay where they were.
+ * result, so source authority and the read receipt stay with that reader.
  */
 export const executionResultSubject = (executionId: string) => `execution:${executionId}`;
 
 /** What the result pins, so the screen can evaluate the MD test over exactly the packet and gate receipt of the revision. */
 export type ExecutionRevisionPins = {readonly resultFingerprint: string; readonly packetFingerprint: string | null; readonly gatesFingerprint: string | null};
 export type ExecutionRevision = {
+  readonly revisionId: string;
   readonly revisionNo: number;
   readonly recordedAt: string;
   readonly freshness: Freshness;
@@ -27,7 +28,7 @@ export type ExecutionRevision = {
 /**
  * - `absent`: no revision (an execution committed before the producer, or a result the producer could
  *   not map); the screen shows what it showed before.
- * - `unavailable`: the read failed or its answer did not parse; the screen shows what it showed before.
+ * - `unavailable`: the read failed or its answer did not parse; the screen withholds the result instead of falling back to raw bytes.
  * - `withheld`: the database withheld the revision from this reader; nothing of the result is shown.
  * - `ready`: the blocks of the revision, with its pins.
  * - `mismatch`: a requested revision that is not this execution's; the page answers as for a missing one.
@@ -50,6 +51,7 @@ export function executionRevisionFromRead(read: ArtifactRead, executionId: strin
   const blocks = readCapitalProcedurePacketBlocks(serving.blocks);
   if (!blocks) return {state: "unavailable"};
   return {state: "ready", revision: {
+    revisionId: serving.revision.id,
     revisionNo: serving.revision.revisionNo,
     recordedAt: serving.revision.createdAt,
     freshness: read.freshness,

@@ -31,7 +31,7 @@ describe("the registered revision of an execution result", () => {
   it("gives the blocks and the pins of a revision the reader may serve", () => {
     const state = executionRevisionFromRead(parsed(recorded({freshness: "stale", revisionNo: 1})), executionId);
     expect(state).toEqual({state: "ready", revision: {
-      revisionNo: 1, recordedAt: "2026-09-26T18:39:57.123456+00:00", freshness: "stale",
+      revisionId, revisionNo: 1, recordedAt: "2026-09-26T18:39:57.123456+00:00", freshness: "stale",
       pins: {resultFingerprint: "d".repeat(64), packetFingerprint: packet.fingerprint, gatesFingerprint: "f".repeat(64)},
       blocks: readCapitalProcedurePacketBlocks(blocks),
     }});

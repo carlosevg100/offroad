@@ -2501,6 +2501,12 @@
           "line": 307,
           "anchor": "create or replace function private.artifact_revision_release_v1(r public.artifact_revisions)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929182306_execution_result_human_review.sql",
+          "line": 2,
+          "anchor": "create or replace function private.artifact_revision_release_v1(r public.artifact_revisions)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -197154,6 +197160,20 @@
       "decision": "preservar",
       "stage": "20 / 3J",
       "reason": "Fechar fontes indiretas e preservar histórico sob revogação, sem alterar o conteúdo fixado."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260929182306_execution_result_human_review.sql",
+      "decision": "preservar",
+      "stage": "20 / 3K",
+      "reason": "Separar conclusão de execução de aprovação humana sob alçada e autoridade das fontes."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/execution-review-actions.ts",
+      "decision": "preservar",
+      "stage": "20 / 3K",
+      "reason": "Revisão humana da execução exata, sob organização da sessão, alçada e fontes revalidadas na RPC."
     }
   ],
   "staging_archive": [
