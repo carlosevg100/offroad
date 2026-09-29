@@ -44,7 +44,7 @@ revoke all on function private.institutional_native_ancestry_v1(uuid,uuid) from 
 
 create function private.institutional_native_read_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid) returns boolean
 language plpgsql volatile security definer set search_path='' as $$
-declare b private.institutional_native_bindings;pin jsonb;r private.source_rights_versions;deadline timestamptz;current_until timestamptz;policy_until timestamptz;started_at timestamptz:=clock_timestamp();pins jsonb:='[]';
+declare b private.institutional_native_bindings;pin jsonb;r private.source_rights_versions;deadline timestamptz;current_until timestamptz;policy_until timestamptz;started_at timestamptz:=clock_timestamp();pins jsonb:='[]'::jsonb;
 begin
  if not exists(select 1 from private.institutional_native_ancestry_v1(p_org,p_revision)) then return true;end if;
  -- Match authority writers: fresh policy reads occur after their transaction ends.
@@ -184,7 +184,7 @@ revoke all on function private.worker_record_institutional_model_result_v3(uuid,
 grant execute on function private.worker_record_institutional_model_result_v3(uuid,text,jsonb),public.worker_record_institutional_model_result_v3(uuid,text,jsonb) to authenticated;
 
 -- Full installed definitions with the reviewed contract extensions.
-CREATE OR REPLACE FUNCTION private.validate_artifact_manifest_v1(p_manifest jsonb)
+create or replace function private.validate_artifact_manifest_v1(p_manifest jsonb)
  RETURNS void
  LANGUAGE plpgsql
  IMMUTABLE
@@ -281,7 +281,7 @@ begin
  if (select count(*)<>count(distinct t#>>'{}') from jsonb_array_elements(m->'traces') t) then raise exception 'duplicate_trace' using errcode='22023'; end if;
 end $function$;
 
-CREATE OR REPLACE FUNCTION private.create_artifact_revision_v1(p_org uuid, p_work uuid, p_kind text, p_subject text, p_audience text, p_origin text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint, p_legacy_ref jsonb, p_actor uuid, p_rights_subject uuid DEFAULT NULL::uuid, p_revision_id uuid DEFAULT NULL::uuid, p_lock_work boolean DEFAULT true)
+create or replace function private.create_artifact_revision_v1(p_org uuid, p_work uuid, p_kind text, p_subject text, p_audience text, p_origin text, p_manifest jsonb, p_blocks jsonb, p_links jsonb, p_content_sha256 text, p_byte_length bigint, p_legacy_ref jsonb, p_actor uuid, p_rights_subject uuid DEFAULT NULL::uuid, p_revision_id uuid DEFAULT NULL::uuid, p_lock_work boolean DEFAULT true)
  RETURNS jsonb
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -510,7 +510,7 @@ begin
  return jsonb_build_object('artifact_id',a.id,'revision_id',rev_id,'revision_no',next_no,'manifest_fingerprint',fingerprint,'replayed',false);
 end $function$;
 
-CREATE OR REPLACE FUNCTION private.artifact_revision_release_v1(r public.artifact_revisions)
+create or replace function private.artifact_revision_release_v1(r public.artifact_revisions)
  RETURNS text
  LANGUAGE plpgsql
  STABLE SECURITY DEFINER
@@ -534,7 +534,7 @@ begin
  return case when approved then 'released' when r.audience='external' then 'blocked' else 'internal' end;
 end $function$;
 
-CREATE OR REPLACE FUNCTION private.read_artifact_revision_v1(p_revision uuid)
+create or replace function private.read_artifact_revision_v1(p_revision uuid)
  RETURNS jsonb
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -586,7 +586,7 @@ begin
   'restriction',restriction);
 end $function$;
 
-CREATE OR REPLACE FUNCTION private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)
+create or replace function private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)
  RETURNS boolean
  LANGUAGE sql
  SECURITY DEFINER
@@ -611,7 +611,7 @@ AS $function$
    or (c.depth=64 and l.link_kind='artifact_revision' and not exists(select 1 from ancestry visited where visited.revision_id=l.derived_from_revision_id)));
 $function$;
 
-CREATE OR REPLACE FUNCTION private.review_basis_receipt_authority_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid)
+create or replace function private.review_basis_receipt_authority_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid)
  RETURNS text
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -633,7 +633,7 @@ begin
  return 'allowed';
 end $function$;
 
-CREATE OR REPLACE FUNCTION public.worker_runtime_schema_contract_v1()
+create or replace function public.worker_runtime_schema_contract_v1()
  RETURNS jsonb
  LANGUAGE sql
  STABLE

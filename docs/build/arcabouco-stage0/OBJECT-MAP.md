@@ -3094,3 +3094,22 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 
 1 objeto novo e 0 atualizados na superfície de acesso. União completa de fontes do cálculo e ancestralidade, direitos fixados e correntes sob autoridade da execução; sem concessão ou liberação. Produção: `20260929003415` e `20260929003427`; staging: `20260929001830` e `20260929002747`.
 - `function:private.institutional_result_source_closure_v1(p_job uuid, p_capability text)`
+
+## Etapa 20 / 3H — projeção institucional nativa
+
+15 objetos novos e 0 atualizados. Projeção institucional nativa atômica, prova imutável dos pares fonte/direito e leitura serializada com revogação; sem aprovação histórica presumida.
+- `function:private.institutional_native_ancestry_v1(p_org uuid, p_revision uuid)`
+- `function:private.institutional_native_blocks_v1(p_artifact jsonb)`
+- `function:private.institutional_native_read_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)`
+- `function:private.project_institutional_native_result_v1(p_job uuid, p_capability text)`
+- `function:private.worker_record_institutional_model_result_v3(p_job_id uuid, p_capability_token text, p_result jsonb)`
+- `function:public.worker_record_institutional_model_result_v3(p_job_id uuid, p_capability_token text, p_result jsonb)`
+- `policy:private.institutional_native_bindings.institutional_native_deny_delete`
+- `policy:private.institutional_native_bindings.institutional_native_deny_insert`
+- `policy:private.institutional_native_bindings.institutional_native_deny_select`
+- `policy:private.institutional_native_bindings.institutional_native_deny_update`
+- `r:private.institutional_native_bindings`
+- `trigger:private.institutional_native_bindings.institutional_native_audit`
+- `trigger:private.institutional_native_bindings.institutional_native_immutable`
+- `trigger:private.institutional_native_bindings.institutional_native_no_truncate`
+- `trigger:private.institutional_native_bindings.institutional_native_updated`

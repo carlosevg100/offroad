@@ -63255,7 +63255,271 @@
       ],
       "signature": "p_job uuid, p_capability text",
       "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_native_ancestry_v1(p_org uuid, p_revision uuid)",
+      "kind": "function",
+      "name": "institutional_native_ancestry_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_native_blocks_v1(p_artifact jsonb)",
+      "kind": "function",
+      "name": "institutional_native_blocks_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_artifact jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:private.institutional_native_read_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "institutional_native_read_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.project_institutional_native_result_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "name": "project_institutional_native_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_institutional_model_result_v3(p_job_id uuid, p_capability_token text, p_result jsonb)",
+      "kind": "function",
+      "name": "worker_record_institutional_model_result_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_result jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.worker_record_institutional_model_result_v3(p_job_id uuid, p_capability_token text, p_result jsonb)",
+      "kind": "function",
+      "name": "worker_record_institutional_model_result_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_result jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.institutional_native_bindings.institutional_native_deny_delete",
+      "kind": "policy",
+      "name": "institutional_native_deny_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_native_bindings",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_native_bindings.institutional_native_deny_insert",
+      "kind": "policy",
+      "name": "institutional_native_deny_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_native_bindings",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_native_bindings.institutional_native_deny_select",
+      "kind": "policy",
+      "name": "institutional_native_deny_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_native_bindings",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_native_bindings.institutional_native_deny_update",
+      "kind": "policy",
+      "name": "institutional_native_deny_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_native_bindings",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.institutional_native_bindings",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_native_bindings",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.institutional_native_bindings.institutional_native_audit",
+      "kind": "trigger",
+      "name": "institutional_native_audit",
+      "table": "institutional_native_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER institutional_native_audit AFTER INSERT ON private.institutional_native_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.institutional_native_bindings.institutional_native_immutable",
+      "kind": "trigger",
+      "name": "institutional_native_immutable",
+      "table": "institutional_native_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_native_immutable BEFORE DELETE OR UPDATE ON private.institutional_native_bindings FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_native_bindings.institutional_native_no_truncate",
+      "kind": "trigger",
+      "name": "institutional_native_no_truncate",
+      "table": "institutional_native_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_native_no_truncate BEFORE TRUNCATE ON private.institutional_native_bindings FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_native_bindings.institutional_native_updated",
+      "kind": "trigger",
+      "name": "institutional_native_updated",
+      "table": "institutional_native_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_native_updated BEFORE UPDATE ON private.institutional_native_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     }
   ],
-  "captured_at": "2026-09-29T00:35:09.846926+00:00"
+  "captured_at": "2026-09-29T02:14:41.157288+00:00"
 }
