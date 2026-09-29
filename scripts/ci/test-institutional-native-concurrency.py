@@ -173,3 +173,27 @@ c = case(8)
 run('begin;'+auth(c,write(c))+'commit;')
 compete(c, f"update auth.users set banned_until=clock_timestamp()+interval '1 hour' where id='{c['actor']}';", read_native(c, False), immediate=True)
 print('native_read_account_contention: PASS (NOWAIT, read denied)')
+
+def derivative_case(n):
+    c=case(n)
+    run('begin;'+auth(c,write(c))+'commit;')
+    c['source']=c['source'][:-3]+'884'
+    fixture=expand(ROOT/'supabase/tests/support/institutional_native_derivative.sql')
+    c['derived']=run('begin;'+fixture+'\n'+auth(c,f"select pg_temp.native_derivative('{c['result']}','{c['source']}','{c['actor']}');")+'commit;').splitlines()[-1]
+    return c
+
+def read_derived(c, allowed, review=False):
+    if review:
+        check=f"private.artifact_review_sources_allowed_v1((select organization_id from public.artifact_revisions where id='{c['derived']}'),'{c['derived']}','{c['actor']}')"
+    else:
+        check=f"(private.read_artifact_revision_v1('{c['derived']}')->'restriction'='null'::jsonb)"
+    return f"do $$begin if {check} is distinct from {'true' if allowed else 'false'} then raise exception 'native_derived_read_mismatch';end if;end $$;"
+
+for n, review in [(9,False),(11,True)]:
+    c=derivative_case(n)
+    compete(c,deny_read(c),read_derived(c,False,review))
+    print(f'native_derived_{"review" if review else "read"}_revocation_first: PASS (exclusive source, wait then deny)')
+    c=derivative_case(n+1)
+    compete(c,read_derived(c,True,review),deny_read(c))
+    run('begin;'+auth(c,read_derived(c,False,review))+'rollback;')
+    print(f'native_derived_{"review" if review else "read"}_before_revocation: PASS (exclusive source, writer waits)')

@@ -38,6 +38,43 @@ do $$declare result jsonb:=current_setting('test.native_result')::jsonb;r public
  if again->>'revisionId'<>r.id::text or again->>'replayed'<>'true' then raise exception 'native_replay_changed';end if;
  if not private.artifact_review_sources_allowed_v1(r.organization_id,r.id,'10000000-0000-4000-8000-000000000881') then raise exception 'native_review_authority_missing';end if;
 end $$;
+\ir support/institutional_native_derivative.sql
+do $test$ declare body text;needle text;rev uuid;org uuid:='20000000-0000-4000-8000-000000000881';actor uuid:='10000000-0000-4000-8000-000000000881';begin
+ begin
+ rev:=pg_temp.native_derivative((current_setting('test.native_result')::jsonb->>'id')::uuid,'50000000-0000-4000-8000-000000000884',actor);
+ if private.read_artifact_revision_v1(rev)->'restriction'<>'null'::jsonb or not private.artifact_review_sources_allowed_v1(org,rev,actor) then raise exception 'native_derived_source_initial_denial';end if;
+ -- Force the precise interleaving: the exclusive source is revoked at helper entry.
+ -- Old readers computed their link restrictions before this point and leaked the manifest.
+ body:=pg_get_functiondef('private.institutional_native_read_allowed_v1(uuid,uuid,uuid)'::regprocedure);
+ needle:=E'begin\n if not exists(select 1 from private.institutional_native_ancestry_v1(p_org,p_revision))';
+ if position(needle in body)=0 then raise exception 'native_interleaving_hook_missing';end if;
+ body:=replace(body,needle,E'begin\n if current_setting(''test.derivative_hook'',true)=''armed'' then\n perform set_config(''test.derivative_hook'',''fired'',true);\n perform public.set_source_rights_v1(''50000000-0000-4000-8000-000000000884'',1,array[''store''],array[''analysis''],null,null,''50000000-0000-4000-8000-000000000884'',repeat(''d'',64));\n end if;\n if not exists(select 1 from private.institutional_native_ancestry_v1(p_org,p_revision))');
+ execute body;
+ perform set_config('test.derivative_hook','armed',true);
+ if private.read_artifact_revision_v1(rev)#>>'{restriction,kind}' is distinct from 'source_rights' or private.artifact_review_sources_allowed_v1(org,rev,actor) then raise exception 'native_derived_interleaving_leak';end if;
+ raise exception 'rollback_derivative_case' using errcode='ZX001';
+ exception when sqlstate 'ZX001' then null;end;
+end $test$;
+-- Expiry after the first successful gate must be caught immediately before returning.
+do $test$ declare mode text;rev uuid;body text;org uuid:='20000000-0000-4000-8000-000000000881';actor uuid:='10000000-0000-4000-8000-000000000881';begin
+ foreach mode in array array['read','review'] loop
+  begin
+   rev:=pg_temp.native_derivative((current_setting('test.native_result')::jsonb->>'id')::uuid,'50000000-0000-4000-8000-000000000885',actor,clock_timestamp()+interval '2 seconds');
+   perform public.set_source_rights_v1('50000000-0000-4000-8000-000000000885',2,array['read','process','store','derive','export'],array['analysis'],null,null,'50000000-0000-4000-8000-000000000885',repeat('c',64));
+   body:=pg_get_functiondef('private.institutional_native_read_allowed_v1(uuid,uuid,uuid)'::regprocedure);
+   if position(E' return true;\nexception' in body)=0 then raise exception 'native_temporal_hook_missing';end if;
+   body:=replace(body,E' return true;\nexception',E' if current_setting(''test.native_temporal_hook'',true)=''armed'' then perform set_config(''test.native_temporal_hook'',''fired'',true);perform pg_sleep(2.1);end if;\n return true;\nexception');
+   execute body;perform set_config('test.native_temporal_hook','armed',true);
+   if mode='read' then
+    if private.read_artifact_revision_v1(rev)#>>'{restriction,kind}' is distinct from 'source_rights' then raise exception 'native_expiry_after_read_gate';end if;
+   else
+    if private.artifact_review_sources_allowed_v1(org,rev,actor) then raise exception 'native_expiry_after_review_gate';end if;
+   end if;
+   if current_setting('test.native_temporal_hook')<>'fired' then raise exception 'native_temporal_test_did_not_reach_gate';end if;
+   raise exception 'rollback_temporal_case' using errcode='ZX001';
+  exception when sqlstate 'ZX001' then null;end;
+ end loop;
+end $test$;
 \ir support/institutional_closure_clone.sql
 do $test$ begin
  if has_table_privilege('authenticated','private.institutional_native_bindings','SELECT')
