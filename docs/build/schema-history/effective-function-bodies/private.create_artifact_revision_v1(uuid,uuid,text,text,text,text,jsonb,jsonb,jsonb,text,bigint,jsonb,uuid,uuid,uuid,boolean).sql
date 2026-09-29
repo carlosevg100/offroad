@@ -115,11 +115,13 @@ begin
     or (rv is not null and not exists(select 1 from private.source_rights_versions r where r.organization_id=p_org and r.source_version_id=sv and r.id=rv)) then
     raise exception 'artifact_link_target_not_found' using errcode='P0002'; end if;
    -- A projection of a legacy store carries no subject; rights are then evaluated at read time only.
-   if jsonb_typeof(p_manifest->'legacy')<>'object' and (p_rights_subject is null or not private.source_use_allowed_v1(p_org,sv,p_rights_subject,'derive','analysis')) then
+   if jsonb_typeof(p_manifest->'legacy')<>'object' and (p_rights_subject is null or not private.source_use_allowed_v1(p_org,sv,p_rights_subject,'read','analysis')) then
     raise exception 'artifact_source_use_refused' using errcode='42501'; end if;
   elsif lnk_kind='execution' then
    if not exists(select 1 from public.work_executions e where e.organization_id=p_org and e.id=(lnk->>'executionId')::uuid) then raise exception 'artifact_link_target_not_found' using errcode='P0002'; end if;
    if not exists(select 1 from public.work_executions e where e.organization_id=p_org and e.id=(lnk->>'executionId')::uuid and e.work_id=p_work) then raise exception 'artifact_link_work_mismatch' using errcode='22023'; end if;
+   if jsonb_typeof(p_manifest->'legacy') is distinct from 'object' and not private.execution_closure_read_allowed_v1(p_org,private.execution_result_source_closure_v1(p_org,(lnk->>'executionId')::uuid),p_rights_subject,'read')
+    then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
   elsif lnk_kind='institutional_result' then
    if not exists(select 1 from private.institutional_model_results m where m.organization_id=p_org and m.id=(lnk->>'resultId')::uuid) then raise exception 'artifact_link_target_not_found' using errcode='P0002'; end if;
    if not exists(select 1 from private.institutional_model_results m where m.organization_id=p_org and m.id=(lnk->>'resultId')::uuid and m.capital_project_id=p_work) then raise exception 'artifact_link_work_mismatch' using errcode='22023'; end if;
@@ -132,6 +134,8 @@ begin
    then raise exception 'artifact_link_target_not_found' using errcode='P0002'; end if;
   elsif lnk_kind='artifact_revision' then
    if not exists(select 1 from public.artifact_revisions r where r.organization_id=p_org and r.id=(lnk->>'derivedFromRevisionId')::uuid) then raise exception 'artifact_link_target_not_found' using errcode='P0002'; end if;
+   if jsonb_typeof(p_manifest->'legacy') is distinct from 'object' and not private.execution_artifact_read_allowed_v1(p_org,(lnk->>'derivedFromRevisionId')::uuid,p_rights_subject,'read')
+    then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
   end if;
  end loop;
  -- Substance, as revisionSubstance of the contract: material with a block claim, a source, an
@@ -193,8 +197,24 @@ begin
    union all
    (select edge from stored except select edge from requested)
   ) then raise exception 'artifact_revision_replay_mismatch' using errcode='23505'; end if;
+  for lnk in select value from jsonb_array_elements(all_links) where value->>'kind'='execution' loop
+   if jsonb_typeof(p_manifest->'legacy') is distinct from 'object' and not private.execution_closure_read_allowed_v1(p_org,private.execution_result_source_closure_v1(p_org,(lnk->>'executionId')::uuid),p_rights_subject,'read')
+    then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
+  end loop;
+  for lnk in select value from jsonb_array_elements(all_links) where value->>'kind'='artifact_revision' loop
+   if jsonb_typeof(p_manifest->'legacy') is distinct from 'object' and not private.execution_artifact_read_allowed_v1(p_org,(lnk->>'derivedFromRevisionId')::uuid,p_rights_subject,'read')
+    then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
+  end loop;
   return jsonb_build_object('artifact_id',a.id,'revision_id',existing.id,'revision_no',existing.revision_no,'manifest_fingerprint',existing.manifest_fingerprint,'replayed',true);
  end if;
+ -- Only a new revision is a new derivation. Identical replay above retains current read/store authority.
+ for lnk in select value from jsonb_array_elements(all_links) loop
+  if jsonb_typeof(p_manifest->'legacy') is distinct from 'object' then
+   if lnk->>'kind'='source_version' and not private.source_use_allowed_v1(p_org,(lnk->>'sourceVersionId')::uuid,p_rights_subject,'derive','analysis') then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
+   if lnk->>'kind'='execution' and not private.execution_closure_read_allowed_v1(p_org,private.execution_result_source_closure_v1(p_org,(lnk->>'executionId')::uuid),p_rights_subject,'derive') then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
+   if lnk->>'kind'='artifact_revision' and not private.execution_artifact_read_allowed_v1(p_org,(lnk->>'derivedFromRevisionId')::uuid,p_rights_subject,'derive') then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
+  end if;
+ end loop;
  select * into head from public.artifact_revisions r where r.organization_id=p_org and r.artifact_id=a.id order by r.revision_no desc limit 1;
  next_no:=coalesce(head.revision_no,0)+1;
  rev_id:=coalesce(p_revision_id,gen_random_uuid());
@@ -224,5 +244,13 @@ begin
   on conflict on constraint artifact_dependency_links_target_key do nothing;
  end loop;
  update public.artifacts set head_revision_id=rev_id where organization_id=p_org and id=a.id;
+  for lnk in select value from jsonb_array_elements(all_links) where value->>'kind'='execution' loop
+   if jsonb_typeof(p_manifest->'legacy') is distinct from 'object' and not private.execution_closure_read_allowed_v1(p_org,private.execution_result_source_closure_v1(p_org,(lnk->>'executionId')::uuid),p_rights_subject,'derive')
+    then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
+  end loop;
+  for lnk in select value from jsonb_array_elements(all_links) where value->>'kind'='artifact_revision' loop
+   if jsonb_typeof(p_manifest->'legacy') is distinct from 'object' and not private.execution_artifact_read_allowed_v1(p_org,(lnk->>'derivedFromRevisionId')::uuid,p_rights_subject,'derive')
+    then raise exception 'artifact_source_use_refused' using errcode='42501';end if;
+  end loop;
  return jsonb_build_object('artifact_id',a.id,'revision_id',rev_id,'revision_no',next_no,'manifest_fingerprint',fingerprint,'replayed',false);
 end $function$

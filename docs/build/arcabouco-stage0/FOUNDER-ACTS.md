@@ -94,3 +94,7 @@ Depois do fechamento da onda corretiva (PRs 828, 831 e 832, migrações nos dois
 ## Reagrupamento da etapa 20, 28/09/2026
 
 Depois da reprodução em staging e do relatório `BLOQUEIO-ORDEM-DE-PUBLICACAO.md` de 27/09, o executor propôs publicar primeiro a fundação aditiva e ativar a nova regra de liberação junto dos adaptadores, comprovantes de fontes e declaração explícita na interface. O fundador respondeu: "segue". Autoriza esse reagrupamento dentro da onda 20, preservando os critérios de pronto e o OK separado da etapa 21. Nenhuma declaração ou origem histórica é presumida; não se amplia a política de dados.
+
+## Correção de fontes da etapa 20, 29/09/2026
+
+Após a reprodução em staging de uma fonte de observação omitida no manifesto do resultado, o fundador respondeu "ok" ao reagrupamento proposto: primeiro o incremento corretivo de fechamento de fontes e autoridade de leitura, revisão, notas e derivados; depois a integração de revisão humana de execução e a retirada da liberação automática por recibo. As etapas 21–24 continuam fora desta autorização. O corretivo preserva os manifestos históricos e exige negativos de revogação, concorrência, CI, migrações conciliadas, merge e deployments antes de fechar.
