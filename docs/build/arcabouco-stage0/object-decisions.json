@@ -27454,6 +27454,12 @@
           "line": 537,
           "anchor": "create or replace function private.read_artifact_revision_v1(p_revision uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929024501_institutional_native_read_lock_order.sql",
+          "line": 4,
+          "anchor": "create or replace function private.read_artifact_revision_v1(p_revision uuid)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -179453,6 +179459,12 @@
           "line": 589,
           "anchor": "create or replace function private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929024501_institutional_native_read_lock_order.sql",
+          "line": 61,
+          "anchor": "create or replace function private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -188487,6 +188499,12 @@
           "line": 45,
           "anchor": "create function private.institutional_native_read_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid) returns boolean",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929024501_institutional_native_read_lock_order.sql",
+          "line": 99,
+          "anchor": "create or replace function private.institutional_native_read_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid) returns boolean",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -196060,6 +196078,13 @@
       "decision": "preservar",
       "stage": "20 / 3H",
       "reason": "Grava revisão nativa e comprovante ancestral com resultado, preserva todas as licenças e impede liberação implícita."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260929024501_institutional_native_read_lock_order.sql",
+      "decision": "preservar",
+      "stage": "20 / 3H",
+      "reason": "Correção aditiva aplicada em staging e produção após contrato SQL e concorrência na CI; sem reaplicar a migração inicial."
     }
   ],
   "staging_archive": [

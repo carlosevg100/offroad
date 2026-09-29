@@ -3113,3 +3113,7 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 - `trigger:private.institutional_native_bindings.institutional_native_immutable`
 - `trigger:private.institutional_native_bindings.institutional_native_no_truncate`
 - `trigger:private.institutional_native_bindings.institutional_native_updated`
+
+## Etapa 20 / 3H — barreira de leitura e revisão institucional
+
+0 objetos novos e 0 atualizados. Leitura e revisão revalidam autoridade e todas as licenças fixadas sob a barreira de política, inclusive fontes exclusivas dos derivados.
