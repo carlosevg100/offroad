@@ -2,10 +2,11 @@
 set search_path='';
 set local lock_timeout='5s';
 create table private.institutional_setup_parent_pins (
+ id uuid not null default gen_random_uuid(),
  organization_id uuid not null references public.organizations(id), snapshot_id uuid not null,
  work_id uuid not null, parent_configuration_id uuid, parent_fingerprint text,
  created_at timestamptz not null default clock_timestamp(), updated_at timestamptz not null default clock_timestamp(),
- primary key(organization_id,snapshot_id),
+ primary key(organization_id,snapshot_id), unique(organization_id,id),
  foreign key(organization_id,snapshot_id) references private.institutional_setup_input_snapshots(organization_id,id),
  foreign key(organization_id,work_id) references public.capital_projects(organization_id,id),
  foreign key(organization_id,parent_configuration_id) references private.institutional_model_configurations(organization_id,id),

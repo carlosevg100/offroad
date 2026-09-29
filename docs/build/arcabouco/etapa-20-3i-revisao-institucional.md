@@ -40,3 +40,11 @@ O draft não aplicado foi consolidado em `institutional_setup_parent_lineage`, n
 O predicado privado `institutional_revision_missing_native_v1` é compartilhado pela liberação e pelo controle de revisão. O teste negativo chama a RPC de aprovação diretamente sobre uma revisão sem legado nem fontes, que referencia um resultado capturado inelegível: nenhum ato é gravado. Conteúdo e cópia pelo fingerprint também são negados. O motivo exibido usa a mensagem existente de resultado não verificável.
 
 Provas preliminares em staging, sempre BEGIN/ROLLBACK: `institutional_native_human_review.sql` passou com o negativo de aprovação direta e cópia; `institutional_setup_parent_lineage.sql` passou com aprovação interveniente, cadeia setup/contribuição/setup, replay e imutabilidade do pai. O teste de duas sessões foi acrescentado ao checker de concorrência de captura já ligado na CI; ainda precisa executar na base descartável da CI. Gate local completo em andamento. Nenhuma alteração permanente de ambiente nesta rodada.
+
+## Verificação do candidato c8aa0add e correção adicional
+
+CI `36569372150`: check e segurança passaram; contratos SQL, nove corridas de captura do setup (incluindo aprovação concorrente), demais corridas e funções efetivas passaram. Inventário negou os arquivos e a rota ainda não conciliados e a migração ainda ausente de produção. E2E institucional passou, incluindo o segundo resultado nativo. E2E combinado de execução/modelo falhou nas duas tentativas ao aprovar o segundo setup depois de uma nova versão de fonte.
+
+`approvedConfigurations` é filtrado pela elegibilidade atual das fontes; não pode ser a identidade editorial do pai. Migração aditiva `institutional_setup_parent_identity` captura `setupParent` sob o lock do projeto e valida id, fingerprint, revisão e trabalho. Ausência do campo conserva classificação anterior; null explícito não procura outro pai. Capturas antigas não são reescritas. Prova `institutional_setup_parent_source_change.sql`: antes, falha por perda do pai; depois, passa com pai exato, três versões de fonte, replay e imutabilidade.
+
+Primeira migração instalada em staging com carimbo `20260929124911`, com revisão humana e cadeia mista retestadas e advisor de segurança zero. Produção não alterada. Migração adicional ainda em verificação; completion continua pendente.
