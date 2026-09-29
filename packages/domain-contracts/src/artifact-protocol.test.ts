@@ -91,6 +91,13 @@ const executionRef = {executionId: id(50), resultFingerprint: hex("5"), inputFin
 const institutionalRef = {id: id(60), configurationFingerprint: hex("7")};
 
 describe("artifact manifest v1", () => {
+  it("keeps distinct fixed licenses for one source and refuses duplicate or ambiguous pairs", () => {
+    const other = {...sourceA, rightsVersionId: id(49)};
+    expect(artifactManifestSchema.parse(manifest({sources: [sourceA, other]})).sources).toEqual([sourceA, other]);
+    expect(artifactManifestSchema.safeParse(manifest({sources: [sourceA, sourceA]})).success).toBe(false);
+    expect(artifactManifestSchema.safeParse(manifest({sources: [sourceA, {...sourceA, rightsVersionId: null}]})).success).toBe(false);
+  });
+
   it("strict manifest rejects unknown keys", () => {
     expect(artifactManifestSchema.safeParse(manifest()).success).toBe(true);
     expect(artifactManifestSchema.safeParse({...manifest(), extra: true}).success).toBe(false);
@@ -497,6 +504,13 @@ describe("adapters", () => {
     const mapped = manifestFromDocumentWorkProduct(product, {...context, audience: "advisor"});
     expect(mapped).toMatchObject({kind: "work_product", audience: "advisor", format: "json", inputSnapshot: {fingerprint: hex("5")}, sources: [], claims: []});
     expect(mapped.traces).toEqual([`document-work-product:${hex("6")}`, `approved-request:${hex("4")}`]);
+  });
+
+  it("preserves every resolved license while refining the packet's unpinned source", () => {
+    const secondLicense = {...sourceA, rightsVersionId: id(99)};
+    const packet = {...executionResultPacket(), contractSourceVersionIds: [sourceA.sourceVersionId]};
+    const mapped = manifestFromCapitalProcedurePacket(packet, {...context, execution: executionRef, inputSnapshot: {fingerprint: hex("6")}, sources: [sourceA, secondLicense, sourceA], gatesFingerprint: hex("5")});
+    expect(mapped.sources).toEqual([sourceA, secondLicense]);
   });
 
   it("maps a capital procedure packet to an execution result", () => {

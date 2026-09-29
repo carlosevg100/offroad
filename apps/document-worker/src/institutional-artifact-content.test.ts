@@ -37,6 +37,13 @@ function reassemble(result: ReturnType<typeof prepareInstitutionalArtifactConten
 }
 
 describe("institutional native content preparation", () => {
+  it("uses the exact legacy revision when its shared artifact originated in an earlier result", () => {
+    const request = input();
+    const ancestor = {...request.ancestor, artifact: {...request.ancestor.artifact,
+      legacyOrigin: {...request.ancestor.artifact.legacyOrigin!, id: id(99)}}};
+    expect(reassemble(prepareInstitutionalArtifactContent({...request, ancestor}))).toEqual(request.artifact);
+  });
+
   it("round-trips every field of the persisted workbook without recalculation or approval", () => {
     const request = input();
     const before = JSON.stringify(request);

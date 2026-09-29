@@ -37,8 +37,13 @@ export async function processInstitutionalModelSetup(input:{job:AgentOperationBr
 export const institutionalInputSnapshotSchema=z.object({id:z.uuid(),fingerprint:z.string().regex(/^[a-f0-9]{64}$/)}).strict();
 export type InstitutionalInputSnapshot=z.infer<typeof institutionalInputSnapshotSchema>;
 export type InstitutionalResultInput=({status:"completed";artifact:unknown}|{status:"blocked";blockers:string[]})&{inputSnapshot:InstitutionalInputSnapshot};
-export type InstitutionalResultQueue={loadInstitutionalModelContext:(job:AgentOperationBriefJob)=>Promise<unknown>;recordInstitutionalModelResult:(job:AgentOperationBriefJob,result:InstitutionalResultInput)=>Promise<{id:string;status:string;replayed:boolean}>};
-export async function processInstitutionalModelResult(input:{job:AgentOperationBriefJob;queue:InstitutionalResultQueue}){
+export const institutionalResultReceiptSchema=z.object({id:z.uuid(),status:z.string(),replayed:z.boolean(),nativeProjection:z.discriminatedUnion("state",[
+ z.object({state:z.literal("available"),revisionId:z.uuid(),replayed:z.boolean()}).strict(),
+ z.object({state:z.literal("ineligible"),reason:z.string()}).strict(),
+]).optional()});
+export type InstitutionalResultReceipt=z.infer<typeof institutionalResultReceiptSchema>;
+export type InstitutionalResultQueue={loadInstitutionalModelContext:(job:AgentOperationBriefJob)=>Promise<unknown>;recordInstitutionalModelResult:(job:AgentOperationBriefJob,result:InstitutionalResultInput)=>Promise<InstitutionalResultReceipt>};
+export async function processInstitutionalModelResult(input:{job:AgentOperationBriefJob;queue:InstitutionalResultQueue}):Promise<InstitutionalResultReceipt>{
  const loaded=await input.queue.loadInstitutionalModelContext(input.job);
  const context=institutionalModelRuntimeContextSchema.parse(loaded);
  const request=context.modelResultRequest;

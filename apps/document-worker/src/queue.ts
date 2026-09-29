@@ -1,4 +1,4 @@
-import type {InstitutionalResultInput} from "./institutional-model-runtime";
+import {institutionalResultReceiptSchema, type InstitutionalResultReceipt, type InstitutionalResultInput} from "./institutional-model-runtime";
 import {retrieveGoverned} from "@offroad/governed-retrieval";
 import type {InstitutionalModelConfiguration} from "@offroad/financial-model";
 import {createHash} from "node:crypto";
@@ -260,7 +260,7 @@ export type QueueClient = {
     draftFingerprint: string;
     replayed: boolean;
   }>;
-  recordInstitutionalModelResult?(job: AgentOperationBriefJob, result: InstitutionalResultInput): Promise<{id: string; status: string; replayed: boolean}>;
+  recordInstitutionalModelResult?(job: AgentOperationBriefJob, result: InstitutionalResultInput): Promise<InstitutionalResultReceipt>;
   loadInstitutionalModelContext?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<unknown>;
   recordInitialInstitutionalConfigurationCandidate?(job: AgentOperationBriefJob, input: {submissionId: string; candidate: unknown; inputSnapshot: InstitutionalResultInput["inputSnapshot"]}): Promise<{candidateId: string | null; revision: number | null; replayed: boolean}>;
   loadInstitutionalConfiguration?(job: FullCaseAnalysisJob | AgentOperationBriefJob): Promise<{configuration:InstitutionalModelConfiguration|null;configurationFingerprint:string|null;revision:number|null}>;
@@ -781,8 +781,8 @@ export function createQueueClient(
     },
 
     async recordInstitutionalModelResult(job, result) {
-      const data = await call("worker_record_institutional_model_result_v2", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_result: result});
-      return z.object({id: z.uuid(), status: z.string(), replayed: z.boolean()}).parse(data);
+      const data = await call("worker_record_institutional_model_result_v3", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_result: result});
+      return institutionalResultReceiptSchema.parse(data);
     },
     async loadInstitutionalModelContext(job) {
       return call("worker_load_institutional_model_context_v3", {p_job_id: job.job_id, p_capability_token: job.capability_token});

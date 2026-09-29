@@ -13879,6 +13879,10 @@ export type Database = {
         Args: { p_capability_token: string; p_job_id: string; p_result: Json }
         Returns: Json
       }
+      worker_record_institutional_model_result_v3: {
+        Args: { p_capability_token: string; p_job_id: string; p_result: Json }
+        Returns: Json
+      }
       worker_record_intake_request_ladders: {
         Args: { p_capability_token: string; p_events: Json; p_job_id: string }
         Returns: Json

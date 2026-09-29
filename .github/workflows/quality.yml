@@ -189,6 +189,11 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-closure-concurrency.py
 
+      - name: Institutional native projection concurrency
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-institutional-native-concurrency.py
+
       - name: Verify effective function bodies match the committed snapshot
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}

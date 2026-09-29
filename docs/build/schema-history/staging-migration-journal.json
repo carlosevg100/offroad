@@ -1711,8 +1711,16 @@
   {
    "version": "20260929002747",
    "name": "institutional_closure_execution_scope"
+  },
+  {
+   "name": "institutional_native_projection",
+   "version": "20260929015835"
+  },
+  {
+   "name": "institutional_native_read_lock_order",
+   "version": "20260929022817"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-29T00:34:47.406221+00:00"
+ "captured_at": "2026-09-29 02:30:19.743141+00"
 }

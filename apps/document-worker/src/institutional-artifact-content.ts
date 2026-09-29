@@ -36,7 +36,6 @@ export function prepareInstitutionalArtifactContent(value: unknown) {
   if (ancestorArtifact.organizationId !== input.organizationId || ancestorArtifact.workId !== input.workId
     || ancestorArtifact.kind !== "model_result" || ancestorRevision.artifactId !== ancestorArtifact.id
     || ancestorArtifact.legacyOrigin?.table !== "institutional_model_results"
-    || ancestorArtifact.legacyOrigin.id !== input.resultId
     || legacy?.table !== "institutional_model_results" || legacy.id !== input.resultId
     || legacy.fingerprint !== workbook.fingerprint || manifest.kind !== "model_result"
     || manifest.institutionalResult?.id !== input.resultId
