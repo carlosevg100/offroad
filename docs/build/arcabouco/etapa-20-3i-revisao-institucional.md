@@ -1,6 +1,6 @@
 # Etapa 20 / 3I: revisão humana do conteúdo institucional
 
-Status: correção da linhagem do segundo setup autorizada pelo fundador e em verificação. Nenhuma migração permanente aplicada. Não inicia etapas 21–24.
+Status: correção da linhagem autorizada pelo fundador, com duas migrações instaladas e retestadas em staging. Produção não alterada; CI final pendente. Não inicia etapas 21–24.
 
 O resultado institucional que tem binding nativo é lido dos blocos imutáveis e comparado ao envelope persistido. O leitor retorna a revisão exata; cada resultado de comparação recebe sua própria validação. Somente o resultado histórico sem captura conserva o contrato anterior. Resultado capturado sem binding nega leitura, cópia, liberação e revisão direta, inclusive por derivação. O contraponto legado de um resultado nativo e seus derivados ficam bloqueados para impedir recuperação da aprovação histórica.
 
@@ -48,3 +48,9 @@ CI `36569372150`: check e segurança passaram; contratos SQL, nove corridas de c
 `approvedConfigurations` é filtrado pela elegibilidade atual das fontes; não pode ser a identidade editorial do pai. Migração aditiva `institutional_setup_parent_identity` captura `setupParent` sob o lock do projeto e valida id, fingerprint, revisão e trabalho. Ausência do campo conserva classificação anterior; null explícito não procura outro pai. Capturas antigas não são reescritas. Prova `institutional_setup_parent_source_change.sql`: antes, falha por perda do pai; depois, passa com pai exato, três versões de fonte, replay e imutabilidade.
 
 Primeira migração instalada em staging com carimbo `20260929124911`, com revisão humana e cadeia mista retestadas e advisor de segurança zero. Produção não alterada. Migração adicional ainda em verificação; completion continua pendente.
+
+Staging confirmado em 29/09: `20260929124911` (`institutional_setup_parent_lineage`, md5 `c7665037bbee94957b5fd6c4e5ce3281`) e `20260929131006` (`institutional_setup_parent_identity`, md5 `5845586101b154ce36111581c4df19f0`). Conteúdo dos arquivos idêntico aos statements do journal. A migração adicional passou no teste instalado de troca de fonte. Candidato `1522b34c` publicado para repetir a CI completa.
+
+CI `36573328405`, candidato `1522b34c`: check, segurança, contratos SQL e corridas passaram; inventário/journal continuam pendentes de produção. O E2E combinado avançou por aprovação, recálculo e adoção, com resultado completed. Falhou somente no seletor antigo que exigia URL terminada em `/xlsx` e excluía a query `?revision=`. O teste passa a exigir binding existente, revisão exata na URL, download 200 e header `x-artifact-revision` correspondente; antes da adoção, nega qualquer URL do novo resultado, com ou sem query. Revisão independente aprovou o ajuste. Gate local completo passou novamente.
+
+Prova adicional de fonte exclusiva ancestral: fixture estrutural mantém os bytes em outra sessão do mesmo trabalho; captura filha tem duas fontes e ancestralidade tem três. Após revogação, o snapshot filho continua autorizado, o ancestral perde autorização e a fonte permanece na cadeia. Passou em staging com rollback. Essa prova não é, isoladamente, uma execução do produtor final.

@@ -13,6 +13,11 @@ update public.agent_messages set status='completed' where organization_id='20000
 -- but cannot remove the editorial parent or its exclusive source version.
 insert into public.source_documents(id,organization_id,intake_session_id,logical_source_id,object_path,original_name,sha256,document_version,sha256_verified_at,scan_result,processing_status,created_by)
 select '50000000-0000-4000-8000-000000000884',organization_id,intake_session_id,logical_source_id,object_path||'.v2',original_name,repeat('e',64),2,clock_timestamp(),scan_result,processing_status,created_by from public.source_documents where id='50000000-0000-4000-8000-000000000882';
+-- Structural fixture: keep the ancestor-only bytes in a separate session of the
+-- same work. No byte, version, right or captured history is rewritten.
+insert into public.document_intake_sessions(id,organization_id,capital_project_id,started_by,journey,locale,created_at)
+values('40000000-0000-4000-8000-000000000885','20000000-0000-4000-8000-000000000881','30000000-0000-4000-8000-000000000881','10000000-0000-4000-8000-000000000881','company','pt-BR',clock_timestamp()+interval '1 second');
+update public.source_documents set intake_session_id='40000000-0000-4000-8000-000000000885' where id='50000000-0000-4000-8000-000000000882';
 select set_config('test.setup_context',public.read_institutional_model_setup_v1('30000000-0000-4000-8000-000000000881')::text,true);
 select set_config('test.next_submission',gen_random_uuid()::text,true);
 set local role authenticated;
@@ -48,5 +53,16 @@ do $$declare c private.institutional_model_configurations;lineage jsonb;again js
   update private.institutional_setup_parent_pins set parent_fingerprint=repeat('f',64) where snapshot_id=(current_setting('test.next_capture')::jsonb#>>'{setupInputSnapshot,id}')::uuid;
   raise exception 'parent_pin_mutable';
  exception when others then if sqlerrm<>'review_history_immutable' then raise;end if;end;
+end $$;
+do $$declare before jsonb;child uuid:=(current_setting('test.next_stored')::jsonb->>'candidateId')::uuid;begin
+ if jsonb_array_length(current_setting('test.next_capture')::jsonb->'currentSources')<>2 then raise exception 'ancestor_source_not_exclusive';end if;
+ before:=private.institutional_configuration_ancestry_v1('20000000-0000-4000-8000-000000000881','30000000-0000-4000-8000-000000000881',child);
+ perform public.set_source_rights_v1('50000000-0000-4000-8000-000000000882',1,array['store'],array['analysis'],null,null,gen_random_uuid(),repeat('b',64));
+ if not private.institutional_setup_snapshot_authorized_v1((current_setting('test.next_capture')::jsonb#>>'{setupInputSnapshot,id}')::uuid,current_setting('test.next_job')::uuid)
+  or private.institutional_setup_snapshot_authorized_v1((current_setting('test.closure_setup_capture')::jsonb#>>'{setupInputSnapshot,id}')::uuid,current_setting('test.setup_job')::uuid)
+  then raise exception 'exclusive_ancestor_revocation_not_distinguished';end if;
+ if private.institutional_configuration_ancestry_v1('20000000-0000-4000-8000-000000000881','30000000-0000-4000-8000-000000000881',child) is distinct from before
+  or not exists(select 1 from jsonb_array_elements(before->'sources') pin where pin->>'sourceVersionId'='50000000-0000-4000-8000-000000000882')
+  then raise exception 'revoked_ancestor_removed_from_source_closure';end if;
 end $$;
 rollback;
