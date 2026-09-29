@@ -6064,3 +6064,9 @@ Seis casos em `capital-decision-domain-eval.test.ts`: oráculo independente em c
 ## 2026-09-27: retomada da etapa 20
 
 Fundador respondeu "Ok" ao início da 20 após a onda corretiva encerrada em `85191003`. Primeiro incremento cria contrato puro `review-protocol.ts` e endurece classificação de mudança narrativa. Ver `docs/build/arcabouco/etapa-20-1-contrato.md`; ainda sem migração, rotas ou efeito operacional novo. Próximos incrementos permanecem na ordem aprovada; não iniciar 21–24.
+
+## 2026-09-29: etapa 20 / 3I em verificação
+
+PR 845 conecta o resultado institucional nativo à revisão humana e aos downloads exatos. Gate local completo passou; SQL sob rollback em staging passou; revisão independente fechou os dois achados. CI, aplicação permanente, inventário instalado, merge e deploys ainda pendentes. Fonte de retomada: `docs/build/arcabouco/etapa-20-3i-revisao-institucional.md`. Não iniciar 21–24 nem declarar completion sem as evidências de produção.
+
+Atualização da retomada 3I: promoção bloqueada pelo segundo setup com pai sem linhagem reconhecida. CI 36560374405: Quality PASS, SQL e corridas PASS, snapshot antigo recusado, E2E 43 PASS/16 skip/1 FAIL em duas tentativas. Não aceitar fallback legado para fazer o teste passar. Correção da dependência antes do corte exige o OK de ordem do fundador; relatório em `docs/build/arcabouco/etapa-20-3i-revisao-institucional.md`.

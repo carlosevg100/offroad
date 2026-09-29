@@ -92,6 +92,24 @@ describe("approved institutional result downloads", () => {
     expect(rpc).toHaveBeenCalledWith("read_institutional_model_results_v1", {p_project_id: projectId});
     expect(rpc).toHaveBeenCalledWith("read_artifact_head_v1", {p_work_id: projectId, p_kind: "model_result", p_subject: "institutional-workbook"});
   });
+  it("serves the bound native revision and rejects the historical revision parameter",async()=>{
+    const nativeId="70000000-0000-4000-8000-000000000003";
+    institutional={data:{projectId,latest:{...latest,nativeRevisionId:nativeId}},error:null};
+    reads.push(resultRevision({revisionId:nativeId,subject:`institutional-native:${resultId}`,legacy:undefined,release:"released"}));
+    const response=await request();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-artifact-revision")).toBe(nativeId);
+    expect(response.headers.get("x-artifact-release")).toBe("released");
+    expect((await request("xlsx","pt-BR",resultId,`?revision=${revisionId}`)).status).toBe(404);
+    expect(rpc).not.toHaveBeenCalledWith("read_artifact_head_v1",expect.anything());
+  });
+  it("does not fall back to the historical representation after native denial",async()=>{
+    const nativeId="70000000-0000-4000-8000-000000000003";
+    institutional={data:{projectId,latest:{...latest,nativeRevisionId:nativeId}},error:null};
+    reads.push(resultRevision({revisionId:nativeId,subject:`institutional-native:${resultId}`,legacy:undefined,release:"blocked"}));
+    expect((await request()).status).toBe(409);
+    expect(rpc).not.toHaveBeenCalledWith("read_artifact_revision_v1",{p_revision_id:revisionId});
+  });
   it.each(["stale", "queued", "blocked"])("refuses %s even if an old artifact remains in the database response", async status => {
     institutional = {data: {projectId, latest: {...latest, status}}, error: null};
     for (const format of ["xlsx", "docx", "pptx", "pdf"]) expect((await request(format)).status).toBe(409);

@@ -80,7 +80,7 @@ create or replace function private.read_institutional_model_results_v1(p_project
  SECURITY DEFINER
  SET search_path TO ''
 AS $function$
-declare org_id uuid;r private.institutional_model_results;context jsonb;current_id uuid;is_current boolean;job_status text;visible_status text;visible_blockers jsonb;comparison_results jsonb; answer jsonb; native jsonb; item jsonb; safe_comparisons jsonb:='[]';
+declare org_id uuid;r private.institutional_model_results;context jsonb;current_id uuid;is_current boolean;job_status text;visible_status text;visible_blockers jsonb;comparison_results jsonb; answer jsonb; native jsonb; item jsonb; safe_comparisons jsonb:='[]'::jsonb;
 begin
  perform private.require_resource_access_v1(p_project_id,'read');
  select organization_id into org_id from public.capital_projects where id=p_project_id;
