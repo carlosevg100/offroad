@@ -6788,5 +6788,36 @@
       "storageMissing": "O arquivo guardado desta versão não foi encontrado onde foi registrado, então nada foi entregue. Peça uma nova versão antes de baixar.",
       "synthesisMissing": "A síntese ainda não foi produzida."
     }
+  },
+  "ArtifactRevisionReview": {
+    "title": "Revisão {revision}",
+    "approved": "Conteúdo aprovado nesta revisão.",
+    "pending": "Conteúdo aguardando aprovação.",
+    "scope": "A aprovação vale para o conteúdo desta versão no trabalho. Não publica nem envia materiais. Os arquivos reproduzem esse conteúdo; cada formato mantém sua verificação.",
+    "assigned": "A aprovação segue as responsabilidades atribuídas neste trabalho.",
+    "individual": "A aprovação segue a regra de autoaprovação deste trabalho.",
+    "declaration": "Declaro que preparei e revisei o conteúdo desta versão.",
+    "differentReviewer": "Este trabalho exige a aprovação de outra pessoa.",
+    "note": "Comentário",
+    "block": "Trecho do comentário",
+    "whole": "Conteúdo completo",
+    "blockNumber": "Trecho {number}",
+    "approve": "Aprovar conteúdo",
+    "comment": "Comentar",
+    "return": "Solicitar ajustes",
+    "revoke": "Revogar aprovação",
+    "acts": {
+      "approve": "Aprovação registrada",
+      "comment": "Comentário registrado",
+      "return": "Ajustes solicitados",
+      "reaffirm": "Aprovação reafirmada",
+      "revoke_approval": "Aprovação revogada",
+      "reassign": "Responsabilidade reassociada"
+    },
+    "errors": {
+      "denied": "Seu acesso ou sua responsabilidade não permite este ato. Atualize a página.",
+      "changed": "A versão mudou. Atualize a página antes de revisar.",
+      "save": "Não foi possível registrar. Tente novamente."
+    }
   }
 }

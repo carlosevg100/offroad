@@ -6314,3 +6314,14 @@ do $$begin
  or has_function_privilege('service_role','private.institutional_result_source_closure_v1(uuid,text)','EXECUTE')
  then raise exception 'institutional_closure_client_grant';end if;
 end $$;
+
+-- Stage 20 / 3I exposes only the authenticated work-scoped lookup.
+do $$declare api_role text;begin
+ foreach api_role in array array['anon','authenticated','service_role'] loop
+  if has_function_privilege(api_role,'private.institutional_native_result_content_v1(uuid,uuid)','EXECUTE') then raise exception 'native_review_content_helper_exposed: %',api_role;end if;
+ end loop;
+ foreach api_role in array array['anon','service_role'] loop
+  if has_function_privilege(api_role,'public.read_institutional_workbook_binding_v1(uuid,text)','EXECUTE') or has_function_privilege(api_role,'private.read_institutional_workbook_binding_v1(uuid,text)','EXECUTE') then raise exception 'native_review_binding_grant: %',api_role;end if;
+ end loop;
+ if not has_function_privilege('authenticated','public.read_institutional_workbook_binding_v1(uuid,text)','EXECUTE') then raise exception 'native_review_binding_missing';end if;
+end $$;

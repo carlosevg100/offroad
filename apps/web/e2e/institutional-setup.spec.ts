@@ -178,11 +178,25 @@ test("guided institutional setup calculates only after review and survives resum
  await resultLink.click();
  const result=page.getByTestId("institutional-model-result");
  await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed,{timeout:120_000});
- const xlsx=page.locator(`a[href^="${projectPath}/financial-results/"][href$="/xlsx"]`);
+ // Native content review is separate from approval of assumptions before calculation.
+ const nativeReview=page.getByTestId("artifact-revision-review");
+ await expect(nativeReview).toBeVisible();
+ await expect(nativeReview).toContainText(messages.ArtifactRevisionReview.pending);
+ const approveContent=nativeReview.getByRole("button",{name:messages.ArtifactRevisionReview.approve,exact:true});
+ await expect(approveContent).toBeDisabled();
+ await nativeReview.getByRole("checkbox",{name:messages.ArtifactRevisionReview.declaration}).check();
+ await approveContent.click();
+ await expect(nativeReview).toContainText(messages.ArtifactRevisionReview.approved);
+ await page.reload();await resultLink.click();
+ await expect(nativeReview).toContainText(messages.ArtifactRevisionReview.approved);
+ await nativeReview.getByRole("button",{name:messages.ArtifactRevisionReview.revoke,exact:true}).click();
+ await expect(nativeReview).toContainText(messages.ArtifactRevisionReview.pending);
+ await expect(nativeReview).toContainText(messages.ArtifactRevisionReview.acts.revoke_approval);
+ const xlsx=page.locator(`a[href^="${projectPath}/financial-results/"][href*="/xlsx?revision="]`);
  await expect(xlsx).toHaveCount(1);
  const resultUrl=await xlsx.getAttribute("href");
  for(const format of ["xlsx","docx","pptx","pdf"]){
-  const response=await page.request.get(resultUrl!.replace(/xlsx$/,format));
+  const response=await page.request.get(resultUrl!.replace(/\/xlsx(?=\?)/,`/${format}`));
   expect(response.status()).toBe(200);const bytes=await response.body();expect(bytes.byteLength).toBeGreaterThan(500);expect(bytes.subarray(0,format==="pdf"?5:2).toString()).toBe(format==="pdf"?"%PDF-":"PK");
  }
  await page.reload();await resultLink.click();

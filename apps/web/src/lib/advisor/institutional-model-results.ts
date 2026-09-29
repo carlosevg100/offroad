@@ -7,7 +7,7 @@ import {prepareInstitutionalComparison, type InstitutionalComparison} from "./in
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const resultSchema = z.object({projectId: z.uuid(), latest: z.object({
-  id: z.uuid(), status: z.enum(["queued", "completed", "blocked", "stale"]),
+  nativeRevisionId: z.uuid().optional(), id: z.uuid(), status: z.enum(["queued", "completed", "blocked", "stale"]),
   configurationId: z.uuid(), configurationFingerprint: hash, sourceManifestFingerprint: hash,
   artifact: institutionalWorkbookArtifactSchema.nullable(), blockers: z.array(z.string()), createdAt: z.iso.datetime({offset: true}),
 }).nullable()});

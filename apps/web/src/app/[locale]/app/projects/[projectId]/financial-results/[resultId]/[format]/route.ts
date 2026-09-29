@@ -43,17 +43,17 @@ export async function GET(request: Request, {params}: Params) {
   if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
   const lang = locale === "en-US" ? "en" : "pt";
   const copy = artifactDownloadCopy(lang);
-  const resolved = await resolveRouteRevision(supabase, {workId: projectId, kind: "model_result", subject: "institutional-workbook"}, revisionParameter.revisionId);
+  const result = await loadInstitutionalModelResult(supabase, projectId);
+  if (!result || result.id !== resultId) return artifactUnavailable(revisionParameter.revisionId ? copy.revisionReplaced : copy.financialResult.unavailable);
+  if (result.nativeRevisionId && revisionParameter.revisionId && revisionParameter.revisionId !== result.nativeRevisionId) return artifactNotFound();
+  const target = {workId: projectId, kind: "model_result" as const, subject: result.nativeRevisionId ? `institutional-native:${result.id}` : "institutional-workbook"};
+  const resolved = await resolveRouteRevision(supabase, target, result.nativeRevisionId ?? revisionParameter.revisionId);
   if (!resolved.ok) {
     if (resolved.outcome === "not_found") return artifactNotFound();
     return artifactUnavailable(resolved.outcome === "refused" ? refusalText(copy, resolved.refusal) : copy.financialResult.unavailable);
   }
   const {revision, read} = resolved;
   if (!revisionRendererAllowed(revision, {families: ["institutional_workbook", "material"]})) return artifactUnavailable(copy.rendererUnavailable);
-  const result = await loadInstitutionalModelResult(supabase, projectId);
-  if (!result || result.id !== resultId) {
-    return artifactUnavailable(resolved.exact && result ? copy.revisionReplaced : copy.financialResult.unavailable);
-  }
   const artifact = result.artifact;
   const template = format === "xlsx" ? {ok: true as const, template: undefined} : await templateForRevision(supabase, projectId, revision, "project");
   if (!template.ok) return artifactUnavailable(copy.templateUnavailable);
@@ -76,10 +76,16 @@ export async function GET(request: Request, {params}: Params) {
   const verification = verifyRenderedBytes(revision, rendered.bytes, {format: rendered.format, selectors: {locale: lang}});
   if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
   if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
+  // Rendering is outside the database transaction. Re-read the exact revision and result after it.
+  const final = await resolveRouteRevision(supabase, target, revision.id);
+  const current = await loadInstitutionalModelResult(supabase, projectId);
+  if (!final.ok || final.revision.manifestFingerprint !== revision.manifestFingerprint || final.read.release !== read.release
+    || final.read.freshness !== read.freshness || !current || current.id !== result.id || current.status !== "completed"
+    || current.nativeRevisionId !== result.nativeRevisionId || current.artifact?.fingerprint !== artifact?.fingerprint) return artifactUnavailable(copy.sourceRestricted);
   const issuedOn = revisionIssuedOn(revision, result.createdAt);
   return new Response(Buffer.from(rendered.bytes), {headers: {
     "content-type": formats[format as keyof typeof formats],
-    "content-disposition": `attachment; filename="${lang === "pt" ? "Cenarios_aprovados" : "Approved_scenarios"}_${issuedOn}.${format}"`,
+    "content-disposition": `attachment; filename="${lang === "pt" ? "Cenarios" : "Scenarios"}_${issuedOn}.${format}"`,
     "cache-control": "private, no-store",
     "x-content-type-options": "nosniff",
     ...artifactResponseHeaders(read, verification),

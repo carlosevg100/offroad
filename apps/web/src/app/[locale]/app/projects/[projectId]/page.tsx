@@ -1,3 +1,4 @@
+import {loadInstitutionalReview} from "@/lib/artifacts/institutional-review";
 import {WorkVaultPanel} from "@/components/advisor/work-vault-panel";
 import {WorkParticipationPanel} from "@/components/advisor/work-participation-panel";
 import {WorkContextPanel} from "@/components/advisor/work-context-panel";
@@ -514,8 +515,9 @@ async function ConversationalCapitalProject({
   const updates = await loadWorkUpdates(supabase, project.id, locale === "en-US" ? "en-US" : "pt-BR");
   const institutionalResult = await loadInstitutionalModelResult(supabase, project.id);
   if (institutionalResult) {
+    const nativeReview = institutionalResult.nativeRevisionId ? await loadInstitutionalReview(supabase, project.id, institutionalResult.id, institutionalResult.nativeRevisionId) : null;
     const resultCopy = await getTranslations({locale, namespace: "InstitutionalModelResult"});
-    workSections.push({id: "institutional-model-result", title: resultCopy("title"), content: <InstitutionalModelResultWork projectId={project.id} result={institutionalResult}
+    workSections.push({id: "institutional-model-result", title: resultCopy("title"), content: <InstitutionalModelResultWork projectId={project.id} result={institutionalResult} nativeReview={nativeReview} reviewerId={userId}
       calculating={institutionalCalculationRuns(activity, institutionalResult.id)} recalculation={recalculationAwaitingAdoption(updates, institutionalResult.id)} />});
   }
   const providerHistory = plan ? await loadProviderWorkHistory(supabase, artifacts ?? [], {organizationId: organization.id, projectId: project.id, currentPlanId: plan.id}) : [];

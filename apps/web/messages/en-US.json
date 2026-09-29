@@ -6788,5 +6788,36 @@
       "storageMissing": "The stored file of this version was not found where it was recorded, so nothing was delivered. Request a new version before downloading.",
       "synthesisMissing": "The synthesis has not been produced yet."
     }
+  },
+  "ArtifactRevisionReview": {
+    "title": "Revision {revision}",
+    "approved": "Content approved for this revision.",
+    "pending": "Content awaiting approval.",
+    "scope": "Approval covers this version’s content within the work. It does not publish or send materials. Files reproduce this content; each format retains its verification.",
+    "assigned": "Approval follows the responsibilities assigned to this work.",
+    "individual": "Approval follows this work’s self-approval policy.",
+    "declaration": "I declare that I prepared and reviewed the content of this version.",
+    "differentReviewer": "This work requires approval by another person.",
+    "note": "Comment",
+    "block": "Comment scope",
+    "whole": "Entire content",
+    "blockNumber": "Section {number}",
+    "approve": "Approve content",
+    "comment": "Comment",
+    "return": "Request changes",
+    "revoke": "Revoke approval",
+    "acts": {
+      "approve": "Approval recorded",
+      "comment": "Comment recorded",
+      "return": "Changes requested",
+      "reaffirm": "Approval reaffirmed",
+      "revoke_approval": "Approval revoked",
+      "reassign": "Responsibility reassigned"
+    },
+    "errors": {
+      "denied": "Your access or responsibility does not permit this action. Refresh the page.",
+      "changed": "The version changed. Refresh the page before reviewing.",
+      "save": "Could not record the action. Try again."
+    }
   }
 }
