@@ -3095,7 +3095,7 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 1 objeto novo e 0 atualizados na superfície de acesso. União completa de fontes do cálculo e ancestralidade, direitos fixados e correntes sob autoridade da execução; sem concessão ou liberação. Produção: `20260929003415` e `20260929003427`; staging: `20260929001830` e `20260929002747`.
 - `function:private.institutional_result_source_closure_v1(p_job uuid, p_capability text)`
 
-## Etapa 20 / 3H — projeção institucional nativa
+## Etapa 20 / 3H: projeção institucional nativa
 
 15 objetos novos e 0 atualizados. Projeção institucional nativa atômica, prova imutável dos pares fonte/direito e leitura serializada com revogação; sem aprovação histórica presumida.
 - `function:private.institutional_native_ancestry_v1(p_org uuid, p_revision uuid)`
@@ -3114,6 +3114,6 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 - `trigger:private.institutional_native_bindings.institutional_native_no_truncate`
 - `trigger:private.institutional_native_bindings.institutional_native_updated`
 
-## Etapa 20 / 3H — barreira de leitura e revisão institucional
+## Etapa 20 / 3H: barreira de leitura e revisão institucional
 
 0 objetos novos e 0 atualizados. Leitura e revisão revalidam autoridade e todas as licenças fixadas sob a barreira de política, inclusive fontes exclusivas dos derivados.
