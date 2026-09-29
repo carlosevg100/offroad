@@ -41,6 +41,7 @@ end $$;
 \ir support/institutional_native_derivative.sql
 do $test$ declare body text;needle text;rev uuid;org uuid:='20000000-0000-4000-8000-000000000881';actor uuid:='10000000-0000-4000-8000-000000000881';begin
  begin
+ drop trigger zzz_fixture_source_rights on public.source_versions;
  rev:=pg_temp.native_derivative((current_setting('test.native_result')::jsonb->>'id')::uuid,'50000000-0000-4000-8000-000000000884',actor);
  if private.read_artifact_revision_v1(rev)->'restriction'<>'null'::jsonb or not private.artifact_review_sources_allowed_v1(org,rev,actor) then raise exception 'native_derived_source_initial_denial';end if;
  -- Force the precise interleaving: the exclusive source is revoked at helper entry.
