@@ -125,7 +125,7 @@ insert into public.organization_review_policies(organization_id,self_approval_al
 values('{org}',true,false,'{actor}') on conflict(organization_id) do update set self_approval_allowed=true,assignment_required=false;
 do $$declare r public.artifact_revisions;b jsonb;made jsonb;begin
  select * into strict r from public.artifact_revisions where id='{revision}';
- select jsonb_agg(jsonb_build_object('blockKey',block_key,'blockNo',block_no,'kind',kind,'content',content,'claims',claims) order by block_no)
+ select jsonb_agg(jsonb_build_object('blockKey',block_key,'kind',kind,'content',content,'claims',claims) order by block_no)
  into b from public.artifact_blocks where revision_id=r.id;
  made:=private.create_artifact_revision_v1('{org}','{work}','execution_result','synthetic-concurrent-external-review','external','person',
  jsonb_set(r.manifest,'{{audience}}','"external"'),b,'[]',null,null,null,'{actor}','{actor}');
