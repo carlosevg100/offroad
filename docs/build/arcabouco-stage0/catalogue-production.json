@@ -63769,7 +63769,79 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER institutional_setup_parent_pins_updated BEFORE UPDATE ON private.institutional_setup_parent_pins FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.execution_artifact_read_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid, p_operation text)",
+      "kind": "function",
+      "name": "execution_artifact_read_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid, p_operation text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_closure_read_allowed_v1(p_org uuid, p_closure jsonb, p_actor uuid, p_operation text)",
+      "kind": "function",
+      "name": "execution_closure_read_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_closure jsonb, p_actor uuid, p_operation text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_result_source_closure_v1(p_org uuid, p_execution uuid)",
+      "kind": "function",
+      "name": "execution_result_source_closure_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_execution uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.execution_snapshot_reference_closure_v1(p_org uuid, p_payload jsonb, p_declared_sources jsonb)",
+      "kind": "function",
+      "name": "execution_snapshot_reference_closure_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_payload jsonb, p_declared_sources jsonb",
+      "security_definer": true
     }
   ],
-  "captured_at": "2026-09-29T13:56:33.016043+00:00"
+  "captured_at": "2026-09-29T16:37:57.909952+00:00"
 }
