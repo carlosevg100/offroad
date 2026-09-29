@@ -23,7 +23,16 @@ O primeiro run da CI revelou um contrato antigo que confundia leitura com autori
 
 Ensaios transacionais em staging chegaram à exceção sentinela obrigatória de rollback para as duas suítes novas, recuperação de artefato e protocolo geral de artefatos. Journal sem entrada do preflight, helpers ausentes, fixtures ausentes e hash da função original conferidos após rollback. O primeiro ensaio revelou comparação de hash nulo e a regressão revelou ordem de validação de alvo inexistente; ambos corrigidos antes de qualquer instalação permanente.
 
-Gate local `pnpm check` passou. Staging recebeu `20260929160225_execution_result_source_closure`, SQL MD5 `cc1e0202ce64689e8737273cf47dbcdd`. As duas suítes novas e recuperação passaram também sobre a instalação; security advisors zero. Concorrência, CI final, produção, catálogos, merge e deployments continuam pendentes. Este documento não declara completion.
+Gate local `pnpm check`: 44/44 tarefas. O primeiro run da CI identificou a expectativa antiga de ocultar resultados após retirar apenas `derive/process`; a revisão corrigiu também a indicação de atualidade e a chave dos recibos. No run preliminar `36598291769`, todos os contratos SQL, quatro corridas de fechamento de fontes e regressões de concorrência passaram. O checker de inventário recusou o snapshot anterior do journal, como esperado antes da conciliação; a CI final valida a captura nova.
+
+| Migração | Staging | Produção | SQL MD5 |
+|---|---|---|---|
+| `execution_result_source_closure` | `20260929160225` | `20260929163715` | `cc1e0202ce64689e8737273cf47dbcdd` |
+| `execution_result_read_freshness` | `20260929163005` | `20260929163721` | `5430388fc3feeeb57f6e2c26a4924eb0` |
+
+As 11 funções afetadas têm definições idênticas nos dois ambientes. Checker de inventário: 2.842 objetos em produção e 2.903 em staging, zero diferenças contra as decisões registradas. Todos os arquivos de migração conferem com o journal vivo de produção. Tipos regenerados de produção iguais aos versionados. Security advisors zero; advisors de performance informam índices/FKs e configuração de conexões, sem bloqueador de segurança. Quatro helpers novos sem grants para `anon`, `authenticated` ou `service_role`; recibos mantêm RLS forçada e imutabilidade. Nenhum dado descartável foi criado em produção.
+
+Em staging, as duas suítes novas, produtor e tempo de resposta passaram após a migração aditiva, sob rollback. A revisão independente aprovou o SQL após as provas de concorrência. PR846; CI final, merge, web e worker ainda pendentes.
 
 ## Segurança e operação
 

@@ -3135,3 +3135,11 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 - `trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_immutable`
 - `trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_no_truncate`
 - `trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_updated`
+
+## Etapa 20 / 3J: fontes de resultados e leitura histórica
+
+4 objetos novos e 0 atualizados. Autoridade de leitura e derivação cobre toda fonte fixada do resultado e distingue leitura histórica de entradas atuais.
+- `function:private.execution_artifact_read_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid, p_operation text)`
+- `function:private.execution_closure_read_allowed_v1(p_org uuid, p_closure jsonb, p_actor uuid, p_operation text)`
+- `function:private.execution_result_source_closure_v1(p_org uuid, p_execution uuid)`
+- `function:private.execution_snapshot_reference_closure_v1(p_org uuid, p_payload jsonb, p_declared_sources jsonb)`

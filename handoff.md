@@ -1,6 +1,6 @@
 ## Etapa 20 / 3J: autoridade completa dos resultados, 29/09/2026
 
-3I fechado na PR 845/main `422ce16d1154f7c14977e42b5ef2961e73982f42`, com CI, journals e deployments verificados. O fundador aprovou corrigir primeiro a fonte omitida quando o resultado depende de observação adotada. O 3J cobre fontes diretas e indiretas, licenças fixadas, snapshot, leitura histórica, notas e derivados; preserva os manifestos antigos. Duas suítes novas e regressões passaram em ensaio atômico com rollback em staging; gate local passou. Instalação permanente, concorrência na CI, merge e deployments ainda pendentes. Ver `docs/build/arcabouco/etapa-20-3j-execution-source-closure.md`. Etapa 20 aberta; 21–24 não iniciadas.
+3J na PR 846: fontes diretas e indiretas, licenças fixadas, snapshot, leitura histórica, notas e derivados sob a mesma autoridade. Manifestos históricos preservados. `inputsCurrent` separado da autorização de leitura; recibos distinguem os quatro estados sem sobrescrita. SQL completo e quatro corridas de revogação passaram no run preliminar 36598291769. Staging: `20260929160225`/`20260929163005`; produção: `20260929163715`/`20260929163721`. SQL exato, 11 funções iguais nos dois ambientes, catálogos conciliados (2.842 produção/2.903 staging), tipos públicos inalterados e security advisors zero. Gate local 44/44. CI final, merge e deployments pendentes; não é completion. Ver `docs/build/arcabouco/etapa-20-3j-execution-source-closure.md`. Etapa 20 aberta; 21–24 não iniciadas.
 
 ## Etapa 20 / 3G: fechamento de fontes, 28/09/2026
 

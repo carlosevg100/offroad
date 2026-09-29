@@ -1671,8 +1671,16 @@
   {
    "version": "20260929135520",
    "name": "institutional_setup_parent_identity"
+  },
+  {
+   "version": "20260929163715",
+   "name": "execution_result_source_closure"
+  },
+  {
+   "version": "20260929163721",
+   "name": "execution_result_read_freshness"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-29T13:57:45.131339+00:00"
+ "captured_at": "2026-09-29T16:38:04.827539+00:00"
 }
