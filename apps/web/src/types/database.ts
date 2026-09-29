@@ -12003,6 +12003,10 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_institutional_workbook_binding_v1: {
+        Args: { p_fingerprint: string; p_work: string }
+        Returns: Json
+      }
       read_presentation_template_v1: {
         Args: { p_project_id: string }
         Returns: Json
@@ -12441,10 +12445,6 @@ export type Database = {
       retire_method_release_v1: {
         Args: { p_reason: string; p_release_id: string }
         Returns: string
-      }
-      read_institutional_workbook_binding_v1: {
-        Args: { p_work: string; p_fingerprint: string }
-        Returns: Json
       }
       review_artifact_revision_v1: {
         Args: {

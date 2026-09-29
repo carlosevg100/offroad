@@ -3117,3 +3117,21 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 ## Etapa 20 / 3H: barreira de leitura e revisão institucional
 
 0 objetos novos e 0 atualizados. Leitura e revisão revalidam autoridade e todas as licenças fixadas sob a barreira de política, inclusive fontes exclusivas dos derivados.
+
+## Etapa 20 / 3I: revisão institucional e pai capturado
+
+14 objetos novos e 0 atualizados. Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.
+- `function:private.institutional_native_result_content_v1(p_org uuid, p_result uuid)`
+- `function:private.institutional_result_requires_native_v1(p_org uuid, p_result uuid)`
+- `function:private.institutional_revision_missing_native_v1(p_org uuid, p_revision uuid)`
+- `function:private.read_institutional_workbook_binding_v1(p_work uuid, p_fingerprint text)`
+- `function:public.read_institutional_workbook_binding_v1(p_work uuid, p_fingerprint text)`
+- `policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_delete`
+- `policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_insert`
+- `policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_select`
+- `policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_update`
+- `r:private.institutional_setup_parent_pins`
+- `trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_audit`
+- `trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_immutable`
+- `trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_no_truncate`
+- `trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_updated`

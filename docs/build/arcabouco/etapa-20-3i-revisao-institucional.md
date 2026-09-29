@@ -1,6 +1,6 @@
 # Etapa 20 / 3I: revisão humana do conteúdo institucional
 
-Status: correção da linhagem autorizada pelo fundador, com duas migrações instaladas e retestadas em staging. Produção não alterada; CI final pendente. Não inicia etapas 21–24.
+Status: migrações instaladas nos dois ambientes e inventário conciliado; CI final, merge e deploys pendentes. Não inicia etapas 21–24.
 
 O resultado institucional que tem binding nativo é lido dos blocos imutáveis e comparado ao envelope persistido. O leitor retorna a revisão exata; cada resultado de comparação recebe sua própria validação. Somente o resultado histórico sem captura conserva o contrato anterior. Resultado capturado sem binding nega leitura, cópia, liberação e revisão direta, inclusive por derivação. O contraponto legado de um resultado nativo e seus derivados ficam bloqueados para impedir recuperação da aprovação histórica.
 
@@ -21,7 +21,7 @@ Controles afetados: IAM-05, APP-04, APP-11, AI-09, SDLC-08 e SDLC-10. Dados: con
 
 Não reverter para leitores antigos que possam servir o contraponto legado bloqueado. Se o novo fluxo falhar, suspender a capacidade institucional e corrigir por migração aditiva; preservar revisões e atos imutáveis. Captura de catálogo, journal, tipos e funções efetivas somente depois da aplicação real. Fechamento exige CI, main, produção, web e worker no mesmo commit e comprovação de boot.
 
-## Bloqueio descoberto no E2E de 29/09/2026
+## Histórico: bloqueio descoberto no E2E de 29/09/2026
 
 CI preliminar `36560374405`, commit `3f40e383`: Quality passou; todos os contratos SQL passaram, assim como oito corridas de autoridade de revisão e doze de projeção/leitura nativa. Banco recusou somente o snapshot antigo de `read_institutional_model_results_v1`, cuja captura corrigida está nesta branch. E2E: 43 passaram, 16 condicionais foram pulados e um falhou em duas tentativas. Aprovação explícita, recarga, revogação e os quatro downloads do primeiro resultado passaram; após adotar o segundo cálculo, não existe o link com revisão nativa exigido pelo teste (`institutional-setup.spec.ts:237`).
 
@@ -31,9 +31,9 @@ Não reduzir a exigência do teste para aceitar o legado. Recomendação: antes 
 
 Alternativa segura: publicar apenas a contenção da leitura prospectiva inelegível e manter o recálculo governado indisponível até completar a prova. Não recomendada como fechamento de 3I, pois deixa a jornada interrompida.
 
-Responsável: executor desta PR. O fundador respondeu "ok" à antecipação desta dependência técnica dentro da etapa 20. A correção está autorizada; próxima ação é concluir os gates e publicar. Nenhum DDL permanente, merge ou deploy deste incremento ocorreu. PR permanece em draft durante a verificação; não é completion.
+Responsável: executor desta PR. O fundador respondeu "ok" à correção desta dependência dentro da etapa 20. O registro acima descreve o bloqueio anterior à aplicação em staging. A correção está autorizada; próxima ação é concluir os gates e publicar. PR permanece em draft durante a verificação; não é completion.
 
-## Correção autorizada em 29/09/2026
+## Histórico: correção autorizada em 29/09/2026
 
 O draft não aplicado foi consolidado em `institutional_setup_parent_lineage`, numa transação única. `private.institutional_setup_parent_pins` fixa o pai no contexto entregue ao preparador, com vínculo exato de trabalho, configuração e fingerprint. A persistência usa esse pai mesmo após outra aprovação; replay não o substitui. A ancestralidade valida todos os setups e contribuições em até 128 nós, reunindo as fontes e versões de direitos de cada setup. Não há backfill de prova histórica.
 
@@ -41,16 +41,28 @@ O predicado privado `institutional_revision_missing_native_v1` é compartilhado 
 
 Provas preliminares em staging, sempre BEGIN/ROLLBACK: `institutional_native_human_review.sql` passou com o negativo de aprovação direta e cópia; `institutional_setup_parent_lineage.sql` passou com aprovação interveniente, cadeia setup/contribuição/setup, replay e imutabilidade do pai. O teste de duas sessões foi acrescentado ao checker de concorrência de captura já ligado na CI; ainda precisa executar na base descartável da CI. Gate local completo em andamento. Nenhuma alteração permanente de ambiente nesta rodada.
 
-## Verificação do candidato c8aa0add e correção adicional
+## Histórico: verificação do candidato c8aa0add e correção adicional
 
 CI `36569372150`: check e segurança passaram; contratos SQL, nove corridas de captura do setup (incluindo aprovação concorrente), demais corridas e funções efetivas passaram. Inventário negou os arquivos e a rota ainda não conciliados e a migração ainda ausente de produção. E2E institucional passou, incluindo o segundo resultado nativo. E2E combinado de execução/modelo falhou nas duas tentativas ao aprovar o segundo setup depois de uma nova versão de fonte.
 
 `approvedConfigurations` é filtrado pela elegibilidade atual das fontes; não pode ser a identidade editorial do pai. Migração aditiva `institutional_setup_parent_identity` captura `setupParent` sob o lock do projeto e valida id, fingerprint, revisão e trabalho. Ausência do campo conserva classificação anterior; null explícito não procura outro pai. Capturas antigas não são reescritas. Prova `institutional_setup_parent_source_change.sql`: antes, falha por perda do pai; depois, passa com pai exato, três versões de fonte, replay e imutabilidade.
 
-Primeira migração instalada em staging com carimbo `20260929124911`, com revisão humana e cadeia mista retestadas e advisor de segurança zero. Produção não alterada. Migração adicional ainda em verificação; completion continua pendente.
+A primeira migração foi instalada em staging com carimbo `20260929124911`, com revisão humana e cadeia mista retestadas e advisor de segurança zero. A segunda aplicação está registrada a seguir; produção não alterada e completion pendente.
 
 Staging confirmado em 29/09: `20260929124911` (`institutional_setup_parent_lineage`, md5 `c7665037bbee94957b5fd6c4e5ce3281`) e `20260929131006` (`institutional_setup_parent_identity`, md5 `5845586101b154ce36111581c4df19f0`). Conteúdo dos arquivos idêntico aos statements do journal. A migração adicional passou no teste instalado de troca de fonte. Candidato `1522b34c` publicado para repetir a CI completa.
 
 CI `36573328405`, candidato `1522b34c`: check, segurança, contratos SQL e corridas passaram; inventário/journal continuam pendentes de produção. O E2E combinado avançou por aprovação, recálculo e adoção, com resultado completed. Falhou somente no seletor antigo que exigia URL terminada em `/xlsx` e excluía a query `?revision=`. O teste passa a exigir binding existente, revisão exata na URL, download 200 e header `x-artifact-revision` correspondente; antes da adoção, nega qualquer URL do novo resultado, com ou sem query. Revisão independente aprovou o ajuste. Gate local completo passou novamente.
 
 Prova adicional de fonte exclusiva ancestral: fixture estrutural mantém os bytes em outra sessão do mesmo trabalho; captura filha tem duas fontes e ancestralidade tem três. Após revogação, o snapshot filho continua autorizado, o ancestral perde autorização e a fonte permanece na cadeia. Passou em staging com rollback. Essa prova não é, isoladamente, uma execução do produtor final.
+
+## Histórico: preflight do candidato 9d6dc5ee
+
+`9d6dc5ee`, CI `36576332203`: check e Security `36576332018` passaram. Todos os contratos SQL e testes concorrentes passaram; o job de banco recusa exclusivamente os dois arquivos ainda ausentes do journal de produção e o inventário de migrações/entrypoint ainda não conciliado. Não houve relaxamento desses checkers. E2E continua em execução. As nove funções afetadas em produção foram relidas e conferem com a baseline pré-aplicação.
+
+## Aplicação e conciliação
+
+Migrações instaladas e conferidas em produção (`20260929135457`, `20260929135520`) e staging (`20260929124911`, `20260929131006`), com SQL idêntico nos journals e 14 definições de função iguais entre ambientes. Catálogos conciliados: 2.838 objetos em produção e 2.899 em staging; 14 novos objetos inventariados, nova ação de revisão registrada e tipos regenerados. Os 18 testes do checker passaram; segurança de produção sem alertas. Nenhum dado sintético criado em produção. CI preliminar `36576332203`: check e E2E passaram (44 testes, 16 condicionais não executados); banco recusou somente inventário/journal então pendentes, agora conciliados. Security `36576332018` passou. CI final, merge e deploys ainda pendentes.
+
+Avisos de desempenho são informativos: a tabela nova ainda vazia aparece em `unused_index`; nenhum índice de integridade foi removido. Recuperação permanece por contenção da capacidade e migração aditiva, sem restaurar o caminho legado bloqueado.
+
+Gate local repetido após regeneração e conciliação: 44/44 tarefas aprovadas. A tentativa inicial em sandbox recusou sockets locais usados por sete testes de scripts; repetição com a permissão necessária passou sem alteração de código/teste. Revisor independente confirmou migrações byte a byte e ausência de bloqueador para CI final.

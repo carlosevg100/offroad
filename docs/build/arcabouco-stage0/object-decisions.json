@@ -2495,6 +2495,12 @@
           "line": 513,
           "anchor": "create or replace function private.artifact_revision_release_v1(r public.artifact_revisions)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 307,
+          "anchor": "create or replace function private.artifact_revision_release_v1(r public.artifact_revisions)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -28142,6 +28148,12 @@
           "path": "supabase/migrations/20260910134318_institutional_reviewed_result_comparison.sql",
           "line": 3,
           "anchor": "create or replace function private.read_institutional_model_results_v1(p_project_id uuid) returns jsonb language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 345,
+          "anchor": "create or replace function private.read_institutional_model_results_v1(p_project_id uuid)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -179465,6 +179477,12 @@
           "line": 61,
           "anchor": "create or replace function private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 499,
+          "anchor": "create or replace function private.artifact_review_sources_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -179744,6 +179762,12 @@
           "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
           "line": 606,
           "anchor": "create function private.read_artifact_revision_reviews_v1(p_revision_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 470,
+          "anchor": "create or replace function private.read_artifact_revision_reviews_v1(p_revision_id uuid) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ]
@@ -180108,6 +180132,12 @@
           "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
           "line": 529,
           "anchor": "create function private.review_artifact_revision_v1(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 400,
+          "anchor": "create or replace function private.review_artifact_revision_v1(",
           "mechanism": "direct_ddl"
         }
       ]
@@ -185873,6 +185903,12 @@
           "line": 215,
           "anchor": "create function private.institutional_configuration_capture_state_v1(p_org uuid,p_configuration uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135520_institutional_setup_parent_identity.sql",
+          "line": 59,
+          "anchor": "create or replace function private.institutional_configuration_capture_state_v1(p_org uuid,p_configuration uuid)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -185981,6 +186017,12 @@
           "line": 88,
           "anchor": "create or replace function private.persist_initial_institutional_candidate_v1(p_job_id uuid,p_capability_token text,p_submission_id uuid,p_candidate jsonb,p_snapshot uuid) returns jsonb language plpgsql security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 82,
+          "anchor": "create or replace function private.persist_initial_institutional_candidate_v1(p_job_id uuid,p_capability_token text,p_submission_id uuid,p_candidate jsonb,p_snapshot uuid) returns jsonb language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -186044,6 +186086,12 @@
           "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
           "line": 125,
           "anchor": "create function private.worker_load_institutional_model_context_v3(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135520_institutional_setup_parent_identity.sql",
+          "line": 4,
+          "anchor": "create or replace function private.worker_load_institutional_model_context_v3(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
         }
       ]
@@ -188283,6 +188331,12 @@
           "line": 3,
           "anchor": "create function private.institutional_configuration_ancestry_v1(p_org uuid,p_work uuid,p_configuration uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 166,
+          "anchor": "create or replace function private.institutional_configuration_ancestry_v1(p_org uuid,p_work uuid,p_configuration uuid)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -189140,6 +189194,758 @@
           "path": "supabase/migrations/20260929021418_institutional_native_projection.sql",
           "line": 31,
           "anchor": "create trigger institutional_native_updated before update on private.institutional_native_bindings for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_native_result_content_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_native_result_content_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_native_result_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_native_result_content_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_native_result_content_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 249,
+          "anchor": "create function private.institutional_native_result_content_v1(p_org uuid,p_result uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_result_requires_native_v1(p_org uuid, p_result uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_result_requires_native_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_result_requires_native_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_result_requires_native_v1(p_org uuid, p_result uuid)",
+          "kind": "function",
+          "name": "institutional_result_requires_native_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_result uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 242,
+          "anchor": "create function private.institutional_result_requires_native_v1(p_org uuid,p_result uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_revision_missing_native_v1(p_org uuid, p_revision uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_revision_missing_native_v1(p_org uuid, p_revision uuid)",
+          "kind": "function",
+          "name": "institutional_revision_missing_native_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_revision_missing_native_v1(p_org uuid, p_revision uuid)",
+          "kind": "function",
+          "name": "institutional_revision_missing_native_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 294,
+          "anchor": "create function private.institutional_revision_missing_native_v1(p_org uuid,p_revision uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.read_institutional_workbook_binding_v1(p_work uuid, p_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_institutional_workbook_binding_v1(p_work uuid, p_fingerprint text)",
+          "kind": "function",
+          "name": "read_institutional_workbook_binding_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work uuid, p_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_institutional_workbook_binding_v1(p_work uuid, p_fingerprint text)",
+          "kind": "function",
+          "name": "read_institutional_workbook_binding_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work uuid, p_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 269,
+          "anchor": "create function private.read_institutional_workbook_binding_v1(p_work uuid,p_fingerprint text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.read_institutional_workbook_binding_v1(p_work uuid, p_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_institutional_workbook_binding_v1(p_work uuid, p_fingerprint text)",
+          "kind": "function",
+          "name": "read_institutional_workbook_binding_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work uuid, p_fingerprint text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_institutional_workbook_binding_v1(p_work uuid, p_fingerprint text)",
+          "kind": "function",
+          "name": "read_institutional_workbook_binding_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work uuid, p_fingerprint text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 288,
+          "anchor": "create function public.read_institutional_workbook_binding_v1(p_work uuid,p_fingerprint text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_delete",
+          "kind": "policy",
+          "name": "institutional_setup_parent_pins_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_delete",
+          "kind": "policy",
+          "name": "institutional_setup_parent_pins_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 24,
+          "anchor": "create policy institutional_setup_parent_pins_deny_delete on private.institutional_setup_parent_pins as restrictive for delete to anon,authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_insert",
+          "kind": "policy",
+          "name": "institutional_setup_parent_pins_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_insert",
+          "kind": "policy",
+          "name": "institutional_setup_parent_pins_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 22,
+          "anchor": "create policy institutional_setup_parent_pins_deny_insert on private.institutional_setup_parent_pins as restrictive for insert to anon,authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_select",
+          "kind": "policy",
+          "name": "institutional_setup_parent_pins_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_select",
+          "kind": "policy",
+          "name": "institutional_setup_parent_pins_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 21,
+          "anchor": "create policy institutional_setup_parent_pins_deny_select on private.institutional_setup_parent_pins as restrictive for select to anon,authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_update",
+          "kind": "policy",
+          "name": "institutional_setup_parent_pins_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_setup_parent_pins.institutional_setup_parent_pins_deny_update",
+          "kind": "policy",
+          "name": "institutional_setup_parent_pins_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 23,
+          "anchor": "create policy institutional_setup_parent_pins_deny_update on private.institutional_setup_parent_pins as restrictive for update to anon,authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.institutional_setup_parent_pins",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.institutional_setup_parent_pins",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_setup_parent_pins",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.institutional_setup_parent_pins",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_setup_parent_pins",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 4,
+          "anchor": "create table private.institutional_setup_parent_pins (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_audit",
+          "kind": "trigger",
+          "name": "institutional_setup_parent_pins_audit",
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_setup_parent_pins_audit AFTER INSERT ON private.institutional_setup_parent_pins FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_audit",
+          "kind": "trigger",
+          "name": "institutional_setup_parent_pins_audit",
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_setup_parent_pins_audit AFTER INSERT ON private.institutional_setup_parent_pins FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 28,
+          "anchor": "create trigger institutional_setup_parent_pins_audit after insert on private.institutional_setup_parent_pins for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_immutable",
+          "kind": "trigger",
+          "name": "institutional_setup_parent_pins_immutable",
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_parent_pins_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_parent_pins FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_immutable",
+          "kind": "trigger",
+          "name": "institutional_setup_parent_pins_immutable",
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_parent_pins_immutable BEFORE DELETE OR UPDATE ON private.institutional_setup_parent_pins FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 25,
+          "anchor": "create trigger institutional_setup_parent_pins_immutable before update or delete on private.institutional_setup_parent_pins for each row execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_setup_parent_pins_no_truncate",
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_parent_pins_no_truncate BEFORE TRUNCATE ON private.institutional_setup_parent_pins FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_setup_parent_pins_no_truncate",
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_setup_parent_pins_no_truncate BEFORE TRUNCATE ON private.institutional_setup_parent_pins FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 26,
+          "anchor": "create trigger institutional_setup_parent_pins_no_truncate before truncate on private.institutional_setup_parent_pins for each statement execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_updated",
+          "kind": "trigger",
+          "name": "institutional_setup_parent_pins_updated",
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_setup_parent_pins_updated BEFORE UPDATE ON private.institutional_setup_parent_pins FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_setup_parent_pins.institutional_setup_parent_pins_updated",
+          "kind": "trigger",
+          "name": "institutional_setup_parent_pins_updated",
+          "table": "institutional_setup_parent_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_setup_parent_pins_updated BEFORE UPDATE ON private.institutional_setup_parent_pins FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Pai institucional fixado na captura e revisão humana vinculada ao conteúdo nativo exato; resultado capturado sem prova nativa permanece bloqueado.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+          "line": 27,
+          "anchor": "create trigger institutional_setup_parent_pins_updated before update on private.institutional_setup_parent_pins for each row execute function private.set_updated_at();",
           "mechanism": "direct_ddl"
         }
       ]
@@ -196085,6 +196891,27 @@
       "decision": "preservar",
       "stage": "20 / 3H",
       "reason": "Correção aditiva aplicada em staging e produção após contrato SQL e concorrência na CI; sem reaplicar a migração inicial."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260929135457_institutional_setup_parent_lineage.sql",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Revisão institucional nativa com pai editorial imutável e identidade independente da elegibilidade das fontes."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260929135520_institutional_setup_parent_identity.sql",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Revisão institucional nativa com pai editorial imutável e identidade independente da elegibilidade das fontes."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/artifact-review-actions.ts",
+      "decision": "preservar",
+      "stage": "20 / 3I",
+      "reason": "Revisão humana sobre revisão institucional exata, com identidade e autoridade derivadas da sessão e RPC atômica."
     }
   ],
   "staging_archive": [

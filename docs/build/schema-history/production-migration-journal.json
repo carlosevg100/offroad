@@ -1657,14 +1657,22 @@
    "name": "institutional_closure_execution_scope"
   },
   {
-   "name": "institutional_native_projection",
-   "version": "20260929021418"
+   "version": "20260929021418",
+   "name": "institutional_native_projection"
   },
   {
    "version": "20260929024501",
    "name": "institutional_native_read_lock_order"
+  },
+  {
+   "version": "20260929135457",
+   "name": "institutional_setup_parent_lineage"
+  },
+  {
+   "version": "20260929135520",
+   "name": "institutional_setup_parent_identity"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-29T02:45:54.951Z"
+ "captured_at": "2026-09-29T13:57:45.131339+00:00"
 }
