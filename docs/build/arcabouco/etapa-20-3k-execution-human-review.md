@@ -1,4 +1,4 @@
-# Etapa 20 / 3K — revisão humana de resultados de execução
+# Etapa 20 / 3K: revisão humana de resultados de execução
 
 ## Escopo e decisão
 
@@ -15,7 +15,7 @@ A página de execução usa `ArtifactRevisionReview`, com comentário, devoluç�
 - Jornada `capital-execution-request.spec.ts` ampliada: pendência, declaração, aprovação persistida após reload e revogação.
 - Migração `execution_result_human_review`: staging `20260929182221`, produção `20260929182306`; SQL MD5 `3276a2f0260533d74f984eb257401da2`. Definição instalada idêntica nos dois ambientes.
 - Catálogos: 2.842 objetos em produção, 2.903 em staging; nenhuma alteração de grants. Checkers: 18 testes e 95 snapshots efetivos conferidos.
-- CI, merge e deployments ainda pendentes; este documento não declara completion.
+- Gates de banco e E2E da CI 36612321209 PASS e Security 36612321465 PASS. O gate web identificou um travessão proibido no título deste documento; corrigido sem alterar comportamento. CI final, merge e deployments ainda pendentes; este documento não declara completion.
 
 ## Riscos tratados e limites
 
