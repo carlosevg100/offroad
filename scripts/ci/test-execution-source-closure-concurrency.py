@@ -116,3 +116,55 @@ run('begin;'+authorized(restore)+'commit;')
 compete(review,revoke)
 assert run('begin;'+authorized(f"select private.read_artifact_revision_reviews_v1('{revision}')->>'withheld';")+'rollback;').endswith('true')
 print('execution_closure_review_before_revoke: PASS (prior review retained, notes withheld)')
+
+# Approval revocation is distinct from source revocation. An overlapping read may
+# linearize before the approval is revoked; a subsequent READ COMMITTED statement
+# must observe the revocation, even inside the same still-open reader transaction.
+run('begin;'+authorized(restore)+f"""
+insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by)
+values('{org}',true,false,'{actor}') on conflict(organization_id) do update set self_approval_allowed=true,assignment_required=false;
+do $$declare r public.artifact_revisions;b jsonb;made jsonb;begin
+ select * into strict r from public.artifact_revisions where id='{revision}';
+ select jsonb_agg(jsonb_build_object('blockKey',block_key,'blockNo',block_no,'kind',kind,'content',content,'claims',claims) order by block_no)
+ into b from public.artifact_blocks where revision_id=r.id;
+ made:=private.create_artifact_revision_v1('{org}','{work}','execution_result','synthetic-concurrent-external-review','external','person',
+ jsonb_set(r.manifest,'{{audience}}','"external"'),b,'[]',null,null,null,'{actor}','{actor}');
+end $$;commit;""")
+external_revision=run(f"select r.id from public.artifact_revisions r join public.artifacts a on a.id=r.artifact_id where a.organization_id='{org}' and a.subject='synthetic-concurrent-external-review';")
+external_fingerprint=run(f"select manifest_fingerprint from public.artifact_revisions where id='{external_revision}';")
+approval=run('begin;'+authorized(f"select public.review_artifact_revision_v1('{external_revision}','{external_fingerprint}','approve',null,null,true,gen_random_uuid(),null)->>'reviewId';")+'commit;').splitlines()[-1]
+revoke_approval=f"select public.review_artifact_revision_v1('{external_revision}','{external_fingerprint}','revoke_approval',null,null,false,gen_random_uuid(),'{approval}');"
+
+def external_read(blocked):
+    expected='blocked' if blocked else 'released'
+    return f"""do $$declare x jsonb;begin x:=public.read_artifact_revision_v1('{external_revision}');
+    if (x->>'release') is distinct from '{expected}' then raise exception 'approval_release_unexpected';end if;
+    if {str(blocked).lower()} and ((x#>>'{{restriction,kind}}') is distinct from 'release' or (x->'blocks') is distinct from '[]'::jsonb)
+    then raise exception 'revoked_external_bytes_returned';end if;
+    end $$;"""
+
+reader=None
+try:
+    reader=subprocess.Popen(command,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
+    reader.stdin.write('\\o /dev/null\nbegin;'+authorized(external_read(False))+'\n\\echo APPROVAL_READ_OBSERVED\n')
+    reader.stdin.flush()
+    deadline=time.monotonic()+20
+    observed=[]
+    while True:
+        remaining=deadline-time.monotonic()
+        if remaining<=0 or not select.select([reader.stdout],[],[],remaining)[0]:
+            raise AssertionError('Reader did not observe the approval before revocation')
+        line=reader.stdout.readline().strip();observed.append(line)
+        if line=='APPROVAL_READ_OBSERVED':break
+        if reader.poll() is not None:raise AssertionError('\n'.join(observed))
+    # A distinct session revokes and commits while the reader transaction remains open.
+    run('begin;'+authorized(revoke_approval)+'commit;')
+    reader.stdin.write(external_read(True)+'commit;\n');reader.stdin.close();reader.stdin=None
+    output=reader.communicate(timeout=20)[0]
+    assert reader.returncode==0,output
+    print('execution_approval_read_before_revoke: PASS (overlapping reader observed approval; revocation committed; next statement in the same transaction denies external bytes)')
+    run('begin;'+authorized(external_read(True))+'commit;')
+    print('execution_approval_revoke_before_read: PASS (new session after revocation commit denies external bytes)')
+finally:
+    if reader is not None and reader.poll() is None:
+        reader.kill();reader.wait(timeout=10)

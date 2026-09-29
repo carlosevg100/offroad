@@ -11,6 +11,7 @@ A página de execução usa `ArtifactRevisionReview`, com comentário, devoluç�
 - `execution_result_human_review.sql`: recibo sem aprovação; preparador original; leitura interna antes de aprovar; autoaprovação exige declaração; aprovação exata; derivado com ato próprio; pacote legado não libera; audiência externa bloqueada/aprovada/revogada; fingerprint errado; fonte revogada. PASS staging em transação integralmente revertida.
 - `execution_artifact_recovery.sql`: recovery por sucessor conserva preparador original. PASS staging.
 - `institutional_native_human_review.sql`: preservação das negações e aprovação institucional. PASS staging.
+- Concorrência de aprovação: `execution_approval_read_before_revoke` e `execution_approval_revoke_before_read`, no script de duas sessões já ligado à CI. Uma leitura concorrente pode observar a aprovação antes da revogação; a instrução seguinte em READ COMMITTED, inclusive na mesma transação, e uma sessão nova negam os bytes externos após o commit. Sem promessa de retirar bytes já entregues.
 - 39 testes web direcionados PASS; testes adicionais de erro sem fallback. Gate local `pnpm check`: 44/44 PASS.
 - Jornada `capital-execution-request.spec.ts` ampliada: pendência, declaração, aprovação persistida após reload e revogação.
 - Migração `execution_result_human_review`: staging `20260929182221`, produção `20260929182306`; SQL MD5 `3276a2f0260533d74f984eb257401da2`. Definição instalada idêntica nos dois ambientes.
