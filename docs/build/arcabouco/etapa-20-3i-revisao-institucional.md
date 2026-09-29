@@ -66,3 +66,9 @@ Migrações instaladas e conferidas em produção (`20260929135457`, `2026092913
 Avisos de desempenho são informativos: a tabela nova ainda vazia aparece em `unused_index`; nenhum índice de integridade foi removido. Recuperação permanece por contenção da capacidade e migração aditiva, sem restaurar o caminho legado bloqueado.
 
 Gate local repetido após regeneração e conciliação: 44/44 tarefas aprovadas. A tentativa inicial em sandbox recusou sockets locais usados por sete testes de scripts; repetição com a permissão necessária passou sem alteração de código/teste. Revisor independente confirmou migrações byte a byte e ausência de bloqueador para CI final.
+
+## Estabilidade do teste de formatos
+
+CI `36580381480` passou banco completo, incluindo inventário e journal; Security `36580381257` passou. Check encontrou um timeout de cinco segundos no teste que renderizava quatro formatos duas vezes dentro do mesmo caso. Separado em oito casos idioma/formato, mantendo duas datas e todas as assertions de bytes, fontes, cabeçalhos e RPCs, sem aumentar timeout nem alterar runtime/DDL. Teste focal: 26/26 passaram. Revisão independente aprovou o isolamento; gate local e CI são repetidos antes do merge.
+
+A jornada E2E da mesma CI também passou. Gate local repetido após separação do teste: 44/44 tarefas aprovadas. Somente teste e este registro mudaram; DDL instalado e runtime permanecem os mesmos.

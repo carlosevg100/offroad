@@ -62,32 +62,32 @@ beforeEach(() => {
 afterEach(() => {vi.useRealTimers(); vi.resetAllMocks();});
 
 describe("approved institutional result downloads", () => {
-  it.each(["pt-BR", "en-US"])("replays all four actual formats and preserves reviewed evidence in %s", async locale => {
+  it.each(["pt-BR", "en-US"].flatMap(locale =>
+    ["xlsx", "docx", "pptx", "pdf"].map(format => ({locale, format})),
+  ))("replays $format and preserves reviewed evidence in $locale", async ({locale, format}) => {
     vi.useFakeTimers({toFake: ["Date"]});
-    for (const format of ["xlsx", "docx", "pptx", "pdf"]) {
-      vi.setSystemTime(new Date("2026-09-14T12:00:00Z"));
-      const monday = await request(format, locale);
-      expect(monday.status, `${format} must replay the real persisted artifact`).toBe(200);
-      const first = Buffer.from(await monday.arrayBuffer());
-      vi.setSystemTime(new Date("2026-09-18T12:00:00Z"));
-      const friday = await request(format, locale);
-      expect(friday.status).toBe(200);
-      expect(first.equals(Buffer.from(await friday.arrayBuffer()))).toBe(true);
-      expect(friday.headers.get("cache-control")).toBe("private, no-store");
-      expect(friday.headers.get("content-disposition")).toContain(`2026-09-10.${format}`);
-      expect(friday.headers.get("x-content-type-options")).toBe("nosniff");
-      expect(friday.headers.get("x-artifact-revision")).toBe(revisionId);
-      expect(friday.headers.get("x-artifact-legacy")).toBe("unpinned");
-      expect(friday.headers.get("x-artifact-release")).toBe("internal");
-      const content = textFromOutput(first, format).replace(/\s+/g, " ");
-      expect(content).toContain("EBITDA");
-      expect(content).toContain(scenario.sourceBindings[0]!.metadataEvidence.rationale);
-      expect(content).toContain(scenario.sourceBindings[0]!.sourceDocument);
-      expect(content).toContain(scenario.input.assumptionBook.assumptions[0]!.rationale);
-      if (process.env.OFFROAD_RESULT_QA_DIR) {
-        mkdirSync(process.env.OFFROAD_RESULT_QA_DIR, {recursive: true});
-        writeFileSync(`${process.env.OFFROAD_RESULT_QA_DIR}/result-${locale === "en-US" ? "en" : "pt"}.${format}`, first);
-      }
+    vi.setSystemTime(new Date("2026-09-14T12:00:00Z"));
+    const monday = await request(format, locale);
+    expect(monday.status, `${format} must replay the real persisted artifact`).toBe(200);
+    const first = Buffer.from(await monday.arrayBuffer());
+    vi.setSystemTime(new Date("2026-09-18T12:00:00Z"));
+    const friday = await request(format, locale);
+    expect(friday.status).toBe(200);
+    expect(first.equals(Buffer.from(await friday.arrayBuffer()))).toBe(true);
+    expect(friday.headers.get("cache-control")).toBe("private, no-store");
+    expect(friday.headers.get("content-disposition")).toContain(`2026-09-10.${format}`);
+    expect(friday.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(friday.headers.get("x-artifact-revision")).toBe(revisionId);
+    expect(friday.headers.get("x-artifact-legacy")).toBe("unpinned");
+    expect(friday.headers.get("x-artifact-release")).toBe("internal");
+    const content = textFromOutput(first, format).replace(/\s+/g, " ");
+    expect(content).toContain("EBITDA");
+    expect(content).toContain(scenario.sourceBindings[0]!.metadataEvidence.rationale);
+    expect(content).toContain(scenario.sourceBindings[0]!.sourceDocument);
+    expect(content).toContain(scenario.input.assumptionBook.assumptions[0]!.rationale);
+    if (process.env.OFFROAD_RESULT_QA_DIR) {
+      mkdirSync(process.env.OFFROAD_RESULT_QA_DIR, {recursive: true});
+      writeFileSync(`${process.env.OFFROAD_RESULT_QA_DIR}/result-${locale === "en-US" ? "en" : "pt"}.${format}`, first);
     }
     expect(rpc).toHaveBeenCalledWith("read_institutional_model_results_v1", {p_project_id: projectId});
     expect(rpc).toHaveBeenCalledWith("read_artifact_head_v1", {p_work_id: projectId, p_kind: "model_result", p_subject: "institutional-workbook"});
