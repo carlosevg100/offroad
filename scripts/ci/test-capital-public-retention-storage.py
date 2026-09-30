@@ -188,7 +188,8 @@ update private.capital_public_retention_controls set enabled=true,policy_id='{PO
             enabled = 'true' if self.original_control['enabled'] else 'false'
             self.sql(f"update private.capital_public_retention_controls set enabled={enabled},policy_id='{self.original_control['policy']}' where singleton;")
 
-    def claim(self, token=TOKEN):
+    def claim(self, token=None):
+        token = TOKEN if token is None else token
         return self.rpc_sql(f"select public.worker_claim_capital_capture_purge_v1({literal(token)},20);")
 
     def delivery(self, label, lifetime_seconds=3600):
