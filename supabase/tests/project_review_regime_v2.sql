@@ -61,6 +61,30 @@ do $$declare fp text;ofp text;before_count bigint;before_row jsonb;begin
  perform pg_temp.denied_v2(format('select public.set_organization_review_policy_v2(%L,false,false,%L)','a11b0000-0000-4000-9000-000000000001',ofp),'policy_changed','40001','cas_stale_organization_denied');
 end $$;
 
+-- The retained assignment trigger promotes inherit, preserves an explicit
+-- override, and never reopens a required regime when the last role is removed.
+do $$declare stale text;begin
+ perform pg_temp.project_policy_v2('inherit','inherit');
+ stale:=pg_temp.context_v2()->>'policy_fingerprint';
+ perform pg_temp.rpc_v2($q$select public.set_capital_project_review_assignment_v1('a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-8000-000000000001','preparer',true)$q$);
+ perform pg_temp.check_v2(pg_temp.context_v2()#>>'{assignment_required,project}'='required'
+  and pg_temp.context_v2()->>'policy_fingerprint'<>stale,'first_assignment_promotes_inherit_and_invalidates_snapshot');
+ perform pg_temp.denied_v2(format('select public.set_capital_project_review_policy_v2(%L,%L,%L,%L)',
+  'a11b0000-0000-4000-9000-000000000002','inherit','not_required',stale),
+  'policy_changed','40001','assignment_promotion_rejects_stale_cas');
+ perform pg_temp.project_policy_v2('inherit','not_required');
+ perform pg_temp.rpc_v2($q$select public.set_capital_project_review_assignment_v1('a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-8000-000000000001','reviewer',true)$q$);
+ perform pg_temp.check_v2(pg_temp.context_v2()#>>'{assignment_required,project}'='not_required'
+  and pg_temp.context_v2()#>>'{assignment_required,effective}'='false','explicit_not_required_survives_assignment');
+ perform pg_temp.project_policy_v2('inherit','required');
+ perform pg_temp.rpc_v2($q$select public.set_capital_project_review_assignment_v1('a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-8000-000000000001','reviewer',false)$q$);
+ perform pg_temp.rpc_v2($q$select public.set_capital_project_review_assignment_v1('a11b0000-0000-4000-9000-000000000002','a11b0000-0000-4000-8000-000000000001','preparer',false)$q$);
+ perform pg_temp.check_v2(pg_temp.context_v2()#>>'{assignment_required,project}'='required'
+  and pg_temp.context_v2()#>>'{assignment_required,effective}'='true'
+  and not exists(select 1 from public.capital_project_review_assignments where capital_project_id='a11b0000-0000-4000-9000-000000000002'),
+  'last_unassignment_does_not_reopen_required_regime');
+end $$;
+
 select pg_temp.denied_v2($q$select public.read_capital_project_review_context_v2('a4192000-0000-4000-9000-000000000002')$q$,'review_context_access_denied','42501','cross_tenant_context_denied');
 select pg_temp.denied_v2(format('select public.set_capital_project_review_policy_v2(%L,%L,%L,%L)','a4192000-0000-4000-9000-000000000002','inherit','inherit',repeat('a',64)),
  'capital_project_review_management_denied','42501','cross_tenant_setter_denied');

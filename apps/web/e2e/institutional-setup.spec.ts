@@ -159,10 +159,10 @@ test("guided institutional setup calculates only after review and survives resum
  const ownRow=roles.locator(`tr[data-member-email="${email}"]`);
  await ownRow.locator('input[value="preparer"]').click();
  await expect(ownRow.locator('input[value="preparer"]')).toBeChecked();
- // Assigning a person does not change the separate policy requiring assignments.
- // The legacy setup reader still enforces this person's preparer/approver roles below.
- await expect(roles).toHaveAttribute("data-regime","open");
- await expect(page.getByTestId("project-review-assignment-required")).toHaveAttribute("data-effective","false");
+ // The retained history trigger promotes an inherited project policy to required
+ // on the first assignment. An explicit not_required override remains separate.
+ await expect(roles).toHaveAttribute("data-regime","assigned");
+ await expect(page.getByTestId("project-review-assignment-required")).toHaveAttribute("data-effective","true");
  await ownRow.locator('input[value="approver"]').click();
  await expect(ownRow.locator('input[value="approver"]')).toBeChecked();
  await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective","false");

@@ -63841,7 +63841,181 @@
       ],
       "signature": "p_org uuid, p_payload jsonb, p_declared_sources jsonb",
       "security_definer": true
+    },
+    {
+      "id": "function:private.lock_review_policy_member_v2(p_org uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "lock_review_policy_member_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_capital_project_review_context_v2(p_project_id uuid)",
+      "kind": "function",
+      "name": "read_capital_project_review_context_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.review_policy_projection_v2(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "name": "review_policy_projection_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)",
+      "kind": "function",
+      "name": "set_capital_project_review_policy_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)",
+      "kind": "function",
+      "name": "set_organization_review_policy_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.read_capital_project_review_context_v2(p_project_id uuid)",
+      "kind": "function",
+      "name": "read_capital_project_review_context_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)",
+      "kind": "function",
+      "name": "set_capital_project_review_policy_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)",
+      "kind": "function",
+      "name": "set_organization_review_policy_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text",
+      "security_definer": false
     }
   ],
-  "captured_at": "2026-09-29T18:24:22.063386+00:00"
+  "captured_at": "2026-09-30T17:30:47.285437+00:00"
 }

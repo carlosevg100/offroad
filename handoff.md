@@ -1,6 +1,6 @@
 ## Etapa 20 / 3P: regime de revisão em validação, 30/09/2026
 
-Regime v2 e CAS no componente existente, inclusive trabalho sem intake. Setters antigos de política recebem identidade vigente e READ/MANAGE legítimos. Antes: três aceitações indevidas reproduzidas em staging e atribuição negada. Depois: 45 controles SQL PASS, rollback e zero fixtures; 67 testes focais de interface PASS e gate local 44/44 por fase. Migração staging `20260930143756`; produção, corridas reais, E2E, CI final, merge e deployments pendentes. Não é completion. Contrato e riscos em `docs/build/arcabouco/etapa-20-3p-regime.md`. Etapa 20 aberta; 21–24 aguardam OK de onda.
+Regime v2 e CAS no componente existente, inclusive trabalho sem intake. Setters antigos de política exigem identidade vigente e READ/MANAGE legítimos. Três aceitações indevidas reproduzidas antes em staging; 49 controles SQL depois, 69 corridas reais, 67 testes focais de interface e gate local 44/44 PASS. A nova jornada E2E passou integralmente; o teste institucional legado recebeu a expectativa corrigida para o trigger vigente. Migração staging `20260930143756`, produção `20260930172846`: mesmo SQL MD5 `90385a7faadbc49ae5b494b44dbe9916`, 14 definições idênticas, oito funções novas, security advisors sem lints, zero dados de teste retidos. Journals e catálogo conciliados. CI final, merge e deploys pendentes; não é completion. Contrato e riscos em `docs/build/arcabouco/etapa-20-3p-regime.md`. Etapa 20 aberta; 21–24 aguardam OK de onda.
 
 ## Etapa 20 / 3O: paridade do contrato e execução paralela, 30/09/2026
 
