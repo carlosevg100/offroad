@@ -102,3 +102,7 @@ Após a reprodução em staging de uma fonte de observação omitida no manifest
 ## Destino de publicação do 3J, 29/09/2026
 
 Após o bloqueio automático do push, o executor perguntou explicitamente: "Autoriza publicar o commit 35322337 (correção SQL, testes sintéticos e documentação do 3J) no repositório público https://github.com/carlosevg100/offroad, para executar a CI e concluir a entrega?" O fundador respondeu: "sim e segue". Autoriza a publicação desse incremento no remoto público verificado, sua validação e a conclusão da entrega. Não autoriza publicar credenciais ou dados de clientes.
+
+## Execução paralela dentro das ondas, 30/09/2026
+
+Após a proposta de separar banco/adaptadores, interface e eval independente, com integração única, o fundador respondeu: "ok. segue assim". A explicação imediatamente anterior preservou o OK por onda e distinguiu preparação documental de implementação funcional. Autoriza distribuir trabalho independente da etapa 20 e preparar o próximo incremento durante a CI. Migrações, integração, merge, deploy e completion continuam coordenados e sequenciais quando dependentes. Nenhuma aprovação de conteúdo profissional, gasto, acesso ou efeito externo decorre desta organização. O mapa finito está em `docs/build/arcabouco/etapa-20-restante-e-paralelismo.md`. Etapas 21–24 aguardam o OK de sua onda; dentro das ondas seguintes, aplicar o mesmo paralelismo às dependências estabilizadas.

@@ -1,6 +1,8 @@
 import {z} from "zod";
 
 import {documentWorkProductSchema, type DocumentWorkProduct} from "./document-work-product";
+import {approvalCoversRevision} from "./review-coverage";
+import type {ArtifactReview, ExactReviewTarget} from "./review-protocol";
 
 /**
  * Stage 19 artifact protocol, the pure domain contract.
@@ -537,17 +539,39 @@ export function freshness(links: readonly ArtifactDependencyLink[], heads: Linea
 
 export type ReleaseState = "internal" | "released" | "blocked";
 
-/** The approval facts that exist today, each tied to the exact version it approved. */
+/** Historical approval facts. Execution receipts attest computation and never approve content. */
 export type ApprovalFact =
   | {readonly kind: "artifact_decision"; readonly decision: "confirm" | "request_changes"; readonly artifactFingerprint: string}
   | {readonly kind: "package_review"; readonly status: string; readonly materialFingerprint: string}
   /** Established already includes the adoption of a recomputed result (`institutional_result_established_v1`). */
   | {readonly kind: "institutional_result"; readonly resultId: string; readonly established: boolean}
+  /** Retained for callers carrying computation evidence; ignored for approval. */
   | {readonly kind: "execution_receipt"; readonly executionId: string; readonly resultFingerprint: string};
+
+/**
+ * Facts supplied by an authorized resolver for this exact revision. This pure contract cannot
+ * discover source rights, indirect execution links or persisted institutional bindings. A
+ * missing/incomplete context never establishes historical fallback. The resolver must traverse
+ * all ancestry and supply complete review history, including revocations and reaffirmation bases.
+ * This projection is evidence for domain evaluation, not a token that grants database access.
+ * ArtifactRevision carries no organization/work: ownership of those two target fields must be
+ * verified by that resolver, while this contract binds the human act to its supplied target.
+ */
+export type ReleaseContext = {
+  readonly target: ExactReviewTarget;
+  readonly sourceReadAccess: boolean;
+  readonly ancestry: {
+    readonly complete: boolean;
+    readonly hasExecution: boolean;
+    readonly institutional: "none" | "native" | "historical_counterpart" | "missing_native";
+  };
+  readonly reviews: readonly ArtifactReview[];
+};
 
 export type ReleaseInput = {
   readonly workReadAccess: boolean;
   readonly facts: readonly ApprovalFact[];
+  readonly context: ReleaseContext;
 };
 
 /** The fingerprints under which an approval may name this exact revision. */
@@ -564,20 +588,35 @@ function factCoversRevision(revision: ArtifactRevision, fact: ApprovalFact): boo
     case "artifact_decision": return fact.decision === "confirm" && fingerprints.has(fact.artifactFingerprint);
     case "package_review": return fact.status === "approved" && fingerprints.has(fact.materialFingerprint);
     case "institutional_result": return fact.established && revision.manifest.institutionalResult?.id === fact.resultId;
-    case "execution_receipt": return revision.manifest.execution !== null
-      && revision.manifest.execution.executionId === fact.executionId && revision.manifest.execution.resultFingerprint === fact.resultFingerprint;
+    case "execution_receipt": return false;
   }
 }
 
 /**
- * Every audience requires read access to the work; without it nothing is served. An external
- * audience is served only when an approval fact names this exact revision; internal and advisor
- * revisions are served as `internal` until approved and `released` afterwards. There is no
- * purpose parameter: preview and download call this same function with the same facts.
+ * Every audience requires current work and inherited source access plus complete lineage facts.
+ * Execution and institutional native content require their own exact active human act. Historical
+ * alternatives of native bindings are blocked. Only a proved ordinary historical lineage may
+ * use the legacy approval facts. This is a pure domain evaluation; runtime readers use the
+ * database's authorized projection, not this function. No purpose parameter changes the result.
  */
 export function releaseState(revision: ArtifactRevision, input: ReleaseInput): ReleaseState {
-  if (!input.workReadAccess) return "blocked";
-  const approved = input.facts.some((fact) => factCoversRevision(revision, fact));
+  if (input.workReadAccess !== true) return "blocked";
+  const context = input.context;
+  if (!context || context.sourceReadAccess !== true || context.ancestry?.complete !== true
+    || typeof context.ancestry.hasExecution !== "boolean"
+    || !["none", "native", "historical_counterpart", "missing_native"].includes(context.ancestry.institutional)
+    || !uuid.safeParse(context.target?.organizationId).success || !uuid.safeParse(context.target?.workId).success
+    || !Array.isArray(context.reviews)
+    || context.target.artifactId !== revision.artifactId || context.target.revisionId !== revision.id
+    || context.target.manifestFingerprint !== revision.manifestFingerprint || context.target.audience !== revision.audience) return "blocked";
+  const binding = context.ancestry.institutional;
+  if (binding === "missing_native") return "blocked";
+  // Native binding takes precedence, as in SQL; its ancestor cannot become an alternative route.
+  if (binding === "historical_counterpart") return "blocked";
+  const humanReviewRequired = binding === "native" || context.ancestry.hasExecution || revision.manifest.execution !== null;
+  const approved = humanReviewRequired
+    ? context.reviews.some((review) => approvalCoversRevision(context.target, review, context.reviews))
+    : input.facts.some((fact) => factCoversRevision(revision, fact));
   if (revision.audience === "external") return approved ? "released" : "blocked";
   return approved ? "released" : "internal";
 }

@@ -43,6 +43,9 @@ import {
   type LineageHeads,
 } from "./artifact-protocol";
 import {documentWorkProductSchema} from "./document-work-product";
+import {approvalCoversRevision, artifactReviewSchema, type ArtifactReview, type ExactReviewTarget} from "./review-protocol";
+import {approvalCoversRevision as sharedApprovalCoverage} from "./review-coverage";
+import {approvalCoversRevision as packageApprovalCoverage} from "./index";
 import executionResultBlocksFixture from "./fixtures/execution-result-blocks.json";
 import executionResultPacketFixture from "./fixtures/execution-result-packet.json";
 
@@ -259,45 +262,172 @@ describe("freshness", () => {
 describe("release", () => {
   const confirm = {kind: "artifact_decision", decision: "confirm", artifactFingerprint: hex("1")} as const;
 
+  type Context = {
+    target: ExactReviewTarget;
+    sourceReadAccess: boolean;
+    ancestry: {complete: boolean; hasExecution: boolean; institutional: "none" | "native" | "historical_counterpart" | "missing_native"};
+    reviews: readonly ArtifactReview[];
+  };
+  function context(current: ArtifactRevision, overrides: Partial<Context> = {}): Context {
+    return {target: {organizationId: id(4), workId: id(5), artifactId: current.artifactId, revisionId: current.id,
+      manifestFingerprint: current.manifestFingerprint, audience: current.audience}, sourceReadAccess: true,
+      ancestry: {complete: true, hasExecution: false, institutional: "none"}, reviews: [], ...overrides};
+  }
+  function humanApproval(current: ArtifactRevision, overrides: Partial<ArtifactReview> = {}): ArtifactReview {
+    return artifactReviewSchema.parse({id: id(80), target: context(current).target, act: "approve", reviewerId: id(81), preparedBy: id(82),
+      selfApprovalDeclared: false, reviewMode: "assigned", policySnapshot: {assignmentRequired: true, selfApprovalAllowed: false, roles: ["approver"]},
+      block: null, basisReviewId: null, changeReport: null, commandId: id(83), note: null, createdAt: at, ...overrides});
+  }
+
+  it("imports the package entry point and reexports one shared approval implementation", () => {
+    expect(approvalCoversRevision).toBe(sharedApprovalCoverage);
+    expect(packageApprovalCoverage).toBe(sharedApprovalCoverage);
+    const current = revision({}, {kind: "execution_result", execution: executionRef});
+    const approval = humanApproval(current);
+    expect(packageApprovalCoverage(context(current).target, approval, [approval])).toBe(true);
+  });
+
+  it.each(["internal", "advisor", "external"] as const)("computation receipts never approve the %s audience", (audience) => {
+    const current = revision({audience}, {kind: "execution_result", execution: executionRef});
+    const input = {workReadAccess: true, facts: [{kind: "execution_receipt" as const, executionId: executionRef.executionId, resultFingerprint: executionRef.resultFingerprint}], context: context(current)};
+    expect(releaseState(current, input)).toBe(audience === "external" ? "blocked" : "internal");
+  });
+
+  it.each(["internal", "advisor", "external"] as const)("legacy approvals cannot bypass execution review for %s", (audience) => {
+    const current = revision({audience}, {kind: "execution_result", execution: executionRef, institutionalResult: institutionalRef});
+    const input = {workReadAccess: true, facts: [confirm, {kind: "package_review" as const, status: "approved", materialFingerprint: current.manifestFingerprint},
+      {kind: "institutional_result" as const, resultId: institutionalRef.id, established: true}], context: context(current)};
+    expect(releaseState(current, input)).toBe(audience === "external" ? "blocked" : "internal");
+  });
+
+  it("a derived execution revision needs its own exact human act even when its manifest omits execution", () => {
+    const current = revision({audience: "external"}, {kind: "work_product"});
+    const parent = revision({id: id(11)}, {kind: "execution_result", execution: executionRef});
+    const input = {workReadAccess: true, facts: [confirm], context: context(current, {
+      ancestry: {complete: true, hasExecution: true, institutional: "none"}, reviews: [humanApproval(parent)],
+    })};
+    expect(releaseState(current, input)).toBe("blocked");
+    expect(releaseState(current, {...input, context: {...input.context, reviews: [humanApproval(current)]}})).toBe("released");
+  });
+
+  it("unknown ancestry or authority cannot fall back to a legacy approval", () => {
+    const current = revision({audience: "external"});
+    // A historical JavaScript caller lacks the context now required by the TypeScript API.
+    // @ts-expect-error release context is deliberately mandatory
+    expect(releaseState(current, {workReadAccess: true, facts: [confirm]})).toBe("blocked");
+    expect(releaseState(current, {workReadAccess: true, facts: [confirm], context: context(current, {
+      ancestry: {complete: false, hasExecution: false, institutional: "none"},
+    })})).toBe("blocked");
+  });
+
+  it.each([
+    ["missing execution lineage", (c: Context) => ({...c, ancestry: {complete: true, institutional: "none"}})],
+    ["unknown institutional classification", (c: Context) => ({...c, ancestry: {...c.ancestry, institutional: "other"}})],
+    ["truthy ancestry completion", (c: Context) => ({...c, ancestry: {...c.ancestry, complete: "true"}})],
+    ["truthy source access", (c: Context) => ({...c, sourceReadAccess: "true"})],
+    ["missing ancestry", (c: Context) => ({...c, ancestry: undefined})],
+    ["missing target", (c: Context) => ({...c, target: undefined})],
+    ["invalid organization", (c: Context) => ({...c, target: {...c.target, organizationId: "invalid"}})],
+    ["invalid work", (c: Context) => ({...c, target: {...c.target, workId: "invalid"}})],
+    ["missing review history", (c: Context) => ({...c, reviews: undefined})],
+  ] as const)("fails closed for %s even with matching legacy approval", (_name, change) => {
+    const current = revision({audience: "external"});
+    const malformed = {workReadAccess: true, facts: [confirm], context: change(context(current))};
+    // Simulate malformed boundary data instead of pretending TypeScript validated it.
+    expect(releaseState(current, malformed as never)).toBe("blocked");
+  });
+
+  it("human review binds organization, work, artifact, revision, fingerprint and audience", () => {
+    const current = revision({audience: "external"}, {kind: "execution_result", execution: executionRef});
+    const approval = humanApproval(current);
+    const input = {workReadAccess: true, facts: [confirm], context: context(current, {reviews: [approval]})};
+    expect(releaseState(current, input)).toBe("released");
+    for (const key of ["organizationId", "workId", "artifactId", "revisionId"] as const) {
+      const other = humanApproval(current, {target: {...approval.target, [key]: id(99)}});
+      expect(releaseState(current, {...input, context: {...input.context, reviews: [other]}})).toBe("blocked");
+    }
+    for (const target of [{...approval.target, manifestFingerprint: hex("9")}, {...approval.target, audience: "advisor" as const}]) {
+      expect(releaseState(current, {...input, context: {...input.context, reviews: [humanApproval(current, {target})]}})).toBe("blocked");
+    }
+  });
+
+  it("lost work or source access and target mismatches block otherwise approved content", () => {
+    const current = revision({audience: "external"}, {kind: "execution_result", execution: executionRef});
+    const input = {workReadAccess: true, facts: [confirm], context: context(current, {reviews: [humanApproval(current)]})};
+    expect(releaseState(current, {...input, workReadAccess: false})).toBe("blocked");
+    expect(releaseState(current, {...input, context: {...input.context, sourceReadAccess: false}})).toBe("blocked");
+    for (const target of [{...input.context.target, artifactId: id(99)}, {...input.context.target, revisionId: id(99)},
+      {...input.context.target, manifestFingerprint: hex("9")}, {...input.context.target, audience: "advisor" as const}]) {
+      expect(releaseState(current, {...input, context: {...input.context, target}})).toBe("blocked");
+    }
+  });
+
+  it("revocation and cosmetic reaffirmation use the shared exact approval coverage", () => {
+    const previous = revision({}, {kind: "execution_result", execution: executionRef});
+    const current = revision({id: id(11), revisionNo: 2, previousRevisionId: previous.id, manifestFingerprint: hex("9"), audience: "internal"}, {kind: "execution_result", execution: executionRef});
+    const base = humanApproval(previous);
+    const reaffirm = humanApproval(current, {id: id(84), act: "reaffirm", basisReviewId: base.id, changeReport: {outcome: "cosmetic", reasons: []}});
+    const input = {workReadAccess: true, facts: [confirm], context: context(current, {reviews: [base, reaffirm]})};
+    expect(releaseState(current, input)).toBe("released");
+    expect(releaseState(current, {...input, context: {...input.context, reviews: [reaffirm]}})).toBe("internal");
+    const revoke = humanApproval(previous, {id: id(85), act: "revoke_approval", basisReviewId: base.id});
+    expect(releaseState(current, {...input, context: {...input.context, reviews: [base, reaffirm, revoke]}})).toBe("internal");
+    const approve = humanApproval(current);
+    const directRevoke = humanApproval(current, {id: id(86), act: "revoke_approval", basisReviewId: approve.id});
+    expect(releaseState(current, {...input, context: {...input.context, reviews: [approve, directRevoke]}})).toBe("internal");
+  });
+
+  it("preserves institutional native precedence and refuses its historical alternative", () => {
+    const current = revision({audience: "external"}, {kind: "model_result", institutionalResult: institutionalRef});
+    const input = {workReadAccess: true, facts: [confirm, {kind: "institutional_result" as const, resultId: institutionalRef.id, established: true}], context: context(current, {
+      ancestry: {complete: true, hasExecution: false, institutional: "native"}, reviews: [],
+    })};
+    expect(releaseState(current, input)).toBe("blocked");
+    expect(releaseState(current, {...input, context: {...input.context, reviews: [humanApproval(current)]}})).toBe("released");
+    for (const institutional of ["historical_counterpart", "missing_native"] as const) {
+      expect(releaseState(current, {...input, context: {...input.context, ancestry: {...input.context.ancestry, institutional}, reviews: [humanApproval(current)]}})).toBe("blocked");
+    }
+  });
+
   it.each([
     ["internal", "internal", "released"],
     ["advisor", "internal", "released"],
     ["external", "blocked", "released"],
   ] as const)("release for the %s audience with and without approvals", (audience, without, withApproval) => {
     const current = revision({audience});
-    expect(releaseState(current, {workReadAccess: true, facts: []})).toBe(without);
-    expect(releaseState(current, {workReadAccess: true, facts: [{...confirm, decision: "request_changes"}]})).toBe(without);
-    expect(releaseState(current, {workReadAccess: true, facts: [{...confirm, artifactFingerprint: hex("2")}]})).toBe(without);
-    expect(releaseState(current, {workReadAccess: true, facts: [confirm]})).toBe(withApproval);
-    expect(releaseState(current, {workReadAccess: false, facts: [confirm]})).toBe("blocked");
-    expect(releaseState(current, {workReadAccess: false, facts: []})).toBe("blocked");
+    expect(releaseState(current, {workReadAccess: true, facts: [], context: context(current)})).toBe(without);
+    expect(releaseState(current, {workReadAccess: true, facts: [{...confirm, decision: "request_changes"}], context: context(current)})).toBe(without);
+    expect(releaseState(current, {workReadAccess: true, facts: [{...confirm, artifactFingerprint: hex("2")}], context: context(current)})).toBe(without);
+    expect(releaseState(current, {workReadAccess: true, facts: [confirm], context: context(current)})).toBe(withApproval);
+    expect(releaseState(current, {workReadAccess: false, facts: [confirm], context: context(current)})).toBe("blocked");
+    expect(releaseState(current, {workReadAccess: false, facts: [], context: context(current)})).toBe("blocked");
   });
 
   it("recognises each approval fact only on the exact version it names", () => {
     const material = revision({audience: "external", contentSha256: hex("3"), byteLength: 12}, {kind: "material", format: "pptx", bytes: {sha256: hex("3"), byteLength: 12, storage: {bucket: "case-artifacts", path: "o/p/materials/x.pptx"}}});
-    expect(releaseState(material, {workReadAccess: true, facts: [{kind: "package_review", status: "approved", materialFingerprint: hex("3")}]})).toBe("released");
-    expect(releaseState(material, {workReadAccess: true, facts: [{kind: "package_review", status: "pending_confirmation", materialFingerprint: hex("3")}]})).toBe("blocked");
-    expect(releaseState(material, {workReadAccess: true, facts: [{kind: "package_review", status: "approved", materialFingerprint: hex("4")}]})).toBe("blocked");
+    expect(releaseState(material, {workReadAccess: true, facts: [{kind: "package_review", status: "approved", materialFingerprint: hex("3")}], context: context(material)})).toBe("released");
+    expect(releaseState(material, {workReadAccess: true, facts: [{kind: "package_review", status: "pending_confirmation", materialFingerprint: hex("3")}], context: context(material)})).toBe("blocked");
+    expect(releaseState(material, {workReadAccess: true, facts: [{kind: "package_review", status: "approved", materialFingerprint: hex("4")}], context: context(material)})).toBe("blocked");
 
     const model = revision({}, {kind: "model_result", format: "xlsx", institutionalResult: institutionalRef});
-    expect(releaseState(model, {workReadAccess: true, facts: [{kind: "institutional_result", resultId: id(60), established: true}]})).toBe("released");
-    expect(releaseState(model, {workReadAccess: true, facts: [{kind: "institutional_result", resultId: id(60), established: false}]})).toBe("internal");
-    expect(releaseState(model, {workReadAccess: true, facts: [{kind: "institutional_result", resultId: id(61), established: true}]})).toBe("internal");
+    expect(releaseState(model, {workReadAccess: true, facts: [{kind: "institutional_result", resultId: id(60), established: true}], context: context(model)})).toBe("released");
+    expect(releaseState(model, {workReadAccess: true, facts: [{kind: "institutional_result", resultId: id(60), established: false}], context: context(model)})).toBe("internal");
+    expect(releaseState(model, {workReadAccess: true, facts: [{kind: "institutional_result", resultId: id(61), established: true}], context: context(model)})).toBe("internal");
 
     const result = revision({}, {kind: "execution_result", format: "json", execution: executionRef});
-    expect(releaseState(result, {workReadAccess: true, facts: [{kind: "execution_receipt", executionId: id(50), resultFingerprint: hex("5")}]})).toBe("released");
-    expect(releaseState(result, {workReadAccess: true, facts: [{kind: "execution_receipt", executionId: id(50), resultFingerprint: hex("6")}]})).toBe("internal");
+    expect(releaseState(result, {workReadAccess: true, facts: [{kind: "execution_receipt", executionId: id(50), resultFingerprint: hex("5")}], context: context(result)})).toBe("internal");
+    expect(releaseState(result, {workReadAccess: true, facts: [{kind: "execution_receipt", executionId: id(50), resultFingerprint: hex("6")}], context: context(result)})).toBe("internal");
 
     const legacy: LegacyInput = {table: "capital_project_artifacts", id: id(70), fingerprint: hex("8"), evidence: []};
     const projected = revision({origin: "legacy", legacyRef: legacy}, {legacy});
-    expect(releaseState(projected, {workReadAccess: true, facts: [{...confirm, artifactFingerprint: hex("8")}]})).toBe("released");
+    expect(releaseState(projected, {workReadAccess: true, facts: [{...confirm, artifactFingerprint: hex("8")}], context: context(projected)})).toBe("released");
   });
 
   it("preview equals download", () => {
     // One evaluation, no purpose parameter: both surfaces pass the same revision and the same facts.
     expect(releaseState.length).toBe(2);
     const current = revision({audience: "external"});
-    const input = {workReadAccess: true, facts: [confirm]};
+    const input = {workReadAccess: true, facts: [confirm], context: context(current)};
     expect(releaseState(current, input)).toBe(releaseState(current, input));
   });
 });
