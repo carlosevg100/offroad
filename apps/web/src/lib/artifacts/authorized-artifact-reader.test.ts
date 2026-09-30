@@ -26,6 +26,8 @@ import {
 } from "./authorized-artifact-reader";
 import {supabaseDouble} from "./supabase-double.test-support";
 
+// Synthetic organization supplied by the authorized resolver, absent from the reader response.
+const organizationId = "90000000-0000-4000-8000-000000000001";
 const workId = "10000000-0000-4000-8000-000000000001";
 const revisionId = "20000000-0000-4000-8000-000000000001";
 const rowId = "30000000-0000-4000-8000-000000000001";
@@ -95,7 +97,14 @@ describe("serving follows the database's release evaluation and is never looser"
     for (const approved of [false, true]) {
       const draft = served(legacy({audience, release: "internal"}));
       // The contract's rule over the same revision with the facts the database would find.
-      const expected = releaseState(draft.revision, {workReadAccess: true, facts: approved ? [fact] : []});
+      const context = {
+        target: {organizationId, workId: draft.artifact.workId,
+          artifactId: draft.artifact.id, revisionId: draft.revision.id,
+          manifestFingerprint: draft.revision.manifestFingerprint, audience},
+        sourceReadAccess: true,
+        ancestry: {complete: true, hasExecution: false, institutional: "none" as const}, reviews: [],
+      };
+      const expected = releaseState(draft.revision, {workReadAccess: true, facts: approved ? [fact] : [], context});
       const answer = legacy({audience, release: expected});
       const result = parseArtifactRead(answer);
       if (!result.ok) throw new Error("unexpected invalid read");
@@ -104,7 +113,13 @@ describe("serving follows the database's release evaluation and is never looser"
       if (decision.serve) expect(decision.release).toBe(expected);
     }
     // Without work read access the contract blocks everything; the database answers not found.
-    expect(releaseState(served(legacy({audience})).revision, {workReadAccess: false, facts: [fact]})).toBe("blocked");
+    const unreadable = served(legacy({audience}));
+    expect(releaseState(unreadable.revision, {workReadAccess: false, facts: [fact], context: {
+      target: {organizationId, workId: unreadable.artifact.workId,
+        artifactId: unreadable.artifact.id, revisionId: unreadable.revision.id,
+        manifestFingerprint: unreadable.revision.manifestFingerprint, audience},
+      sourceReadAccess: true, ancestry: {complete: true, hasExecution: false, institutional: "none"}, reviews: [],
+    }})).toBe("blocked");
   });
   it("refuses an external revision the database did not release, even without a restriction", () => {
     const read = served(pinned({release: "internal"}));

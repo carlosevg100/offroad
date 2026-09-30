@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {approvalCoversRevision, artifactReviewSchema, decisionPrecedence, reportedDecisionEffects,
-  requiredActForChange, reviewActionAllowed, workDecisionSchema, type ReviewRole, type WorkDecision} from "./review-protocol";
+  requiredActForChange, reviewActionAllowed, workDecisionSchema, type ArtifactReview, type ReviewRole, type WorkDecision} from "./review-protocol";
 import fixtures from "./fixtures/review-authorization.json";
 const id = (n: number) => `b5200000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const fp = "a".repeat(64);
@@ -65,6 +65,16 @@ describe("stage 20 review authority", () => {
       expect(approvalCoversRevision(final.target, final, [{...approval, target: {...target, [key]: id(99)}}, middle, final])).toBe(false);
     }
     expect(approvalCoversRevision(final.target, final, [{...approval, target: {...target, audience: "external"}}, middle, final])).toBe(false);
+  });
+  it.each([[127, true], [128, false]] as const)("%i reaffirmations before approval follow the SQL traversal bound", (count, allowed) => {
+    const history: ArtifactReview[] = [approval];
+    let current: ArtifactReview = approval;
+    for (let index = 0; index < count; index++) {
+      current = artifactReviewSchema.parse({...approval, id: id(1000 + index), target: {...target, revisionId: id(2000 + index)},
+        commandId: id(3000 + index), act: "reaffirm", basisReviewId: current.id, changeReport: {outcome: "cosmetic", reasons: []}});
+      history.push(current);
+    }
+    expect(approvalCoversRevision(current.target, current, history)).toBe(allowed);
   });
   it("material changes require approve and cannot be relabeled without reasons", () => {
     expect(requiredActForChange({outcome: "material", reasons: ["block_content"]})).toBe("approve");

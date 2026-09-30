@@ -1,3 +1,7 @@
+## Etapa 20 / 3O: paridade do contrato e execução paralela, 30/09/2026
+
+3N fechado na PR 850/main `adbaa636`, com CI e web/worker 501 conferidos. O restante da 20 foi mapeado em dez pacotes 3O–3X, com dependências, donos, critérios e riscos em `docs/build/arcabouco/etapa-20-restante-e-paralelismo.md`. Banco, interface e eval trabalham em paralelo; integração e publicação permanecem coordenadas. A conferência live de vinte funções encontrou definições idênticas em staging/produção. O 3O corrige o contrato puro de release que ainda reconhecia recibo de execução como aprovação; sem consumidor runtime ou DDL. Vinte e um novos negativos reproduziram a divergência na baseline. Revisão independente corrigiu também o limite de reafirmação SQL; 100 testes focais e 157 do pacote aprovados. Gate local completo aprovado, 44/44 tarefas por fase, web 1.145 e worker 933 testes aprovados. CI, merge e deployments ainda em validação; não é completion. Etapa 20 aberta, etapas 21–24 aguardam OK de onda.
+
 ## Etapa 20 / 3N: vínculo corrente da prévia, 30/09/2026
 
 3M concluído na PR 849/main `d7d600242b5464342515d5b6c1aed2770b6be738`: Quality de main `36702940030`, Security `36702940226`, web deployment `6757204276`, worker run `36702986652` PASS. Worker 500 no mesmo commit, boot e serviço estável conferidos. Completion externo em `outputs/etapa-20-2026-09-30-3m/COMPLETION-ETAPA-20-3M.md` na raiz do workspace.
