@@ -33,7 +33,14 @@ describe("content review policy configuration", () => {
  });
  it("does not expose an internal UUID as a missing member name", () => {
   const html = render("pt-BR", {...context, members: context.members.map(member => ({...member, fullName: null, email: null}))});
-  expect(html).toContain("Membro 1"); const text = html.replace(/<[^>]*>/g, ""); expect(text).not.toContain(context.members[0].userId); expect(text).not.toContain(context.members[0].userId.slice(0, 8));
+  const headingStart = html.indexOf('<th scope="row">');
+  const headingEnd = html.indexOf("</th>", headingStart);
+  expect(headingStart).toBeGreaterThanOrEqual(0);
+  expect(headingEnd).toBeGreaterThan(headingStart);
+  const memberHeading = html.slice(headingStart, headingEnd);
+  expect(memberHeading).toContain("Membro 1");
+  expect(memberHeading).not.toContain(context.members[0].userId);
+  expect(memberHeading).not.toContain(context.members[0].userId.slice(0, 8));
  });
  it("discloses truncation", () => expect(render("pt-BR", {...context, membersTruncated: true})).toContain(ptNew.ProjectReviewRoles.membersTruncated));
  it("does not describe open as unrestricted approval", () => {
