@@ -266,13 +266,16 @@ select jsonb_build_object('binding',binding,'rights',rights) from retained_licen
             json.dumps({'prefixes': [ticket['path']]}).encode())
         if status != 200 or not isinstance(json.loads(body), list):
             raise AssertionError('Physical Storage DELETE was not confirmed')
-        # Purge has HEAD/info authority, never permission to download expired bytes.
+        # The info endpoint reports physical absence without requiring permission
+        # to download revoked or expired bytes. The local Storage API does not
+        # implement HEAD for this route, so HTTP 400 there is not erasure proof.
         status, body = self.request('GET', '/storage/v1/object/info/' + object_path(ticket))
         if not missing_object(status, body):
             raise AssertionError('Exact Storage info did not prove404 after DELETE: HTTP ' + str(status))
-        status, _body = self.request('HEAD', '/storage/v1/object/' + object_path(ticket))
-        if status != 404:
-            raise AssertionError('Exact Storage HEAD did not prove404 after DELETE: HTTP ' + str(status))
+        remaining = self.sql('select count(*) from storage.objects where bucket_id='
+            + literal(BUCKET) + ' and name=' + literal(ticket['path']) + ';')
+        if remaining != '0':
+            raise AssertionError('Storage catalog retained the exact deleted object')
 
     def ack(self, ticket, confirmed=True, expected=None):
         boolean = 'true' if confirmed else 'false'
