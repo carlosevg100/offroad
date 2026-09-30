@@ -458,7 +458,7 @@ describe("preview binding remains current after Storage", () => {
   }
   it.each(paths)("denies $format pinned=$pinned when a newer contract removes the binding during Storage", async ({format, pinned}) => {
     arrange(pinned);
-    afterStorage = () => { rows = [...rows, unboundContractRow]; };
+    afterStorage = () => { rows = [...rows.map((entry) => entry === contractRow ? {...entry, status: "superseded"} : entry), {...unboundContractRow, artifact_version: 2}]; };
     const response = await request(format);
     expect(response.status).toBe(409);
     expect(downloads).toHaveLength(1);
@@ -483,7 +483,7 @@ describe("preview binding remains current after Storage", () => {
   });
   it.each(paths)("allows $format pinned=$pinned when a newer contract still binds the same bytes", async ({format, pinned}) => {
     arrange(pinned);
-    afterStorage = () => { rows = [...rows, {...contractRow, id: unboundContractRow.id, created_at: unboundContractRow.created_at}]; };
+    afterStorage = () => { rows = [...rows.map((entry) => entry === contractRow ? {...entry, status: "superseded"} : entry), {...contractRow, id: unboundContractRow.id, artifact_version: 2, created_at: unboundContractRow.created_at}]; };
     const response = await request(format);
     expect(response.status).toBe(200);
     expect(Buffer.from(await response.arrayBuffer())).toEqual(Buffer.from(format === "xlsx" ? workbookBytes : deckBytes));
