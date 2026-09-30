@@ -1751,8 +1751,24 @@
   {
    "version": "20260930194821",
    "name": "capital_public_capture_context_guard"
+  },
+  {
+   "version": "20260930211315",
+   "name": "capital_public_payload_retention"
+  },
+  {
+   "version": "20260930211935",
+   "name": "capital_public_retention_prepare_conflict_guard"
+  },
+  {
+   "version": "20260930212126",
+   "name": "capital_public_retention_prepare_scope_guard"
+  },
+  {
+   "version": "20260930220314",
+   "name": "capital_public_payload_retention_activation"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-30T20:00:44.003068Z"
+ "captured_at": "2026-09-30T22:11:51.382847Z"
 }

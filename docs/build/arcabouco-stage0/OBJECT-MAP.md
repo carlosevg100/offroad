@@ -3178,3 +3178,80 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 - `r:private.capital_public_input_snapshots`
 
 24 politicas e gatilhos da captura 3Q sao produzidos pelo loop DDL das linhas 77-82 da migracao base, com fonte individual no inventario.
+
+## Etapa 20 / 3Q: retenção pública
+
+36 objetos novos e 0 atualizados. Retencao limitada e verificavel do JSON publico entregue: identidade, acesso, Storage privado, purge e auditoria sem promover insumos legados.
+- `function:private.capital_public_allocation_job_current_v1(p_allocation_id uuid)`
+- `function:private.capital_public_capture_bucket_safe_v1()`
+- `function:private.capital_public_purge_worker_v1(p_worker_token text)`
+- `function:private.capital_public_retention_deadline_v1(p_license_id uuid, p_organization_id uuid, p_observed_at timestamp with time zone, p_policy_id uuid)`
+- `function:private.capital_public_retention_healthy_v1(p_worker_id uuid, p_policy_id uuid)`
+- `function:private.expedite_capital_public_retention_v1()`
+- `function:private.worker_ack_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean)`
+- `function:private.worker_can_access_capital_public_payload_v1(p_bucket text, p_path text, p_mode text)`
+- `function:private.worker_claim_capital_capture_purge_v1(p_worker_token text, p_limit integer)`
+- `function:private.worker_commit_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)`
+- `function:private.worker_prepare_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_delivery_id uuid, p_request_id uuid, p_payload jsonb)`
+- `function:private.worker_read_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_retained_payload_id uuid)`
+- `function:private.worker_retry_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_reason text)`
+- `function:public.worker_ack_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean)`
+- `function:public.worker_claim_capital_capture_purge_v1(p_worker_token text, p_limit integer)`
+- `function:public.worker_commit_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)`
+- `function:public.worker_prepare_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_delivery_id uuid, p_request_id uuid, p_payload jsonb)`
+- `function:public.worker_read_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_retained_payload_id uuid)`
+- `function:public.worker_retry_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_reason text)`
+- `policy:storage.objects.capital_capture_objects_delete`
+- `policy:storage.objects.capital_capture_objects_insert`
+- `policy:storage.objects.capital_capture_objects_select`
+- `r:private.capital_public_payload_allocations`
+- `r:private.capital_public_payload_erasure_events`
+- `r:private.capital_public_payload_purge_queue`
+- `r:private.capital_public_purge_health`
+- `r:private.capital_public_retained_payloads`
+- `r:private.capital_public_retention_controls`
+- `r:private.capital_public_retention_policies`
+- `trigger:private.capital_public_payload_purge_queue.capital_public_purge_queue_audit`
+- `trigger:private.capital_public_payload_purge_queue.capital_public_purge_queue_updated_at`
+- `trigger:private.capital_public_purge_health.capital_public_purge_health_updated_at`
+- `trigger:private.capital_public_retention_controls.capital_public_retention_controls_updated_at`
+- `trigger:private.resource_dependencies.capital_public_dependency_retention_changed`
+- `trigger:private.source_rights_versions.capital_public_rights_retention_changed`
+- `trigger:public.source_bindings.capital_public_binding_retention_changed`
+
+Os 35 objetos de policy e trigger restantes são gerados pelo laço SQL da migração de retenção; cada um tem âncora da expressão dinâmica e decisão nominal no inventário.
+- `policy:private.capital_public_payload_allocations.capital_public_payload_allocations_delete`
+- `policy:private.capital_public_payload_allocations.capital_public_payload_allocations_insert`
+- `policy:private.capital_public_payload_allocations.capital_public_payload_allocations_select`
+- `policy:private.capital_public_payload_allocations.capital_public_payload_allocations_update`
+- `policy:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_delete`
+- `policy:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_insert`
+- `policy:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_select`
+- `policy:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_update`
+- `policy:private.capital_public_payload_purge_queue.capital_public_payload_purge_queue_delete`
+- `policy:private.capital_public_payload_purge_queue.capital_public_payload_purge_queue_insert`
+- `policy:private.capital_public_payload_purge_queue.capital_public_payload_purge_queue_select`
+- `policy:private.capital_public_payload_purge_queue.capital_public_payload_purge_queue_update`
+- `policy:private.capital_public_purge_health.capital_public_purge_health_delete`
+- `policy:private.capital_public_purge_health.capital_public_purge_health_insert`
+- `policy:private.capital_public_purge_health.capital_public_purge_health_select`
+- `policy:private.capital_public_purge_health.capital_public_purge_health_update`
+- `policy:private.capital_public_retained_payloads.capital_public_retained_payloads_delete`
+- `policy:private.capital_public_retained_payloads.capital_public_retained_payloads_insert`
+- `policy:private.capital_public_retained_payloads.capital_public_retained_payloads_select`
+- `policy:private.capital_public_retained_payloads.capital_public_retained_payloads_update`
+- `policy:private.capital_public_retention_controls.capital_public_retention_controls_delete`
+- `policy:private.capital_public_retention_controls.capital_public_retention_controls_insert`
+- `policy:private.capital_public_retention_controls.capital_public_retention_controls_select`
+- `policy:private.capital_public_retention_controls.capital_public_retention_controls_update`
+- `policy:private.capital_public_retention_policies.capital_public_retention_policies_delete`
+- `policy:private.capital_public_retention_policies.capital_public_retention_policies_insert`
+- `policy:private.capital_public_retention_policies.capital_public_retention_policies_select`
+- `policy:private.capital_public_retention_policies.capital_public_retention_policies_update`
+- `trigger:private.capital_public_payload_allocations.capital_public_payload_allocations_audit`
+- `trigger:private.capital_public_payload_allocations.capital_public_payload_allocations_immutable`
+- `trigger:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_audit`
+- `trigger:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_immutable`
+- `trigger:private.capital_public_retained_payloads.capital_public_retained_payloads_audit`
+- `trigger:private.capital_public_retained_payloads.capital_public_retained_payloads_immutable`
+- `trigger:private.capital_public_retention_policies.capital_public_retention_policies_immutable`
