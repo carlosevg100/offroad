@@ -6226,7 +6226,8 @@
         "inherit": "Follow the organization",
         "allowed": "Allowed",
         "forbidden": "Not allowed"
-      }
+      },
+      "origins": "Work: {project}. Organization: {organization}."
     },
     "yourRoles": "Your roles in this project: {roles}.",
     "none": "none",
@@ -6251,8 +6252,33 @@
       "invalid": "This change is not valid.",
       "denied": "Your role in the organization does not allow changing responsibilities.",
       "not_found": "The project is no longer available.",
-      "save": "The change could not be saved."
-    }
+      "save": "The change could not be saved.",
+      "policy_changed": "The policy changed after you opened this page. Review the updated rules before saving again."
+    },
+    "contentTitle": "Content review",
+    "contentScope": "These rules govern content review tied to an exact revision. Each approval also depends on source access and the identity of the person who prepared the revision. Execution and configuration confirmations follow their own steps.",
+    "contentReadOnly": "Changing this policy requires organization administration and permission to manage this work.",
+    "regime": {
+      "assigned": "Content review requires assigned roles. The self-approval rule appears below.",
+      "individual": "Content review allows declared self-approval, with access and revision requirements checked.",
+      "open": "Content review does not require an assigned role. The person who prepared the revision needs another reviewer because self-approval is forbidden."
+    },
+    "assignmentRequired": {
+      "effective": "Assigned role required for review in this work: {state}.",
+      "required": "required",
+      "notRequired": "not required",
+      "project": "Require an assigned role for this work",
+      "organization": "Require an assigned role in the organization (applies to work following the organization)",
+      "origins": "Work: {project}. Organization: {organization}.",
+      "options": {
+        "inherit": "Follow the organization",
+        "required": "Required",
+        "not_required": "Not required"
+      }
+    },
+    "membersTruncated": "The list shows the first 500 members. There are more people in the organization.",
+    "unavailable": "The content review policy is unavailable. Refresh the page to try again.",
+    "unnamedMember": "Member {number}"
   },
   "DeliverableFormats": {
     "title": "Formats for this delivery",

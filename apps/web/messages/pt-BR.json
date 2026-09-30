@@ -6226,7 +6226,8 @@
         "inherit": "Seguir a organização",
         "allowed": "Permitida",
         "forbidden": "Não permitida"
-      }
+      },
+      "origins": "Trabalho: {project}. Organização: {organization}."
     },
     "yourRoles": "Suas funções neste projeto: {roles}.",
     "none": "nenhuma",
@@ -6251,8 +6252,33 @@
       "invalid": "Esta alteração não é válida.",
       "denied": "Sua função na organização não permite alterar responsabilidades.",
       "not_found": "O projeto não está mais disponível.",
-      "save": "Não foi possível salvar a alteração."
-    }
+      "save": "Não foi possível salvar a alteração.",
+      "policy_changed": "A política mudou desde que você abriu esta página. Confira as regras atualizadas antes de salvar novamente."
+    },
+    "contentTitle": "Revisão de conteúdo",
+    "contentScope": "Estas regras governam a revisão de conteúdo vinculada a uma versão exata. Cada aprovação depende também de acesso às fontes e da identificação de quem preparou a versão. As confirmações de execução e configuração seguem suas próprias etapas.",
+    "contentReadOnly": "Alterar esta política exige administração da organização e permissão para gerenciar este trabalho.",
+    "regime": {
+      "assigned": "A revisão de conteúdo exige funções atribuídas. A regra de autoaprovação aparece abaixo.",
+      "individual": "A revisão de conteúdo permite autoaprovação declarada, com os acessos e requisitos da versão conferidos.",
+      "open": "A revisão de conteúdo não exige função atribuída. Quem preparou a versão precisa de outro revisor, pois a autoaprovação está proibida."
+    },
+    "assignmentRequired": {
+      "effective": "Atribuição de função para revisão neste trabalho: {state}.",
+      "required": "obrigatória",
+      "notRequired": "não obrigatória",
+      "project": "Exigir função atribuída neste trabalho",
+      "organization": "Exigir função atribuída na organização (vale para trabalhos que seguem a organização)",
+      "origins": "Trabalho: {project}. Organização: {organization}.",
+      "options": {
+        "inherit": "Seguir a organização",
+        "required": "Obrigatória",
+        "not_required": "Não obrigatória"
+      }
+    },
+    "membersTruncated": "A lista mostra os primeiros 500 membros. Há mais pessoas na organização.",
+    "unavailable": "A política de revisão de conteúdo está indisponível. Atualize a página para tentar novamente.",
+    "unnamedMember": "Membro {number}"
   },
   "DeliverableFormats": {
     "title": "Formatos desta entrega",

@@ -1,3 +1,5 @@
+import {loadProjectReviewPolicyContext} from "@/lib/advisor/project-review-policy-context";
+import {ProjectReviewRoles} from "./project-review-roles";
 import {WorkVaultPanel} from "@/components/advisor/work-vault-panel";
 import {getTranslations} from "next-intl/server";
 import {WorkParticipationPanel} from "./work-participation-panel";
@@ -23,19 +25,23 @@ export async function StandaloneWork({locale, project}: {
   // What is in progress is read before what it produces: a turn answered between the two reads
   // costs one more refresh and never leaves the page waiting without one.
   const activity = await loadWorkActivity(supabase, {organizationId: organization.id, workId: project.id, sessionId: null});
-  const [{data: messages, error}, copy, updates] = await Promise.all([
+  const [{data: messages, error}, copy, updates, reviewPolicy] = await Promise.all([
     supabase.from("agent_messages").select("id, role, content, status, error_code, created_at, human_author_id, metadata")
       .eq("organization_id", organization.id).eq("work_id", project.id)
       .order("created_at", {ascending: true}).order("id", {ascending: true}),
     advisorProjectCopy(locale),
     loadWorkUpdates(supabase, project.id, locale === "en-US" ? "en-US" : "pt-BR"),
+    loadProjectReviewPolicyContext(supabase, project.id, organization.id),
   ]);
   if (error) throw new Error("work_conversation_unavailable");
   const language = locale === "en-US" ? "en-US" : "pt-BR";
   const vaultCopy = await getTranslations({locale, namespace: "Vault"});
   const contributionCopy = await getTranslations({locale, namespace: "WorkContributions"});
   const updatesCopy = await getTranslations({locale, namespace: "App.workUpdates"});
+  const rolesCopy = await getTranslations({locale, namespace: "ProjectReviewRoles"});
   const sections: AdvisorWorkSection[] = [
+    {id: "project-review", title: rolesCopy("contentTitle"), status: reviewPolicy ? rolesCopy(`regime.${reviewPolicy.regime}`) : undefined,
+      content: reviewPolicy ? <ProjectReviewRoles context={reviewPolicy} locale={language} projectId={project.id}/> : <p role="status">{rolesCopy("unavailable")}</p>},
     {id: "contributions", title: contributionCopy("title"), content: <WorkParticipationPanel locale={locale} workId={project.id} />},
     {id: "vault", title: vaultCopy("title"), content: <WorkVaultPanel locale={locale} workId={project.id} />},
   ];

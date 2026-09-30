@@ -4,9 +4,11 @@ import {projectReviewRoleSchema} from "@offroad/work-plan";
 import {revalidatePath} from "next/cache";
 import {z} from "zod";
 
+import {projectReviewPolicyWriteSchema, organizationReviewPolicyWriteSchema} from "@/lib/advisor/project-review-policy-context";
+
 import {requireWorkspace} from "@/lib/auth/workspace";
 
-export type ReviewSettingsResult = {ok: true} | {ok: false; error: "invalid" | "denied" | "not_found" | "save"};
+export type ReviewSettingsResult = {ok: true} | {ok: false; error: "invalid" | "denied" | "not_found" | "save" | "policy_changed"};
 
 const localeSchema = z.enum(["pt-BR", "en-US"]);
 const assignmentSchema = z.object({
@@ -28,6 +30,7 @@ const organizationPolicySchema = z.object({
 }).strict();
 
 function settingsError(error: {code?: string; message?: string} | null): ReviewSettingsResult {
+  if (error?.code === "40001" && error.message === "policy_changed") return {ok: false, error: "policy_changed"};
   if (error?.code === "P0002") return {ok: false, error: "not_found"};
   if (error?.code === "42501") return {ok: false, error: "denied"};
   if (error?.code === "22023") return {ok: false, error: "invalid"};
@@ -74,5 +77,40 @@ export async function setOrganizationReviewPolicy(input: unknown): Promise<Revie
   });
   if (error) return settingsError(error);
   revalidatePath(`/${parsed.data.locale}/app/projects/${parsed.data.projectId}`);
+  return {ok: true};
+}
+
+
+const policyFingerprintSchema = z.string().regex(/^[a-f0-9]{64}$/);
+const projectPolicyV2Schema = z.strictObject({expectedPolicyFingerprint: policyFingerprintSchema, locale: localeSchema, projectId: z.uuid(), selfApproval: z.enum(["inherit", "allowed", "forbidden"]), assignmentRequired: z.enum(["inherit", "required", "not_required"])});
+const organizationPolicyV2Schema = z.strictObject({expectedPolicyFingerprint: policyFingerprintSchema, locale: localeSchema, projectId: z.uuid(), selfApprovalAllowed: z.boolean(), assignmentRequired: z.boolean()});
+
+export async function setProjectReviewPolicyV2(input: unknown): Promise<ReviewSettingsResult> {
+  const parsed = projectPolicyV2Schema.safeParse(input);
+  if (!parsed.success) return {ok: false, error: "invalid"};
+  const c = parsed.data;
+  const {supabase, organization} = await requireWorkspace(c.locale);
+  const {data, error} = await supabase.rpc("set_capital_project_review_policy_v2", {p_project_id: c.projectId, p_self_approval: c.selfApproval, p_assignment_required: c.assignmentRequired, p_expected_policy_fingerprint: c.expectedPolicyFingerprint});
+  if (error) return settingsError(error);
+  const result = projectReviewPolicyWriteSchema.safeParse(data);
+  if (!result.success || result.data.project_id !== c.projectId || result.data.organization_id !== organization.id
+    || result.data.self_approval.project !== c.selfApproval || result.data.assignment_required.project !== c.assignmentRequired) return {ok: false, error: "save"};
+  revalidatePath(`/${c.locale}/app/projects/${c.projectId}`);
+  return {ok: true};
+}
+
+export async function setOrganizationReviewPolicyV2(input: unknown): Promise<ReviewSettingsResult> {
+  const parsed = organizationPolicyV2Schema.safeParse(input);
+  if (!parsed.success) return {ok: false, error: "invalid"};
+  const c = parsed.data;
+  const {supabase, organization} = await requireWorkspace(c.locale);
+  const {data: project, error: projectError} = await supabase.from("capital_projects").select("id").eq("id", c.projectId).eq("organization_id", organization.id).maybeSingle();
+  if (projectError || !project) return {ok: false, error: "denied"};
+  const {data, error} = await supabase.rpc("set_organization_review_policy_v2", {p_organization_id: organization.id, p_self_approval_allowed: c.selfApprovalAllowed, p_assignment_required: c.assignmentRequired, p_expected_policy_fingerprint: c.expectedPolicyFingerprint});
+  if (error) return settingsError(error);
+  const result = organizationReviewPolicyWriteSchema.safeParse(data);
+  if (!result.success || result.data.organization_id !== organization.id || result.data.self_approval_allowed !== c.selfApprovalAllowed
+    || result.data.assignment_required !== c.assignmentRequired) return {ok: false, error: "save"};
+  revalidatePath(`/${c.locale}/app/projects/${c.projectId}`);
   return {ok: true};
 }
