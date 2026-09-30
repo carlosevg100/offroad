@@ -93,13 +93,19 @@ let reads: ReturnType<typeof artifactReadFixture>[];
 let stored: Record<string, Uint8Array>;
 let storageDown: boolean;
 let pinnedHeadDown: boolean;
+let afterStorage: () => void;
+let historyFailure: "error" | "throw" | null;
 const downloads: string[] = [];
 function client() {
   const readers = (name: string, args: Record<string, unknown>) => artifactRpc(reads)(name, args);
   return supabaseDouble({
     // The old route asked for non-superseded rows; the new one reads the whole history.
-    tables: {capital_project_artifacts: (filters) => ({data: [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at))
-      .filter(candidate => !filters.some(([method, args]) => method === "neq" && args[0] === "status" && candidate.status === args[1])), error: null})},
+    tables: {capital_project_artifacts: (filters) => {
+      if (historyFailure === "throw") throw new Error("synthetic read failure");
+      if (historyFailure === "error") return {data: null, error: {message: "synthetic read failure"}};
+      return {data: [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .filter(candidate => !filters.some(([method, args]) => method === "neq" && args[0] === "status" && candidate.status === args[1])), error: null};
+    }},
     // A pinned head that cannot be read answers a failure, never "no revision".
     rpc: async (name, args) => pinnedHeadDown && name === "read_artifact_head_v1" && String(args.p_subject).startsWith("integration-preview:")
       ? {data: null, error: {code: "57014", message: "canceling statement due to statement timeout"}}
@@ -107,6 +113,7 @@ function client() {
     // What Storage answers: the object, "not found" (also for an object the person cannot read), or a failure.
     storage: {"case-artifacts": (path) => {
       downloads.push(path);
+      afterStorage();
       if (storageDown) return {data: null, error: {message: "upstream timeout", statusCode: "503"}};
       return stored[path] ? {data: new Blob([new Uint8Array(stored[path]!)]), error: null} : {data: null, error: {message: "Object not found", statusCode: "404"}};
     }},
@@ -128,6 +135,8 @@ beforeEach(() => {
   stored = {[workbookManifest.storage.objectPath]: workbookBytes};
   storageDown = false;
   pinnedHeadDown = false;
+  afterStorage = () => {};
+  historyFailure = null;
   downloads.length = 0;
   mocks.readable.mockResolvedValue(true);
   mocks.workspace.mockImplementation(async () => ({supabase: client(), organization: {id: organizationId}}));
@@ -434,5 +443,60 @@ describe("old and new resolution decide equal for the preview", () => {
       expect((await legacyRequest(format)).status, format).toBe(502);
       expect((await request(format)).status, format).toBe(409);
     }
+  });
+});
+
+
+describe("preview binding remains current after Storage", () => {
+  const paths = [
+    {format: "xlsx", pinned: true}, {format: "pptx", pinned: true},
+    {format: "xlsx", pinned: false}, {format: "pptx", pinned: false},
+  ] as const;
+  function arrange(pinned: boolean) {
+    pinnedPreview();
+    if (!pinned) reads = reads.filter((read) => !read.artifact.subject.startsWith("integration-preview:"));
+  }
+  it.each(paths)("denies $format pinned=$pinned when a newer contract removes the binding during Storage", async ({format, pinned}) => {
+    arrange(pinned);
+    afterStorage = () => { rows = [...rows.map((entry) => entry === contractRow ? {...entry, status: "superseded"} : entry), {...unboundContractRow, artifact_version: 2}]; };
+    const response = await request(format);
+    expect(response.status).toBe(409);
+    expect(downloads).toHaveLength(1);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    for (const header of ["content-disposition", "x-artifact-revision", "x-material-sha256"]) expect(response.headers.get(header)).toBeNull();
+  });
+  it.each(paths)("denies $format pinned=$pinned when the contract disappears during Storage", async ({format, pinned}) => {
+    arrange(pinned);
+    afterStorage = () => { rows = rows.filter((entry) => entry !== contractRow); };
+    expect((await request(format)).status).toBe(409);
+    expect(downloads).toHaveLength(1);
+  });
+  it.each(paths)("denies $format pinned=$pinned when the final binding query fails", async ({format, pinned}) => {
+    arrange(pinned);
+    afterStorage = () => { historyFailure = "error"; };
+    expect((await request(format)).status).toBe(409);
+  });
+  it.each(paths)("denies $format pinned=$pinned when the final binding query throws", async ({format, pinned}) => {
+    arrange(pinned);
+    afterStorage = () => { historyFailure = "throw"; };
+    expect((await request(format)).status).toBe(409);
+  });
+  it.each(paths)("allows $format pinned=$pinned when a newer contract still binds the same bytes", async ({format, pinned}) => {
+    arrange(pinned);
+    afterStorage = () => { rows = [...rows.map((entry) => entry === contractRow ? {...entry, status: "superseded"} : entry), {...contractRow, id: unboundContractRow.id, artifact_version: 2, created_at: unboundContractRow.created_at}]; };
+    const response = await request(format);
+    expect(response.status).toBe(200);
+    expect(Buffer.from(await response.arrayBuffer())).toEqual(Buffer.from(format === "xlsx" ? workbookBytes : deckBytes));
+    expect(downloads).toHaveLength(1);
+  });
+  it.each(["xlsx", "pptx"])("denies legacy %s when the receipt is superseded during Storage", async (format) => {
+    arrange(false);
+    afterStorage = () => { rows = rows.map((entry) => entry === (format === "xlsx" ? workbookRow : deckRow) ? {...entry, status: "superseded"} : entry); };
+    expect((await request(format)).status).toBe(409);
+  });
+  it.each(["xlsx", "pptx"])("denies legacy %s when receipt content changes at the same ID during Storage", async (format) => {
+    arrange(false);
+    afterStorage = () => { rows = rows.map((entry) => entry === (format === "xlsx" ? workbookRow : deckRow) ? {...entry, content: {manifest: {...materialManifest(format === "xlsx" ? "workbook" : "presentation"), fileName: "changed.xlsx"}}} : entry); };
+    expect((await request(format)).status).toBe(409);
   });
 });

@@ -176,6 +176,36 @@ export async function GET(request: Request, {params}: Params) {
     const verification: BytesVerification = verifyRenderedBytes(revision, bytes, {format});
     if (verification.status === "mismatch") return artifactUnavailable(copy.preview.storageMismatch);
     if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
+    // Storage may take long enough for the decision contract or its receipt to change. Re-read
+    // both under the caller's scope; the earlier snapshot cannot authorize delivery of these bytes.
+    let bindingCurrent = false;
+    try {
+      const {data: currentData, error} = await supabase.from("capital_project_artifacts")
+        .select("id, artifact_type, artifact_version, status, artifact_fingerprint, content, created_at")
+        .eq("organization_id", organization.id).eq("capital_project_id", projectId)
+        .in("artifact_type", [artifactType, "preview_decision_contract"])
+        .neq("status", "superseded")
+        .order("created_at", {ascending: false});
+      if (!error && currentData) {
+        const currentRows = currentData as ArtifactRow[];
+        const currentContract = currentRows.find((entry) => entry.artifact_type === "preview_decision_contract");
+        if (stored) {
+          bindingCurrent = decisionContractBoundSha256(currentContract?.content, format) === stored.sha256;
+        } else {
+          const currentReceipt = currentRows.find((entry) => entry.artifact_type === artifactType);
+          if (currentReceipt?.id === rowId && currentReceipt.artifact_fingerprint === current!.artifact_fingerprint) {
+            const currentManifest = resolveGovernedMaterialDownload({
+              materialContent: currentReceipt.content, decisionContractContent: currentContract?.content,
+              format, organizationId: organization.id, projectId,
+            });
+            bindingCurrent = JSON.stringify(currentManifest) === JSON.stringify(manifest);
+          }
+        }
+      }
+    } catch {
+      // Missing, malformed or failed reads never restore the pre-download binding.
+    }
+    if (!bindingCurrent) return artifactUnavailable(notReady);
     if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
     return new Response(bytes, {headers: {
       "content-type": mimeType,

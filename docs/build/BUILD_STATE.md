@@ -1,3 +1,9 @@
+## Etapa 20 / 3N: vínculo corrente da prévia, 30/09/2026
+
+3M concluído na PR 849/main `d7d600242b5464342515d5b6c1aed2770b6be738`: Quality de main `36702940030`, Security `36702940226`, web deployment `6757204276`, worker run `36702986652` PASS. Worker 500 no mesmo commit, boot e serviço estável conferidos. Completion externo em `outputs/etapa-20-2026-09-30-3m/COMPLETION-ETAPA-20-3M.md` na raiz do workspace.
+
+3N relê contrato e recibo da prévia após Storage. Vínculo removido, recibo substituído/alterado e falha de leitura negam a entrega. Revisão exata continua como última checagem. Vinte negativos reproduziram 200 antes; 65 testes direcionados PASS depois, incluindo quatro positivos de novo contrato com o mesmo vínculo. Revisão independente sem bloqueios. Sem DDL. Gate local 44/44 PASS; checker 18 testes e catálogo versionado com 2.842 objetos PASS. CI, merge e deployments pendentes; não é completion. Ver `docs/build/arcabouco/etapa-20-3n-vinculo-previa.md`. Etapa 20 aberta; 21–24 não iniciadas.
+
 ## Etapa 20 / 3M: autoridade na entrega de produtos de trabalho e prévias, 30/09/2026
 
 3L concluído na PR 848/main `37630b5bb39189c2d7ce0dcca8e742ab27caa9d0`: Quality de main `36651807826`, Security `36651807882`, web deployment `6748763357` e worker run `36651848554` PASS. Worker 499 no mesmo commit, boot com 27 capacidades/dois executores/um preparador conferido. Completion externo em `outputs/etapa-20-2026-09-29-3l/COMPLETION-ETAPA-20-3L.md` na raiz do workspace.
