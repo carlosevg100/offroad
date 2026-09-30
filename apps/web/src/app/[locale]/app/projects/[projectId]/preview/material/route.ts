@@ -6,6 +6,7 @@ import {
   artifactUnavailable,
   legacyRowId,
   refusalText,
+  renderedRevisionStillAuthorized,
   requestedRevision,
   resolvePreferredRouteRevision,
   revisionRendererAllowed,
@@ -175,6 +176,7 @@ export async function GET(request: Request, {params}: Params) {
     const verification: BytesVerification = verifyRenderedBytes(revision, bytes, {format});
     if (verification.status === "mismatch") return artifactUnavailable(copy.preview.storageMismatch);
     if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
+    if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
     return new Response(bytes, {headers: {
       "content-type": mimeType,
       "content-disposition": `attachment; filename="${fileName}"`,
@@ -236,6 +238,7 @@ export async function GET(request: Request, {params}: Params) {
   const verification = verifyRenderedBytes(revision, rendered.bytes, {format: "docx", selectors: {locale: lang}});
   if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
   if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
+  if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
   return new Response(new Uint8Array(rendered.bytes), {headers: {
     "x-preview-artifact-version": String(material.artifact_version),
     "x-preview-artifact-fingerprint": material.artifact_fingerprint,

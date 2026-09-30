@@ -1,3 +1,9 @@
+## Etapa 20 / 3M: autoridade na entrega de produtos de trabalho e prévias, 30/09/2026
+
+3L concluído na PR 848/main `37630b5bb39189c2d7ce0dcca8e742ab27caa9d0`: Quality de main `36651807826`, Security `36651807882`, web deployment `6748763357` e worker run `36651848554` PASS. Worker 499 no mesmo commit, boot com 27 capacidades/dois executores/um preparador conferido. Completion externo em `outputs/etapa-20-2026-09-29-3l/COMPLETION-ETAPA-20-3L.md` na raiz do workspace.
+
+3M reutiliza a releitura da revisão exata antes de entregar produtos de trabalho DOCX/PDF, prévias DOCX e arquivos XLSX/PPTX do Storage. Dez negativos falharam com HTTP 200 antes e passaram após a correção; 64 testes direcionados PASS. Sem DDL ou novos grants. Revisão independente sem achados bloqueantes. Gate local 44/44 PASS; catálogo versionado (2.842 objetos) e 18 testes do checker PASS. Quatro funções de autoridade idênticas ao vivo em staging/produção. CI, merge e deploys pendentes; não é completion. Ver `docs/build/arcabouco/etapa-20-3m-produtos-previas.md`. Etapa 20 aberta; 21–24 não iniciadas.
+
 ## Etapa 20 / 3L: revalidação de downloads, 29/09/2026
 
 3K concluído na PR 847/main `fe32b74db41e1b7fb80f5a0afdc369a5afb17d25`: Quality de main `36619279160`, Security `36619279148`, web deployment `6743545225` e worker run `36619311769` PASS. Worker 498 no mesmo commit, boot com 27 capacidades/dois executores/um preparador conferido. Completion externo em `outputs/etapa-20-2026-09-29-3k/COMPLETION-ETAPA-20-3K.md` na raiz do workspace.
