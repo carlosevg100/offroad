@@ -155,11 +155,14 @@ test("guided institutional setup calculates only after review and survives resum
  // this configuration, so approving its own work needs the explicit self-approval setting.
  await page.locator('.advisor-work-surface__navigation a[href="#work-project-review"]').click();
  const roles=page.getByTestId("project-review-roles");
- await expect(roles).toHaveAttribute("data-mode","open");
+ await expect(roles).toHaveAttribute("data-regime","open");
  const ownRow=roles.locator(`tr[data-member-email="${email}"]`);
  await ownRow.locator('input[value="preparer"]').click();
  await expect(ownRow.locator('input[value="preparer"]')).toBeChecked();
- await expect(roles).toHaveAttribute("data-mode","assigned");
+ // Assigning a person does not change the separate policy requiring assignments.
+ // The legacy setup reader still enforces this person's preparer/approver roles below.
+ await expect(roles).toHaveAttribute("data-regime","open");
+ await expect(page.getByTestId("project-review-assignment-required")).toHaveAttribute("data-effective","false");
  await ownRow.locator('input[value="approver"]').click();
  await expect(ownRow.locator('input[value="approver"]')).toBeChecked();
  await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective","false");

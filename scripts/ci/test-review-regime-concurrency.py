@@ -91,6 +91,7 @@ fixture = expand(ROOT / 'supabase/tests/support/artifact_revision_setup.sql')
 for old, new in [('a11b0000','a530c000'),('a4192000','a530d000'),('a4191000','a530e000'),('a4171000','a530f000'),('a9990000','a530b000'),('a3300000','a530a000')]:
     fixture = fixture.replace(old, new)
 fixture = fixture.replace('a11b-', 'a530c-').replace('synthetic-artifact', 'synthetic-regime-concurrency')
+fixture = fixture.replace('synthetic-execution', 'synthetic-regime-execution')
 fixture = fixture.replace('synthetic-policy-worker-fixture-token-v1', 'synthetic-regime-policy-worker-token-v1')
 fixture = fixture.replace('offroad:test:artifact-source:', 'offroad:test:regime-concurrency-source:')
 fixture = fixture.replace('artifact-foreign@example.invalid', 'regime-foreign@example.invalid')

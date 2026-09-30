@@ -20,6 +20,12 @@ Migração instalada em staging: `20260930143756_project_review_regime_v2`. O co
 
 Cinco arquivos focais de interface, parser e ações passaram 67 testes. Gate local completo passou 44/44 tarefas por fase. Concorrência com duas sessões, E2E, produção, CI final, merge e deploys ainda exigem evidência; isto não é completion.
 
+## Preflight da CI
+
+Quality `36732377184`: os contratos SQL e as 69 disputas de regime passaram; Security `36732377169` passou. O teste seguinte de execução encontrou colisão de fixture em `synthetic-execution`: a expansão nova conservava o nome de release do fixture comum. O harness agora fixa namespace `synthetic-regime-execution`, preservando o teste seguinte e sem apagar seus registros. O gate completo será repetido; não há migração em produção nem completion antecipado.
+
+A jornada institucional conservava `data-mode` e a expectativa de que atribuir uma pessoa mudasse a política. Agora verifica `data-regime` e que a atribuição não altera o eixo obrigatório; os negativos e atos da configuração permanecem. A nova jornada usa clique e espera pela resposta persistida para checkboxes controlados, sem `force`, sleeps ou redução de asserts. A primeira execução terminou com 43 jornadas passando e duas falhando; a nova execução ainda precisa comprovar o caminho inteiro.
+
 ## Segurança, riscos e contenção
 
 APP-02, APP-08, APP-11, DATA-03, DATA-09. Abusos: gravar política por cargo sem MANAGE, usar identidade suspensa, sobrescrever outra alteração de política, converter regime em aprovação, bloquear recurso estrangeiro antes de negar acesso. Negativos cobrem os endpoints novos e antigos. A prova usa apenas identidades sintéticas em staging com rollback e banco descartável local da CI; produção recebe somente migração e consultas de catálogo.

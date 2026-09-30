@@ -27,7 +27,9 @@ test("content review policy persists without intake, honors exact acts, and reje
   panel = await openReview(page, f, "?view=work");
   await expect(panel).toHaveAttribute("data-regime", "open");
   const ownRow = panel.locator(`tr[data-user-id="${f.actorId}"]`);
-  await ownRow.locator('input[value="approver"]').check();
+  // These controlled fields update from refreshed server props after the action commits.
+  await expect(ownRow.locator('input[value="approver"]')).not.toBeChecked();
+  await ownRow.locator('input[value="approver"]').click();
   await expect(ownRow.locator('input[value="approver"]')).toBeChecked();
   await expect(panel.locator('select[name="project_self_approval"]')).toBeEnabled();
   await panel.locator('select[name="project_self_approval"]').selectOption("allowed");
@@ -36,13 +38,15 @@ test("content review policy persists without intake, honors exact acts, and reje
   await panel.locator('select[name="project_assignment_required"]').selectOption("not_required");
   await expect(panel).toHaveAttribute("data-regime", "individual");
   await expect(panel.locator('input[name="organization_assignment_required"]')).toBeEnabled();
-  await panel.locator('input[name="organization_assignment_required"]').check();
+  await expect(panel.locator('input[name="organization_assignment_required"]')).not.toBeChecked();
+  await panel.locator('input[name="organization_assignment_required"]').click();
   await expect(panel.locator('input[name="organization_assignment_required"]')).toBeChecked();
   await expect(panel.locator('select[name="project_assignment_required"]')).toBeEnabled();
   await panel.locator('select[name="project_assignment_required"]').selectOption("inherit");
   await expect(panel).toHaveAttribute("data-regime", "assigned");
   await expect(panel.locator('input[name="organization_self_approval"]')).toBeEnabled();
-  await panel.locator('input[name="organization_self_approval"]').check();
+  await expect(panel.locator('input[name="organization_self_approval"]')).not.toBeChecked();
+  await panel.locator('input[name="organization_self_approval"]').click();
   await expect(panel.locator('input[name="organization_self_approval"]')).toBeChecked();
   await expect(panel.locator('select[name="project_self_approval"]')).toBeEnabled();
   await panel.locator('select[name="project_self_approval"]').selectOption("inherit");
