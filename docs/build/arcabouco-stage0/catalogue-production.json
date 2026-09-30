@@ -64717,7 +64717,1366 @@
       "enabled": "O",
       "function": "private.reject_source_version_mutation_v1()",
       "definition": "CREATE TRIGGER capital_public_input_snapshots_immutable BEFORE DELETE OR UPDATE ON private.capital_public_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "function:private.capital_public_allocation_job_current_v1(p_allocation_id uuid)",
+      "kind": "function",
+      "name": "capital_public_allocation_job_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_allocation_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_public_capture_bucket_safe_v1()",
+      "kind": "function",
+      "name": "capital_public_capture_bucket_safe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_public_purge_worker_v1(p_worker_token text)",
+      "kind": "function",
+      "name": "capital_public_purge_worker_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_public_retention_deadline_v1(p_license_id uuid, p_organization_id uuid, p_observed_at timestamp with time zone, p_policy_id uuid)",
+      "kind": "function",
+      "name": "capital_public_retention_deadline_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_license_id uuid, p_organization_id uuid, p_observed_at timestamp with time zone, p_policy_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_public_retention_healthy_v1(p_worker_id uuid, p_policy_id uuid)",
+      "kind": "function",
+      "name": "capital_public_retention_healthy_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_id uuid, p_policy_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.expedite_capital_public_retention_v1()",
+      "kind": "function",
+      "name": "expedite_capital_public_retention_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_ack_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean)",
+      "kind": "function",
+      "name": "worker_ack_capital_capture_purge_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_can_access_capital_public_payload_v1(p_bucket text, p_path text, p_mode text)",
+      "kind": "function",
+      "name": "worker_can_access_capital_public_payload_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text, p_mode text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_claim_capital_capture_purge_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "name": "worker_claim_capital_capture_purge_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_limit integer",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_commit_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)",
+      "kind": "function",
+      "name": "worker_commit_capital_public_payload_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_prepare_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_delivery_id uuid, p_request_id uuid, p_payload jsonb)",
+      "kind": "function",
+      "name": "worker_prepare_capital_public_payload_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_delivery_id uuid, p_request_id uuid, p_payload jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_read_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_read_capital_public_payload_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_retained_payload_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_retry_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_reason text)",
+      "kind": "function",
+      "name": "worker_retry_capital_capture_purge_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_purge_id uuid, p_purge_capability text, p_reason text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.worker_ack_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean)",
+      "kind": "function",
+      "name": "worker_ack_capital_capture_purge_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_purge_id uuid, p_purge_capability text, p_storage_delete_confirmed boolean",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_claim_capital_capture_purge_v1(p_worker_token text, p_limit integer)",
+      "kind": "function",
+      "name": "worker_claim_capital_capture_purge_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_limit integer",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_commit_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)",
+      "kind": "function",
+      "name": "worker_commit_capital_public_payload_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_prepare_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_delivery_id uuid, p_request_id uuid, p_payload jsonb)",
+      "kind": "function",
+      "name": "worker_prepare_capital_public_payload_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_delivery_id uuid, p_request_id uuid, p_payload jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_read_capital_public_payload_v1(p_job_id uuid, p_capability_token text, p_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_read_capital_public_payload_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_retained_payload_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_retry_capital_capture_purge_v1(p_worker_token text, p_purge_id uuid, p_purge_capability text, p_reason text)",
+      "kind": "function",
+      "name": "worker_retry_capital_capture_purge_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_worker_token text, p_purge_id uuid, p_purge_capability text, p_reason text",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.capital_public_payload_allocations.capital_public_payload_allocations_delete",
+      "kind": "policy",
+      "name": "capital_public_payload_allocations_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_allocations",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_payload_allocations.capital_public_payload_allocations_insert",
+      "kind": "policy",
+      "name": "capital_public_payload_allocations_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_allocations",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_payload_allocations.capital_public_payload_allocations_select",
+      "kind": "policy",
+      "name": "capital_public_payload_allocations_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_allocations",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_payload_allocations.capital_public_payload_allocations_update",
+      "kind": "policy",
+      "name": "capital_public_payload_allocations_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_allocations",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_delete",
+      "kind": "policy",
+      "name": "capital_public_payload_erasure_events_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_erasure_events",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_insert",
+      "kind": "policy",
+      "name": "capital_public_payload_erasure_events_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_erasure_events",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_select",
+      "kind": "policy",
+      "name": "capital_public_payload_erasure_events_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_erasure_events",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_update",
+      "kind": "policy",
+      "name": "capital_public_payload_erasure_events_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_erasure_events",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_payload_purge_queue.capital_public_payload_purge_queue_delete",
+      "kind": "policy",
+      "name": "capital_public_payload_purge_queue_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_purge_queue",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_payload_purge_queue.capital_public_payload_purge_queue_insert",
+      "kind": "policy",
+      "name": "capital_public_payload_purge_queue_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_purge_queue",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_payload_purge_queue.capital_public_payload_purge_queue_select",
+      "kind": "policy",
+      "name": "capital_public_payload_purge_queue_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_purge_queue",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_payload_purge_queue.capital_public_payload_purge_queue_update",
+      "kind": "policy",
+      "name": "capital_public_payload_purge_queue_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_payload_purge_queue",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_purge_health.capital_public_purge_health_delete",
+      "kind": "policy",
+      "name": "capital_public_purge_health_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_purge_health",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_purge_health.capital_public_purge_health_insert",
+      "kind": "policy",
+      "name": "capital_public_purge_health_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_purge_health",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_purge_health.capital_public_purge_health_select",
+      "kind": "policy",
+      "name": "capital_public_purge_health_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_purge_health",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_purge_health.capital_public_purge_health_update",
+      "kind": "policy",
+      "name": "capital_public_purge_health_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_purge_health",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_retained_payloads.capital_public_retained_payloads_delete",
+      "kind": "policy",
+      "name": "capital_public_retained_payloads_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retained_payloads",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_retained_payloads.capital_public_retained_payloads_insert",
+      "kind": "policy",
+      "name": "capital_public_retained_payloads_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retained_payloads",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_retained_payloads.capital_public_retained_payloads_select",
+      "kind": "policy",
+      "name": "capital_public_retained_payloads_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retained_payloads",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_retained_payloads.capital_public_retained_payloads_update",
+      "kind": "policy",
+      "name": "capital_public_retained_payloads_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retained_payloads",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_retention_controls.capital_public_retention_controls_delete",
+      "kind": "policy",
+      "name": "capital_public_retention_controls_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retention_controls",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_retention_controls.capital_public_retention_controls_insert",
+      "kind": "policy",
+      "name": "capital_public_retention_controls_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retention_controls",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_retention_controls.capital_public_retention_controls_select",
+      "kind": "policy",
+      "name": "capital_public_retention_controls_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retention_controls",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_retention_controls.capital_public_retention_controls_update",
+      "kind": "policy",
+      "name": "capital_public_retention_controls_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retention_controls",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_retention_policies.capital_public_retention_policies_delete",
+      "kind": "policy",
+      "name": "capital_public_retention_policies_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retention_policies",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_retention_policies.capital_public_retention_policies_insert",
+      "kind": "policy",
+      "name": "capital_public_retention_policies_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retention_policies",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_public_retention_policies.capital_public_retention_policies_select",
+      "kind": "policy",
+      "name": "capital_public_retention_policies_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retention_policies",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_public_retention_policies.capital_public_retention_policies_update",
+      "kind": "policy",
+      "name": "capital_public_retention_policies_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_public_retention_policies",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:storage.objects.capital_capture_objects_delete",
+      "kind": "policy",
+      "name": "capital_capture_objects_delete",
+      "qual": "((bucket_id = 'capital-input-capture'::text) AND private.worker_can_access_capital_public_payload_v1(bucket_id, name, 'purge'::text))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:storage.objects.capital_capture_objects_insert",
+      "kind": "policy",
+      "name": "capital_capture_objects_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "((bucket_id = 'capital-input-capture'::text) AND private.worker_can_access_capital_public_payload_v1(bucket_id, name, 'upload'::text))"
+    },
+    {
+      "id": "policy:storage.objects.capital_capture_objects_select",
+      "kind": "policy",
+      "name": "capital_capture_objects_select",
+      "qual": "((bucket_id = 'capital-input-capture'::text) AND (private.worker_can_access_capital_public_payload_v1(bucket_id, name, 'read'::text) OR private.worker_can_access_capital_public_payload_v1(bucket_id, name, 'purge_select'::text)))",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "objects",
+      "schema": "storage",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "r:private.capital_public_payload_allocations",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_public_payload_allocations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_public_payload_erasure_events",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_public_payload_erasure_events",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_public_payload_purge_queue",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_public_payload_purge_queue",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_public_purge_health",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_public_purge_health",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_public_retained_payloads",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_public_retained_payloads",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_public_retention_controls",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_public_retention_controls",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_public_retention_policies",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_public_retention_policies",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.capital_public_payload_allocations.capital_public_payload_allocations_audit",
+      "kind": "trigger",
+      "name": "capital_public_payload_allocations_audit",
+      "table": "capital_public_payload_allocations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_public_payload_allocations_audit AFTER INSERT ON private.capital_public_payload_allocations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_public_payload_allocations.capital_public_payload_allocations_immutable",
+      "kind": "trigger",
+      "name": "capital_public_payload_allocations_immutable",
+      "table": "capital_public_payload_allocations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_public_payload_allocations_immutable BEFORE DELETE OR UPDATE ON private.capital_public_payload_allocations FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_audit",
+      "kind": "trigger",
+      "name": "capital_public_payload_erasure_events_audit",
+      "table": "capital_public_payload_erasure_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_public_payload_erasure_events_audit AFTER INSERT ON private.capital_public_payload_erasure_events FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_public_payload_erasure_events.capital_public_payload_erasure_events_immutable",
+      "kind": "trigger",
+      "name": "capital_public_payload_erasure_events_immutable",
+      "table": "capital_public_payload_erasure_events",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_public_payload_erasure_events_immutable BEFORE DELETE OR UPDATE ON private.capital_public_payload_erasure_events FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_public_payload_purge_queue.capital_public_purge_queue_audit",
+      "kind": "trigger",
+      "name": "capital_public_purge_queue_audit",
+      "table": "capital_public_payload_purge_queue",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_public_purge_queue_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_public_payload_purge_queue FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_public_payload_purge_queue.capital_public_purge_queue_updated_at",
+      "kind": "trigger",
+      "name": "capital_public_purge_queue_updated_at",
+      "table": "capital_public_payload_purge_queue",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_public_purge_queue_updated_at BEFORE UPDATE ON private.capital_public_payload_purge_queue FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_public_purge_health.capital_public_purge_health_updated_at",
+      "kind": "trigger",
+      "name": "capital_public_purge_health_updated_at",
+      "table": "capital_public_purge_health",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_public_purge_health_updated_at BEFORE UPDATE ON private.capital_public_purge_health FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_public_retained_payloads.capital_public_retained_payloads_audit",
+      "kind": "trigger",
+      "name": "capital_public_retained_payloads_audit",
+      "table": "capital_public_retained_payloads",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_public_retained_payloads_audit AFTER INSERT ON private.capital_public_retained_payloads FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_public_retained_payloads.capital_public_retained_payloads_immutable",
+      "kind": "trigger",
+      "name": "capital_public_retained_payloads_immutable",
+      "table": "capital_public_retained_payloads",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_public_retained_payloads_immutable BEFORE DELETE OR UPDATE ON private.capital_public_retained_payloads FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_public_retention_controls.capital_public_retention_controls_updated_at",
+      "kind": "trigger",
+      "name": "capital_public_retention_controls_updated_at",
+      "table": "capital_public_retention_controls",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_public_retention_controls_updated_at BEFORE UPDATE ON private.capital_public_retention_controls FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_public_retention_policies.capital_public_retention_policies_immutable",
+      "kind": "trigger",
+      "name": "capital_public_retention_policies_immutable",
+      "table": "capital_public_retention_policies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_public_retention_policies_immutable BEFORE DELETE OR UPDATE ON private.capital_public_retention_policies FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.resource_dependencies.capital_public_dependency_retention_changed",
+      "kind": "trigger",
+      "name": "capital_public_dependency_retention_changed",
+      "table": "resource_dependencies",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.expedite_capital_public_retention_v1()",
+      "definition": "CREATE TRIGGER capital_public_dependency_retention_changed AFTER INSERT OR DELETE ON private.resource_dependencies FOR EACH ROW EXECUTE FUNCTION private.expedite_capital_public_retention_v1()"
+    },
+    {
+      "id": "trigger:private.source_rights_versions.capital_public_rights_retention_changed",
+      "kind": "trigger",
+      "name": "capital_public_rights_retention_changed",
+      "table": "source_rights_versions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.expedite_capital_public_retention_v1()",
+      "definition": "CREATE TRIGGER capital_public_rights_retention_changed AFTER INSERT ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.expedite_capital_public_retention_v1()"
+    },
+    {
+      "id": "trigger:public.source_bindings.capital_public_binding_retention_changed",
+      "kind": "trigger",
+      "name": "capital_public_binding_retention_changed",
+      "table": "source_bindings",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.expedite_capital_public_retention_v1()",
+      "definition": "CREATE TRIGGER capital_public_binding_retention_changed AFTER UPDATE OF revoked_at ON public.source_bindings FOR EACH ROW EXECUTE FUNCTION private.expedite_capital_public_retention_v1()"
     }
   ],
-  "captured_at": "2026-09-30T20:00:35.754916Z"
+  "captured_at": "2026-09-30T22:15:49.452044+00:00"
 }

@@ -111,6 +111,42 @@ do $$ declare tab text; api_role text; sig text; begin
    raise exception 'capital_public_capture_rpc_grant_invalid: %',sig; end if;
  end loop;
 end $$;
+-- Stage 20 / 3Q retention: neither metadata nor maintenance state is a client table.
+do $$ declare tab text; api_role text; sig text; begin
+ foreach tab in array array['private.capital_public_retention_policies','private.capital_public_retention_controls',
+  'private.capital_public_purge_health','private.capital_public_payload_allocations',
+  'private.capital_public_retained_payloads','private.capital_public_payload_purge_queue',
+  'private.capital_public_payload_erasure_events'] loop
+  if not exists(select 1 from pg_class where oid=tab::regclass and relrowsecurity and relforcerowsecurity)
+   or (select count(distinct polcmd) from pg_policy where polrelid=tab::regclass)<>4 then
+   raise exception 'capital_public_retention_rls_missing: %',tab; end if;
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_table_privilege(api_role,tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') then
+    raise exception 'capital_public_retention_table_exposed: %, %',tab,api_role; end if;
+  end loop;
+ end loop;
+ foreach sig in array array['private.capital_public_capture_bucket_safe_v1()',
+  'private.capital_public_purge_worker_v1(text)',
+  'private.capital_public_retention_healthy_v1(uuid,uuid)',
+  'private.capital_public_retention_deadline_v1(uuid,uuid,timestamptz,uuid)',
+  'private.capital_public_allocation_job_current_v1(uuid)'] loop
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_function_privilege(api_role,sig,'EXECUTE') then
+    raise exception 'capital_public_retention_helper_exposed: %, %',sig,api_role; end if;
+  end loop;
+ end loop;
+ foreach sig in array array[
+  'public.worker_prepare_capital_public_payload_v1(uuid,text,uuid,uuid,jsonb)',
+  'public.worker_commit_capital_public_payload_v1(uuid,text,uuid,uuid,text,text,bigint)',
+  'public.worker_read_capital_public_payload_v1(uuid,text,uuid)',
+  'public.worker_claim_capital_capture_purge_v1(text,integer)',
+  'public.worker_ack_capital_capture_purge_v1(text,uuid,text,boolean)',
+  'public.worker_retry_capital_capture_purge_v1(text,uuid,text,text)'] loop
+  if has_function_privilege('anon',sig,'EXECUTE') or has_function_privilege('service_role',sig,'EXECUTE')
+   or not has_function_privilege('authenticated',sig,'EXECUTE') then
+   raise exception 'capital_public_retention_rpc_grant_invalid: %',sig; end if;
+ end loop;
+end $$;
 set local role authenticated;
 select set_config(
   'request.jwt.claims',

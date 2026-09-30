@@ -49,6 +49,7 @@ describe("worker runtime schema preflight", () => {
       "institutional-input-snapshot.v1",
   "institutional-setup-input-snapshot.v1",
   "institutional-native-projection.v1",
+          "capital-public-retention.v1",
         ],
       },
       error: null,
@@ -78,7 +79,7 @@ describe("worker runtime schema preflight", () => {
         capabilities: REQUIRED_WORKER_RUNTIME_CAPABILITIES.slice(0, -1),
       },
       error: null,
-    }))).rejects.toThrow("missing capabilities: institutional-native-projection.v1");
+    }))).rejects.toThrow("missing capabilities: capital-public-retention.v1");
   });
 
   it("refuses to read the recompute health before its database migration", async () => {
@@ -185,7 +186,7 @@ describe("worker runtime schema preflight", () => {
     const evaluationSql = readFileSync(`${migrationsDirectory}/${evaluationExtension}`, "utf8");
     expect(evaluationSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
     expect(evaluationSql).toContain(`replace(body,'pinned-execution-consumer.v1','pinned-execution-consumer.v1","governed-evaluation-consumer.v1')`);
-    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "governed-evaluation-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && capability !== "dependency-recompute.v1" && capability !== "dependency-recompute-health.v1" && capability !== "institutional-input-snapshot.v1" && capability !== "institutional-setup-input-snapshot.v1" && capability !== "institutional-native-projection.v1" && capability !== ARTIFACT_REVISION_CAPABILITY && !accessCapabilities.includes(capability))) {
+    for (const capability of REQUIRED_WORKER_RUNTIME_CAPABILITIES.filter((capability) => capability !== "pinned-execution-consumer.v1" && capability !== "governed-evaluation-consumer.v1" && capability !== "provider-resource-retention.v2" && capability !== "domain-event-outbox.v1" && capability !== "confirmed-receivables-support-sheets.v1" && capability !== "dependency-recompute.v1" && capability !== "dependency-recompute-health.v1" && capability !== "institutional-input-snapshot.v1" && capability !== "institutional-setup-input-snapshot.v1" && capability !== "institutional-native-projection.v1" && capability !== "capital-public-retention.v1" && capability !== ARTIFACT_REVISION_CAPABILITY && !accessCapabilities.includes(capability))) {
       expect(sql).toContain(`'${capability}'`);
     }
     const extension = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_confirmed_receivables_support_sheets_v2.sql")).sort().at(-1);
@@ -215,6 +216,11 @@ describe("worker runtime schema preflight", () => {
     const nativeProjection = readdirSync(migrationsDirectory).find((name) => name.endsWith("_institutional_native_projection.sql"));
     expect(nativeProjection).toBeDefined();
     expect(readFileSync(`${migrationsDirectory}/${nativeProjection}`, "utf8")).toContain("institutional-native-projection.v1");
+    const capitalRetention = readdirSync(migrationsDirectory).find((name) => name.endsWith("_capital_public_payload_retention.sql"));
+    expect(capitalRetention).toBeDefined();
+    const capitalRetentionSql = readFileSync(`${migrationsDirectory}/${capitalRetention}`, "utf8");
+    expect(capitalRetentionSql).toContain("pg_get_functiondef('public.worker_runtime_schema_contract_v1()'::regprocedure)");
+    expect(capitalRetentionSql).toContain('"institutional-native-projection.v1","capital-public-retention.v1"');
     const artifact = readdirSync(migrationsDirectory).filter((name) => name.endsWith("_artifact_revision_protocol.sql")).sort().at(-1);
     expect(artifact).toBeDefined();
     const artifactSql = readFileSync(`${migrationsDirectory}/${artifact}`, "utf8");

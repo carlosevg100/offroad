@@ -40,6 +40,8 @@ export const REQUIRED_WORKER_RUNTIME_CAPABILITIES = [
   "institutional-input-snapshot.v1",
   "institutional-setup-input-snapshot.v1",
   "institutional-native-projection.v1",
+  // Stage 20 / 3Q: retained public payload read and independent purge loop.
+  "capital-public-retention.v1",
 ] as const;
 
 /**
