@@ -108,14 +108,16 @@ class RetentionStorage:
             raise AssertionError(output)
         return result.stdout.strip()
 
-    def authorized(self, query, actor=ACTOR, organization=ORG):
+    def authorized(self, query, actor=None, organization=None):
+        actor = ACTOR if actor is None else actor
+        organization = ORG if organization is None else organization
         claims = {'sub': actor, 'role': 'authenticated', 'aal': 'aal1'}
         return ('select set_config(\'request.jwt.claim.sub\',' + literal(actor) + ',true);'
                 + 'select set_config(\'request.jwt.claims\',' + literal(json.dumps(claims)) + ',true);'
                 + 'select set_config(\'request.headers\',' + literal(json.dumps({'x-offroad-workspace': organization})) + ',true);'
                 + query)
 
-    def rpc_sql(self, query, expected=None, actor=ACTOR, organization=ORG):
+    def rpc_sql(self, query, expected=None, actor=None, organization=None):
         output = self.sql('begin;' + self.authorized('set local role authenticated;' + query, actor, organization) + 'commit;', expected)
         return None if output is None else json.loads(output.splitlines()[-1])
 

@@ -30,14 +30,16 @@ function fixture() {
   };
   const rpc = vi.fn(async (name: string) => ({data: replies[name], error: null as unknown}));
   const upload = vi.fn().mockResolvedValue({data: {id: id(7)}, error: null});
-  const info = vi.fn().mockResolvedValue({data: {id: id(7), version: "version-one", bucketId: allocation.bucket, name: allocation.path, isVersioned: false}, error: null});
-  const download = vi.fn().mockResolvedValue({data: new Blob([canonicalPayload]), error: null});
   const remove = vi.fn().mockResolvedValue({data: [{name: allocation.path}], error: null});
-  const exists = vi.fn().mockResolvedValue({data: false, error: {status: 404}});
-  const from = vi.fn().mockReturnValue({upload, info, download, remove, exists});
+  const missing = {status: 400, statusCode: "404", message: "Object not found"};
+  const info = vi.fn().mockImplementation(async () => remove.mock.calls.length > 0
+    ? {data: null, error: missing}
+    : {data: {id: id(7), version: "version-one", bucketId: allocation.bucket, name: allocation.path, isVersioned: false}, error: null});
+  const download = vi.fn().mockResolvedValue({data: new Blob([canonicalPayload]), error: null});
+  const from = vi.fn().mockReturnValue({upload, info, download, remove});
   const client = createCapitalPublicCaptureStorage({rpc, storage: {from}} as unknown as SupabaseClient, () => instant);
   const calls = (name: string) => rpc.mock.calls.filter(([actual]) => actual === name);
-  return {client, rpc, replies, upload, info, download, remove, exists, from, calls, advance: (next: number) => {instant = next;}};
+  return {client, rpc, replies, upload, info, download, remove, from, calls, advance: (next: number) => {instant = next;}};
 }
 
 describe("capital capture retained bytes", () => {
@@ -161,29 +163,40 @@ describe("capital capture retained bytes", () => {
 });
 
 describe("capital capture physical purge", () => {
+  it("accepts the SDK's exact HTTP 400/statusCode 404 object-not-found response", async () => {
+    const fetch = vi.fn(async () => new Response(JSON.stringify({statusCode: "404", error: "not_found", message: "Object not found"}),
+      {status: 400, headers: {"Content-Type": "application/json"}}));
+    const sdk = createClient("https://storage.synthetic.invalid", "synthetic-key", {global: {fetch}, auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false}});
+    const absence = await sdk.storage.from(allocation.bucket).info(allocation.path);
+    expect(absence.error).toMatchObject({status: 400, statusCode: "404", message: "Object not found"});
+    const f = fixture(); f.info.mockResolvedValue(absence);
+    expect((await f.client.purgeOnce("synthetic-worker-token"))[0]?.state).toBe("purged");
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
   it("removes only the leased exact path, checks absence, then acknowledges SQL", async () => {
     const f = fixture(); expect(await f.client.purgeOnce("synthetic-worker-token")).toEqual([{purgeId: id(8), state: "purged"}]);
-    expect(f.remove).toHaveBeenCalledWith([allocation.path]); expect(f.exists).toHaveBeenCalledWith(allocation.path);
+    expect(f.remove).toHaveBeenCalledWith([allocation.path]); expect(f.info).toHaveBeenCalledWith(allocation.path);
     expect(f.rpc).toHaveBeenCalledWith("worker_ack_capital_capture_purge_v1", {p_worker_token: "synthetic-worker-token", p_purge_id: id(8), p_purge_capability: purge.purgeCapability, p_storage_delete_confirmed: true});
-    expect(f.remove.mock.invocationCallOrder[0]).toBeLessThan(f.exists.mock.invocationCallOrder[0]!);
+    expect(f.remove.mock.invocationCallOrder[0]).toBeLessThan(f.info.mock.invocationCallOrder[0]!);
   });
   it("supports lost-response retry only through another successful DELETE plus absence and DB proof", async () => {
     const f = fixture(); f.remove.mockResolvedValue({data: [], error: null}); f.replies.worker_ack_capital_capture_purge_v1 = {purged: true, replayed: true};
-    expect((await f.client.purgeOnce("synthetic-worker-token"))[0]?.state).toBe("purged"); expect(f.exists).toHaveBeenCalledTimes(1);
+    expect((await f.client.purgeOnce("synthetic-worker-token"))[0]?.state).toBe("purged"); expect(f.info).toHaveBeenCalledTimes(1);
   });
-  it.each([{data: false, error: null}, {data: false, error: {status: 400}}, {data: false, error: {status: 403}}, {data: true, error: null}])("never confirms ambiguous absence %j", async (absence) => {
-    const f = fixture(); f.exists.mockResolvedValue(absence);
+  it.each([{data: null, error: null}, {data: null, error: {status: 400}}, {data: null, error: {status: 403, statusCode: "404", message: "Object not found"}},
+    {data: null, error: {status: 400, statusCode: "404", message: "Access denied"}}, {data: {id: id(7)}, error: null}])("never confirms ambiguous absence %j", async (absence) => {
+    const f = fixture(); f.info.mockResolvedValue(absence);
     expect(await f.client.purgeOnce("synthetic-worker-token")).toEqual([{purgeId: id(8), state: "retry_scheduled", reason: "storage_absence_unconfirmed"}]);
     expect(f.calls("worker_ack_capital_capture_purge_v1")).toHaveLength(0);
   });
   it("does not use a 404 DELETE failure as absence proof", async () => {
     const f = fixture(); f.remove.mockResolvedValue({data: null, error: {status: 404}});
     expect((await f.client.purgeOnce("synthetic-worker-token"))[0]?.reason).toBe("storage_delete_failed");
-    expect(f.exists).not.toHaveBeenCalled(); expect(f.calls("worker_ack_capital_capture_purge_v1")).toHaveLength(0);
+    expect(f.info).not.toHaveBeenCalled(); expect(f.calls("worker_ack_capital_capture_purge_v1")).toHaveLength(0);
   });
   it("does not acknowledge when the lease expires during DELETE", async () => {
     const f = fixture(); f.remove.mockImplementation(async () => {f.advance(Date.parse(purge.leaseExpiresAt)); return {data: [], error: null};});
-    expect((await f.client.purgeOnce("synthetic-worker-token"))[0]?.state).toBe("retry_scheduled"); expect(f.exists).not.toHaveBeenCalled(); expect(f.calls("worker_ack_capital_capture_purge_v1")).toHaveLength(0);
+    expect((await f.client.purgeOnce("synthetic-worker-token"))[0]?.state).toBe("retry_scheduled"); expect(f.info).not.toHaveBeenCalled(); expect(f.calls("worker_ack_capital_capture_purge_v1")).toHaveLength(0);
   });
   it("reports no successful purge after SQL rejects the acknowledgment", async () => {
     const f = fixture(); f.rpc.mockImplementation(async (name) => name === "worker_ack_capital_capture_purge_v1" ? {data: null, error: {code: "42501"}} : {data: f.replies[name], error: null});
@@ -203,10 +216,10 @@ describe("capital capture physical purge", () => {
   });
   it("does not accept a deletion receipt from another object", async () => {
     const f = fixture(); f.remove.mockResolvedValue({data: [{name: "other/path.json"}], error: null});
-    expect((await f.client.purgeOnce("synthetic-worker-token"))[0]?.reason).toBe("storage_delete_failed"); expect(f.exists).not.toHaveBeenCalled();
+    expect((await f.client.purgeOnce("synthetic-worker-token"))[0]?.reason).toBe("storage_delete_failed"); expect(f.info).not.toHaveBeenCalled();
   });
   it("never downloads revoked payload bytes during purge", async () => {
     const f = fixture(); await f.client.purgeOnce("synthetic-worker-token");
-    expect(f.download).not.toHaveBeenCalled(); expect(f.info).not.toHaveBeenCalled(); expect(f.upload).not.toHaveBeenCalled();
+    expect(f.download).not.toHaveBeenCalled(); expect(f.info).toHaveBeenCalledTimes(1); expect(f.upload).not.toHaveBeenCalled();
   });
 });

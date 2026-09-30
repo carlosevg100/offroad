@@ -43,6 +43,14 @@ function status(error: unknown): number | undefined {
   const raw = value.status ?? value.statusCode ?? value.originalError?.status;
   return raw === undefined ? undefined : Number(raw);
 }
+function exactStorageAbsence(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const value = error as {status?: unknown; statusCode?: unknown; message?: unknown};
+  return (Number(value.status) === 400 || Number(value.status) === 404)
+    && Number(value.statusCode) === 404
+    && typeof value.message === "string"
+    && /^(object not found|the resource was not found)$/i.test(value.message);
+}
 function assertPath(scope: {allocationId: string; path: string}) {
   const parts = scope.path.split("/");
   uuid.parse(parts[0]);
@@ -140,10 +148,11 @@ export function createCapitalPublicCaptureStorage(supabase: SupabaseClient, now:
           if (removed.error || !Array.isArray(removed.data)) throw new Error("storage delete denied");
           if (removed.data.some((object) => object.name !== item.path)) throw new Error("storage delete scope mismatch");
           leaseLive(); reason = "storage_absence_unconfirmed";
-          const absence = await storage.exists(item.path);
-          // SDK returns error alongside false. A bare false, 400, 403 or generic failure is not proof.
-          // 404 is admissible ONLY after successful DELETE and SQL ACK rechecking exact lease/auth/path.
-          if (absence.data !== false || status(absence.error) !== 404) throw new Error("storage absence unconfirmed");
+          const absence = await storage.info(item.path);
+          // Storage's info route can report HTTP 400 with statusCode 404. Require
+          // its exact object-not-found response after DELETE; a bare 400 or an
+          // authorization failure is never physical erasure evidence.
+          if (absence.data || !exactStorageAbsence(absence.error)) throw new Error("storage absence unconfirmed");
           leaseLive();
         } catch {
           retrySchema.parse(await rpc("worker_retry_capital_capture_purge_v1", {...args, p_reason: reason}));
