@@ -71,6 +71,32 @@ beforeEach(() => {
   ))(name, args));
 });
 describe("document work product download route", () => {
+  it.each(["docx", "pdf"])("withholds %s when source rights are revoked after rendering but project access remains", async (format) => {
+    mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+      expect(render).toHaveBeenCalled();
+      reads = [readingRevision({restriction: {kind: "source_rights", linkIds: [], unresolvedRevisionIds: []}})];
+      return true;
+    });
+    const response = await request({format});
+    expect(response.status).toBe(409);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(response.headers.get("content-disposition")).toBeNull();
+    expect(response.headers.get("x-artifact-revision")).toBeNull();
+    expect(response.headers.get("x-work-product-fingerprint")).toBeNull();
+    expect(mocks.rpc).toHaveBeenCalledWith("read_artifact_revision_v1", {p_revision_id: revisionId});
+  });
+  it.each(["docx", "pdf"])("withholds %s when external approval is revoked after rendering", async (format) => {
+    reads = [readingRevision({audience: "external", release: "released"})];
+    mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+      reads = [readingRevision({audience: "external", release: "blocked"})];
+      return true;
+    });
+    const response = await request({format});
+    expect(response.status).toBe(409);
+    expect(response.headers.get("content-disposition")).toBeNull();
+    expect(response.headers.get("x-artifact-release")).toBeNull();
+  });
+
   it("withholds a rendered file when access was revoked during rendering", async () => {
     mocks.readable.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
     const response = await request({format:"pdf"});

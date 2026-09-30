@@ -11,6 +11,7 @@ import {
   artifactUnavailable,
   legacyRowId,
   refusalText,
+  renderedRevisionStillAuthorized,
   requestedRevision,
   resolveRouteRevision,
   revisionRendererAllowed,
@@ -75,6 +76,7 @@ export async function GET(request:Request,{params}:{params:Promise<{locale:strin
   const verification=verifyRenderedBytes(revision,rendered.bytes,{format:rendered.format,selectors:{locale:document.lang}});
   if(verification.status==="mismatch")return artifactUnavailable(copy.bytesMismatch);
   if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
+  if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
   return new Response(new Uint8Array(rendered.bytes),{headers:{
     "content-type":media[format as keyof typeof media],
     "content-disposition":`attachment; filename="offroad-${result.product.job}-${fingerprint.slice(0,12)}.${format}"`,

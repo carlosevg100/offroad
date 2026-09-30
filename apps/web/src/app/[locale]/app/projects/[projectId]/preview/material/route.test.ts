@@ -95,7 +95,7 @@ let storageDown: boolean;
 let pinnedHeadDown: boolean;
 const downloads: string[] = [];
 function client() {
-  const readers = artifactRpc(reads);
+  const readers = (name: string, args: Record<string, unknown>) => artifactRpc(reads)(name, args);
   return supabaseDouble({
     // The old route asked for non-superseded rows; the new one reads the whole history.
     tables: {capital_project_artifacts: (filters) => ({data: [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at))
@@ -135,6 +135,49 @@ beforeEach(() => {
 afterEach(() => {vi.useRealTimers(); vi.resetAllMocks();});
 
 describe("integration preview material", () => {
+  it.each(["docx", "xlsx", "pptx"])("withholds %s after generation or Storage when source rights alone are revoked", async (format) => {
+    pinnedPreview();
+    mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+      if (format !== "docx") expect(downloads).toHaveLength(1);
+      reads = reads.map((read) => ({...read, revision: {...read.revision, manifest: null}, blocks: [],
+        restriction: {kind: "source_rights" as const, linkIds: [], unresolvedRevisionIds: []}}));
+      return true;
+    });
+    const response = await request(format);
+    expect(response.status).toBe(409);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(response.headers.get("content-disposition")).toBeNull();
+    expect(response.headers.get("x-artifact-revision")).toBeNull();
+    expect(response.headers.get("x-preview-artifact-fingerprint")).toBeNull();
+    expect(response.headers.get("x-material-sha256")).toBeNull();
+  });
+  it.each(["xlsx", "pptx"])("withholds stored %s when approval is revoked and does not fall back to the receipt", async (format) => {
+    pinnedPreview();
+    const surface = format === "xlsx" ? "workbook" : "presentation";
+    reads = [...reads.filter((read) => read.artifact.kind !== surface), pinnedRevision(surface, {audience: "external", release: "released"})];
+    mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+      expect(downloads).toHaveLength(1);
+      reads = [...reads.filter((read) => read.artifact.kind !== surface), pinnedRevision(surface, {audience: "external", release: "blocked"})];
+      return true;
+    });
+    const response = await request(format);
+    expect(response.status).toBe(409);
+    expect(downloads).toHaveLength(1);
+    expect(response.headers.get("content-disposition")).toBeNull();
+    expect(response.headers.get("x-artifact-release")).toBeNull();
+  });
+  it("withholds the unpinned receipt path when its authority is revoked after Storage", async () => {
+    mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+      expect(downloads).toHaveLength(1);
+      reads = [];
+      return true;
+    });
+    const response = await request("xlsx");
+    expect(response.status).toBe(409);
+    expect(response.headers.get("x-material-sha256")).toBeNull();
+    expect(response.headers.get("content-disposition")).toBeNull();
+  });
+
   it("issues the Word preview on the date of its version: the same revision is the same file on any day", async () => {
     vi.useFakeTimers({toFake: ["Date"]});
     vi.setSystemTime(new Date("2026-09-14T12:00:00Z"));
