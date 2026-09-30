@@ -37,6 +37,7 @@ import {
   type PublicSearchProvider,
 } from "@offroad/public-research";
 import {rotateLegacyStorage} from "./storage-rotation";
+import {createCapitalPublicCaptureStorage} from "./capital-public-capture-storage";
 import {createJobStorageClient} from "./job-storage";
 import {processProviderCaseFitJob} from "./provider-case-fit";
 import {processCaseAnalysisJob} from "./case-analysis";
@@ -115,6 +116,7 @@ async function main(): Promise<void> {
   const eventOutbox = createEventOutboxConsumer(supabase, config.OFFROAD_WORKER_TOKEN, log);
   const dependencyRecompute = createDependencyRecomputeQueue(supabase, config.OFFROAD_WORKER_TOKEN);
   const recomputeHealth = createRecomputeHealthMonitor(supabase, config.OFFROAD_WORKER_TOKEN, log);
+  const capitalCaptureStorage = createCapitalPublicCaptureStorage(supabase);
 
   // External tools: report their versions once, so a run records exactly what read the file.
   const [sofficeVersion, tesseractVersion, pdfinfoVersion, pdftoppmVersion] = await Promise.all([
@@ -322,6 +324,24 @@ async function main(): Promise<void> {
     }
   })();
 
+  // Retention cleanup must continue while a long analysis job runs, including after the
+  // responsible person or job has been revoked. Only exact leased paths can be removed.
+  // A successful empty poll refreshes the database health gate; an error never does.
+  const capitalCapturePurgeLoop = (async () => {
+    while (!stopping) {
+      try {
+        const results = await capitalCaptureStorage.purgeOnce(config.OFFROAD_WORKER_TOKEN);
+        if (results.length > 0) log("capital_capture.purge_poll", {
+          purged: results.filter((result) => result.state === "purged").length,
+          retryScheduled: results.filter((result) => result.state === "retry_scheduled").length,
+        });
+      } catch {
+        log("capital_capture.purge_poll_failed", {reason: "transport_or_authority_failed"});
+      }
+      await sleep(30000, shuttingDown.signal);
+    }
+  })();
+
   try {
   while (!stopping) {
     let job: ClaimedJob | null = null;
@@ -490,7 +510,7 @@ async function main(): Promise<void> {
   } finally {
     stopping = true;
     shuttingDown.abort();
-    await Promise.all([outboxLoop, recomputeLoop]);
+    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop]);
   }
   log("worker.stopped");
 }
