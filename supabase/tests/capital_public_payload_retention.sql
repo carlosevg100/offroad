@@ -249,16 +249,21 @@ do $$ declare next_ticket jsonb; begin
  update pg_temp.capture_purge_test_ticket set ticket=next_ticket;
 end; $$;
 reset role;
--- Fixture metadata deletion is only SQL-contract evidence. HTTP eval proves real deletion.
-delete from storage.objects where id=(select object_id from pg_temp.retained_test_fixture);
+-- Storage's own trigger forbids direct SQL deletion. Keep the metadata present and
+-- prove ACK denial here; the HTTP eval covers real DELETE, 404 and successful ACK.
 set local role authenticated;
-do $$ declare t jsonb; ack jsonb; begin
+do $$ declare t jsonb; begin
  select ticket into strict t from pg_temp.capture_purge_test_ticket;
- ack:=public.worker_ack_capital_capture_purge_v1(repeat('v',64),(t->>'purgeId')::uuid,t->>'purgeCapability',true);
- if ack->>'purged'<>'true' or ack->>'replayed'<>'false' then raise exception 'erase receipt failed'; end if;
- ack:=public.worker_ack_capital_capture_purge_v1(repeat('v',64),(t->>'purgeId')::uuid,t->>'purgeCapability',true);
- if ack->>'replayed'<>'true' then raise exception 'erase ack replay failed'; end if;
+ begin
+  perform public.worker_ack_capital_capture_purge_v1(repeat('v',64),(t->>'purgeId')::uuid,t->>'purgeCapability',true);
+  raise exception 'metadata-present retry acknowledged';
+ exception when invalid_parameter_value then null; end;
 end; $$;
 reset role;
+do $$ declare t jsonb; begin
+ select ticket into strict t from pg_temp.capture_purge_test_ticket;
+ if exists(select 1 from private.capital_public_payload_erasure_events where purge_id=(t->>'purgeId')::uuid)
+  then raise exception 'denied ACK wrote erasure event'; end if;
+end; $$;
 select 'capital_public_payload_retention' as test,'PASS' as result;
 rollback;
