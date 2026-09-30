@@ -110,6 +110,30 @@ export async function resolvePreferredRouteRevision(
   return {ok: true, read: found.read, revision: serving.revision, exact: revisionId !== null, target: found.target};
 }
 
+/** Recheck the rendered revision, never a newer head, immediately before returning bytes.
+ * This closes authorization changes during rendering; it cannot recall a completed response.
+ */
+export async function renderedRevisionStillAuthorized(
+  supabase: SupabaseClient<Database>,
+  rendered: ServedRead,
+): Promise<boolean> {
+  try {
+    const current = await readArtifactRevision(supabase, {revisionId: rendered.summary.id});
+    if (!current.ok || current.read.withheld || !artifactServing(current.read).serve) return false;
+    const read = current.read;
+    return revisionBelongsTo(read, rendered.artifact)
+      && read.artifact.id === rendered.artifact.id
+      && read.summary.manifestFingerprint === rendered.summary.manifestFingerprint
+      && read.summary.contentSha256 === rendered.summary.contentSha256
+      && read.summary.revisionNo === rendered.summary.revisionNo
+      && read.summary.audience === rendered.summary.audience
+      && read.release === rendered.release
+      && read.freshness === rendered.freshness;
+  } catch {
+    return false;
+  }
+}
+
 export function refusalText(copy: ArtifactDownloadCopy, refusal: ArtifactRefusal): string {
   return refusal === "artifact_source_restricted" ? copy.sourceRestricted : copy.releaseBlocked;
 }

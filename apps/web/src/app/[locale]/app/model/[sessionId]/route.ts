@@ -4,7 +4,7 @@ import type {ArchetypeId} from "@offroad/credit-playbook";
 import {buildFinancialModel, renderApprovedFinancialWorkbook} from "@offroad/financial-model";
 
 import {artifactRenderers} from "@/lib/artifacts/artifact-renderers";
-import {artifactNotFound, artifactUnavailable} from "@/lib/artifacts/artifact-route";
+import {artifactNotFound, artifactUnavailable, renderedRevisionStillAuthorized} from "@/lib/artifacts/artifact-route";
 import {artifactResponseHeaders, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
 import {resolveGovernedMaterialRevision} from "@/lib/artifacts/material-download";
 import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
@@ -93,6 +93,7 @@ export async function GET(request: Request, {params}: Params) {
     if (!final.ok || final.native?.summary.id !== nativeBinding.native?.summary.id || final.native?.release !== nativeBinding.native?.release
       || final.native?.summary.manifestFingerprint !== nativeBinding.native?.summary.manifestFingerprint) return artifactUnavailable(copy.sourceRestricted);
   }
+  if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
   return new Response(Buffer.from(rendered.bytes), {
     headers: {
       "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
