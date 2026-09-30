@@ -5,7 +5,7 @@ O mapa fixa os objetos observados e o destino de cada um no roteiro. Não declar
 - `OBJECT-MAP.md`: pacotes/apps, tabelas, funções, políticas, triggers, views, migrações e entradas da aplicação com destino e motivo.
 - `object-decisions.json`: decisões revisáveis separadas do coletor, contratos por ambiente, fontes e referências de módulos.
 - `SOURCE-LINEAGE.md`: resolução das 75 funções e dez tabelas antes sem origem localizada. Inclui criação direta, mudança de schema, cópia/transformação dinâmica e matriz de nomes.
-- `catalogue-production.json` e `catalogue-staging.json`: respostas de consultas de metadados de 14/09/2026. Não contêm linhas de clientes.
+- `catalogue-production.json` e `catalogue-staging.json`: respostas de consultas de metadados atualizadas em 30/09/2026 a partir dos projetos ativos. Não contêm linhas de clientes.
 - `catalogue-differences.json`: 61 objetos presentes somente em staging. Os contratos capturados dos objetos comuns coincidem. Este resultado não compara o corpo integral de funções nem conteúdo das tabelas.
 - `../schema-history/recovered-wave1-manifest.json`: sete arquivos de produção recuperados e nove registros exclusivos de staging arquivados. Arquivar SQL não remove os objetos do ambiente.
 
