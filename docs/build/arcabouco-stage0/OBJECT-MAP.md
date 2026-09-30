@@ -3147,3 +3147,15 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 ## Etapa 20 / 3K: revisão humana de execução
 
 0 objetos novos e 0 atualizados. Resultado e derivado de execução exigem revisão humana exata; recibo de cálculo não concede aprovação.
+
+## Etapa 20 / 3P: regime de revisao de conteudo
+
+8 objetos novos e 0 atualizados. Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.
+- `function:private.lock_review_policy_member_v2(p_org uuid, p_actor uuid)`
+- `function:private.read_capital_project_review_context_v2(p_project_id uuid)`
+- `function:private.review_policy_projection_v2(p_org uuid, p_work uuid)`
+- `function:private.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)`
+- `function:private.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)`
+- `function:public.read_capital_project_review_context_v2(p_project_id uuid)`
+- `function:public.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)`
+- `function:public.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)`

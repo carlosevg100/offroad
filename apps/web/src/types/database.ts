@@ -11978,6 +11978,10 @@ export type Database = {
         Args: { p_project_id: string }
         Returns: Json
       }
+      read_capital_project_review_context_v2: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
       read_documentary_plan_job_v1: {
         Args: { p_execution_brief_id: string; p_project_id: string }
         Returns: string
@@ -12690,6 +12694,15 @@ export type Database = {
         Args: { p_project_id: string; p_self_approval: string }
         Returns: Json
       }
+      set_capital_project_review_policy_v2: {
+        Args: {
+          p_assignment_required: string
+          p_expected_policy_fingerprint: string
+          p_project_id: string
+          p_self_approval: string
+        }
+        Returns: Json
+      }
       set_information_barrier_v1: {
         Args: {
           p_enabled?: boolean
@@ -12751,6 +12764,15 @@ export type Database = {
       }
       set_organization_review_policy_v1: {
         Args: { p_organization_id: string; p_self_approval_allowed: boolean }
+        Returns: Json
+      }
+      set_organization_review_policy_v2: {
+        Args: {
+          p_assignment_required: boolean
+          p_expected_policy_fingerprint: string
+          p_organization_id: string
+          p_self_approval_allowed: boolean
+        }
         Returns: Json
       }
       set_organization_unit_v1: {

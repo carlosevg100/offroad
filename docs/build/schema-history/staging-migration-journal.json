@@ -1727,8 +1727,24 @@
   {
    "version": "20260929131006",
    "name": "institutional_setup_parent_identity"
+  },
+  {
+   "version": "20260929160225",
+   "name": "execution_result_source_closure"
+  },
+  {
+   "version": "20260929163005",
+   "name": "execution_result_read_freshness"
+  },
+  {
+   "version": "20260929182221",
+   "name": "execution_result_human_review"
+  },
+  {
+   "version": "20260930143756",
+   "name": "project_review_regime_v2"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-29T13:57:57.076201+00:00"
+ "captured_at": "2026-09-30T17:29:15Z"
 }

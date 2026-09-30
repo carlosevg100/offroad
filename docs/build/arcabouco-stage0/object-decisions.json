@@ -38233,6 +38233,12 @@
           "line": 469,
           "anchor": "create or replace function public.set_capital_project_review_policy_v1(p_project_id uuid, p_self_approval text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 154,
+          "anchor": "create or replace function private.set_capital_project_review_policy_v1(p_project_id uuid,p_self_approval text) returns jsonb",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -38697,6 +38703,12 @@
           "path": "supabase/migrations/20260910230211_project_review_roles.sql",
           "line": 492,
           "anchor": "create or replace function public.set_organization_review_policy_v1(p_organization_id uuid, p_self_approval_allowed boolean)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 181,
+          "anchor": "create or replace function private.set_organization_review_policy_v1(p_organization_id uuid,p_self_approval_allowed boolean) returns jsonb",
           "mechanism": "direct_ddl"
         }
       ],
@@ -190183,6 +190195,498 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.lock_review_policy_member_v2(p_org uuid, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_review_policy_member_v2(p_org uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "lock_review_policy_member_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_actor uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_review_policy_member_v2(p_org uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "lock_review_policy_member_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_actor uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de revisao de conteudo, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 76,
+          "anchor": "create function private.lock_review_policy_member_v2(p_org uuid,p_actor uuid) returns void",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.read_capital_project_review_context_v2(p_project_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_capital_project_review_context_v2(p_project_id uuid)",
+          "kind": "function",
+          "name": "read_capital_project_review_context_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_capital_project_review_context_v2(p_project_id uuid)",
+          "kind": "function",
+          "name": "read_capital_project_review_context_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de revisao de conteudo, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 37,
+          "anchor": "create function private.read_capital_project_review_context_v2(p_project_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.review_policy_projection_v2(p_org uuid, p_work uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.review_policy_projection_v2(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "review_policy_projection_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.review_policy_projection_v2(p_org uuid, p_work uuid)",
+          "kind": "function",
+          "name": "review_policy_projection_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de revisao de conteudo, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 4,
+          "anchor": "create function private.review_policy_projection_v2(p_org uuid,p_work uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)",
+          "kind": "function",
+          "name": "set_capital_project_review_policy_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)",
+          "kind": "function",
+          "name": "set_capital_project_review_policy_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de revisao de conteudo, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 86,
+          "anchor": "create function private.set_capital_project_review_policy_v2(p_project_id uuid,p_self_approval text,p_assignment_required text,p_expected_policy_fingerprint text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)",
+          "kind": "function",
+          "name": "set_organization_review_policy_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)",
+          "kind": "function",
+          "name": "set_organization_review_policy_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de revisao de conteudo, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 123,
+          "anchor": "create function private.set_organization_review_policy_v2(p_organization_id uuid,p_self_approval_allowed boolean,p_assignment_required boolean,p_expected_policy_fingerprint text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.read_capital_project_review_context_v2(p_project_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_capital_project_review_context_v2(p_project_id uuid)",
+          "kind": "function",
+          "name": "read_capital_project_review_context_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_capital_project_review_context_v2(p_project_id uuid)",
+          "kind": "function",
+          "name": "read_capital_project_review_context_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de revisao de conteudo, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 69,
+          "anchor": "create function public.read_capital_project_review_context_v2(p_project_id uuid) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)",
+          "kind": "function",
+          "name": "set_capital_project_review_policy_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)",
+          "kind": "function",
+          "name": "set_capital_project_review_policy_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de revisao de conteudo, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 118,
+          "anchor": "create function public.set_capital_project_review_policy_v2(p_project_id uuid,p_self_approval text,p_assignment_required text,p_expected_policy_fingerprint text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)",
+          "kind": "function",
+          "name": "set_organization_review_policy_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)",
+          "kind": "function",
+          "name": "set_organization_review_policy_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de revisao de conteudo, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Projecao e comandos de politica de revisao de conteudo com autoridade READ e MANAGE, identidade vigente e CAS por snapshot.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+          "line": 146,
+          "anchor": "create function public.set_organization_review_policy_v2(p_organization_id uuid,p_self_approval_allowed boolean,p_assignment_required boolean,p_expected_policy_fingerprint text) returns jsonb",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -197174,6 +197678,13 @@
       "decision": "preservar",
       "stage": "20 / 3K",
       "reason": "Revisão humana da execução exata, sob organização da sessão, alçada e fontes revalidadas na RPC."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260930172846_project_review_regime_v2.sql",
+      "decision": "preservar",
+      "stage": "20 / 3P",
+      "reason": "Funcoes v2 aditivas e guardas nos setters legados de politica; tabelas, triggers e dados preservados."
     }
   ],
   "staging_archive": [

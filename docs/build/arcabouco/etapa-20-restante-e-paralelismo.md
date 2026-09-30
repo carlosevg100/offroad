@@ -8,7 +8,7 @@ O fundador aprovou a execução paralela dentro das ondas com "ok. segue assim",
 
 Fundação de atos, política, fontes, contestação, reafirmação e reassociação já existe e tem testes SQL e concorrência na CI. Institucional nativo e execução já exigem aprovação humana da revisão exata. Downloads revalidam autoridade depois de geração/Storage. Aproveitar esses contratos; implementar seus consumidores e os adaptadores restantes.
 
-Lacunas reais: produtores legados registram envelopes sem conteúdo/fontes completos; confirmação e conversa continuam nos comandos antigos; pacote escreve estado e fila em duas chamadas; decisão do trabalho registra efeitos declarados sem aplicá-los; regime e reassociação ainda não têm os consumidores completos; o contrato puro de release ainda aceita recibo de execução como aprovação. Não converter estado histórico confirmado em aprovação presumida.
+Lacunas reais: produtores legados registram envelopes sem conteúdo/fontes completos; confirmação e conversa continuam nos comandos antigos; pacote escreve estado e fila em duas chamadas; decisão do trabalho registra efeitos declarados sem aplicá-los; regime e reassociação ainda não têm os consumidores completos; a divergência do contrato puro de release foi corrigida e publicada no 3O/main `089e70a7d51a`. Não converter estado histórico confirmado em aprovação presumida.
 
 ## Dez pacotes de entrega restantes
 

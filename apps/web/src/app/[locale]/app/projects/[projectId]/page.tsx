@@ -57,6 +57,7 @@ import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
 import {projectExecutionBriefApproval} from "@/lib/advisor/execution-brief-approval";
+import {loadProjectReviewPolicyContext} from "@/lib/advisor/project-review-policy-context";
 import {loadProjectReviewContext, reviewMemberLabels} from "@/lib/advisor/project-review-context";
 import {loadProjectWorkRequests} from "@/lib/advisor/project-work-requests";
 import {ProjectReviewRoles} from "@/components/advisor/project-review-roles";
@@ -153,8 +154,9 @@ async function ConversationalCapitalProject({
   if (!session) return <StandaloneWork locale={locale} project={project} />;
   // Review roles decide what this person may prepare, return or approve; the registry entry and
   // the approval card only explain the decision the database will enforce again.
-  const [reviewContext, workRequests] = await Promise.all([
+  const [reviewContext, reviewPolicyContext, workRequests] = await Promise.all([
     loadProjectReviewContext(supabase, project.id),
+    loadProjectReviewPolicyContext(supabase, project.id, organization.id),
     loadProjectWorkRequests(supabase, organization.id, project.id),
   ]);
   const memberLabels = reviewMemberLabels(reviewContext);
@@ -574,10 +576,9 @@ async function ConversationalCapitalProject({
       workSections.push({id: "institutional-setup-review", title: initialReviewCopy("title"), version: initialReviews[0].revision, content: <InstitutionalSetupReviewWork projectId={project.id} reviews={initialReviews} reviewPermissions={reviewContext ? {canApprove: reviewContext.caller.canApprove} : undefined} />});
     }
   }
-  if (reviewContext) {
-    const rolesCopy = await getTranslations({locale, namespace: "ProjectReviewRoles"});
-    workSections.push({id: "project-review", title: rolesCopy("title"), status: rolesCopy(`modeLabel.${reviewContext.mode}`), content: <ProjectReviewRoles context={reviewContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} />});
-  }
+  const rolesCopy = await getTranslations({locale, namespace: "ProjectReviewRoles"});
+  workSections.push({id: "project-review", title: rolesCopy("contentTitle"), status: reviewPolicyContext ? rolesCopy(`regime.${reviewPolicyContext.regime}`) : undefined,
+    content: reviewPolicyContext ? <ProjectReviewRoles context={reviewPolicyContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} /> : <p role="status">{rolesCopy("unavailable")}</p>});
   const templateContext = await loadPresentationTemplateContext(supabase, project.id);
   if (templateContext) {
     const templateCopy = await getTranslations({locale, namespace: "PresentationTemplate"});
