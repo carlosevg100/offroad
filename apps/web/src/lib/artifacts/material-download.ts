@@ -17,6 +17,7 @@ import {
   legacyRowId,
   refusalText,
   requestedRevision,
+  renderedRevisionStillAuthorized,
   resolveRouteRevision,
   revisionRendererAllowed,
   templateForRevision,
@@ -190,6 +191,7 @@ export async function serveGovernedMaterialFile(
   const verification = verifyRenderedBytes(revision, rendered.bytes, {format, selectors: {locale: lang, materialKind: kind}});
   if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
   if (!await resourceStillReadable(supabase, organization.id, sessionId, "session")) return artifactNotFound();
+  if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
   return new Response(Buffer.from(rendered.bytes), {
     headers: {
       "content-type": fileMedia[format],

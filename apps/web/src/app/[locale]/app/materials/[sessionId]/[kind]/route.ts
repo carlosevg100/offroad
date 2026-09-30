@@ -1,7 +1,7 @@
 import type {MaterialKind} from "@offroad/case-materials";
 
 import {artifactRenderers} from "@/lib/artifacts/artifact-renderers";
-import {artifactNotFound, artifactUnavailable} from "@/lib/artifacts/artifact-route";
+import {artifactNotFound, artifactUnavailable, renderedRevisionStillAuthorized} from "@/lib/artifacts/artifact-route";
 import {artifactResponseHeaders, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
 import {governedMaterialKinds, materialSourcesFromRevision, resolveGovernedMaterialRevision} from "@/lib/artifacts/material-download";
 import {resourceStillReadable} from "@/lib/auth/resource-download";
@@ -49,6 +49,7 @@ export async function GET(request: Request, {params}: Params) {
 
   if (!await resourceStillReadable(supabase, organization.id, sessionId, "session")) return artifactNotFound();
 
+  if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
   return new Response(html, {
     headers: {
       "content-type": "text/html; charset=utf-8",

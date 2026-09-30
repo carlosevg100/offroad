@@ -152,3 +152,34 @@ describe("old and new resolution decide equal for the model", () => {
     }
   });
 });
+
+
+it("denies model bytes when material revision loses source authority during rendering", async () => {
+  const rpc = supabase.client.rpc;
+  mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+    supabase.client.rpc = async (name, args) => name === "read_artifact_revision_v1"
+      ? {data: legacyMaterialRead({restriction: {kind: "source_rights", linkIds: [], unresolvedRevisionIds: [materialRevisionId]}}), error: null}
+      : rpc(name, args);
+    return true;
+  });
+  const response = await request();
+  expect(response.status).toBe(409);
+  expect(response.headers.get("content-disposition")).toBeNull();
+  expect(response.headers.get("x-artifact-revision")).toBeNull();
+  expect(mocks.readable).toHaveBeenCalledTimes(2);
+});
+
+
+it("denies model bytes when material approval is revoked during rendering", async () => {
+  supabase = withReads([legacyMaterialRead({audience: "external", release: "released"})]);
+  const rpc = supabase.client.rpc;
+  mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+    supabase.client.rpc = async (name, args) => name === "read_artifact_revision_v1"
+      ? {data: legacyMaterialRead({audience: "external", release: "blocked"}), error: null} : rpc(name, args);
+    return true;
+  });
+  const response = await request();
+  expect(response.status).toBe(409);
+  expect(response.headers.get("content-disposition")).toBeNull();
+  expect(response.headers.get("x-artifact-revision")).toBeNull();
+});

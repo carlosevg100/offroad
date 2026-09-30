@@ -1,3 +1,9 @@
+## Etapa 20 / 3L: revalidação de downloads, 29/09/2026
+
+3K concluído na PR 847/main `fe32b74db41e1b7fb80f5a0afdc369a5afb17d25`: Quality de main `36619279160`, Security `36619279148`, web deployment `6743545225` e worker run `36619311769` PASS. Worker 498 no mesmo commit, boot com 27 capacidades/dois executores/um preparador conferido. Completion externo em `outputs/etapa-20-2026-09-29-3k/COMPLETION-ETAPA-20-3K.md` na raiz do workspace.
+
+3L revalida a revisão exata após gerar materiais em HTML/DOCX/PDF/PPTX/XLSX, além do acesso à sessão e do binding institucional. Cinco negativos reproduziram entrega indevida antes; 53 testes direcionados passaram depois. Contrato SQL de revisão PASS staging com rollback. Sem DDL ou novos grants. Gate completo, CI, merge e deploys pendentes; não é completion. Ver `docs/build/arcabouco/etapa-20-3l-revalidacao-downloads.md`. Etapa 20 aberta; 21–24 não iniciadas.
+
 ## Etapa 20 / 3K: revisão humana de execução, 29/09/2026
 
 3J fechado: PR 846/main `d2fed2e5401491910edc75d77097a45607c8a2a6`; Quality de main 36603137038 e Security 36603137054 PASS, web e worker 497 no mesmo commit, boot e 27 capacidades conferidos. O 3K retira a liberação automática por recibo e exige ato exato em execução e derivados; acrescenta a revisão na tela e impede fallback bruto quando a revisão falha. Três contratos SQL passaram em staging; gate local 44/44 PASS. Migração staging `20260929182221` e produção `20260929182306`, definição idêntica e journals conciliados. CI, merge e deployments pendentes: não é completion. Ver `docs/build/arcabouco/etapa-20-3k-execution-human-review.md`. Etapa 20 aberta; 21–24 não iniciadas.

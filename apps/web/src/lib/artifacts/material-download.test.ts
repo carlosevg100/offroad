@@ -216,3 +216,37 @@ describe("the materials routes serve one exact revision", () => {
     expect(materialProjectId).toMatch(/^[0-9a-f-]{36}$/);
   });
 });
+
+
+describe("material authority at response time", () => {
+  it.each(["docx", "pdf", "pptx", "html"] as const)("denies %s after source revocation even while session access remains", async format => {
+    const revoked = legacyMaterialRead({restriction: {kind: "source_rights", linkIds: [], unresolvedRevisionIds: [materialRevisionId]}});
+    const rpc = supabase.client.rpc;
+    mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+      supabase.client.rpc = async (name, args) => name === "read_artifact_revision_v1" ? {data: revoked, error: null} : rpc(name, args);
+      return true;
+    });
+    const response = await call(routes[format].now);
+    expect(response.status).toBe(409);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(response.headers.get("content-disposition")).toBeNull();
+    expect(response.headers.get("x-artifact-revision")).toBeNull();
+    expect(await response.text()).not.toContain("Material sintético");
+    expect(mocks.readable).toHaveBeenCalledTimes(2);
+  });
+});
+
+
+it.each(["docx", "pdf", "pptx", "html"] as const)("denies %s after external approval is revoked during rendering", async format => {
+  supabase = materialSupabase([legacyMaterialRead({audience: "external", release: "released"})]);
+  const rpc = supabase.client.rpc;
+  mocks.readable.mockResolvedValueOnce(true).mockImplementationOnce(async () => {
+    supabase.client.rpc = async (name, args) => name === "read_artifact_revision_v1"
+      ? {data: legacyMaterialRead({audience: "external", release: "blocked"}), error: null} : rpc(name, args);
+    return true;
+  });
+  const response = await call(routes[format].now);
+  expect(response.status).toBe(409);
+  expect(response.headers.get("content-disposition")).toBeNull();
+  expect(response.headers.get("x-artifact-revision")).toBeNull();
+});
