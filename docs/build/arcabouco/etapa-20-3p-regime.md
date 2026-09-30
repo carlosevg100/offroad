@@ -1,5 +1,9 @@
 # Etapa 20: 3P, regime de revisão do conteúdo
 
+## Fechamento
+
+O 3P foi publicado pela PR 852 em `main` no commit `b3c378f51c0eb38f387f185bc66756ad3ca01f32`. Quality e Security passaram na PR e em `main`; a jornada E2E de `main` terminou com 45 testes aprovados, 16 dispensados e nenhuma falha. A migração está aplicada em staging (`20260930143756`) e produção (`20260930172846`), com SQL idêntico ao arquivo versionado, catálogo conferido e advisors de segurança sem lints. Web e worker 503 foram conferidos no mesmo commit; o serviço ECS ficou 1/1, com boot e executores fixados registrados no CloudWatch. O relatório de completion e a lista nominal de testes estão em `outputs/etapa-20-2026-09-30-3p/` na raiz do workspace. Os registros abaixo preservam a ordem da validação anterior ao fechamento.
+
 ## Contrato e transição
 
 O componente existente `project-review-roles.tsx` lê `read_capital_project_review_context_v2`. Mostra separadamente atribuição obrigatória e autoaprovação, com valores do projeto, da organização e efetivos. `assigned`, `individual` e `open` descrevem a combinação; papel, membership e regime nunca equivalem à autoridade de aprovar uma revisão. O leitor exige identidade humana vigente, membership ativa e acesso ao trabalho. Limita a lista a 500 pessoas elegíveis e declara truncamento.

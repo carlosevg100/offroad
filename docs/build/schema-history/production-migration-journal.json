@@ -1687,8 +1687,16 @@
   {
    "version": "20260930172846",
    "name": "project_review_regime_v2"
+  },
+  {
+   "version": "20260930195919",
+   "name": "capital_public_input_capture"
+  },
+  {
+   "version": "20260930195925",
+   "name": "capital_public_capture_context_guard"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-30T17:29:15Z"
+ "captured_at": "2026-09-30T20:00:44.002306Z"
 }

@@ -13251,6 +13251,17 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_capture_capital_project_delivery_v1: {
+        Args: {
+          p_capability_token: string
+          p_capture_id: string
+          p_delivery_key: string
+          p_job_id: string
+          p_origin_refs: Json
+          p_payload: Json
+        }
+        Returns: Json
+      }
       worker_claim_dependency_recompute_v1: {
         Args: { p_lease_seconds?: number; p_worker_token: string }
         Returns: Json
@@ -13493,6 +13504,10 @@ export type Database = {
         Returns: Json
       }
       worker_load_agent_plan_context_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_load_capital_project_capture_context_v1: {
         Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }

@@ -1743,8 +1743,16 @@
   {
    "version": "20260930143756",
    "name": "project_review_regime_v2"
+  },
+  {
+   "version": "20260930193642",
+   "name": "capital_public_input_capture"
+  },
+  {
+   "version": "20260930194821",
+   "name": "capital_public_capture_context_guard"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-09-30T17:29:15Z"
+ "captured_at": "2026-09-30T20:00:44.003068Z"
 }

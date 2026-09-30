@@ -27,6 +27,8 @@ Estes pacotes cobrem o escopo remanescente. São dez entregas planejadas, não u
 | 3W | Leitor enumerador autorizado de decisões e pendências, sem SELECT de cliente; histórico autorizado e relato/contestação no produto; revisão comum com autores, mudança, `reaffirm` e razões; pendências e ação de `reassign_pending_review_v1` no componente existente. Nenhum seletor livre de efeitos operacionais. | Contratos de 3P e cortes pertinentes; integração após 3R/3T/3U/3V / G |
 | 3X | Conferir os cinco escritores/projeções e todo o pronto da 20; jornada integrada com duas pessoas, revisão material/cosmética, reassociação, revogação e ausência de efeitos externos; R01/procedimento 1; catálogo/journals, CI e produção no commit final. Completion da etapa. | Todos os pacotes anteriores / M |
 
+O 3Q foi dividido em cinco incrementos revisáveis: fundação de identidade/fingerprint sem bytes, armazenamento com prazo e eliminação mais licença pública exata, integração dos produtores de pesquisa empresarial, integração dos demais produtores, e eval integrado com fechamento. O primeiro mantém cápsula e entregas `unresolved`; a entrega pública individual só pode ser admitida como completa depois do mecanismo de retenção. Essa divisão não antecipa o corte de confirmação do 3R nem a recuperação dos bytes de material do 3S. O contrato e o aceite da primeira fatia estão em `etapa-20-3q-captura-base.md`.
+
 ## Paralelismo e donos
 
 - Frente banco: um responsável pelos contratos SQL, recibos, adaptadores e ordem de travas. Captura 3Q e 3S pode ser preparada em paralelo quando produtores/arquivos não se sobrepõem; integração SQL é única.

@@ -1,4 +1,10 @@
-## Etapa 20 / 3P: regime de revisão em validação, 30/09/2026
+## Etapa 20 / 3Q: captura dos insumos da análise pública em execução, 30/09/2026
+
+O 3P foi concluído na PR 852/main `b3c378f51c0eb38f387f185bc66756ad3ca01f32`: Quality e Security da PR e de main passaram; web READY e worker 503 RUNNING no mesmo commit, com boot e executores fixados conferidos no CloudWatch. Migração staging `20260930143756` e produção `20260930172846` têm o mesmo SQL, catálogo conferido e zero fixtures retidas. Completion em `outputs/etapa-20-2026-09-30-3p/COMPLETION-ETAPA-20-3P.md` na raiz do workspace.
+
+O 3Q iniciou a captura prospectiva de contextos, entregas, fontes e direitos dos produtores de análise pública. O contrato de preparação está em `outputs/etapa-20-paralelismo-2026-09-30/3Q-CONTRATO.md` na raiz do workspace. O primeiro incremento trata a fundação persistente e não encerra o 3Q; adaptação dos seis consumidores, replay de artefato e corte de confirmação ainda dependem das fatias seguintes. Etapas 21–24 aguardam OK de onda.
+
+## Etapa 20 / 3P: registro anterior ao fechamento, 30/09/2026
 
 Regime v2 e CAS no componente existente, inclusive trabalho sem intake. Setters antigos de política exigem identidade vigente e READ/MANAGE legítimos. Três aceitações indevidas reproduzidas antes em staging; 49 controles SQL depois, 69 corridas reais, 67 testes focais de interface e gate local 44/44 PASS. A nova jornada E2E passou integralmente; o teste institucional legado recebeu a expectativa corrigida para o trigger vigente. Migração staging `20260930143756`, produção `20260930172846`: mesmo SQL MD5 `90385a7faadbc49ae5b494b44dbe9916`, 14 definições idênticas, oito funções novas, security advisors sem lints, zero dados de teste retidos. Journals e catálogo conciliados. CI final, merge e deploys pendentes; não é completion. Contrato e riscos em `docs/build/arcabouco/etapa-20-3p-regime.md`. Etapa 20 aberta; 21–24 aguardam OK de onda.
 
