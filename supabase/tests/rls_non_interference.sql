@@ -82,6 +82,35 @@ create function pg_temp.assert_safe_document_job_references(p_session uuid) retu
  where j.intake_session_id=p_session and (j.payload ? 'download_url' or j.payload ? 'layer_upload_url' or j.payload->>'object_path' is distinct from d.object_path
  or j.payload->>'layer_object_path' not like j.organization_id::text||'/'||j.intake_session_id::text||'/%')) then raise exception 'caller-controlled storage reference reached the worker'; end if;
 end $$;
+
+-- Stage 20 / 3Q: metadata capture is private and only the bound worker RPC is callable.
+do $$ declare tab text; api_role text; sig text; begin
+ foreach tab in array array['private.capital_public_input_snapshots','private.capital_public_deliveries',
+  'private.capital_public_delivery_licenses','private.capital_public_delivery_license_pins'] loop
+  if not exists(select 1 from pg_class where oid=tab::regclass and relrowsecurity and relforcerowsecurity)
+   or (select count(distinct polcmd) from pg_policy where polrelid=tab::regclass)<>4 then
+   raise exception 'capital_public_capture_rls_missing: %',tab; end if;
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_table_privilege(api_role,tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') then
+    raise exception 'capital_public_capture_table_exposed: %, %',tab,api_role; end if;
+  end loop;
+ end loop;
+ foreach sig in array array['private.capital_public_capture_clock_current_v1(uuid,text)',
+  'private.capital_public_capture_job_v1(uuid,text)','private.capital_public_capture_context_v1(uuid,text)',
+  'private.capital_public_payload_valid_v1(jsonb)',
+  'private.capital_public_license_proof_v1(uuid,uuid,uuid,uuid,text,text,timestamptz,jsonb,text)'] loop
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_function_privilege(api_role,sig,'EXECUTE') then
+    raise exception 'capital_public_capture_helper_exposed: %, %',sig,api_role; end if;
+  end loop;
+ end loop;
+ foreach sig in array array['public.worker_load_capital_project_capture_context_v1(uuid,text)',
+  'public.worker_capture_capital_project_delivery_v1(uuid,text,uuid,text,jsonb,jsonb)'] loop
+  if has_function_privilege('anon',sig,'EXECUTE') or has_function_privilege('service_role',sig,'EXECUTE')
+   or not has_function_privilege('authenticated',sig,'EXECUTE') then
+   raise exception 'capital_public_capture_rpc_grant_invalid: %',sig; end if;
+ end loop;
+end $$;
 set local role authenticated;
 select set_config(
   'request.jwt.claims',

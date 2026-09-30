@@ -3159,3 +3159,22 @@ Quatro funções novas e dois comandos refatorados, sem tabela ou backfill. Esta
 - `function:public.read_capital_project_review_context_v2(p_project_id uuid)`
 - `function:public.set_capital_project_review_policy_v2(p_project_id uuid, p_self_approval text, p_assignment_required text, p_expected_policy_fingerprint text)`
 - `function:public.set_organization_review_policy_v2(p_organization_id uuid, p_self_approval_allowed boolean, p_assignment_required boolean, p_expected_policy_fingerprint text)`
+
+## 20 / 3Q, fundacao de captura publica
+
+13 objetos novos e 0 atualizados. Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure
+- `function:private.capital_public_capture_clock_current_v1(p_job_id uuid, p_capability_token text)`
+- `function:private.capital_public_capture_context_v1(p_job_id uuid, p_capability_token text)`
+- `function:private.capital_public_capture_job_v1(p_job_id uuid, p_capability_token text)`
+- `function:private.capital_public_license_proof_v1(p_org uuid, p_version uuid, p_right uuid, p_binding uuid, p_url text, p_public_hash text, p_delivered_at timestamp with time zone, p_pins jsonb, p_dependency_fingerprint text)`
+- `function:private.capital_public_payload_valid_v1(p_payload jsonb)`
+- `function:private.worker_capture_capital_project_delivery_v1(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb)`
+- `function:private.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)`
+- `function:public.worker_capture_capital_project_delivery_v1(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb)`
+- `function:public.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)`
+- `r:private.capital_public_deliveries`
+- `r:private.capital_public_delivery_license_pins`
+- `r:private.capital_public_delivery_licenses`
+- `r:private.capital_public_input_snapshots`
+
+24 politicas e gatilhos da captura 3Q sao produzidos pelo loop DDL das linhas 77-82 da migracao base, com fonte individual no inventario.

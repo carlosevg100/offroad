@@ -190687,6 +190687,2076 @@
           "mechanism": "direct_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.capital_public_capture_clock_current_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_public_capture_clock_current_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "capital_public_capture_clock_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_public_capture_clock_current_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "capital_public_capture_clock_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 88,
+          "anchor": "create function private.capital_public_capture_clock_current_v1(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_public_capture_context_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_public_capture_context_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "capital_public_capture_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_public_capture_context_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "capital_public_capture_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 145,
+          "anchor": "create function private.capital_public_capture_context_v1(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_public_capture_job_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_public_capture_job_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "capital_public_capture_job_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_public_capture_job_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "capital_public_capture_job_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 105,
+          "anchor": "create function private.capital_public_capture_job_v1(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_public_license_proof_v1(p_org uuid, p_version uuid, p_right uuid, p_binding uuid, p_url text, p_public_hash text, p_delivered_at timestamp with time zone, p_pins jsonb, p_dependency_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_public_license_proof_v1(p_org uuid, p_version uuid, p_right uuid, p_binding uuid, p_url text, p_public_hash text, p_delivered_at timestamp with time zone, p_pins jsonb, p_dependency_fingerprint text)",
+          "kind": "function",
+          "name": "capital_public_license_proof_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_right uuid, p_binding uuid, p_url text, p_public_hash text, p_delivered_at timestamp with time zone, p_pins jsonb, p_dependency_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_public_license_proof_v1(p_org uuid, p_version uuid, p_right uuid, p_binding uuid, p_url text, p_public_hash text, p_delivered_at timestamp with time zone, p_pins jsonb, p_dependency_fingerprint text)",
+          "kind": "function",
+          "name": "capital_public_license_proof_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_version uuid, p_right uuid, p_binding uuid, p_url text, p_public_hash text, p_delivered_at timestamp with time zone, p_pins jsonb, p_dependency_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195925_capital_public_capture_context_guard.sql",
+          "line": 126,
+          "anchor": "create or replace function private.capital_public_license_proof_v1(p_org uuid,p_version uuid,p_right uuid,p_binding uuid,",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_public_payload_valid_v1(p_payload jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_public_payload_valid_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "capital_public_payload_valid_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:private.capital_public_payload_valid_v1(p_payload jsonb)",
+          "kind": "function",
+          "name": "capital_public_payload_valid_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_payload jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 188,
+          "anchor": "create function private.capital_public_payload_valid_v1(p_payload jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_capture_capital_project_delivery_v1(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_capture_capital_project_delivery_v1(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb)",
+          "kind": "function",
+          "name": "worker_capture_capital_project_delivery_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_capture_capital_project_delivery_v1(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb)",
+          "kind": "function",
+          "name": "worker_capture_capital_project_delivery_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195925_capital_public_capture_context_guard.sql",
+          "line": 31,
+          "anchor": "create or replace function private.worker_capture_capital_project_delivery_v1(p_job_id uuid,p_capability_token text,p_capture_id uuid,p_delivery_key text,p_payload jsonb,p_origin_refs jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_capital_project_capture_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_capital_project_capture_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195925_capital_public_capture_context_guard.sql",
+          "line": 6,
+          "anchor": "create or replace function private.worker_load_capital_project_capture_context_v1(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_capture_capital_project_delivery_v1(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_capture_capital_project_delivery_v1(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb)",
+          "kind": "function",
+          "name": "worker_capture_capital_project_delivery_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_capture_capital_project_delivery_v1(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb)",
+          "kind": "function",
+          "name": "worker_capture_capital_project_delivery_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_capture_id uuid, p_delivery_key text, p_payload jsonb, p_origin_refs jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 376,
+          "anchor": "create function public.worker_capture_capital_project_delivery_v1(p_job_id uuid,p_capability_token text,p_capture_id uuid,p_delivery_key text,p_payload jsonb,p_origin_refs jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_capital_project_capture_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_capital_project_capture_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 181,
+          "anchor": "create function public.worker_load_capital_project_capture_context_v1(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_deliveries.capital_public_deliveries_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_deliveries.capital_public_deliveries_delete",
+          "kind": "policy",
+          "name": "capital_public_deliveries_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_public_deliveries.capital_public_deliveries_delete",
+          "kind": "policy",
+          "name": "capital_public_deliveries_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 80,
+          "anchor": "  execute format('create policy %I on private.%I for delete to anon,authenticated using(false)',t||'_delete',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_deliveries.capital_public_deliveries_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_deliveries.capital_public_deliveries_insert",
+          "kind": "policy",
+          "name": "capital_public_deliveries_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_public_deliveries.capital_public_deliveries_insert",
+          "kind": "policy",
+          "name": "capital_public_deliveries_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 78,
+          "anchor": "  execute format('create policy %I on private.%I for insert to anon,authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_deliveries.capital_public_deliveries_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_deliveries.capital_public_deliveries_select",
+          "kind": "policy",
+          "name": "capital_public_deliveries_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_public_deliveries.capital_public_deliveries_select",
+          "kind": "policy",
+          "name": "capital_public_deliveries_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 77,
+          "anchor": "  execute format('create policy %I on private.%I for select to anon,authenticated using(false)',t||'_select',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_deliveries.capital_public_deliveries_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_deliveries.capital_public_deliveries_update",
+          "kind": "policy",
+          "name": "capital_public_deliveries_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_public_deliveries.capital_public_deliveries_update",
+          "kind": "policy",
+          "name": "capital_public_deliveries_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 79,
+          "anchor": "  execute format('create policy %I on private.%I for update to anon,authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_delete",
+          "kind": "policy",
+          "name": "capital_public_delivery_license_pins_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_delete",
+          "kind": "policy",
+          "name": "capital_public_delivery_license_pins_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 80,
+          "anchor": "  execute format('create policy %I on private.%I for delete to anon,authenticated using(false)',t||'_delete',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_insert",
+          "kind": "policy",
+          "name": "capital_public_delivery_license_pins_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_insert",
+          "kind": "policy",
+          "name": "capital_public_delivery_license_pins_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 78,
+          "anchor": "  execute format('create policy %I on private.%I for insert to anon,authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_select",
+          "kind": "policy",
+          "name": "capital_public_delivery_license_pins_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_select",
+          "kind": "policy",
+          "name": "capital_public_delivery_license_pins_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 77,
+          "anchor": "  execute format('create policy %I on private.%I for select to anon,authenticated using(false)',t||'_select',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_update",
+          "kind": "policy",
+          "name": "capital_public_delivery_license_pins_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_update",
+          "kind": "policy",
+          "name": "capital_public_delivery_license_pins_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 79,
+          "anchor": "  execute format('create policy %I on private.%I for update to anon,authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_delete",
+          "kind": "policy",
+          "name": "capital_public_delivery_licenses_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_delete",
+          "kind": "policy",
+          "name": "capital_public_delivery_licenses_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 80,
+          "anchor": "  execute format('create policy %I on private.%I for delete to anon,authenticated using(false)',t||'_delete',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_insert",
+          "kind": "policy",
+          "name": "capital_public_delivery_licenses_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_insert",
+          "kind": "policy",
+          "name": "capital_public_delivery_licenses_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 78,
+          "anchor": "  execute format('create policy %I on private.%I for insert to anon,authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_select",
+          "kind": "policy",
+          "name": "capital_public_delivery_licenses_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_select",
+          "kind": "policy",
+          "name": "capital_public_delivery_licenses_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 77,
+          "anchor": "  execute format('create policy %I on private.%I for select to anon,authenticated using(false)',t||'_select',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_update",
+          "kind": "policy",
+          "name": "capital_public_delivery_licenses_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_public_delivery_licenses.capital_public_delivery_licenses_update",
+          "kind": "policy",
+          "name": "capital_public_delivery_licenses_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 79,
+          "anchor": "  execute format('create policy %I on private.%I for update to anon,authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_delete",
+          "kind": "policy",
+          "name": "capital_public_input_snapshots_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_delete",
+          "kind": "policy",
+          "name": "capital_public_input_snapshots_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 80,
+          "anchor": "  execute format('create policy %I on private.%I for delete to anon,authenticated using(false)',t||'_delete',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_insert",
+          "kind": "policy",
+          "name": "capital_public_input_snapshots_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_insert",
+          "kind": "policy",
+          "name": "capital_public_input_snapshots_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 78,
+          "anchor": "  execute format('create policy %I on private.%I for insert to anon,authenticated with check(false)',t||'_insert',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_select",
+          "kind": "policy",
+          "name": "capital_public_input_snapshots_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_select",
+          "kind": "policy",
+          "name": "capital_public_input_snapshots_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 77,
+          "anchor": "  execute format('create policy %I on private.%I for select to anon,authenticated using(false)',t||'_select',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_update",
+          "kind": "policy",
+          "name": "capital_public_input_snapshots_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_public_input_snapshots.capital_public_input_snapshots_update",
+          "kind": "policy",
+          "name": "capital_public_input_snapshots_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 79,
+          "anchor": "  execute format('create policy %I on private.%I for update to anon,authenticated using(false) with check(false)',t||'_update',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_public_deliveries",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_public_deliveries",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_public_deliveries",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_public_deliveries",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_public_deliveries",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 29,
+          "anchor": "create table private.capital_public_deliveries (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_public_delivery_license_pins",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_public_delivery_license_pins",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_public_delivery_license_pins",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_public_delivery_license_pins",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_public_delivery_license_pins",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 59,
+          "anchor": "create table private.capital_public_delivery_license_pins (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_public_delivery_licenses",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_public_delivery_licenses",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_public_delivery_licenses",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_public_delivery_licenses",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_public_delivery_licenses",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 44,
+          "anchor": "create table private.capital_public_delivery_licenses (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_public_input_snapshots",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_public_input_snapshots",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_public_input_snapshots",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_public_input_snapshots",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_public_input_snapshots",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Identidades e pinos privados da captura publica permanecem unresolved ate prova de retencao e closure",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 8,
+          "anchor": "create table private.capital_public_input_snapshots (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_public_deliveries.capital_public_deliveries_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_public_deliveries.capital_public_deliveries_audit",
+          "kind": "trigger",
+          "name": "capital_public_deliveries_audit",
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_public_deliveries_audit AFTER INSERT ON private.capital_public_deliveries FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_public_deliveries.capital_public_deliveries_audit",
+          "kind": "trigger",
+          "name": "capital_public_deliveries_audit",
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_public_deliveries_audit AFTER INSERT ON private.capital_public_deliveries FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 82,
+          "anchor": "  execute format('create trigger %I after insert on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_public_deliveries.capital_public_deliveries_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_public_deliveries.capital_public_deliveries_immutable",
+          "kind": "trigger",
+          "name": "capital_public_deliveries_immutable",
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_public_deliveries_immutable BEFORE DELETE OR UPDATE ON private.capital_public_deliveries FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_public_deliveries.capital_public_deliveries_immutable",
+          "kind": "trigger",
+          "name": "capital_public_deliveries_immutable",
+          "table": "capital_public_deliveries",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_public_deliveries_immutable BEFORE DELETE OR UPDATE ON private.capital_public_deliveries FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 81,
+          "anchor": "  execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_audit",
+          "kind": "trigger",
+          "name": "capital_public_delivery_license_pins_audit",
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_public_delivery_license_pins_audit AFTER INSERT ON private.capital_public_delivery_license_pins FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_audit",
+          "kind": "trigger",
+          "name": "capital_public_delivery_license_pins_audit",
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_public_delivery_license_pins_audit AFTER INSERT ON private.capital_public_delivery_license_pins FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 82,
+          "anchor": "  execute format('create trigger %I after insert on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_immutable",
+          "kind": "trigger",
+          "name": "capital_public_delivery_license_pins_immutable",
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_public_delivery_license_pins_immutable BEFORE DELETE OR UPDATE ON private.capital_public_delivery_license_pins FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_public_delivery_license_pins.capital_public_delivery_license_pins_immutable",
+          "kind": "trigger",
+          "name": "capital_public_delivery_license_pins_immutable",
+          "table": "capital_public_delivery_license_pins",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_public_delivery_license_pins_immutable BEFORE DELETE OR UPDATE ON private.capital_public_delivery_license_pins FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 81,
+          "anchor": "  execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_public_delivery_licenses.capital_public_delivery_licenses_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_public_delivery_licenses.capital_public_delivery_licenses_audit",
+          "kind": "trigger",
+          "name": "capital_public_delivery_licenses_audit",
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_public_delivery_licenses_audit AFTER INSERT ON private.capital_public_delivery_licenses FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_public_delivery_licenses.capital_public_delivery_licenses_audit",
+          "kind": "trigger",
+          "name": "capital_public_delivery_licenses_audit",
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_public_delivery_licenses_audit AFTER INSERT ON private.capital_public_delivery_licenses FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 82,
+          "anchor": "  execute format('create trigger %I after insert on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_public_delivery_licenses.capital_public_delivery_licenses_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_public_delivery_licenses.capital_public_delivery_licenses_immutable",
+          "kind": "trigger",
+          "name": "capital_public_delivery_licenses_immutable",
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_public_delivery_licenses_immutable BEFORE DELETE OR UPDATE ON private.capital_public_delivery_licenses FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_public_delivery_licenses.capital_public_delivery_licenses_immutable",
+          "kind": "trigger",
+          "name": "capital_public_delivery_licenses_immutable",
+          "table": "capital_public_delivery_licenses",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_public_delivery_licenses_immutable BEFORE DELETE OR UPDATE ON private.capital_public_delivery_licenses FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 81,
+          "anchor": "  execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_public_input_snapshots.capital_public_input_snapshots_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_public_input_snapshots.capital_public_input_snapshots_audit",
+          "kind": "trigger",
+          "name": "capital_public_input_snapshots_audit",
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_public_input_snapshots_audit AFTER INSERT ON private.capital_public_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_public_input_snapshots.capital_public_input_snapshots_audit",
+          "kind": "trigger",
+          "name": "capital_public_input_snapshots_audit",
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_public_input_snapshots_audit AFTER INSERT ON private.capital_public_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 82,
+          "anchor": "  execute format('create trigger %I after insert on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_public_input_snapshots.capital_public_input_snapshots_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_public_input_snapshots.capital_public_input_snapshots_immutable",
+          "kind": "trigger",
+          "name": "capital_public_input_snapshots_immutable",
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_public_input_snapshots_immutable BEFORE DELETE OR UPDATE ON private.capital_public_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_public_input_snapshots.capital_public_input_snapshots_immutable",
+          "kind": "trigger",
+          "name": "capital_public_input_snapshots_immutable",
+          "table": "capital_public_input_snapshots",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_public_input_snapshots_immutable BEFORE DELETE OR UPDATE ON private.capital_public_input_snapshots FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de captura e autoridade, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "Politica de negacao ou gatilho de imutabilidade/auditoria gerado para metadata privada da captura publica",
+      "sources": [
+        {
+          "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+          "line": 81,
+          "anchor": "  execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -197685,6 +199755,20 @@
       "decision": "preservar",
       "stage": "20 / 3P",
       "reason": "Funcoes v2 aditivas e guardas nos setters legados de politica; tabelas, triggers e dados preservados."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260930195919_capital_public_input_capture.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "RPCs aditivas de captura metadata-only e correcao forward de replay e prova de licenca"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20260930195925_capital_public_capture_context_guard.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q foundation",
+      "reason": "RPCs aditivas de captura metadata-only e correcao forward de replay e prova de licenca"
     }
   ],
   "staging_archive": [
