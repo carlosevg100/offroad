@@ -130,7 +130,7 @@ export function createCapitalPublicCaptureStorage(supabase: SupabaseClient, now:
       live(receipt);
       return receipt;
     },
-    read: (job: CapitalCaptureJobAuthority, retainedPayloadId: string) => read(job, retainedPayloadId),
+    read: (job: CapitalCaptureJobAuthority, retainedPayloadId: string, expected?: CapitalCaptureRetentionReceipt) => read(job, retainedPayloadId, expected),
     async purgeOnce(workerToken: string, limit = 20): Promise<CapitalCapturePurgeResult[]> {
       z.string().min(1).parse(workerToken); z.number().int().min(1).max(20).parse(limit);
       const claim = purgeClaimSchema.parse(await rpc("worker_claim_capital_capture_purge_v1", {p_worker_token: workerToken, p_limit: limit}));
