@@ -1,3 +1,9 @@
+## Etapa 20 / 3Q: builder compartilhado em validação, 01/10/2026
+
+Atestação concluída na PR 857/main `226cdd831c1312ffe792192a9e149d8a0cedbd0b`: Quality de main `36864226641`, Security `36864226662` e worker `36864226791` PASS; web production `6784653603` e ECS 507 no mesmo commit, boot/executores conferidos. Completion externo em `outputs/etapa-20-2026-10-01-3q-atestacao/COMPLETION-ETAPA-20-3Q-ATESTACAO.md` na raiz do workspace.
+
+O builder comum substitui a montagem interna do pedido ao adapter. Preserva dispatch e recibos v1; expõe v2 ordinal UTF-16 explicitamente para a reconstrução futura. Preparação síncrona possui os dados antes de await, com schema JSON fixado e rechecagem antes do envio. Sem DDL, grants, flags, novos consumidores ou alteração de release. Contrato em `docs/build/arcabouco/etapa-20-3q-builder-input.md`. Eval: 20 casos novos, gateway 168, worker 1.008 e web 1.209 PASS; gate local Node 24 com 44/44 tarefas por fase. Revisão independente corrigiu colisão de array esparso na v2 e encerrou sem bloqueadores. Journal live 428/428, catálogo versionado 2.958 objetos sem drift e 18 testes do checker PASS. CI, merge e deployments ainda em validação; não é completion. Receita persistente e integração dos produtores continuam no 3Q. Etapa 20 aberta, etapas 21 a 24 aguardam OK de onda.
+
 ## Etapa 20 / 3Q: input efetivo por tentativa em validação, 01/10/2026
 
 Adaptador comum concluído na PR 856/main `68af000d84dbf9a3df3b317c8e1237000e32cf3b`: Quality/Security de main e worker PASS; web no mesmo commit, ECS 506 e boot/executores conferidos. Completion externo em `outputs/etapa-20-2026-09-30-3q-adaptador/COMPLETION-ETAPA-20-3Q-ADAPTADOR.md`.

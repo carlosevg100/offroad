@@ -1,10 +1,12 @@
-import {createHash, randomUUID} from "node:crypto";
+import {randomUUID} from "node:crypto";
 import {z} from "zod";
 import {cassetteKey, type CassetteMode, type CassetteStore} from "./cassette";
 import {defaultTaskPolicies, resolveModel, type TaskPolicy} from "./policy";
 import {estimateCostUsd, listPrices, type ModelPrice} from "./pricing";
 import {buildRepairGuidance, type RepairValidationSource} from "./repair";
-import {redactPersonalIdentifiers, type RedactionOptions} from "./redaction";
+import type {RedactionOptions} from "./redaction";
+import {prepareGatewayInput, buildEffectiveAdapterRequest, assertGatewaySchemaUnchanged} from "./effective-input";
+import {legacyGatewayFingerprint as fingerprint} from "./input-serialization";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
 import {conservativeTextReservationUsd} from "./conservative-reservation";
 import {assertWithinModelLimits, modelLimits, type ModelLimits} from "./model-limits";
@@ -14,7 +16,6 @@ import {
   ModelGatewayError,
   type AdapterRequest,
   type AdapterResponse,
-  type ContentPart,
   type GatewayCallLog,
   type GatewayRequest,
   type GatewayResult,
@@ -127,9 +128,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   const complete = async <TSchema extends z.ZodType>(request: GatewayRequest<TSchema>): Promise<GatewayResult<z.infer<TSchema>>> => {
     // Own all mutable data before the first await. Zod remains the validation authority;
     // its JSON representation is checked again at dispatch rather than freezing its internals.
-    request = {...request, input: structuredClone(request.input),
-      ...(request.metadata ? {metadata: structuredClone(request.metadata)} : {}),
-      ...(request.dataHandling ? {dataHandling: structuredClone(request.dataHandling)} : {})};
+    const prepared = prepareGatewayInput(request, config.redaction ?? {});
+    request = prepared.request;
     const attestInput = config.attestInput;
     if (request.requireInputAttestation && !attestInput) {
       throw new ModelGatewayError("input attestation is required", "input_attestation_denied");
@@ -139,9 +139,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       useShadow: request.useShadow,
       experimentalModels: config.experimentalModels,
     });
-    const input = freezeData(config.redaction === false ? request.input : redactParts(request.input, config.redaction ?? {}));
-    const schemaJson = z.toJSONSchema(request.schema);
-    const inputFingerprint = fingerprint(input);
+    const effectiveDefaults = Object.freeze({maxOutputTokens: policy.maxOutputTokens, timeoutMs: policy.timeoutMs});
+    const {input, schemaJson, inputFingerprint} = prepared;
     const attempts: GatewayResult<unknown>["attempts"] = [];
     const candidates: Array<{
       ref: ModelRef;
@@ -149,14 +148,14 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       isSameModelRepair: boolean;
       usedProviderFallback: boolean;
     }> = [
-      {ref: primary, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false},
+      {ref: Object.freeze({...primary}), retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: false},
       // A repair attempt is conditional: the loop skips it unless the first response reached
       // schema validation and produced bounded, content-free repair guidance.
       ...(request.outputMode === "prompted_json"
-        ? [{ref: primary, retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false}]
+        ? [{ref: Object.freeze({...primary}), retryOrdinal: 1, isSameModelRepair: true, usedProviderFallback: false}]
         : []),
       ...(fallback && request.allowFallback !== false
-        ? [{ref: fallback, retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true}]
+        ? [{ref: Object.freeze({...fallback}), retryOrdinal: 0, isSameModelRepair: false, usedProviderFallback: true}]
         : []),
     ];
     let lastFailureWasTruncation = false;
@@ -164,24 +163,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     let previousAttemptInvocationId: string | undefined;
     let pendingRepairIssueCodeFingerprint: string | undefined;
 
-    const adapterRequestFor = (ref: ModelRef, system: string): AdapterRequest => {
-      const built: AdapterRequest = {
-        model: ref.model,
-        effort: ref.effort,
-        system,
-        input,
-        schema: request.schema,
-        schemaName: request.schemaName,
-        maxOutputTokens: request.maxOutputTokens ?? policy.maxOutputTokens,
-        timeoutMs: request.timeoutMs ?? policy.timeoutMs,
-      };
-      if (request.cacheKey) built.cacheKey = request.cacheKey;
-      if (request.thinking) built.thinking = request.thinking;
-      if (request.outputMode) built.outputMode = request.outputMode;
-      if (request.metadata) built.metadata = request.metadata;
-      if (built.metadata) freezeData(built.metadata);
-      return Object.freeze(built);
-    };
+    const adapterRequestFor = (ref: ModelRef): AdapterRequest => buildEffectiveAdapterRequest(prepared, ref, effectiveDefaults).adapterRequest;
     // A request must fit every route it may take: checked for all of them before anything is
     // reserved or sent, and again for each attempt (a repair carries its guidance as well).
     const assertFits = (ref: ModelRef, built: AdapterRequest) => assertWithinModelLimits({
@@ -189,27 +171,24 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       estimatedInputTokens: estimateRequestInputTokens(ref.provider, built).inputTokens,
     });
     for (const candidate of candidates) {
-      if (!candidate.isSameModelRepair) assertFits(candidate.ref, adapterRequestFor(candidate.ref, request.system));
+      if (!candidate.isSameModelRepair) assertFits(candidate.ref, adapterRequestFor(candidate.ref));
     }
 
     for (const candidate of candidates) {
       if (candidate.isSameModelRepair && !repairGuidance) continue;
       const {ref, retryOrdinal, isSameModelRepair, usedProviderFallback} = candidate;
       const invocationId = randomUUID();
-      const attemptSystem = isSameModelRepair && repairGuidance
-        ? `${request.system}\n\n${repairGuidance}`
-        : request.system;
+      const effective = buildEffectiveAdapterRequest(prepared, ref, effectiveDefaults, isSameModelRepair ? repairGuidance : undefined);
       const legacyUsedFallback = isSameModelRepair || usedProviderFallback;
-      const promptFingerprint = fingerprint({system: attemptSystem, schemaName: request.schemaName, schema: schemaJson});
+      const promptFingerprint = effective.promptFingerprint;
 
       const repairLineage = isSameModelRepair && repairGuidance ? {
         ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {}),
         repairGuidanceFingerprint: fingerprint(repairGuidance),
         ...(pendingRepairIssueCodeFingerprint ? {repairValidationIssueCodeFingerprint: pendingRepairIssueCodeFingerprint} : {}),
       } : {};
-      const adapterRequest = adapterRequestFor(ref, attemptSystem);
-      const adapterRequestFingerprint = fingerprint({schemaVersion: "gateway-adapter-input.v1",
-        provider: ref.provider, ...adapterRequest, schema: schemaJson});
+      const adapterRequest = effective.adapterRequest;
+      const adapterRequestFingerprint = effective.requestFingerprintV1;
       const attemptTelemetry: {retryOrdinal: number; isSameModelRepair: boolean; usedProviderFallback: boolean;
         adapterRequestFingerprint: string; inputAttestationReceiptId?: string} =
         {retryOrdinal, isSameModelRepair, usedProviderFallback, adapterRequestFingerprint};
@@ -314,9 +293,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           }
           attemptTelemetry.inputAttestationReceiptId = receipt.receiptId;
         }
-        if (fingerprint(z.toJSONSchema(request.schema)) !== fingerprint(schemaJson)) {
-          throw new Error("output schema changed before dispatch");
-        }
+        assertGatewaySchemaUnchanged(prepared);
       } catch {
         budgetExposureUsd -= reservationUsd;
         inFlightCalls -= 1;
@@ -512,10 +489,6 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   return {complete, spent: () => ({...spent, budgetExposureUsd})};
 }
 
-function redactParts(parts: ContentPart[], options: RedactionOptions): ContentPart[] {
-  return parts.map((part) => (part.type === "text" ? {type: "text", text: redactPersonalIdentifiers(part.text, options).text} : part));
-}
-
 function emit(
   config: ModelGatewayConfig,
   entry: {
@@ -622,22 +595,6 @@ function safeContractToken(value: unknown, fallback: string, max: number): strin
     : fallback;
 }
 
-function fingerprint(value: unknown): string {
-  return createHash("sha256").update(stableJson(value)).digest("hex");
-}
-
-function stableJson(value: unknown): string {
-  if (value === undefined) return "undefined";
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
-  if (value && typeof value === "object") {
-    return `{${Object.entries(value as Record<string, unknown>)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, child]) => `${JSON.stringify(key)}:${stableJson(child)}`)
-      .join(",")}}`;
-  }
-  return JSON.stringify(value) ?? "undefined";
-}
-
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
@@ -653,13 +610,4 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 function errorMessage(error: unknown): string {
   if (error instanceof Error) return `${error.name}: ${error.message}`.slice(0, 300);
   return String(error).slice(0, 300);
-}
-
-/** Freeze owned JSON data only, never shared Zod internals or SDK clients. */
-function freezeData<T>(value: T): T {
-  if (value && typeof value === "object") {
-    for (const child of Object.values(value)) freezeData(child);
-    Object.freeze(value);
-  }
-  return value;
 }
