@@ -1711,8 +1711,20 @@
   {
    "version": "20260930221005",
    "name": "capital_public_payload_retention_activation"
+  },
+  {
+   "version": "20261001205206",
+   "name": "capital_body_retention"
+  },
+  {
+   "version": "20261001205251",
+   "name": "typedbody_storage_job_authority"
+  },
+  {
+   "version": "20261001205326",
+   "name": "capital_body_server_read_boundary"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-09-30T22:11:51.382213Z"
+ "captured_at": "2026-10-01T20:58:45.200835+00:00"
 }
