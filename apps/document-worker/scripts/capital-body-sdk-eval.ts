@@ -11,7 +11,7 @@ import {createCapitalBodyRetention} from "../src/capital-body-retention";
 const PRODUCTION = "ifnogpksgdadruooqydi", STAGING = "gjkkjtbfnssdsbmlhmwk";
 const fixtureSchema = z.object({environment: z.enum(["local", "staging"]), projectRef: z.string().min(1), apiUrl: z.url(), publishableKey: z.string().min(1),
   organizationId: z.uuid(), actorId: z.uuid(), email: z.email(), password: z.string().min(1),
-  sourceVersionId: z.uuid(), jobs: z.object({baseline: z.object({jobId: z.uuid(), workId: z.uuid(), capabilityToken: z.string().min(1)})}),
+  sourceVersionId: z.uuid(), jobs: z.object({baseline: z.object({jobId: z.uuid(), workId: z.uuid(), capabilityToken: z.string().min(1)}), expired: z.object({jobId: z.uuid(), workId: z.uuid(), capabilityToken: z.string().min(1)})}),
 }).passthrough();
 type Fixture = z.infer<typeof fixtureSchema>;
 function validate(f: Fixture) {
@@ -50,7 +50,7 @@ async function loadFixture(path: string) {
 async function selfTest() {
   const fixture: Fixture = {environment: "local", projectRef: "local", apiUrl: "http://127.0.0.1:54321", publishableKey: "sb_publishable_synthetic",
     organizationId: randomUUID(), actorId: randomUUID(), email: "synthetic@example.test", password: "synthetic-not-a-credential", sourceVersionId: randomUUID(),
-    jobs: {baseline: {jobId: randomUUID(), workId: randomUUID(), capabilityToken: "synthetic-not-a-capability"}}};
+    jobs: {baseline: {jobId: randomUUID(), workId: randomUUID(), capabilityToken: "synthetic-not-a-capability"}, expired: {jobId: randomUUID(), workId: randomUUID(), capabilityToken: "synthetic-other-live-job-capability"}}};
   validate(fixture);
   for (const invalid of [{...fixture, apiUrl: `https://${PRODUCTION}.supabase.co`}, {...fixture, apiUrl: "https://example.test"}, {...fixture, publishableKey: "sb_secret_forbidden"}, {...fixture, apiUrl: "http://127.0.0.1:54321/?token=forbidden"}]) assert.throws(() => validate(invalid));
   const parsed = syntheticOutput(); assert.equal(originationSeniorReadoutSchema.safeParse(parsed).success, true);
@@ -73,7 +73,9 @@ async function main() {
   const login = await sdk.auth.signInWithPassword({email: f.email, password: f.password});
   if (login.error || login.data.user?.id !== f.actorId) throw new Error("wrong fixture actor");
   const auth = {jobId: job.jobId, capabilityToken: job.capabilityToken};
-  const body = createCapitalBodyRetention(sdk, auth);
+  const connection = {supabaseUrl: f.apiUrl, publishableKey: f.publishableKey, organizationId: f.organizationId,
+    accessToken: async () => (await sdk.auth.getSession()).data.session?.access_token ?? null};
+  const body = createCapitalBodyRetention(connection, auth);
   const revision = randomUUID(), contributionRequestId = randomUUID();
   const human = await sdk.rpc("submit_work_contribution_v1", {p_work_id: job.workId, p_contribution_id: randomUUID(), p_revision_id: revision,
     p_expected_revision_id: null, p_base_revision_id: null, p_content: "Synthetic SDK body: ação € 漢字 🧮", p_source_version_ids: [f.sourceVersionId]});
@@ -104,10 +106,33 @@ async function main() {
   const acceptedReplay = await body.retainAccepted(result, acceptedRequestId);
   assert.equal(accepted.retention.retainedPayloadId, acceptedReplay.retention.retainedPayloadId); assert.equal(syntheticDispatches, 1);
   await body.readOriginal(accepted.retention.retainedPayloadId!, accepted.retention);
-  const wrong = createCapitalBodyRetention(sdk, {...auth, capabilityToken: "intentionally-invalid-synthetic-capability"});
+  const wrong = createCapitalBodyRetention(connection, {...auth, capabilityToken: "intentionally-invalid-synthetic-capability"});
   await assert.rejects(wrong.readOriginal(accepted.retention.retainedPayloadId!), {message: "capital_body_adapter_denied"});
+  // These deliberately use the public SDK directly. RPC denial alone cannot
+  // prove Storage enforces capability and original-job request context.
+  for (const [index, headers] of [
+    {"x-offroad-workspace": f.organizationId, "x-offroad-job-id": job.jobId, "x-offroad-capability": job.capabilityToken},
+    {"x-offroad-workspace": f.organizationId},
+    {"x-offroad-workspace": f.organizationId, "x-offroad-job-id": job.jobId, "x-offroad-capability": "intentionally-invalid-synthetic-capability"},
+    {"x-offroad-workspace": f.organizationId, "x-offroad-job-id": f.jobs.expired.jobId, "x-offroad-capability": f.jobs.expired.capabilityToken},
+    {"x-offroad-workspace": f.organizationId, "x-offroad-job-id": randomUUID(), "x-offroad-capability": job.capabilityToken},
+  ].entries()) {
+    const raw = createClient(f.apiUrl, f.publishableKey, {accessToken: connection.accessToken,
+      global: {headers, fetch: (input, init) => fetch(input, {...init, redirect: "error"})},
+      auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false}});
+    const denied = await raw.storage.from(accepted.retention.bucket).download(accepted.retention.path,
+      {versionId: accepted.retention.storageVersion!, cacheNonce: randomUUID()}, {cache: "no-store"});
+    assert.ok(denied.error); assert.equal(denied.data, null);
+    const deniedInfo = await raw.storage.from(accepted.retention.bucket).info(accepted.retention.path);
+    assert.ok(deniedInfo.error); assert.equal(deniedInfo.data, null);
+    // The Edge URL is exactly the same for correct then wrong scopes. POST must
+    // authorize every request; fresh Storage nonce cannot mask a CDN shortcut.
+    const posted = await raw.functions.invoke("capital-body-read", {method: "POST", body: {allocationId: accepted.retention.allocationId, kind: "typed_body"}});
+    if (index === 0) {assert.equal(posted.error, null); assert.ok(posted.data instanceof Blob); assert.equal(posted.data.size, accepted.retention.byteLength);}
+    else {assert.ok(posted.error); assert.equal(posted.data, null); assert.equal(posted.response?.status, 403);}
+  }
   process.stdout.write(JSON.stringify({eval: "capital_body_sdk", result: "PASS", runtime: process.version,
-    checks: ["authenticated-sdk", "human-contribution", "canonical-roundtrip", "concrete-gateway-input-receipt", "parsed-output-bound", "original-job-read", "request-replay-no-model-redispatch", "wrong-capability-denied"],
+    checks: ["authenticated-sdk", "human-contribution", "canonical-roundtrip", "concrete-gateway-input-receipt", "parsed-output-bound", "original-job-read", "request-replay-no-model-redispatch", "wrong-capability-denied", "storage-worker-direct-read-denied", "edge-same-url-rechecks-authority", "storage-missing-headers-denied", "storage-wrong-capability-denied", "storage-other-live-job-denied", "storage-wrong-job-denied"],
     providerEgress: "NOT_EVALUATED_SYNTHETIC_ADAPTER", physicalFingerprints: [contribution.retention.payloadFingerprint, accepted.retention.payloadFingerprint]}) + "\n");
 }
 main().catch(() => {process.stderr.write("capital_body_sdk_eval_failed; fixture cleanup required\n"); process.exitCode = 1;});

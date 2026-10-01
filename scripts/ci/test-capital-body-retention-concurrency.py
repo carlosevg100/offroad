@@ -60,7 +60,9 @@ class Races:
                 + '::uuid,' + L(self.client.capability) + ',' + args + ');')
 
     def read(self):
-        return self.rpc('worker_read_capital_body_v1', L(self.retained['retainedPayloadId']) + '::uuid')
+        # Exercise the actual server POST's before/after authority command under
+        # the same policy/membership/queue frontier, not only the legacy receipt.
+        return self.rpc('worker_read_capital_body_allocation_v1', L(self.allocation['allocationId']) + '::uuid')
 
     def prepare(self, request):
         return self.rpc('worker_prepare_capital_body_v1', L(request) + "::uuid,'contribution_input'," + L(self.revision) + '::uuid')

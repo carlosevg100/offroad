@@ -1,11 +1,12 @@
 /** Typed retention for admitted contribution bodies and gateway parsed output.
  * Original live job only: SQL/RLS decide current rights, identity and deadlines.
  * This service does not construct input recipes, activate M07 or certify native materials. */
-import {createHash, randomUUID} from "node:crypto";
+import {createHash} from "node:crypto";
 import {z} from "zod";
-import type {SupabaseClient} from "@supabase/supabase-js";
+import {createClient} from "@supabase/supabase-js";
 import {originationSeniorReadoutSchema} from "@offroad/domain-contracts";
 import {legacyGatewayFingerprint, type GatewayAcceptedInvocation, type GatewayResult} from "@offroad/model-gateway";
+import {readCapitalCaptureBytes} from "./capital-body-read-client";
 const uuid = z.uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/), time = z.iso.datetime({offset: true});
 const acceptedSchema = z.strictObject({schemaVersion: z.literal("gateway-accepted-invocation.v1"), invocationId: uuid,
   adapterInputVersion: z.literal("gateway-adapter-input.v1"), adapterRequestFingerprint: hash,
@@ -25,14 +26,53 @@ export type CapitalBodyRetentionReceipt = z.infer<typeof scopeSchema>;
 type Scope = CapitalBodyRetentionReceipt;
 const receiptSchema = z.strictObject({acceptedInvocationId: uuid, inputReceiptId: uuid, invocationId: uuid, outputFingerprint: hash});
 export interface CapitalBodyJobAuthority {jobId: string; capabilityToken: string}
+/** Explicit connection only: never reuse or mutate a shared authenticated SDK. */
+export interface CapitalBodyConnection {
+  supabaseUrl: string;
+  publishableKey: string;
+  organizationId: string;
+  accessToken: () => Promise<string | null>;
+  fetch?: typeof globalThis.fetch;
+}
 const sha = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 function deny(): never {throw new Error("capital_body_adapter_denied");}
 function freeze<T>(value: T): T {if (value && typeof value === "object") {for (const v of Object.values(value)) freeze(v); Object.freeze(value);} return value;}
 function sameObject(left: unknown, right: unknown) {return legacyGatewayFingerprint(left) === legacyGatewayFingerprint(right);}
-export function createCapitalBodyRetention(transport: SupabaseClient, authority: CapitalBodyJobAuthority, now = Date.now) {
+export function createCapitalBodyRetention(connection: CapitalBodyConnection, authority: CapitalBodyJobAuthority, now = Date.now) {
   const job = (() => {
     try {return freeze(z.strictObject({jobId: uuid, capabilityToken: z.string().min(1)}).parse(authority));}
     catch {return deny();}
+  })();
+  const transport = (() => {
+    try {
+      const organizationId = uuid.parse(connection.organizationId);
+      const endpoint = new URL(connection.supabaseUrl);
+      if (!["https:", "http:"].includes(endpoint.protocol) || endpoint.username || endpoint.password || endpoint.search || endpoint.hash
+        || (endpoint.protocol === "http:" && !["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname))) deny();
+      const key = z.string().min(1).parse(connection.publishableKey);
+      if (key.startsWith("sb_secret_")) deny();
+      if (!key.startsWith("sb_publishable_")) {
+        const claims = JSON.parse(Buffer.from(key.split(".")[1] ?? "", "base64url").toString("utf8")) as {role?: unknown};
+        if (claims.role !== "anon") deny();
+      }
+      const tokenGetter = connection.accessToken, fetcher = connection.fetch ?? globalThis.fetch;
+      if (typeof tokenGetter !== "function" || typeof fetcher !== "function") deny();
+      const headers = Object.freeze({"x-offroad-workspace": organizationId, "x-offroad-job-id": job.jobId, "x-offroad-capability": job.capabilityToken});
+      return createClient(endpoint.toString(), key, {
+        global: {headers, fetch: (input, init) => fetcher(input, {...init, redirect: "error"})},
+        accessToken: async () => {
+          // Supabase calls this eagerly for Realtime too. Never let a caller error
+          // reach its console warning, or fall back to privileged API credentials.
+          try {
+            const token = await tokenGetter();
+            if (!token) return null;
+            const claims = JSON.parse(Buffer.from(token.split(".")[1] ?? "", "base64url").toString("utf8")) as {role?: unknown};
+            return claims.role === "authenticated" ? token : null;
+          } catch {return null;}
+        },
+        auth: {persistSession: false, autoRefreshToken: false, detectSessionInUrl: false},
+      });
+    } catch {return deny();}
   })();
   const jobArgs = {p_job_id: job.jobId, p_capability_token: job.capabilityToken};
   async function rpc(name: string, args: Record<string, unknown>) {
@@ -64,14 +104,12 @@ export function createCapitalBodyRetention(transport: SupabaseClient, authority:
     const s = scopeSchema.parse(await rpc("worker_read_capital_body_v1", {p_retained_payload_id: uuid.parse(id)}));
     retained(s); if (s.retainedPayloadId !== id) deny(); return s;
   }
-  async function physical(s: Scope, version: string) {
-    live(s); const r = await transport.storage.from(s.bucket).download(s.path, {versionId: version, cacheNonce: randomUUID()}, {cache: "no-store"});
-    if (r.error || !r.data) deny(); const bytes = new Uint8Array(await r.data.arrayBuffer());
-    if (sha(bytes) !== s.payloadFingerprint || bytes.byteLength !== s.byteLength) deny(); live(s); return bytes;
+  async function physical(s: Scope) {
+    live(s); const result = await readCapitalCaptureBytes(transport, job, s, "typed_body"); live(s); return result;
   }
   async function read(id: string, expected?: Scope) {
     const before = await readScope(id); if (expected) exact(expected, before);
-    const bytes = await physical(before, before.storageVersion!); const after = await readScope(id); exact(before, after); live(after);
+    const {bytes} = await physical(before); const after = await readScope(id); exact(before, after); live(after);
     return {bytes, scope: after};
   }
   function body(bytes: Uint8Array, kind: "contribution_input" | "gateway_accepted_output", semantic?: string) {
@@ -95,10 +133,7 @@ export function createCapitalBodyRetention(transport: SupabaseClient, authority:
     const upload = await storage.upload(p.path, bytes, {contentType: "application/json", cacheControl: "0", upsert: false});
     const status = upload.error && typeof upload.error === "object" ? Number((upload.error as {statusCode?: unknown; status?: unknown}).statusCode ?? (upload.error as {status?: unknown}).status) : undefined;
     if (upload.error && status !== 409) deny(); live(p); if (Date.parse(p.uploadExpiresAt) <= now()) deny();
-    const info = await storage.info(p.path); if (info.error || !info.data || info.data.isVersioned || info.data.isDeleteMarker
-      || info.data.name !== p.path || info.data.bucketId !== p.bucket) deny();
-    const objectId = uuid.parse(info.data.id), version = z.string().min(1).parse(info.data.version);
-    const actual = await physical(p, version); body(actual, args.kind, args.semantic);
+    const {bytes: actual, objectId, version} = await physical(p); body(actual, args.kind, args.semantic);
     const committed = scopeSchema.parse(await rpc("worker_commit_capital_body_v1", {p_allocation_id: p.allocationId,
       p_storage_object_id: objectId, p_storage_version: version, p_verified_sha256: sha(actual), p_verified_size: actual.byteLength}));
     retained(committed);

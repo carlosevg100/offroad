@@ -29,7 +29,20 @@ function fixture(body = '{"title": "ação € 漢字 🧮", "snippet": "Exact S
     name: allocation.path, version: retained.storageVersion, isVersioned: false, isDeleteMarker: false}, error: null});
   const download = vi.fn().mockResolvedValue({data: new Blob([body]), error: null});
   const from = vi.fn().mockReturnValue({upload, info, download});
-  const client = createCapitalPublicCaptureStorage({rpc, storage: {from}} as unknown as SupabaseClient, () => start);
+  const invoke = vi.fn(async () => {
+    let objectId = retained.storageObjectId, version = retained.storageVersion;
+    if (upload.mock.calls.length) {
+      const identity = await info();
+      if (identity.error || !identity.data || identity.data.isVersioned || identity.data.isDeleteMarker) return {error: new Error("server identity unavailable"), data: null};
+      if (identity.data.name !== allocation.path || identity.data.bucketId !== allocation.bucket || !identity.data.id || !identity.data.version) return {error: new Error("server identity mismatch"), data: null};
+      objectId = identity.data.id; version = identity.data.version;
+    }
+    const r = await download(allocation.path, {versionId: version, cacheNonce: "synthetic-server-only"}, {cache: "no-store"});
+    return {...r, response: new Response(null, {headers: {"content-type": "application/octet-stream", "cache-control": "no-store",
+      "x-offroad-allocation-id": allocation.allocationId, "x-offroad-object-id": objectId, "x-offroad-storage-version": version,
+      "x-offroad-payload-sha256": allocation.payloadFingerprint, "x-offroad-byte-length": String(allocation.byteLength)}})};
+  });
+  const client = createCapitalPublicCaptureStorage({rpc, functions: {invoke}, storage: {from}} as unknown as SupabaseClient, () => start);
   const input = {...job, deliveryId: allocation.deliveryId, requestId: uuid(6), payload: JSON.parse(body)};
   return {client, input, allocation, receipt, retained, rpc, upload, info, download, replies};
 }
@@ -47,7 +60,7 @@ describe("independent SQL/Storage capture contract", () => {
     const body = JSON.stringify({url: "https://example.invalid/independent", title: value});
     const f = fixture(body);
     await f.client.retain(f.input);
-    expect(f.upload).toHaveBeenCalledWith(f.allocation.path, Buffer.from(body), {contentType: "application/json", cacheControl: "0", upsert: false});
+    expect(f.upload).toHaveBeenCalledWith(f.allocation.path, Buffer.from(body), {contentType: "application/json", cacheControl: "0", upsert: false, headers: {"x-offroad-workspace": uuid(9), "x-offroad-job-id": job.jobId, "x-offroad-capability": job.capabilityToken}});
     expect(f.rpc).toHaveBeenCalledWith("worker_commit_capital_public_payload_v1", expect.objectContaining({p_verified_size: Buffer.byteLength(body), p_verified_sha256: sha(body)}));
   });
 
@@ -70,7 +83,7 @@ describe("independent SQL/Storage capture contract", () => {
   it("does not return a different body under an unchanged SQL fingerprint", async () => {
     const f = fixture();
     f.download.mockResolvedValue({data: new Blob(["synthetic-corruption"]), error: null});
-    await expect(f.client.read(job, f.receipt.retainedPayloadId)).rejects.toThrow("immutable bytes conflict");
+    await expect(f.client.read(job, f.receipt.retainedPayloadId)).rejects.toThrow("server read denied");
     expect(f.rpc.mock.calls.filter(([name]) => name === "worker_read_capital_public_payload_v1")).toHaveLength(1);
   });
 });

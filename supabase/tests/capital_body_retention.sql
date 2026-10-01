@@ -153,24 +153,100 @@ do $$ declare f record;j record;a jsonb;replay jsonb;begin
  begin perform public.worker_commit_capital_body_v1(j.job_id,j.capability,(a->>'allocationId')::uuid,gen_random_uuid(),'v1',repeat('0',64),(a->>'byteLength')::bigint);raise exception 'wrong byte hash accepted';exception when invalid_parameter_value then null;end;
  begin perform public.worker_commit_capital_body_v1(j.job_id,j.capability,(a->>'allocationId')::uuid,gen_random_uuid(),'v1',a->>'payloadFingerprint',(a->>'byteLength')::bigint);raise exception 'missing Storage object accepted';exception when invalid_parameter_value then null;end;
 end; $$;
+-- Direct Storage upload is bound to the request's exact live job capability.
+-- SQL metadata insertion proves RLS only; separate HTTP gates prove physical bytes.
+do $$ declare f record;j record;valid_headers jsonb;bad_headers jsonb;begin
+ select * into strict f from pg_temp.body_test_fixture;select * into strict j from pg_temp.capture_job_fixture;
+ valid_headers:=jsonb_build_object('x-offroad-workspace','20000000-0000-4000-8000-000000000991','x-offroad-job-id',j.job_id::text,'x-offroad-capability',j.capability);
+ perform set_config('storage.operation','object.upload',true);
+ for bad_headers in select value from jsonb_array_elements(jsonb_build_array(
+ '{}'::jsonb,
+ valid_headers-'x-offroad-job-id',valid_headers-'x-offroad-capability',
+ valid_headers||jsonb_build_object('x-offroad-job-id',gen_random_uuid()::text),
+ valid_headers||jsonb_build_object('x-offroad-capability',repeat('x',64)),
+ valid_headers||jsonb_build_object('x-offroad-job-id',123),
+ valid_headers||jsonb_build_object('x-offroad-capability',true),
+ valid_headers||jsonb_build_object('x-offroad-workspace','20000000-0000-4000-8000-000000000992'))) loop
+ perform set_config('request.headers',bad_headers::text,true);
+ if private.worker_can_access_capital_public_payload_v1('capital-input-capture',f.allocation->>'path','upload') then raise exception 'direct Storage upload accepted unbound request';end if;
+ begin
+ insert into storage.objects(bucket_id,name,metadata,version) values('capital-input-capture',f.allocation->>'path',jsonb_build_object('size',(f.allocation->>'byteLength')::bigint,'mimetype','application/json'),'body-rls-rejected');
+ raise exception 'direct Storage upload bypassed job capability';exception when insufficient_privilege then null;end;
+ end loop;
+ perform set_config('request.headers',valid_headers::text,true);
+ if not private.worker_can_access_capital_public_payload_v1('capital-input-capture',f.allocation->>'path','upload') then raise exception 'exact Storage upload authority rejected';end if;
+ begin
+ insert into storage.objects(bucket_id,name,metadata,version) values('capital-input-capture',f.allocation->>'path',jsonb_build_object('size',(f.allocation->>'byteLength')::bigint,'mimetype','application/json'),'body-rls-accepted');
+ raise exception 'fixture_rollback' using errcode='P3991';exception when sqlstate 'P3991' then null;end;
+ perform set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000991"}',true);
+end; $$;
 reset role;
 -- Metadata fixture ONLY. HTTP eval must prove that bytes exist and match worker SHA.
 insert into storage.objects(bucket_id,name,metadata,version)
  select 'capital-input-capture',allocation->>'path',jsonb_build_object('size',(allocation->>'byteLength')::bigint,'mimetype','application/json'),'body-sql-v1' from body_test_fixture;
 update body_test_fixture f set object_id=o.id from storage.objects o where o.bucket_id='capital-input-capture' and o.name=f.allocation->>'path';
 set local role authenticated;
+do $$ declare f record;j record;scope jsonb;begin
+ select * into strict f from pg_temp.body_test_fixture;select * into strict j from pg_temp.capture_job_fixture;
+ scope:=public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid);
+ if scope->>'retentionState'<>'allocated' or scope->>'storageObjectId' is distinct from f.object_id::text
+ or scope->>'storageVersion'<>'body-sql-v1' or scope->>'path' is distinct from f.allocation->>'path'
+ or scope->>'payloadFingerprint' is distinct from f.allocation->>'payloadFingerprint'
+ or scope->>'byteLength' is distinct from f.allocation->>'byteLength' or scope->'retainedPayloadId'<>'null'::jsonb
+ or scope?'canonicalBody' then raise exception 'allocated server scope not physical/exact';end if;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,repeat('x',64),(f.allocation->>'allocationId')::uuid);raise exception 'server scope wrong capability admitted';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(gen_random_uuid(),j.capability,(f.allocation->>'allocationId')::uuid);raise exception 'server scope wrong job admitted';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,gen_random_uuid());raise exception 'server scope caller allocation admitted';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,null);raise exception 'null server scope admitted';exception when invalid_parameter_value then null;end;
+ begin perform public.worker_read_capital_public_payload_allocation_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid);raise exception 'wrong scope family admitted';exception when insufficient_privilege then null;end;
+end; $$;
 do $$ declare f record;j record;r jsonb;begin
  select * into strict f from pg_temp.body_test_fixture;select * into strict j from pg_temp.capture_job_fixture;
  begin perform public.worker_commit_capital_body_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid,f.object_id,'wrong',f.allocation->>'payloadFingerprint',(f.allocation->>'byteLength')::bigint);raise exception 'wrong Storage version accepted';exception when invalid_parameter_value then null;end;
  r:=public.worker_commit_capital_body_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid,f.object_id,'body-sql-v1',f.allocation->>'payloadFingerprint',(f.allocation->>'byteLength')::bigint);
  if r->>'retentionState'<>'retained' or r?'canonicalBody' then raise exception 'retained DTO includes raw bytes';end if;
  update pg_temp.body_test_fixture set retained=r;
+ if public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid) is distinct from r||jsonb_build_object('replayed',true) then raise exception 'retained server scope changed identity';end if;
  if public.worker_commit_capital_body_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid,f.object_id,'body-sql-v1',f.allocation->>'payloadFingerprint',(f.allocation->>'byteLength')::bigint)->>'replayed'<>'true' then raise exception 'commit idempotency failed';end if;
  if public.worker_read_capital_body_v1(j.job_id,j.capability,(r->>'retainedPayloadId')::uuid)->>'storageObjectId' is distinct from f.object_id::text then raise exception 'read receipt failed';end if;
  r:=public.worker_prepare_capital_body_v1(j.job_id,j.capability,'b09d0000-0000-4000-9000-000000000001','contribution_input',f.revision_id);
  if r->>'retentionState'<>'retained' or r?'canonicalBody' or r->>'replayed'<>'true' then raise exception 'committed prepare replay failed';end if;
 end; $$;
+-- All direct GET/HEAD/info are denied, including the correct live job.
+-- Physical readback requires the server POST and its two fresh scope checks.
+do $$ declare f record;j record;valid_headers jsonb;bad_headers jsonb;op text;n bigint;begin
+ select * into strict f from pg_temp.body_test_fixture;select * into strict j from pg_temp.capture_job_fixture;
+ valid_headers:=jsonb_build_object('x-offroad-workspace','20000000-0000-4000-8000-000000000991','x-offroad-job-id',j.job_id::text,'x-offroad-capability',j.capability);
+ foreach op in array array['object.get_authenticated','object.get_authenticated_info','object.head_authenticated_info'] loop
+ perform set_config('storage.operation',op,true);
+ perform set_config('request.headers',valid_headers::text,true);
+ select count(*) into n from storage.objects where bucket_id='capital-input-capture' and name=f.allocation->>'path';
+ if n<>0 then raise exception 'typed Storage direct read permitted for correct live job %',op;end if;
+ for bad_headers in select value from jsonb_array_elements(jsonb_build_array(
+ '{}'::jsonb,valid_headers-'x-offroad-job-id',valid_headers-'x-offroad-capability',
+ valid_headers||jsonb_build_object('x-offroad-job-id',gen_random_uuid()::text),
+ valid_headers||jsonb_build_object('x-offroad-capability',repeat('x',64)),
+ valid_headers||jsonb_build_object('x-offroad-job-id',123),
+ valid_headers||jsonb_build_object('x-offroad-capability',true),
+ valid_headers||jsonb_build_object('x-offroad-workspace','20000000-0000-4000-8000-000000000992'))) loop
+ perform set_config('request.headers',bad_headers::text,true);
+ select count(*) into n from storage.objects where bucket_id='capital-input-capture' and name=f.allocation->>'path';
+ if n<>0 then raise exception 'direct Storage read bypassed job capability for %',op;end if;
+ end loop;
+ end loop;
+ perform set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000991"}',true);
+end; $$;
 reset role;
+-- Malformed/non-object header GUC cannot become Storage authority. This direct
+-- owner call tests parser behavior, not a client function grant.
+do $$ declare f record;h text;begin
+ select * into strict f from pg_temp.body_test_fixture;
+ foreach h in array array['not-json','[]','null','"string"'] loop
+ perform set_config('request.headers',h,true);
+ if private.capital_body_storage_job_authority_v1((f.allocation->>'allocationId')::uuid) then raise exception 'malformed Storage headers authorized';end if;
+ end loop;
+ perform set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000991"}',true);
+end; $$;
 -- Private origins store exact direct + ancestor rights/bindings, never content.
 do $$ declare f record;begin
  select * into strict f from pg_temp.body_test_fixture;
@@ -266,6 +342,7 @@ do $$ declare f record;j record;before_count bigint;v uuid;operation_name text;b
  select organization_id,source_version_id,revision+1,array_remove(array['read','process','store','derive'],operation_name),purposes,audience,clock_timestamp(),evidence_kind,evidence_reference,evidence_sha256,created_by from private.source_rights_versions where source_version_id=v order by revision desc limit 1;
  if not exists(select 1 from private.capital_body_retention_wakes where allocation_id=(f.allocation->>'allocationId')::uuid) then raise exception 'rights notification absent';end if;
  begin perform public.worker_read_capital_body_v1(j.job_id,j.capability,(f.retained->>'retainedPayloadId')::uuid);raise exception 'removed process read allowed';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid);raise exception 'server allocation scope ignored changed rights/authority/bytes';exception when insufficient_privilege then null;end;
  begin perform public.worker_read_capital_body_v1(j.job_id,j.capability,(f.response_retained->>'retainedPayloadId')::uuid);raise exception 'restricted derivative read allowed';exception when insufficient_privilege then null;end;
  raise exception 'fixture_rollback' using errcode='P3991';exception when sqlstate 'P3991' then null;end;
  end loop;
@@ -277,18 +354,22 @@ do $$ declare f record;j record;before_count bigint;v uuid;operation_name text;b
  begin
  update public.organization_memberships set status='suspended' where organization_id='20000000-0000-4000-8000-000000000991' and user_id='10000000-0000-4000-8000-000000000991';
  begin perform public.worker_read_capital_body_v1(j.job_id,j.capability,(f.retained->>'retainedPayloadId')::uuid);raise exception 'revoked subject read allowed';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid);raise exception 'server allocation scope ignored changed rights/authority/bytes';exception when insufficient_privilege then null;end;
  raise exception 'fixture_rollback' using errcode='P3991';exception when sqlstate 'P3991' then null;end;
  begin
  update private.worker_tokens set execution_account_user_id='10000000-0000-4000-8000-000000000992' where id=(select leased_by from public.processing_jobs where id=j.job_id);
  begin perform public.worker_read_capital_body_v1(j.job_id,j.capability,(f.retained->>'retainedPayloadId')::uuid);raise exception 'reassigned worker read allowed';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid);raise exception 'server allocation scope ignored changed rights/authority/bytes';exception when insufficient_privilege then null;end;
  raise exception 'fixture_rollback' using errcode='P3991';exception when sqlstate 'P3991' then null;end;
  begin
  update public.processing_jobs set lease_expires_at=clock_timestamp()-interval '1 second' where id=j.job_id;
  begin perform public.worker_read_capital_body_v1(j.job_id,j.capability,(f.retained->>'retainedPayloadId')::uuid);raise exception 'expired lease read allowed';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid);raise exception 'server allocation scope ignored changed rights/authority/bytes';exception when insufficient_privilege then null;end;
  raise exception 'fixture_rollback' using errcode='P3991';exception when sqlstate 'P3991' then null;end;
  begin
  update storage.objects set metadata=jsonb_build_object('size',1,'mimetype','application/json') where id=f.object_id;
  begin perform public.worker_read_capital_body_v1(j.job_id,j.capability,(f.retained->>'retainedPayloadId')::uuid);raise exception 'changed physical size read allowed';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,(f.allocation->>'allocationId')::uuid);raise exception 'server allocation scope ignored changed rights/authority/bytes';exception when insufficient_privilege then null;end;
  raise exception 'fixture_rollback' using errcode='P3991';exception when sqlstate 'P3991' then null;end;
 end; $$;
 -- Exact pin and contemporaneity proof: a current valid declaration never
@@ -319,6 +400,18 @@ do $$ declare f record;j record;ticket jsonb;begin
  ticket:=public.worker_claim_capital_capture_purge_v1(repeat('z',64))#>'{items,0}';
  if ticket is null or ticket->>'allocationId' is distinct from f.allocation->>'allocationId' then raise exception 'parent not claimed';end if;
  insert into body_purge_tickets values(ticket);
+ perform set_config('request.headers','{}',true);
+ perform set_config('storage.operation','object.get_authenticated_info',true);
+ if (select count(*) from storage.objects where bucket_id='capital-input-capture' and name=f.allocation->>'path')<>1 then raise exception 'purger metadata lease denied';end if;
+ perform set_config('storage.operation','object.get_authenticated',true);
+ if (select count(*) from storage.objects where bucket_id='capital-input-capture' and name=f.allocation->>'path')<>0 then raise exception 'purger byte GET permitted';end if;
+ perform set_config('storage.operation','object.delete',true);
+ perform set_config('storage.allow_delete_query','true',true);
+ begin
+ delete from storage.objects where bucket_id='capital-input-capture' and name=f.allocation->>'path';
+ if not found then raise exception 'purger exact DELETE denied';end if;
+ raise exception 'fixture_rollback' using errcode='P3991';exception when sqlstate 'P3991' then null;end;
+ perform set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000991"}',true);
  begin perform public.worker_read_capital_body_v1(j.job_id,j.capability,(f.response_retained->>'retainedPayloadId')::uuid);raise exception 'purged parent derivative read allowed';exception when insufficient_privilege then null;end;
  begin perform public.worker_ack_capital_capture_purge_v1(repeat('z',64),(ticket->>'purgeId')::uuid,ticket->>'purgeCapability',true);raise exception 'metadata present ACK passed';exception when invalid_parameter_value then null;end;
 end; $$;
@@ -329,6 +422,7 @@ do $$ declare t text;begin
  or has_table_privilege('authenticated','private.'||t,'select') or has_table_privilege('authenticated','private.'||t,'insert') or has_table_privilege('authenticated','private.'||t,'update') or has_table_privilege('authenticated','private.'||t,'delete') then raise exception 'body RLS/grants %',t;end if;
  if exists(select 1 from information_schema.columns where table_schema='private' and table_name=t and column_name in ('content','payload','raw_body','canonical_body','context')) then raise exception 'body content permanently stored %',t;end if;
  end loop;
+ if has_function_privilege('anon','public.worker_read_capital_body_allocation_v1(uuid,text,uuid)','execute') or has_function_privilege('service_role','public.worker_read_capital_body_allocation_v1(uuid,text,uuid)','execute') then raise exception 'scope RPC broadly granted';end if;
  if has_function_privilege('anon','public.worker_prepare_capital_body_v1(uuid,text,uuid,text,uuid,jsonb,text)','execute') or has_function_privilege('service_role','public.worker_prepare_capital_body_v1(uuid,text,uuid,text,uuid,jsonb,text)','execute') then raise exception 'public body RPC broadly granted';end if;
  if exists(select 1 from public.audit_events where organization_id='20000000-0000-4000-8000-000000000991' and resource_type like 'capital_body_%' and metadata<>jsonb_build_object('operation',upper(action))) then raise exception 'body content in audit';end if;
 end; $$;

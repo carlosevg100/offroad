@@ -203,6 +203,21 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
         run: python3 -B scripts/ci/test-capital-public-capture-concurrency.py
+      - name: Serve the authenticated capital body Edge reader
+        env:
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+        run: |
+          set -euo pipefail
+          umask 077
+          runtime_dir="$RUNNER_TEMP/capital-body-edge"
+          mkdir -p "$runtime_dir"
+          chmod 700 "$runtime_dir"
+          # CLI injects built-in credentials into the server runtime only.
+          # JWT verification stays enabled; no privileged key enters a client.
+          supabase functions serve > "$runtime_dir/server.log" 2>&1 &
+          echo "$!" > "$runtime_dir/server.pid"
+          python3 -B scripts/ci/verify-capital-body-edge-ready.py
+
       - name: Capital public retention with physical Storage
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -488,6 +503,17 @@ jobs:
           OFFROAD_E2E_API_URL="${API_URL:-http://127.0.0.1:54321}" OFFROAD_E2E_PUBLISHABLE_KEY="${PUBLISHABLE_KEY:-${ANON_KEY:-}}" \
             node scripts/ci/verify-dependency-wait-restart.mjs
           echo "wait_proof_script_seconds=$((SECONDS - started))"
+
+      - name: Stop the capital body Edge reader
+        if: always()
+        run: |
+          set -euo pipefail
+          runtime_dir="$RUNNER_TEMP/capital-body-edge"
+          if [ -f "$runtime_dir/server.pid" ]; then
+            runtime_pid="$(cat "$runtime_dir/server.pid")"
+            if [[ "$runtime_pid" =~ ^[0-9]+$ ]]; then kill "$runtime_pid" 2>/dev/null || true; fi
+          fi
+          rm -rf -- "$runtime_dir"
 
       - name: Stop local Supabase
         if: always()

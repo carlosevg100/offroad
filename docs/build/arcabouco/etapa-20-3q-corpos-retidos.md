@@ -14,7 +14,7 @@ As tabelas privadas `capital_body_origins`, `capital_body_source_pins`,
 `capital_body_accepted_invocations` e `capital_body_bases` conservam identidades,
 hashes e referências. `capital_body_retention_wakes` registra intenções duráveis
 de reavaliação. `capital_public_payload_allocations` recebe um discriminante e
-base tipada, preservando constraints, FKs e caminhos públicos anteriores.
+base tipada, preservando constraints e FKs. A leitura física anterior de payload público passa pelo mesmo transporte autenticado, com seu contrato de licença preservado.
 
 O worker usa `worker_record_capital_body_input_v1`,
 `worker_record_capital_body_accepted_v1`, `worker_prepare_capital_body_v1`,
@@ -69,3 +69,15 @@ Migração aplicada não será editada: correção posterior exige migração fo
   que todos os componentes foram usados.
 
 Etapa 20 permanece aberta. Etapas 21 a 24 aguardam OK da próxima onda.
+
+## Transporte de leitura e correção do cache
+
+A prova em staging encontrou GET direto servindo200 após revogação da fonte na mesma URL/JWT, enquanto uma URL nova recebia400. No-store ou nonce não comprovam revogação de uma URL já conhecida. Por decisão do fundador de01/10/2026, o CTO escolhe e executa a correção técnica nesta onda.
+
+`supabase/functions/capital-body-read/index.ts` serve exclusivamente POST, com validação Auth, workspace/job/capability e body estrito contendo allocationId e kind. O servidor obtém path, identidade, versão, tamanho, SHA e prazos pelos comandos `worker_read_capital_body_allocation_v1` ou `worker_read_capital_public_payload_allocation_v1`, executados com o JWT autenticado do solicitante. Recupera e verifica os bytes com credencial interna de Storage e repete a autorização antes de liberar a resposta. Nenhum path, versão ou hash enviado pelo solicitante concede acesso. Buffers e duração são limitados. Não cria URL assinada, download GET nem fallback.
+
+A credencial privilegiada padrão do runtime Supabase existe somente na entrada Edge para a leitura interna de Storage. Não é entregue a web, worker, cliente, manifestos de teste ou logs. A autoridade permanece nos RPCs sob JWT do solicitante, antes e depois dos bytes. A função não oferece operações administrativas genéricas; esta fronteira restrita e o uso da credencial são objeto de testes negativos e revisão independente.
+
+A migração forward fecha GET/info/HEAD/sign diretos de ambos os tipos no bucket, exige job/capability por upload e preserva o purger independente, seu lease e a comprovação de ausência física. Rollout exige zero objetos/alocações anteriores em produção ou invalidação física comprovada antes da ativação; mudar RLS sozinho não invalida cache antigo.
+
+Gates adicionais: função real no runtimeDeno; mesmo endpointPOST/JWT antes e após revogação; GET/info/HEAD/sign negados ao job correto; capability errada/outrojob; revogação entre os dois gates; metadados/versão/SHA/tamanho incorretos; teste de expurgo. CI sobe a função com verificaçãoJWT ativa e só aceita readiness do handler real.

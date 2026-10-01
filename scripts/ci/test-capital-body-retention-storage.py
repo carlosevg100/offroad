@@ -10,7 +10,7 @@ owner directory outside git. Request id.request.json0600 = {id,projectRef,query}
 Root alone executes each query on known staging via its SQL tool and responds
 id.response.json0600 = {id,projectRef,ok:true,value:<psql-style scalar string>}.
 For JSON-building SELECTs value is JSON text; counts are decimal text. Failure:
-{...,ok:false}; never include credentials/errors/raw customer data. Timeout60s.
+{...,ok:false}; never include credentials/errors/raw customer data. Bridge timeout300s; native local psql unchanged.
 Only SQL_BRIDGE_WAIT id is emitted, no query. Requests persist for root cleanup.
 Fixture JSON: environment(local|staging), projectRef, apiUrl, databaseHost,
 organizationId, actorId, publishableKey, email,password,purgeToken, sourceVersionId,
@@ -22,6 +22,8 @@ Root owns provisioning/cleanup; this script purges every allocated body and prin
 only named test outcomes, never bodies, paths, JWTs, capabilities or DB credentials.
 """
 import base64
+import ast
+import traceback
 import importlib.util
 import json
 import os
@@ -42,6 +44,7 @@ base = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(base)
 PRODUCTION_REF = 'ifnogpksgdadruooqydi'
 CURRENT_STAGE = 'initialize'
+STAGING_BRIDGE_TIMEOUT_SECONDS = 300
 
 
 class SafeEvalFailure(Exception):
@@ -56,6 +59,30 @@ def named_stage(value):
     if not re.fullmatch(r'[a-zA-Z0-9_]{1,100}', value):
         raise AssertionError('Invalid diagnostic stage')
     CURRENT_STAGE = value
+
+
+def safe_failure_location(failure):
+    # Use only frames in our two checked-in harnesses. Never show locals, traceback
+    # source lines or exception text (which can contain HTTP/SQL/private bodies).
+    allowed = {Path(__file__).resolve(), Path(base.__file__).resolve()}
+    frames = [f for f in traceback.extract_tb(failure.__traceback__) if Path(f.filename).resolve() in allowed]
+    if not frames:
+        return {'location': 'outside_harness', 'assertionCode': 'external_failure'}
+    frame = frames[-1]
+    filename = Path(frame.filename).resolve()
+    code = 'external_failure'
+    if isinstance(failure, AssertionError):
+        code = 'dynamic_assertion'
+        tree = ast.parse(filename.read_text())
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Raise) and node.lineno == frame.lineno and isinstance(node.exc, ast.Call) and isinstance(node.exc.func, ast.Name) and node.exc.func.id == 'AssertionError' and node.exc.args and isinstance(node.exc.args[0], ast.Constant) and isinstance(node.exc.args[0].value, str):
+                # This is a literal checked-in assertion message, not failure.args.
+                code = 'assert_' + re.sub(r'[^a-z0-9]+', '_', node.exc.args[0].value.lower()).strip('_')[:80]
+                break
+    elif isinstance(failure, SafeEvalFailure):
+        code = 'rpc_or_control_failure'
+    method = frame.name if re.fullmatch(r'[a-zA-Z0-9_<>]{1,100}', frame.name) else 'method'
+    return {'location': filename.name + ':' + method + ':' + str(frame.lineno), 'assertionCode': code}
 
 
 def validate_environment(f, database=None):
@@ -173,7 +200,7 @@ class BodyStorage(base.RetentionStorage):
         with os.fdopen(fd, 'w') as out:
             json.dump({'id': request_id, 'projectRef': self.f['projectRef'], 'query': query}, out)
         print('SQL_BRIDGE_WAIT ' + request_id, flush=True)
-        deadline = time.monotonic() + 60
+        deadline = time.monotonic() + STAGING_BRIDGE_TIMEOUT_SECONDS
         while time.monotonic() < deadline:
             if response.exists():
                 if response.is_symlink() or response.stat().st_uid != os.getuid() or stat.S_IMODE(response.stat().st_mode) != 0o600:
@@ -237,11 +264,12 @@ class BodyStorage(base.RetentionStorage):
             raise AssertionError('Wrong fixture actor')
         self.jwt = result['access_token']
 
-    def request(self, method, path, body=None, authenticated=True, job_headers=True, content_type='application/json'):
+    def request(self, method, path, body=None, authenticated=True, job_headers=True, content_type='application/json', workspace_headers=True):
         if authenticated and path != '/rest/v1/rpc/worker_claim_capital_capture_purge_v1':
             self.ensure_heartbeat()
-        headers = {'apikey': self.key, 'Content-Type': content_type, 'Cache-Control': 'no-store',
-                   'x-offroad-workspace': self.f['organizationId']}
+        headers = {'apikey': self.key, 'Content-Type': content_type, 'Cache-Control': 'no-store, private, max-age=0'}
+        if workspace_headers:
+            headers['x-offroad-workspace'] = self.f['organizationId']
         if authenticated:
             headers['Authorization'] = 'Bearer ' + self.jwt
         if job_headers:
@@ -249,8 +277,10 @@ class BodyStorage(base.RetentionStorage):
         request = Request(self.api + path, data=body, headers=headers, method=method)
         try:
             with self.opener.open(request, timeout=15) as response:
+                self.last_response_headers = dict(response.headers)
                 return response.status, response.read()
         except HTTPError as error:
+            self.last_response_headers = dict(error.headers)
             return error.code, error.read()
 
     def rpc(self, name, args, expected=None):
@@ -296,8 +326,12 @@ class BodyStorage(base.RetentionStorage):
         adapted = {**allocation, 'canonicalPayload': allocation['canonicalBody']}
         return super().upload(adapted, original if body is None else body)
 
-    def commit(self, allocation, observed, expected=None, version=None, sha=None, size=None):
-        identity = self.storage_identity(allocation)
+    def physical_post(self, allocation, kind=None, denied=False):
+        kind = kind or ('typed_body' if 'bodyBasisId' in allocation else 'public_source')
+        return super().physical_post(allocation, kind, denied)
+
+    def commit(self, allocation, observed, expected=None, version=None, sha=None, size=None, identity=None):
+        identity = self.storage_identity(allocation) if identity is None else identity
         return self.job_rpc('worker_commit_capital_body_v1', {'p_allocation_id': allocation['allocationId'],
             'p_storage_object_id': identity['id'], 'p_storage_version': version or identity['version'],
             'p_verified_sha256': sha or base.digest(observed), 'p_verified_size': len(observed) if size is None else size}, expected)
@@ -338,13 +372,26 @@ class BodyStorage(base.RetentionStorage):
         return allocated, stored
 
     def claim(self, token=None):
-        result = self.rpc('worker_claim_capital_capture_purge_v1', {'p_worker_token': self.f['purgeToken'], 'p_limit': 100})
+        # Remote bridge metadata round-trips can consume most of the fixed 60s lease.
+        # Lease only the one ticket we can finish; never widen the server lease.
+        limit = 1 if self.bridge is not None else 100
+        result = self.rpc('worker_claim_capital_capture_purge_v1', {'p_worker_token': self.f['purgeToken'], 'p_limit': limit})
         self._last_purge_heartbeat = time.monotonic()
         return result
 
+    def erase(self, ticket):
+        # Staging MCP orchestration is not part of the product's fixed purge
+        # lease. Real DELETE and genuine INFO404 still precede every ACK.
+        return super().erase(ticket, verify_catalogue=self.bridge is None)
+
     def ack(self, ticket, confirmed=True, expected=None):
-        return self.rpc('worker_ack_capital_capture_purge_v1', {'p_worker_token': self.f['purgeToken'],
+        result = self.rpc('worker_ack_capital_capture_purge_v1', {'p_worker_token': self.f['purgeToken'],
             'p_purge_id': ticket['purgeId'], 'p_purge_capability': ticket['purgeCapability'], 'p_storage_delete_confirmed': confirmed}, expected)
+        if self.bridge is not None and confirmed and expected is None and result.get('purged') is True:
+            # Mandatory independent catalogue proof, immediately after ACK.
+            # A delayed/failed bridge response still fails this eval; no skip.
+            self.assert_catalogue_absent(ticket)
+        return result
 
     def public_parent(self):
         parent = self.f['publicParent']
@@ -450,8 +497,14 @@ class BodyStorage(base.RetentionStorage):
         original_capability = self.capability
         self.capability = 'wrong-synthetic-capability-' + 'x' * 40
         self.read(retained['retainedPayloadId'], ('42501', 'capital_capture_denied'))
+        self.physical_post(allocation, denied=True)
         self.denied_get(allocation)
         self.capability = original_capability
+        self.direct_reads_denied(allocation)
+        missing_status, _ = self.request('POST','/functions/v1/capital-body-read',
+            json.dumps({'allocationId':allocation['allocationId'],'kind':'typed_body'}).encode(),job_headers=False,workspace_headers=False)
+        if missing_status not in (400,401,403,404):
+            raise SafeEvalFailure('edge_missing_headers_not_denied',missing_status)
         for route, payload in (('/storage/v1/object/list/' + base.BUCKET, {'prefix': allocation['path'].split('/')[0]}),
                                ('/storage/v1/object/sign/' + base.object_path(allocation), {'expiresIn': 60})):
             status, _ = self.request('POST', route, json.dumps(payload).encode())
@@ -462,23 +515,38 @@ class BodyStorage(base.RetentionStorage):
                 if json.loads(_) != []:
                     raise AssertionError('List exposed object metadata')
         corrupt = self.prepare(revision)
-        mutated = json.dumps(json.loads(corrupt['canonicalBody']), ensure_ascii=False, indent=2).encode('utf8')
-        if base.digest(mutated) == corrupt['payloadFingerprint']:
-            raise AssertionError('Corruption fixture did not change physical bytes')
-        observed_corrupt = self.upload(corrupt, mutated)
-        self.commit(corrupt, observed_corrupt, ('22023', 'capital_body_proof_invalid'))
+        original_corrupt = corrupt['canonicalBody'].encode('utf8')
+        # Relocate JSON whitespace, preserving parsed semantics and byte length.
+        # The metadata scope can authorize identity while the byte SHA must deny.
+        mutated = original_corrupt.replace(b', ', b' ,', 1)
+        if (mutated == original_corrupt or len(mutated) != len(original_corrupt)
+                or json.loads(mutated) != json.loads(original_corrupt)
+                or base.digest(mutated) == corrupt['payloadFingerprint']):
+            raise AssertionError('Corruption fixture must preserve size and parsed JSON')
+        status, _ = self.request('POST','/storage/v1/object/' + base.object_path(corrupt),mutated)
+        if status not in (200,201):
+            raise SafeEvalFailure('corrupt_upload_fixture_failed',status)
+        self.physical_post(corrupt,denied=True)
+        corrupt_scope = self.job_rpc('worker_read_capital_body_allocation_v1',
+            {'p_allocation_id': corrupt['allocationId']})
+        corrupt_identity = {'id': corrupt_scope['storageObjectId'], 'version': corrupt_scope['storageVersion']}
+        self.commit(corrupt, mutated, ('22023', 'capital_body_proof_invalid'), identity=corrupt_identity)
         if self.counts(corrupt)['receipt'] != 0:
             raise AssertionError('Corrupt body committed a receipt')
         print('body_http_wrong_capability_list_signed_url_corrupt_physical_json_denied: PASS')
-        print('body_http_physical_upload_sha_size_version_replay: PASS')
+        print('body_http_mediated_post_physical_upload_sha_size_version_replay_direct_storage_denied: PASS')
         named_stage('private_gateway_response_cascade')
         derived, result = self.cascade_output(retained)
         named_stage('public_parent_upload_commit_response')
         public_allocation, public_receipt = self.public_parent()
         public_derived, public_result = self.cascade_output(public_receipt)
+        self.direct_reads_denied(public_allocation)
+        self.physical_post(public_allocation)
+        self.physical_post(public_derived)
         print('body_http_public_retained_parent_real_bytes_response_inheritance: PASS')
         self.select_job('expired')
         self.read(retained['retainedPayloadId'], ('42501', 'capital_body_read_denied'))
+        self.physical_post(allocation,denied=True)
         self.denied_get(allocation)
         self.select_job('baseline')
         status, _ = self.request('GET', '/storage/v1/object/authenticated/' + base.object_path(allocation), authenticated=False)
@@ -494,8 +562,9 @@ class BodyStorage(base.RetentionStorage):
             self.sql('update public.processing_jobs set ' + mutation + ' where id=' + base.literal(self.job)
                      + '::uuid and organization_id=' + base.literal(self.f['organizationId']) + '::uuid;')
             self.read(stored['retainedPayloadId'], ('42501', 'capital_capture_denied'))
+            self.physical_post(other,denied=True)
             self.denied_get(other)
-            print('body_http_original_job_' + label + '_denies_sql_storage: PASS')
+            print('body_http_original_job_' + label + '_denies_sql_post_storage: PASS')
         self.select_job('baseline')
         named_stage('source_revocation_private_public_denial')
         self.sql('update public.source_bindings set revoked_at=clock_timestamp() where id='
@@ -504,11 +573,13 @@ class BodyStorage(base.RetentionStorage):
         self.revoke_public_parent()
         self.job_rpc('worker_read_capital_public_payload_v1', {'p_retained_payload_id': public_receipt['retainedPayloadId']},
                      ('42501', 'capital_capture_retention_denied'))
+        self.physical_post(public_allocation,denied=True)
         self.denied_get(public_allocation)
         for item, receipt in ((allocation, retained), (derived, result), (public_derived, public_result)):
             self.read(receipt['retainedPayloadId'], ('42501', 'capital_body_read_denied'))
+            self.physical_post(item,denied=True)
             self.denied_get(item)
-        print('body_http_source_revocation_cascade_denies_private_public_parent_responses: PASS')
+        print('body_http_identical_post_url_jwt_revocation_denies_private_public_parents_responses: PASS')
         named_stage('cascade_physical_delete_and_ack')
         expected_ids = {x['allocationId'] for x in self.allocations}
         erased = set()
@@ -685,6 +756,91 @@ def self_test():
         pass
     else:
         raise AssertionError('Bridge accepted repository')
+    # Delayed orchestration response is not a product lease renewal. Fake time
+    # proves a response at 180s is accepted and a missing response fails at 300s.
+    from contextlib import redirect_stdout
+    from io import StringIO
+    from unittest.mock import patch
+    for reply_at in (180, None):
+        with tempfile.TemporaryDirectory() as temporary:
+            bridge_harness = object.__new__(BodyStorage)
+            bridge_harness.bridge = Path(temporary)
+            bridge_harness.f = {'projectRef': 'gjkkjtbfnssdsbmlhmwk'}
+            bridge_harness.ensure_heartbeat = lambda: None
+            bridge_harness.bridge_query_allowed = lambda query: None
+            clock_value = [0.0]
+            def fake_wait(duration):
+                assert duration == 0.1
+                clock_value[0] += 30
+                if reply_at is not None and clock_value[0] >= reply_at:
+                    request_file = next(bridge_harness.bridge.glob('*.request.json'))
+                    request_data = json.loads(request_file.read_text())
+                    response = request_file.with_name(request_data['id'] + '.response.json')
+                    response.write_text(json.dumps({'id': request_data['id'],
+                        'projectRef': request_data['projectRef'], 'ok': True, 'value': 'synthetic-result'}))
+                    response.chmod(0o600)
+            with patch.object(time, 'monotonic', side_effect=lambda: clock_value[0]), \
+                    patch.object(time, 'sleep', side_effect=fake_wait), redirect_stdout(StringIO()):
+                if reply_at is not None:
+                    assert bridge_harness.sql('select synthetic_metadata;') == 'synthetic-result'
+                    assert clock_value[0] == 180
+                else:
+                    try:
+                        bridge_harness.sql('select synthetic_metadata;')
+                    except SafeEvalFailure as error:
+                        assert error.operation == 'sql_bridge_timeout'
+                        assert clock_value[0] == STAGING_BRIDGE_TIMEOUT_SECONDS == 300
+                    else:
+                        raise AssertionError('Bridge timeout did not fail closed')
+    print('body_storage_bridge_delayed_response_timeout_static_self_test: PASS (180s accepted, 300s fails closed; fake clock only)')
+    # Both erasure proofs remain mandatory; only bridge catalogue ordering changes.
+    for bridge, expected_order in ((Path('/synthetic-private-bridge'), ['DELETE_INFO404', 'ACK', 'CATALOGUE0']),
+                                   (None, ['DELETE_INFO404', 'CATALOGUE0', 'ACK'])):
+        purge_harness = object.__new__(BodyStorage)
+        purge_harness.bridge = bridge
+        purge_harness.f = {'purgeToken': 'synthetic-token'}
+        order = []
+        def erase_spy(self, ticket, verify_catalogue=True):
+            order.append('DELETE_INFO404')
+            if verify_catalogue:
+                self.assert_catalogue_absent(ticket)
+        def ack_spy(name, arguments, expected=None):
+            order.append('ACK')
+            return {'purged': True}
+        purge_harness.rpc = ack_spy
+        purge_harness.assert_catalogue_absent = lambda ticket: order.append('CATALOGUE0')
+        ticket = {'purgeId': 'synthetic-purge', 'purgeCapability': 'synthetic-capability'}
+        with patch.object(base.RetentionStorage, 'erase', new=erase_spy):
+            purge_harness.erase(ticket)
+            purge_harness.ack(ticket)
+        assert order == expected_order
+    # A failed mandatory post-ACK catalogue proof propagates as eval failure.
+    purge_harness.bridge = Path('/synthetic-private-bridge')
+    def fail_catalogue(ticket):
+        raise SafeEvalFailure('sql_bridge_timeout')
+    purge_harness.assert_catalogue_absent = fail_catalogue
+    try:
+        purge_harness.ack(ticket)
+    except SafeEvalFailure as error:
+        assert error.operation == 'sql_bridge_timeout'
+    else:
+        raise AssertionError('Post-ACK catalogue proof was skipped')
+    print('body_storage_bridge_ack_catalogue_order_static_self_test: PASS (both mandatory, native unchanged, proof failure propagates; no SQL/HTTP)')
+    # Bridge throughput changes only batch size, never server lease/deadline fields.
+    claim_harness = object.__new__(BodyStorage)
+    claim_harness.f = {'purgeToken': 'synthetic-purge-token'}
+    claim_calls = []
+    def claim_rpc(name, arguments):
+        claim_calls.append((name, arguments))
+        return {'items': []}
+    claim_harness.rpc = claim_rpc
+    for bridge, expected_limit in ((Path('/synthetic-private-bridge'), 1), (None, 100)):
+        claim_harness.bridge = bridge
+        claim_harness.claim()
+        name, arguments = claim_calls[-1]
+        assert name == 'worker_claim_capital_capture_purge_v1'
+        assert arguments == {'p_worker_token': 'synthetic-purge-token', 'p_limit': expected_limit}
+    print('body_storage_bridge_one_ticket_fixed_lease_static_self_test: PASS (bridge1/local100, no lease override; no SQL/HTTP)')
     # Offline clock/recursion/phase adversaries: never mint a health row or use SQL.
     from unittest.mock import patch
     harness = object.__new__(BodyStorage)
@@ -718,6 +874,12 @@ def self_test():
     else:
         raise AssertionError('Unexpected ticket incorrectly treated as heartbeat')
     assert not harness._heartbeat_enabled and not harness._heartbeat_inflight
+    try:
+        raise AssertionError('private' + ' dynamic sentinel must never be printed')
+    except AssertionError as error:
+        location = safe_failure_location(error)
+        assert location['assertionCode'] == 'dynamic_assertion'
+        assert 'sentinel' not in json.dumps(location)
     print('body_storage_heartbeat_static_self_test: PASS (bounded, no recursion, stops before revoke, tickets fail; no SQL/HTTP)')
     print('body_storage_static_self_test: PASS (environment, key, bridge production/path/permissions; no SQL/HTTP executed)')
 
@@ -736,7 +898,7 @@ if __name__ == '__main__':
             BodyStorage().main()
     except Exception as failure:
         # Only fixed stage/operation and structured status/code are emitted.
-        diagnostic = {'stage': CURRENT_STAGE}
+        diagnostic = {'stage': CURRENT_STAGE, **safe_failure_location(failure)}
         if isinstance(failure, SafeEvalFailure):
             diagnostic.update({'operation': failure.operation, 'httpStatus': failure.http_status, 'sqlState': failure.sql_state})
         print('capital_body_retention_storage: FAILED ' + json.dumps(diagnostic, sort_keys=True), file=sys.stderr)

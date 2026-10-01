@@ -1,5 +1,6 @@
-import {test} from "vitest";
-import type {SupabaseClient} from "@supabase/supabase-js";
+import {test, vi} from "vitest";
+import {createClient} from "@supabase/supabase-js";
+vi.mock("@supabase/supabase-js", async importOriginal => {const actual = await importOriginal<typeof import("@supabase/supabase-js")>(); return {...actual, createClient: vi.fn(actual.createClient)};});
 import assert from "node:assert/strict";
 import {createHash, randomUUID} from "node:crypto";
 import {createCapitalBodyRetention} from "./capital-body-retention";
@@ -30,14 +31,19 @@ function harness(options: {badBytes?: boolean; denyAfter?: boolean; wrongVersion
     },
     storage: {from() {return {
       async upload(_p: string, b: Uint8Array, config: {upsert: boolean}) {uploads++; assert.deepEqual(Buffer.from(b), bytes); assert.equal(config.upsert, false); return {error: options.error409 ? {statusCode: 409} : null};},
-      async info() {return {error: null, data: {id: objectId, version: options.wrongVersion ? "other" : "immutable-version", bucketId: base.bucket, name: base.path}};},
-      async download(_p: string, config: {cacheNonce: string}, fetchConfig: {cache: string}) {downloads++; assert.equal(fetchConfig.cache, "no-store"); assert.ok(config.cacheNonce); if (options.expireDuring) clock = Date.parse(base.purgeAt);
-        const downloaded = options.badBytes ? Buffer.from("wrong") : bytes;
-        return {error: null, data: {async arrayBuffer() {return Uint8Array.from(downloaded).buffer;}}};},
     };}},
+    functions: {async invoke(_name: string, command: {body: {allocationId: string; kind: string}; headers: Record<string, string>}) {
+      downloads++; assert.equal(command.body.kind, "typed_body"); assert.equal(command.body.allocationId, allocationId);
+      if (options.expireDuring) clock = Date.parse(base.purgeAt);
+      const downloaded = options.badBytes ? Buffer.from("wrong") : bytes;
+      return {error: null, data: new Blob([downloaded]), response: new Response(null, {headers: {"content-type": "application/octet-stream", "cache-control": "no-store",
+        "x-offroad-allocation-id": allocationId, "x-offroad-object-id": objectId, "x-offroad-storage-version": options.wrongVersion ? "other" : "immutable-version",
+        "x-offroad-payload-sha256": base.payloadFingerprint, "x-offroad-byte-length": String(bytes.byteLength)}})};
+    }},
   };
   const authority = {jobId: randomUUID(), capabilityToken: "synthetic-live-job-capability"};
-  const client = createCapitalBodyRetention(transport as unknown as SupabaseClient, authority, () => clock);
+  vi.mocked(createClient).mockReturnValueOnce(transport as unknown as ReturnType<typeof createClient>);
+  const client = createCapitalBodyRetention({supabaseUrl: "https://synthetic.supabase.co", publishableKey: "sb_publishable_synthetic", organizationId: randomUUID(), accessToken: async () => null}, authority, () => clock);
   return {client, calls, base, retained, authority, count: () => ({uploads, downloads}), revisionId: randomUUID()};
 }
 test("SQL-owned canonical UTF8 is roundtripped, SHA physical retained, original body RPC before/after read", async () => {
@@ -182,5 +188,56 @@ test("authority42501 and transport timeout never retry", async () => {
     const h = harness(options);
     await assert.rejects(h.client.retainContribution(h.revisionId, randomUUID()), {message: "capital_body_adapter_denied"});
     assert.equal(h.calls.length, 1); assert.equal(h.count().uploads, 0);
+  }
+});
+
+const syntheticJWT = (role = "authenticated") => `synthetic.${Buffer.from(JSON.stringify({role})).toString("base64url")}.signature`;
+test("real SDK isolates concurrent job headers and pins connection before asynchronous token resolution", async () => {
+  const h = harness();
+  const bytes = Buffer.from('{"content": "Synthetic author contribution", "schemaVersion": "capital-body.contribution.v1"}');
+  const organizationId = h.base.path.split("/")[0]!;
+  const first = {jobId: randomUUID(), capabilityToken: "first-job-capability"};
+  const second = {jobId: randomUUID(), capabilityToken: "second-job-capability"};
+  const observed: {job: string | null; cap: string | null; workspace: string | null; path: string}[] = [];
+  const fetcher: typeof fetch = async (input, init) => {
+    const headers = new Headers(init?.headers), path = String(input);
+    assert.equal(headers.get("authorization"), `Bearer ${syntheticJWT()}`);
+    assert.equal(init?.redirect, "error");
+    observed.push({job: headers.get("x-offroad-job-id"), cap: headers.get("x-offroad-capability"), workspace: headers.get("x-offroad-workspace"), path});
+    await new Promise(resolve => setTimeout(resolve, 1));
+    return path.includes("/rest/v1/rpc/")
+      ? new Response(JSON.stringify(h.retained), {headers: {"content-type": "application/json"}})
+      : new Response(bytes, {headers: {"content-type": "application/octet-stream", "cache-control": "no-store", "x-offroad-allocation-id": h.retained.allocationId,
+        "x-offroad-object-id": h.retained.storageObjectId, "x-offroad-storage-version": h.retained.storageVersion, "x-offroad-payload-sha256": h.retained.payloadFingerprint,
+        "x-offroad-byte-length": String(h.retained.byteLength)}});
+  };
+  const connection = {supabaseUrl: "https://synthetic.supabase.co", publishableKey: "sb_publishable_synthetic", organizationId,
+    accessToken: async () => {await new Promise(resolve => setTimeout(resolve, 1)); return syntheticJWT();}, fetch: fetcher};
+  const a = createCapitalBodyRetention(connection, first, () => Date.parse(h.base.retainedAt));
+  const b = createCapitalBodyRetention(connection, second, () => Date.parse(h.base.retainedAt));
+  connection.organizationId = randomUUID(); connection.fetch = async () => {throw new Error("mutated caller fetch");};
+  first.capabilityToken = "mutated caller capability";
+  await Promise.all([a.readOriginal(h.retained.retainedPayloadId), b.readOriginal(h.retained.retainedPayloadId)]);
+  assert.equal(observed.length, 6);
+  for (const v of observed) {
+    assert.equal(v.workspace, organizationId);
+    assert.equal(v.cap, v.job === first.jobId ? "first-job-capability" : "second-job-capability");
+  }
+  assert.equal(observed.filter(v => v.path.includes("/functions/v1/capital-body-read")).length, 2);
+});
+test("connection forbids privileged keys, preserves safe token errors and refuses token role escalation", async () => {
+  const base = {supabaseUrl: "https://synthetic.supabase.co", publishableKey: "sb_publishable_synthetic", organizationId: randomUUID(), accessToken: async () => syntheticJWT()};
+  const authority = {jobId: randomUUID(), capabilityToken: "synthetic-capability"};
+  for (const publishableKey of ["sb_secret_sensitive", syntheticJWT("service_role")]) {
+    assert.throws(() => createCapitalBodyRetention({...base, publishableKey}, authority), {message: "capital_body_adapter_denied"});
+  }
+  for (const accessToken of [async () => {throw new Error("private sensitive token getter error");}, async () => syntheticJWT("service_role")]) {
+    let requests = 0;
+    const body = createCapitalBodyRetention({...base, accessToken, fetch: async (_input, init) => {
+      requests++; assert.equal(new Headers(init?.headers).get("authorization"), "Bearer sb_publishable_synthetic");
+      return new Response(JSON.stringify({code: "42501", message: "private remote message"}), {status: 403, headers: {"content-type": "application/json"}});
+    }}, authority);
+    await assert.rejects(body.readOriginal(randomUUID()), {message: "capital_body_adapter_denied"});
+    assert.equal(requests, 1);
   }
 });

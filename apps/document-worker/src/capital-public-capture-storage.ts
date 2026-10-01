@@ -1,6 +1,7 @@
-import {createHash, randomUUID} from "node:crypto";
+import {createHash} from "node:crypto";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
+import {readCapitalCaptureBytes} from "./capital-body-read-client";
 
 const uuid = z.uuid();
 const hash = z.string().regex(/^[0-9a-f]{64}$/);
@@ -71,14 +72,8 @@ export function createCapitalPublicCaptureStorage(supabase: SupabaseClient, now:
   const live = (scope: {expiresAt: string; purgeAt: string}) => {
     if (Date.parse(scope.purgeAt) <= now() || Date.parse(scope.purgeAt) >= Date.parse(scope.expiresAt)) throw new Error("capital capture retention expired");
   };
-  const verifiedBytes = async (scope: z.infer<typeof retainedSchema> | z.infer<typeof allocationSchema>, version: string) => {
-    live(scope);
-    const result = await supabase.storage.from(scope.bucket).download(scope.path, {versionId: version, cacheNonce: randomUUID()}, {cache: "no-store"});
-    if (result.error || !result.data) throw new Error("capital capture storage read denied");
-    const bytes = new Uint8Array(await result.data.arrayBuffer());
-    if (bytes.byteLength !== scope.byteLength || digest(bytes) !== scope.payloadFingerprint) throw new Error("capital capture immutable bytes conflict");
-    live(scope);
-    return bytes;
+  const verifiedBytes = async (job: CapitalCaptureJobAuthority, scope: z.infer<typeof retainedSchema> | z.infer<typeof allocationSchema>) => {
+    live(scope); const result = await readCapitalCaptureBytes(supabase, job, scope, "public_source"); live(scope); return result;
   };
   const readScope = async (job: CapitalCaptureJobAuthority, retainedPayloadId: string) => {
     const scope = retainedSchema.parse(await rpc("worker_read_capital_public_payload_v1", {...authorityArgs(job), p_retained_payload_id: uuid.parse(retainedPayloadId)}));
@@ -89,13 +84,14 @@ export function createCapitalPublicCaptureStorage(supabase: SupabaseClient, now:
   const read = async (job: CapitalCaptureJobAuthority, retainedPayloadId: string, expected?: CapitalCaptureRetentionReceipt): Promise<Uint8Array> => {
     const before = await readScope(job, retainedPayloadId);
     if (expected && (before.allocationId !== expected.allocationId || before.expiresAt !== expected.expiresAt || before.purgeAt !== expected.purgeAt)) throw new Error("capital capture receipt mismatch");
-    const bytes = await verifiedBytes(before, before.storageVersion);
+    const {bytes} = await verifiedBytes(job, before);
     const after = await readScope(job, retainedPayloadId);
     if (JSON.stringify(before) !== JSON.stringify(after)) throw new Error("capital capture read scope changed");
     return bytes;
   };
   return {
-    async retain(input: CapitalCaptureRetentionInput): Promise<CapitalCaptureRetentionReceipt> {
+    async retain(callerInput: CapitalCaptureRetentionInput): Promise<CapitalCaptureRetentionReceipt> {
+      const input = structuredClone(callerInput);
       const prepared = preparationSchema.parse(await rpc("worker_prepare_capital_public_payload_v1", {
         ...authorityArgs(input), p_delivery_id: uuid.parse(input.deliveryId), p_request_id: uuid.parse(input.requestId), p_payload: input.payload,
       }));
@@ -114,14 +110,11 @@ export function createCapitalPublicCaptureStorage(supabase: SupabaseClient, now:
       const bytes = Buffer.from(allocation.canonicalPayload, "utf8");
       if (bytes.byteLength !== allocation.byteLength || digest(bytes) !== allocation.payloadFingerprint) throw new Error("capital capture canonical bytes mismatch");
       const storage = supabase.storage.from(allocation.bucket);
-      const upload = await storage.upload(allocation.path, bytes, {contentType: "application/json", cacheControl: "0", upsert: false});
+      const upload = await storage.upload(allocation.path, bytes, {contentType: "application/json", cacheControl: "0", upsert: false,
+        headers: Object.freeze({"x-offroad-workspace": uuid.parse(allocation.path.split("/")[0]), "x-offroad-job-id": uuid.parse(input.jobId),
+          "x-offroad-capability": z.string().min(1).parse(input.capabilityToken)})});
       if (upload.error && status(upload.error) !== 409) throw new Error("capital capture storage write denied");
-      const info = await storage.info(allocation.path);
-      if (info.error || !info.data || info.data.isVersioned || info.data.isDeleteMarker) throw new Error("capital capture storage identity unavailable");
-      const objectId = uuid.parse(info.data.id);
-      const version = z.string().min(1).parse(info.data.version);
-      if (info.data.bucketId !== allocation.bucket || info.data.name !== allocation.path) throw new Error("capital capture storage identity mismatch");
-      await verifiedBytes(allocation, version);
+      const {objectId, version} = await verifiedBytes(input, allocation);
       const receipt = commitSchema.parse(await rpc("worker_commit_capital_public_payload_v1", {
         ...authorityArgs(input), p_allocation_id: allocation.allocationId, p_storage_object_id: objectId,
         p_storage_version: version, p_verified_sha256: digest(bytes), p_verified_size: bytes.byteLength,
@@ -130,7 +123,7 @@ export function createCapitalPublicCaptureStorage(supabase: SupabaseClient, now:
       live(receipt);
       return receipt;
     },
-    read: (job: CapitalCaptureJobAuthority, retainedPayloadId: string, expected?: CapitalCaptureRetentionReceipt) => read(job, retainedPayloadId, expected),
+    read: (job: CapitalCaptureJobAuthority, retainedPayloadId: string, expected?: CapitalCaptureRetentionReceipt) => read(structuredClone(job), retainedPayloadId, expected ? structuredClone(expected) : undefined),
     async purgeOnce(workerToken: string, limit = 20): Promise<CapitalCapturePurgeResult[]> {
       z.string().min(1).parse(workerToken); z.number().int().min(1).max(20).parse(limit);
       const claim = purgeClaimSchema.parse(await rpc("worker_claim_capital_capture_purge_v1", {p_worker_token: workerToken, p_limit: limit}));

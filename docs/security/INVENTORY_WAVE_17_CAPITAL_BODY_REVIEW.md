@@ -44,12 +44,19 @@ em teste transacional não substituem essa prova.
 
 ## Evidência e limites
 
-Revisão independente de SQL/worker/SDK encerrou os achados conhecidos: guard
+Revisão independente de SQL/worker/SDK conferiu as correções de guard
 final de clock após montagem do DTO, menor prazo operacional do pai público,
 retry limitado e ausência de bloqueio global por wakes de outro cliente. SQL
 candidato e setup/cleanup passaram em staging com rollback; o SDK real passou
-roundtrip, recibo server-bound, replay e negação. A fixture SDK teve os dois corpos
-fisicamente eliminados e os metadados sintéticos removidos de staging.
+roundtrip, recibo server-bound, replay e negação. Na execução SDK anterior, os dois corpos
+foram fisicamente eliminados e os metadados sintéticos removidos de staging;
+essa limpeza não comprova a limpeza da fixture HTTP final em validação.
+
+O eval HTTP encontrou um achado adicional: a conta de execução ainda podia fazer
+GET direto com header de capability errado, apesar da negação correta da RPC.
+O incremento exige barreira de job/capability no Storage, em migração forward;
+a negação real precisa passar antes da produção. A revisão estática não substitui
+a prova desse caminho.
 
 Concorrência remota pela ferramenta MCP foi rejeitada como evidência: as chamadas
 foram serializadas. A CI verifica corridas por conexões diretas e sessões
@@ -62,3 +69,13 @@ Riscos da integração estão atribuídos ao corte M07 e à etapa 22 em
 eligibilidade por novas origens, receita completa e texto canônico legado.
 Rollback operacional desconecta novos consumidores e fecha admissão pela política
 existente, preservando expurgo. SQL aplicado exige correção forward.
+
+## Correção de transporte autorizada em01/10/2026
+
+A reprodução adicional demonstrou mesma URL/JWT200 após revogação e URL nova400; o cache Cloudflare podia ignorar o gate de origem. A correção migra ambas as famílias de capital-input-capture para POST autenticado no servidor e fecha leituras diretas, inclusive para o job legítimo. Upload exige identidade exata por pedido; purger mantém somente suas operações com lease. Credential privilegiada padrão somente no runtimeEdge, nunca no worker/web/cliente. RPC sob JWT do solicitante antes e depois dos bytes, paths SQL-derived, SHA/size/version fixados, limites de buffer/tempo, sem conteúdo ou credenciais nos logs. Revisão independente não encontrou atalhos nos arquivos; confirmação remota permanece gate.
+
+Journal staging da nova barreira: `20261001185956 capital_body_server_read_boundary`, arquivo candidato `20261001184027`; SQL congelado após aplicação. Ambas suítes SQL passaram em staging com rollback antes da aplicação. A função Edge versão 3 foi publicada em staging com verificação JWT ativa. O erro inicial de configuração foi corrigido: built-ins modernos `SUPABASE_PUBLISHABLE_KEYS['default']` e `SUPABASE_SECRET_KEYS['default']` são preferidos, com fallback legacy explícito; secret moderno é somente apikey, nunca Bearer. Diagnósticos de configuração são códigos fixos, sem valores. Credencial privilegiada não chega a web, worker, manifestos ou logs.
+
+SDK real Node24 em staging passou 14 verificações. Gate local final passou com exit 0 e quatro fases 44/44; worker 1049/gateway 180/web 1209 PASS. Handler cobre Auth/user e subject exato, tenant/job/cap, pinos antes/depois, buffer 1MiB, duração total 10s, redirects negados e respostas no-store. Upload público usa headers imutáveis por chamada; consumers typed/public não oferecem fallback GET/info. Retry de autoridade é somente SQL40001, mesma RPC/args até três tentativas; negação 42501 e transporte não repetem nem reenviam modelo.
+
+A prova HTTP remota final passou quatro fases, incluindo bytes/corrupção de mesmo tamanho, POST/readback/replay/direct-denial, pai público com herança e negação de outro job/anon. Depois houve timeout na ponte de metadados. Isso não constitui PASS da suíte HTTP completa. Corridas reais, CI final e publicação permanecem gates abertos. Produção permanece intocada no baseline `69eedd46`; zero objetos/alocações já foram conferidos pelo root, mas nova conferência antes do rollout é obrigatória. Main remoto atual só usa o adapter no purger; não há produtor retain/read ativo. Fechar admissão pelo controle existente durante rollout, preservando expurgo; se aparecer objeto anterior, parar e reconciliar/purgar por contrato legítimo antes da barreira. RLS sozinho não invalida cache antigo. Etapa 20/3Q aberta, sem promoção nativa ou release.
