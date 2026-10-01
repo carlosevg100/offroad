@@ -10,7 +10,7 @@ O schema de linhagem conserva ambos os campos novos ao recuperar histórico. Cha
 
 ## Limite e dependências
 
-Este corte entrega a fronteira efetiva de tentativa e o gancho de persistência; não liga ainda os seis produtores à captura nativa e não fecha 3Q. Nenhum prompt, schema body, snippet ou documento é copiado para telemetria. A próxima receita persistente precisa fixar componentes privados, referências retidas e versões de transformação; o writer nativo precisa validar fechamento e recibos, com replay da revisão exata. Hash sozinho não confere direito, retenção nem recuperação. Não há migração, novo grant, flag ou mudança de rota.
+Este corte entrega a fronteira efetiva de tentativa e o gancho de persistência; não liga ainda os seis produtores à captura nativa e não fecha 3Q. Nenhum prompt, schema body, snippet ou documento é copiado para telemetria. A próxima receita persistente precisa fixar componentes privados, referências retidas e versões de transformação; o writer nativo precisa validar fechamento e recibos, com replay da revisão exata. O deadline local não cancela uma gravação remota já iniciada: eventual recibo tardio não prova envio nem sucesso. Hash sozinho não confere direito, retenção nem recuperação. Não há migração, novo grant, flag ou mudança de rota.
 
 ## Verificação e controles
 
