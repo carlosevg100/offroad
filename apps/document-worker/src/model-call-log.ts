@@ -68,6 +68,7 @@ export function safeSuccessfulModelCall(call: {
   attempts?: unknown;
   costUsd?: unknown;
   latencyMs?: unknown;
+  processingDecisionId?: unknown;
 }) {
   return {
     provider: closed(call.provider, providers),
@@ -79,6 +80,7 @@ export function safeSuccessfulModelCall(call: {
     attemptCount: Array.isArray(call.attempts) ? Math.min(call.attempts.length, 8) : null,
     costUsd: boundedNumber(call.costUsd, false, 10_000),
     latencyMs: boundedNumber(call.latencyMs, true, 86_400_000),
+    ...(call.processingDecisionId !== undefined ? {processingDecisionId: uuid(call.processingDecisionId)} : {}),
   };
 }
 
@@ -128,6 +130,7 @@ function providerFailureCategory(call: GatewayCallLog): "timeout" | "rate_limit"
 /** Additive only: old persisted calls retain their exact projection shape. */
 function retryTelemetry(call: GatewayCallLog) {
   return {
+    ...(call.processingDecisionId !== undefined ? {processingDecisionId: uuid(call.processingDecisionId)} : {}),
     ...(call.retryOrdinal !== undefined ? {retryOrdinal: boundedNumber(call.retryOrdinal, true, 1)} : {}),
     ...(call.isSameModelRepair !== undefined ? {isSameModelRepair: call.isSameModelRepair === true} : {}),
     ...(call.usedProviderFallback !== undefined ? {usedProviderFallback: call.usedProviderFallback === true} : {}),

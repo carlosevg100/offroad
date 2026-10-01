@@ -185,6 +185,10 @@ export type GatewayResult<T> = {
   acceptedInvocation?: GatewayAcceptedInvocation;
   requestId?: string;
   attempts: Array<{
+    invocationId?: string;
+    previousInvocationId?: string;
+    adapterRequestFingerprint?: string;
+    processingDecisionId?: string;
     provider: Provider;
     model: string;
     outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected";
@@ -216,7 +220,7 @@ export type ValidationIssueDiagnostic = {
 
 export type GatewayCallLog = {
   invocationId: string;
-  /** Present only on a bounded same-model repair; identifies the rejected attempt it repairs. */
+  /** Immediate predecessor on a repair or provider fallback, including a denied route. */
   previousInvocationId?: string;
   /** SHA-256 of the exact content-free repair guidance sent to the model. */
   repairGuidanceFingerprint?: string;
@@ -255,6 +259,8 @@ export type GatewayCallLog = {
   schemaName: string;
   dataClassification?: DataHandlingContext["classification"];
   providerPolicyVersion?: string;
+  /** Actual SQL route decision identity; not proof of a request/recipe binding. */
+  processingDecisionId?: string;
   metadata?: Record<string, string>;
   providerError?: ProviderErrorDiagnostic;
   validationIssues?: ValidationIssueDiagnostic[];

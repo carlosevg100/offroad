@@ -74,13 +74,20 @@ export type ModelGatewayConfig = {
  * one its call log carries; the reservation is the budget exposure this gateway holds for it: the
  * calibrated upper bound of the complete adapter request (`conservativeTextReservationUsd`).
  */
-export type GatewayAttempt = {
+export type GatewayAttempt = Readonly<{
+  adapterInputVersion: "gateway-adapter-input.v1";
+  task: TaskKind;
+  schemaName: string;
+  requestFingerprint: string;
+  inputFingerprint: string;
+  promptFingerprint: string;
+  previousInvocationId?: string;
   invocationId: string;
   retryOrdinal: number;
   isSameModelRepair: boolean;
   usedProviderFallback: boolean;
   reservationUsd: number;
-};
+}>;
 
 /** No prompt, document, schema body or cache key leaves this boundary. */
 export type GatewayInputAttestation = Readonly<{
@@ -184,15 +191,15 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       const promptFingerprint = effective.promptFingerprint;
 
       const repairLineage = isSameModelRepair && repairGuidance ? {
-        ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {}),
         repairGuidanceFingerprint: fingerprint(repairGuidance),
         ...(pendingRepairIssueCodeFingerprint ? {repairValidationIssueCodeFingerprint: pendingRepairIssueCodeFingerprint} : {}),
       } : {};
       const adapterRequest = effective.adapterRequest;
       const adapterRequestFingerprint = effective.requestFingerprintV1;
       const attemptTelemetry: {retryOrdinal: number; isSameModelRepair: boolean; usedProviderFallback: boolean;
-        adapterRequestFingerprint: string; inputAttestationReceiptId?: string} =
-        {retryOrdinal, isSameModelRepair, usedProviderFallback, adapterRequestFingerprint};
+        adapterRequestFingerprint: string; previousInvocationId?: string; processingDecisionId?: string; inputAttestationReceiptId?: string} =
+        {retryOrdinal, isSameModelRepair, usedProviderFallback, adapterRequestFingerprint,
+          ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {})};
       assertFits(ref, adapterRequest);
       // The reservation is computed once per attempt: before the live decision when there is one,
       // so the authority reserves the same exposure this gateway charges, otherwise where it was.
@@ -211,10 +218,18 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         if (request.outputMode !== "prompted_json") resources.push("schema_cache");
         if (input.some(part => part.type !== "text")) resources.push("inline_document");
         const decision = await config.processingEligibility({provider: ref.provider, model: ref.model, resources, context: request.dataHandling,
-          attempt: {invocationId, ...attemptTelemetry, reservationUsd: reserveAttempt()}});
+          attempt: Object.freeze({adapterInputVersion: "gateway-adapter-input.v1", task: request.task, schemaName: request.schemaName,
+            requestFingerprint: adapterRequestFingerprint, inputFingerprint, promptFingerprint,
+            invocationId, retryOrdinal, isSameModelRepair, usedProviderFallback,
+            ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {}),
+            reservationUsd: reserveAttempt()})});
+        if (decision.decisionId !== undefined) {
+          if (!z.uuid().safeParse(decision.decisionId).success) throw new ModelGatewayError("invalid processing decision identity", "data_policy_violation");
+          attemptTelemetry.processingDecisionId = decision.decisionId;
+        }
         providerPolicyVersion = decision.policyVersion;
         if (!decision.allowed) {
-          attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: decision.reasons.join(","), ...attemptTelemetry});
+          attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: decision.reasons.join(","), ...attemptTelemetry});
           emit(config, {request, ref, invocationId, ...repairLineage, costUsd: 0, latencyMs: 0,
             usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette: false,
             outcome: "policy_rejected", promptFingerprint, inputFingerprint,
@@ -238,7 +253,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         });
         providerPolicyVersion = policyDecision.policyVersion ?? undefined;
         if (!policyDecision.allowed) {
-          attempts.push({provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: policyDecision.reasons.join(","), ...attemptTelemetry});
+          attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "policy_rejected", message: policyDecision.reasons.join(","), ...attemptTelemetry});
           emit(config, {
             request,
             ref,
@@ -333,7 +348,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           throw error;
         }
         const providerError = providerErrorDiagnostic(error);
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error), ...attemptTelemetry});
+        attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error), ...attemptTelemetry});
         spent.calls += 1;
         spent.unknownCostCalls += 1;
         emit(config, {
@@ -370,7 +385,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       spent.calls += fromCassette ? 0 : 1;
 
       if (response.stopReason === "refusal") {
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "refusal", ...attemptTelemetry});
+        attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "refusal", ...attemptTelemetry});
         emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
         previousAttemptInvocationId = invocationId;
         continue;
@@ -404,7 +419,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         const message = truncated
           ? "provider stopped at the output-token limit before completing the structured response"
           : parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
-        attempts.push({provider: ref.provider, model: ref.model, outcome: "invalid_output", message, ...attemptTelemetry});
+        attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "invalid_output", message, ...attemptTelemetry});
         lastFailureWasTruncation = truncated;
         const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues: allowedValues ?? []})));
         if (!truncated && !isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
@@ -435,6 +450,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           return {path, code, message: `Deterministic validation failed: ${code}.`};
         });
         attempts.push({
+          invocationId,
           provider: ref.provider,
           model: ref.model,
           outcome: "invalid_output",
@@ -465,7 +481,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         schemaName: request.schemaName, retryOrdinal, isSameModelRepair, usedProviderFallback, fromCassette,
         ...(attemptTelemetry.inputAttestationReceiptId ? {inputAttestationReceiptId: attemptTelemetry.inputAttestationReceiptId} : {}),
       });
-      attempts.push({provider: ref.provider, model: ref.model, outcome: "ok", ...attemptTelemetry});
+      attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "ok", ...attemptTelemetry});
       emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint, providerPolicyVersion});
       previousAttemptInvocationId = invocationId;
       const result: GatewayResult<z.infer<TSchema>> = {
@@ -521,6 +537,7 @@ function emit(
     outcome: GatewayCallLog["outcome"];
     adapterRequestFingerprint?: string;
     inputAttestationReceiptId?: string;
+    processingDecisionId?: string;
     promptFingerprint: string;
     inputFingerprint: string;
     outputFingerprint: string;
@@ -559,6 +576,7 @@ function emit(
   };
   if (entry.adapterRequestFingerprint) log.adapterRequestFingerprint = entry.adapterRequestFingerprint;
   if (entry.inputAttestationReceiptId) log.inputAttestationReceiptId = entry.inputAttestationReceiptId;
+  if (entry.processingDecisionId) log.processingDecisionId = entry.processingDecisionId;
   if (entry.previousInvocationId) log.previousInvocationId = entry.previousInvocationId;
   if (entry.repairGuidanceFingerprint) log.repairGuidanceFingerprint = entry.repairGuidanceFingerprint;
   if (entry.validationIssueCodeFingerprint) log.validationIssueCodeFingerprint = entry.validationIssueCodeFingerprint;

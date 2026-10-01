@@ -97,3 +97,13 @@ Produção recebeu o SQL exato das três migrações, com MD5 conferido pelo exe
 Catálogos/journals e decisões foram reconciliados: produção 3051 objetos, staging 3112, zero erros nos dois checkers; 42 políticas/triggers dinâmicos têm âncoras explícitas. Os 18 testes unitários do checker passaram. Tipos web foram regenerados da produção (+127 linhas). A admissão em produção permanece suspensa (enabled=false), com estado anterior true e política 485402d6… preservados para restauração CAS somente pelo executor principal após deploy no commit exato. Não restaurar controles nesta preparação.
 
 Merge, CI final reconciliada, web e worker no commit mesclado e verificação final continuam pendentes. Produção recebeu DDL/Edge, mas o incremento não tem completion. Etapa 20/3Q permanece aberta; sem ativação M07, recuperação histórica, seal ou release, e sem início das etapas 21–24.
+
+## 2026-10-01: transporte de autoridade por tentativa na mesma onda
+
+Baseline publicada fdf209a2: serviço de corpos/POST, três journals de produção, HTTP/SDK/races, CI main, web, ECS510 e boot/23 artefatos verificados; admissão original restaurada. Registros anteriores de pendência são históricos.
+
+Delta material desta revisão de onda: GatewayAttempt imutável com hashes efetivos e linhagem, identity decisionId SQL preservada no worker, projeções explícitas e schemas fechados atualizados. TRUST-AI-01/TRUST-SDLC-01: não incluir conteúdo no DTO/log, não permitir callback mudar hashes, não fabricar recibo para negativa, não confundir ID de decisão de rota com vínculo de receita. Sem alteração de grants/RLS, DDL, credenciais, egress, endpoints ou controles de retenção. A revisão segue a cadência da onda e se renova quando houver mudança material, sem janela artificial de sete dias.
+
+Novos negativos e regressões estão em attempt-authority.test.ts, provider-processing.test.ts e model-call-log.test.ts. O próximo incremento SQL ainda deve fechar ledger/inputv2, menor prazo ancestral por recurso e antialtaho v1; este transporte não afirma essas garantias. Gate Node24 quatro fases44/44 e revisão independente passaram. CI, merge e deploy continuam necessários ao completion.
+
+O gate governado inicial da PR861 recusou38predecessores legítimos de fallback pelo pressuposto repair-only. A correção mantém negação de ID forjado/cross-operation, predecessor não imediato/exitoso, guidance fora de repair e lineage em primary/preflight. Testes negativos do avaliador foram ampliados; nova CI completa é obrigatória. Sem mudança de autorização/DDL ou exceção de promoção paga.

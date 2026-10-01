@@ -32,6 +32,23 @@ const call: GatewayCallLog = {
 };
 
 describe("modelCallLogDetail", () => {
+  it("preserves legacy projection shapes without a processing decision", () => {
+    for (const projected of [modelCallLogDetail("20000000-0000-4000-8000-000000000002", call), safeModelAttemptDiagnostics([call])[0], safeSuccessfulModelCall(call)]) {
+      expect(projected).not.toHaveProperty("processingDecisionId");
+    }
+  });
+  it("projects a real processing decision through operational, failure and success diagnostics", () => {
+    const decision = {...call, processingDecisionId: "10000000-0000-4000-8000-ABCDEF000001"};
+    for (const projected of [modelCallLogDetail("20000000-0000-4000-8000-000000000002", decision), safeModelAttemptDiagnostics([decision])[0], safeSuccessfulModelCall(decision)]) {
+      expect(projected).toHaveProperty("processingDecisionId", "10000000-0000-4000-8000-abcdef000001");
+    }
+  });
+  it.each(["private-user-content", "10000000-0000-4000-0000-000000000001", null])("sanitizes malformed processing decision identities in every projection (%s)", value => {
+    const decision = {...call, processingDecisionId: value} as GatewayCallLog;
+    const projected = [modelCallLogDetail("20000000-0000-4000-8000-000000000002", decision), safeModelAttemptDiagnostics([decision])[0], safeSuccessfulModelCall(decision)];
+    for (const result of projected) expect(result).toHaveProperty("processingDecisionId", null);
+    expect(JSON.stringify(projected)).not.toContain("private-user-content");
+  });
   it("binds the call to its job and excludes open-ended metadata and diagnostic messages", () => {
     const detail = modelCallLogDetail("20000000-0000-4000-8000-000000000002", call);
     expect(detail).toMatchObject({

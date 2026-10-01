@@ -325,6 +325,41 @@ describe("intent router promotion gate", () => {
       },
     }).passed).toBe(true);
 
+    const fallbackSpend = {costUsd: fallbackMeasured, calls: fallbackCalls.length, unknownCostCalls: 1,
+      budgetExposureUsd: fallbackMeasured + primaryReservation};
+    const boundFallback = {...fallbackSuccess, previousInvocationId: primaryError.invocationId};
+    expect(verifyIntentRouterCallEvidence({observations: [fallbackRun], calls: [primaryError, boundFallback, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: fallbackSpend}).passed).toBe(true);
+    for (const predecessor of ["forged-invocation", observationCalls[1]!.invocationId, preflightCalls[0]!.invocationId, ""]) {
+      const forgedFallback = {...boundFallback, previousInvocationId: predecessor};
+      const rejected = verifyIntentRouterCallEvidence({observations: [fallbackRun], calls: [primaryError, forgedFallback, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: fallbackSpend});
+      expect(rejected.passed).toBe(false);
+      expect(rejected.issues).toEqual(expect.arrayContaining([expect.stringContaining("fallback_predecessor_mismatch")]));
+    }
+    const guidanceOnFallback = {...boundFallback, repairGuidanceFingerprint: "a".repeat(64)};
+    expect(verifyIntentRouterCallEvidence({observations: [fallbackRun], calls: [primaryError, guidanceOnFallback, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: fallbackSpend}).issues)
+      .toEqual(expect.arrayContaining([expect.stringContaining("unexpected_repair_lineage")]));
+    const primaryWithPredecessor = {...observationCalls[0]!, previousInvocationId: observationCalls[1]!.invocationId};
+    expect(verifyIntentRouterCallEvidence({observations: [run], calls: [primaryWithPredecessor, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: spent}).issues)
+      .toEqual(expect.arrayContaining([expect.stringContaining("unexpected_repair_lineage")]));
+    const preflightWithPredecessor = preflightCalls.map((entry, index) => index === 0 ? {...entry, previousInvocationId: observationCalls[0]!.invocationId} : entry);
+    expect(verifyIntentRouterCallEvidence({observations: [run], calls: [...observationCalls, ...preflightWithPredecessor], providerPreflight, gatewaySpent: spent}).issues)
+      .toEqual(expect.arrayContaining([expect.stringContaining("unexpected_repair_lineage:preflight")]));
+
+    // Real gateway sequence: primary schema rejection, bounded repair rejection,
+    // then provider fallback with ordinal zero and the immediate repair predecessor.
+    const failedRepair = {...repairedRoute, outcome: "invalid_output" as const};
+    const afterRepairFallback = {...fallbackSuccess, previousInvocationId: failedRepair.invocationId};
+    const afterRepairCalls = [rejectedRoute, failedRepair, afterRepairFallback, observationCalls[1]!, ...preflightCalls];
+    const afterRepairTotal = afterRepairCalls.reduce((sum, entry) => sum + entry.costUsd, 0);
+    const afterRepairRun = {...fallbackRun, routeAttemptCount: 3, routeLatencyMs: 50,
+      routeCostUsd: rejectedRoute.costUsd + failedRepair.costUsd + afterRepairFallback.costUsd,
+      costUsd: rejectedRoute.costUsd + failedRepair.costUsd + afterRepairFallback.costUsd + observationCalls[1]!.costUsd};
+    const afterRepairSpend = {costUsd: afterRepairTotal, calls: afterRepairCalls.length, unknownCostCalls: 0, budgetExposureUsd: afterRepairTotal};
+    expect(verifyIntentRouterCallEvidence({observations: [afterRepairRun], calls: afterRepairCalls, providerPreflight, gatewaySpent: afterRepairSpend}).passed).toBe(true);
+    const skippedRepairFallback = {...afterRepairFallback, previousInvocationId: rejectedRoute.invocationId};
+    expect(verifyIntentRouterCallEvidence({observations: [afterRepairRun], calls: [rejectedRoute, failedRepair, skippedRepairFallback, observationCalls[1]!, ...preflightCalls], providerPreflight, gatewaySpent: afterRepairSpend}).issues)
+      .toEqual(expect.arrayContaining([expect.stringContaining("fallback_predecessor_mismatch")]));
+
     const fallbackError: GatewayCallLog = {
       ...fallbackSuccess, invocationId: "route-fallback-error", outcome: "error", costStatus: "unknown", costUsd: 0,
       usage: {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0}, outputFingerprint: "e".repeat(64),
