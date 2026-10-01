@@ -27,7 +27,17 @@ function fixture() {
   const info = vi.fn().mockResolvedValue({data: {id: id(7), version: scope.storageVersion, bucketId: allocation.bucket, name: allocation.path, isVersioned: false}, error: null});
   const download = vi.fn().mockResolvedValue({data: new Blob([canonical]), error: null});
   const from = vi.fn().mockReturnValue({upload, info, download});
-  const client = {rpc, storage: {from}} as unknown as SupabaseClient;
+  const invoke = vi.fn(async (_name: string, command: {body: {allocationId: string; kind: string}; headers: Record<string, string>}) => {
+    expect(command.body).toEqual({allocationId: allocation.allocationId, kind: "public_source"});
+    expect(command.headers["x-offroad-job-id"]).toBe(job.jobId);
+    expect(command.headers["x-offroad-capability"]).toBe(job.capabilityToken);
+    const current = replies.worker_read_capital_public_payload_v1 as typeof scope;
+    const r = await download();
+    return {...r, response: new Response(null, {headers: {"content-type": "application/octet-stream", "cache-control": "no-store",
+      "x-offroad-allocation-id": current.allocationId, "x-offroad-object-id": current.storageObjectId, "x-offroad-storage-version": current.storageVersion,
+      "x-offroad-payload-sha256": current.payloadFingerprint, "x-offroad-byte-length": String(current.byteLength)}})};
+  });
+  const client = {rpc, functions: {invoke}, storage: {from}} as unknown as SupabaseClient;
   return {replies, rpc, upload, download, from, open: () => openCapitalPublicCaptureAdapter(client, job, () => now)};
 }
 
@@ -75,7 +85,7 @@ describe("capital public delivery admission", () => {
   });
   it("binds reread to the allocation and deadlines returned by retention", async () => {
     const f = fixture(); f.replies.worker_read_capital_public_payload_v1 = {...scope, allocationId: id(20), path: `${id(9)}/${id(20)}/payload.json`};
-    await expect((await f.open()).deliver(request)).rejects.toThrow("receipt mismatch"); expect(f.download).toHaveBeenCalledTimes(1);
+    await expect((await f.open()).deliver(request)).rejects.toThrow("scope mismatch"); expect(f.download).toHaveBeenCalledTimes(1);
   });
   it("rejects retained bytes whose hash differs from the captured delivery", async () => {
     const f = fixture(); f.replies.worker_capture_capital_project_delivery_v1 = {...delivery, payloadFingerprint: "f".repeat(64)};

@@ -122,7 +122,7 @@ class RetentionStorage:
         return None if output is None else json.loads(output.splitlines()[-1])
 
     def request(self, method, path, body=None, authenticated=True, job_headers=False, content_type='application/json'):
-        headers = {'apikey': self.key, 'Content-Type': content_type, 'Cache-Control': 'no-store'}
+        headers = {'x-offroad-workspace': ORG, 'apikey': self.key, 'Content-Type': content_type, 'Cache-Control': 'no-store, private, max-age=0'}
         if authenticated:
             headers['Authorization'] = 'Bearer ' + self.jwt
         if job_headers:
@@ -130,8 +130,10 @@ class RetentionStorage:
         request = Request(self.api + path, data=body, headers=headers, method=method)
         try:
             with self.opener.open(request, timeout=15) as response:
+                self.last_response_headers = dict(response.headers)
                 return response.status, response.read()
         except HTTPError as error:
+            self.last_response_headers = dict(error.headers)
             return error.code, error.read()
 
     def login(self):
@@ -226,17 +228,48 @@ select jsonb_build_object('binding',binding,'rights',rights) from retained_licen
 
     def upload(self, allocation, body=None):
         body = allocation['canonicalPayload'].encode('utf8') if body is None else body
-        status, response = self.request('POST', '/storage/v1/object/' + object_path(allocation), body)
+        status, response = self.request('POST', '/storage/v1/object/' + object_path(allocation), body, job_headers=True)
         if status not in (200, 201):
             raise AssertionError('Actual Storage upload failed: HTTP ' + str(status))
-        # Independently re-download; a successful INSERT/RPC is not proof of bytes.
-        storage = self.storage_identity(allocation)
-        version = quote(storage['version'], safe='')
-        status, observed = self.request('GET', '/storage/v1/object/authenticated/' + object_path(allocation)
-            + '?versionId=' + version + '&cacheNonce=' + str(uuid.uuid4()))
-        if status != 200 or observed != body:
-            raise AssertionError('Storage did not return the uploaded bytes exactly')
+        # All byte reads use POST mediation; authenticated Storage GET is denied.
+        observed = self.physical_post(allocation)
+        if observed != body:
+            raise AssertionError('Mediated POST did not return uploaded bytes exactly')
         return observed
+
+    def physical_post(self, allocation, kind='public_source', denied=False):
+        # Same exact endpoint and JWT across authorization/revocation; no nonce.
+        status, observed = self.request('POST', '/functions/v1/capital-body-read',
+            json.dumps({'allocationId': allocation['allocationId'], 'kind': kind}).encode(), job_headers=True)
+        if denied:
+            if status not in (400,401,403,404):
+                raise AssertionError('Repeated mediated POST released denied bytes')
+            return None
+        if status != 200:
+            raise AssertionError('Mediated POST authorized byte read failed')
+        headers = {key.lower(): value for key,value in self.last_response_headers.items()}
+        if headers.get('content-type','').split(';')[0] != 'application/octet-stream' or 'no-store' not in headers.get('cache-control',''):
+            raise AssertionError('Mediated POST returned unsafe content/cache headers')
+        if headers.get('x-offroad-allocation-id') != allocation['allocationId'] or headers.get('x-offroad-payload-sha256') != allocation['payloadFingerprint'] or headers.get('x-offroad-byte-length') != str(allocation['byteLength']):
+            raise AssertionError('Mediated POST changed physical scope headers')
+        uuid.UUID(headers['x-offroad-object-id'])
+        if not headers.get('x-offroad-storage-version') or digest(observed) != allocation['payloadFingerprint'] or len(observed) != allocation['byteLength']:
+            raise AssertionError('Mediated POST changed physical byte identity')
+        return observed
+
+    def direct_reads_denied(self, allocation):
+        scoped = object_path(allocation)
+        cases = [('GET','/storage/v1/object/authenticated/' + scoped,None),
+                 ('HEAD','/storage/v1/object/authenticated/' + scoped,None),
+                 ('GET','/storage/v1/object/info/authenticated/' + scoped,None),
+                 ('HEAD','/storage/v1/object/info/authenticated/' + scoped,None),
+                 ('GET','/storage/v1/object/info/' + scoped,None),
+                 ('HEAD','/storage/v1/object/info/' + scoped,None),
+                 ('POST','/storage/v1/object/sign/' + scoped,json.dumps({'expiresIn':60}).encode())]
+        for method,path,payload in cases:
+            status,_ = self.request(method,path,payload,job_headers=True)
+            if status not in (400,401,403,404):
+                raise AssertionError('Direct Storage read/info/head/sign exposed retained bytes')
 
     def storage_identity(self, allocation):
         return json.loads(self.sql("select jsonb_build_object('id',id,'version',version) from storage.objects where bucket_id="
@@ -264,7 +297,7 @@ select jsonb_build_object('binding',binding,'rights',rights) from retained_licen
         object_path(result)
         return result
 
-    def erase(self, ticket):
+    def erase(self, ticket, verify_catalogue=True):
         status, body = self.request('DELETE', '/storage/v1/object/' + BUCKET,
             json.dumps({'prefixes': [ticket['path']]}).encode())
         if status != 200 or not isinstance(json.loads(body), list):
@@ -275,6 +308,10 @@ select jsonb_build_object('binding',binding,'rights',rights) from retained_licen
         status, body = self.request('GET', '/storage/v1/object/info/' + object_path(ticket))
         if not missing_object(status, body):
             raise AssertionError('Exact Storage info did not prove404 after DELETE: HTTP ' + str(status))
+        if verify_catalogue:
+            self.assert_catalogue_absent(ticket)
+
+    def assert_catalogue_absent(self, ticket):
         remaining = self.sql('select count(*) from storage.objects where bucket_id='
             + literal(BUCKET) + ' and name=' + literal(ticket['path']) + ';')
         if remaining != '0':
@@ -332,9 +369,12 @@ select jsonb_build_object('binding',binding,'rights',rights) from retained_licen
                 raise AssertionError('Lost commit response created another receipt')
             if self.counts(allocation) != {'receipt': 1, 'erasure': 0, 'object': 1}:
                 raise AssertionError('Replay duplicated receipt/object')
-            print('physical_upload_download_digest_size_exact_replay: PASS')
+            self.physical_post(allocation)
+            self.direct_reads_denied(allocation)
+            print('physical_upload_mediated_post_digest_size_exact_replay_direct_get_denied: PASS')
             self.revoke(delivery)
             self.read(receipt['retainedPayloadId'], ('42501', 'capital_capture_retention_denied'))
+            self.physical_post(allocation, denied=True)
             status, body = self.request('GET', '/storage/v1/object/authenticated/' + object_path(allocation)
                 + '?cacheNonce=' + str(uuid.uuid4()))
             if status == 200 or body == observed:
@@ -369,7 +409,7 @@ select jsonb_build_object('binding',binding,'rights',rights) from retained_licen
 update public.processing_jobs set status='cancelled',capability_sha256=null,lease_expires_at=null,leased_by=null where id='{self.job}' and organization_id='{ORG}';""")
             self.clean(orphan, allocation)
             print('uploaded_uncommitted_orphan_erased_after_job_cancel_membership_revocation: PASS')
-            print('capital_public_retention_storage: PASS (real HTTP bytes/delete/404; local disposable stack only)')
+            print('capital_public_retention_storage: PASS (real POST bytes/direct-GET denial/delete/404; local disposable stack only)')
         finally:
             self.restore_control()
 

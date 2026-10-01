@@ -3255,3 +3255,9 @@ Os 35 objetos de policy e trigger restantes são gerados pelo laço SQL da migra
 - `trigger:private.capital_public_retained_payloads.capital_public_retained_payloads_audit`
 - `trigger:private.capital_public_retained_payloads.capital_public_retained_payloads_immutable`
 - `trigger:private.capital_public_retention_policies.capital_public_retention_policies_immutable`
+
+## 2026-10-01: serviço de corpos e barreira física de leitura
+
+As sete tabelas privadas de corpos, wrappers worker, guards e wakes entram como preservação aditiva de referências, direitos, prazo e auditoria, com acesso direto negado. O transporte consumer GET/info/HEAD/sign de capital-input-capture é substituído por capital-body-read POST autenticado e reautorizado; o purger preserva lease/info/delete. Upload das duas famílias exige job/capability exatos. Não existe produtor M07 ou recuperação histórica ativada.
+
+Migrações canônicas de produção: 20261001205206_capital_body_retention.sql, 20261001205251_typedbody_storage_job_authority.sql, 20261001205326_capital_body_server_read_boundary.sql. As fatias de staging permanecem no journal próprio; SQL idêntico conferido sem reaplicação. Catálogo produção 3051/staging 3112, decisões e 42 âncoras de políticas/triggers dinâmicos reconciliadas; checker de ambos com zero erros e 18 unidades PASS. Tipos são agora da produção. Edge produção versão 1 ACTIVE/JWT/source SHA conferidos; controle de admissão suspenso até deploy exato, sob restauração CAS exclusiva do executor principal. CI final/merge/deploy continuam gates; etapa 20 aberta.

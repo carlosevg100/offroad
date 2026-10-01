@@ -4092,3 +4092,33 @@ Migrações instaladas e conferidas em produção (`20260929135457`, `2026092913
 ## Etapa 20 / 3Q: retenção do conteúdo público em validação, 30/09/2026
 
 O incremento acrescenta prova de Storage ativo à base 3Q já publicada na PR 854/main `1ce590bc7d801de7c2d4da07f8c10ab65bbb35f3`. Testes do worker cobrem upload exato, versão, hash, leitura após revalidação, replay e purge sem GET de bytes. O SQL e a CI descartável acrescentam negativos de tenant, direito, lease, prazo, revogação e corrida. `pnpm check` completo, CI de banco com Storage real, staging, produção e deploy ainda são gates pendentes; este registro não é completion. Ver `docs/build/arcabouco/etapa-20-3q-retencao.md`.
+
+## Etapa 20 / 3Q: serviço de corpos retidos em validação, 01/10/2026
+
+Base publicada: PR 859/main `69eedd46aee6ac9716bc13093d8f5c009113fcd0`, Quality/Security de main e web/worker no mesmo commit conferidos no completion externo. O incremento atual adiciona serviço de contribuição e resposta aceita, limitado ao job original, com bytes privados, direitos de origem e expurgo herdado. O candidato SQL passou em staging com rollback; API física, SDK, concorrência, CI, migrações permanentes e deploys ainda precisam passar. Não é completion nem ativa produtor. Contrato e destinos dos riscos em `docs/build/arcabouco/etapa-20-3q-corpos-retidos.md`. Etapa 20 aberta; 21 a 24 aguardam OK de onda.
+
+## 2026-10-01: etapa 20/3Q, candidato de leitura física mediada
+
+Solução técnica autorizada pelo fundador: POST autenticado no servidor para ambas as famílias do bucket, autoridade SQL antes/depois e negação de GET/info/HEAD/sign diretos. Produção intocada neste corte; etapa 20 permanece aberta. Staging: journals `20261001171939`, `20261001180909`, `20261001185956`; Edge versão 3 com JWT verification ativo e keys modernas padrão servidor.
+
+Evidência executada: SDK real Node24 em staging, 14 verificações PASS; inclui criação humana legítima, retenção/readback/replay, recibo real de input gerado pelo gateway, vínculo da resposta parsed e negações de capability/job/Storage direto na mesma URL POST. O provider adapter é sintético: não comprova egress real ou M07 nativo. Testes novos worker: 41 (24 body, 16 handler, 1 upload público); cinco arquivos focados totalizam 116 PASS. Gate completo final após Python e restauração dos tipos baseline: exit 0, lint/typecheck/test/build 44/44, worker 1049/gateway 180/web 1209 PASS. Log local: `/tmp/offroad-body-server-restored-types-check.log`.
+
+HTTP remoto final passou quatro fases físicas e negativas; depois sofreu timeout na ponte de metadados. Resultado global da suíte HTTP: **não aprovado**. Corridas reais, CI final, journals/catálogo/advisors de produção, merge e implantação web/worker/Edge no commit continuam pendentes. Tipos atuais são baseline de produção; regeneração de novos tipos ocorre somente após aplicação em produção e conferência do catálogo. Relatório externo de testes/revisão: `outputs/etapa-20-2026-10-01-3q-accepted/servico-corpos/EVAL-TESTES-WORKER-E-REVIEW-POST.md` na raiz do workspace.
+
+## 2026-10-01: prova HTTP final e bloqueio de publicação
+
+Após corrigir apenas o timeout e a ordem da ponte de avaliação, a suíte HTTP hospedada encerrou com exit 0 e oito fases PASS, conforme conferência do executor principal. Inclui negação após revogação usando a mesma URL e JWT, e a cadeia completa de expurgo: DELETE físico, INFO 404, ACK e catálogo com zero objetos. A falha histórica de timeout acima fica preservada como evidência da execução anterior; ela foi superada nesta nova execução, sem alterar o SQL instalado ou enfraquecer negativos.
+
+A limpeza SQL foi restrita às fixtures da avaliação e passou. A verificação agregada confirmou zero organizações e usuários sintéticos, alocações e objetos. O controle de retenção mantém o baseline anterior: enabled=true, política d7ae… e updated_at de 2026-09-30. Arquivos temporários de credenciais, ponte e pedidos foram removidos. Edge staging versão 3 e SDK real com 14 checks PASS permanecem evidências válidas. Gate local final em /tmp/offroad-body-server-candidate-final-check.log encerrou exit 0: lint/typecheck/test/build 44/44; worker 1049, gateway 180, web 1209 PASS.
+
+O candidato foi registrado no commit local 487cc047. A publicação na branch feat/capital-body-retention do repositório público carlosevg100/offroad foi rejeitada pela revisão automática, que exige consentimento humano específico para expor o conteúdo novo, mesmo após conferir o destino canônico e a permissão ADMIN. O pedido de consentimento está pendente; não houve push, dispatch ou contorno. CI final, corridas reais, merge, migrações de produção e deploys continuam abertos. Produção permanece no baseline 69eedd46, etapa 20/3Q aberta e etapas 21–24 aguardam OK de onda. A prova HTTP completa não equivale a completion da etapa.
+
+## 2026-10-01: aplicação em produção e preparação do merge
+
+Consentimento específico de publicação recebido do fundador; candidato 12f36a09 publicado na branch canônica. Quality 36923661251 passou os testes funcionais do banco/HTTP/SDK/corridas e o check local da CI; o inventário anterior recusou os carimbos então pendentes, como esperado. E2E estava em execução na conferência. Novo gate completo da branch reconciliada ainda precisa passar antes do merge.
+
+Produção recebeu o SQL exato das três migrações, com MD5 conferido pelo executor principal: 20261001205206_capital_body_retention.sql, 20261001205251_typedbody_storage_job_authority.sql e 20261001205326_capital_body_server_read_boundary.sql. Arquivos foram renomeados para esses carimbos, sem reaplicar SQL de staging nem alterar carimbos anteriores. Edge capital-body-read versão 1 está ACTIVE em produção, JWT ativo e SHA de fonte igual ao repositório. POST anônimo válido negou 403/no-store e RPC anônima negou acesso; nenhuma fixture foi criada em produção.
+
+Catálogos/journals e decisões foram reconciliados: produção 3051 objetos, staging 3112, zero erros nos dois checkers; 42 políticas/triggers dinâmicos têm âncoras explícitas. Os 18 testes unitários do checker passaram. Tipos web foram regenerados da produção (+127 linhas). A admissão em produção permanece suspensa (enabled=false), com estado anterior true e política 485402d6… preservados para restauração CAS somente pelo executor principal após deploy no commit exato. Não restaurar controles nesta preparação.
+
+Merge, CI final reconciliada, web e worker no commit mesclado e verificação final continuam pendentes. Produção recebeu DDL/Edge, mas o incremento não tem completion. Etapa 20/3Q permanece aberta; sem ativação M07, recuperação histórica, seal ou release, e sem início das etapas 21–24.

@@ -37,7 +37,20 @@ function fixture() {
     : {data: {id: id(7), version: "version-one", bucketId: allocation.bucket, name: allocation.path, isVersioned: false}, error: null});
   const download = vi.fn().mockResolvedValue({data: new Blob([canonicalPayload]), error: null});
   const from = vi.fn().mockReturnValue({upload, info, download, remove});
-  const client = createCapitalPublicCaptureStorage({rpc, storage: {from}} as unknown as SupabaseClient, () => instant);
+  const invoke = vi.fn(async () => {
+    let objectId = retained.storageObjectId, version = retained.storageVersion;
+    if (upload.mock.calls.length) {
+      const identity = await info();
+      if (identity.error || !identity.data || identity.data.isVersioned || identity.data.isDeleteMarker) return {error: new Error("server identity unavailable"), data: null};
+      if (identity.data.name !== allocation.path || identity.data.bucketId !== allocation.bucket || !identity.data.id || !identity.data.version) return {error: new Error("server identity mismatch"), data: null};
+      objectId = identity.data.id; version = identity.data.version;
+    }
+    const r = await download(allocation.path, {versionId: version, cacheNonce: "synthetic-server-only"}, {cache: "no-store"});
+    return {...r, response: new Response(null, {headers: {"content-type": "application/octet-stream", "cache-control": "no-store",
+      "x-offroad-allocation-id": allocation.allocationId, "x-offroad-object-id": objectId, "x-offroad-storage-version": version,
+      "x-offroad-payload-sha256": allocation.payloadFingerprint, "x-offroad-byte-length": String(allocation.byteLength)}})};
+  });
+  const client = createCapitalPublicCaptureStorage({rpc, functions: {invoke}, storage: {from}} as unknown as SupabaseClient, () => instant);
   const calls = (name: string) => rpc.mock.calls.filter(([actual]) => actual === name);
   return {client, rpc, replies, upload, info, download, remove, from, calls, advance: (next: number) => {instant = next;}};
 }
@@ -45,7 +58,7 @@ function fixture() {
 describe("capital capture retained bytes", () => {
   it("stores SQL canonical bytes immutably, verifies an actual Storage version, and commits its proof", async () => {
     const f = fixture(); expect(await f.client.retain(input)).toEqual(receipt);
-    expect(f.upload).toHaveBeenCalledWith(allocation.path, Buffer.from(canonicalPayload), {contentType: "application/json", cacheControl: "0", upsert: false});
+    expect(f.upload).toHaveBeenCalledWith(allocation.path, Buffer.from(canonicalPayload), {contentType: "application/json", cacheControl: "0", upsert: false, headers: {"x-offroad-workspace": id(5), "x-offroad-job-id": job.jobId, "x-offroad-capability": job.capabilityToken}});
     expect(f.download).toHaveBeenCalledWith(allocation.path, expect.objectContaining({versionId: "version-one", cacheNonce: expect.any(String)}), {cache: "no-store"});
     expect(f.rpc).toHaveBeenCalledWith("worker_commit_capital_public_payload_v1", expect.objectContaining({p_storage_object_id: id(7), p_storage_version: "version-one", p_verified_sha256: sha(canonicalPayload), p_verified_size: Buffer.byteLength(canonicalPayload)}));
     expect(f.upload.mock.invocationCallOrder[0]).toBeLessThan(f.download.mock.invocationCallOrder[0]!);
@@ -76,7 +89,7 @@ describe("capital capture retained bytes", () => {
   });
   it("requires a real Storage id/version and refuses a versioned object", async () => {
     const f = fixture(); f.info.mockResolvedValue({data: {id: id(7), name: allocation.path, bucketId: allocation.bucket, version: "version-one", isVersioned: true}, error: null});
-    await expect(f.client.retain(input)).rejects.toThrow("identity unavailable"); expect(f.download).not.toHaveBeenCalled();
+    await expect(f.client.retain(input)).rejects.toThrow("server read denied"); expect(f.download).not.toHaveBeenCalled();
   });
   it.each([false, true])("uses the actual SDK info transformation from wire snake_case (versioned=%s)", async (versioned) => {
     const fetch = vi.fn(async () => new Response(JSON.stringify({
@@ -87,7 +100,7 @@ describe("capital capture retained bytes", () => {
     const result = await sdk.storage.from(allocation.bucket).info(allocation.path);
     expect(result.data).toMatchObject({bucketId: allocation.bucket, isVersioned: versioned, isDeleteMarker: false});
     const f = fixture(); f.info.mockResolvedValue(result);
-    if (versioned) await expect(f.client.retain(input)).rejects.toThrow("identity unavailable");
+    if (versioned) await expect(f.client.retain(input)).rejects.toThrow("server read denied");
     else expect(await f.client.retain(input)).toEqual(receipt);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
@@ -222,4 +235,29 @@ describe("capital capture physical purge", () => {
     const f = fixture(); await f.client.purgeOnce("synthetic-worker-token");
     expect(f.download).not.toHaveBeenCalled(); expect(f.info).toHaveBeenCalledTimes(1); expect(f.upload).not.toHaveBeenCalled();
   });
+});
+
+it("real SDK public upload overrides stale shared job headers per call and pins caller authority before await", async () => {
+  let release!: () => void;
+  const hold = new Promise<void>(resolve => {release = resolve;});
+  let prepared!: () => void;
+  const started = new Promise<void>(resolve => {prepared = resolve;});
+  let writes = 0;
+  const sdk = createClient("https://synthetic.supabase.co", "sb_publishable_synthetic", {auth: {persistSession: false, autoRefreshToken: false},
+    global: {headers: {"x-offroad-job-id": id(99), "x-offroad-capability": "stale-shared-job"}, fetch: async (url, options) => {
+      const path = String(url), h = new Headers(options?.headers);
+      if (path.includes("worker_prepare_capital_public_payload_v1")) {prepared(); await hold; return new Response(JSON.stringify(allocation), {headers: {"content-type": "application/json"}});}
+      if (path.includes("/storage/")) {
+        writes++; expect(options?.method).toBe("POST"); expect(h.get("x-offroad-job-id")).toBe(job.jobId);
+        expect(h.get("x-offroad-capability")).toBe(job.capabilityToken); expect(h.get("x-offroad-workspace")).toBe(id(5));
+        return new Response(JSON.stringify({Id: id(7), Key: allocation.path}), {headers: {"content-type": "application/json"}});
+      }
+      if (path.includes("/functions/")) return new Response(canonicalPayload, {headers: {"content-type": "application/octet-stream", "cache-control": "no-store",
+        "x-offroad-allocation-id": allocation.allocationId, "x-offroad-object-id": id(7), "x-offroad-storage-version": "version-one",
+        "x-offroad-payload-sha256": allocation.payloadFingerprint, "x-offroad-byte-length": String(allocation.byteLength)}});
+      return new Response(JSON.stringify(receipt), {headers: {"content-type": "application/json"}});
+    }}});
+  const caller = structuredClone(input), service = createCapitalPublicCaptureStorage(sdk, () => clock);
+  const pending = service.retain(caller); await started; caller.jobId = id(88); caller.capabilityToken = "mutated-caller"; release();
+  expect(await pending).toEqual(receipt); expect(writes).toBe(1);
 });

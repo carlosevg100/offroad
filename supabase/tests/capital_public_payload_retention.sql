@@ -1,6 +1,7 @@
 -- Transactional SQL contract only. storage.objects rows below are metadata fixtures,
 -- NOT physical byte/purge evidence. Real Storage HTTP and worker eval are separate gates.
 begin;
+select set_config('request.jwt.claim.sub','',true);
 \ir support/legacy_workspace_capabilities.sql
 \ir support/legacy_persistent_work_fixture.sql
 \ir support/provider_research_plan_snapshot.sql
@@ -125,6 +126,27 @@ do $$ declare j record; l record; d record; allocated jsonb; replay jsonb; begin
   raise exception 'absent object accepted';
  exception when invalid_parameter_value then null; end;
 end; $$;
+-- A public allocation is not an authenticated-account-wide upload grant either.
+do $$ declare j record;d record;valid_headers jsonb;bad_headers jsonb;begin
+ select * into strict j from pg_temp.capture_job_fixture;select * into strict d from pg_temp.retained_test_fixture;
+ valid_headers:=jsonb_build_object('x-offroad-workspace','20000000-0000-4000-8000-000000000981','x-offroad-job-id',j.job_id,'x-offroad-capability',j.capability);
+ perform set_config('storage.operation','object.upload',true);
+ for bad_headers in select value from jsonb_array_elements(jsonb_build_array('{}'::jsonb,
+ valid_headers-'x-offroad-job-id',valid_headers-'x-offroad-capability',
+ valid_headers||jsonb_build_object('x-offroad-job-id',gen_random_uuid()),
+ valid_headers||jsonb_build_object('x-offroad-capability',repeat('x',64)),
+ valid_headers||jsonb_build_object('x-offroad-workspace','20000000-0000-4000-8000-000000000982'))) loop
+ perform set_config('request.headers',bad_headers::text,true);
+ begin
+ insert into storage.objects(bucket_id,name,metadata,version) values('capital-input-capture',d.result->>'path',jsonb_build_object('size',(d.result->>'byteLength')::bigint,'mimetype','application/json'),'public-rls-rejected');
+ raise exception 'public upload accepted unbound capability';exception when insufficient_privilege then null;end;
+ end loop;
+ perform set_config('request.headers',valid_headers::text,true);
+ begin
+ insert into storage.objects(bucket_id,name,metadata,version) values('capital-input-capture',d.result->>'path',jsonb_build_object('size',(d.result->>'byteLength')::bigint,'mimetype','application/json'),'public-rls-accepted');
+ raise exception 'fixture_rollback' using errcode='P3091';exception when sqlstate 'P3091' then null;end;
+ perform set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000981"}',true);
+end; $$;
 reset role;
 -- Metadata fixture is deliberately privileged and rolled back. It does not store bytes.
 insert into storage.objects(bucket_id,name,metadata,version)
@@ -132,6 +154,27 @@ insert into storage.objects(bucket_id,name,metadata,version)
  from pg_temp.retained_test_fixture;
 update pg_temp.retained_test_fixture f set object_id=o.id from storage.objects o where o.bucket_id='capital-input-capture' and o.name=f.result->>'path';
 set local role authenticated;
+-- The server POST can read back an allocated upload before the immutable receipt.
+-- Direct GET/info/head/sign/copy remain closed even for this exact live job.
+do $$ declare j record;d record;scope jsonb;op text;begin
+ select * into strict j from pg_temp.capture_job_fixture;select * into strict d from pg_temp.retained_test_fixture;
+ scope:=public.worker_read_capital_public_payload_allocation_v1(j.job_id,j.capability,d.allocation_id);
+ if scope->>'schemaVersion'<>'capital-public-storage-scope.v1' or scope->>'state'<>'allocated'
+ or scope->>'storageObjectId' is distinct from d.object_id::text or scope->>'storageVersion'<>'retention-sql-v1'
+ or scope->>'payloadFingerprint' is distinct from d.result->>'payloadFingerprint'
+ or scope->>'path' is distinct from d.result->>'path' or scope->>'byteLength' is distinct from d.result->>'byteLength'
+ or scope->'retainedPayloadId'<>'null'::jsonb or scope?'canonicalPayload' then raise exception 'public allocated physical scope mismatch';end if;
+ begin perform public.worker_read_capital_public_payload_allocation_v1(j.job_id,repeat('x',64),d.allocation_id);raise exception 'public physical scope wrongcap accepted';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_public_payload_allocation_v1(gen_random_uuid(),j.capability,d.allocation_id);raise exception 'public physical scope wrongjob accepted';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_public_payload_allocation_v1(j.job_id,j.capability,gen_random_uuid());raise exception 'public physical scope unknownallocation accepted';exception when insufficient_privilege then null;end;
+ begin perform public.worker_read_capital_body_allocation_v1(j.job_id,j.capability,d.allocation_id);raise exception 'public scope entered typed family';exception when insufficient_privilege then null;end;
+ perform set_config('request.headers',jsonb_build_object('x-offroad-workspace','20000000-0000-4000-8000-000000000981','x-offroad-job-id',j.job_id,'x-offroad-capability',j.capability)::text,true);
+ foreach op in array array['object.get_authenticated','object.get_authenticated_info','object.head_authenticated_info','object.sign','object.copy'] loop
+ perform set_config('storage.operation',op,true);
+ if (select count(*) from storage.objects where bucket_id='capital-input-capture' and name=d.result->>'path')<>0 then raise exception 'public direct Storage read allowed for %',op;end if;
+ end loop;
+ perform set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000981"}',true);
+end; $$;
 do $$ declare j record; d record; r jsonb; replay jsonb; readback jsonb; l record; begin
  select * into strict j from pg_temp.capture_job_fixture; select * into strict d from pg_temp.retained_test_fixture;
  select * into strict l from pg_temp.capture_public_license_fixture;
@@ -144,6 +187,8 @@ do $$ declare j record; d record; r jsonb; replay jsonb; readback jsonb; l recor
  if r->>'state'<>'complete' or replay->>'retainedPayloadId' is distinct from r->>'retainedPayloadId' or replay->>'replayed'<>'true' then raise exception 'receipt/replay failed'; end if;
  readback:=public.worker_read_capital_public_payload_v1(j.job_id,j.capability,(r->>'retainedPayloadId')::uuid);
  if readback->>'storageObjectId' is distinct from d.object_id::text or readback->>'storageVersion'<>'retention-sql-v1' then raise exception 'read receipt mismatch'; end if;
+ readback:=public.worker_read_capital_public_payload_allocation_v1(j.job_id,j.capability,d.allocation_id);
+ if readback->>'state'<>'complete' or readback->>'retainedPayloadId' is distinct from r->>'retainedPayloadId' or readback->>'storageObjectId' is distinct from d.object_id::text then raise exception 'public retained physical scope mismatch';end if;
  replay:=public.worker_prepare_capital_public_payload_v1(j.job_id,j.capability,d.delivery_id,d.request_id,l.payload);
  if replay->>'state'<>'complete' or replay->>'retainedPayloadId' is distinct from r->>'retainedPayloadId' or replay?'canonicalPayload' then raise exception 'prepare committed replay failed'; end if;
  update pg_temp.retained_test_fixture set retained_id=(r->>'retainedPayloadId')::uuid;
@@ -203,6 +248,7 @@ do $$ declare d record; j record; begin
   begin
    perform public.worker_read_capital_public_payload_v1(j.job_id,j.capability,d.retained_id); raise exception 'changed object size read';
   exception when insufficient_privilege then null; end;
+  begin perform public.worker_read_capital_public_payload_allocation_v1(j.job_id,j.capability,d.allocation_id);raise exception 'public server scope changed size accepted';exception when insufficient_privilege then null;end;
   raise exception 'fixture_rollback' using errcode='P3091';
  exception when sqlstate 'P3091' then null; end;
 end; $$;
@@ -217,6 +263,7 @@ do $$ declare d record; j record; begin
  begin
   perform public.worker_read_capital_public_payload_v1(j.job_id,j.capability,d.retained_id); raise exception 'revoked binding read';
  exception when insufficient_privilege then null; end;
+ begin perform public.worker_read_capital_public_payload_allocation_v1(j.job_id,j.capability,d.allocation_id);raise exception 'public server scope revoked binding accepted';exception when insufficient_privilege then null;end;
 end; $$;
 reset role;
 update auth.users set banned_until=clock_timestamp()+interval '1 day' where id='10000000-0000-4000-8000-000000000981';
