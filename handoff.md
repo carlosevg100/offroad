@@ -6135,3 +6135,7 @@ PR 845. Pai editorial fixado na captura, independente da elegibilidade das fonte
 ## Etapa 20 / 3Q: retenção de payload público em validação, 30/09/2026
 
 A fundação 3Q da PR 854 está em produção no commit `1ce590bc7d801de7c2d4da07f8c10ab65bbb35f3`; CI main, web e worker passaram. O incremento corrente adiciona `capital-input-capture`, contratos SQL de licença/prazo/leitura/purge, um adaptador autenticado no worker e testes SQL/HTTP/concorrência em stack descartável. Nada está sendo promovido a `complete` ou release; produtores e recuperação global permanecem para as fatias seguintes do 3Q. O contrato está em `docs/build/arcabouco/etapa-20-3q-retencao.md`; não declarar a fatia fechada antes de CI, staging/produção e deploy. Etapas 21–24 aguardam OK de onda.
+
+## Etapa 20 / 3Q: serviço de corpos retidos em validação, 01/10/2026
+
+Base publicada: PR 859/main `69eedd46aee6ac9716bc13093d8f5c009113fcd0`, Quality/Security de main e web/worker no mesmo commit conferidos no completion externo. O incremento atual adiciona serviço de contribuição e resposta aceita, limitado ao job original, com bytes privados, direitos de origem e expurgo herdado. O candidato SQL passou em staging com rollback; API física, SDK, concorrência, CI, migrações permanentes e deploys ainda precisam passar. Não é completion nem ativa produtor. Contrato e destinos dos riscos em `docs/build/arcabouco/etapa-20-3q-corpos-retidos.md`. Etapa 20 aberta; 21 a 24 aguardam OK de onda.

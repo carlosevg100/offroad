@@ -5411,3 +5411,7 @@ Migrações instaladas e conferidas em produção (`20260929135457`, `2026092913
 ## Etapa 20 / 3Q: retenção do conteúdo público em validação, 30/09/2026
 
 A base 3Q está publicada na PR 854/main `1ce590bc7d801de7c2d4da07f8c10ab65bbb35f3`, com Quality, Security, web e worker no mesmo commit. Este incremento acrescenta alocação de payload público com prazo, bucket privado sem versionamento, leitura sob direito atual e purge independente do job humano. A admissão exige worker com heartbeat e fila saudável; a CI nova verifica Storage físico e corridas de política, binding e purgers. O contrato e os riscos estão em `docs/build/arcabouco/etapa-20-3q-retencao.md`. A migração remota, CI final, merge e deploy deste incremento ainda precisam passar; 3Q e etapa 20 permanecem abertos, e 21–24 aguardam OK de onda.
+
+## Etapa 20 / 3Q: serviço de corpos retidos em validação, 01/10/2026
+
+Base publicada: PR 859/main `69eedd46aee6ac9716bc13093d8f5c009113fcd0`, Quality/Security de main e web/worker no mesmo commit conferidos no completion externo. O incremento atual adiciona serviço de contribuição e resposta aceita, limitado ao job original, com bytes privados, direitos de origem e expurgo herdado. O candidato SQL passou em staging com rollback; API física, SDK, concorrência, CI, migrações permanentes e deploys ainda precisam passar. Não é completion nem ativa produtor. Contrato e destinos dos riscos em `docs/build/arcabouco/etapa-20-3q-corpos-retidos.md`. Etapa 20 aberta; 21 a 24 aguardam OK de onda.

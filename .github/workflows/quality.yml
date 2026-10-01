@@ -182,6 +182,22 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
         run: python3 -B scripts/ci/test-review-regime-concurrency.py
+      - name: Install pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        id: database_deps
+        run: pnpm install --frozen-lockfile
+
       - name: Capital public capture authority and lock concurrency
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -201,6 +217,93 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
           OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
         run: python3 -B scripts/ci/test-capital-public-retention-concurrency.py
+      - name: Capital typed bodies with physical HTTP Storage
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+          OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          umask 077
+          fixture_dir="$(mktemp -d "$RUNNER_TEMP/capital-body-http.XXXXXX")"
+          export OFFROAD_BODY_STORAGE_FIXTURE_FILE="$fixture_dir/fixture.json"
+          cleanup() {
+            test_exit=$?
+            trap - EXIT
+            set +e
+            cleanup_exit=0
+            if [ -f "$OFFROAD_BODY_STORAGE_FIXTURE_FILE" ]; then
+              python3 -B scripts/ci/test-capital-body-retention-storage.py --cleanup-local
+              cleanup_exit=$?
+            fi
+            rm -rf -- "$fixture_dir"
+            if [ "$test_exit" -ne 0 ]; then exit "$test_exit"; fi
+            exit "$cleanup_exit"
+          }
+          trap cleanup EXIT
+          python3 -B scripts/ci/test-capital-body-retention-storage.py --provision-local
+          node scripts/ci/test-capital-body-retention-sdk.mjs --write-accepted-fixture
+          python3 -B scripts/ci/test-capital-body-retention-storage.py
+
+      - name: Capital typed bodies through the real Node24 SDK and gateway
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+          OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          umask 077
+          fixture_dir="$(mktemp -d "$RUNNER_TEMP/capital-body-sdk.XXXXXX")"
+          export OFFROAD_BODY_STORAGE_FIXTURE_FILE="$fixture_dir/fixture.json"
+          cleanup() {
+            test_exit=$?
+            trap - EXIT
+            set +e
+            cleanup_exit=0
+            if [ -f "$OFFROAD_BODY_STORAGE_FIXTURE_FILE" ]; then
+              python3 -B scripts/ci/test-capital-body-retention-storage.py --cleanup-local
+              cleanup_exit=$?
+            fi
+            rm -rf -- "$fixture_dir"
+            if [ "$test_exit" -ne 0 ]; then exit "$test_exit"; fi
+            exit "$cleanup_exit"
+          }
+          trap cleanup EXIT
+          python3 -B scripts/ci/test-capital-body-retention-storage.py --provision-local
+          node scripts/ci/test-capital-body-retention-sdk.mjs --write-accepted-fixture
+          node scripts/ci/test-capital-body-retention-sdk.mjs
+
+      - name: Capital typed body revocation and purge with two real SQL sessions
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+          OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          umask 077
+          fixture_dir="$(mktemp -d "$RUNNER_TEMP/capital-body-races.XXXXXX")"
+          export OFFROAD_BODY_STORAGE_FIXTURE_FILE="$fixture_dir/fixture.json"
+          cleanup() {
+            test_exit=$?
+            trap - EXIT
+            set +e
+            cleanup_exit=0
+            if [ -f "$OFFROAD_BODY_STORAGE_FIXTURE_FILE" ]; then
+              python3 -B scripts/ci/test-capital-body-retention-storage.py --cleanup-local
+              cleanup_exit=$?
+            fi
+            rm -rf -- "$fixture_dir"
+            if [ "$test_exit" -ne 0 ]; then exit "$test_exit"; fi
+            exit "$cleanup_exit"
+          }
+          trap cleanup EXIT
+          python3 -B scripts/ci/test-capital-body-retention-storage.py --provision-local
+          node scripts/ci/test-capital-body-retention-sdk.mjs --write-accepted-fixture
+          python3 -B scripts/ci/test-capital-body-retention-concurrency.py
+
       - name: Execution artifact recovery concurrency
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -283,22 +386,6 @@ jobs:
       # provider. The gold baseline script then runs live against it as a child process with no
       # provider key in its environment, once through to its run record and once with the
       # assurance revoked. No provider key, no network beyond the local stack, synthetic data only.
-      - name: Install pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: 10.32.1
-          run_install: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install dependencies
-        id: database_deps
-        run: pnpm install --frozen-lockfile
-
       - name: Governed evaluation through the worker consumer and the baseline script, with a cassette provider
         env:
           OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}

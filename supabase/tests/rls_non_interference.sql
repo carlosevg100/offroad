@@ -6390,3 +6390,44 @@ do $$declare api_role text;begin
  end loop;
  if not has_function_privilege('authenticated','public.read_institutional_workbook_binding_v1(uuid,text)','EXECUTE') then raise exception 'native_review_binding_missing';end if;
 end $$;
+
+-- Stage 20 / typed retained bodies: API roles cannot turn metadata into a raw
+-- content/history surface. Assert installed FORCE RLS, four explicit false
+-- policies, grants and actual permission-denied reads (including service_role).
+do $$
+declare tab text;api_role text;relation regclass;denied boolean;policy_row record;
+begin
+ foreach tab in array array[
+  'private.capital_body_origins','private.capital_body_source_pins',
+  'private.capital_body_invocation_inputs','private.capital_body_input_components',
+  'private.capital_body_accepted_invocations','private.capital_body_bases',
+  'private.capital_body_retention_wakes'
+ ] loop
+  relation:=tab::regclass;
+  if not exists(select 1 from pg_class where oid=relation and relrowsecurity and relforcerowsecurity)
+   then raise exception 'capital_body_force_rls_missing: %',tab;end if;
+  if (select count(*) from pg_policy where polrelid=relation)<>4
+   or (select array_agg(polcmd::text order by polcmd::text) from pg_policy where polrelid=relation)
+      is distinct from array['a','d','r','w']::text[]
+   then raise exception 'capital_body_four_command_policies_missing: %',tab;end if;
+  for policy_row in select polcmd,pg_get_expr(polqual,polrelid) as qualifier,
+   pg_get_expr(polwithcheck,polrelid) as checker from pg_policy where polrelid=relation loop
+   if (policy_row.polcmd in ('r','w','d') and policy_row.qualifier is distinct from 'false')
+    or (policy_row.polcmd in ('a','w') and policy_row.checker is distinct from 'false')
+    then raise exception 'capital_body_policy_allows_direct_access: %',tab;end if;
+  end loop;
+  foreach api_role in array array['anon','authenticated','service_role'] loop
+   if has_table_privilege(api_role,tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
+    then raise exception 'capital_body_raw_table_grant: %, %',tab,api_role;end if;
+   denied:=false;
+   begin
+    execute format('set local role %I',api_role);
+    execute format('select 1 from %s limit 0',relation);
+   exception when insufficient_privilege then
+    denied:=true;
+   end;
+   reset role;
+   if not denied then raise exception 'capital_body_direct_read_not_denied: %, %',tab,api_role;end if;
+  end loop;
+ end loop;
+end $$;

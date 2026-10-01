@@ -4092,3 +4092,7 @@ Migrações instaladas e conferidas em produção (`20260929135457`, `2026092913
 ## Etapa 20 / 3Q: retenção do conteúdo público em validação, 30/09/2026
 
 O incremento acrescenta prova de Storage ativo à base 3Q já publicada na PR 854/main `1ce590bc7d801de7c2d4da07f8c10ab65bbb35f3`. Testes do worker cobrem upload exato, versão, hash, leitura após revalidação, replay e purge sem GET de bytes. O SQL e a CI descartável acrescentam negativos de tenant, direito, lease, prazo, revogação e corrida. `pnpm check` completo, CI de banco com Storage real, staging, produção e deploy ainda são gates pendentes; este registro não é completion. Ver `docs/build/arcabouco/etapa-20-3q-retencao.md`.
+
+## Etapa 20 / 3Q: serviço de corpos retidos em validação, 01/10/2026
+
+Base publicada: PR 859/main `69eedd46aee6ac9716bc13093d8f5c009113fcd0`, Quality/Security de main e web/worker no mesmo commit conferidos no completion externo. O incremento atual adiciona serviço de contribuição e resposta aceita, limitado ao job original, com bytes privados, direitos de origem e expurgo herdado. O candidato SQL passou em staging com rollback; API física, SDK, concorrência, CI, migrações permanentes e deploys ainda precisam passar. Não é completion nem ativa produtor. Contrato e destinos dos riscos em `docs/build/arcabouco/etapa-20-3q-corpos-retidos.md`. Etapa 20 aberta; 21 a 24 aguardam OK de onda.
