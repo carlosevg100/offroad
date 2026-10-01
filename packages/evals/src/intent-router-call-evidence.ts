@@ -134,9 +134,7 @@ export function verifyIntentRouterCallEvidence(input: {
           validateRepairLineage(call, prior, contract.system, contract.schemaName, contract.schema, operation, index, issues);
         } else {
           if (call.promptFingerprint !== expectedInitialPromptFingerprint) issues.push(`prompt_mismatch:${operation}:${index}`);
-          if (call.previousInvocationId || call.repairGuidanceFingerprint || call.repairValidationIssueCodeFingerprint) {
-            issues.push(`unexpected_repair_lineage:${operation}:${index}`);
-          }
+          validateNonRepairLineage(call, prior, operation, index, issues);
         }
         if ((call.retryOrdinal ?? 0) !== index && !call.usedProviderFallback) issues.push(`retry_ordinal_mismatch:${operation}:${index}`);
         if (index > 0 && calls[index - 1]?.outcome === "ok") issues.push(`attempt_after_success:${operation}:${index}`);
@@ -207,9 +205,7 @@ export function verifyIntentRouterCallEvidence(input: {
         validateRepairLineage(call, matching[index - 1], contract.system, contract.schemaName, contract.schema, `preflight:${row.task}:${row.provider}`, index, issues);
       } else {
         if (call.promptFingerprint !== expectedPromptFingerprint) issues.push(`preflight_prompt_mismatch:${row.task}:${row.provider}:${index}`);
-        if (call.previousInvocationId || call.repairGuidanceFingerprint || call.repairValidationIssueCodeFingerprint) {
-          issues.push(`unexpected_repair_lineage:preflight:${row.task}:${row.provider}:${index}`);
-        }
+        validateNonRepairLineage(call, matching[index - 1], `preflight:${row.task}:${row.provider}`, index, issues);
       }
       if (call.outcome === "ok" && call.model !== row.resolvedModel) issues.push(`preflight_model_mismatch:${row.task}:${row.provider}:${index}`);
       if (call.fromCassette || call.costStatus === "cassette") issues.push(`preflight_cassette_not_paid_evidence:${row.task}:${row.provider}:${index}`);
@@ -296,6 +292,21 @@ function sum(values: readonly number[]): number {
 
 function close(left: number, right: number): boolean {
   return Math.abs(left - right) <= 1e-8;
+}
+
+/** Legacy fallback logs omitted predecessor. A supplied identity must bind the
+ * immediately preceding non-successful attempt in this already-filtered operation. */
+function validateNonRepairLineage(call: GatewayCallLog, prior: GatewayCallLog | undefined,
+  operation: string, index: number, issues: string[]): void {
+  if (call.repairGuidanceFingerprint !== undefined || call.repairValidationIssueCodeFingerprint !== undefined) {
+    issues.push(`unexpected_repair_lineage:${operation}:${index}`);
+  }
+  if (call.previousInvocationId === undefined) return;
+  if (!call.usedProviderFallback) {
+    issues.push(`unexpected_repair_lineage:${operation}:${index}`);
+  } else if (!prior || prior.outcome === "ok" || call.previousInvocationId !== prior.invocationId) {
+    issues.push(`fallback_predecessor_mismatch:${operation}:${index}`);
+  }
 }
 
 function validateRepairLineage(

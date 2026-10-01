@@ -9,3 +9,7 @@ Não há DDL. worker_authorize_provider_processing_v1 continua decidindo rota so
 Gates: denied primary zero sends com fallback positivo e IDs próprios; fingerprints reais iguais aos de attestation/log; snapshot imutável; reparo com prompt distinto e predecessor correto; decisão inválida zero sends; parser SQL allow/deny e local deny sem ID; telemetria hostil não vaza texto; regressões de cassette, orçamento, resultado aceito e gold. Gate completo, CI, merge e web/worker no commit final são necessários ao completion. Sem mudança de comportamento de acesso ou dados em produção; rollback é redeploy do commit anterior.
 
 Etapa20 continua aberta. Nenhum release, captura nativa, leitura histórica ou etapa21 foi ativado.
+
+## Consumidor de evidência governada
+
+A CI inicial detectou 38 unexpected_repair_lineage no ensaio governado com cassette: o avaliador tratava predecessor de fallback como se fosse guidance de reparo. verifyIntentRouterCallEvidence agora aceita a identidade somente no fallback e exige predecessor imediato, não exitoso, da mesma operação filtrada. Primary/preflight com predecessor, ID forjado/outra superfície, salto sobre repair e guidance fora de repair continuam negados. Logs históricos de fallback sem esse campo conservam a verificação existente de topologia/custo/input/prompt; nenhum gate pago é eliminado. Focais20 e typecheckeval PASS; o ensaio governado real precisa passar novamente na CI antes de merge.
