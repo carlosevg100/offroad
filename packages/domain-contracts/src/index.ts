@@ -804,3 +804,4 @@ export * from "./contextual-adoption";
 export * from "./artifact-protocol";
 
 export * from "./review-protocol";
+export * from "./capital-public-capture";
