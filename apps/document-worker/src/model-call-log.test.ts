@@ -10,6 +10,8 @@ const call: GatewayCallLog = {
   model: "claude-sonnet-5",
   effort: "low",
   outcome: "invalid_output",
+  adapterRequestFingerprint: "9".repeat(64),
+  inputAttestationReceiptId: "10000000-0000-4000-8000-000000000099",
   promptFingerprint: "a".repeat(64),
   inputFingerprint: "b".repeat(64),
   outputFingerprint: "c".repeat(64),
@@ -33,6 +35,8 @@ describe("modelCallLogDetail", () => {
   it("binds the call to its job and excludes open-ended metadata and diagnostic messages", () => {
     const detail = modelCallLogDetail("20000000-0000-4000-8000-000000000002", call);
     expect(detail).toMatchObject({
+      adapterRequestFingerprint: "9".repeat(64),
+      inputAttestationReceiptId: "10000000-0000-4000-8000-000000000099",
       job: "20000000-0000-4000-8000-000000000002",
       task: "route_intent",
       provider: "anthropic",
@@ -72,6 +76,8 @@ describe("modelCallLogDetail", () => {
       schemaName: "customer-secret-schema",
       providerError: {name: "customer-secret-error", status: 429, code: "customer-secret-code", type: "customer-secret-type"},
       validationIssues: [{path: "customer.secret.account", code: "customer-secret-code", message: "customer-secret-message"}],
+      adapterRequestFingerprint: "customer-secret-input",
+      inputAttestationReceiptId: "customer-secret-receipt",
       promptFingerprint: "customer-secret-prompt",
       previousInvocationId: "customer-secret-previous-id",
       repairGuidanceFingerprint: "customer-secret-guidance",
@@ -88,6 +94,7 @@ describe("modelCallLogDetail", () => {
 
   it("closes failure codes and spend against forged or future runtime fields", () => {
     expect(safeGatewayFailureCode("timeout")).toBe("timeout");
+    expect(safeGatewayFailureCode("input_attestation_denied")).toBe("input_attestation_denied");
     expect(safeGatewayFailureCode("CLIENT_SECRET_FROM_PROVIDER")).toBe("unknown");
     const spend = safeModelSpend({
       costUsd: Number.NaN,

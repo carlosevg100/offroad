@@ -34,6 +34,8 @@ export const gatewayCallLogSchema = z.object({
   model: z.string().min(1),
   effort: z.enum(["low", "medium", "high", "xhigh", "max"]),
   outcome: z.enum(["ok", "refusal", "error", "invalid_output", "policy_rejected"]),
+  adapterRequestFingerprint: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  inputAttestationReceiptId: z.uuid().optional(),
   promptFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   inputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
   outputFingerprint: z.string().regex(/^[a-f0-9]{64}$/),

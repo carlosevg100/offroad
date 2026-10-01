@@ -60,6 +60,8 @@ export type ModelGatewayConfig = {
     enforce: boolean;
     assurances: Partial<Record<Provider, ProviderDataAssurance>>;
   };
+  /** Commit a content-free receipt before dispatch; failure terminates the run, including fallback. */
+  attestInput?: (attestation: GatewayInputAttestation) => Promise<GatewayInputReceipt>;
   /** Structured, content-free log of every call. */
   onCall?: (log: GatewayCallLog) => void;
   now?: () => number;
@@ -76,6 +78,27 @@ export type GatewayAttempt = {
   isSameModelRepair: boolean;
   usedProviderFallback: boolean;
   reservationUsd: number;
+};
+
+/** No prompt, document, schema body or cache key leaves this boundary. */
+export type GatewayInputAttestation = Readonly<{
+  schemaVersion: "gateway-adapter-input.v1";
+  invocationId: string;
+  task: TaskKind;
+  provider: Provider;
+  model: string;
+  requestFingerprint: string;
+  inputFingerprint: string;
+  promptFingerprint: string;
+  retryOrdinal: number;
+  isSameModelRepair: boolean;
+  usedProviderFallback: boolean;
+  previousInvocationId?: string;
+}>;
+export type GatewayInputReceipt = {
+  invocationId: string;
+  requestFingerprint: string;
+  receiptId: string;
 };
 
 export type ModelGateway = {
@@ -102,12 +125,21 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
   };
 
   const complete = async <TSchema extends z.ZodType>(request: GatewayRequest<TSchema>): Promise<GatewayResult<z.infer<TSchema>>> => {
+    // Own all mutable data before the first await. Zod remains the validation authority;
+    // its JSON representation is checked again at dispatch rather than freezing its internals.
+    request = {...request, input: structuredClone(request.input),
+      ...(request.metadata ? {metadata: structuredClone(request.metadata)} : {}),
+      ...(request.dataHandling ? {dataHandling: structuredClone(request.dataHandling)} : {})};
+    const attestInput = config.attestInput;
+    if (request.requireInputAttestation && !attestInput) {
+      throw new ModelGatewayError("input attestation is required", "input_attestation_denied");
+    }
     const {primary, fallback, policy} = resolveModel(request.task, policies, {
       override: request.model,
       useShadow: request.useShadow,
       experimentalModels: config.experimentalModels,
     });
-    const input = config.redaction === false ? request.input : redactParts(request.input, config.redaction ?? {});
+    const input = freezeData(config.redaction === false ? request.input : redactParts(request.input, config.redaction ?? {}));
     const schemaJson = z.toJSONSchema(request.schema);
     const inputFingerprint = fingerprint(input);
     const attempts: GatewayResult<unknown>["attempts"] = [];
@@ -147,7 +179,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       if (request.thinking) built.thinking = request.thinking;
       if (request.outputMode) built.outputMode = request.outputMode;
       if (request.metadata) built.metadata = request.metadata;
-      return built;
+      if (built.metadata) freezeData(built.metadata);
+      return Object.freeze(built);
     };
     // A request must fit every route it may take: checked for all of them before anything is
     // reserved or sent, and again for each attempt (a repair carries its guidance as well).
@@ -168,13 +201,18 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         : request.system;
       const legacyUsedFallback = isSameModelRepair || usedProviderFallback;
       const promptFingerprint = fingerprint({system: attemptSystem, schemaName: request.schemaName, schema: schemaJson});
-      const attemptTelemetry = {retryOrdinal, isSameModelRepair, usedProviderFallback};
+
       const repairLineage = isSameModelRepair && repairGuidance ? {
         ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {}),
         repairGuidanceFingerprint: fingerprint(repairGuidance),
         ...(pendingRepairIssueCodeFingerprint ? {repairValidationIssueCodeFingerprint: pendingRepairIssueCodeFingerprint} : {}),
       } : {};
       const adapterRequest = adapterRequestFor(ref, attemptSystem);
+      const adapterRequestFingerprint = fingerprint({schemaVersion: "gateway-adapter-input.v1",
+        provider: ref.provider, ...adapterRequest, schema: schemaJson});
+      const attemptTelemetry: {retryOrdinal: number; isSameModelRepair: boolean; usedProviderFallback: boolean;
+        adapterRequestFingerprint: string; inputAttestationReceiptId?: string} =
+        {retryOrdinal, isSameModelRepair, usedProviderFallback, adapterRequestFingerprint};
       assertFits(ref, adapterRequest);
       // The reservation is computed once per attempt: before the live decision when there is one,
       // so the authority reserves the same exposure this gateway charges, otherwise where it was.
@@ -262,6 +300,34 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       }
       budgetExposureUsd += reservationUsd;
       inFlightCalls += 1;
+
+      try {
+        if (attestInput) {
+          const receipt = await withTimeout(attestInput(Object.freeze({schemaVersion: "gateway-adapter-input.v1",
+            invocationId, task: request.task, provider: ref.provider, model: ref.model,
+            requestFingerprint: adapterRequestFingerprint, inputFingerprint, promptFingerprint,
+            retryOrdinal, isSameModelRepair, usedProviderFallback,
+            ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {})})), Math.min(10_000, adapterRequest.timeoutMs));
+          if (!receipt || receipt.invocationId !== invocationId || receipt.requestFingerprint !== adapterRequestFingerprint
+              || !z.uuid().safeParse(receipt.receiptId).success) {
+            throw new Error("unbound input receipt");
+          }
+          attemptTelemetry.inputAttestationReceiptId = receipt.receiptId;
+        }
+        if (fingerprint(z.toJSONSchema(request.schema)) !== fingerprint(schemaJson)) {
+          throw new Error("output schema changed before dispatch");
+        }
+      } catch {
+        budgetExposureUsd -= reservationUsd;
+        inFlightCalls -= 1;
+        emit(config, {request, ref, invocationId, ...repairLineage, ...attemptTelemetry,
+          costUsd: 0, latencyMs: 0, usedFallback: legacyUsedFallback, fromCassette: false,
+          outcome: "policy_rejected", promptFingerprint, inputFingerprint,
+          outputFingerprint: fingerprint({outcome: "policy_rejected", reason: "input_attestation_denied"}),
+          notCalled: true, providerPolicyVersion});
+        // Do not disclose callback errors or classify them as billable provider failures.
+        throw new ModelGatewayError("input attestation failed before dispatch", "input_attestation_denied");
+      }
 
       const startedAt = now();
       let response: AdapterResponse | undefined;
@@ -468,6 +534,8 @@ function emit(
     usedProviderFallback: boolean;
     fromCassette: boolean;
     outcome: GatewayCallLog["outcome"];
+    adapterRequestFingerprint?: string;
+    inputAttestationReceiptId?: string;
     promptFingerprint: string;
     inputFingerprint: string;
     outputFingerprint: string;
@@ -504,6 +572,8 @@ function emit(
     fromCassette: entry.fromCassette,
     schemaName: entry.request.schemaName,
   };
+  if (entry.adapterRequestFingerprint) log.adapterRequestFingerprint = entry.adapterRequestFingerprint;
+  if (entry.inputAttestationReceiptId) log.inputAttestationReceiptId = entry.inputAttestationReceiptId;
   if (entry.previousInvocationId) log.previousInvocationId = entry.previousInvocationId;
   if (entry.repairGuidanceFingerprint) log.repairGuidanceFingerprint = entry.repairGuidanceFingerprint;
   if (entry.validationIssueCodeFingerprint) log.validationIssueCodeFingerprint = entry.validationIssueCodeFingerprint;
@@ -583,4 +653,13 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 function errorMessage(error: unknown): string {
   if (error instanceof Error) return `${error.name}: ${error.message}`.slice(0, 300);
   return String(error).slice(0, 300);
+}
+
+/** Freeze owned JSON data only, never shared Zod internals or SDK clients. */
+function freezeData<T>(value: T): T {
+  if (value && typeof value === "object") {
+    for (const child of Object.values(value)) freezeData(child);
+    Object.freeze(value);
+  }
+  return value;
 }

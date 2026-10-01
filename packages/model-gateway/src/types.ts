@@ -43,6 +43,8 @@ export type OutputMode = "structured" | "prompted_json";
 
 export type GatewayRequest<TSchema extends z.ZodType> = {
   task: TaskKind;
+  /** Refuse every attempt unless a bound input receipt is committed before dispatch. */
+  requireInputAttestation?: boolean;
   /** See AdapterRequest.outputMode. A prompted request gets one extra attempt on its primary model when the text is not the JSON asked for. */
   outputMode?: OutputMode;
   /** Stable instructions; placed first so provider prompt caching applies. Never contains document data. */
@@ -202,6 +204,9 @@ export type GatewayCallLog = {
   model: string;
   effort: Effort;
   outcome: "ok" | "refusal" | "error" | "invalid_output" | "policy_rejected";
+  /** Hash of the complete gateway adapter request, not SDK wire bytes or a retained snapshot. */
+  adapterRequestFingerprint?: string;
+  inputAttestationReceiptId?: string;
   promptFingerprint: string;
   inputFingerprint: string;
   outputFingerprint: string;
@@ -233,7 +238,7 @@ export type GatewayCallLog = {
 export class ModelGatewayError extends Error {
   constructor(
     message: string,
-    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "output_truncated" | "cassette_missing" | "timeout" | "data_policy_violation" | "input_limit_exceeded" | "output_limit_exceeded",
+    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "output_truncated" | "cassette_missing" | "timeout" | "data_policy_violation" | "input_limit_exceeded" | "output_limit_exceeded" | "input_attestation_denied",
     readonly details?: unknown,
   ) {
     super(message);
