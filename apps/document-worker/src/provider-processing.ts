@@ -12,7 +12,7 @@ export type ProviderConnections = z.infer<typeof providerConnectionsSchema>;
 /** The one endpoint each provider route declares; assurances are recorded against exactly these. */
 export const providerEndpoints = {anthropic: "https://api.anthropic.com/v1/messages", openai: "https://api.openai.com/v1/responses", perplexity: "https://api.perplexity.ai/search", firecrawl: "https://api.firecrawl.dev/v2/scrape"} as const;
 const endpoints = providerEndpoints;
-const decisionSchema = z.object({allowed: z.boolean(), policyVersion: z.literal(retentionMatrixVersion), assuranceId: z.uuid().nullable(), reasons: z.array(z.string().regex(/^[a-z_:]+$/))});
+const decisionSchema = z.object({allowed: z.boolean(), policyVersion: z.literal(retentionMatrixVersion), assuranceId: z.uuid().nullable(), decisionId: z.uuid(), reasons: z.array(z.string().regex(/^[a-z_:]+$/))});
 
 /** The job capability, source rights, classification floor and expiry are rechecked in SQL.
  * The model never receives the capability or a means of authoring an assurance. */

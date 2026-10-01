@@ -408,7 +408,8 @@ describe("gateway", () => {
     expect(logs[1]?.validationIssueCodeFingerprint).toMatch(/^[a-f0-9]{64}$/);
     expect(logs[0]).toMatchObject({configuredModel: "claude-sonnet-5", validationSource: "deterministic"});
     expect(logs[1]).toMatchObject({configuredModel: "claude-sonnet-5", validationSource: "deterministic"});
-    expect(logs[2]).not.toHaveProperty("previousInvocationId");
+    expect(logs[2]?.previousInvocationId).toBe(logs[1]?.invocationId);
+    expect(logs[2]).not.toHaveProperty("repairGuidanceFingerprint");
     expect(logs.map((log) => gatewayCallLogSchema.parse(log))).toHaveLength(3);
   });
 

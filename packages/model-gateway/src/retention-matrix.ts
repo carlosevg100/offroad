@@ -73,6 +73,8 @@ export const processingRequirementSchema = z.object({
 }).strict();
 export type ProcessingRequirement = z.infer<typeof processingRequirementSchema>;
 export type ProcessingEligibilityDecision = {
+  /** Present only when a live control-plane decision was persisted. */
+  decisionId?: string;
   allowed: boolean;
   policyVersion: typeof retentionMatrixVersion;
   assuranceId: string | null;

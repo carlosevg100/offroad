@@ -179,6 +179,7 @@ export const intentRouterGoldCallLogSchema = z.object({
   outcome: z.enum(["ok", "refusal", "error", "invalid_output", "policy_rejected"]),
   adapterRequestFingerprint: sha256.optional(),
   inputAttestationReceiptId: z.uuid().optional(),
+  processingDecisionId: z.uuid().optional(),
   promptFingerprint: sha256,
   inputFingerprint: sha256,
   outputFingerprint: sha256,
