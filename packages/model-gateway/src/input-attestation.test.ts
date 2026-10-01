@@ -70,7 +70,7 @@ describe("effective gateway input attestation", () => {
     let sends = 0;
     const send = async () => {sends++; return response;};
     const gateway = createModelGateway({attestInput: async a => ({...receipt(a),
-      ...(field === "invocation" ? {invocationId: randomUUID()} : field === "fingerprint" ? {requestFingerprint: "0".repeat(64)} : {receiptId: "private prompt"})}),
+      ...(field === "invocation" ? {invocationId: randomUUID()} : field === "fingerprint" ? {requestFingerprint: "0".repeat(64)} : {receiptId: "10000000-0000-4000-0000-000000000099"})}),
       adapters: {anthropic: adapter(send), openai: {provider: "openai", complete: send}}});
     await expect(gateway.complete(request())).rejects.toMatchObject({code: "input_attestation_denied"});
     expect(sends).toBe(0); expect(gateway.spent()).toEqual({calls: 0, costUsd: 0, unknownCostCalls: 0, budgetExposureUsd: 0});

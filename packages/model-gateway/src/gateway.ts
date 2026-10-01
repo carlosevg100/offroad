@@ -309,7 +309,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
             retryOrdinal, isSameModelRepair, usedProviderFallback,
             ...(previousAttemptInvocationId ? {previousInvocationId: previousAttemptInvocationId} : {})})), Math.min(10_000, adapterRequest.timeoutMs));
           if (!receipt || receipt.invocationId !== invocationId || receipt.requestFingerprint !== adapterRequestFingerprint
-              || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(receipt.receiptId)) {
+              || !z.uuid().safeParse(receipt.receiptId).success) {
             throw new Error("unbound input receipt");
           }
           attemptTelemetry.inputAttestationReceiptId = receipt.receiptId;
