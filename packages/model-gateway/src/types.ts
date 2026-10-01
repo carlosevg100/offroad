@@ -60,6 +60,7 @@ export type GatewayRequest<TSchema extends z.ZodType> = {
    * express (for example attributable-span coverage). A rejection participates in the same bounded
    * same-model repair and provider-fallback rail as a schema rejection.
    *
+   * Receives a separately owned, deeply frozen parsed-output view; it must not mutate it.
    * Issues must be content-free: only stable paths/codes and generic messages are persisted or
    * included in repair guidance.
    */
@@ -137,6 +138,29 @@ export interface ProviderAdapter {
   complete(request: AdapterRequest): Promise<AdapterResponse>;
 }
 
+/** Identity of the one attempt accepted after schema and deterministic validation. These
+ * fingerprints bind adapter input and parsed output, not raw HTTP bytes or retained storage.
+ * A receipt is evidence of input admission only; cassette results never prove provider egress. */
+export type GatewayAcceptedInvocation = Readonly<{
+  schemaVersion: "gateway-accepted-invocation.v1";
+  invocationId: string;
+  adapterInputVersion: "gateway-adapter-input.v1";
+  adapterRequestFingerprint: string;
+  outputFingerprintVersion: "gateway-parsed-output.v1";
+  outputFingerprint: string;
+  inputFingerprint: string;
+  promptFingerprint: string;
+  provider: Provider;
+  configuredModel: string;
+  reportedModel: string;
+  schemaName: string;
+  retryOrdinal: number;
+  isSameModelRepair: boolean;
+  usedProviderFallback: boolean;
+  fromCassette: boolean;
+  inputAttestationReceiptId?: string;
+}>;
+
 export type GatewayResult<T> = {
   output: T;
   provider: Provider;
@@ -156,6 +180,9 @@ export type GatewayResult<T> = {
   isSameModelRepair?: boolean;
   /** True when the response came from a recorded cassette (tests/CI). */
   fromCassette: boolean;
+  /** Concrete gateway always supplies this. Optional only for historical implementations;
+   * consumers requiring native response provenance must reject its absence. */
+  acceptedInvocation?: GatewayAcceptedInvocation;
   requestId?: string;
   attempts: Array<{
     provider: Provider;

@@ -17,6 +17,7 @@ import {
   type AdapterRequest,
   type AdapterResponse,
   type GatewayCallLog,
+  type GatewayAcceptedInvocation,
   type GatewayRequest,
   type GatewayResult,
   type ModelRef,
@@ -314,16 +315,16 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         if (config.cassette && key && config.cassette.mode !== "off") {
           const stored = config.cassette.store.get(key);
           if (stored) {
-            response = stored;
+            response = structuredClone(stored);
             fromCassette = true;
           } else if (config.cassette.mode === "replay") {
             throw new ModelGatewayError(`no cassette for ${ref.provider}/${ref.model} (${request.task}); record it before running in replay mode`, "cassette_missing", {key});
           }
         }
         if (!response) {
-          response = await withTimeout(adapterFor(ref.provider).complete(adapterRequest), adapterRequest.timeoutMs);
+          response = structuredClone(await withTimeout(adapterFor(ref.provider).complete(adapterRequest), adapterRequest.timeoutMs));
           if (config.cassette && key && config.cassette.mode === "record") {
-            config.cassette.store.set(key, response, {provider: ref.provider, model: ref.model, schemaName: request.schemaName});
+            config.cassette.store.set(key, structuredClone(response), {provider: ref.provider, model: ref.model, schemaName: request.schemaName});
           }
         }
       } catch (error) {
@@ -415,10 +416,11 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         continue;
       }
 
+      const parsedOutput = structuredClone(parsed.data) as z.infer<TSchema>;
       let postValidation: ReturnType<NonNullable<typeof request.validateOutput>> | undefined;
       if (request.validateOutput) {
         try {
-          postValidation = request.validateOutput(parsed.data as z.infer<TSchema>);
+          postValidation = request.validateOutput(freezeOwnedOutput(structuredClone(parsedOutput)));
         } catch {
           postValidation = {
             accepted: false,
@@ -447,18 +449,27 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         emit(config, {
           request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback,
           ...attemptTelemetry, fromCassette, outcome: "invalid_output", promptFingerprint,
-          inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion,
+          inputFingerprint, outputFingerprint: fingerprint(parsedOutput), providerPolicyVersion,
           validationIssues, validationIssueCodeFingerprint, validationSource: "deterministic",
         });
         previousAttemptInvocationId = invocationId;
         continue;
       }
 
+      const outputFingerprint = fingerprint(parsedOutput);
+      const acceptedInvocation: GatewayAcceptedInvocation = Object.freeze({
+        schemaVersion: "gateway-accepted-invocation.v1", invocationId,
+        adapterInputVersion: "gateway-adapter-input.v1", adapterRequestFingerprint,
+        outputFingerprintVersion: "gateway-parsed-output.v1", outputFingerprint, inputFingerprint, promptFingerprint,
+        provider: ref.provider, configuredModel: ref.model, reportedModel: response.model || ref.model,
+        schemaName: request.schemaName, retryOrdinal, isSameModelRepair, usedProviderFallback, fromCassette,
+        ...(attemptTelemetry.inputAttestationReceiptId ? {inputAttestationReceiptId: attemptTelemetry.inputAttestationReceiptId} : {}),
+      });
       attempts.push({provider: ref.provider, model: ref.model, outcome: "ok", ...attemptTelemetry});
-      emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(parsed.data), providerPolicyVersion});
+      emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "ok", promptFingerprint, inputFingerprint, outputFingerprint, providerPolicyVersion});
       previousAttemptInvocationId = invocationId;
       const result: GatewayResult<z.infer<TSchema>> = {
-        output: parsed.data as z.infer<TSchema>,
+        output: parsedOutput,
         provider: ref.provider,
         model: response.model || ref.model,
         effort: ref.effort,
@@ -471,6 +482,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         retryOrdinal,
         isSameModelRepair,
         fromCassette,
+        acceptedInvocation,
         attempts,
       };
       if (response.requestId) result.requestId = response.requestId;
@@ -521,7 +533,7 @@ function emit(
   },
 ): void {
   if (!config.onCall) return;
-  const usage = entry.response?.usage ?? {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0};
+  const usage = {...(entry.response?.usage ?? {inputTokens: 0, outputTokens: 0, cachedInputTokens: 0})};
   const log: GatewayCallLog = {
     invocationId: entry.invocationId,
     task: entry.request.task,
@@ -610,4 +622,14 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 function errorMessage(error: unknown): string {
   if (error instanceof Error) return `${error.name}: ${error.message}`.slice(0, 300);
   return String(error).slice(0, 300);
+}
+
+/** Freeze only a gateway-owned validation view; never shared Zod internals or caller data. */
+function freezeOwnedOutput<T>(value: T, seen = new WeakSet<object>()): T {
+  if (value !== null && typeof value === "object" && !seen.has(value)) {
+    seen.add(value);
+    for (const child of Object.values(value)) freezeOwnedOutput(child, seen);
+    Object.freeze(value);
+  }
+  return value;
 }
