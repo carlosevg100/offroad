@@ -564,6 +564,35 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-material-production-native-sdk.mjs
 
+      - name: Install unpublished native consumer drafts in isolated CI only
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
+        run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
+
+      - name: Native debt and S11 catalogue and hostile commands
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: |
+          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_debt_execution_ledger.sql
+          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_s11_task_projections.sql
+
+      - name: Native S11 initial and human return through real Storage and Edge
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+          S11_HTTP_NAMESPACE: a8810001
+        run: python3 -B scripts/ci/test-capital-s11-sdk.py
+
+      - name: Native C11 initial and human return through real Storage and Edge
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+          DEBT_HTTP_NAMESPACE: a8820001
+        run: python3 -B scripts/ci/test-capital-company-debt-sdk.py
+
       - name: Stop the capital body Edge reader
         if: always()
         run: |
@@ -673,6 +702,12 @@ jobs:
           echo "E2E_MAIL_URL=${MAILPIT_URL:-${INBUCKET_URL:-http://127.0.0.1:54324}}" >> "$GITHUB_ENV"
 
       # NEXT_PUBLIC_* values are inlined at build time, so the build must run after the export above.
+      - name: Install native consumers for the disposable browser stack
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
+        run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
+
       - name: Build the web app against the local stack
         run: pnpm --filter web build
 

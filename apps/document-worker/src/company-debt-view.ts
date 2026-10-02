@@ -25,6 +25,8 @@ import {createWorkerPublicCompanyMemory, verifiedCompanyMemorySubject} from "./p
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {buildPublicWorkAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
+import {consumeCapitalCompanyDebtInitial} from "./capital-company-debt-native-consumer";
+import type {CapitalCompanyDebtNativeRuntime} from "./capital-company-debt-native-runtime";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const taskSchema = z.object({
@@ -35,7 +37,7 @@ const taskSchema = z.object({
   execution_class: z.string().min(1),
   effect: z.string().min(1),
 });
-const contextSchema = z.object({
+export const companyDebtContextSchema = z.object({
   project: z.object({
     id: z.uuid(), organization_id: z.uuid(), project_name: z.string().min(2),
     entry_job: z.literal("company_debt_view"), access_basis: z.literal("public_information"),
@@ -113,7 +115,7 @@ const REQUIRED_TASKS = [
   "C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10", "C11",
 ] as const;
 
-type Context = z.infer<typeof contextSchema>;
+export type CompanyDebtContext = z.infer<typeof companyDebtContextSchema>;
 type Diagnostic = z.infer<typeof companyDebtDiagnosticSchema>;
 type ArtifactRef = {taskId: string; id: string; artifactFingerprint: string};
 type QualityResult = {id: string; passed: boolean; detail: string};
@@ -131,6 +133,7 @@ export type CompanyDebtViewDependencies = {
   lineage: () => GatewayCallLog[];
   researchProviders: PublicSearchProvider[];
   officialResearchProviderFactory?: WorkerOfficialResearchProviderFactory;
+  nativeRuntime?: CapitalCompanyDebtNativeRuntime;
   now?: () => Date;
   log?: (event: string, detail?: Record<string, unknown>) => void;
 };
@@ -142,8 +145,9 @@ export async function processCompanyDebtViewJob(
   const log = dependencies.log ?? (() => {});
   await dependencies.queue.writeStage(job, "company_debt_view", "started");
   try {
-    const context = contextSchema.parse(await dependencies.queue.loadCapitalProjectContext(job));
-    assertExactTaskPlan(job, context);
+    if(dependencies.nativeRuntime)return await processNativeCompanyDebt(job,dependencies);
+    const context = companyDebtContextSchema.parse(await dependencies.queue.loadCapitalProjectContext(job));
+    assertExactCompanyDebtTaskPlan(job, context);
     const taskById = new Map(context.tasks.map((task) => [task.id, task]));
     const artifacts = new Map<string, ArtifactRef>();
     const companyName = stringValue(context.session.company_profile.name);
@@ -271,7 +275,7 @@ export async function processCompanyDebtViewJob(
     const persistFinal = async (research: ResearchSummary, synthesis: Awaited<ReturnType<typeof synthesize>>) => {
       const asOfDate = (dependencies.now ?? (() => new Date()))().toISOString().slice(0, 10);
       const allowedUrls = new Set(research.sources.map((source) => source.url));
-      const quality = validateDiagnostic(
+      const quality = validateCompanyDebtDiagnostic(
         synthesis.diagnostic,
         allowedUrls,
         research.sources,
@@ -446,14 +450,15 @@ export async function processCompanyDebtViewJob(
   } catch (error) {
     const code = errorCode(error);
     await dependencies.queue.writeStage(job, "company_debt_view", "failed", {code}).catch(() => undefined);
-    const spend = dependencies.gateway.spent();
-    await dependencies.queue.fail(job, describeJobFailure(error, {code, stage: "company_debt_view", spend, retryable: code !== "company_debt_task_plan_mismatch"}), {retryable: code !== "company_debt_task_plan_mismatch", retryInSeconds: 30});
+    const retryable = !dependencies.nativeRuntime && code !== 'company_debt_task_plan_mismatch';
+    const observed = dependencies.nativeRuntime ? {} : {spend: dependencies.gateway.spent()};
+    await dependencies.queue.fail(job, describeJobFailure(error, {code, stage: "company_debt_view", ...observed, retryable}), {retryable, retryInSeconds: 30});
     log("company_debt_view.failed", {job: job.job_id, code});
     return {status: "failed"};
   }
 }
 
-function assertExactTaskPlan(job: CapitalProjectAnalysisJob, context: Context): void {
+export function assertExactCompanyDebtTaskPlan(job: CapitalProjectAnalysisJob, context: CompanyDebtContext): void {
   if (job.payload.analysis_scope !== "company_debt_view"
     || context.project.id !== job.payload.capital_project_id
     || context.plan.id !== job.payload.capital_project_plan_id
@@ -476,8 +481,36 @@ function assertExactTaskPlan(job: CapitalProjectAnalysisJob, context: Context): 
   if (!finalTask || finalTask.dependencies.join(",") !== "C09,C10") throw codedError("company_debt_task_dependencies_invalid");
 }
 
+/** Recovery precedes all mutable loading, search and gateway work. */
+async function processNativeCompanyDebt(job:CapitalProjectAnalysisJob,dependencies:CompanyDebtViewDependencies){
+ const runtime=dependencies.nativeRuntime;if(!runtime)throw codedError('capital_debt_runtime_required');
+ const recovered=await runtime.createRecoveryAdapter(job).recover();
+ const receipt=recovered??(await consumeCapitalCompanyDebtInitial(job,{adapter:runtime.createAdapter(job),queue:dependencies.queue,adapters:runtime.adapters,connections:runtime.connections,budget:{...runtime,researchReserveUsd:job.payload.revision_of_artifact_id?0:runtime.researchReserveUsd},
+ research:async context=>{
+  const name=stringValue(context.session.company_profile.name),website=optionalString(context.session.company_profile.website),geography=optionalString(context.session.company_profile.geography);
+  if(!name)throw codedError('capital_debt_company_identity_missing');
+  const subject={legalName:name,...(website?{website}:{}),...(geography?{geography}:{})};
+  const researchRuntime=prepareWorkerDebtResearch({work:'company_debt_view',locale:context.session.locale,subject,discoveryProviders:dependencies.researchProviders,officialProviderFactory:dependencies.officialResearchProviderFactory,evidenceBasis:'public_information'});
+  const plan=buildCompanyDebtResearchPlan(subject);
+  await dependencies.queue.writeStage(job,'public_research','started',{queryCount:plan.length,researchStrategyFingerprint:researchRuntime.strategy.fingerprint});
+  const result=await runPublicResearch({plan,providers:researchRuntime.providers,maxSourcesPerQuery:5});
+  const sources=result.sources.filter(source=>source.url.startsWith('https://'));
+  const costExposureUsd=Object.values(result.metrics.maxCostExposureUsdByProvider).reduce((sum,value)=>sum+value,0);
+  await dependencies.queue.writeStage(job,'public_research','succeeded',{status:result.status,sourceCount:sources.length,costExposureUsd,researchStrategyFingerprint:researchRuntime.strategy.fingerprint},{external_search_cost_usd:costExposureUsd});
+  // No mutable cache, company-memory read or permanent raw research writer.
+  // Every delivered source must acquire its existing human-published license.
+  if(!sources.length||(result.status!=='succeeded'&&result.status!=='partial'))throw codedError('capital_debt_published_source_required');
+  return{status:result.status,sources,researchRunId:job.job_id,costExposureUsd};
+ }})).committed;
+ const artifact={id:receipt.capitalArtifactId,artifactFingerprint:receipt.artifactFingerprint};
+ await dependencies.queue.writeStage(job,'company_debt_view','succeeded',{artifactId:artifact.id,recipeId:receipt.recipeId,revisionId:receipt.revisionId,replayed:receipt.replayed});
+ await completeAdvisorSpecializedWork({queue:dependencies.queue,job,artifact,result:{capital_project_id:job.payload.capital_project_id,company_debt_diagnostic_artifact_id:artifact.id,artifact_fingerprint:artifact.artifactFingerprint,recipe_id:receipt.recipeId,revision_id:receipt.revisionId,replayed:receipt.replayed}});
+ dependencies.log?.('company_debt_view.succeeded',{job:job.job_id,recipeId:receipt.recipeId,replayed:receipt.replayed});
+ return{status:'succeeded' as const,artifactId:artifact.id};
+}
+
 async function collectResearch(input: {
-  job: CapitalProjectAnalysisJob; context: Context; companyName: string; website?: string;
+  job: CapitalProjectAnalysisJob; context: CompanyDebtContext; companyName: string; website?: string;
   queue: QueueClient; discoveryProviders: PublicSearchProvider[];
   officialProviderFactory?: WorkerOfficialResearchProviderFactory | undefined;
 }): Promise<ResearchSummary> {
@@ -526,7 +559,7 @@ async function collectResearch(input: {
   return {status: persisted.status, researchRunId, costExposureUsd, sources: safeSources, failures: result.failures};
 }
 
-function researchFromPrior(context: Context): ResearchSummary {
+function researchFromPrior(context: CompanyDebtContext): ResearchSummary {
   const prior = companyDebtDiagnosticArtifactSchema.parse(context.revision?.prior_content);
   const researchRunId = context.dependency_artifacts.flatMap((artifact) => artifact.evidence_refs)
     .find((reference) => reference.sourceType === "public_research_run" && typeof reference.sourceId === "string")?.sourceId;
@@ -576,7 +609,7 @@ function sanitizeCitations(output: Diagnostic, allowedUrls: Set<string>): Diagno
   };
 }
 
-function validateDiagnostic(output: Diagnostic, allowedUrls: Set<string>, sources: ResearchSource[], priorValidatedContent = ""): QualityResult[] {
+export function validateCompanyDebtDiagnostic(output: Diagnostic, allowedUrls: Set<string>, sources: ResearchSource[], priorValidatedContent = ""): QualityResult[] {
   const citedUrls = [
     ...output.businessRiskProfile.sourceUrls,
     ...output.financialSignals.flatMap((signal) => signal.sourceUrls),
@@ -595,13 +628,13 @@ function validateDiagnostic(output: Diagnostic, allowedUrls: Set<string>, source
     {id: "citation_allowlist", passed: citedUrls.every((url) => allowedUrls.has(url)), detail: "Every citation resolves to persisted public research."},
     {id: "business_evidence", passed: !requiresCitation || output.businessRiskProfile.sourceUrls.length > 0, detail: "The business reconstruction cites public evidence when evidence exists."},
     {id: "capacity_boundary", passed: ["not_computable", "directional_only"].includes(output.capacityAssessment.status), detail: "Public-only work cannot claim calculated capacity."},
-    {id: "next_batch", passed: output.informationRequests.length >= 0 && output.informationRequests.length <= 24, detail: "residual batch complete"},
+    {id: "next_batch", passed: output.informationRequests.every(request => request.request.length > 0 && request.whyItMatters.length > 0 && request.decisionImpact.length > 0 && request.acceptableEvidence.length > 0), detail: "residual batch complete"},
     {id: "unsupported_material_numbers", passed: unsupportedNumbers.length === 0, detail: unsupportedNumbers.length ? `Unsupported tokens: ${unsupportedNumbers.join(", ")}` : "No unsupported material numeric token detected."},
     {id: "scope_boundary", passed: !prohibited, detail: "No approval, supported-capacity or lender-commitment claim detected."},
   ];
 }
 
-function abstainedDiagnostic(locale: Context["session"]["locale"]): Diagnostic {
+function abstainedDiagnostic(locale: CompanyDebtContext["session"]["locale"]): Diagnostic {
   if (locale === "en-US") return {
     executiveRead: "No usable public source was returned, so the system abstained from forming a company-specific debt view and preserved the missing evidence as the next step.",
     companySnapshot: "The supplied company identity could not be corroborated with usable public evidence in this run.",

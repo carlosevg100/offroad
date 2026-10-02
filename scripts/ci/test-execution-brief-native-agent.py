@@ -8,6 +8,10 @@ url=os.environ['DATABASE_URL']
 assert urlparse(url).hostname in ('localhost','127.0.0.1','::1'), 'Local disposable database only'
 http_fixture=os.environ.get('S11_HTTP_FIXTURE')=='1'
 ui_namespace=os.environ.get('BRIEF_UI_NAMESPACE')
+http_namespace=os.environ.get('S11_HTTP_NAMESPACE','a8810001') if http_fixture else None
+if http_namespace:
+ assert re.fullmatch(r'[0-9a-f]{8}',http_namespace), 'Closed S11 HTTP namespace required'
+ assert not ui_namespace, 'HTTP and UI fixture modes are distinct'
 if ui_namespace:
  assert os.environ.get('BRIEF_UI_FIXTURE')=='1' and re.fullmatch(r'[0-9a-f]{8}',ui_namespace), 'UI namespace must be local and explicit'
 if http_fixture:
@@ -20,6 +24,9 @@ p=subprocess.Popen(['psql',url,'-XAtq','-v','ON_ERROR_STOP=1'],stdin=subprocess.
 def phase(sql):
  if ui_namespace:
   sql=sql.replace('a8800000',ui_namespace).replace('native-agent@example.invalid','native-agent-'+ui_namespace+'@example.invalid').replace('Synthetic native agent','Synthetic native agent '+ui_namespace).replace("repeat('d',64)","repeat('"+ui_namespace+"',8)")
+ if http_namespace:
+  sql=sql.replace('a8800000',http_namespace).replace('native-agent@example.invalid','native-agent-'+http_namespace+'@example.invalid').replace('s11-publisher@example.invalid','s11-publisher-'+http_namespace+'@example.invalid').replace("repeat('d',64)","repeat('"+http_namespace+"',8)").replace('https://example.invalid/capture-licensed','https://example.invalid/s11/'+http_namespace+'/capture-licensed').replace('s11-sql-account','s11-http-'+http_namespace+'-account').replace('s11-sql-project','s11-http-'+http_namespace+'-project').replace('s11-sql-key','s11-http-'+http_namespace+'-key')
+  for old,new in [('10000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000994'),('20000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000995'),('30000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000996')]:sql=sql.replace(old,new)
  p.stdin.write(sql+'\n\\echo PHASE_DONE\n');p.stdin.flush();out=[]
  while True:
   line=p.stdout.readline()
@@ -145,7 +152,7 @@ try:
  if http_fixture:
   phase(expand(ROOT/'supabase/tests/support/capital_s11_native_http_setup.sql'))
   phase('commit;')
-  print(json.dumps({'eval':'capital_s11_http_human_bootstrap','result':'PASS','organizationId':'a8800000-0000-4000-8000-000000000002'}))
+  print(json.dumps({'eval':'capital_s11_http_human_bootstrap','result':'PASS','organizationId':http_namespace+'-0000-4000-8000-000000000002'}))
  else:
   phase('rollback;')
   print('PASS native_agent_activation_normalization_and_human_review')

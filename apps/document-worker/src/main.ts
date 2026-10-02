@@ -45,6 +45,7 @@ import {processWorkConversationJob} from "./work-conversation";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
 import {createCapitalMaterialRuntime} from "./capital-material-production-runtime";
+import {createCapitalCompanyDebtNativeRuntime} from "./capital-company-debt-native-runtime";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
@@ -453,6 +454,7 @@ async function main(): Promise<void> {
           : job.payload.analysis_scope === "company_debt_view"
           ? processCompanyDebtViewJob(job, {
               queue,
+              nativeRuntime: createCapitalCompanyDebtNativeRuntime(supabase, {adapters, connections: config.PROVIDER_CONNECTIONS_JSON, maxCostUsd: gatewayRun.maxCostUsd, maxCalls: gatewayRun.maxCalls, researchReserveUsd: gatewayRun.researchReserveUsd}),
               gateway: gatewayRun.gateway,
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
               researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
@@ -474,6 +476,7 @@ async function main(): Promise<void> {
             : processCapitalPlanningJob(job, {
                 queue,
                 gateway: gatewayRun.gateway,
+                s11Runtime: {adapters, connections: config.PROVIDER_CONNECTIONS_JSON, maxCostUsd: gatewayRun.maxCostUsd, maxCalls: gatewayRun.maxCalls, researchReserveUsd: gatewayRun.researchReserveUsd},
                 lineage: () => gatewayRun.calls.map((call) => ({...call})),
                 researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
                 ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),
