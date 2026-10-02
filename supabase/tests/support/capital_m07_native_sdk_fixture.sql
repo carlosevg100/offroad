@@ -97,6 +97,15 @@ begin
     ),
     plan_snapshot
   );
+  -- Persistent work starts without a resolved company. The historical executor
+  -- fixture prepares its intake relationship, then the genuine human command
+  -- supplies company context while it is collecting, before analysis starts.
+  select s.id into strict session_id
+  from public.document_intake_sessions s
+  join public.capital_projects p on p.organization_id=s.organization_id and p.id=s.capital_project_id
+  where s.organization_id='20000000-0000-4000-8000-000000000201' and p.project_name='Projeto Farol';
+  perform public.save_project_company_context(session_id,
+    '{"name":"Companhia Farol S.A.","website":"https://farol.example"}'::jsonb);
   first_result := public.start_public_origination_thesis_v1(
     request_id, 'pt-BR', 'Projeto Farol', 'Companhia Farol S.A.',
     'https://farol.example',
