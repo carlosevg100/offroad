@@ -1,4 +1,4 @@
-# Etapa 20 — corte finito de JSONs do preview
+# Etapa 20: corte finito de JSONs do preview
 
 ## Escopo fechado
 
