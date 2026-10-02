@@ -205,7 +205,7 @@ do $$declare fixture_job uuid; matched integer; begin
  and b.request_id='30000000-0000-4000-8000-000000000201';
  if matched<>1 then raise exception 'sdk_fixture_exact_job_required';end if;
  update public.processing_jobs set available_at=least(clock_timestamp(),
-   coalesce((select min(available_at)-interval '1 second' from public.processing_jobs where status='queued'),clock_timestamp()))
+   coalesce((select min(available_at)-interval '1 second' from public.processing_jobs),clock_timestamp()))
  where id=fixture_job;
 end;$$;
 update private.capital_public_retention_controls set enabled=true;

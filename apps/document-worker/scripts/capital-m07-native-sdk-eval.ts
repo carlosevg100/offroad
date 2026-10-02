@@ -14,6 +14,7 @@ import {createClient} from '@supabase/supabase-js';
 import {originationSeniorReadoutSchema} from '@offroad/domain-contracts';
 import {createQueueClient,type CapitalProjectAnalysisJob} from '../src/queue';
 import {processOriginationThesisJob,transformCapitalM07FinalProduct} from '../src/origination-thesis';
+import {ensureInitialAgentPlan} from '../src/agent-plan';
 import type {ModelGateway} from '@offroad/model-gateway';
 const actor='10000000-0000-4000-8000-000000000201',organization='20000000-0000-4000-8000-000000000201';
 const url='https://example.invalid/capture-licensed';
@@ -74,7 +75,11 @@ async function main(){
  }},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
  phase='login';const login=await client.auth.signInWithPassword({email:'origination-owner@example.invalid',password:'m07-isolated-local-eval-password'});assert.equal(login.error,null);assert.equal(login.data.user?.id,actor);
  const realQueue=createQueueClient(client,{workerToken:'w'.repeat(64),leaseSeconds:600});
- phase='real-claim';const claimed=await realQueue.claim();if(!claimed||claimed.kind!=='capital_project_analysis'||claimed.payload.analysis_scope!=='origination_thesis')throw new Error('origination required');const job:CapitalProjectAnalysisJob=claimed;
+ phase='real-claim';const claimed=await realQueue.claim();if(!claimed||claimed.kind!=='capital_project_analysis'||claimed.payload.analysis_scope!=='origination_thesis'||claimed.organization_id!==organization)throw new Error('sdk_exact_origination_fixture_required');const job:CapitalProjectAnalysisJob=claimed;
+ assert.equal(sql(`select count(*) from public.capital_project_briefs where organization_id='${organization}' and capital_project_id='${job.payload.capital_project_id}' and request_id='30000000-0000-4000-8000-000000000201';`,db),'1');
+ // The worker loop runs this same deterministic preparation before the executor.
+ // The SDK eval must preserve that dependency, not fabricate an agent-plan row.
+ phase='real-agent-plan';z.uuid().parse(await ensureInitialAgentPlan(job,realQueue));
  const purge=await client.rpc('worker_claim_capital_capture_purge_v1',{p_worker_token:'w'.repeat(64),p_limit:100});assert.equal(purge.error,null);
  let sends=0,acknowledgements=0;
  const queue={...realQueue,complete:async(...args:Parameters<typeof realQueue.complete>)=>{acknowledgements++;if(acknowledgements===2)await realQueue.complete(...args);},
