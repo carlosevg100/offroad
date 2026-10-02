@@ -3,13 +3,19 @@ import {
   buildDebtServiceSchedule,
   calculateCoverageSeries,
   calculateCovenantHeadroom,
+  calculateSizingGap,
+  compareFigures,
   maturityConcentration,
+  readFactFigure,
+  readMonthCount,
+  selectLowestFigure,
+  sumAmounts,
+  sumAmountsByKey,
   type GraceInterest,
   type InterestConvention,
   type RepaymentFormat,
 } from "@offroad/financial-core";
 import type {DebtTruthSet, FinancialTruthSet, ReconciledFact} from "@offroad/reconciliation";
-import Decimal from "decimal.js";
 
 import type {CapacityAssessment} from "./capacity";
 import type {CollateralPackage} from "./collateral";
@@ -80,13 +86,16 @@ export type StructureTruthSet = {
   procedureCoverage: StructureProcedureResult[];
 };
 
-const number = (value: string | undefined | null) => value !== undefined && value !== null && value.trim() !== "" && Number.isFinite(Number(value)) ? value : undefined;
-const integer = (value: string | undefined | null) => number(value) !== undefined && Number.isInteger(Number(value)) ? Number(value) : null;
-const bool = (value: string | undefined) => value === undefined ? null : ["true","yes","sim","1","pass","compliant"].includes(value.toLowerCase()) ? true : ["false","no","não","nao","0","fail","conflict"].includes(value.toLowerCase()) ? false : null;
-const minimum = (values: Array<string | undefined | null>) => {
-  const present = values.flatMap((value) => number(value) === undefined ? [] : [new Decimal(value!)]);
-  return present.length ? present.reduce((lowest, value) => value.lt(lowest) ? value : lowest).toFixed() : null;
+// A fact's figure is read by financial-core in decimal notation: text in another notation is no figure,
+// and a count is a whole number of the same reading. The figure is handed on as the fact states it.
+const number = (value: string | undefined | null) => value !== undefined && value !== null && readFactFigure({text: value}).value !== null ? value : undefined;
+const integer = (value: string | undefined | null) => {
+  const count = number(value) === undefined ? null : readMonthCount({text: value!}).value;
+  return count !== null && Number.isInteger(count) ? count : null;
 };
+const bool = (value: string | undefined) => value === undefined ? null : ["true","yes","sim","1","pass","compliant"].includes(value.toLowerCase()) ? true : ["false","no","não","nao","0","fail","conflict"].includes(value.toLowerCase()) ? false : null;
+/** The lowest of the figures present, compared exactly (financial-core); null when none is. */
+const minimum = (values: Array<string | undefined | null>) => selectLowestFigure({values: values.flatMap((value) => number(value) === undefined ? [] : [value!])}).value;
 const firstRecognizedFormat = (labels: readonly string[]): RepaymentFormat | null => {
   for (const label of labels) {
     const normalized = label.toLowerCase();
@@ -128,7 +137,7 @@ export function buildStructureTruthSet(input: {
   const covenantCeiling = number(value("structure.capacity.covenant_limit"));
   if (covenantCeiling) capacityCeilings.push({id:"existing_covenant",amount:covenantCeiling,basis:"reconciled_fact"});
   const envelopeAmount = minimum(capacityCeilings.map((ceiling)=>ceiling.amount));
-  const bindingConstraint = envelopeAmount ? capacityCeilings.find((ceiling)=>new Decimal(ceiling.amount).eq(envelopeAmount))?.id ?? null : null;
+  const bindingConstraint = envelopeAmount ? capacityCeilings.find((ceiling)=>compareFigures(ceiling.amount,envelopeAmount)===0)?.id ?? null : null;
   if (!capacityCeilings.length) missing.add("structure.capacity_envelope");
 
   const sizingBase = calculated ?? requested;
@@ -136,17 +145,17 @@ export function buildStructureTruthSet(input: {
   const ticketMin = number(value("structure.mandate.ticket_min")) ?? policy.matchedTicketMin;
   const ticketMax = number(value("structure.mandate.ticket_max")) ?? policy.matchedTicketMax;
   let proposed = beforeTicket;
-  if (proposed && ticketMax && new Decimal(proposed).gt(ticketMax)) proposed = ticketMax;
+  if (proposed && ticketMax && compareFigures(proposed,ticketMax)>0) proposed = ticketMax;
   const ticketCompatible = proposed && ticketMin && ticketMax
-    ? new Decimal(proposed).gte(ticketMin) && new Decimal(proposed).lte(ticketMax)
+    ? compareFigures(proposed,ticketMin)>=0 && compareFigures(proposed,ticketMax)<=0
     : null;
-  if (proposed && envelopeAmount && new Decimal(proposed).gt(envelopeAmount)) exceptions.push({id:"sizing-exceeds-envelope",severity:"critical",message:"Proposed sizing exceeds the binding capacity envelope.",affectedProcedures:["ES-03","ES-45"]});
+  if (proposed && envelopeAmount && compareFigures(proposed,envelopeAmount)>0) exceptions.push({id:"sizing-exceeds-envelope",severity:"critical",message:"Proposed sizing exceeds the binding capacity envelope.",affectedProcedures:["ES-03","ES-45"]});
   if (ticketCompatible===false) exceptions.push({id:"ticket-incompatible",severity:"high",message:"Proposed sizing does not fit the confirmed mandate ticket.",affectedProcedures:["ES-41","ES-45"]});
   if (input.operationTruth.sourcesAndUses.status!=="pass") exceptions.push({id:"sources-uses-not-closed",severity:"critical",message:"Final sizing cannot close before sources and uses tie.",affectedProcedures:["ES-45"]});
 
   const proFormaLeverage = input.operationTruth.proForma?.leverage ?? null;
   const leverageCeiling = definition.structure.leverageCeiling;
-  const leveragePosition = proFormaLeverage===null ? null : new Decimal(proFormaLeverage).lte(leverageCeiling)?"inside":"above";
+  const leveragePosition = proFormaLeverage===null ? null : compareFigures(proFormaLeverage,leverageCeiling)<=0?"inside":"above";
   if (leveragePosition==="above") exceptions.push({id:"leverage-above-band",severity:"high",message:"Pro forma leverage is above the current house-playbook ceiling and requires an ES-40 alternative.",affectedProcedures:["ES-01","ES-03","ES-40"]});
 
   const termValue = input.termSheet?.terms.find((term)=>term.id==="tenor")?.value.en.match(/\d+/)?.[0];
@@ -165,16 +174,16 @@ export function buildStructureTruthSet(input: {
   const balloonPercent=number(value("structure.balloon_percent"))??policy.balloonPercent;
   const scheduleInputsValid=Boolean(
     proposed&&termMonths&&format&&annualRate&&rateConvention&&
-    graceMonths>=0&&graceMonths<termMonths&&new Decimal(annualRate).gte(0)&&
-    (format!=="balloon"||(balloonPercent!==undefined&&new Decimal(balloonPercent).gte(0)&&new Decimal(balloonPercent).lte(1))),
+    graceMonths>=0&&graceMonths<termMonths&&compareFigures(annualRate,0)>=0&&
+    (format!=="balloon"||(balloonPercent!==undefined&&compareFigures(balloonPercent,0)>=0&&compareFigures(balloonPercent,1)<=0)),
   );
   if (!termMonths) missing.add("structure.term_months");
   if (format===null) missing.add("structure.amortization_format");
   if (!annualRate) missing.add("structure.sizing_annual_rate");
   if (!rateConvention) missing.add("structure.rate_convention");
   if(termMonths&&graceMonths>=termMonths)exceptions.push({id:"invalid-grace-period",severity:"critical",message:"Grace must end before final maturity.",affectedProcedures:["ES-05","ES-07","ES-42"]});
-  if(annualRate&&new Decimal(annualRate).lt(0))exceptions.push({id:"invalid-sizing-rate",severity:"critical",message:"The governed sizing rate cannot be negative.",affectedProcedures:["ES-02","ES-05"]});
-  if(format==="balloon"&&(balloonPercent===undefined||new Decimal(balloonPercent).lt(0)||new Decimal(balloonPercent).gt(1)))exceptions.push({id:"invalid-balloon",severity:"critical",message:"Balloon amortisation requires a governed percentage between zero and one.",affectedProcedures:["ES-05","ES-06"]});
+  if(annualRate&&compareFigures(annualRate,0)<0)exceptions.push({id:"invalid-sizing-rate",severity:"critical",message:"The governed sizing rate cannot be negative.",affectedProcedures:["ES-02","ES-05"]});
+  if(format==="balloon"&&(balloonPercent===undefined||compareFigures(balloonPercent,0)<0||compareFigures(balloonPercent,1)>0))exceptions.push({id:"invalid-balloon",severity:"critical",message:"Balloon amortisation requires a governed percentage between zero and one.",affectedProcedures:["ES-05","ES-06"]});
   let schedule:ReturnType<typeof buildDebtServiceSchedule>|null=null;
   if (scheduleInputsValid&&proposed&&termMonths&&format&&annualRate&&rateConvention) {
     schedule=buildDebtServiceSchedule({amount:proposed,annualRate,rateConvention,termMonths,graceMonths,graceInterest,format,...(format==="balloon"?{balloonPercent:balloonPercent!}: {})});
@@ -196,30 +205,24 @@ export function buildStructureTruthSet(input: {
   const downside=coverage.find((scenario)=>/down|stress|advers|baixa/i.test(scenario.name));
   const minimumDscr=downside?.minimumDscr??null;
   const dscrFloor=policy.minimumDscr??definition.structure.minimumDscr;
-  if(minimumDscr!==null&&new Decimal(minimumDscr).lt(dscrFloor))exceptions.push({id:"downside-coverage-breach",severity:"critical",message:"The proposed repayment schedule breaches the downside DSCR floor.",affectedProcedures:["ES-02","ES-03","ES-04","ES-05","ES-24","ES-42"]});
+  if(minimumDscr!==null&&compareFigures(minimumDscr,dscrFloor)<0)exceptions.push({id:"downside-coverage-breach",severity:"critical",message:"The proposed repayment schedule breaches the downside DSCR floor.",affectedProcedures:["ES-02","ES-03","ES-04","ES-05","ES-24","ES-42"]});
   if(!scenarioInputs.length)missing.add("structure.cfads_scenarios");
 
   const baseCoverage=coverage.find((scenario)=>/base/i.test(scenario.name));
   const covenantHeadroom=baseCoverage?.minimumDscr?calculateCovenantHeadroom({actual:baseCoverage.minimumDscr,limit:dscrFloor,direction:"minimum"}):null;
   if(covenantHeadroom&&!covenantHeadroom.passes)exceptions.push({id:"covenant-no-headroom",severity:"critical",message:"The proposed covenant has no headroom in the base case.",affectedProcedures:["ES-04","ES-23","ES-24","ES-42"]});
-  if(covenantHeadroom?.percentage&&policy.minimumCovenantHeadroom&&new Decimal(covenantHeadroom.percentage).lt(policy.minimumCovenantHeadroom))exceptions.push({id:"covenant-insufficient-headroom",severity:"critical",message:"The proposed covenant headroom is below the governed minimum in the base case.",affectedProcedures:["ES-04","ES-23","ES-24","ES-42"]});
+  if(covenantHeadroom?.percentage&&policy.minimumCovenantHeadroom&&compareFigures(covenantHeadroom.percentage,policy.minimumCovenantHeadroom)<0)exceptions.push({id:"covenant-insufficient-headroom",severity:"critical",message:"The proposed covenant headroom is below the governed minimum in the base case.",affectedProcedures:["ES-04","ES-23","ES-24","ES-42"]});
 
-  const proposedMaturities:Record<string,string>={};
-  for(const row of schedule?.rows??[]){
-    if(new Decimal(row.principal).eq(0))continue;
-    const key=`Y${Math.ceil(row.period/12)}`;
-    proposedMaturities[key]=new Decimal(proposedMaturities[key]??0).plus(row.principal).toFixed();
-  }
+  // The principal falling due, by year of the schedule (the calendar), summed by financial-core.
+  const proposedMaturities:Record<string,string>={...sumAmountsByKey({entries:(schedule?.rows??[]).flatMap((row)=>compareFigures(row.principal,0)===0?[]:[{key:`Y${Math.ceil(row.period/12)}`,amount:row.principal}])}).totals};
   const referenceYear=Number(input.referenceDate.slice(0,4));
-  const existingMaturities:Record<string,string>={};
-  for(const [period,amount] of Object.entries(input.debtTruth.maturity)){
+  const existingMaturities:Record<string,string>={...sumAmountsByKey({entries:Object.entries(input.debtTruth.maturity).map(([period,amount])=>{
     const year=Number(period.slice(0,4));
-    const key=Number.isFinite(year)&&year>=referenceYear?`Y${Math.max(1,year-referenceYear+1)}`:period;
-    existingMaturities[key]=new Decimal(existingMaturities[key]??0).plus(amount).toFixed();
-  }
+    return {key:Number.isFinite(year)&&year>=referenceYear?`Y${Math.max(1,year-referenceYear+1)}`:period,amount};
+  })}).totals};
   const maturity=schedule?maturityConcentration({existing:existingMaturities,proposed:proposedMaturities}):null;
   const maturityLimit=policy.maturityConcentrationLimit;
-  const maturityWallPass=maturity&&maturityLimit?maturity.rows.every((row)=>new Decimal(row.share).lte(maturityLimit)):null;
+  const maturityWallPass=maturity&&maturityLimit?maturity.rows.every((row)=>compareFigures(row.share,maturityLimit)<=0):null;
   if(maturityWallPass===false)exceptions.push({id:"new-maturity-wall",severity:"critical",message:"The proposed schedule creates a consolidated maturity concentration above policy.",affectedProcedures:["ES-10","ES-42"]});
 
   const bulletSource=value("structure.bullet_repayment_source")??input.operationTruth.bridgeAndTakeout.takeout;
@@ -239,7 +242,7 @@ export function buildStructureTruthSet(input: {
     ? policy.minimumCollateralCoverage
     : null;
   const collateralSufficient = collateralCoverage && governedCollateralCoverage
-    ? new Decimal(collateralCoverage).gte(governedCollateralCoverage)
+    ? compareFigures(collateralCoverage,governedCollateralCoverage)>=0
     : null;
   if(collateralSufficient===false)exceptions.push({id:"collateral-policy-shortfall",severity:"critical",message:"Post-haircut collateral coverage is below the governed minimum.",affectedProcedures:["ES-03","ES-20","ES-40","ES-42"]});
 
@@ -259,7 +262,7 @@ export function buildStructureTruthSet(input: {
 
   const adjustments=(()=>{
     if(!bindingConstraint)return[];
-    const gap=requested&&envelopeAmount?Decimal.max(new Decimal(requested).minus(envelopeAmount),0).toFixed():null;
+    const gap=requested&&envelopeAmount?calculateSizingGap({requested,envelope:envelopeAmount}).value:null;
     if(bindingConstraint==="collateral")return[{id:"eligible_security",effect:"increase collateral ceiling",quantifiedGap:gap},{id:"lower_amount",effect:"fit current collateral envelope",quantifiedGap:gap}];
     if(bindingConstraint==="cash_flow")return[{id:"repayment_profile",effect:"reduce periodic service",quantifiedGap:gap},{id:"lower_amount",effect:"fit cash-flow envelope",quantifiedGap:gap}];
     if(bindingConstraint==="market")return[{id:"staged_transaction",effect:"reduce initial ticket",quantifiedGap:gap},{id:"wait_for_milestone",effect:"reassess after documented operating milestone",quantifiedGap:gap}];
@@ -267,9 +270,9 @@ export function buildStructureTruthSet(input: {
   })();
 
   const rationale=[
-    ...(requested&&calculated&&!new Decimal(requested).eq(calculated)?[`calculated need ${calculated} differs from request ${requested}`]:[]),
-    ...(envelopeAmount&&sizingBase&&new Decimal(envelopeAmount).lt(sizingBase)?[`binding ${bindingConstraint} envelope caps sizing at ${envelopeAmount}`]:[]),
-    ...(ticketMax&&beforeTicket&&new Decimal(beforeTicket).gt(ticketMax)?[`confirmed mandate maximum caps sizing at ${ticketMax}`]:[]),
+    ...(requested&&calculated&&compareFigures(requested,calculated)!==0?[`calculated need ${calculated} differs from request ${requested}`]:[]),
+    ...(envelopeAmount&&sizingBase&&compareFigures(envelopeAmount,sizingBase)<0?[`binding ${bindingConstraint} envelope caps sizing at ${envelopeAmount}`]:[]),
+    ...(ticketMax&&beforeTicket&&compareFigures(beforeTicket,ticketMax)>0?[`confirmed mandate maximum caps sizing at ${ticketMax}`]:[]),
   ];
   const finalSizing={requested,calculated,envelope:envelopeAmount,proposed,ticketCompatible,rationale};
 
@@ -288,7 +291,7 @@ export function buildStructureTruthSet(input: {
     result("ES-04",blocked("ES-04",covenantHeadroom?policy.minimumCovenantHeadroom?"completed":"partial":"not_computable"),covenantHeadroom?{metric:"DSCR",headroom:covenantHeadroom,downside:downside?.minimumDscr??null}:null,covenantHeadroom?policy.minimumCovenantHeadroom?[]:["headroom policy"]:["base and downside coverage"],owned("ES-04"),evidencePrefix("structure.covenants.")),
     result("ES-05",blocked("ES-05",schedule&&coverage.length?downside?"completed":"partial":"not_computable"),schedule?{schedule,coverage}:null,schedule?coverage.length?downside?[]:["downside scenario"]:["CFADS scenarios"]:["amount","rate","term","format"],owned("ES-05"),evidencePrefix("structure.")),
     result("ES-06",blocked("ES-06",format?formatOrigin==="house_playbook_candidate"?"partial":"completed":"not_computable"),format?{format,origin:formatOrigin,bulletRepaymentSource:bulletSource??null}:null,format?format==="bullet"&&!bulletSource?["bullet repayment source"]:[]:["amortization format"],owned("ES-06"),evidence("structure.amortization_format","structure.bullet_repayment_source").length),
-    result("ES-07",blocked("ES-07",termMonths?"completed":"not_computable"),termMonths?{type:graceInterest,months:graceMonths,capitalizedInterest:schedule?.rows.filter((row)=>new Decimal(row.interestCapitalized).gt(0)).reduce((sum,row)=>sum.plus(row.interestCapitalized),new Decimal(0)).toFixed()??null}:null,termMonths?[]:["term and grace"],owned("ES-07"),evidence("structure.grace_months","structure.grace_interest").length),
+    result("ES-07",blocked("ES-07",termMonths?"completed":"not_computable"),termMonths?{type:graceInterest,months:graceMonths,capitalizedInterest:schedule?sumAmounts({amounts:schedule.rows.filter((row)=>compareFigures(row.interestCapitalized,0)>0).map((row)=>row.interestCapitalized)}).value:null}:null,termMonths?[]:["term and grace"],owned("ES-07"),evidence("structure.grace_months","structure.grace_interest").length),
     result("ES-08",blocked("ES-08",value("structure.seasonality.design")?"completed":value("structure.seasonality.material")?"partial":"not_applicable"),value("structure.seasonality.material")?{material:bool(value("structure.seasonality.material")),design:value("structure.seasonality.design")??null,reserve:value("structure.seasonality.reserve_mechanism")??null}:null,bool(value("structure.seasonality.material"))===true&&!value("structure.seasonality.design")?["seasonal payment calendar"]:[],owned("ES-08"),evidencePrefix("structure.seasonality.")),
     result("ES-09",blocked("ES-09",rampMonths!==null?delayMonths!==undefined?"completed":"partial":"not_applicable"),rampMonths!==null?{rampMonths,delayMarginMonths:delayMonths??null,graceMonths,physicalMilestones:indexed("structure.project_milestones").length}:null,rampMonths!==null&&delayMonths===undefined?["construction delay policy"]:[],owned("ES-09"),evidencePrefix("structure.project_milestones.")),
     result("ES-10",blocked("ES-10",maturity?maturityLimit?"completed":"partial":"not_computable"),maturity?{...maturity,limit:maturityLimit??null,passes:maturityWallPass}:null,maturity?maturityLimit?[]:["maturity concentration policy"]:["proposed repayment schedule"],owned("ES-10"),0),

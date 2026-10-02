@@ -1,4 +1,4 @@
-import Decimal from "decimal.js";
+import {compareFigures, designCollateralCoverage, presentationAmount, presentationFigure} from "@offroad/financial-core";
 
 /**
  * The security package, designed from the inventory instead of listed from the playbook.
@@ -10,6 +10,10 @@ import Decimal from "decimal.js";
  * haircut when the room states none, orders the assets by the quality a lender ranks them in,
  * and picks the smallest package that reaches the coverage the archetype asks for. Every asset
  * says what it adds and what was taken off it.
+ *
+ * The policy stays here as data; the eligible values, the order, the selection and the coverage are
+ * computed by `@offroad/financial-core` (stage 19, third polish), and every figure a note states is
+ * printed by it.
  */
 
 export type CollateralClass = "receivables" | "inventory" | "property" | "equipment" | "vehicles" | "shares" | "financial" | "guarantee" | "other";
@@ -68,38 +72,35 @@ export const policyHaircuts: Record<CollateralClass, {haircut: string; rank: num
   other: {haircut: "0.70", rank: 9, lien: {pt: "garantia a classificar", en: "security to be classified"}, whyPt: "Classe não reconhecida; entra com desconto de desconhecido até ser nomeada.", whyEn: "Unrecognised class; enters at an unknown's discount until named."},
 };
 
-const d = (value: string | number): Decimal => new Decimal(value);
+/** A figure at the precision the package publishes it, half-up on the decimal value. */
+const at = (value: string, decimals: number) => presentationFigure({value, decimals}).value;
 
 export function designCollateralPackage(input: {assets: CollateralAsset[]; amount: string; coverage?: string}): CollateralPackage {
-  const amount = d(input.amount);
-  const coverage = d(input.coverage ?? "1.3");
-  const required = amount.times(coverage);
-
-  const lines: PackageLine[] = input.assets.map((asset) => {
-    const policy = policyHaircuts[asset.type];
-    const haircut = asset.haircut !== undefined ? d(asset.haircut) : d(policy.haircut);
-    const free = Decimal.max(d(asset.value).minus(d(asset.encumbered ?? "0")), 0);
-    return {
-      asset,
-      haircut: haircut.toFixed(4),
-      haircutSource: asset.haircut !== undefined ? "room" : "policy",
-      eligible: free.times(new Decimal(1).minus(haircut)).toFixed(2),
-      lien: policy.lien,
-      selected: false,
-    };
+  const coverage = input.coverage ?? "1.3";
+  const figures = designCollateralCoverage({
+    assets: input.assets.map((asset) => ({
+      value: asset.value,
+      encumbered: asset.encumbered ?? "0",
+      haircut: asset.haircut !== undefined ? asset.haircut : policyHaircuts[asset.type].haircut,
+      rank: policyHaircuts[asset.type].rank,
+    })),
+    amount: input.amount,
+    coverage,
   });
+
+  const lines: PackageLine[] = input.assets.map((asset, index) => ({
+    asset,
+    haircut: figures.lines[index]!.haircut,
+    haircutSource: asset.haircut !== undefined ? "room" : "policy",
+    eligible: figures.lines[index]!.eligible,
+    lien: policyHaircuts[asset.type].lien,
+    selected: figures.selected.includes(index),
+  }));
 
   // Best quality first, then the largest eligible value: the package a lender signs is the one
   // with the fewest, most liquid liens, not the one with everything pledged.
-  const ordered = [...lines].sort((a, b) => policyHaircuts[a.asset.type].rank - policyHaircuts[b.asset.type].rank || d(b.eligible).minus(a.eligible).toNumber());
-  let running = new Decimal(0);
-  for (const line of ordered) {
-    if (running.gte(required)) break;
-    if (d(line.eligible).lte(0)) continue;
-    line.selected = true;
-    running = running.plus(line.eligible);
-  }
-  const sufficient = running.gte(required);
+  const ordered = figures.order.map((index) => lines[index]!);
+  const sufficient = figures.sufficient;
   const notes: {pt: string; en: string}[] = [];
   const unappraised = lines.filter((line) => line.selected && (line.asset.type === "property" || line.asset.type === "equipment") && !line.asset.appraised);
   if (unappraised.length > 0) {
@@ -111,18 +112,20 @@ export function designCollateralPackage(input: {assets: CollateralAsset[]; amoun
   const guaranteeOnly = lines.some((line) => line.asset.type === "guarantee");
   if (guaranteeOnly) notes.push({pt: "Aval dos controladores acompanha o pacote e não conta como cobertura.", en: "The controllers' guarantee accompanies the package and does not count as coverage."});
   if (!sufficient) {
+    // The amount missing is stated as every material states an amount (financial-core), never as raw digits.
+    const missing = (locale: "pt-BR" | "en-US") => presentationAmount({value: figures.shortfall!, locale, style: "whole"}).text;
     notes.push({
-      pt: `O inventário cobre ${running.div(amount).toFixed(2).replace(".", ",")}x do pedido contra ${coverage.toFixed(2).replace(".", ",")}x exigidos: faltam ${required.minus(running).toFixed(0)} de valor elegível. Ou a empresa nomeia outro ativo, ou o tíquete cai, ou a cobertura se completa com garantia de terceiro.`,
-      en: `The inventory covers ${running.div(amount).toFixed(2)}x of the ask against ${coverage.toFixed(2)}x required: ${required.minus(running).toFixed(0)} of eligible value is missing. Either the company names another asset, the ticket comes down, or a third-party guarantee completes the coverage.`,
+      pt: `O inventário cobre ${at(figures.coverageReached!, 2).replace(".", ",")}x do pedido contra ${at(coverage, 2).replace(".", ",")}x exigidos: faltam ${missing("pt-BR")} de valor elegível. Ou a empresa nomeia outro ativo, ou o tíquete cai, ou a cobertura se completa com garantia de terceiro.`,
+      en: `The inventory covers ${at(figures.coverageReached!, 2)}x of the ask against ${at(coverage, 2)}x required: ${missing("en-US")} of eligible value is missing. Either the company names another asset, the ticket comes down, or a third-party guarantee completes the coverage.`,
     });
   }
   return {
-    target: {coverage: coverage.toFixed(4), amount: amount.toFixed(2), required: required.toFixed(2)},
+    target: {coverage: at(coverage, 4), amount: at(input.amount, 2), required: at(figures.required, 2)},
     lines: ordered,
-    coverageAchieved: amount.gt(0) ? running.div(amount).toFixed(4) : "0",
-    eligibleSelected: running.toFixed(2),
+    coverageAchieved: compareFigures(input.amount, 0) > 0 ? at(figures.coverageReached!, 4) : "0",
+    eligibleSelected: at(figures.eligibleSelected, 2),
     sufficient,
-    shortfall: sufficient ? null : required.minus(running).toFixed(2),
+    shortfall: figures.shortfall === null ? null : at(figures.shortfall, 2),
     notes,
   };
 }

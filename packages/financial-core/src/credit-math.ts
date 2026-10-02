@@ -280,6 +280,15 @@ export const financialCalculationRegistry = {
   "rating.factor_points": "scoreRatingFactor",
   "rating.grade": "gradeInternalRating",
   "stress.table": "calculateStressTable",
+  "deal.venture_capacity": "calculateVentureDebtCapacity",
+  "deal.leverage_ceiling_room": "calculateLeverageCeilingRoom",
+  "deal.lowest_figure": "selectLowestFigure",
+  "deal.collateral_coverage": "designCollateralCoverage",
+  "deal.amount_sum": "sumAmounts",
+  "deal.amount_difference": "calculateAmountDifference",
+  "deal.within_tolerance": "testWithinTolerance",
+  "deal.sizing_gap": "calculateSizingGap",
+  "deal.amounts_by_key": "sumAmountsByKey",
 } as const;
 
 export type FinancialCalculationId = keyof typeof financialCalculationRegistry;

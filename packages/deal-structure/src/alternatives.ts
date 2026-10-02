@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 
 import type {InstrumentVerdict} from "@offroad/credit-playbook";
-import Decimal from "decimal.js";
+import {calculateAmountDifference, compareFigures, readFactFigure, sumAmounts, testWithinTolerance} from "@offroad/financial-core";
 
 import type {OperationTruthSet} from "./operation";
 import type {StructureTruthSet} from "./structure";
@@ -172,12 +172,21 @@ export type StructureDecision = {
   blockers: string[];
 };
 
+/**
+ * An amount of the proposal as financial-core reads it: decimal notation, surrounding spaces aside; null
+ * for any other text, which is never read as zero.
+ */
+const figureOf = (value: string) => readFactFigure({text: value}).value;
 const validAmount = (value: string) => {
-  try { return new Decimal(value).gt(0); } catch { return false; }
+  const figure = figureOf(value);
+  return figure !== null && compareFigures(figure, 0) > 0;
 };
-const sum = (lines: readonly StructureBasisLine[]) => lines.reduce((total, line) => {
-  try { return total.plus(line.amount); } catch { return total; }
-}, new Decimal(0)).toFixed();
+/** The lines' amounts that are figures, summed by financial-core. A line that is not one keeps sources and uses from closing. */
+const sum = (lines: readonly StructureBasisLine[]) => sumAmounts({amounts: lines.flatMap((line) => {
+  const figure = figureOf(line.amount);
+  return figure === null ? [] : [figure];
+})}).value;
+const unreadableLine = (lines: readonly StructureBasisLine[]) => lines.some((line) => figureOf(line.amount) === null);
 const unique = (values: readonly string[]) => [...new Set(values.filter(Boolean))].sort();
 const isIsoDateTime = (value: string) => Number.isFinite(Date.parse(value)) && /T/.test(value);
 
@@ -204,7 +213,7 @@ export function compileStructureAlternatives(input: {
     .filter((id, index, ids) => ids.indexOf(id) !== index);
   if (duplicateIds.length) globalBlockers.push("duplicate_structure_alternative_id");
 
-  const tolerance = new Decimal(input.sourcesAndUsesTolerance ?? "0").abs();
+  const tolerance = input.sourcesAndUsesTolerance ?? "0";
   const allowedBasisIds = input.allowedBasisIds ? new Set(input.allowedBasisIds) : null;
   const envelope = input.structureTruth.capacityEnvelope.amount;
   const alternatives = proposal.alternatives.slice(0, 3).map((draft): CompiledStructureAlternative => {
@@ -227,22 +236,25 @@ export function compileStructureAlternatives(input: {
 
     const totalSources = sum(draft.sources);
     const totalUses = sum(draft.uses);
-    const difference = new Decimal(totalSources).minus(totalUses).toFixed();
-    const sourcesAndUsesClosed = new Decimal(difference).abs().lte(tolerance) && draft.sources.length > 0 && draft.uses.length > 0;
+    const difference = calculateAmountDifference({amount: totalSources, reference: totalUses}).value;
+    const sourcesAndUsesClosed = testWithinTolerance({difference, tolerance}).within && draft.sources.length > 0 && draft.uses.length > 0
+      && !unreadableLine(draft.sources) && !unreadableLine(draft.uses);
     if (!draft.sources.length || !draft.uses.length) missingInputs.push("alternative.sources_and_uses");
     if (!sourcesAndUsesClosed) blockers.push("alternative_sources_and_uses_not_closed");
 
     const verifiedEnvelope = deterministicVerification ? verification!.structureTruth.capacityEnvelope.amount : envelope;
+    const amount = figureOf(draft.amount);
     const sizingWithinEnvelope = verifiedEnvelope === null || !validAmount(draft.amount)
       ? null
-      : new Decimal(draft.amount).lte(verifiedEnvelope);
+      : compareFigures(amount!, verifiedEnvelope) <= 0;
     if (!validAmount(draft.amount)) blockers.push("invalid_alternative_amount");
     if (sizingWithinEnvelope === false) blockers.push("alternative_exceeds_capacity_envelope");
 
     const verifiedTermsMatch = deterministicVerification
       ? verification!.structureTruth.proposal.instrument === draft.instrument
         && verification!.structureTruth.proposal.amount !== null
-        && new Decimal(verification!.structureTruth.proposal.amount).eq(draft.amount)
+        && amount !== null
+        && compareFigures(verification!.structureTruth.proposal.amount, amount) === 0
         && verification!.structureTruth.proposal.termMonths === draft.termMonths
         && verification!.structureTruth.proposal.graceMonths === draft.graceMonths
         && verification!.structureTruth.proposal.amortizationFormat === draft.amortization
@@ -251,8 +263,8 @@ export function compileStructureAlternatives(input: {
 
     const verifiedSourcesAndUsesMatch = deterministicVerification
       ? verification!.operationTruth.sourcesAndUses.status === "pass"
-        && new Decimal(verification!.operationTruth.sourcesAndUses.totalSources).eq(totalSources)
-        && new Decimal(verification!.operationTruth.sourcesAndUses.totalUses).eq(totalUses)
+        && compareFigures(verification!.operationTruth.sourcesAndUses.totalSources, totalSources) === 0
+        && compareFigures(verification!.operationTruth.sourcesAndUses.totalUses, totalUses) === 0
       : null;
     if (verifiedSourcesAndUsesMatch === false) blockers.push("alternative_sources_and_uses_not_verified");
 

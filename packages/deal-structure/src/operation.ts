@@ -1,17 +1,22 @@
 import {
+  calculateAmountDifference,
   calculateExcessFundingCarry,
   calculateIncrementalWorkingCapital,
   calculateProFormaPosition,
   calculateTransactionNeed,
+  compareFigures,
+  readFactFigure,
+  readMonthCount,
   reconcileSourcesAndUses,
+  sumAmounts,
   testDisbursementCoverage,
 } from "@offroad/financial-core";
 import type {DebtTruthSet, FinancialTruthSet, ReconciledFact} from "@offroad/reconciliation";
-import Decimal from "decimal.js";
 
 import type {CapacityAssessment} from "./capacity";
 
-export const operationTruthVersion = "2026.09.08-v2";
+// Prospective identity: unreadable supplied amounts are gaps, never zero or omitted arithmetic.
+export const operationTruthVersion = "2026.10.02-v3";
 type Status = "completed" | "partial" | "blocked" | "not_computable" | "not_applicable";
 type EvidenceLink = {fieldPath: string; sourceDocument: string; anchor?: unknown};
 type Line = {
@@ -67,9 +72,20 @@ const source = (fact: ReconciledFact): EvidenceLink => ({
   sourceDocument: fact.accepted.sourceDocument,
   ...(fact.accepted.anchor !== undefined ? {anchor: fact.accepted.anchor} : {}),
 });
-const asNumber = (value: string | undefined) => value !== undefined && Number.isFinite(Number(value)) ? value : undefined;
-const asInteger = (value: string | undefined) => value !== undefined && Number.isInteger(Number(value)) ? Number(value) : null;
-const sum = (values: Array<string | undefined>) => values.reduce((total, value) => total.plus(asNumber(value) ?? 0), new Decimal(0)).toFixed();
+// A fact's figure is read by financial-core in decimal notation, and handed on as the fact states it: an
+// empty text or another notation is no figure, and a count is a whole number of the same reading.
+const asNumber = (value: string | undefined) => value !== undefined && readFactFigure({text: value}).value !== null ? value : undefined;
+const asInteger = (value: string | undefined) => {
+  const count = value === undefined ? null : readMonthCount({text: value}).value;
+  return count !== null && Number.isInteger(count) ? count : null;
+};
+/** Optional absence follows the existing contract; callers must expose supplied unreadable values as gaps before summing. */
+const sum = (values: Array<string | undefined>) => sumAmounts({amounts: values.flatMap((value) => {
+  if (value === undefined) return [];
+  const figure = readFactFigure({text: value}).value;
+  if (figure === null) throw new RangeError("supplied operation amount must be a finite decimal number");
+  return [figure];
+})}).value;
 
 export function buildOperationTruthSet(input: {
   facts: readonly ReconciledFact[];
@@ -93,13 +109,18 @@ export function buildOperationTruthSet(input: {
   const requested = asNumber(input.requestedAmount ?? value("transaction.requested_amount"));
   if (!requested) missing.add("transaction.requested_amount");
 
+  const lineMissing = new Set<string>();
+  const needMissing = new Set<string>();
   const lines: Line[] = indexed("transaction.sources_and_uses").flatMap((index) => {
     const base = `transaction.sources_and_uses.${index}`;
     const side = value(`${base}.side`);
     const amount = asNumber(value(`${base}.amount`));
     const item = value(`${base}.item`);
     const normalizedSide = side === "sources" ? "source" : side === "uses" ? "use" : side;
-    if ((normalizedSide !== "source" && normalizedSide !== "use") || !amount || !item) return [];
+    if (normalizedSide !== "source" && normalizedSide !== "use") lineMissing.add(`${base}.side`);
+    if (amount === undefined) lineMissing.add(`${base}.amount`);
+    if (!item?.trim()) lineMissing.add(`${base}.item`);
+    if ((normalizedSide !== "source" && normalizedSide !== "use") || amount === undefined || !item?.trim()) return [];
     return [{
       id: index, side: normalizedSide, item, amount,
       entity: value(`${base}.entity`) ?? null,
@@ -113,7 +134,8 @@ export function buildOperationTruthSet(input: {
   const sourceLines = lines.filter((line) => line.side === "source");
   const useLines = lines.filter((line) => line.side === "use");
   const tolerance = policy.residualTolerance ?? "0";
-  const tie = sourceLines.length && useLines.length
+  for (const field of lineMissing) missing.add(field);
+  const tie = sourceLines.length && useLines.length && lineMissing.size === 0
     ? reconcileSourcesAndUses({sources: sourceLines, uses: useLines, tolerance})
     : null;
   if (!sourceLines.length || !useLines.length) missing.add("transaction.sources_and_uses");
@@ -124,21 +146,42 @@ export function buildOperationTruthSet(input: {
     lines,
     totalSources: unmatchedTotalSources,
     totalUses: unmatchedTotalUses,
-    difference: new Decimal(unmatchedTotalSources).minus(unmatchedTotalUses).toFixed(),
+    difference: calculateAmountDifference({amount: unmatchedTotalSources, reference: unmatchedTotalUses}).value,
     status: "not_computable" as const,
   };
 
-  const capex = asNumber(value("project.total_cost")) ?? sum(useLines.filter((line) => /capex|expans|aquisi|equip|obra/i.test(line.item)).map((line) => line.amount));
-  const incrementalWcValue = asNumber(value("transaction.incremental_working_capital")) ?? sum(useLines.filter((line) => /capital de giro|working capital|ncg/i.test(line.item)).map((line) => line.amount));
-  const transactionCosts = asNumber(value("transaction.transaction_costs")) ?? sum(useLines.filter((line) => /fee|custo|despesa da opera/i.test(line.item)).map((line) => line.amount));
+  // An absent optional component keeps its established absence semantics. A
+  // supplied but unreadable component is a gap, never a zero or an inferred use.
+  const needAmount = (path: string, pattern: RegExp): string | undefined => {
+    const raw = value(path);
+    const figure = asNumber(raw);
+    if (raw !== undefined && figure === undefined) {
+      needMissing.add(path);
+      return undefined;
+    }
+    if (raw === undefined && lineMissing.size > 0) {
+      for (const field of lineMissing) needMissing.add(field);
+      return undefined;
+    }
+    return figure ?? sum(useLines.filter((line) => pattern.test(line.item)).map((line) => line.amount));
+  };
+  const capex = needAmount("project.total_cost", /capex|expans|aquisi|equip|obra/i);
+  const incrementalWcValue = needAmount("transaction.incremental_working_capital", /capital de giro|working capital|ncg/i);
+  const transactionCosts = needAmount("transaction.transaction_costs", /fee|custo|despesa da opera/i);
   const executionBuffer = asNumber(value("transaction.execution_buffer"));
-  const selfFunding = sum([value("project.company_cash"), value("project.shareholder_equity"), value("transaction.self_funding")]);
+  const selfFundingPaths = ["project.company_cash", "project.shareholder_equity", "transaction.self_funding"];
+  for (const path of selfFundingPaths) {
+    if (value(path) !== undefined && asNumber(value(path)) === undefined) needMissing.add(path);
+  }
+  const selfFunding = needMissing.size === 0 ? sum(selfFundingPaths.map(value)) : null;
+  for (const field of needMissing) missing.add(field);
   let calculatedNeed: OperationTruthSet["calculatedNeed"] = null;
-  if (capex && incrementalWcValue && transactionCosts && executionBuffer !== undefined) {
+  if (capex && incrementalWcValue && transactionCosts && executionBuffer !== undefined && selfFunding !== null) {
     const calculation = calculateTransactionNeed({capex, incrementalWorkingCapital: incrementalWcValue, transactionCosts, executionBuffer, selfFunding});
-    const divergence = requested ? new Decimal(requested).minus(calculation.calculatedNeed).toFixed() : null;
+    const difference = requested ? calculateAmountDifference({amount: requested, reference: calculation.calculatedNeed}) : null;
+    const divergence = difference ? difference.value : null;
     calculatedNeed = {value: calculation.calculatedNeed, trace: calculation.trace, divergence, status: requested && policy.sizingMateriality !== undefined ? "completed" : "partial"};
-    if (requested && policy.sizingMateriality !== undefined && new Decimal(divergence!).abs().gt(policy.sizingMateriality)) {
+    if (difference && policy.sizingMateriality !== undefined && compareFigures(difference.magnitude, policy.sizingMateriality) > 0) {
       exceptions.push({id: "request-need-divergence", severity: "high", message: "The stated request differs materially from calculated need.", affectedFields: ["transaction.requested_amount"]});
     }
   } else {
@@ -157,6 +200,9 @@ export function buildOperationTruthSet(input: {
     .filter((statement) => statement.adjustedEbitda !== null)
     .sort((left, right) => right.period.localeCompare(left.period))[0]?.adjustedEbitda ?? undefined;
   const proFormaMissing = new Set<string>();
+  for (const path of ["transaction.refinanced_debt", "transaction.fees_paid_from_cash", "project.company_cash"]) {
+    if (value(path) !== undefined && asNumber(value(path)) === undefined) proFormaMissing.add(path);
+  }
   if (!requested) proFormaMissing.add("transaction.requested_amount");
   if (input.debtTruth.views.balanceBasis !== "reported_instruments") proFormaMissing.add("debt.balance_provenance");
   if (input.debtTruth.views.cashBasis !== "reported") proFormaMissing.add("debt.unrestricted_cash");
@@ -188,7 +234,7 @@ export function buildOperationTruthSet(input: {
     const coverage = asNumber(value(`${base}.dscr`)) ?? null;
     const deficit = asNumber(value(`${base}.liquidity_deficit`));
     if (!scenario || deficit === undefined) return [];
-    return [{scenario, coverage, deficit, status: coverage === null || policy.minimumDscr === undefined ? "not_computable" as const : new Decimal(coverage).gte(policy.minimumDscr) && new Decimal(deficit).eq(0) ? "pass" as const : "fail" as const}];
+    return [{scenario, coverage, deficit, status: coverage === null || policy.minimumDscr === undefined ? "not_computable" as const : compareFigures(coverage, policy.minimumDscr) >= 0 && compareFigures(deficit, 0) === 0 ? "pass" as const : "fail" as const}];
   });
 
   const effects = {
@@ -281,8 +327,8 @@ export function buildOperationTruthSet(input: {
     "stale-operation-version": ["OP-14"],
   };
   const coverageSpec: Array<[`OP-${string}`, Status, number, string[]]> = [
-    ["OP-01", calculatedNeed?.status ?? "not_computable", calculatedNeed ? 1 : 0, calculatedNeed ? [] : ["complete calculated need"]],
-    ["OP-02", sourcesAndUses.status === "pass" ? "completed" : sourcesAndUses.status === "fail" ? "blocked" : "not_computable", lines.length, sourceLines.length && useLines.length ? [] : ["complete sources and uses"]],
+    ["OP-01", calculatedNeed?.status ?? "not_computable", calculatedNeed ? 1 : 0, calculatedNeed ? [] : needMissing.size ? [...needMissing].sort() : ["complete calculated need"]],
+    ["OP-02", sourcesAndUses.status === "pass" ? "completed" : sourcesAndUses.status === "fail" ? "blocked" : "not_computable", lines.length, lineMissing.size ? [...lineMissing].sort() : sourceLines.length && useLines.length ? [] : ["complete sources and uses"]],
     ["OP-03", proFormaWithCovenant ? covenantConflict ? "blocked" : "completed" : "not_computable", proFormaWithCovenant ? 1 : 0, proFormaWithCovenant ? [] : [...proFormaMissing].sort()],
     ["OP-04", scenarioCapacity.length ? scenarioCapacity.some((item) => item.status === "fail") ? "blocked" : scenarioCapacity.every((item) => item.status === "pass") ? "completed" : "partial" : "not_computable", scenarioCapacity.length, scenarioCapacity.length ? [] : ["scenario liquidity coverage"]],
     ["OP-05", Object.values(effects).every((items) => items.length) ? "completed" : "partial", Object.values(effects).flat().length, Object.values(effects).every((items) => items.length) ? [] : ["three explicit effect lists"]],
