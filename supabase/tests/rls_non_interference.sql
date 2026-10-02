@@ -2776,7 +2776,8 @@ declare
   body text := pg_get_functiondef('private.enqueue_incremental_deal_state_analysis_pre_material_native_v1(uuid,uuid,text)'::regprocedure);
   current_body text := pg_get_functiondef('private.enqueue_incremental_deal_state_analysis(uuid,uuid,text)'::regprocedure);
 begin
-  if position('private.enqueue_incremental_deal_state_analysis_pre_material_native_v1' in current_body)=0 then raise exception 'native material enqueue lost the governed budget producer';end if;
+  if position('private.enqueue_incremental_deal_state_analysis_pre_material_package_v1' in current_body)=0
+   or position('private.enqueue_incremental_deal_state_analysis_pre_material_native_v1' in pg_get_functiondef('private.enqueue_incremental_deal_state_analysis_pre_material_package_v1(uuid,uuid,text)'::regprocedure))=0 then raise exception 'native material enqueue lost the governed budget producer';end if;
   if position($ceiling$'max_cost_usd', 3.10,
     'max_calls', 4,
     'case_max_cost_usd', 3.10,$ceiling$ in body) = 0
