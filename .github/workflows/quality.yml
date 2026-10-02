@@ -622,6 +622,16 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-capital-native-provider-sdk.mjs
 
+      - name: Work review dashboard SQL and integrated runner target guards
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_WORK_REVIEW_DRAFT_INSTALL: isolated-loopback-ci
+        run: |
+          set -euo pipefail
+          python3 -B scripts/ci/install-work-review-dashboard-ci-draft.py
+          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/work_review_dashboard.sql
+          node --test scripts/evals/stage20-integrated-review.test.mjs
+
       - name: Finite native preview through real Storage, two paid boundaries and replay
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -629,6 +639,7 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
           PREVIEW_DRAFTS_IN_LOCAL_STACK: "1"
           PREVIEW_HTTP_NAMESPACE: a8830001
+          PREVIEW_INTEGRATED_REVIEW_EVAL: "1"
         run: |
           python3 -B scripts/ci/test-capital-preview-sdk.py
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
@@ -748,6 +759,12 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
         run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
+
+      - name: Install review dashboard on the disposable browser stack
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          OFFROAD_WORK_REVIEW_DRAFT_INSTALL: isolated-loopback-ci
+        run: python3 -B scripts/ci/install-work-review-dashboard-ci-draft.py
 
       - name: Build the web app against the local stack
         run: pnpm --filter web build

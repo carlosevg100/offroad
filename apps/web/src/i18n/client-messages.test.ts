@@ -23,6 +23,9 @@ describe("locale layout client messages",()=>{
   expect(translate('ProviderCaseFitForm.submit')).toBe(messages.ProviderCaseFitForm.submit);
   expect(translate('InstitutionalSetup.title')).toBe(messages.InstitutionalSetup.title);
   expect(translate('InstitutionalModelResult.title')).toBe(messages.InstitutionalModelResult.title);
+  expect(translate('WorkReviewHistory.reaffirm')).toBe(messages.WorkReviewHistory.reaffirm);
+  expect(translate('WorkReviewHistory.decisionKinds.choose_alternative')).toBe(messages.WorkReviewHistory.decisionKinds.choose_alternative);
+  expect(translate('WorkReviewHistory.precedence.contested')).toBe(messages.WorkReviewHistory.precedence.contested);
   expect(errors).toEqual([]);
   expect(selected).not.toHaveProperty('Home');
  });

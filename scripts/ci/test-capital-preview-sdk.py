@@ -27,6 +27,10 @@ def main():
   files=['capital_preview_consumed_sources','capital_preview_dispatch_policy','capital_preview_native_consumption','capital_preview_execution_ledger','capital_preview_native_commit']
   sql='begin;\n'+'\n'.join((ROOT/'supabase/pending'/f'{name}.sql').read_text()for name in files)+'\ncommit;'
   subprocess.run(['psql',env['DATABASE_URL'],'-Xq','-v','ON_ERROR_STOP=1'],input=sql,text=True,env=env,cwd=ROOT,check=True)
+ if env.get('PREVIEW_INTEGRATED_REVIEW_EVAL')=='1' and env.get('PREVIEW_REVIEW_DRAFT_IN_LOCAL_STACK')=='1':
+  draft=ROOT/'supabase/pending/work_review_dashboard.sql'
+  assert draft.is_file(),'Frozen 3W review wrappers required'
+  subprocess.run(['psql',env['DATABASE_URL'],'-Xq','-v','ON_ERROR_STOP=1'],input='begin;\n'+draft.read_text()+'\ncommit;',text=True,env=env,cwd=ROOT,check=True)
  env['PREVIEW_HTTP_FIXTURE']='1';env.setdefault('PREVIEW_HTTP_NAMESPACE','a8830001')
  loader=next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/loader.mjs'))
  sdk=['node','--import',str(loader),str(ROOT/'apps/document-worker/scripts/capital-preview-native-sdk-eval.ts')]

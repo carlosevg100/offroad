@@ -5502,3 +5502,7 @@ As oito migrações estão instaladas em staging e produção. Arquivos usam os 
 O SQL instalado de staging passou pelos grupos de produção, recuperação, revisão, política, papéis, revogação, ausência física dos pais e bloqueio das três aprovações antigas. Esse SQL verifica metadados de Storage; HTTP físico é gate próprio, sem inferência. A CI passa a exigir os runners nativos, corridas de duas transações, SDK/Auth/Storage real e navegador. Os testes `deal_state_route.sql` e `material_package_analysis_trigger.sql` que aprovavam objetos históricos livremente foram substituídos por essas provas; somente o setup sintético útil permanece em `support/material_production_route_fixture.sql`.
 
 Migração aplicada não encerra o incremento. CI, merge, web e worker no mesmo commit e verificação pós-deploy precisam fechar antes do completion. Etapa 20 continua aberta; o importador de workbook permanece na etapa 21.
+
+## Etapa 20: candidata 3W e eval integrado 3X, 02/10/2026
+
+Histórico/pendências de revisão, reafirmação cosmética, reassociação, relato e contestação usam comandos com autoridade atual e efeitos fechados. O eval integra duas contas Auth, leitura nativa pelo Storage/Edge, mudança material, revogação e contagens de efeitos. Testes focais locais passaram; SQL, HTTP, Playwright, staging, produção e implantação ainda dependem dos gates. Esta nota não declara completion da etapa. Contratos e saldo: `docs/build/arcabouco/etapa-20-3w-consumidor.md` e `docs/build/arcabouco/etapa-20-3x-integrated-review-eval.md`.

@@ -2,9 +2,11 @@
  * bodies, native task writes and recovery use the real Supabase stack. */
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
-import {readFileSync} from "node:fs";
+import {readFileSync, writeFileSync, mkdtempSync, rmSync} from "node:fs";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
 import {fileURLToPath} from "node:url";
-import {createHash} from "node:crypto";
+import {createHash, randomUUID} from "node:crypto";
 import {createClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import type {AdapterRequest} from "@offroad/model-gateway";
@@ -43,9 +45,47 @@ async function main(){
  phase='human-body';const revision=z.uuid().parse(sql(db,`select revision_id from private.capital_preview_native_bindings where capital_artifact_id='${z.uuid().parse(result.capitalArtifactId)}';`));const headers={apikey:key,Authorization:`Bearer ${login.data.session!.access_token}`,'x-offroad-workspace':organization,'Content-Type':'application/json'};
  const response=await fetch(`${api.replace(/\/$/,'')}/functions/v1/capital-body-read`,{method:'POST',redirect:'error',headers,body:JSON.stringify({kind:'preview_result',revisionId:revision})});assert.equal(response.status,200);const bytes=new Uint8Array(await response.arrayBuffer());assert.equal(createHash('sha256').update(bytes).digest('hex'),response.headers.get('x-offroad-payload-sha256'));assert.equal(response.headers.get('x-offroad-recipe-id'),sql(db,`select id from private.capital_preview_runs where job_id='${job.job_id}';`));
  phase='ordinary-storage-denied';const objectPath=sql(db,`select object_path from private.capital_public_payload_allocations where job_id='${job.job_id}'order by created_at limit1;`.replace('limit1','limit 1'));assert.ok((await client.storage.from('capital-input-capture').download(objectPath)).error);
+ let integratedReviewFailure=false;let reviewUserId:string|undefined;
+ if(process.env.PREVIEW_INTEGRATED_REVIEW_EVAL==='1'){
+  // Tool-only and loopback-only: preserve the default SDK proof unchanged.
+  // This runs before revoking the actual licence, never over a recovered denied body.
+  phase='integrated-review-bootstrap';const fixtureNamespace=randomUUID(),reviewEmail=`stage20-review-${fixtureNamespace}-reviewer@example.invalid`,reviewPassword=`Synthetic-${randomUUID()}!`;
+  const secondary=createClient(api,key,{auth:{persistSession:false},global:{fetch:(input,init)=>fetch(input,{...init,redirect:'error'})}});
+  const signup=await secondary.auth.signUp({email:reviewEmail,password:reviewPassword});assert.equal(signup.error,null);reviewUserId=z.uuid().parse(signup.data.user?.id);
+  // Auth created this identity. Confirm only its exact synthetic address in the disposable DB;
+  // membership bootstrap is fixture data, while access and all review roles use product commands.
+  sql(db,`begin;update auth.users set email_confirmed_at=coalesce(email_confirmed_at,clock_timestamp())where id='${reviewUserId}'and email='${reviewEmail}';insert into public.organization_memberships(organization_id,user_id,role,status)values('${organization}','${reviewUserId}','member','active');commit;`);
+  const work=z.uuid().parse(sql(db,`select work_id from private.capital_preview_runs where job_id='${job.job_id}';`));
+  const command=async(name:string,args:Record<string,unknown>)=>{const r=await(client as unknown as {rpc:(name:string,args:Record<string,unknown>)=>PromiseLike<{data:unknown;error:unknown}>}).rpc(name,args);assert.equal(r.error,null);return r.data;};
+  await command('set_resource_policy_grant_v1',{p_resource_id:work,p_user_id:reviewUserId,p_group_id:null,p_action:'work',p_effect:'allow'});
+  await command('set_resource_policy_grant_v1',{p_resource_id:work,p_user_id:reviewUserId,p_group_id:null,p_action:'read',p_effect:'allow'});
+  for(const person of[actor,reviewUserId])for(const role of['preparer','approver'])await command('set_capital_project_review_assignment_v1',{p_project_id:work,p_user_id:person,p_review_role:role,p_assigned:true});
+  const regime=z.object({policy_fingerprint:z.string().regex(/^[a-f0-9]{64}$/),self_approval:z.object({effective:z.boolean()})}).parse(await command('read_capital_project_review_context_v2',{p_project_id:work}));
+  assert.equal(regime.self_approval.effective,true,'existing brief ancestor requires its actual declared self-approval policy');
+  await command('set_capital_project_review_policy_v2',{p_project_id:work,p_self_approval:'inherit',p_assignment_required:'required',p_expected_policy_fingerprint:regime.policy_fingerprint});
+  const binding=z.object({recipeId:z.uuid(),retainedPayloadId:z.uuid()}).parse(JSON.parse(sql(db,`select jsonb_build_object('recipeId',run_id,'retainedPayloadId',retained_payload_id)from private.capital_preview_native_bindings where revision_id='${revision}';`)));
+  const directory=mkdtempSync(join(tmpdir(),'offroad-integrated-review-')),fixture=join(directory,'fixture.json'),output=join(directory,'proof.json');
+  try{
+   writeFileSync(fixture,JSON.stringify({schemaVersion:'stage20-integrated-review-fixture.v1',namespace:fixtureNamespace,organizationId:organization,workId:work,artifactId:result.capitalArtifactId,revisionId:revision,...binding,ownerId:actor,reviewerId:reviewUserId,cleanupOwner:'disposable Supabase CI stack integrator'}),{mode:0o600,flag:'wx'});
+   const runner=spawnSync(process.execPath,[fileURLToPath(new URL('../../../scripts/evals/stage20-integrated-review.mjs',import.meta.url))],{env:{...process.env,REVIEW_EVAL_API_URL:api,REVIEW_EVAL_DATABASE_URL:db,REVIEW_EVAL_PUBLISHABLE_KEY:key,REVIEW_EVAL_FIXTURE:fixture,REVIEW_EVAL_OUTPUT:output,REVIEW_EVAL_OWNER_EMAIL:`native-agent-${namespace}@example.invalid`,REVIEW_EVAL_OWNER_PASSWORD:'preview-isolated-local-eval-password',REVIEW_EVAL_REVIEWER_EMAIL:reviewEmail,REVIEW_EVAL_REVIEWER_PASSWORD:reviewPassword},encoding:'utf8',timeout:180000});
+   integratedReviewFailure=!!runner.error||runner.status!==0;
+   if(integratedReviewFailure)console.error('capital_preview_integrated_review: FAIL (raw Auth and SQL withheld)');
+   else{const evidence=JSON.parse(readFileSync(output,'utf8'))as{proof:{name:string;result:string}[]};assert.equal(evidence.proof.length,8);assert.ok(evidence.proof.every(v=>v.result==='PASS'));console.log(JSON.stringify({eval:'capital_preview_integrated_review',result:'PASS',checks:evidence.proof.map(v=>v.name)}));}
+  }finally{rmSync(directory,{recursive:true,force:true});}
+ }
  if(timer){clearInterval(timer);timer=undefined;}if(pending)await pending;if(failure)throw failure;
  phase='own-source-revocation';sql(db,`update public.source_bindings set revoked_at=clock_timestamp()where organization_id='${publisher}'and id=(select source_binding_id from private.capital_preview_consumed_basis_sources where organization_id='${publisher}'and basis_id='${basisId}'order by file_name limit 1);`);
  const denied=await fetch(`${api.replace(/\/$/,'')}/functions/v1/capital-body-read`,{method:'POST',redirect:'error',headers,body:JSON.stringify({kind:'preview_result',revisionId:revision})});assert.equal(denied.status,403);await assert.rejects(runtime.run());assert.equal(sends,2);
+ if(reviewUserId){
+  phase='integrated-review-own-cleanup';
+  const work=z.uuid().parse(sql(db,`select work_id from private.capital_preview_runs where job_id='${job.job_id}';`));
+  const revoked=await(client as unknown as{rpc:(name:string,args:Record<string,unknown>)=>PromiseLike<{error:unknown}>}).rpc('set_resource_policy_grant_v1',{p_resource_id:work,p_user_id:reviewUserId,p_group_id:null,p_action:'work',p_effect:'deny'});assert.equal(revoked.error,null);
+  sql(db,`update auth.users set banned_until='infinity'where id='${reviewUserId}'and email like'stage20-review-%@example.invalid';`);
+  // Physical deletion is performed only by the existing scoped purge worker; immutable
+  // audit/review history remains synthetic evidence in the stack that CI destroys.
+  await janitor.purgeOnce(workerToken,100);
+ }
+ if(integratedReviewFailure)throw Error('capital_preview_integrated_review_failed');
  console.log(JSON.stringify({eval:'capital_preview_native_sdk',result:'PASS',paidAttempts:sends,checks:['human-native-brief-approval','17-human-published-verified-source-versions','byte-preserving-CSV','real-Storage-Edge','10-native-TaskRuns-11-JSONs','two-real-paid-boundaries','stop-after-terminal-task-before-final-marker','partial-and-completed-physical-recovery-zero-model','missing-basis-zero-model','current-revocation-denied'],materialRecovery:'not_proven'}));
 }
 main().catch(error=>{if(timer)clearInterval(timer);const message=error instanceof Error?error.message:'';console.error(JSON.stringify({eval:'capital_preview_native_sdk',result:'FAIL',phase,code:/^[a-z0-9_]{3,120}$/.test(message)?message:null}));process.exitCode=1;});

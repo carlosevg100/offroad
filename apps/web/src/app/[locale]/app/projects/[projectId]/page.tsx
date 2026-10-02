@@ -1,3 +1,5 @@
+import type {SupabaseClient} from "@supabase/supabase-js";
+import {loadWorkReviewDashboard} from "@/lib/advisor/work-review-dashboard";
 import {resolveCapitalPreviewRows} from "@/lib/artifacts/capital-preview-result";
 import {resolveNativeProviderResultRows} from "@/lib/artifacts/capital-native-provider-result";
 import {loadExecutionBriefReviewBasis} from "@/lib/advisor/execution-brief-review-command";
@@ -605,9 +607,10 @@ async function ConversationalCapitalProject({
       workSections.push({id: "institutional-setup-review", title: initialReviewCopy("title"), version: initialReviews[0].revision, content: <InstitutionalSetupReviewWork projectId={project.id} reviews={initialReviews} />});
     }
   }
+  const reviewDashboard = reviewPolicyContext ? await loadWorkReviewDashboard(async(name,args)=>{const r=await (supabase as SupabaseClient).rpc(name,args);return {data:r.data,error:r.error};},project.id,organization.id,userId) : null;
   const rolesCopy = await getTranslations({locale, namespace: "ProjectReviewRoles"});
   workSections.push({id: "project-review", title: rolesCopy("contentTitle"), status: reviewPolicyContext ? rolesCopy(`regime.${reviewPolicyContext.regime}`) : undefined,
-    content: reviewPolicyContext ? <ProjectReviewRoles context={reviewPolicyContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} /> : <p role="status">{rolesCopy("unavailable")}</p>});
+    content: reviewPolicyContext ? <ProjectReviewRoles dashboard={reviewDashboard} context={reviewPolicyContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} /> : <p role="status">{rolesCopy("unavailable")}</p>});
   const templateContext = await loadPresentationTemplateContext(supabase, project.id);
   if (templateContext) {
     const templateCopy = await getTranslations({locale, namespace: "PresentationTemplate"});
