@@ -70093,7 +70093,763 @@
       "enabled": "O",
       "function": "private.guard_capital_body_input_attempt_v1()",
       "definition": "CREATE TRIGGER capital_body_input_attempt_guard BEFORE INSERT ON private.capital_body_invocation_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_capital_body_input_attempt_v1()"
+    },
+    {
+      "id": "function:private.capital_body_attempt_assurances_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+      "kind": "function",
+      "name": "capital_body_attempt_assurances_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_body_attempt_outcome_dto_v1(p_outcome private.capital_body_attempt_outcomes, p_root uuid, p_replayed boolean)",
+      "kind": "function",
+      "name": "capital_body_attempt_outcome_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_outcome private.capital_body_attempt_outcomes, p_root uuid, p_replayed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_body_attempt_outcome_fingerprint_v1(p_outcome jsonb)",
+      "kind": "function",
+      "name": "capital_body_attempt_outcome_fingerprint_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_outcome jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_body_attempt_predecessor_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+      "kind": "function",
+      "name": "capital_body_attempt_predecessor_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_body_dispatch_policy_v1(p_provider text, p_model text, p_byte_length bigint)",
+      "kind": "function",
+      "name": "capital_body_dispatch_policy_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_provider text, p_model text, p_byte_length bigint",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_body_operation_basis_v1(p_job processing_jobs, p_components jsonb)",
+      "kind": "function",
+      "name": "capital_body_operation_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job processing_jobs, p_components jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_body_operation_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+      "kind": "function",
+      "name": "capital_body_operation_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_body_operation_origins_v1(p_org uuid, p_resolved_components jsonb)",
+      "kind": "function",
+      "name": "capital_body_operation_origins_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_resolved_components jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_capital_body_legacy_origins_v1(p_org uuid, p_work uuid, p_resolved_components jsonb)",
+      "kind": "function",
+      "name": "guard_capital_body_legacy_origins_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_resolved_components jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.lock_capital_body_operation_origins_v1(p_org uuid, p_work uuid, p_origins uuid[])",
+      "kind": "function",
+      "name": "lock_capital_body_operation_origins_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_origins uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_authorize_capital_body_processing_core_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb, p_terminal_outcome_required boolean)",
+      "kind": "function",
+      "name": "worker_authorize_capital_body_processing_core_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb, p_terminal_outcome_required boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+      "kind": "function",
+      "name": "worker_authorize_capital_body_processing_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_body_attempt_outcome_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+      "kind": "function",
+      "name": "worker_record_capital_body_input_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+      "kind": "function",
+      "name": "worker_authorize_capital_body_processing_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_body_attempt_outcome_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+      "kind": "function",
+      "name": "worker_record_capital_body_input_v3",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_delete",
+      "kind": "policy",
+      "name": "capital_body_attempt_outcomes_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_attempt_outcomes",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_insert",
+      "kind": "policy",
+      "name": "capital_body_attempt_outcomes_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_attempt_outcomes",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_select",
+      "kind": "policy",
+      "name": "capital_body_attempt_outcomes_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_attempt_outcomes",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_update",
+      "kind": "policy",
+      "name": "capital_body_attempt_outcomes_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_attempt_outcomes",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_delete",
+      "kind": "policy",
+      "name": "capital_body_operation_dispatches_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_operation_dispatches",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_insert",
+      "kind": "policy",
+      "name": "capital_body_operation_dispatches_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_operation_dispatches",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_select",
+      "kind": "policy",
+      "name": "capital_body_operation_dispatches_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_operation_dispatches",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_update",
+      "kind": "policy",
+      "name": "capital_body_operation_dispatches_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_operation_dispatches",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_delete",
+      "kind": "policy",
+      "name": "capital_body_processing_operations_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_processing_operations",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_insert",
+      "kind": "policy",
+      "name": "capital_body_processing_operations_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_processing_operations",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_select",
+      "kind": "policy",
+      "name": "capital_body_processing_operations_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_processing_operations",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_update",
+      "kind": "policy",
+      "name": "capital_body_processing_operations_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_body_processing_operations",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.capital_body_attempt_outcomes",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_body_attempt_outcomes",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_body_operation_dispatches",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_body_operation_dispatches",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_body_processing_operations",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_body_processing_operations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_audit",
+      "kind": "trigger",
+      "name": "capital_body_attempt_outcomes_audit",
+      "table": "capital_body_attempt_outcomes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_body_attempt_outcomes_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_immutable",
+      "kind": "trigger",
+      "name": "capital_body_attempt_outcomes_immutable",
+      "table": "capital_body_attempt_outcomes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_body_attempt_outcomes_immutable BEFORE DELETE OR UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_updated_at",
+      "kind": "trigger",
+      "name": "capital_body_attempt_outcomes_updated_at",
+      "table": "capital_body_attempt_outcomes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_body_attempt_outcomes_updated_at BEFORE UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_audit",
+      "kind": "trigger",
+      "name": "capital_body_operation_dispatches_audit",
+      "table": "capital_body_operation_dispatches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_body_operation_dispatches_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_immutable",
+      "kind": "trigger",
+      "name": "capital_body_operation_dispatches_immutable",
+      "table": "capital_body_operation_dispatches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_body_operation_dispatches_immutable BEFORE DELETE OR UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_updated_at",
+      "kind": "trigger",
+      "name": "capital_body_operation_dispatches_updated_at",
+      "table": "capital_body_operation_dispatches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_body_operation_dispatches_updated_at BEFORE UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_audit",
+      "kind": "trigger",
+      "name": "capital_body_processing_operations_audit",
+      "table": "capital_body_processing_operations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_body_processing_operations_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_immutable",
+      "kind": "trigger",
+      "name": "capital_body_processing_operations_immutable",
+      "table": "capital_body_processing_operations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_body_processing_operations_immutable BEFORE DELETE OR UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_updated_at",
+      "kind": "trigger",
+      "name": "capital_body_processing_operations_updated_at",
+      "table": "capital_body_processing_operations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_body_processing_operations_updated_at BEFORE UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     }
   ],
-  "captured_at": "2026-10-02T01:43:21.84635+00:00"
+  "captured_at": "2026-10-02T10:16:26.699523+00:00"
 }

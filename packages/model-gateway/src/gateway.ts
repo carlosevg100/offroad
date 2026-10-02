@@ -7,6 +7,7 @@ import {buildRepairGuidance, type RepairValidationSource} from "./repair";
 import type {RedactionOptions} from "./redaction";
 import {prepareGatewayInput, buildEffectiveAdapterRequest, assertGatewaySchemaUnchanged} from "./effective-input";
 import {legacyGatewayFingerprint as fingerprint} from "./input-serialization";
+import {conservativeMicroUsd, prepareAttemptOutcome, verifyAttemptOutcomeReceipt, type GatewayAttemptOutcome, type GatewayAttemptOutcomeReceipt} from "./attempt-outcome";
 import {evaluateProviderDataPolicy, type ProviderDataAssurance} from "./data-policy";
 import {conservativeTextReservationUsd} from "./conservative-reservation";
 import {assertWithinModelLimits, modelLimits, type ModelLimits} from "./model-limits";
@@ -64,6 +65,8 @@ export type ModelGatewayConfig = {
   };
   /** Commit a content-free receipt before dispatch; failure terminates the run, including fallback. */
   attestInput?: (attestation: GatewayInputAttestation) => Promise<GatewayInputReceipt>;
+  /** Awaited terminal evidence. Failure stops the operation before a successor or success return. */
+  recordAttemptOutcome?: (outcome: GatewayAttemptOutcome) => Promise<GatewayAttemptOutcomeReceipt>;
   /** Structured, content-free log of every call. */
   onCall?: (log: GatewayCallLog) => void;
   now?: () => number;
@@ -139,6 +142,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
     const prepared = prepareGatewayInput(request, config.redaction ?? {});
     request = prepared.request;
     const attestInput = config.attestInput;
+    const recordAttemptOutcome = config.recordAttemptOutcome;
     if (request.requireInputAttestation && !attestInput) {
       throw new ModelGatewayError("input attestation is required", "input_attestation_denied");
     }
@@ -325,6 +329,26 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       const startedAt = now();
       let response: AdapterResponse | undefined;
       let fromCassette = false;
+      const closeOutcome = async (kind: GatewayAttemptOutcome["outcome"], failureCode: GatewayAttemptOutcome["failureCode"],
+        costUsd: number, latencyMs: number, outputFingerprint: string | null = null, validationIssueCodeFingerprint: string | null = null) => {
+        if (!recordAttemptOutcome) return;
+        try {
+          const status = fromCassette ? "cassette" : response && response.usageKnown !== false ? "measured" : "unknown";
+          const reservationMicroUsd = conservativeMicroUsd(reservationUsd);
+          const costMicroUsd = status === "unknown" ? null : conservativeMicroUsd(costUsd);
+          const outcome = prepareAttemptOutcome({invocationId, task: request.task, provider: ref.provider, configuredModel: ref.model,
+            schemaName: request.schemaName, adapterInputVersion: "gateway-adapter-input.v1", requestFingerprint: adapterRequestFingerprint,
+            inputFingerprint, promptFingerprint, previousInvocationId: previousAttemptInvocationId ?? null, retryOrdinal, isSameModelRepair, usedProviderFallback,
+            processingDecisionId: attemptTelemetry.processingDecisionId ?? null, inputAttestationReceiptId: attemptTelemetry.inputAttestationReceiptId ?? null,
+            fromCassette, outcome: kind, failureCode, outputFingerprintVersion: kind === "accepted" ? "gateway-parsed-output.v1" : null,
+            outputFingerprint, reportedModel: kind === "accepted" ? response!.model || ref.model : null, validationIssueCodeFingerprint,
+            reservationMicroUsd, costMicroUsd, exposureMicroUsd: fromCassette ? 0 : Math.max(reservationMicroUsd, costMicroUsd ?? 0), costStatus: status,
+            inputTokens: status === "unknown" ? null : response!.usage.inputTokens,
+            outputTokens: status === "unknown" ? null : response!.usage.outputTokens,
+            cachedInputTokens: status === "unknown" ? null : response!.usage.cachedInputTokens, latencyMillis: Math.ceil(latencyMs)});
+          return verifyAttemptOutcomeReceipt(outcome, await withTimeout(recordAttemptOutcome(outcome), Math.min(10_000, adapterRequest.timeoutMs)));
+        } catch {throw new ModelGatewayError("attempt outcome could not be recorded", "attempt_outcome_denied");}
+      };
       const key = config.cassette ? cassetteKey(ref.provider, adapterRequest, schemaJson) : undefined;
       try {
         if (config.cassette && key && config.cassette.mode !== "off") {
@@ -351,6 +375,8 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "error", message: errorMessage(error), ...attemptTelemetry});
         spent.calls += 1;
         spent.unknownCostCalls += 1;
+        await closeOutcome(error instanceof ModelGatewayError && error.code === "timeout" ? "timeout" : "provider_error",
+          error instanceof ModelGatewayError && error.code === "timeout" ? "provider_timeout" : "provider_failure", 0, now() - startedAt);
         emit(config, {
           request,
           ref,
@@ -386,6 +412,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
 
       if (response.stopReason === "refusal") {
         attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "refusal", ...attemptTelemetry});
+        await closeOutcome("refusal", "provider_refusal", costUsd, latencyMs);
         emit(config, {request, ref, invocationId, ...repairLineage, response, costUsd, latencyMs, usedFallback: legacyUsedFallback, ...attemptTelemetry, fromCassette, outcome: "refusal", promptFingerprint, inputFingerprint, outputFingerprint: fingerprint(response.output), providerPolicyVersion});
         previousAttemptInvocationId = invocationId;
         continue;
@@ -422,6 +449,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         attempts.push({invocationId, provider: ref.provider, model: ref.model, outcome: "invalid_output", message, ...attemptTelemetry});
         lastFailureWasTruncation = truncated;
         const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues: allowedValues ?? []})));
+        await closeOutcome("invalid_output", truncated ? "output_truncated" : "schema_invalid", costUsd, latencyMs, null, validationIssueCodeFingerprint);
         if (!truncated && !isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
           repairGuidance = buildRepairGuidance("schema", validationIssues);
           pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
@@ -458,6 +486,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
           ...attemptTelemetry,
         });
         const validationIssueCodeFingerprint = fingerprint(validationIssues.map(({path, code, allowedValues}) => ({path, code, allowedValues: allowedValues ?? []})));
+        await closeOutcome("invalid_output", "deterministic_invalid", costUsd, latencyMs, null, validationIssueCodeFingerprint);
         if (!isSameModelRepair && !usedProviderFallback && request.outputMode === "prompted_json") {
           repairGuidance = buildRepairGuidance("deterministic", validationIssues);
           pendingRepairIssueCodeFingerprint = validationIssueCodeFingerprint;
@@ -473,6 +502,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
       }
 
       const outputFingerprint = fingerprint(parsedOutput);
+      const attemptOutcomeReceipt = await closeOutcome("accepted", null, costUsd, latencyMs, outputFingerprint);
       const acceptedInvocation: GatewayAcceptedInvocation = Object.freeze({
         schemaVersion: "gateway-accepted-invocation.v1", invocationId,
         adapterInputVersion: "gateway-adapter-input.v1", adapterRequestFingerprint,
@@ -499,6 +529,7 @@ export function createModelGateway(config: ModelGatewayConfig): ModelGateway {
         isSameModelRepair,
         fromCassette,
         acceptedInvocation,
+        ...(attemptOutcomeReceipt ? {attemptOutcomeReceipt} : {}),
         attempts,
       };
       if (response.requestId) result.requestId = response.requestId;

@@ -1735,8 +1735,16 @@
   {
    "version": "20261002014224",
    "name": "capital_body_attempt_fk_index"
+  },
+  {
+   "version": "20261002101548",
+   "name": "capital_body_attempt_outcomes"
+  },
+  {
+   "version": "20261002101604",
+   "name": "capital_body_accepted_input_identity_fk_index"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-10-02T01:45:00.36968+00:00"
+ "captured_at": "2026-10-02T10:17:06.265328+00:00"
 }

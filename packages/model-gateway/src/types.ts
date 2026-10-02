@@ -162,6 +162,8 @@ export type GatewayAcceptedInvocation = Readonly<{
 }>;
 
 export type GatewayResult<T> = {
+  /** Verified terminal evidence only when the awaited outcome hook is configured. */
+  attemptOutcomeReceipt?: import("./attempt-outcome").GatewayAttemptOutcomeReceipt;
   output: T;
   provider: Provider;
   model: string;
@@ -271,7 +273,7 @@ export type GatewayCallLog = {
 export class ModelGatewayError extends Error {
   constructor(
     message: string,
-    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "output_truncated" | "cassette_missing" | "timeout" | "data_policy_violation" | "input_limit_exceeded" | "output_limit_exceeded" | "input_attestation_denied",
+    readonly code: "model_not_allowed" | "budget_exceeded" | "all_attempts_failed" | "invalid_output" | "output_truncated" | "cassette_missing" | "timeout" | "data_policy_violation" | "input_limit_exceeded" | "output_limit_exceeded" | "input_attestation_denied" | "attempt_outcome_denied",
     readonly details?: unknown,
   ) {
     super(message);
