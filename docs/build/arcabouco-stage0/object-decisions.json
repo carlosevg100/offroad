@@ -241566,6 +241566,13 @@
       "decision": "preservar",
       "stage": "20 / materiais",
       "reason": "Revoga execução de helpers internos recriados; histórico aplicado sem reescrever migrações."
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/assessment-review-actions.ts",
+      "decision": "preservar",
+      "stage": "20 / 3V",
+      "reason": "Ato humano de revisão da análise capturada; valida autoridade vigente e identidade da revisão antes do RPC."
     }
   ],
   "staging_archive": [
