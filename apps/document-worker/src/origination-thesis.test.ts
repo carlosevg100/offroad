@@ -1,9 +1,14 @@
-import {describe, expect, it} from "vitest";
+import {describe, expect, it, vi} from "vitest";
 
+import {readFileSync} from "node:fs";
+import {legacyGatewayFingerprint} from "@offroad/model-gateway";
+import {prepareCapitalPublicTaskRecipe} from "./capital-public-task-recipe";
+import type {CapitalPublicRecipeComponent} from "./capital-public-task-recipe";
+import type {CapitalM07RecipeReceipt} from "./capital-m07-processing";
 import type {ModelGateway} from "@offroad/model-gateway";
 import type {PublicSearchProvider} from "@offroad/public-research";
 
-import {processOriginationThesisJob} from "./origination-thesis";
+import {processOriginationThesisJob,reconstructCapitalM07Preparation} from "./origination-thesis";
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 
 const ids = {
@@ -539,5 +544,55 @@ describe("origination thesis vertical", () => {
     expect(startedTasks).toEqual(["M07"]);
     expect(publicResearchCalls).toBe(0);
     expect(completedJobs).toBe(1);
+  });
+});
+
+
+describe("native M07 consumer boundaries with synthetic unit dependencies",()=>{
+  const runtime={adapters:{},connections:{},maxCostUsd:1.25,maxCalls:2,researchReserveUsd:0.3};
+  it("does not enter the old producer when native runtime lacks its SQL adapter",async()=>{
+    const complete=vi.fn(),fail=vi.fn(async(_job:unknown,_cause:unknown,_options:unknown)=>{}),load=vi.fn();
+    const queue={writeStage:vi.fn(async()=>{}),fail,loadCapitalProjectContext:load} as unknown as QueueClient;
+    const gateway={complete,spent:()=>({costUsd:0,calls:0,unknownCostCalls:0,budgetExposureUsd:0})} as unknown as ModelGateway;
+    expect(await processOriginationThesisJob(job,{queue,gateway,lineage:()=>[],researchProviders:[],m07Runtime:runtime})).toEqual({status:"failed"});
+    expect(load).not.toHaveBeenCalled();expect(complete).not.toHaveBeenCalled();expect(fail.mock.calls[0]![1]).toMatchObject({code:"capital_m07_runtime_required"});
+  });
+  it("captures immutable context before tasks and denies an unlicensed source before model and research persistence",async()=>{
+    const context={project:{id:ids.project,organization_id:ids.organization,project_name:"Synthetic",entry_job:"origination_thesis",access_basis:"public_information",current_phase:"understand"},
+      session:{id:ids.session,locale:"pt-BR",company_profile:{name:"Synthetic company"},privacy_status:"public_information",representation_status:"not_claimed"},
+      brief:{id:ids.brief,kind:"origination_thesis",version:1,content:{meetingContext:"Discuss capital alternatives"},content_fingerprint:"b".repeat(64)},
+      plan:{id:ids.plan,version:1,fingerprint:"a".repeat(64),compiler_version:"synthetic.v1",registry_version:"synthetic.v1"},
+      tasks:taskDefinitions.map((task,ordinal)=>({...task,batch:ordinal,ordinal,execution_class:"deterministic",effect:"propose_state",domain:"capital_structure",subject:"company",agent_role:"analyst",action:"analyze",output_type:"artifact",output_cardinality:"one",primary_executor:"deterministic",required_inputs:[],review_required:false}))};
+    const order:string[]=[],complete=vi.fn(),fail=vi.fn(async(_job:unknown,_cause:unknown,_options:unknown)=>{}),recordResearch=vi.fn();let id=0;
+    const adapter={recoverExisting:async()=>null,begin:async()=>{order.push("context");return{context,asOfDate:"2026-10-02",recipeId:ids.research};},captureSources:async()=>{order.push("source");throw Object.assign(new Error("capital_m07_published_source_required"),{code:"capital_m07_published_source_required"});}};
+    const queue={createCapitalM07Adapter:()=>adapter,writeStage:async()=>{},startCapitalTask:async()=>{order.push("task");return`task-${++id}`;},
+      recordCapitalProjectArtifact:async()=>({id:`artifact-${id}`,artifactFingerprint:"c".repeat(64),artifactVersion:1,replayed:false}),finishCapitalTask:async()=>{},fail,
+      recordPublicResearch:recordResearch,loadPublicResearchCache:vi.fn(),loadPublicCompanyMemory:vi.fn()} as unknown as QueueClient;
+    const gateway={complete,spent:()=>({costUsd:0,calls:0,unknownCostCalls:0,budgetExposureUsd:0})} as unknown as ModelGateway;
+    const result=await processOriginationThesisJob(job,{queue,gateway,lineage:()=>[],researchProviders:[],m07Runtime:runtime});
+    expect(result.status).toBe("failed");expect(order[0]).toBe("context");expect(order).toContain("source");expect(complete).not.toHaveBeenCalled();expect(recordResearch).not.toHaveBeenCalled();
+    expect(fail.mock.calls[0]![1]).toMatchObject({code:"capital_m07_published_source_required"});expect(fail.mock.calls[0]![2]).toMatchObject({retryable:false});
+  });
+});
+
+
+describe("M07 recovery uses the same pinned preparation",()=>{
+  it("reconstructs exact sharedjob slots and server dependency versions, denying source alteration",()=>{
+    const recipeId=ids.research,deliveryId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",dependencyId="bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const source={provider:"official" as const,topic:"identity" as const,title:"Synthetic",url:"https://example.test/source",snippet:"R$ 650 milhões",publishedAt:null,retrievedAt:"2026-10-02T00:00:00Z",contentHash:"b".repeat(64)};
+    const originalContext={project:{id:ids.project,organization_id:ids.organization,project_name:"Synthetic",entry_job:"origination_thesis",access_basis:"public_information",current_phase:"understand"},
+      session:{id:ids.session,locale:"pt-BR",company_profile:{name:"Synthetic company"},privacy_status:"public_information",representation_status:"not_claimed"},brief:{id:ids.brief,kind:"origination_thesis",version:3,content:{meetingContext:"Discuss capital alternatives"},content_fingerprint:"b".repeat(64)},
+      plan:{id:ids.plan,version:2,fingerprint:"a".repeat(64),compiler_version:"synthetic.v1",registry_version:"synthetic.v1"},tasks:taskDefinitions.map((task,ordinal)=>({...task,ordinal,batch:ordinal,execution_class:"deterministic",effect:"propose_state"}))};
+    const pin=(slot:CapitalPublicRecipeComponent["slot"],id:string,version:number,body:unknown)=>({slot,id,version,body,bodyFingerprint:legacyGatewayFingerprint(body)});
+    const components=[pin("company",ids.session,1,{name:"Synthetic company",website:null}),pin("brief",ids.brief,3,originalContext.brief.content),pin("institution",ids.plan,2,null),
+      pin("revision",ids.job,1,null),pin("quality_retry",ids.job,1,{attempt:2,failedTaskFeedback:[]}),pin("research",recipeId,1,{status:"succeeded",sourceIds:[deliveryId]}),pin("source",deliveryId,1,source),pin("dependency",dependencyId,5,{artifactFingerprint:"c".repeat(64)})];
+    const system=readFileSync(new URL("./origination-thesis.ts",import.meta.url),"utf8").match(/const ORIGINATION_THESIS_SYSTEM = `([\s\S]*?)`;/)![1]!;
+    const preparation={basis:{jobId:ids.job,organizationId:ids.organization,workId:ids.project,planId:ids.plan,planFingerprint:"a".repeat(64),locale:"pt-BR" as const,asOfDate:"2026-10-02"},components,system},pure=prepareCapitalPublicTaskRecipe(preparation).recipe;
+    const recipe={...preparation.basis,schemaVersion:"capital-m07-recipe-receipt.v1",state:"ready",recipeId,taskRunId:ids.run,rendererVersion:"capital-public-task-renderer.m07.v1",recipeFingerprint:"d".repeat(64),contextRetainedPayloadId:ids.session,reconstructionFingerprint:pure.reconstructionFingerprint,components:pure.components,expiresAt:"2026-10-03T00:00:00Z",
+      operationalBudget:{schemaVersion:"capital-m07-operational-budget.v1",researchReservationVersion:"public-research-reservation.m07.v1",researchReservationMicroUsd:300000,maxExposureMicroUsd:1250000,maxDispatches:2}} as CapitalM07RecipeReceipt;
+    const input={recipe,originalContext,sources:[{deliveryId,source}],originalAttempt:2,researchStatus:"succeeded" as const,dependencies:[{id:dependencyId,artifactFingerprint:"c".repeat(64)}]};
+    const reconstructed=reconstructCapitalM07Preparation(input);expect(reconstructed.reconstruction.recipe.components).toEqual(pure.components);expect(reconstructed.modelInput.qualityRetry).toMatchObject({attempt:2});expect(reconstructed.preparation.components.find(value=>value.slot==="dependency")!.version).toBe(5);
+    expect(()=>reconstructCapitalM07Preparation({...input,sources:[{deliveryId,source:{...source,snippet:"changed"}}]})).toThrow("reconstruction_denied");
+    expect(()=>reconstructCapitalM07Preparation({...input,originalAttempt:1})).toThrow("reconstruction_denied");
   });
 });

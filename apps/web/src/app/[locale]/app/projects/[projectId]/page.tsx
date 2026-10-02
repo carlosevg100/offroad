@@ -1,4 +1,6 @@
+import {effectiveTaskRunStatus} from "@/lib/advisor/task-run-status";
 import {loadInstitutionalReview} from "@/lib/artifacts/institutional-review";
+import {isCapitalM07Projection, readCapitalM07Result} from "@/lib/artifacts/capital-m07-result";
 import {WorkVaultPanel} from "@/components/advisor/work-vault-panel";
 import {WorkParticipationPanel} from "@/components/advisor/work-participation-panel";
 import {WorkContextPanel} from "@/components/advisor/work-context-panel";
@@ -284,15 +286,23 @@ async function ConversationalCapitalProject({
       ? supabase.from("capital_project_plan_tasks").select("id, task_id, label, ordinal").eq("organization_id", organization.id).eq("plan_id", plan.id).order("ordinal")
       : Promise.resolve({data: []}),
     plan
-      ? supabase.from("capital_project_task_runs").select("id, plan_task_id, attempt_no, status").eq("organization_id", organization.id).eq("plan_id", plan.id).order("attempt_no", {ascending: false})
+      ? supabase.from("capital_project_task_runs").select("id, plan_task_id, attempt_no, status, processing_job_id").eq("organization_id", organization.id).eq("plan_id", plan.id).order("attempt_no", {ascending: false})
       : Promise.resolve({data: []}),
   ]);
+  const runningJobIds = [...new Set((runs ?? []).filter(run => run.status === "running").map(run => run.processing_job_id).filter((id): id is string => id !== null))];
+  const {data: taskJobs} = runningJobIds.length
+    ? await supabase.from("processing_jobs").select("id, status, lease_expires_at").eq("organization_id", organization.id)
+      .eq("intake_session_id", session.id).in("id", runningJobIds)
+    : {data: []};
+  const taskJobById = new Map((taskJobs ?? []).map(job => [job.id, job]));
+  const effectiveRuns = (runs ?? []).map(run => ({...run,
+    status: effectiveTaskRunStatus(run.status, (run.processing_job_id ? taskJobById.get(run.processing_job_id) : null) ?? null)}));
   const latestRunByTask = new Map<string, {status: string}>();
-  for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
+  for (const run of effectiveRuns) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
-  const providerCaseFit = currentProviderCaseFit(artifacts ?? [], runs ?? [], plan
+  const providerCaseFit = currentProviderCaseFit(artifacts ?? [], effectiveRuns, plan
     ? {organizationId: organization.id, projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
-  const providerResearch = currentProviderResearch(artifacts ?? [], runs ?? [], plan
+  const providerResearch = currentProviderResearch(artifacts ?? [], effectiveRuns, plan
     ? {projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
 
   const {data: agentPlan} = await supabase.from("capital_project_agent_plans")
@@ -356,8 +366,14 @@ async function ConversationalCapitalProject({
   const originationArtifact = project.entry_job === "origination_thesis"
     ? (artifacts ?? []).find((artifact) => artifact.artifact_type === "meeting_brief" && artifact.status !== "superseded")
     : undefined;
+  const nativeOrigination = originationArtifact ? isCapitalM07Projection(originationArtifact.content) : false;
+  const retainedOrigination = nativeOrigination && originationArtifact
+    ? await readCapitalM07Result(supabase, {organizationId: organization.id, projection: originationArtifact.content})
+    : null;
   const parsedOrigination = originationArtifact
-    ? originationConversationArtifactSchema.safeParse(originationArtifact.content)
+    ? originationConversationArtifactSchema.safeParse(nativeOrigination
+      ? retainedOrigination?.ok ? retainedOrigination.content : null
+      : originationArtifact.content)
     : null;
   const originationDecision = originationArtifact
     ? artifactDecisions?.find((item) => item.artifact_id === originationArtifact.id)
@@ -551,7 +567,10 @@ async function ConversationalCapitalProject({
   if (parsedOrigination?.success && originationArtifact) workSections.push({id: "meeting-brief", artifactId: originationArtifact.id,
     title: customerArtifactLabel("meeting_brief", locale)!, version: originationArtifact.artifact_version,
     content: <OriginationConversationWork artifact={parsedOrigination.data} artifactId={originationArtifact.id} decision={originationDecision}
-      fingerprint={originationArtifact.artifact_fingerprint} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} status={originationArtifact.status} />});
+      nativeReviewRequired={nativeOrigination} fingerprint={originationArtifact.artifact_fingerprint} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} status={originationArtifact.status} />});
+  if (nativeOrigination && !parsedOrigination?.success && originationArtifact) workSections.push({id: "meeting-brief", artifactId: originationArtifact.id,
+    title: customerArtifactLabel("meeting_brief", locale)!, version: originationArtifact.artifact_version,
+    content: <p>{t("artifactReadUnavailable")}</p>});
   if (parsedDecisionArtifact.success || previewArtifacts.length) workSections.push({id: "decision-work", title: t("openWork"),
     content: <AdvisorDecisionWork contract={parsedDecisionArtifact.success ? parsedDecisionArtifact.data : null} artifacts={previewArtifacts}
       locale={locale === "en-US" ? "en-US" : "pt-BR"} materialHref={`/${locale}/app/projects/${project.id}/preview/material`} />});

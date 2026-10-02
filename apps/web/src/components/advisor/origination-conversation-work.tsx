@@ -15,6 +15,7 @@ type Props = {
   locale: "pt-BR" | "en-US";
   projectId: string;
   status: string;
+  nativeReviewRequired?: boolean;
 };
 
 const copy = {
@@ -116,7 +117,7 @@ export function OriginationConversationWork(props: Props) {
       <ol>{props.artifact.sources.map((source, index) => <li key={`${source.url}-${index}`}><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={11} /></a></li>)}</ol>
     </details>
 
-    {props.status === "pending_confirmation" ? <OriginationDecision artifactId={props.artifactId} copy={{
+    {!props.nativeReviewRequired && props.status === "pending_confirmation" ? <OriginationDecision artifactId={props.artifactId} copy={{
       confirm: t.confirm, confirmed: t.confirmed, errorInvalid: t.errors.invalid, errorSave: t.errors.save,
       errorStale: t.errors.stale, note: t.note, notePlaceholder: t.notePlaceholder,
       requestChanges: t.requestChanges, requested: t.requested, title: t.title,
@@ -179,7 +180,7 @@ function SeniorReadout(props: Props & {artifact: OriginationSeniorReadoutArtifac
     <details className="advisor-banker-readout__questions" open><summary><span><Lightbulb aria-hidden="true" size={15} />{t.questions}</span><ChevronRight aria-hidden="true" size={15} /></summary><ol>{artifact.meetingStrategy.decisionQuestions.map((question, index) => <li key={`${question.question}-${index}`}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{question.question}</strong><p>{question.whyItMatters}</p></div></li>)}</ol></details>
     <details className="advisor-banker-readout__unknowns"><summary><span>{t.unknowns}</span><ChevronRight aria-hidden="true" size={15} /></summary><ul>{artifact.unknowns.map((item) => <li key={item}>{item}</li>)}</ul></details>
     <details className="advisor-banker-readout__sources"><summary><span>{t.sources} · {artifact.sources.length}</span><ChevronRight aria-hidden="true" size={15} /></summary><ol>{artifact.sources.map((source, index) => <li key={`${source.url}-${index}`}><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={11} /></a></li>)}</ol></details>
-    {props.status === "pending_confirmation" ? <OriginationDecision artifactId={props.artifactId} copy={{confirm: t.confirm, confirmed: t.confirmed, errorInvalid: t.errors.invalid, errorSave: t.errors.save, errorStale: t.errors.stale, note: t.note, notePlaceholder: t.notePlaceholder, requestChanges: t.requestChanges, requested: t.requested, title: t.title}} fingerprint={props.fingerprint} locale={props.locale} projectId={props.projectId} /> : props.decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{props.decision.decision === "confirm" ? t.confirmed : t.requested}</p> : null}
+    {!props.nativeReviewRequired && props.status === "pending_confirmation" ? <OriginationDecision artifactId={props.artifactId} copy={{confirm: t.confirm, confirmed: t.confirmed, errorInvalid: t.errors.invalid, errorSave: t.errors.save, errorStale: t.errors.stale, note: t.note, notePlaceholder: t.notePlaceholder, requestChanges: t.requestChanges, requested: t.requested, title: t.title}} fingerprint={props.fingerprint} locale={props.locale} projectId={props.projectId} /> : !props.nativeReviewRequired && props.decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{props.decision.decision === "confirm" ? t.confirmed : t.requested}</p> : null}
   </article>;
 }
 

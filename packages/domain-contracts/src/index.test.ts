@@ -8,6 +8,7 @@ import {
   initialDealWorkflowState,
   originationMeetingBriefSchema,
   originationSeniorReadoutSchema,
+  originationSeniorReadoutArtifactSchema,
   originationSeniorReadoutV2ArtifactSchema,
   scenarioTermsSchema,
   taskEnvelopeSchema,
@@ -84,6 +85,12 @@ describe("domain contracts", () => {
     };
     expect(originationSeniorReadoutV2ArtifactSchema.safeParse(legacy).success).toBe(true);
     expect(originationSeniorReadoutSchema.safeParse(legacy).success).toBe(false);
+  });
+
+  it("preserves frozen source-pack provenance in a senior financial artifact",()=>{
+    const sources=originationSeniorReadoutArtifactSchema.shape.sources.parse([{title:"Synthetic frozen source",url:"https://example.test/source",topic:"identity",publishedAt:null,provider:"source_pack"}]);
+    expect(sources[0]!.provider).toBe("source_pack");
+    expect(originationSeniorReadoutArtifactSchema.shape.sources.safeParse([{...sources[0],provider:"unregistered"}]).success).toBe(false);
   });
 
   it("preserves detailed debt economics and complete traceability", () => {

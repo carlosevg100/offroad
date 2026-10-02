@@ -3327,3 +3327,104 @@ Migrações canônicas de produção: 20261001205206_capital_body_retention.sql,
 - `trigger:private.institutional_configuration_review_projections.institutional_configuration_review_immutable`
 - `trigger:private.institutional_configuration_review_projections.institutional_configuration_review_no_truncate`
 - `trigger:private.institutional_configuration_review_projections.institutional_configuration_review_updated`
+
+## Etapa 20 / M07 nativo
+
+93 objetos novos e 0 atualizados. Receita M07, corpos sob retenção, orçamento único e commit/recovery nativos com autoridade atual.
+- `function:private.capital_m07_allocation_deadline_v1(p_org uuid, p_allocation uuid, p_subject uuid)`
+- `function:private.capital_m07_attempt_assurances_current_v1(p_job processing_jobs, p_attempt private.capital_m07_gateway_attempts)`
+- `function:private.capital_m07_attempt_current_v1(p_job_id uuid, p_capability_token text, p_attempt private.capital_m07_gateway_attempts)`
+- `function:private.capital_m07_attempt_dto_v1(p_attempt private.capital_m07_gateway_attempts, p_replayed boolean)`
+- `function:private.capital_m07_attempt_outcome_fingerprint_v1(p_outcome jsonb)`
+- `function:private.capital_m07_base_authority_fingerprint_v1(p_org uuid, p_job uuid, p_session uuid, p_brief uuid, p_plan uuid, p_subject uuid, p_captured_at timestamp with time zone)`
+- `function:private.capital_m07_body_dto_v1(p_org uuid, p_allocation uuid, p_deadline timestamp with time zone, p_replayed boolean)`
+- `function:private.capital_m07_commit_result_core_v1(p_org uuid, p_recipe uuid, p_accepted uuid, p_parsed uuid, p_final uuid, p_final_fingerprint text, p_quality_results jsonb)`
+- `function:private.capital_m07_dispatch_policy_v1(p_model text, p_input_bytes bigint)`
+- `function:private.capital_m07_native_ancestry_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)`
+- `function:private.capital_m07_native_read_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)`
+- `function:private.capital_m07_quality_failure_dto_v1(p_org uuid, p_recipe uuid)`
+- `function:private.capital_m07_recipe_deadline_v1(p_org uuid, p_recipe uuid, p_subject uuid)`
+- `function:private.capital_m07_recipe_dto_v1(p_org uuid, p_recipe uuid)`
+- `function:private.capital_m07_storage_allowed_v1(p_allocation uuid, p_mode text)`
+- `function:private.guard_capital_m07_legacy_input_v1()`
+- `function:private.guard_capital_m07_native_write_v1()`
+- `function:private.lock_capital_m07_operation_v1(p_org uuid, p_recipe uuid)`
+- `function:private.read_capital_m07_result_v1(p_revision_id uuid)`
+- `function:private.require_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)`
+- `function:private.wake_capital_m07_retention_v1()`
+- `function:private.worker_authorize_capital_m07_processing_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text)`
+- `function:private.worker_commit_capital_m07_body_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)`
+- `function:private.worker_commit_capital_m07_recovered_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)`
+- `function:private.worker_commit_capital_m07_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)`
+- `function:private.worker_finalize_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid, p_components jsonb, p_reconstruction_fingerprint text, p_prompt_fingerprint text, p_primary_request_fingerprint text, p_fallback_request_fingerprint text, p_operator_budget_micro_usd bigint, p_operator_max_dispatches integer, p_research_status text)`
+- `function:private.worker_find_capital_m07_recovery_v1(p_job_id uuid, p_capability_token text)`
+- `function:private.worker_prepare_capital_m07_context_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid)`
+- `function:private.worker_prepare_capital_m07_output_core_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid, p_recovery boolean)`
+- `function:private.worker_prepare_capital_m07_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid)`
+- `function:private.worker_prepare_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text)`
+- `function:private.worker_prepare_capital_m07_recovered_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid)`
+- `function:private.worker_read_capital_m07_allocation_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid)`
+- `function:private.worker_read_capital_m07_recovery_body_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid)`
+- `function:private.worker_read_capital_m07_recovery_source_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid)`
+- `function:private.worker_record_capital_m07_accepted_v1(p_job_id uuid, p_capability_token text, p_input_receipt_id uuid, p_accepted jsonb)`
+- `function:private.worker_record_capital_m07_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)`
+- `function:private.worker_record_capital_m07_execution_failure_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_reason text, p_outcome_ids uuid[])`
+- `function:private.worker_record_capital_m07_input_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)`
+- `function:private.worker_record_capital_m07_quality_failure_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)`
+- `function:private.worker_recover_capital_m07_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)`
+- `function:private.worker_revalidate_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)`
+- `function:public.read_capital_m07_result_v1(p_revision_id uuid)`
+- `function:public.worker_authorize_capital_m07_processing_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text)`
+- `function:public.worker_commit_capital_m07_body_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)`
+- `function:public.worker_commit_capital_m07_recovered_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)`
+- `function:public.worker_commit_capital_m07_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)`
+- `function:public.worker_finalize_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid, p_components jsonb, p_reconstruction_fingerprint text, p_prompt_fingerprint text, p_primary_request_fingerprint text, p_fallback_request_fingerprint text, p_operator_budget_micro_usd bigint, p_operator_max_dispatches integer, p_research_status text)`
+- `function:public.worker_find_capital_m07_recovery_v1(p_job_id uuid, p_capability_token text)`
+- `function:public.worker_prepare_capital_m07_context_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid)`
+- `function:public.worker_prepare_capital_m07_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid)`
+- `function:public.worker_prepare_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text)`
+- `function:public.worker_prepare_capital_m07_recovered_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid)`
+- `function:public.worker_read_capital_m07_allocation_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid)`
+- `function:public.worker_read_capital_m07_recovery_body_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid)`
+- `function:public.worker_read_capital_m07_recovery_source_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid)`
+- `function:public.worker_record_capital_m07_accepted_v1(p_job_id uuid, p_capability_token text, p_input_receipt_id uuid, p_accepted jsonb)`
+- `function:public.worker_record_capital_m07_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)`
+- `function:public.worker_record_capital_m07_execution_failure_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_reason text, p_outcome_ids uuid[])`
+- `function:public.worker_record_capital_m07_input_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)`
+- `function:public.worker_record_capital_m07_quality_failure_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)`
+- `function:public.worker_recover_capital_m07_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)`
+- `function:public.worker_revalidate_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)`
+- `policy:private.capital_m07_native_bindings.capital_m07_native_deny_delete`
+- `policy:private.capital_m07_native_bindings.capital_m07_native_deny_insert`
+- `policy:private.capital_m07_native_bindings.capital_m07_native_deny_select`
+- `policy:private.capital_m07_native_bindings.capital_m07_native_deny_update`
+- `r:private.capital_m07_accepted_invocations`
+- `r:private.capital_m07_attempt_outcomes`
+- `r:private.capital_m07_body_bases`
+- `r:private.capital_m07_execution_failures`
+- `r:private.capital_m07_gateway_attempts`
+- `r:private.capital_m07_input_dispatches`
+- `r:private.capital_m07_native_bindings`
+- `r:private.capital_m07_operations`
+- `r:private.capital_m07_quality_failures`
+- `r:private.capital_m07_recipe_components`
+- `r:private.capital_m07_recipe_seals`
+- `r:private.capital_m07_recipes`
+- `trigger:private.capital_body_invocation_inputs.capital_m07_legacy_input_guard`
+- `trigger:private.capital_m07_execution_failures.capital_m07_execution_failure_immutable`
+- `trigger:private.capital_m07_execution_failures.capital_m07_execution_failure_no_truncate`
+- `trigger:private.capital_m07_native_bindings.capital_m07_native_audit`
+- `trigger:private.capital_m07_native_bindings.capital_m07_native_immutable`
+- `trigger:private.capital_m07_native_bindings.capital_m07_native_no_truncate`
+- `trigger:private.capital_m07_native_bindings.capital_m07_native_updated_at`
+- `trigger:private.capital_m07_quality_failures.capital_m07_quality_immutable`
+- `trigger:private.capital_m07_quality_failures.capital_m07_quality_no_truncate`
+- `trigger:private.capital_public_payload_purge_queue.capital_purge_wake_m07`
+- `trigger:public.capital_project_artifacts.capital_artifact_native_m07_guard`
+- `trigger:public.capital_project_artifacts.capital_artifact_wake_m07`
+- `trigger:public.capital_project_task_runs.capital_task_native_m07_guard`
+- `trigger:public.document_intake_sessions.capital_session_wake_m07`
+
+## M07: DDL dinâmico e aliases privados
+
+Revisão adicional de100objetos gerados por loops ou rename na migração20261002125617: políticas restritivas de quatro operações, triggers de timestamp/auditoria/imutabilidade/retensão e nove aliases privados sem grants de API. As fontes de cada objeto fixam a linha da lista de tabelas e a instrução dinâmica efetiva em object-decisions.json. Três wrappers públicos tiveram service_role revogado; permanecem autenticados e sujeitos ao guard nativo. Checkers contra catálogos completos ao vivo: produção3340objetos, staging3401, zero erros ou desvios.

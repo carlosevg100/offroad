@@ -50,7 +50,7 @@ export const originationMeetingBriefArtifactSchema = originationMeetingBriefSche
     url: z.url(),
     topic: z.enum(["identity", "news", "sector", "regulation", "market"]),
     publishedAt: z.string().nullable(),
-    provider: z.enum(["perplexity", "openai", "official", "mcp"]),
+    provider: z.enum(["perplexity", "openai", "official", "mcp", "source_pack"]),
   })),
   researchStatus: z.enum(["succeeded", "partial", "abstained"]),
   scopeBoundary: z.string().min(20),

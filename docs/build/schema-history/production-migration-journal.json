@@ -1747,8 +1747,12 @@
   {
    "version": "20261002113623",
    "name": "institutional_configuration_review_projection"
+  },
+  {
+   "name": "capital_m07_native_consumption",
+   "version": "20261002125617"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-10-02T11:38:24.297116+00:00"
+ "captured_at": "2026-10-02T12:59:29.580234+00:00"
 }

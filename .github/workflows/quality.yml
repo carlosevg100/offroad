@@ -515,6 +515,15 @@ jobs:
             node scripts/ci/verify-dependency-wait-restart.mjs
           echo "wait_proof_script_seconds=$((SECONDS - started))"
 
+      # Keep append-only M07 evidence isolated from the earlier claim/race fixtures.
+      # The always-run Supabase stop below destroys this local database and Storage.
+      - name: Native M07 producer and physical recovery through the SDK
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+        run: node scripts/ci/test-capital-m07-native-sdk.mjs
+
       - name: Stop the capital body Edge reader
         if: always()
         run: |
