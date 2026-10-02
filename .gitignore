@@ -52,3 +52,7 @@ docs/product/OFFROAD_CREDIT_OS_EXPERIENCE_CONTRACT.md
 docs/product/POSICIONAMENTO_PROMESSA.md
 docs/research/
 apps/web/public/offroad-credit-os-prototype.html
+
+# Python bytecode is derived locally; retain only the source and eval evidence.
+__pycache__/
+*.py[cod]
