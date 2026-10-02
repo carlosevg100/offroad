@@ -136,5 +136,31 @@ set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000126","role":"authenticated","aal":"aal1"}',true);
 select pg_temp.verify_native_assessment_source();
 
+-- Legitimate same-job capability; no native marker yet. Failed source capture
+-- rolls back all its changes, and the old writer still cannot become an escape.
+reset role;
+do $$declare job uuid;source uuid;denied boolean:=false;begin
+ select job_id into strict job from native_assessment_ids;
+ source:='51000000-0000-4000-8000-000000000126';
+ if exists(select 1 from private.assessment_input_snapshots where job_id=job)then raise exception 'negative_requires_no_assessment_capture';end if;
+ begin perform public.worker_record_agent_assessment_v1(job,repeat('c',64),'{}');raise exception 'v1_preliminary_before_capture_accepted';
+ exception when insufficient_privilege then if sqlerrm<>'assessment_native_writer_required'then raise;end if;end;
+ begin
+  perform public.set_source_rights_v1(source,(select max(revision)from private.source_rights_versions where source_version_id=source),array['store'],array['analysis'],null,null,gen_random_uuid(),repeat('f',64));
+  begin perform public.worker_load_preliminary_assessment_input_v3(job,repeat('c',64));
+  exception when insufficient_privilege or serialization_failure then denied:=true;end;
+  if not denied then raise exception 'native_source_denial_not_reproduced';end if;
+  raise exception 'rollback_capture_denial'using errcode='ZX001';
+ exception when sqlstate 'ZX001'then null;end;
+ if exists(select 1 from private.assessment_input_snapshots where job_id=job)then raise exception 'failed_capture_left_marker';end if;
+ begin perform public.worker_record_agent_assessment_v1(job,repeat('c',64),'{}');raise exception 'v1_preliminary_after_capture_denial_accepted';
+ exception when insufficient_privilege then if sqlerrm<>'assessment_native_writer_required'then raise;end if;end;
+ -- Even authenticated cannot invoke the owner-only historical implementation.
+ if has_function_privilege('authenticated','private.worker_record_agent_assessment_before_native_v1(uuid,text,jsonb)','execute')
+ or has_function_privilege('service_role','private.worker_record_agent_assessment_before_native_v1(uuid,text,jsonb)','execute')then raise exception 'historical_writer_alias_exposed';end if;
+ raise notice 'PASS assessment_preliminary_v1_42501_before_capture_after_denied_capture_same_cap';
+end$$;
+set local role authenticated;
+
 -- Real server-closed abstention: no licensed physical public source exists in this work.
 select public.worker_prepare_assessment_research_v1(job_id,repeat('c',64))from native_assessment_ids;

@@ -34,7 +34,7 @@ assert s.count(marker)==1
 s=s.replace(marker,setup+'\n'+marker,1)
 needle="insert into route_proof values('native_claim',claim::text);"
 assert s.count(needle)==1
-s=s.replace(needle,needle+"\ninsert into route_proof values('assessment_institutional',public.worker_load_assessment_institutional_context_v1(job,claim->>'capability_token')::text);\n",1)
+s=s.replace(needle,needle+"\nbegin perform public.worker_record_agent_assessment_v1(job,claim->>'capability_token','{}');raise exception 'v1_case_before_capture_accepted';exception when insufficient_privilege then if sqlerrm<>'assessment_native_writer_required'then raise;end if;end;\nbegin perform public.worker_load_assessment_institutional_context_v1(job,repeat('x',64));raise exception 'wrong_capture_capability_accepted';exception when insufficient_privilege then null;end;\nbegin perform public.worker_record_agent_assessment_v1(job,claim->>'capability_token','{}');raise exception 'v1_case_after_capture_denial_accepted';exception when insufficient_privilege then if sqlerrm<>'assessment_native_writer_required'then raise;end if;end;\nraise notice 'PASS assessment_case_v1_42501_before_capture_after_denial_same_cap';\ninsert into route_proof values('assessment_institutional',public.worker_load_assessment_institutional_context_v1(job,claim->>'capability_token')::text);\n",1)
 s=s[:s.index('-- Actual upload policy under the genuine lease/capability.')]+(ROOT/'supabase/tests/support/assessment_native_assessment_institutional_capture.sql').read_text()+'\nrollback;'
 result=subprocess.run(['psql',os.environ['DATABASE_URL'],'-X','-v','ON_ERROR_STOP=1'],input=s,text=True,capture_output=True,timeout=90)
 print(result.stdout[-1500:]);print(result.stderr[-3500:]);raise SystemExit(result.returncode)
