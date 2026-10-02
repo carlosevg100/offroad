@@ -1,10 +1,10 @@
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
 begin;
-\ir support/legacy_workspace_capabilities.sql
-\ir support/legacy_persistent_work_fixture.sql
-\ir support/provider_case_fit_plan_snapshot.sql
-\ir support/provider_research_plan_snapshot.sql
-\ir support/execution_approval.sql
+\ir legacy_workspace_capabilities.sql
+\ir legacy_persistent_work_fixture.sql
+\ir provider_case_fit_plan_snapshot.sql
+\ir provider_research_plan_snapshot.sql
+\ir execution_approval.sql
 insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous) values
 ('10000000-0000-4000-8000-000000000971','authenticated','authenticated','case-fit-a@example.invalid','{"provider":"email","providers":["email"]}','{}',now(),now(),false,false),
 ('10000000-0000-4000-8000-000000000972','authenticated','authenticated','case-fit-b@example.invalid','{"provider":"email","providers":["email"]}','{}',now(),now(),false,false);
@@ -80,15 +80,30 @@ begin
  context:=public.worker_load_provider_case_fit_context(f.job_id,cap);
  update public.mandate_versions set constraints='{"currencies":["USD"]}' where fund_id='40000000-0000-4000-8000-000000000971';
  if public.worker_load_provider_case_fit_context(f.job_id,cap) is distinct from context then raise exception 'frozen mandate changed'; end if;
- foreach task in array array['M01','K01','K02'] loop
-  run:=public.worker_start_capital_project_task(f.job_id,cap,task,'provider_case_fit','2026.09.10-v1',encode(extensions.digest(task,'sha256'),'hex'),'{}');
-  content:=jsonb_build_object('scope','research_case_fit','shortlistAuthorized',false,'externalEffectAllowed',false,'projectId',f.project_id,'planId',context->>'planId','planFingerprint',context->>'planFingerprint','caseCriteria',context->'caseCriteria');
-  artifact:=public.worker_record_capital_project_artifact(f.job_id,cap,run,case task when 'M01' then 'provider_case_fit_scope' when 'K01' then 'provider_case_fit_sources' else 'provider_case_fit' end,case task when 'M01' then 'provider-case-fit-scope.v1' when 'K01' then 'provider-case-fit-sources.v1' else 'provider-case-fit.v1' end,'draft',encode(extensions.digest(task,'sha256'),'hex'),content,'[]',deps);
-  perform public.worker_finish_capital_project_task(f.job_id,cap,run,'succeeded',jsonb_build_object('type','capital_project_artifact','id',artifact->>'id'),artifact->>'artifact_fingerprint','[{"id":"authorized_research_scope","passed":true}]','{}',null);
-  deps:=jsonb_build_array(jsonb_build_object('artifactId',artifact->>'id','artifactFingerprint',artifact->>'artifact_fingerprint'));
- end loop;
- if jsonb_array_length(public.worker_load_provider_case_fit_context(f.job_id,cap)->'priorArtifacts')<>3 then raise exception 'fit replay missing artifacts'; end if;
- perform public.worker_complete_job(f.job_id,cap,jsonb_build_object('provider_case_fit_artifact_id',artifact->>'id','artifact_fingerprint',artifact->>'artifact_fingerprint'));
- if (select status from public.processing_jobs where id=f.job_id)<>'succeeded' then raise exception 'fit did not complete'; end if;
+  -- The existing starter/context contract remains read-only diagnostic evidence.
+  -- Every previous body/finish/complete path is now a negative cutover check.
+  run:=public.worker_start_capital_project_task(f.job_id,cap,'M01','provider_case_fit','2026.09.10-v1',repeat('a',64),'{}');
+  begin
+    perform public.worker_record_capital_project_artifact(f.job_id,cap,run,'provider_case_fit_scope','provider-case-fit-scope.v1','draft',repeat('a',64),'{"synthetic":true}','[]','[]');
+    raise exception 'legacy provider writer accepted';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_native_provider_commit_required' then raise; end if;
+  end;
+  begin
+    perform public.worker_finish_capital_project_task(f.job_id,cap,run,'succeeded',null,repeat('a',64),'[]','{}',null);
+    raise exception 'legacy provider finish accepted';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_native_provider_commit_required' then raise; end if;
+  end;
+  begin
+    perform public.worker_complete_job(f.job_id,cap,jsonb_build_object('provider_case_fit_artifact_id',gen_random_uuid(),'artifact_fingerprint',repeat('a',64)));
+    raise exception 'unbound provider job completed';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_native_provider_completion_invalid' then raise; end if;
+  end;
+  if exists(select 1 from public.capital_project_artifacts where processing_job_id=f.job_id)
+    or exists(select 1 from public.capital_project_task_runs where processing_job_id=f.job_id and status='succeeded')
+    or (select status='succeeded' or model_calls<>0 or model_cost_usd<>0 from public.processing_jobs where id=f.job_id)
+  then raise exception 'denied provider path produced an artifact, success or spend'; end if;
 end $$;
 rollback;

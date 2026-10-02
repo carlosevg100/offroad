@@ -1,3 +1,4 @@
+import {nativeProviderCataloguePublicationFromEnvironment} from "./capital-native-provider-config";
 import {createFairExecutionPoller} from "./execution-poll";
 import {createExecutionQueue} from "./execution-queue";
 import {processPinnedExecution} from "./process-pinned-execution";
@@ -9,7 +10,7 @@ import {createProviderResearchTransport} from "./provider-research-transport";
 import {createProviderProcessingAuthorizer} from "./provider-processing";
 import {createEventOutboxConsumer} from "./event-outbox";
 import {createDependencyRecomputeQueue, createRecomputeHealthMonitor, runDependencyRecomputePass} from "./dependency-recompute";
-import {processProviderResearchJob} from "./provider-research";
+import {processNativeProviderJob} from "./capital-native-provider-processor";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {readFile} from "node:fs/promises";
 import {join} from "node:path";
@@ -39,7 +40,6 @@ import {
 import {rotateLegacyStorage} from "./storage-rotation";
 import {createCapitalPublicCaptureStorage} from "./capital-public-capture-storage";
 import {createJobStorageClient} from "./job-storage";
-import {processProviderCaseFitJob} from "./provider-case-fit";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processWorkConversationJob} from "./work-conversation";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
@@ -110,9 +110,11 @@ async function main(): Promise<void> {
 
   await rotateLegacyStorage(supabase, config.OFFROAD_WORKER_TOKEN, () => log("worker.storage_rotation_completed"));
 
+  const nativeProviderCataloguePublication = nativeProviderCataloguePublicationFromEnvironment(process.env.CAPITAL_NATIVE_PROVIDER_CATALOGUE_PUBLICATION_JSON);
   const queue = createQueueClient(supabase, {
     workerToken: config.OFFROAD_WORKER_TOKEN,
     leaseSeconds: config.LEASE_SECONDS,
+    ...(nativeProviderCataloguePublication ? {nativeProviderCataloguePublication} : {}),
   });
 
   const eventOutbox = createEventOutboxConsumer(supabase, config.OFFROAD_WORKER_TOKEN, log);
@@ -437,9 +439,9 @@ async function main(): Promise<void> {
         })
       : job.kind === "capital_project_analysis"
         ? job.payload.analysis_scope === "provider_case_fit"
-          ? processProviderCaseFitJob(job, {queue})
+          ? processNativeProviderJob(job, {queue})
           : job.payload.analysis_scope === "provider_research"
-          ? processProviderResearchJob(job, {queue})
+          ? processNativeProviderJob(job, {queue})
           : job.payload.analysis_scope === "integration_preview"
           // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.
           ? (job.integration_preview === true

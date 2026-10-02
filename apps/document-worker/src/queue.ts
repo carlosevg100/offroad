@@ -1,3 +1,6 @@
+import {createNativeProviderPorts} from "./capital-native-provider-adapter";
+import {consumeNativeProviderWork,type NativeProviderReceipt} from "./capital-native-provider-consumer";
+import type {CapitalPublicDeliveryRequest} from "./capital-public-capture-adapter";
 import {createCapitalS11QueueAdapter, type CapitalS11QueueAdapter} from "./capital-s11-queue-adapter";
 import {createCapitalS11RecoveryQueueAdapter} from "./capital-s11-recovery-queue-adapter";
 import {createCapitalS11RevisionQueueAdapter} from "./capital-s11-revision-queue-adapter";
@@ -366,6 +369,7 @@ export type QueueClient = {
   recordControlledExecution(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, comparison?: unknown): Promise<string>;
   commitDocumentaryExecution?(job: FullCaseAnalysisJob, report: unknown, manifest: unknown, state: unknown, result: unknown): Promise<string>;
   loadAgentContext(job: AgentOperationBriefJob): Promise<unknown>;
+  consumeNativeProvider?(job: CapitalProjectAnalysisJob): Promise<{artifact: NativeProviderReceipt; replayed: boolean}>;
   loadProviderCaseFitContext?(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadProviderResearchContext?(job: CapitalProjectAnalysisJob): Promise<unknown>;
   loadCapitalProjectContext(job: CapitalProjectAnalysisJob): Promise<unknown>;
@@ -491,7 +495,7 @@ export class InstitutionalCaptureRetryError extends Error {
 
 export function createQueueClient(
   supabase: SupabaseClient,
-  options: {workerToken: string; leaseSeconds: number},
+  options: {workerToken: string; leaseSeconds: number; nativeProviderCataloguePublication?: () => Promise<CapitalPublicDeliveryRequest>},
 ): QueueClient {
   const call = async (name: string, args: Record<string, unknown>): Promise<unknown> => {
     // 40P01 guarantees that PostgreSQL aborted this entire RPC transaction. Repeat
@@ -1124,6 +1128,9 @@ export function createQueueClient(
       });
     },
 
+    async consumeNativeProvider(job) {
+      return consumeNativeProviderWork(job, createNativeProviderPorts({client: supabase, job, ...(options.nativeProviderCataloguePublication ? {cataloguePublication: options.nativeProviderCataloguePublication} : {})}));
+    },
     async loadProviderCaseFitContext(job) {
       return call("worker_load_provider_case_fit_context", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
