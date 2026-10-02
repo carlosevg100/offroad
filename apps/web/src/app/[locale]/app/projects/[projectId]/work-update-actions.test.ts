@@ -29,11 +29,19 @@ describe("the decisions on a work's updates name a decline that races with the w
       p_expected_revision: 3, p_reason: "not_needed"});
   });
 
+  it("rejects adoption without the displayed native basis or self declaration before any RPC", async () => {
+    const input = {locale: "pt-BR", commandId: decline.commandId, updateId: decline.updateId, expectedRevision: 3};
+    for (const incomplete of [input, {...input, expectedBasisFingerprint: "a".repeat(64)}, {...input, selfApprovalDeclared: false}]) {
+      expect(await adoptWorkUpdate(incomplete)).toEqual({ok: false, error: "invalid"});
+    }
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("keeps the processing, stale and success outcomes of the decline and of the adoption", async () => {
     rpc.mockResolvedValueOnce({data: null, error: {code: "55000", message: "work_update_not_ready"}});
     expect(await declineWorkUpdate(decline)).toEqual({ok: false, error: "processing"});
     rpc.mockResolvedValueOnce({data: null, error: {code: "40001", message: "work_update_changed"}});
-    expect(await adoptWorkUpdate({locale: "pt-BR", commandId: decline.commandId, updateId: decline.updateId, expectedRevision: 3})).toEqual({ok: false, error: "stale"});
+    expect(await adoptWorkUpdate({locale: "pt-BR", commandId: decline.commandId, updateId: decline.updateId, expectedRevision: 3, expectedBasisFingerprint: "a".repeat(64), selfApprovalDeclared: false})).toEqual({ok: false, error: "stale"});
     rpc.mockResolvedValueOnce({data: {status: "declined"}, error: null});
     expect(await declineWorkUpdate(decline)).toEqual({ok: true});
     expect(await declineWorkUpdate({...decline, reason: "bored"})).toEqual({ok: false, error: "invalid"});

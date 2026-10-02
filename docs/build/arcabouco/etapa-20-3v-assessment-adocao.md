@@ -54,7 +54,7 @@ O regime de adoção é marcado no servidor para toda request futura; a API não
 `case-analysis.ts:922–927` carrega `loadInstitutionalModelContext` separadamente e injeta o corpo no `executeCaseEngine`. O loader v3 atual faz revisão de configuração efetiva (3U), mas o caminho case segue ao v1 porque a captura institucional existente é restrita ao job `agent_operation_brief`. A captura 3V completa precisa fixar o corpo efetivamente entregue, todas as currentSources, todas as approvedConfigurations e a ancestry/receipt 3U vigente de cada configuração, antes de seu uso. A autoridade futura deve revalidar esses vínculos junto às fontes, incluindo ancestralidade. Não retirar o contexto do consumidor ou declarar a captura rawcase como fechamento desse input. Pesquisa pública fora M07 precisa usar a ponte real de licença/retention 3Q; as negativas locais impedem publicação indevida enquanto essa extensão é resolvida no incremento correspondente, antes do fechamento 3X.
 
 
-## Candidata prospectiva de consumo 3V — saldo fechado de implementação
+## Candidata prospectiva de consumo 3V: saldo fechado de implementação
 
 `assessment-native-runtime.ts` é o adapter de SDK real. `case-analysis.ts` usa seus ports para input preliminar v3 ou case v5, pesquisa pública retida e licenciada, contexto institucional e persistência v2. O hook de `main.ts` deve fornecer `assessmentRuntime: createAssessmentNativeRuntime(supabase)`; até esse hook integrar o executável, a candidata não é um consumidor ativo em produção. O teste do consumidor preliminar exige captura primária e pública antes do gateway e nega loader, pesquisa e writer legados. A pesquisa física registra os eventos reais de estágio; ausência de uma fonte elegível fixa `abstained` antes da inferência.
 
