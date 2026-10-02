@@ -2768,13 +2768,15 @@ end;
 $$;
 
 -- The incremental deal-state analysis has no caller in these tests, so its production case
--- ceiling (migration production_budget_ceilings) is read from its definition: the run, the run's
+-- ceiling (migration production_budget_ceilings) is read from its delegated producer: the run, the run's
 -- case share and the job carry 3.10, and no old ceiling of 1 is left.
 set local role postgres;
 do $$
 declare
-  body text := pg_get_functiondef('private.enqueue_incremental_deal_state_analysis(uuid,uuid,text)'::regprocedure);
+  body text := pg_get_functiondef('private.enqueue_incremental_deal_state_analysis_pre_material_native_v1(uuid,uuid,text)'::regprocedure);
+  current_body text := pg_get_functiondef('private.enqueue_incremental_deal_state_analysis(uuid,uuid,text)'::regprocedure);
 begin
+  if position('private.enqueue_incremental_deal_state_analysis_pre_material_native_v1' in current_body)=0 then raise exception 'native material enqueue lost the governed budget producer';end if;
   if position($ceiling$'max_cost_usd', 3.10,
     'max_calls', 4,
     'case_max_cost_usd', 3.10,$ceiling$ in body) = 0
