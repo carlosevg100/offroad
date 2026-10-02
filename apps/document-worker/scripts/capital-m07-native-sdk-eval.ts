@@ -63,7 +63,15 @@ async function main(){
  localTarget(api,'http:');localTarget(db,'postgresql:');keyAllowed(key);if(!root)throw new Error('repository required');
  phase='protocol-parity';protocolParity(db,root);
  phase='human-fixture';sql(expand(join(root,'supabase/tests/support/capital_m07_native_sdk_fixture.sql')),db);
- const client=createClient(api,key,{global:{headers:{'x-offroad-workspace':organization},fetch:(input,init)=>fetch(input,{...init,redirect:'error'})},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+ const client=createClient(api,key,{global:{headers:{'x-offroad-workspace':organization},fetch:async(input,init)=>{
+  const response=await fetch(input,{...init,redirect:'error'});
+  if(phase==='producer-http-storage'&&!response.ok){
+   const pathname=new URL(input instanceof Request?input.url:String(input)).pathname;
+   const operation=/^\/rest\/v1\/rpc\/[a-z0-9_]+$/.test(pathname)?pathname.split('/').at(-1):pathname==='/functions/v1/capital-body-read'?'capital-body-read':'storage';
+   process.stderr.write(JSON.stringify({eval:'capital_m07_native_sdk',event:'http-failure',operation,status:response.status})+'\n');
+  }
+  return response;
+ }},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
  phase='login';const login=await client.auth.signInWithPassword({email:'origination-owner@example.invalid',password:'m07-isolated-local-eval-password'});assert.equal(login.error,null);assert.equal(login.data.user?.id,actor);
  const realQueue=createQueueClient(client,{workerToken:'w'.repeat(64),leaseSeconds:600});
  phase='real-claim';const claimed=await realQueue.claim();if(!claimed||claimed.kind!=='capital_project_analysis'||claimed.payload.analysis_scope!=='origination_thesis')throw new Error('origination required');const job:CapitalProjectAnalysisJob=claimed;
@@ -106,4 +114,8 @@ async function main(){
  phase='physical-purge-catalog-oracle';const erased=JSON.parse(sql(`select jsonb_build_object('objects',(select count(*) from storage.objects s join private.capital_public_payload_allocations a on a.bucket_id=s.bucket_id and a.object_path=s.name where a.organization_id='${organization}' and a.job_id='${job.job_id}'),'erasureEvents',(select count(*) from private.capital_public_payload_erasure_events e join private.capital_public_payload_allocations a on a.organization_id=e.organization_id and a.id=e.allocation_id where a.organization_id='${organization}' and a.job_id='${job.job_id}'),'purged',(select count(*) from private.capital_public_payload_purge_queue q join private.capital_public_payload_allocations a on a.organization_id=q.organization_id and a.id=q.allocation_id where a.organization_id='${organization}' and a.job_id='${job.job_id}' and q.status='purged'));`,db));assert.equal(erased.objects,0);assert.equal(erased.erasureEvents,allocations.length);assert.equal(erased.purged,allocations.length);
  process.stdout.write(JSON.stringify({eval:'capital_m07_native_sdk',result:'PASS',checks:['human-publication-license','real-approved-job-capability','producer','physical-context-source-parsed-final','native-accepted-outcome','direct-storage-denied','recovery-zero-model','one-artifact','job-completed','real-janitor-lease','sdk-storage-delete','authenticated-head-404','erasure-ack-idempotent'],syntheticModelCalls:sends})+'\n');
 }
-main().catch(()=>{process.stderr.write(JSON.stringify({eval:'capital_m07_native_sdk',result:'FAIL',phase})+'\n');process.exitCode=1;});
+main().catch(error=>{
+ const message=error instanceof Error?error.message:'';
+ const boundedMessage=/^[a-z0-9_]{3,120}(: [a-z0-9_]{3,120})?$/.test(message)?message:null;
+ process.stderr.write(JSON.stringify({eval:'capital_m07_native_sdk',result:'FAIL',phase,boundedMessage})+'\n');process.exitCode=1;
+});
