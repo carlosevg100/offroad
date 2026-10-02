@@ -414,7 +414,11 @@ begin
     or has_function_privilege('anon', 'public.worker_record_agent_response_and_activate_v5(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
     or has_column_privilege('authenticated', 'public.capital_project_execution_briefs', 'internal_snapshot', 'select')
     or not has_column_privilege('authenticated', 'public.capital_project_execution_briefs', 'visible_snapshot', 'select')
-    or not has_function_privilege('authenticated', 'public.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)', 'execute')
+    -- The unbound legacy writer is closed by the native producer cut.
+    or has_function_privilege('authenticated', 'public.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)', 'execute')
+    or not has_function_privilege('authenticated', 'public.worker_capture_execution_brief_inputs_v1(uuid,text,uuid)', 'execute')
+    or not has_function_privilege('authenticated', 'public.worker_record_execution_brief_proposal_v2(uuid,text,uuid,jsonb,jsonb,text,jsonb)', 'execute')
+    or has_function_privilege('anon', 'public.worker_record_execution_brief_proposal_v2(uuid,text,uuid,jsonb,jsonb,text,jsonb)', 'execute')
     or not has_function_privilege('authenticated', 'public.worker_record_agent_response_and_activate_v4(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
     or not has_function_privilege('authenticated', 'public.worker_record_agent_response_and_activate_v5(uuid,text,uuid,jsonb,jsonb,jsonb,jsonb,jsonb,jsonb)', 'execute')
     or not has_function_privilege('authenticated', 'public.read_capital_project_execution_brief_progress_v1(uuid)', 'execute')
