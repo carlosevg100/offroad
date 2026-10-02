@@ -65,6 +65,13 @@ async function run(mode:'success'|'compiler_failed'|'domain_blocked'){
   phase='success_forbidden_self_approval';await rpc(owner,'set_capital_project_review_policy_v1',{p_project_id:workId,p_self_approval:'forbidden'});await assert.rejects(()=>rpc(owner,'decide_material_package_v1',{p_work_id:workId,p_revision_id:committed.revisionId,p_manifest_fingerprint:basis.manifestFingerprint,p_act:'approve',p_note:'Synthetic local forbidden self approval',p_self_approval_declared:true,p_command_id:randomUUID(),p_basis_review_id:null}),/42501$/);
   // Explicit local tenant policy act, never a seeded approval or server bypass.
   await rpc(owner,'set_capital_project_review_policy_v1',{p_project_id:workId,p_self_approval:'allowed'});
+  // The normal worker acknowledges this committed product before the human can
+  // request its next work. A still-leased producer must not enqueue a second run.
+  phase='success_followup_denied_while_producer_leased';
+  assert.equal(sql(db,`select status from public.processing_jobs where id='${job.job_id}';`),'leased');
+  await assert.rejects(()=>rpc(owner,'decide_material_package_v1',{p_work_id:workId,p_revision_id:committed.revisionId,p_manifest_fingerprint:basis.manifestFingerprint,p_act:'approve',p_note:'Synthetic followup denied while original producer remains leased',p_self_approval_declared:true,p_command_id:randomUUID(),p_basis_review_id:null}),/55000$/);
+  phase='success_complete_material_producer';await queue.complete(job,first);
+  assert.equal(sql(db,`select status from public.processing_jobs where id='${job.job_id}';`),'succeeded');
   if(uiFixture){
    const output=resolve(process.env.MATERIAL_UI_FIXTURE_OUTPUT??`/private/tmp/offroad-material-ui-${randomUUID()}.json`);assert.ok(['/private/tmp','/tmp'].includes(dirname(output))&&output.endsWith('.json'));
    const proof={schemaVersion:'material-native-ui-fixture.v1',organizationId:org,workId,sessionId:session,recipeId:committed.recipeId,revisionId:committed.revisionId,bundleFingerprint:committed.bundleFingerprint,manifestFingerprint:basis.manifestFingerprint,materialCompilerVersion:caseMaterialsVersion,approved:false,email:`material-${mode}-owner@example.invalid`,password:fixturePassword,apiUrl:api};
