@@ -1,5 +1,6 @@
 -- Synthetic result through captured setup and real approval. No production data.
 \ir institutional_setup_pending.sql
+\ir institutional_native_review.sql
 set local role authenticated;
 select set_config('test.closure_setup_capture',public.worker_load_institutional_model_context_v3(current_setting('test.setup_job')::uuid,repeat('w',64))::text,true);
 set local role authenticated;
@@ -26,9 +27,12 @@ end $$;
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000881","role":"authenticated"}',true);
 reset role;
 update public.agent_messages set status='completed' where id='90000000-0000-4000-8000-000000000881';
+insert into public.organization_review_policies(organization_id,assignment_required,self_approval_allowed,updated_by)
+values('20000000-0000-4000-8000-000000000881',false,true,'10000000-0000-4000-8000-000000000881')
+on conflict(organization_id) do update set assignment_required=false,self_approval_allowed=true;
 set local role authenticated;
-select public.review_institutional_configuration_and_calculate_v1('30000000-0000-4000-8000-000000000881',current_setting('test.setup_candidate_id')::uuid,null,'approved',current_setting('test.setup_candidate')::jsonb->>'configurationFingerprint','90000000-0000-4000-8000-000000000883','en-US');
-select public.review_institutional_configuration_and_calculate_v1('30000000-0000-4000-8000-000000000881',current_setting('test.setup_candidate_id')::uuid,null,'approved',current_setting('test.setup_candidate')::jsonb->>'configurationFingerprint','90000000-0000-4000-8000-000000000883','en-US');
+select pg_temp.approve_native_configuration('30000000-0000-4000-8000-000000000881',current_setting('test.setup_candidate_id')::uuid,'90000000-0000-4000-8000-000000000883','en-US');
+select pg_temp.approve_native_configuration('30000000-0000-4000-8000-000000000881',current_setting('test.setup_candidate_id')::uuid,'90000000-0000-4000-8000-000000000883','en-US');
 do $$declare result jsonb;begin
  result:=public.worker_load_institutional_model_context_v3(current_setting('test.setup_job')::uuid,repeat('w',64));
  if has_table_privilege('authenticated','private.institutional_model_setup_submissions','UPDATE') then raise exception 'Setup table grants exposed';end if;

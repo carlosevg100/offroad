@@ -345,10 +345,12 @@ export async function beginAdvisorProjectProcessing(input: unknown): Promise<Adv
 
 /** Reviews an immutable configuration and queues deterministic calculation on approval. */
 export async function reviewAdvisorInstitutionalConfiguration(input: unknown): Promise<AdvisorMessageResult> {
-  const parsed = projectSchema.extend({candidateId: z.uuid(), requestId: z.uuid(), expectedParentFingerprint: z.string().regex(/^[0-9a-f]{64}$/).nullable(), expectedCandidateFingerprint: z.string().regex(/^[0-9a-f]{64}$/), decision: z.enum(["approved", "rejected"])}).safeParse(input);
+  const parsed = projectSchema.extend({candidateId: z.uuid(), requestId: z.uuid(), expectedParentFingerprint: z.string().regex(/^[0-9a-f]{64}$/).nullable(), expectedCandidateFingerprint: z.string().regex(/^[0-9a-f]{64}$/), expectedLineageFingerprint:z.string().regex(/^[a-f0-9]{64}$/),selfApprovalDeclared:z.boolean(),decision: z.enum(["approved", "rejected"])}).strict().safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
   const {supabase} = await requireWorkspace(parsed.data.locale);
   const {error} = await reviewInstitutionalConfiguration(supabase, {p_project_id: parsed.data.projectId, p_candidate_id: parsed.data.candidateId,
-    p_expected_parent_fingerprint: parsed.data.expectedParentFingerprint, p_expected_candidate_fingerprint: parsed.data.expectedCandidateFingerprint, p_decision: parsed.data.decision, p_request_id: parsed.data.requestId, p_locale: parsed.data.locale});
+    p_expected_parent_fingerprint: parsed.data.expectedParentFingerprint, p_expected_candidate_fingerprint: parsed.data.expectedCandidateFingerprint,
+    p_expected_lineage_fingerprint:parsed.data.expectedLineageFingerprint,p_self_approval_declared:parsed.data.selfApprovalDeclared,
+    p_decision: parsed.data.decision, p_command_id: parsed.data.requestId, p_locale: parsed.data.locale});
   return error ? {ok: false, error: advisorActionError(error)} : {ok: true};
 }

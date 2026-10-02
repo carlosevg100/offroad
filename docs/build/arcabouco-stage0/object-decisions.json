@@ -36423,6 +36423,12 @@
           "line": 954,
           "anchor": "create function private.review_execution_authority_current_v1(p_id uuid,p_resource_id uuid,p_subject uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 226,
+          "anchor": "create function private.review_execution_authority_current_v1(p_id uuid,p_resource_id uuid,p_subject uuid)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Consumido pelas políticas, RPCs e aplicações de acesso explícito da etapa 1B.",
@@ -36555,6 +36561,12 @@
           "path": "supabase/migrations/20260911115509_restore_institutional_review_role_gate.sql",
           "line": 10,
           "anchor": "create or replace function private.review_institutional_configuration_and_calculate_v1(p_project_id uuid,p_candidate_id uuid,p_expected_parent_fingerprint text,p_decision text,p_expected_candidate_fingerprint text,p_request_id uuid,p_locale text) returns jsonb language plpgsql security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 94,
+          "anchor": "create function private.review_institutional_configuration_and_calculate_v1(p_project_id uuid,p_candidate_id uuid,p_expected_parent_fingerprint text,p_decision text,p_expected_candidate_fingerprint text,p_request_id uuid,p_locale text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -36689,6 +36701,12 @@
           "line": 143,
           "anchor": "alter function private.review_institutional_configuration_v1(uuid,uuid,text,text,text) rename to review_institutional_configuration_before_sources_v1;",
           "mechanism": "schema_move_or_rename"
+        },
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 114,
+          "anchor": "create function private.review_institutional_configuration_v1(p_project_id uuid,p_candidate_id uuid,p_expected_parent_fingerprint text,p_decision text,p_expected_candidate_fingerprint text)",
+          "mechanism": "direct_ddl"
         }
       ],
       "consumer_status": "Only direct source references are enumerated; absence is not proof of no external or SQL caller."
@@ -186123,6 +186141,12 @@
           "line": 4,
           "anchor": "create or replace function private.worker_load_institutional_model_context_v3(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 304,
+          "anchor": "create function private.worker_load_institutional_model_context_v3(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -188367,6 +188391,12 @@
           "line": 166,
           "anchor": "create or replace function private.institutional_configuration_ancestry_v1(p_org uuid,p_work uuid,p_configuration uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 58,
+          "anchor": "create function private.institutional_configuration_ancestry_v1(p_org uuid,p_work uuid,p_configuration uuid)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -188588,6 +188618,12 @@
           "path": "supabase/migrations/20260929024501_institutional_native_read_lock_order.sql",
           "line": 99,
           "anchor": "create or replace function private.institutional_native_read_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid) returns boolean",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 285,
+          "anchor": "create function private.institutional_native_read_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid)",
           "mechanism": "direct_ddl"
         }
       ]
@@ -206203,6 +206239,1148 @@
           "mechanism": "dynamic_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.apply_institutional_configuration_calculation_before_projection(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_request_id uuid, p_locale text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.apply_institutional_configuration_calculation_before_projection(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_request_id uuid, p_locale text)",
+          "kind": "function",
+          "name": "apply_institutional_configuration_calculation_before_projection",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_request_id uuid, p_locale text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.apply_institutional_configuration_calculation_before_projection(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_request_id uuid, p_locale text)",
+          "kind": "function",
+          "name": "apply_institutional_configuration_calculation_before_projection",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_request_id uuid, p_locale text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Conservar primitiva privada sem grants de API, acessível somente pela transação nativa com base, autoria e revogação conferidas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 91,
+          "anchor": " rename to apply_institutional_configuration_calculation_before_projection_v1;",
+          "mechanism": "renamed_private_primitive"
+        }
+      ]
+    },
+    {
+      "id": "function:private.apply_institutional_configuration_review_before_projection_v1(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.apply_institutional_configuration_review_before_projection_v1(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text)",
+          "kind": "function",
+          "name": "apply_institutional_configuration_review_before_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.apply_institutional_configuration_review_before_projection_v1(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text)",
+          "kind": "function",
+          "name": "apply_institutional_configuration_review_before_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Conservar primitiva privada sem grants de API, acessível somente pela transação nativa com base, autoria e revogação conferidas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 112,
+          "anchor": " rename to apply_institutional_configuration_review_before_projection_v1;",
+          "mechanism": "renamed_private_primitive"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_configuration_ancestry_before_review_projection_v(p_org uuid, p_work uuid, p_configuration uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_configuration_ancestry_before_review_projection_v(p_org uuid, p_work uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_ancestry_before_review_projection_v",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_configuration uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_configuration_ancestry_before_review_projection_v(p_org uuid, p_work uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_ancestry_before_review_projection_v",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_configuration uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Conservar primitiva privada sem grants de API, acessível somente pela transação nativa com base, autoria e revogação conferidas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 56,
+          "anchor": " rename to institutional_configuration_ancestry_before_review_projection_v1;",
+          "mechanism": "renamed_private_primitive"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_configuration_requires_native_review_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_configuration_requires_native_review_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_requires_native_review_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_configuration_requires_native_review_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_requires_native_review_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 75,
+          "anchor": "create function private.institutional_configuration_requires_native_review_v1(p_org uuid,p_configuration uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_configuration_review_effective_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_configuration_review_effective_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_review_effective_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_configuration_review_effective_v1(p_org uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_review_effective_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_configuration uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 37,
+          "anchor": "create function private.institutional_configuration_review_effective_v1(p_org uuid,p_configuration uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.institutional_native_read_before_configuration_projection_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.institutional_native_read_before_configuration_projection_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "institutional_native_read_before_configuration_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.institutional_native_read_before_configuration_projection_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+          "kind": "function",
+          "name": "institutional_native_read_before_configuration_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Conservar primitiva privada sem grants de API, acessível somente pela transação nativa com base, autoria e revogação conferidas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 283,
+          "anchor": "alter function private.institutional_native_read_allowed_v1(uuid,uuid,uuid) rename to institutional_native_read_before_configuration_projection_v1;",
+          "mechanism": "renamed_private_primitive"
+        }
+      ]
+    },
+    {
+      "id": "function:private.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)",
+          "kind": "function",
+          "name": "read_institutional_configuration_review_basis_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)",
+          "kind": "function",
+          "name": "read_institutional_configuration_review_basis_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 237,
+          "anchor": "create function private.read_institutional_configuration_review_basis_v2(p_project_id uuid,p_candidate_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.review_execution_authority_before_configuration_projection_v1(p_id uuid, p_resource_id uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.review_execution_authority_before_configuration_projection_v1(p_id uuid, p_resource_id uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "review_execution_authority_before_configuration_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_resource_id uuid, p_subject uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.review_execution_authority_before_configuration_projection_v1(p_id uuid, p_resource_id uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "review_execution_authority_before_configuration_projection_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_id uuid, p_resource_id uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Conservar primitiva privada sem grants de API, acessível somente pela transação nativa com base, autoria e revogação conferidas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 224,
+          "anchor": "alter function private.review_execution_authority_current_v1(uuid,uuid,uuid) rename to review_execution_authority_before_configuration_projection_v1;",
+          "mechanism": "renamed_private_primitive"
+        }
+      ]
+    },
+    {
+      "id": "function:private.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+          "kind": "function",
+          "name": "review_institutional_configuration_and_calculate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+          "kind": "function",
+          "name": "review_institutional_configuration_and_calculate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 133,
+          "anchor": "create function private.review_institutional_configuration_and_calculate_v2(",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_load_institutional_model_context_before_review_projectio(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_load_institutional_model_context_before_review_projectio(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_institutional_model_context_before_review_projectio",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_load_institutional_model_context_before_review_projectio(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_load_institutional_model_context_before_review_projectio",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Conservar primitiva privada sem grants de API, acessível somente pela transação nativa com base, autoria e revogação conferidas.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 302,
+          "anchor": "alter function private.worker_load_institutional_model_context_v3(uuid,text) rename to worker_load_institutional_model_context_before_review_projection_v3;",
+          "mechanism": "renamed_private_primitive"
+        }
+      ]
+    },
+    {
+      "id": "function:public.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)",
+          "kind": "function",
+          "name": "read_institutional_configuration_review_basis_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)",
+          "kind": "function",
+          "name": "read_institutional_configuration_review_basis_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 274,
+          "anchor": "create function public.read_institutional_configuration_review_basis_v2(p_project_id uuid,p_candidate_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+          "kind": "function",
+          "name": "review_institutional_configuration_and_calculate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+          "kind": "function",
+          "name": "review_institutional_configuration_and_calculate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 216,
+          "anchor": "create function public.review_institutional_configuration_and_calculate_v2(p_project_id uuid,p_candidate_id uuid,p_expected_parent_fingerprint text,p_decision text,p_expected_candidate_fingerprint text,p_expected_lineage_fingerprint text,p_command_id uuid,p_locale text,p_self_approval_declared boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_delete",
+          "kind": "policy",
+          "name": "institutional_configuration_review_no_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_delete",
+          "kind": "policy",
+          "name": "institutional_configuration_review_no_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 30,
+          "anchor": "create policy institutional_configuration_review_no_delete on private.institutional_configuration_review_projections for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_insert",
+          "kind": "policy",
+          "name": "institutional_configuration_review_no_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_insert",
+          "kind": "policy",
+          "name": "institutional_configuration_review_no_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 28,
+          "anchor": "create policy institutional_configuration_review_no_insert on private.institutional_configuration_review_projections for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_select",
+          "kind": "policy",
+          "name": "institutional_configuration_review_no_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_select",
+          "kind": "policy",
+          "name": "institutional_configuration_review_no_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 27,
+          "anchor": "create policy institutional_configuration_review_no_select on private.institutional_configuration_review_projections for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_update",
+          "kind": "policy",
+          "name": "institutional_configuration_review_no_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_update",
+          "kind": "policy",
+          "name": "institutional_configuration_review_no_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 29,
+          "anchor": "create policy institutional_configuration_review_no_update on private.institutional_configuration_review_projections for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.institutional_configuration_review_projections",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.institutional_configuration_review_projections",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_configuration_review_projections",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.institutional_configuration_review_projections",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_configuration_review_projections",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 5,
+          "anchor": "create table private.institutional_configuration_review_projections (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_audit",
+          "kind": "trigger",
+          "name": "institutional_configuration_review_audit",
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_configuration_review_audit AFTER INSERT ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_audit",
+          "kind": "trigger",
+          "name": "institutional_configuration_review_audit",
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER institutional_configuration_review_audit AFTER INSERT ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 34,
+          "anchor": "create trigger institutional_configuration_review_audit after insert on private.institutional_configuration_review_projections for each row execute function private.capture_audit_event();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_immutable",
+          "kind": "trigger",
+          "name": "institutional_configuration_review_immutable",
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_configuration_review_immutable BEFORE DELETE OR UPDATE ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_immutable",
+          "kind": "trigger",
+          "name": "institutional_configuration_review_immutable",
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_configuration_review_immutable BEFORE DELETE OR UPDATE ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 31,
+          "anchor": "create trigger institutional_configuration_review_immutable before update or delete on private.institutional_configuration_review_projections for each row execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_no_truncate",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_configuration_review_no_truncate",
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_configuration_review_no_truncate BEFORE TRUNCATE ON private.institutional_configuration_review_projections FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_no_truncate",
+          "kind": "trigger",
+          "name": "institutional_configuration_review_no_truncate",
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_review_history_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_configuration_review_no_truncate BEFORE TRUNCATE ON private.institutional_configuration_review_projections FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 32,
+          "anchor": "create trigger institutional_configuration_review_no_truncate before truncate on private.institutional_configuration_review_projections for each statement execute function private.reject_review_history_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_updated",
+          "kind": "trigger",
+          "name": "institutional_configuration_review_updated",
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_configuration_review_updated BEFORE UPDATE ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_updated",
+          "kind": "trigger",
+          "name": "institutional_configuration_review_updated",
+          "table": "institutional_configuration_review_projections",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER institutional_configuration_review_updated BEFORE UPDATE ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+          "line": 33,
+          "anchor": "create trigger institutional_configuration_review_updated before update on private.institutional_configuration_review_projections for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -213299,6 +214477,13 @@
       "decision": "preservar",
       "stage": "20 / 3Q outcomes e orçamento durável",
       "reason": "Instalar outcomes privados e orçamento durável sem reaplicação do legado nem ativação de M07."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
+      "decision": "preservar",
+      "stage": "20 / 3U configuração",
+      "reason": "Comando v2 com base, autoria, CAS, revogação, replay e efeito atômicos."
     }
   ],
   "staging_archive": [

@@ -39,11 +39,11 @@ describe("persistent work entry", () => {
 });
 
 describe("institutional premise decision", () => {
-  const review = {requestId: input.requestId, locale: "pt-BR", projectId: input.requestId, candidateId: "10000000-0000-4000-8000-000000000002", expectedParentFingerprint: "a".repeat(64), expectedCandidateFingerprint: "b".repeat(64), decision: "approved"};
+  const review = {requestId: input.requestId, locale: "pt-BR", projectId: input.requestId, candidateId: "10000000-0000-4000-8000-000000000002", expectedParentFingerprint: "a".repeat(64), expectedCandidateFingerprint: "b".repeat(64), expectedLineageFingerprint:"c".repeat(64),selfApprovalDeclared:true,decision: "approved"};
   beforeEach(() => {vi.clearAllMocks(); rpc.mockResolvedValue({data: {}, error: null});});
   it("sends both fingerprints and never dispatches calculation", async () => {
     expect(await reviewAdvisorInstitutionalConfiguration(review)).toEqual({ok: true});
-    expect(rpc).toHaveBeenCalledExactlyOnceWith("review_institutional_configuration_and_calculate_v1", {p_project_id: review.projectId, p_candidate_id: review.candidateId, p_expected_parent_fingerprint: review.expectedParentFingerprint, p_expected_candidate_fingerprint: review.expectedCandidateFingerprint, p_decision: "approved", p_request_id: review.requestId, p_locale: "pt-BR"});
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("review_institutional_configuration_and_calculate_v2", {p_project_id: review.projectId, p_candidate_id: review.candidateId, p_expected_parent_fingerprint: review.expectedParentFingerprint, p_expected_candidate_fingerprint: review.expectedCandidateFingerprint,p_expected_lineage_fingerprint:review.expectedLineageFingerprint,p_self_approval_declared:true,p_decision: "approved", p_command_id: review.requestId, p_locale: "pt-BR"});
     expect(after).not.toHaveBeenCalled();
   });
   it("rejects malformed decisions and surfaces stale/denied server results", async () => {
@@ -53,6 +53,18 @@ describe("institutional premise decision", () => {
     expect(await reviewAdvisorInstitutionalConfiguration(review)).toEqual({ok: false, error: "stale"});
     rpc.mockResolvedValue({error: {code: "42501", message: "institutional_review_forbidden"}});
     expect(await reviewAdvisorInstitutionalConfiguration(review)).toEqual({ok: false, error: "denied"});
+  });
+  it("refuses a legacy payload or client supplied authority before calling the database", async () => {
+    for(const patch of [{expectedLineageFingerprint:undefined},{selfApprovalDeclared:undefined},{organizationId:review.projectId},{preparedBy:review.projectId}])
+      expect(await reviewAdvisorInstitutionalConfiguration({...review,...patch})).toEqual({ok:false,error:"invalid"});
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it("retries the same exact command and accepts the reduced server replay receipt", async () => {
+    rpc.mockResolvedValue({data:{replayed:true,decisionId:review.requestId,status:"approved"},error:null});
+    expect(await reviewAdvisorInstitutionalConfiguration(review)).toEqual({ok:true});
+    expect(await reviewAdvisorInstitutionalConfiguration(review)).toEqual({ok:true});
+    expect(rpc.mock.calls[0]).toEqual(rpc.mock.calls[1]);
+    expect(after).not.toHaveBeenCalled();
   });
 });
 

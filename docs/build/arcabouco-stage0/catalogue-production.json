@@ -69124,7 +69124,389 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER capital_body_processing_operations_updated_at BEFORE UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.apply_institutional_configuration_calculation_before_projection(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_request_id uuid, p_locale text)",
+      "kind": "function",
+      "name": "apply_institutional_configuration_calculation_before_projection",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_request_id uuid, p_locale text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.apply_institutional_configuration_review_before_projection_v1(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text)",
+      "kind": "function",
+      "name": "apply_institutional_configuration_review_before_projection_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_configuration_ancestry_before_review_projection_v(p_org uuid, p_work uuid, p_configuration uuid)",
+      "kind": "function",
+      "name": "institutional_configuration_ancestry_before_review_projection_v",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_configuration uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_configuration_requires_native_review_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "name": "institutional_configuration_requires_native_review_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_configuration uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_configuration_review_effective_v1(p_org uuid, p_configuration uuid)",
+      "kind": "function",
+      "name": "institutional_configuration_review_effective_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_configuration uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.institutional_native_read_before_configuration_projection_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "institutional_native_read_before_configuration_projection_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)",
+      "kind": "function",
+      "name": "read_institutional_configuration_review_basis_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_candidate_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.review_execution_authority_before_configuration_projection_v1(p_id uuid, p_resource_id uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "review_execution_authority_before_configuration_projection_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_id uuid, p_resource_id uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+      "kind": "function",
+      "name": "review_institutional_configuration_and_calculate_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_load_institutional_model_context_before_review_projectio(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_institutional_model_context_before_review_projectio",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)",
+      "kind": "function",
+      "name": "read_institutional_configuration_review_basis_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_candidate_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+      "kind": "function",
+      "name": "review_institutional_configuration_and_calculate_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_delete",
+      "kind": "policy",
+      "name": "institutional_configuration_review_no_delete",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_configuration_review_projections",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_insert",
+      "kind": "policy",
+      "name": "institutional_configuration_review_no_insert",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_configuration_review_projections",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_select",
+      "kind": "policy",
+      "name": "institutional_configuration_review_no_select",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_configuration_review_projections",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "PERMISSIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_update",
+      "kind": "policy",
+      "name": "institutional_configuration_review_no_update",
+      "qual": "false",
+      "roles": [
+        "authenticated"
+      ],
+      "table": "institutional_configuration_review_projections",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "PERMISSIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.institutional_configuration_review_projections",
+      "rls": true,
+      "kind": "table",
+      "name": "institutional_configuration_review_projections",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_audit",
+      "kind": "trigger",
+      "name": "institutional_configuration_review_audit",
+      "table": "institutional_configuration_review_projections",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER institutional_configuration_review_audit AFTER INSERT ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_immutable",
+      "kind": "trigger",
+      "name": "institutional_configuration_review_immutable",
+      "table": "institutional_configuration_review_projections",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_configuration_review_immutable BEFORE DELETE OR UPDATE ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_no_truncate",
+      "kind": "trigger",
+      "name": "institutional_configuration_review_no_truncate",
+      "table": "institutional_configuration_review_projections",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER institutional_configuration_review_no_truncate BEFORE TRUNCATE ON private.institutional_configuration_review_projections FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.institutional_configuration_review_projections.institutional_configuration_review_updated",
+      "kind": "trigger",
+      "name": "institutional_configuration_review_updated",
+      "table": "institutional_configuration_review_projections",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER institutional_configuration_review_updated BEFORE UPDATE ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     }
   ],
-  "captured_at": "2026-10-02T10:17:00.815787+00:00"
+  "captured_at": "2026-10-02T11:36:45.397402+00:00"
 }

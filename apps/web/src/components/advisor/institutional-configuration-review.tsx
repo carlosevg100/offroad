@@ -6,6 +6,7 @@ import type {InstitutionalConfigurationReview} from "@/lib/advisor/institutional
 import {reviewAdvisorInstitutionalConfiguration} from "@/app/[locale]/app/advisor-actions";
 import reviewStyles from "./institutional-configuration-review.module.css";
 import styles from "./provider-research-work.module.css";
+import {configurationReviewAllowed} from "@/lib/advisor/institutional-configuration-review-command";
 
 /** Decimal-string shift avoids rounding a proposed percentage for display. */
 export function displayAssumptionValue(value: string, percent: boolean, locale: string): string {
@@ -23,13 +24,18 @@ export function InstitutionalConfigurationReviewWork({projectId, reviews}: {proj
   const [pending, startTransition] = useTransition();
   const requests = useRef(new Map<string, string>());
   const [error, setError] = useState<string | null>(null);
+  const declarationCopy=useTranslations("ArtifactRevisionReview");
+  const [declarations,setDeclarations]=useState<Record<string,boolean>>({});
   function review(candidate: InstitutionalConfigurationReview, decision: "approved" | "rejected") {
+    const basis=candidate.reviewBasis;
+    const declared=declarations[candidate.candidateId]??false;
+    if(!basis||!configurationReviewAllowed(basis,decision,declared)||(decision==="approved"&&!candidate.canApprove))return;
     setError(null);
-    const key = `${candidate.candidateId}:${candidate.configurationFingerprint}:${decision}`;
+    const key = JSON.stringify({candidate:candidate.candidateId,fingerprint:candidate.configurationFingerprint,parent:candidate.parentFingerprint,lineage:basis.lineageFingerprint,decision,declared,locale});
     if (!requests.current.has(key)) requests.current.set(key, crypto.randomUUID());
     startTransition(async () => {
       try {
-      const result = await reviewAdvisorInstitutionalConfiguration({locale, projectId, requestId: requests.current.get(key), candidateId: candidate.candidateId, expectedParentFingerprint: candidate.parentFingerprint, expectedCandidateFingerprint: candidate.configurationFingerprint, decision});
+      const result = await reviewAdvisorInstitutionalConfiguration({locale, projectId, requestId: requests.current.get(key), candidateId: candidate.candidateId, expectedParentFingerprint: candidate.parentFingerprint, expectedCandidateFingerprint: candidate.configurationFingerprint,expectedLineageFingerprint:basis.lineageFingerprint,selfApprovalDeclared:declared,decision});
       if (!result.ok) setError(t(result.error === "stale" ? "stale" : "error"));
       else router.refresh();
       } catch {setError(t("error"));}
@@ -39,7 +45,7 @@ export function InstitutionalConfigurationReviewWork({projectId, reviews}: {proj
     <header><p>{t("introduction")}</p></header>
     {error ? <p role="alert">{error}</p> : null}
     <div className={styles.providers}>{reviews.map(candidate => <article key={candidate.candidateId}>
-      <header><h3>{candidate.label[locale === "pt-BR" ? "pt" : "en"]} · {candidate.period}</h3><span>{t(`status.${candidate.status}`)}</span></header>
+      <header><h3>{candidate.label[locale === "pt-BR" ? "pt" : "en"]} · {candidate.period}</h3><span>{candidate.status==="approved"&&candidate.reviewBasis&&!candidate.reviewBasis.approvalEffective?declarationCopy("pending"):t(`status.${candidate.status}`)}</span></header>
       <dl>
         <div><dt>{t("prior")}</dt><dd>{candidate.priorValue === null ? t("notProvided") : displayAssumptionValue(candidate.priorValue, candidate.unit === "percent", locale)}</dd></div>
         <div><dt>{t("proposed")}</dt><dd>{displayAssumptionValue(candidate.proposedValue, candidate.unit === "percent", locale)}</dd></div>
@@ -47,7 +53,10 @@ export function InstitutionalConfigurationReviewWork({projectId, reviews}: {proj
         <div><dt>{t("source")}</dt><dd>{t("userResponse")} · {format.dateTime(new Date(candidate.answeredAt), {dateStyle: "medium", timeStyle: "short", timeZone: "UTC"})} UTC</dd></div>
       </dl>
       {candidate.status === "review_required" && !candidate.canApprove ? <p>{t("staleParent")}</p> : null}
-      {candidate.status === "review_required" ? <div className={reviewStyles.actions}><button type="button" disabled={pending || !candidate.canApprove} onClick={() => review(candidate, "approved")}>{t("approve")}</button> <button type="button" disabled={pending} onClick={() => review(candidate, "rejected")}>{t("reject")}</button></div> : null}
+      {candidate.status==="review_required"&&candidate.reviewBasis?.preparedBy===candidate.reviewBasis?.viewerId&&candidate.reviewBasis?
+       candidate.reviewBasis.policy.selfApprovalAllowed?<label><input type="checkbox" checked={declarations[candidate.candidateId]??false} disabled={pending}
+        onChange={event=>setDeclarations(value=>({...value,[candidate.candidateId]:event.target.checked}))}/>{declarationCopy("declaration")}</label>:<p>{declarationCopy("differentReviewer")}</p>:null}
+      {candidate.status === "review_required" ? <div className={reviewStyles.actions}><button type="button" disabled={pending || !candidate.canApprove||!candidate.reviewBasis||!configurationReviewAllowed(candidate.reviewBasis,"approved",declarations[candidate.candidateId]??false)} onClick={() => review(candidate, "approved")}>{t("approve")}</button> <button type="button" disabled={pending||!candidate.reviewBasis||!configurationReviewAllowed(candidate.reviewBasis,"rejected",declarations[candidate.candidateId]??false)} onClick={() => review(candidate, "rejected")}>{t("reject")}</button></div> : null}
     </article>)}</div>
     <footer><p>{t("boundary")}</p></footer>
   </section>;

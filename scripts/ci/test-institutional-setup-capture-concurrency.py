@@ -168,7 +168,9 @@ print('setup_capture_legacy_downgrade: PASS (v1 waits for job, then denies captu
 # Capture a second setup over a contribution, then commit another human approval
 # in one session while persistence runs in the other. Retry must retain the pin.
 fixture = expand(ROOT / 'supabase/tests/institutional_setup_parent_lineage.sql')
-fixture = fixture.split("set local role authenticated;\nselect public.review_institutional_configuration_v1('30000000-0000-4000-8000-000000000881',current_setting('test.intervening')")[0]
+marker = "set local role authenticated;\nselect pg_temp.approve_native_configuration('30000000-0000-4000-8000-000000000881',current_setting('test.intervening')"
+assert marker in fixture, "intervening approval fixture cut missing"
+fixture = fixture.split(marker, 1)[0]
 for suffix in ['881', '882', '883']:
     fixture = fixture.replace(f'-000000000{suffix}', f'-000000029{suffix}')
 fixture = fixture.replace('setup-owner@', 'parent-race-owner@').replace('setup-worker@', 'parent-race-worker@')
@@ -180,7 +182,7 @@ cleanup = """do $$declare t record;begin
 data = run('\\o /dev/null\n' + fixture + cleanup + "\n\\o\nselect jsonb_build_object('job',current_setting('test.next_job'),'result',current_setting('test.next_submission'),'artifact',current_setting('test.next_candidate')::jsonb,'pin',current_setting('test.next_capture')::jsonb->'setupInputSnapshot','parent',current_setting('test.parent_fp'),'intervening',current_setting('test.intervening'),'intervening_fp',current_setting('test.intervening_fp'));commit;")
 c = json.loads(data)
 c.update(actor='10000000-0000-4000-8000-000000029881', work='30000000-0000-4000-8000-000000029881')
-approval = f"set local role authenticated;select public.review_institutional_configuration_v1('{c['work']}','{c['intervening']}','{c['parent']}','approved','{c['intervening_fp']}');"
+approval = f"set local role authenticated;with b as (select public.read_institutional_configuration_review_basis_v2('{c['work']}','{c['intervening']}') v) select public.review_institutional_configuration_and_calculate_v2('{c['work']}','{c['intervening']}','{c['parent']}','approved','{c['intervening_fp']}',v->>'lineageFingerprint',gen_random_uuid(),'en-US',true) from b;"
 compete(c, approval, write(c), 'institutional_capture_retry', immediate=True)
 run('begin;' + auth(c, write(c)) + 'commit;')
 assert run(f"select parent_fingerprint from private.institutional_model_configurations where answer_message_id='{c['result']}';") == c['parent']

@@ -4,9 +4,9 @@ begin;
 \ir support/institutional_contribution_builder.sql
 select set_config('test.parent_contribution',pg_temp.add_ancestry_contribution(current_setting('test.setup_candidate_id')::uuid,'9')::text,true);
 select set_config('test.parent_fp',(select configuration_fingerprint from private.institutional_model_configurations where id=current_setting('test.parent_contribution')::uuid),true);
+update public.agent_messages set status='completed' where organization_id='20000000-0000-4000-8000-000000000881' and status in ('queued','processing');
 set local role authenticated;
-select public.review_institutional_configuration_v1('30000000-0000-4000-8000-000000000881',current_setting('test.parent_contribution')::uuid,current_setting('test.setup_candidate')::jsonb->>'configurationFingerprint','approved',
- current_setting('test.parent_fp'));
+select pg_temp.approve_native_configuration('30000000-0000-4000-8000-000000000881',current_setting('test.parent_contribution')::uuid,gen_random_uuid());
 reset role;
 update public.agent_messages set status='completed' where organization_id='20000000-0000-4000-8000-000000000881' and status in ('queued','processing');
 -- Replacing a consumed but uncited source removes old calculation eligibility,

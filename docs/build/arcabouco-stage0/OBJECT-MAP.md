@@ -3308,3 +3308,22 @@ Migrações canônicas de produção: 20261001205206_capital_body_retention.sql,
 - `trigger:private.capital_body_processing_operations.capital_body_processing_operations_audit`
 - `trigger:private.capital_body_processing_operations.capital_body_processing_operations_immutable`
 - `trigger:private.capital_body_processing_operations.capital_body_processing_operations_updated_at`
+
+## Etapa 20 / 3U: configuração institucional
+
+21 objetos novos (15 diretos e 6 primitivas privadas renomeadas) e 0 contratos existentes alterados no catálogo. Aplicar decisão humana exata e autorização atual à configuração institucional capturada, com projeção atômica e negação dos atalhos antigos.
+- `function:private.institutional_configuration_requires_native_review_v1(p_org uuid, p_configuration uuid)`
+- `function:private.institutional_configuration_review_effective_v1(p_org uuid, p_configuration uuid)`
+- `function:private.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)`
+- `function:private.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)`
+- `function:public.read_institutional_configuration_review_basis_v2(p_project_id uuid, p_candidate_id uuid)`
+- `function:public.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)`
+- `policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_delete`
+- `policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_insert`
+- `policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_select`
+- `policy:private.institutional_configuration_review_projections.institutional_configuration_review_no_update`
+- `r:private.institutional_configuration_review_projections`
+- `trigger:private.institutional_configuration_review_projections.institutional_configuration_review_audit`
+- `trigger:private.institutional_configuration_review_projections.institutional_configuration_review_immutable`
+- `trigger:private.institutional_configuration_review_projections.institutional_configuration_review_no_truncate`
+- `trigger:private.institutional_configuration_review_projections.institutional_configuration_review_updated`

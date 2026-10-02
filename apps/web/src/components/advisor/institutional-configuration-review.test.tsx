@@ -7,7 +7,7 @@ vi.mock("next/navigation", () => ({useRouter: () => ({refresh: vi.fn()})}));
 vi.mock("@/app/[locale]/app/advisor-actions", () => ({reviewAdvisorInstitutionalConfiguration: vi.fn()}));
 import {displayAssumptionValue, InstitutionalConfigurationReviewWork} from "./institutional-configuration-review";
 import type {InstitutionalConfigurationReview} from "@/lib/advisor/institutional-configuration-reviews";
-const candidate: InstitutionalConfigurationReview = {candidateId: "candidate", revision: 2, status: "review_required", configurationFingerprint: "a".repeat(64), parentFingerprint: "b".repeat(64), label: {pt: "Crescimento", en: "Growth"}, period: "2027", unit: "percent", currency: "BRL", priorValue: "0.04", proposedValue: "0.075", canApprove: true, sourceMessageId: "source", answeredAt: "2026-09-10T00:00:00Z"};
+const candidate: InstitutionalConfigurationReview = {candidateId: "candidate", revision: 2, status: "review_required", configurationFingerprint: "a".repeat(64), parentFingerprint: "b".repeat(64), label: {pt: "Crescimento", en: "Growth"}, period: "2027", unit: "percent", currency: "BRL", priorValue: "0.04", proposedValue: "0.075", canApprove: true, sourceMessageId: "source", answeredAt: "2026-09-10T00:00:00Z",reviewBasis:{workId:"project",candidateId:"candidate",configurationFingerprint:"a".repeat(64),parentFingerprint:"b".repeat(64),lineageFingerprint:"c".repeat(64),preparedBy:"preparer",viewerId:"reviewer",workAccess:true,policy:{assignmentRequired:false,selfApprovalAllowed:false,roles:[]},status:"review_required",sourceCount:2,nativeDecisionId:null,approvalEffective:false}};
 describe("institutional premise review", () => {
   it.each(["pt-BR", "en-US"] as const)("shows the before/after and explicit approval boundary in %s", locale => {
     const messages = locale === "pt-BR" ? pt : en;
@@ -27,6 +27,25 @@ describe("institutional premise review", () => {
   it("renders decided candidates without approval buttons", () => {
     const html = renderToStaticMarkup(<NextIntlClientProvider locale="pt-BR" messages={pt} timeZone="UTC"><InstitutionalConfigurationReviewWork projectId="project" reviews={[{...candidate, status: "approved"}]} /></NextIntlClientProvider>);
     expect(html).not.toContain("<button");
+  });
+  it("does not expose an enabled command without the native basis", () => {
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="pt-BR" messages={pt} timeZone="UTC"><InstitutionalConfigurationReviewWork projectId="project" reviews={[{...candidate, reviewBasis: undefined}]} /></NextIntlClientProvider>);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Aprovar premissa/);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Rejeitar alteração/);
+  });
+  it("requires an unchecked explicit declaration for permitted self approval", () => {
+    const basis = {...candidate.reviewBasis!, preparedBy: "reviewer", policy: {...candidate.reviewBasis!.policy, selfApprovalAllowed: true}};
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="pt-BR" messages={pt} timeZone="UTC"><InstitutionalConfigurationReviewWork projectId="project" reviews={[{...candidate, reviewBasis: basis}]} /></NextIntlClientProvider>);
+    expect(html).toContain('type="checkbox"');
+    expect(html).not.toContain('checked=""');
+    expect(html).toContain(pt.ArtifactRevisionReview.declaration);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Aprovar premissa/);
+    expect(html).toMatch(/<button type="button">Rejeitar alteração/);
+  });
+  it("does not present an ineffective approved status as current authority", () => {
+    const html = renderToStaticMarkup(<NextIntlClientProvider locale="pt-BR" messages={pt} timeZone="UTC"><InstitutionalConfigurationReviewWork projectId="project" reviews={[{...candidate, status:"approved", reviewBasis:{...candidate.reviewBasis!,status:"approved",approvalEffective:false}}]} /></NextIntlClientProvider>);
+    expect(html).toContain(pt.ArtifactRevisionReview.pending);
+    expect(html).not.toContain(pt.InstitutionalConfigurationReview.status.approved);
   });
   it("preserves precise decimal values in percent display", () => {
     expect(displayAssumptionValue("-0.00000123", true, "pt-BR")).toBe("-0,000123%");

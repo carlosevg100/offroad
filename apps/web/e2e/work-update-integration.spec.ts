@@ -138,7 +138,10 @@ async function institutionalSetup(page: Page, email: string, projectId: string) 
       const reviewLink = page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup-review"]');
       await expect(reviewLink).toBeVisible({timeout: 120_000});
       await reviewLink.click();
-      await expect(page.getByTestId("institutional-setup-review").getByRole("button", {name: approveAndCalculate, exact: true})).toBeEnabled({timeout: 120_000});
+      const review = page.getByTestId("institutional-setup-review");
+      await expect(review.getByRole("button", {name: approveAndCalculate, exact: true})).toBeDisabled({timeout: 120_000});
+      await review.getByRole("checkbox", {name: messages.ArtifactRevisionReview.declaration}).check();
+      await expect(review.getByRole("button", {name: approveAndCalculate, exact: true})).toBeEnabled();
     },
     /** Approves the configuration under review, which calculates. */
     async approve() {

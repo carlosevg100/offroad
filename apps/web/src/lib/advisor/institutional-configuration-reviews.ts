@@ -2,6 +2,7 @@ import {fingerprintInstitutionalModelConfiguration, type InstitutionalModelConfi
 import {z} from "zod";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import type {Database} from "@/types/database";
+import {loadInstitutionalConfigurationReviewBasis, type InstitutionalConfigurationReviewBasis} from "./institutional-configuration-review-command";
 
 const hash = z.string().regex(/^[0-9a-f]{64}$/);
 const numeric = z.string().regex(/^-?\d+(?:\.\d+)?$/);
@@ -10,7 +11,7 @@ const candidateSchema = z.object({candidateId: z.uuid(), revision: z.number().in
   configuration: z.object({currency: z.string().min(1), assumptionBook: z.object({assumptions: z.array(z.object({id: z.string(), label: z.object({pt: z.string().min(1), en: z.string().min(1)}), unit, values: z.record(z.string(), z.string())}).passthrough())}).passthrough()}).passthrough(),
   answerEvidence: z.object({messageId: z.uuid(), requestId: z.uuid(), answeredBy: z.uuid(), answeredAt: z.iso.datetime({offset: true}), responseFingerprint: hash, assumptionId: z.string(), period: z.string().regex(/^\d{4}$/), unit, canonicalValue: numeric, priorValue: numeric.nullable()}),
 });
-export type InstitutionalConfigurationReview = {candidateId: string; revision: number; status: "review_required" | "approved" | "rejected"; configurationFingerprint: string; parentFingerprint: string; label: {pt: string; en: string}; period: string; unit: z.infer<typeof unit>; currency: string; priorValue: string | null; proposedValue: string; canApprove: boolean; sourceMessageId: string; answeredAt: string};
+export type InstitutionalConfigurationReview = {candidateId: string; revision: number; status: "review_required" | "approved" | "rejected"; configurationFingerprint: string; parentFingerprint: string; label: {pt: string; en: string}; period: string; unit: z.infer<typeof unit>; currency: string; priorValue: string | null; proposedValue: string; canApprove: boolean; sourceMessageId: string; answeredAt: string; reviewBasis?:InstitutionalConfigurationReviewBasis};
 
 /** Project-authorized RPC input only. Full configuration stays on the server; malformed or
  * unbound proposals never become actionable review cards. Bootstrap revisions have no answer. */
@@ -42,5 +43,12 @@ export function parseInstitutionalConfigurationReviews(value: unknown): Institut
 }
 export async function loadInstitutionalConfigurationReviews(client: SupabaseClient<Database>, projectId: string) {
   const {data, error} = await client.rpc("read_institutional_configuration_reviews_v1", {p_project_id: projectId});
-  return error ? [] : parseInstitutionalConfigurationReviews(data);
+  if(error)return [];
+  const reviews=parseInstitutionalConfigurationReviews(data);
+  const bound=await Promise.all(reviews.map(async review=>{
+    const basis=await loadInstitutionalConfigurationReviewBasis(client,projectId,review.candidateId);
+    if(!basis||basis.configurationFingerprint!==review.configurationFingerprint||basis.parentFingerprint!==review.parentFingerprint||basis.status!==review.status)return null;
+    return {...review,reviewBasis:basis};
+  }));
+  return bound.filter((review):review is InstitutionalConfigurationReview & {reviewBasis:InstitutionalConfigurationReviewBasis}=>review!==null);
 }
