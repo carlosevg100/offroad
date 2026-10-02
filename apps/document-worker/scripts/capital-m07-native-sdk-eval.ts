@@ -19,6 +19,12 @@ import type {ModelGateway} from '@offroad/model-gateway';
 const actor='10000000-0000-4000-8000-000000000201',organization='20000000-0000-4000-8000-000000000201';
 const url='https://example.invalid/capture-licensed';
 let phase='startup';
+function missingObject(status:number,value:unknown):boolean {
+ if(!value||typeof value!=='object'||Array.isArray(value))return false;
+ const error=value as Record<string,unknown>;
+ return [400,404].includes(status)&&String(error.statusCode)==='404'&&['not_found','Not Found'].includes(String(error.error))
+  &&['object not found','the resource was not found'].includes(String(error.message).toLowerCase());
+}
 function localTarget(value:string,protocol:string){const parsed=new URL(value);if(parsed.protocol!==protocol||!['localhost','127.0.0.1','[::1]'].includes(parsed.hostname)||parsed.hash||parsed.search||(protocol==='http:'&&(parsed.username||parsed.password||!['','/'].includes(parsed.pathname))))throw new Error('local target required');return parsed;}
 function keyAllowed(key:string){if(key.startsWith('sb_publishable_'))return;const claims:unknown=JSON.parse(Buffer.from(key.split('.')[1]??'','base64url').toString());if(!claims||typeof claims!=='object'||!('role'in claims)||claims.role!=='anon')throw new Error('anon required');}
 function sql(command:string,db:string){const result=spawnSync('psql',[db,'-X','-v','ON_ERROR_STOP=1','-Atq'],{input:command,encoding:'utf8'});if(result.error||result.status!==0)throw new Error('local SQL failed');return result.stdout.trim();}
@@ -57,7 +63,7 @@ function protocolParity(db:string,root:string){
  }
 }
 async function main(){
- if(process.argv[2]==='--self-test'){assert.throws(()=>localTarget('https://ifnogpksgdadruooqydi.supabase.co','http:'));assert.throws(()=>localTarget('http://example.test','http:'));assert.throws(()=>keyAllowed('sb_secret_forbidden'));localTarget('http://127.0.0.1:54321','http:');staticQuality();process.stdout.write('capital_m07_sdk_static_self_test: PASS (current-v3-schema + nine shared graders; no SQL or HTTP executed)\n');return;}
+ if(process.argv[2]==='--self-test'){assert.throws(()=>localTarget('https://ifnogpksgdadruooqydi.supabase.co','http:'));assert.throws(()=>localTarget('http://example.test','http:'));assert.throws(()=>keyAllowed('sb_secret_forbidden'));localTarget('http://127.0.0.1:54321','http:');staticQuality();assert.ok(missingObject(400,{statusCode:'404',error:'not_found',message:'Object not found'}));assert.ok(missingObject(404,{statusCode:'404',error:'Not Found',message:'The resource was not found'}));for(const status of [401,403,500])assert.equal(missingObject(status,{statusCode:'404',error:'not_found',message:'Object not found'}),false);assert.equal(missingObject(404,{statusCode:'404',error:'AccessDenied',message:'Object not found'}),false);assert.equal(missingObject(400,{statusCode:'42501',error:'not_found',message:'Object not found'}),false);process.stdout.write('capital_m07_sdk_static_self_test: PASS (current-v3-schema + nine shared graders; no SQL or HTTP executed)\n');return;}
  if(process.argv[2]==='--protocol-sql-only'){const db=process.env.DATABASE_URL!,root=process.env.OFFROAD_REPOSITORY_ROOT!;localTarget(db,'postgresql:');phase='protocol-parity';protocolParity(db,root);process.stdout.write('capital_m07_node_sql_parity: PASS (five outcomes, two fixed policies and server bounds; no HTTP consumer run)\n');return;}
  if(process.argv.length!==2)throw new Error('unsupported args');
  const api=process.env.OFFROAD_E2E_API_URL!,db=process.env.DATABASE_URL!,key=process.env.OFFROAD_E2E_PUBLISHABLE_KEY!,root=process.env.OFFROAD_REPOSITORY_ROOT!;
@@ -114,15 +120,22 @@ async function main(){
  for(const item of purgeItems){
   assert.equal(item.path,allocations.find(value=>value.allocationId===item.allocationId)!.path);assert.ok(item.storageObjectId);assert.ok(item.storageVersion);assert.ok(Date.parse(item.leaseExpiresAt)>Date.now());
   phase='physical-purge-sdk-delete';const removed=await client.storage.from(item.bucket).remove([item.path]);assert.equal(removed.error,null);assert.ok(Array.isArray(removed.data));assert.ok(removed.data.every(value=>value.name===item.path));
-  phase='physical-purge-authenticated-absence';const absent=await client.storage.from(item.bucket).info(item.path);assert.equal(absent.data,null);
-  const absentError=absent.error as unknown as {status?:unknown;statusCode?:unknown;message?:unknown};assert.ok(absentError);assert.equal(Number(absentError.statusCode),404);assert.match(String(absentError.message),/^(object not found|the resource was not found)$/i);
-  const head:Response=await fetch(`${api.replace(/\/$/,'')}/storage/v1/object/authenticated/${item.bucket}/${item.path}`,{method:'HEAD',redirect:'error',headers:{apikey:key,Authorization:`Bearer ${login.data.session!.access_token}`,'x-offroad-workspace':organization}});assert.equal(head.status,404);
+  phase='physical-purge-sdk-info-absence';const absent=await client.storage.from(item.bucket).info(item.path);assert.equal(absent.data,null);
+  const absentError=absent.error as unknown as {status?:unknown;statusCode?:unknown;message?:unknown};assert.ok(absentError);assert.ok([400,404].includes(Number(absentError.status)));assert.equal(Number(absentError.statusCode),404);assert.match(String(absentError.message),/^(object not found|the resource was not found)$/i);
+  // Storage's local HEAD download route does not provide a physical-erasure
+  // oracle. GET info preserves the exact structured not_found response, while
+  // the database check prevents an RLS-invisible existing row counting as gone.
+  phase='physical-purge-authenticated-info-absence';
+  const info:Response=await fetch(`${api.replace(/\/$/,'')}/storage/v1/object/info/${item.bucket}/${item.path}`,{method:'GET',redirect:'error',cache:'no-store',headers:{apikey:key,Authorization:`Bearer ${login.data.session!.access_token}`,'x-offroad-workspace':organization}});
+  const absence:unknown=await info.json();assert.ok(missingObject(info.status,absence));
+  phase='physical-purge-object-catalog-absence';
+  assert.equal(sql(`select count(*) from storage.objects where bucket_id='${item.bucket}' and name='${item.path}';`,db),'0');
   phase='physical-purge-real-ack';const ackArgs={p_worker_token:'w'.repeat(64),p_purge_id:item.purgeId,p_purge_capability:item.purgeCapability,p_storage_delete_confirmed:true};
   const ack=await client.rpc('worker_ack_capital_capture_purge_v1',ackArgs);assert.equal(ack.error,null);assert.deepEqual(ack.data,{purged:true,replayed:false});
   const ackReplay=await client.rpc('worker_ack_capital_capture_purge_v1',ackArgs);assert.equal(ackReplay.error,null);assert.deepEqual(ackReplay.data,{purged:true,replayed:true});
  }
  phase='physical-purge-catalog-oracle';const erased=JSON.parse(sql(`select jsonb_build_object('objects',(select count(*) from storage.objects s join private.capital_public_payload_allocations a on a.bucket_id=s.bucket_id and a.object_path=s.name where a.organization_id='${organization}' and a.job_id='${job.job_id}'),'erasureEvents',(select count(*) from private.capital_public_payload_erasure_events e join private.capital_public_payload_allocations a on a.organization_id=e.organization_id and a.id=e.allocation_id where a.organization_id='${organization}' and a.job_id='${job.job_id}'),'purged',(select count(*) from private.capital_public_payload_purge_queue q join private.capital_public_payload_allocations a on a.organization_id=q.organization_id and a.id=q.allocation_id where a.organization_id='${organization}' and a.job_id='${job.job_id}' and q.status='purged'));`,db));assert.equal(erased.objects,0);assert.equal(erased.erasureEvents,allocations.length);assert.equal(erased.purged,allocations.length);
- process.stdout.write(JSON.stringify({eval:'capital_m07_native_sdk',result:'PASS',checks:['human-publication-license','real-approved-job-capability','producer','physical-context-source-parsed-final','native-accepted-outcome','direct-storage-denied','recovery-zero-model','one-artifact','job-completed','real-janitor-lease','sdk-storage-delete','authenticated-head-404','erasure-ack-idempotent'],syntheticModelCalls:sends})+'\n');
+ process.stdout.write(JSON.stringify({eval:'capital_m07_native_sdk',result:'PASS',checks:['human-publication-license','real-approved-job-capability','producer','physical-context-source-parsed-final','native-accepted-outcome','direct-storage-denied','recovery-zero-model','one-artifact','job-completed','real-janitor-lease','sdk-storage-delete','authenticated-info-not-found-and-catalog-absence','erasure-ack-idempotent'],syntheticModelCalls:sends})+'\n');
 }
 main().catch(error=>{
  const message=error instanceof Error?error.message:'';
