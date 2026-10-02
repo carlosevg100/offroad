@@ -4160,3 +4160,8 @@ Produção recebeu o SQL exato das três migrações, com MD5 conferido pelo exe
 Catálogos/journals e decisões foram reconciliados: produção 3051 objetos, staging 3112, zero erros nos dois checkers; 42 políticas/triggers dinâmicos têm âncoras explícitas. Os 18 testes unitários do checker passaram. Tipos web foram regenerados da produção (+127 linhas). A admissão em produção permanece suspensa (enabled=false), com estado anterior true e política 485402d6… preservados para restauração CAS somente pelo executor principal após deploy no commit exato. Não restaurar controles nesta preparação.
 
 Merge, CI final reconciliada, web e worker no commit mesclado e verificação final continuam pendentes. Produção recebeu DDL/Edge, mas o incremento não tem completion. Etapa 20/3Q permanece aberta; sem ativação M07, recuperação histórica, seal ou release, e sem início das etapas 21–24.
+
+
+## Etapa 20: aritmética prospectiva e reprodutibilidade histórica, candidato 02/10/2026
+
+Nove kernels de estrutura de dívida passam a financial-core/Decimal; deal-structure conserva orquestração e diagnósticos. Valores presentes ilegíveis negam a operação, sem virar zero; ausência opcional e zero real continuam distintos. financial-core v25 e operation-truth v3 são versões prospectivas. Os executores publicados e os 81 pinos históricos permanecem imutáveis. Cápsulas verificadas de fonte v24 sustentam os gold tests históricos; v25 tem provas econômicas e fingerprints próprios. Paridade cobre 538 casos, mais negativos de entrada. Gate integrado local 44/44 PASS; CI deste corte, merge e deploy no commit exato ainda são obrigatórios. Não é completion da etapa 20 nem liberação de novo método.

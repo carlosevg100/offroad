@@ -1,4 +1,4 @@
-export const financialCoreVersion = "2026.09.20-v24";
+export const financialCoreVersion = "2026.10.02-v25";
 
 export * from "./credit-math";
 export * from "./financial-truth";
@@ -33,3 +33,4 @@ export * from "./material-arithmetic";
 export * from "./desk-arithmetic";
 export * from "./price-arithmetic";
 export * from "./credit-review-arithmetic";
+export * from "./deal-arithmetic";

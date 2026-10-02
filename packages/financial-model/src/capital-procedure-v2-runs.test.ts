@@ -1,3 +1,5 @@
+import {financialCoreVersion} from "@offroad/financial-core";
+import {loadHistoricalCapitalRuns} from "../scripts/historical-capital-runs.mjs";
 import {resolve} from "node:path";
 import {loadDeterministicMethodRuns, runCountsForPromotion} from "@offroad/credit-playbook";
 import {describe, expect, it} from "vitest";
@@ -5,8 +7,10 @@ import {buildCapitalProcedureV2Runs, capitalProcedureV2RunIds} from "./capital-p
 
 const records = loadDeterministicMethodRuns(resolve(import.meta.dirname, "../../credit-playbook/knowledge/reviews/runs"));
 describe("recorded capital procedure v2 evaluations", () => {
-  it("reexecutes every gold adversarial and consistency case and reproduces its recorded fingerprint", () => {
-    for (const evidence of [...buildCapitalProcedureV2Runs(), ...buildCapitalProcedureV2Runs("2026.09.21-v4")]) {
+  it("reexecutes every gold adversarial and consistency case and reproduces its recorded fingerprint", async () => {
+    const historical = await loadHistoricalCapitalRuns();
+    expect(historical.fixtureFinancialCoreVersion).toBe("2026.09.20-v24");
+    for (const evidence of [...historical.buildCapitalProcedureV2Runs(), ...historical.buildCapitalProcedureV2Runs("2026.09.21-v4")]) {
       const record = records.get(evidence.runId)!;
       expect(record).toBeDefined();
       expect(record.cases).toEqual(evidence.cases);
@@ -17,6 +21,16 @@ describe("recorded capital procedure v2 evaluations", () => {
       expect(runCountsForPromotion(record)).toBe(true);
     }
   }, 30_000); // Whole-suite replay under concurrent CI load; latency is measured separately.
+  it("evaluates current prospective calculations without relabeling historical evidence", () => {
+    expect(financialCoreVersion).toBe("2026.10.02-v25");
+    for (const evidence of buildCapitalProcedureV2Runs()) {
+      const record = records.get(evidence.runId)!;
+      expect(evidence.result).toBe("pass");
+      expect(evidence.cases.map(c => ({id:c.id,expectation:c.expectation,observed:c.observed,passed:c.passed})))
+        .toEqual(record.cases.map(c => ({id:c.id,expectation:c.expectation,observed:c.observed,passed:c.passed})));
+      expect(evidence.evidenceFingerprint).not.toBe(record.evidenceFingerprint);
+    }
+  }, 30_000);
   it("covers the full packet including contract divergence negative cash framing and missing evidence", () => {
     const gold = records.get(capitalProcedureV2RunIds.gold)!;
     expect(gold.cases.map(c => c.id)).toEqual([

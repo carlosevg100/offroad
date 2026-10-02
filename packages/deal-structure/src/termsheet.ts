@@ -1,6 +1,5 @@
-import Decimal from "decimal.js";
 import {archetype, type ArchetypeId} from "@offroad/credit-playbook";
-import {presentationAmount, tryPresentationNumber} from "@offroad/financial-core";
+import {compareFigures, presentationAmount, tryPresentationNumber} from "@offroad/financial-core";
 
 import type {CapacityAssessment} from "./capacity";
 import {bandProvenanceNote, playbookBand, reconcileTenor, type MarketBand} from "./market";
@@ -141,7 +140,8 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
   // ---- amount ------------------------------------------------------------------------------
   const recommended = input.capacity.recommended;
   const requested = input.capacity.requested;
-  const constrained = recommended !== null && new Decimal(recommended).lt(new Decimal(requested));
+  // Whether a wall holds the amount below the request, compared exactly (financial-core).
+  const constrained = recommended !== null && compareFigures(recommended, requested) < 0;
 
   const bindingLabel =
     input.capacity.bindingConstraint === "cash_flow"

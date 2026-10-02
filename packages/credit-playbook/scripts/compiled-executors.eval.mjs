@@ -8,6 +8,7 @@ import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 import {rebuildReleasedExecutor} from './build-released-executors.mjs';
 import {validateCompiledExecutorRelease} from './compiled-executor-lock.mjs';
+import {historicalCapitalFixturePlugin} from './historical-capital-fixture.mjs';
 const root=resolve(fileURLToPath(new URL('../../..',import.meta.url)));
 const require=createRequire(join(root,'apps/document-worker/package.json'));
 const {build}=require('esbuild');
@@ -59,18 +60,50 @@ test('published capital artifact reproduces every recorded v4 gold adversarial a
  try{
   const {artifact}=await rebuildReleasedExecutor(release),artifactPath=join(temporary,'capital.cjs');writeFileSync(artifactPath,artifact);
   const outfile=join(temporary,'replay.mjs');
-  await build({entryPoints:[join(root,'packages/financial-model/src/capital-procedure-v2-runs.test-support.ts')],outfile,bundle:true,platform:'node',format:'esm',target:'node24',logLevel:'silent',plugins:[{name:'released-calculation',setup(b){
-   b.onResolve({filter:/capital-procedure-packet-v2(?:\.ts)?$/},()=>({path:'packet',namespace:'released-packet'}));
-   b.onResolve({filter:/capital\.cjs$/},()=>({path:artifactPath,external:true}));
-   b.onLoad({filter:/.*/,namespace:'released-packet'},()=>({contents:`import released from ${JSON.stringify(artifactPath)};export const {prepareCapitalProcedurePacketV2,capitalProcedurePacketV2InputSchema,capitalProcedurePacketV2OutputSchema}=released;`,loader:'js'}));
-  }}]});
-  const {buildCapitalProcedureV2Runs}=await import(pathToFileURL(outfile));
+  await build({entryPoints:['historical-capital-fixture'],outfile,bundle:true,platform:'node',format:'esm',target:'node24',logLevel:'silent',plugins:[historicalCapitalFixturePlugin(root,release,artifactPath)]});
+  const {buildCapitalProcedureV2Runs,fixtureFinancialCoreVersion}=await import(pathToFileURL(outfile));
+  assert.equal(fixtureFinancialCoreVersion,'2026.09.20-v24');
   const observed=buildCapitalProcedureV2Runs('2026.09.21-v4');
   for(const r of observed){
    const record=JSON.parse(readFileSync(join(root,'packages/credit-playbook/knowledge/reviews/runs',r.runId,'run.json')));
    assert.equal(r.result,'pass');assert.equal(r.evidenceFingerprint,record.evidenceFingerprint);assert.deepEqual(r.cases,record.cases);
   }
   assert.equal(observed.reduce((n,r)=>n+r.cases.length,0),26);
+ }finally{rmSync(temporary,{recursive:true,force:true});}
+});
+
+test('current main bound-packet composer remains compatible with the frozen published executor',async()=>{
+ const temporary=mkdtempSync(join(tmpdir(),'offroad-capital-main-composer-'));
+ try{
+  const {artifact}=await rebuildReleasedExecutor(release),artifactPath=join(temporary,'capital.cjs');writeFileSync(artifactPath,artifact);
+  const outfile=join(temporary,'current-composer.mjs');
+  const contents=`import {createHash} from "node:crypto";
+   import {adoptedCapitalPeriodFixture} from ${JSON.stringify(join(root,'packages/testing-fixtures/src/capital-structure-decision.ts'))};
+   import {composeBoundCapitalPacketV2,deriveBoundCapitalScope} from ${JSON.stringify(join(root,'packages/financial-model/src/capital-procedure-packet-composer.ts'))};
+   import {readContextualBasis} from ${JSON.stringify(join(root,'packages/reconciliation/src/index.ts'))};
+   export {financialCoreVersion} from ${JSON.stringify(join(root,'packages/financial-core/src/index.ts'))};
+   export function input(){const f=adoptedCapitalPeriodFixture(),canonical=JSON.stringify(f.snapshot),scope={workId:f.snapshot.workId,purpose:f.snapshot.purpose,versionId:f.snapshot.versionId},envelope={canonical,fingerprint:createHash("sha256").update(canonical).digest("hex")},asOf="2026-12-31";
+    return composeBoundCapitalPacketV2({envelope,scope,question:"Does the current structure hold?",objectives:["Measure liquidity"],asOf,...deriveBoundCapitalScope(readContextualBasis(envelope,scope),asOf)});}`;
+  await build({stdin:{contents,resolveDir:root,loader:'ts'},outfile,bundle:true,platform:'node',format:'esm',target:'node24',logLevel:'silent'});
+  const current=await import(pathToFileURL(outfile));assert.equal(current.financialCoreVersion,'2026.10.02-v25');
+  const packet=current.input();assert.deepEqual(packet.contracts,[]);assert.deepEqual(packet.adoptionLinks,[]);
+  const frozen=require(artifactPath);const result=frozen.prepareCapitalProcedurePacketV2(packet);
+  assert.equal(result.decision.provenance.financialCoreVersion,'2026.09.20-v24');
+ }finally{rmSync(temporary,{recursive:true,force:true});}
+});
+
+test('current v25 input derivations cannot enter the frozen v24 capital executor',async()=>{
+ const temporary=mkdtempSync(join(tmpdir(),'offroad-capital-cross-version-'));
+ try{
+  const {artifact}=await rebuildReleasedExecutor(release),artifactPath=join(temporary,'capital.cjs');writeFileSync(artifactPath,artifact);
+  const outfile=join(temporary,'current-input.mjs');
+  await build({entryPoints:[join(root,'packages/financial-model/src/capital-procedure-v2-runs.test-support.ts')],outfile,bundle:true,platform:'node',format:'esm',target:'node24',logLevel:'silent',plugins:[{name:'frozen-executor-current-input',setup(b){
+   b.onResolve({filter:/capital-procedure-packet-v2(?:\.ts)?$/},()=>({path:'packet',namespace:'released-packet'}));
+   b.onResolve({filter:/capital\.cjs$/},()=>({path:artifactPath,external:true}));
+   b.onLoad({filter:/.*/,namespace:'released-packet'},()=>({contents:`import released from ${JSON.stringify(artifactPath)};export const {prepareCapitalProcedurePacketV2,capitalProcedurePacketV2InputSchema,capitalProcedurePacketV2OutputSchema}=released;`,loader:'js'}));
+  }}]});
+  const {buildCapitalProcedureV2Runs}=await import(pathToFileURL(outfile));
+  assert.throws(()=>buildCapitalProcedureV2Runs('2026.09.21-v4'),/capital_contract_derivation_binding_mismatch/);
  }finally{rmSync(temporary,{recursive:true,force:true});}
 });
 
