@@ -25,11 +25,26 @@ describe("published capital executor over a bound packet", () => {
     expect(result.decision.alternatives[0]!.projection.summary).toBeNull();
     expect(result.grantsExecution).toBe(false); expect(result.grantsPublication).toBe(false);
   });
-  it("calculates the same bytes as the workspace source for a fully adopted basis", () => {
+  it("preserves published v24 bytes and compares prospective v25 economic results", () => {
     const {executor} = loadReleasedCapital(identity);
     const packet = compose(adoptedCapitalPeriodFixture().snapshot, "2026-12-31");
     const released = executor.prepareCapitalProcedurePacketV2(packet);
     expect(released.decision.alternatives[0]!.projection.summary!.closingAvailable).toBe("123");
-    expect(fingerprint(released)).toBe(fingerprint(prepareCapitalProcedurePacketV2(packet)));
+    // HEAD 615ea82dc94fd153145b85c546a4e5fa31ed2ef2 was independently replayed
+    // from its complete first-party source closure: v24 and this exact pin.
+    expect(fingerprint(released)).toBe("fd0aef48b2f4ade57967f9511df3acb674cdcea6dadec6bc475196daab53514c");
+    const prospective = prepareCapitalProcedurePacketV2(packet);
+    expect(released.decision.provenance.financialCoreVersion).toBe("2026.09.20-v24");
+    expect(prospective.decision.provenance.financialCoreVersion).toBe("2026.10.02-v25");
+    expect(fingerprint(prospective)).not.toBe(fingerprint(released));
+    expect(fingerprint(prospective)).toBe("66a7df21e283e3bb17d34ab1337cd3476553f279857cfef9bf346cc2ed0ee8e5");
+    // These are economic outputs, compared directly; neither inputs nor released
+    // results are relabeled or normalized to make different versions identical.
+    expect(prospective.status).toBe(released.status);
+    expect(prospective.decision.informationGaps).toEqual(released.decision.informationGaps);
+    expect(prospective.decision.alternatives.map(a => ({id:a.id,rows:a.projection.rows,summary:a.projection.summary})))
+      .toEqual(released.decision.alternatives.map(a => ({id:a.id,rows:a.projection.rows,summary:a.projection.summary})));
+    expect(prospective.grantsExecution).toBe(released.grantsExecution);
+    expect(prospective.grantsPublication).toBe(released.grantsPublication);
   });
 });

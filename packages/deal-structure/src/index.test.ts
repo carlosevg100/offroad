@@ -45,7 +45,12 @@ describe("capacity is three walls, and the lowest one is the answer", () => {
     const cashFlow = assessment.walls.find((w) => w.id === "cash_flow");
     // 20,000,000 / 1.30 DSCR / 0.28 service factor
     expect(Number(cashFlow?.amount)).toBeCloseTo(54945054.94, 0);
-    expect(cashFlow?.explanation.pt).toContain("1.30x");
+    // The playbook's DSCR in each language's decimal separator (stage 19, third polish): it was "1.30x" in Portuguese too.
+    expect(cashFlow?.explanation.pt).toContain("DSCR mínimo de 1,30x");
+    expect(cashFlow?.explanation.en).toContain("minimum DSCR of 1.30x");
+    const market = assessment.walls.find((w) => w.id === "market");
+    expect(market?.explanation.pt).toContain("Espaço até 3,5x dívida líquida");
+    expect(market?.explanation.en).toContain("Room to 3.5x net debt");
   });
 
   it("gives no incremental room when the company is already at the ceiling", () => {

@@ -1,6 +1,5 @@
-import Decimal from "decimal.js";
 import {archetype, type ArchetypeId} from "@offroad/credit-playbook";
-import {calculateCapacityEnvelope, solveMaximumDebtByDscr} from "@offroad/financial-core";
+import {calculateCapacityEnvelope, calculateLeverageCeilingRoom, calculateVentureDebtCapacity, selectLowestFigure, solveMaximumDebtByDscr} from "@offroad/financial-core";
 import type {TracedCalculation} from "@offroad/reconciliation";
 
 /**
@@ -23,7 +22,8 @@ import type {TracedCalculation} from "@offroad/reconciliation";
  *
  * Every figure here is arithmetic over reconciled facts, and every one carries its inputs.
  * Nothing is indicative in the sense of "roughly": it is indicative in the sense of "this is
- * what the numbers give, before an investor prices the risk".
+ * what the numbers give, before an investor prices the risk". The arithmetic itself (each wall,
+ * and the lowest of them) is computed by `@offroad/financial-core` (stage 19, third polish).
  */
 
 export type CapacityInput = {
@@ -72,7 +72,10 @@ export type CapacityAssessment = {
   gaps: string[];
 };
 
-const money = (value: Decimal) => value.toDecimalPlaces(2).toFixed();
+/** Venture-debt practice: the shares of the recurring revenue and of the last equity round a lender sizes against. */
+const VENTURE_SHARES = {arr: "0.30", round: "0.35"} as const;
+/** A figure of the playbook as the Portuguese sentence writes it, with a decimal comma. */
+const decimalComma = (figure: string) => figure.replace(".", ",");
 
 export function assessCapacity(input: CapacityInput): CapacityAssessment {
   const definition = archetype(input.archetypeId);
@@ -85,22 +88,24 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
   const ventureDebt = definition.id === "venture_debt";
   let arrAndRound: string | null = null;
   if (ventureDebt) {
-    const candidates: Array<{label: string; value: Decimal}> = [];
-    if (input.arr && new Decimal(input.arr).gt(0)) candidates.push({label: "arr", value: new Decimal(input.arr).times("0.30")});
-    if (input.lastEquityRound && new Decimal(input.lastEquityRound).gt(0)) candidates.push({label: "last_equity_round", value: new Decimal(input.lastEquityRound).times("0.35")});
-    if (candidates.length > 0) {
-      const lowest = candidates.reduce((min, entry) => (entry.value.lt(min.value) ? entry : min));
-      arrAndRound = money(lowest.value);
+    const venture = calculateVentureDebtCapacity({
+      arr: input.arr ? input.arr : null,
+      lastEquityRound: input.lastEquityRound ? input.lastEquityRound : null,
+      arrShare: VENTURE_SHARES.arr,
+      roundShare: VENTURE_SHARES.round,
+    });
+    if (venture.value !== null) {
+      arrAndRound = venture.value;
       calculations.push({
         id: "capacity_arr_and_round",
         labels: {pt: "Capacidade por ARR e última rodada", en: "Capacity from ARR and last round"},
         value: arrAndRound,
         trace: [
           {label: "arr", value: input.arr ?? "n/d"},
-          {label: "arr_fraction", value: "0.30"},
+          {label: "arr_fraction", value: VENTURE_SHARES.arr},
           {label: "last_equity_round", value: input.lastEquityRound ?? "n/d"},
-          {label: "round_fraction", value: "0.35"},
-          {label: "binding", value: lowest.label},
+          {label: "round_fraction", value: VENTURE_SHARES.round},
+          {label: "binding", value: venture.binding!},
         ],
         inputs: ["historical_financials.arr", "company.last_equity_round.amount", "playbook.venture_debt"],
         warnings: [],
@@ -146,18 +151,16 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
   } else if (input.existingNetDebt === undefined) {
     gaps.push("Dívida líquida existente");
   } else if (input.adjustedEbitda) {
-    const ebitda = new Decimal(input.adjustedEbitda);
-    if (ebitda.gt(0)) {
-      const ceiling = ebitda.times(definition.structure.leverageCeiling);
-      const headroom = ceiling.minus(new Decimal(input.existingNetDebt));
-      // Already above the ceiling means no incremental room, not negative room.
-      market = money(Decimal.max(headroom, new Decimal(0)));
+    // Already above the ceiling means no incremental room, not negative room.
+    const room = calculateLeverageCeilingRoom({adjustedEbitda: input.adjustedEbitda, leverageCeiling: definition.structure.leverageCeiling, existingNetDebt: input.existingNetDebt});
+    if (room.value !== null) {
+      market = room.value;
       calculations.push({
         id: "capacity_market",
         labels: {pt: "Capacidade pelo teto de alavancagem", en: "Capacity at the leverage ceiling"},
         value: market,
         trace: [
-          {label: "adjusted_ebitda", value: money(ebitda)},
+          {label: "adjusted_ebitda", value: room.ebitda},
           {label: "leverage_ceiling", value: definition.structure.leverageCeiling},
           {label: "existing_net_debt", value: input.existingNetDebt},
         ],
@@ -193,7 +196,7 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
       amount: cashFlow,
       explanation: {
         pt: cashFlow
-          ? `A geração cobre um serviço de dívida a um DSCR mínimo de ${definition.structure.minimumDscr}x, que é a cobertura que um financiador subscreve para este tipo de operação.`
+          ? `A geração cobre um serviço de dívida a um DSCR mínimo de ${decimalComma(definition.structure.minimumDscr)}x, que é a cobertura que um financiador subscreve para este tipo de operação.`
           : "Não calculada: falta CFADS ou o fator de serviço da dívida do prazo em discussão.",
         en: cashFlow
           ? `Generation covers debt service at a minimum DSCR of ${definition.structure.minimumDscr}x, the coverage a lender underwrites to for this operation.`
@@ -221,7 +224,7 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
       amount: market,
       explanation: {
         pt: market
-          ? `Espaço até ${definition.structure.leverageCeiling}x dívida líquida / EBITDA no fechamento, que é onde este tipo de papel deixa de encontrar comprador. Este teto é a leitura do desk, não uma média de operações observadas, e ele fala de tamanho, não de prazo. Não é covenant nem meta.`
+          ? `Espaço até ${decimalComma(definition.structure.leverageCeiling)}x dívida líquida / EBITDA no fechamento, que é onde este tipo de papel deixa de encontrar comprador. Este teto é a leitura do desk, não uma média de operações observadas, e ele fala de tamanho, não de prazo. Não é covenant nem meta.`
           : "Não calculada: falta EBITDA ajustado positivo ou dívida líquida existente.",
         en: market
           ? `Room to ${definition.structure.leverageCeiling}x net debt / EBITDA at closing, where this paper stops finding buyers. This ceiling is the desk's read rather than an average of observed transactions, and it speaks to size, not tenor. Not a covenant and not a target.`
@@ -246,9 +249,7 @@ export function assessCapacity(input: CapacityInput): CapacityAssessment {
     marketCapacity: market ?? arrAndRound ?? computed[0]!.amount,
   });
 
-  const binding = computed.reduce((lowest, wall) =>
-    new Decimal(wall.amount).lt(new Decimal(lowest.amount)) ? wall : lowest,
-  );
+  const binding = computed[selectLowestFigure({values: computed.map((wall) => wall.amount)}).index!]!;
 
   return {
     requested: envelope.requested,

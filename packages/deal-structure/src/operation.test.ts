@@ -118,3 +118,52 @@ describe("M4 Operation Truth Set", () => {
     expect(truth.sourcesAndUses).toMatchObject({totalSources: "100", totalUses: "0", difference: "100", status: "not_computable"});
   });
 });
+
+describe("unreadable supplied operation amounts", () => {
+  const base = [
+    f("transaction.requested_amount", "100"), f("project.total_cost", "100"),
+    f("transaction.incremental_working_capital", "20"), f("transaction.transaction_costs", "3"),
+    f("transaction.execution_buffer", "7"), f("project.company_cash", "30"),
+    f("transaction.sources_and_uses.1.side", "source", "text"), f("transaction.sources_and_uses.1.item", "Debt", "text"), f("transaction.sources_and_uses.1.amount", "100"),
+    f("transaction.sources_and_uses.2.side", "use", "text"), f("transaction.sources_and_uses.2.item", "Capex", "text"), f("transaction.sources_and_uses.2.amount", "100"),
+  ];
+  const build = (facts: ReconciledFact[]) => buildOperationTruthSet({facts, financialTruth, debtTruth, capacity: null, referenceDate: "2026-09-08", policies});
+  it.each(["cash not confirmed", "0x10", "", "Infinity", undefined])("does not close valid subtotals while a listed source amount is unreadable or missing: %s", (amount) => {
+    const path = "transaction.sources_and_uses.3.amount";
+    const result = build([...base,
+      f("transaction.sources_and_uses.3.side", "source", "text"), f("transaction.sources_and_uses.3.item", "Equity", "text"),
+      ...(amount === undefined ? [] : [f(path, amount)]),
+    ]);
+    expect(result.sourcesAndUses).toMatchObject({totalSources: "100", totalUses: "100", difference: "0", status: "not_computable"});
+    expect(result.missingInputs).toContain(path);
+    expect(result.procedureCoverage.find((entry) => entry.procedureId === "OP-02")).toMatchObject({status: "not_computable", missingInputs: [path]});
+  });
+  it.each(["project.company_cash", "project.shareholder_equity", "transaction.self_funding", "project.total_cost", "transaction.incremental_working_capital", "transaction.transaction_costs"])("refuses a supplied unreadable need component instead of using zero or a fallback: %s", (path) => {
+    const result = build([...base.filter((entry) => entry.key.fieldPath !== path), f(path, "unconfirmed")]);
+    expect(result.calculatedNeed).toBeNull();
+    expect(result.excessFunding).toBeNull();
+    expect(result.missingInputs).toContain(path);
+    expect(result.procedureCoverage.find((entry) => entry.procedureId === "OP-01")).toMatchObject({status: "not_computable", missingInputs: [path]});
+  });
+  it("keeps absent optional contributions and reported zero distinct from unreadable supplied contributions", () => {
+    expect(build(base).calculatedNeed?.value).toBe("100");
+    expect(build([...base, f("project.shareholder_equity", "0")]).calculatedNeed?.value).toBe("100");
+    expect(build([...base, f("project.shareholder_equity", "20")]).calculatedNeed?.value).toBe("80");
+    expect(build([...base, f("project.shareholder_equity", "twenty")]).calculatedNeed).toBeNull();
+  });
+  it("does not infer a partial use total as complete capex while another listed use is missing its amount", () => {
+    const path = "transaction.sources_and_uses.3.amount";
+    const result = build([...base.filter((entry) => entry.key.fieldPath !== "project.total_cost"),
+      f("transaction.sources_and_uses.3.side", "use", "text"), f("transaction.sources_and_uses.3.item", "Equipment", "text"),
+    ]);
+    expect(result.calculatedNeed).toBeNull();
+    expect(result.sourcesAndUses.totalUses).toBe("100");
+    expect(result.sourcesAndUses.status).toBe("not_computable");
+    expect(result.missingInputs).toContain(path);
+  });
+  it.each(["project.company_cash", "transaction.refinanced_debt", "transaction.fees_paid_from_cash"])("does not turn unreadable supplied pro forma adjustments into zero: %s", (path) => {
+    const result = build([...base.filter((entry) => entry.key.fieldPath !== path), f(path, "unconfirmed")]);
+    expect(result.proForma).toBeNull();
+    expect(result.procedureCoverage.find((entry) => entry.procedureId === "OP-03")).toMatchObject({status: "not_computable", missingInputs: [path]});
+  });
+});
