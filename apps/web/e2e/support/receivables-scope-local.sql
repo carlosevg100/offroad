@@ -21,4 +21,14 @@ begin
  update public.document_intake_sessions set status='review_ready',
  result_summary=jsonb_set(coalesce(result_summary,'{}'),'{case_state}',coalesce(result_summary->'case_state','{}')||jsonb_build_object('receivablesVertical',fixture->'report')) where id=s.id;
 end $$;
+-- The synthetic customer's administrator explicitly permits self-review for
+-- this deterministic scope/R01 proof. The default policy denial remains covered
+-- by the separate sector-context case and the native brief security tests.
+select organization_id::text as fixture_org,started_by::text as fixture_actor
+ from public.document_intake_sessions where id=current_setting('offroad.scope_session')::uuid \gset
+set local role authenticated;
+select set_config('request.jwt.claim.sub', :'fixture_actor', true);
+select set_config('request.jwt.claims', jsonb_build_object('sub', :'fixture_actor', 'role', 'authenticated')::text, true);
+select set_config('request.headers', jsonb_build_object('x-offroad-workspace', :'fixture_org')::text, true);
+select public.set_organization_review_policy_v1(:'fixture_org'::uuid,true);
 commit;
