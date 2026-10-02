@@ -117,8 +117,8 @@ end;
 $$;
 
 reset role;
-insert into private.worker_tokens (label, token_sha256)
-values ('advisor-semantic-router-test', extensions.digest(repeat('s', 64), 'sha256'))
+insert into private.worker_tokens (label, token_sha256,execution_account_user_id)
+values ('advisor-semantic-router-test', extensions.digest(repeat('s', 64), 'sha256'),'10000000-0000-4000-8000-000000000231')
 on conflict (token_sha256) do update set status = 'active', revoked_at = null;
 
 set local role authenticated;
@@ -474,61 +474,8 @@ begin
 end;
 $$;
 
-reset role;
-
-do $$
-declare
-  capital_job public.processing_jobs;
-  plan_task public.capital_project_plan_tasks;
-  task_run_id constant uuid := '50000000-0000-4000-8000-000000000231';
-  artifact_id constant uuid := '60000000-0000-4000-8000-000000000231';
-  artifact_fingerprint constant text := repeat('a', 64);
-begin
-  select job.* into strict capital_job
-  from public.processing_jobs job
-  where job.id = current_setting('offroad_test.capital_job_id')::uuid;
-  select task.* into strict plan_task
-  from public.capital_project_plan_tasks task
-  where task.organization_id = capital_job.organization_id
-    and task.plan_id::text = capital_job.payload ->> 'capital_project_plan_id'
-    and task.task_id = 'M07';
-
-  insert into public.capital_project_task_runs (
-    id, organization_id, capital_project_id, plan_id, plan_task_id,
-    processing_job_id, attempt_no, status, trigger_event, context_manifest,
-    input_fingerprint, executor_key, executor_version, started_at
-  ) values (
-    task_run_id, capital_job.organization_id,
-    (capital_job.payload ->> 'capital_project_id')::uuid,
-    (capital_job.payload ->> 'capital_project_plan_id')::uuid,
-    plan_task.id, capital_job.id, 2, 'running', capital_job.payload -> 'trigger_event',
-    '{}'::jsonb, repeat('1', 64), 'origination-thesis', '2026.09.01-v1', now()
-  );
-
-  insert into public.capital_project_artifacts (
-    id, organization_id, capital_project_id, plan_id, task_run_id, artifact_type,
-    schema_version, artifact_version, status, input_fingerprint,
-    artifact_fingerprint, content, evidence_refs, dependencies,
-    processing_job_id, created_by_kind
-  ) values (
-    artifact_id, capital_job.organization_id,
-    (capital_job.payload ->> 'capital_project_id')::uuid,
-    (capital_job.payload ->> 'capital_project_plan_id')::uuid,
-    task_run_id, 'meeting_brief', 'origination-meeting-brief.v1', 1,
-    'pending_confirmation', repeat('1', 64), artifact_fingerprint,
-    jsonb_build_object('schemaVersion', 'origination-meeting-brief.v1'),
-    '[]'::jsonb, '[]'::jsonb, capital_job.id, 'worker'
-  );
-
-  update public.capital_project_task_runs run
-  set status = 'succeeded',
-      output_reference = jsonb_build_object('type', 'capital_project_artifact', 'id', artifact_id),
-      output_fingerprint = artifact_fingerprint,
-      quality_results = jsonb_build_array(jsonb_build_object('grader', 'schema', 'passed', true)),
-      completed_at = now()
-  where run.id = task_run_id;
-end;
-$$;
+select set_config('offroad_test.worker_token', repeat('s',64),true);
+\ir support/capital_m07_complete_claimed_sql_fixture.sql
 
 set local role authenticated;
 select set_config(
@@ -546,7 +493,7 @@ declare
 begin
   select artifact.capital_project_id into strict project_id
   from public.capital_project_artifacts artifact
-  where artifact.id = '60000000-0000-4000-8000-000000000231';
+  where artifact.id = current_setting('offroad_test.native_artifact_id')::uuid;
   begin
     perform public.worker_complete_advisor_specialized_job_v1(
       current_setting('offroad_test.capital_job_id')::uuid,
@@ -566,7 +513,7 @@ begin
       current_setting('offroad_test.capital_job_id')::uuid,
       current_setting('offroad_test.capability'),
       '70000000-0000-4000-8000-000000000231',
-      '60000000-0000-4000-8000-000000000231', repeat('a', 64),
+      current_setting('offroad_test.native_artifact_id')::uuid, current_setting('offroad_test.native_artifact_fingerprint'),
       'Resultado inconsistente.', jsonb_build_object('capital_project_id', project_id)
     );
   exception when invalid_parameter_value then mismatched_result_rejected := true;
@@ -588,16 +535,16 @@ begin
     current_setting('offroad_test.capital_job_id')::uuid,
     current_setting('offroad_test.capability'),
     '70000000-0000-4000-8000-000000000231',
-    '60000000-0000-4000-8000-000000000231', repeat('a', 64),
+    current_setting('offroad_test.native_artifact_id')::uuid, current_setting('offroad_test.native_artifact_fingerprint'),
     'Concluí a leitura pública. O material está pronto para sua revisão.',
     jsonb_build_object(
       'capital_project_id', project_id,
-      'meeting_brief_artifact_id', '60000000-0000-4000-8000-000000000231',
-      'artifact_fingerprint', repeat('a', 64)
+      'meeting_brief_artifact_id', current_setting('offroad_test.native_artifact_id'),
+      'artifact_fingerprint', current_setting('offroad_test.native_artifact_fingerprint')
     )
   );
   if completion ->> 'completion_message_id' <> '70000000-0000-4000-8000-000000000231'
-    or completion ->> 'artifact_id' <> '60000000-0000-4000-8000-000000000231'
+    or completion ->> 'artifact_id' <> current_setting('offroad_test.native_artifact_id')
     or completion ->> 'analysis_scope' <> 'origination_thesis' then
     raise exception 'semantic completion returned an incoherent result: %', completion;
   end if;
@@ -624,7 +571,7 @@ begin
     or completion_message.status <> 'completed'
     or completion_message.metadata ->> 'kind' <> 'advisor_specialized_completion'
     or completion_message.metadata ->> 'completionForJobId' <> capital_job.id::text
-    or completion_message.metadata #>> '{artifact,id}' <> '60000000-0000-4000-8000-000000000231'
+    or completion_message.metadata #>> '{artifact,id}' <> current_setting('offroad_test.native_artifact_id')
     or completion_message.metadata #>> '{artifact,type}' <> 'meeting_brief'
     or (select state from public.agent_conversations where id = completion_message.conversation_id) <> 'analyzing'
     or (select count(*) from public.agent_messages message where message.id = '71000000-0000-4000-8000-000000000231' and message.status = 'queued') <> 1

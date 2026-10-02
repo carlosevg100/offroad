@@ -198,6 +198,11 @@
       "sha256": "ebbee15ae484b27a0e97e42ad85db12020122c38442782d474cc6718624b8d75"
     },
     {
+      "signature": "private.read_artifact_revision_v1(uuid)",
+      "file": "private.read_artifact_revision_v1(uuid).sql",
+      "sha256": "7bf1b537f3a1c0bd680d1512306a413b302cfa1fee7e8fa22d768f48f5e63738"
+    },
+    {
       "signature": "private.read_capital_project_execution_brief_progress_v1(uuid)",
       "file": "private.read_capital_project_execution_brief_progress_v1(uuid).sql",
       "sha256": "7d3f010b7f139085d916e238f957f676c2633f9d88794f386277b02cbebbce50"
@@ -358,6 +363,11 @@
       "sha256": "c3789f41692c35ce6ea7e923dc1b3d358ed6e4849d41079f00ae29fb3a18faf4"
     },
     {
+      "signature": "private.worker_finish_capital_project_task(uuid,text,uuid,text,jsonb,text,jsonb,jsonb,jsonb)",
+      "file": "private.worker_finish_capital_project_task(uuid,text,uuid,text,jsonb,text,jsonb,jsonb,jsonb).sql",
+      "sha256": "fc68c5b472410b2c8a8a76327d7b228d5156286a173037463413b372181fcc97"
+    },
+    {
       "signature": "private.worker_load_agent_context(uuid,text)",
       "file": "private.worker_load_agent_context(uuid,text).sql",
       "sha256": "142dfd1dd4a7b6abfc7c3754ad3f7596cc01e42bba219c471122e784ced0b7da"
@@ -438,6 +448,11 @@
       "sha256": "328246d04649053d32f972e148b9be166bf322292dd3004bf732200376a65307"
     },
     {
+      "signature": "private.worker_record_capital_project_artifact(uuid,text,uuid,text,text,text,text,jsonb,jsonb,jsonb)",
+      "file": "private.worker_record_capital_project_artifact(uuid,text,uuid,text,text,text,text,jsonb,jsonb,jsonb).sql",
+      "sha256": "132651edf21746645baf803f0a8b8bdf671e0ddba8421612bc613b0300e876dd"
+    },
+    {
       "signature": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)",
       "file": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb).sql",
       "sha256": "276a595e3f1f9825aa8326c377f1bd9593154a42d8b5664485c4f21ae0fbbb3f"
@@ -483,5 +498,6 @@
       "sha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
     }
   ],
-  "missing": []
+  "missing": [],
+  "notes": " On 2026-10-02 forward compatibility migration 20261002135718 (production), 20261002135521 (staging): the three rewritten function bodies were captured after local replay and verified byte-identical in production and staging. Other historical differences are outside this migration; no assertion of global byte parity."
 }

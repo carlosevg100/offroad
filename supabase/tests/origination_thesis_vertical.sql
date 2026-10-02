@@ -176,8 +176,8 @@ $$;
 -- The worker can load the exact project context only with the one-job capability returned by
 -- the queue. A guessed or stale token is rejected.
 reset role;
-insert into private.worker_tokens (label, token_sha256)
-values ('origination-thesis-worker-test', extensions.digest(repeat('w', 64), 'sha256'))
+insert into private.worker_tokens (label, token_sha256,execution_account_user_id)
+values ('origination-thesis-worker-test', extensions.digest(repeat('w', 64), 'sha256'),'10000000-0000-4000-8000-000000000201')
 on conflict (token_sha256) do update set status = 'active', revoked_at = null;
 
 set local role authenticated;
@@ -232,152 +232,51 @@ begin
   end;
   if not rejected then raise exception 'worker context accepted a guessed capability'; end if;
 
-  -- Emulate the governed worker lifecycle for every frozen TaskSpec. The test intentionally
-  -- records artifacts through the capability-bound commands, rather than inserting fixtures
-  -- directly, so dependency and evidence contracts are exercised before revision is allowed.
-  foreach v_task_id in array array['M01','M02','M03','M04','M05','M06','C02','K04','M07']::text[]
-  loop
-    v_input_fingerprint := encode(
-      extensions.digest(convert_to('origination-test:' || v_task_id, 'utf8'), 'sha256'), 'hex'
-    );
-    v_task_run_id := public.worker_start_capital_project_task(
-      (claim ->> 'job_id')::uuid, claim ->> 'capability_token', v_task_id,
-      'offroad.origination_thesis', '2026.09.01-v1', v_input_fingerprint,
-      jsonb_build_object('schemaVersion', 'capital-context-manifest.v1')
-    );
-    select coalesce(jsonb_agg(jsonb_build_object(
-      'artifactId', dependency_artifact.id,
-      'artifactFingerprint', dependency_artifact.artifact_fingerprint
-    ) order by dependency_task.task_id), '[]'::jsonb)
-    into v_dependencies
-    from public.capital_project_plan_tasks current_task
-    cross join lateral unnest(current_task.dependencies) dependency_id
-    join public.capital_project_plan_tasks dependency_task
-      on dependency_task.organization_id = current_task.organization_id
-      and dependency_task.plan_id = current_task.plan_id
-      and dependency_task.task_id = dependency_id
-    join public.capital_project_task_runs dependency_run
-      on dependency_run.organization_id = dependency_task.organization_id
-      and dependency_run.plan_task_id = dependency_task.id
-      and dependency_run.status = 'succeeded'
-    join public.capital_project_artifacts dependency_artifact
-      on dependency_artifact.organization_id = dependency_run.organization_id
-      and dependency_artifact.task_run_id = dependency_run.id
-      and dependency_artifact.status not in ('stale', 'superseded')
-    where current_task.organization_id = (claim ->> 'organization_id')::uuid
-      and current_task.plan_id = (context #>> '{plan,id}')::uuid
-      and current_task.task_id = v_task_id;
-
-    v_artifact_content := case v_task_id
-      when 'C02' then jsonb_build_object(
-        'status', 'succeeded',
-        'researchRunId', '80000000-0000-4000-8000-000000000201',
-        'sources', jsonb_build_array(jsonb_build_object(
-          'provider', 'perplexity', 'topic', 'sector', 'title', 'Fonte setorial pública',
-          'url', 'https://farol.example/setor', 'snippet', 'Sinal público preservado.',
-          'publishedAt', null, 'retrievedAt', '2026-09-01T12:00:00.000Z',
-          'contentHash', repeat('d', 64)
-        )),
-        'failures', jsonb_build_array()
-      )
-      when 'K04' then jsonb_build_object(
-        'status', 'succeeded',
-        'researchRunId', '80000000-0000-4000-8000-000000000201',
-        'sources', jsonb_build_array(), 'failures', jsonb_build_array()
-      )
-      else jsonb_build_object('taskId', v_task_id, 'fixture', true)
-    end;
-    v_artifact := public.worker_record_capital_project_artifact(
-      (claim ->> 'job_id')::uuid, claim ->> 'capability_token', v_task_run_id,
-      case when v_task_id = 'M07' then 'meeting_brief' else 'origination_' || lower(v_task_id) end,
-      'capital-artifact.v1',
-      case when v_task_id = 'M07' then 'pending_confirmation' else 'draft' end,
-      v_input_fingerprint, v_artifact_content, jsonb_build_array(), v_dependencies
-    );
-    perform public.worker_finish_capital_project_task(
-      (claim ->> 'job_id')::uuid, claim ->> 'capability_token', v_task_run_id,
-      'succeeded', jsonb_build_object('type', 'capital_project_artifact', 'id', v_artifact ->> 'id'),
-      v_artifact ->> 'artifact_fingerprint',
-      jsonb_build_array(jsonb_build_object('id', 'test_contract', 'passed', true)),
-      jsonb_build_object(), null
-    );
-    if v_task_id = 'M07' then
-      v_meeting_artifact_id := (v_artifact ->> 'id')::uuid;
-      v_meeting_artifact_fingerprint := v_artifact ->> 'artifact_fingerprint';
-    end if;
-  end loop;
-
-  perform public.worker_complete_job(
-    (claim ->> 'job_id')::uuid, claim ->> 'capability_token',
-    jsonb_build_object('meeting_brief_artifact_id', v_meeting_artifact_id)
-  );
-
-  revision_result := public.submit_advisor_artifact_revision_turn_v1(
-    (context #>> '{project,id}')::uuid,
-    '90000000-0000-4000-8000-000000000201',
-    'pt-BR',
-    'Priorizar capital de giro; a hipótese de refinanciamento não reflete a conversa.'
-  );
-  if revision_result ->> 'replayed' <> 'false'
-    or (select status from public.capital_project_artifacts where id = v_meeting_artifact_id) <> 'superseded'
-    or (select status from public.capital_project_task_runs where id = v_task_run_id) <> 'invalidated'
-    or (select count(*) from public.capital_project_task_runs task_run
-        join public.capital_project_plan_tasks plan_task on plan_task.id = task_run.plan_task_id
-        where task_run.organization_id = (claim ->> 'organization_id')::uuid
-          and plan_task.task_id in ('M06','C02','K04') and task_run.status = 'succeeded') <> 3
-    or (select count(*) from public.agent_messages
-        where id in (
-          '90000000-0000-4000-8000-000000000201',
-          (revision_result ->> 'assistant_message_id')::uuid
-        ) and status = 'completed') <> 2 then
-    raise exception 'conversational revision did not preserve the exact M07-only boundary: %', revision_result;
-  end if;
-
-  revision_replay := public.request_origination_thesis_revision_v1(
-    v_meeting_artifact_id, v_meeting_artifact_fingerprint,
-    'Priorizar capital de giro; a hipótese de refinanciamento não reflete a conversa.'
-  );
-  if revision_replay ->> 'replayed' <> 'true'
-    or revision_replay ->> 'decision_id' <> revision_result ->> 'decision_id'
-    or revision_replay ->> 'job_id' <> revision_result ->> 'job_id' then
-    raise exception 'incremental revision idempotency failed: %', revision_replay;
-  end if;
-
-  chat_replay := public.submit_advisor_artifact_revision_turn_v1(
-    (context #>> '{project,id}')::uuid,
-    '90000000-0000-4000-8000-000000000201',
-    'pt-BR',
-    'Este texto diferente não pode duplicar uma mensagem com o mesmo identificador.'
-  );
-  if chat_replay ->> 'replayed' <> 'true'
-    or chat_replay ->> 'message_id' <> '90000000-0000-4000-8000-000000000201' then
-    raise exception 'conversational revision message idempotency failed: %', chat_replay;
-  end if;
-
-  perform pg_temp.fixture_approve_pending_executions();
-  revision_claim := public.worker_claim_job_v3(repeat('w', 64), 600);
-  if revision_claim ->> 'job_id' <> revision_result ->> 'job_id'
-    or revision_claim #>> '{payload,capital_task_ids,0}' <> 'M07'
-    or jsonb_array_length(revision_claim #> '{payload,capital_task_ids}') <> 1
-    or revision_claim #>> '{payload,model_budget,max_calls}' <> '1'
-    or revision_claim #>> '{payload,trigger_event,type}' <> 'advisor_semantic_route'
-    or revision_claim #>> '{payload,trigger_event,sourceMessageId}' <>
-      '90000000-0000-4000-8000-000000000201'
-    or coalesce(revision_claim #>> '{payload,revision_of_artifact_id}', '') <> v_meeting_artifact_id::text then
-    raise exception 'worker did not claim the exact revision job: %', revision_claim;
-  end if;
-  revision_context := public.worker_load_capital_project_context(
-    (revision_claim ->> 'job_id')::uuid, revision_claim ->> 'capability_token'
-  );
-  if revision_context #>> '{revision,of_artifact_id}' <> v_meeting_artifact_id::text
-    or revision_context #>> '{revision,correction_note}' <>
-      'Priorizar capital de giro; a hipótese de refinanciamento não reflete a conversa.'
-    or jsonb_array_length(revision_context -> 'dependency_artifacts') <> 3 then
-    raise exception 'revision context did not reuse the governed dependencies: %', revision_context;
-  end if;
+  perform set_config('offroad_test.capital_job_id',claim->>'job_id',true);
+  perform set_config('offroad_test.capability',claim->>'capability_token',true);
+  perform set_config('offroad_test.worker_token',repeat('w',64),true);
 end;
 $$;
-
+\ir support/capital_m07_complete_claimed_sql_fixture.sql
+set local role authenticated;
+do $$declare
+ f record;t record;result jsonb;prior_jobs bigint;prior_decisions bigint;blocked boolean;
+ artifact_id uuid:=current_setting('offroad_test.native_artifact_id')::uuid;
+ artifact_fp text:=current_setting('offroad_test.native_artifact_fingerprint');
+ project_id uuid;
+begin
+ select * into strict f from pg_temp.m07_recipe_fixture;select * into strict t from pg_temp.m07_lifecycle;
+ project_id:=(f.base->>'workId')::uuid;
+ perform public.worker_complete_job(f.job_id,f.capability,jsonb_build_object('meeting_brief_artifact_id',artifact_id));
+ if(select status from public.processing_jobs where id=f.job_id)<>'succeeded'
+ or not exists(select 1 from public.capital_project_artifacts a where a.id=artifact_id and a.artifact_fingerprint=artifact_fp and a.content->>'schemaVersion'='capital-m07-projection.v1')
+ then raise exception 'origination_native_completion_missing';end if;
+ -- The historical revision commands cannot revise a native physical product.
+ -- Review/return positives belong to capital_public_artifact_review_cutover.sql;
+ -- these assertions preserve the legacy boundary without fabricating a CPA.
+ select count(*) into prior_jobs from public.processing_jobs where work_id=project_id;
+ select count(*) into prior_decisions from public.capital_project_artifact_decisions where capital_project_id=project_id;
+ blocked:=false;
+ begin
+  perform public.request_origination_thesis_revision_v1(artifact_id,artifact_fp,'Priorizar capital de giro; a hipótese de refinanciamento não reflete a conversa.');
+ exception when insufficient_privilege then
+  if sqlerrm<>'capital_m07_revision_review_required' then raise;end if;blocked:=true;
+ end;
+ if not blocked then raise exception 'origination_old_revision_native_shortcut';end if;
+ blocked:=false;
+ begin
+  perform public.submit_advisor_artifact_revision_turn_v1(project_id,'90000000-0000-4000-8000-000000000201','pt-BR','Priorizar capital de giro; a hipótese de refinanciamento não reflete a conversa.');
+ exception when insufficient_privilege then
+  if sqlerrm<>'capital_m07_revision_review_required' then raise;end if;blocked:=true;
+ end;
+ if not blocked then raise exception 'origination_old_chat_revision_native_shortcut';end if;
+ if(select count(*) from public.processing_jobs where work_id=project_id)<>prior_jobs
+ or(select count(*) from public.capital_project_artifact_decisions where capital_project_id=project_id)<>prior_decisions
+ or exists(select 1 from public.agent_messages where id='90000000-0000-4000-8000-000000000201')
+ then raise exception 'origination_denied_revision_left_effects';end if;
+ if(select count(*) from public.capital_project_task_runs rt join public.capital_project_plan_tasks pt on pt.organization_id=rt.organization_id and pt.id=rt.plan_task_id where rt.organization_id=(f.base->>'organizationId')::uuid and rt.plan_id=(f.base->>'planId')::uuid and pt.task_id in('M06','C02','K04') and rt.status='succeeded')<>3
+ then raise exception 'origination_native_dependencies_not_real';end if;
+ raise notice 'PASS origination_native_completion real_predecessors old_revision_shortcuts_denied no_partial_effects';
+end;$$;
 rollback;
-
 select 'origination_thesis_vertical_passed' as result;

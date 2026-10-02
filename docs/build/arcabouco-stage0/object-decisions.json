@@ -225443,6 +225443,13 @@
       "decision": "preservar",
       "stage": "20 / 3Q M07",
       "reason": "Consumidor M07 prospectivo completo, com portas legadas fechadas e fontes publicadas reais."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002135718_capital_m07_legacy_contract_compatibility.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q M07",
+      "reason": "Preserva contratos e diagnósticos legados fora do M07, mantendo todos os guards de commit e qualidade nativos."
     }
   ],
   "staging_archive": [

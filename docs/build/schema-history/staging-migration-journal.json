@@ -1779,8 +1779,12 @@
   {
    "version": "20261001185956",
    "name": "capital_body_server_read_boundary"
+  },
+  {
+   "name": "capital_m07_legacy_contract_compatibility",
+   "version": "20261002135521"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-10-01T20:58:45.200835+00:00"
+ "captured_at": "2026-10-02T13:57:42.765317+00:00"
 }
