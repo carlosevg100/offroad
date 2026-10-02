@@ -14,15 +14,29 @@ def sanitized_failure(tool,stderr,code):
  # Do not echo SQL, fixture bodies, URLs, usernames, passwords or arbitrary stderr.
  text=stderr.decode('utf-8','replace') if isinstance(stderr,bytes) else stderr
  reason='operation_failed'
- for phrase,label in [('server version mismatch','server_version_mismatch'),('unsupported version','unsupported_version'),('permission denied','permission_denied'),('connection refused','connection_refused'),('could not connect','connection_failed'),('does not exist','object_missing')]:
+ for phrase,label in [('server version mismatch','server_version_mismatch'),('unsupported version','unsupported_version'),('permission denied','permission_denied'),('connection refused','connection_refused'),('could not connect','connection_failed'),('does not exist','object_missing'),('already exists','object_already_exists'),('can only create extension in database','extension_database_restriction'),('can only be created in database','extension_database_restriction'),('must be superuser','superuser_required'),('must be owner','ownership_required'),('unrecognized configuration parameter','configuration_parameter_unknown'),('could not open extension control file','extension_control_missing'),('invalid archive','archive_invalid'),('does not appear to be a valid archive','archive_invalid'),('unsupported version in file header','archive_version_unsupported')]:
   if phrase in text.lower():reason=label;break
  versions=re.findall(r'(?:server version|pg_dump version|pg_restore version):\s*([0-9]+(?:\.[0-9]+)*)',text)
- return 'material_race_tool_failed:'+Path(tool).name+':exit='+str(code)+':reason='+reason+':versions='+','.join(versions)
+ sqlstates=re.findall(r'^\s*SQLSTATE[: =]+([0-9A-Z]{5})\b',text,re.MULTILINE)
+ error_lines='\n'.join(line for line in text.splitlines() if re.match(r'^\s*(?:pg_restore: error:|pg_dump: error:|ERROR:|FATAL:)',line))
+ # Only catalogue identifiers immediately following a closed object-kind keyword.
+ # Never include DETAIL, failing rows, SQL commands or arbitrary message content.
+ objects=[]
+ for kind,name in re.findall(r'\b(schema|extension|role|relation|table|constraint|function|database|parameter)\s+"([A-Za-z_][A-Za-z0-9_]{0,62})"',error_lines):
+  item=kind+':'+name
+  if item not in objects:objects.append(item)
+ return 'material_race_tool_failed:'+Path(tool).name+':exit='+str(code)+':reason='+reason+':versions='+','.join(versions)+':sqlstates='+','.join(sqlstates)+':objects='+','.join(objects[:8])
 def tool_run(args,**kwargs):
  result=subprocess.run(args,capture_output=True,timeout=120,**kwargs)
  if result.returncode:
-  message=sanitized_failure(args[0],result.stderr,result.returncode)
-  print(message,file=sys.stderr);raise RuntimeError(message)
+  logical_tool=next((arg for arg in args if arg in ('pg_dump','pg_restore','psql')),args[0])
+  message=sanitized_failure(logical_tool,result.stderr,result.returncode)
+  # Full stderr stays private in the runner temporary directory, never echoed.
+  descriptor,filename=tempfile.mkstemp(prefix='material-race-private-stderr-',suffix='.txt')
+  os.fchmod(descriptor,0o600)
+  with os.fdopen(descriptor,'wb') as diagnostic:
+   diagnostic.write(result.stderr.encode('utf-8') if isinstance(result.stderr,str) else result.stderr)
+  print(message+':private_diagnostic='+filename,file=sys.stderr);raise RuntimeError(message)
  return result
 
 def select_clone_tools():
@@ -71,7 +85,12 @@ if sys.argv[1:]==['--self-test']:
  assert 'server_version_mismatch' in diagnostic and 'versions=17.6,16.11' in diagnostic
  assert all(value not in diagnostic for value in ('secret','host','user','FIXTURE','postgresql://'))
  generic=sanitized_failure('pg_restore','PRIVATE CONTENT could not connect to database password=secret',2)
- assert generic.endswith('reason=connection_failed:versions=') and 'secret' not in generic
+ assert 'reason=connection_failed:versions=:sqlstates=:objects=' in generic and 'secret' not in generic
+ catalog=sanitized_failure('pg_restore','ERROR: schema "public" already exists\nSQLSTATE: 42P06\nDETAIL: failing row contains (PRIVATE BODY)\nCommand was: CREATE SCHEMA public;',1)
+ assert 'reason=object_already_exists' in catalog and 'sqlstates=42P06' in catalog and 'objects=schema:public' in catalog
+ assert 'BODY' not in catalog and 'CREATE' not in catalog and 'DETAIL' not in catalog
+ cron=sanitized_failure('pg_restore','ERROR: can only create extension in database postgres\nHINT: arbitrary private message',1)
+ assert 'reason=extension_database_restriction' in cron and 'arbitrary' not in cron
  text=Path(__file__).read_text()
  for guard in ("config['project_id']=='offroad'", "config['db']['major_version']==17", "host_id==container_id", "parsed.port is not None", "archive.startswith(b'PGDMP')", "input=dump.read_bytes()", "MATERIAL_RACE_SYNTHETIC_LOCAL"):
   assert guard in text,guard
@@ -118,6 +137,9 @@ try:
    tool_run(clone_tools['pg_restore']+['--dbname',url,'--exit-on-error',str(dump)],text=True)
   else:
    tool_run(clone_tools['pg_restore']+['--dbname='+dbname,'--exit-on-error'],input=dump.read_bytes(),env=clone_env)
+ if sys.argv[1:]==['--clone-only']:
+  print('PASS material_race_full_native_clone_dump_restore')
+  raise SystemExit(0)
  # Setup operates only the private clone; no body/receipt/approval seeded.
  source=(ROOT/'scripts/ci/test-material-production-plan-native.py').read_text()
  source=source.replace("'material_production_terminal.sql']","'material_production_terminal.sql','material_package_native_review.sql','material_retire_experimental_approvals.sql']")
