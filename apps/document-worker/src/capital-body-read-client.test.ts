@@ -138,3 +138,12 @@ test("C11 recovered task client binds original task run without impersonation",a
 test("C11 human result uses JWT WORK with no job/cap headers and rehashes bytes",async()=>{const f=fixture({"x-offroad-revision-id":retained,"x-offroad-final-fingerprint":digest});await readCapitalDebtResultBytes(f.sdk,{revisionId:retained,recipeId:recipe,finalFingerprint:digest},scope);expect(f.invoke).toHaveBeenCalledExactlyOnceWith("capital-body-read",{method:"POST",body:{kind:"debt_result",revisionId:retained},headers:{"x-offroad-workspace":org},timeout:10000});});
 test.each(["x-offroad-revision-id","x-offroad-recipe-id","x-offroad-final-fingerprint","x-offroad-object-id","x-offroad-storage-version"])("C11 human refuses changed %s",async key=>{const f=fixture({"x-offroad-revision-id":retained,"x-offroad-final-fingerprint":digest,[key]:org});await expect(readCapitalDebtResultBytes(f.sdk,{revisionId:retained,recipeId:recipe,finalFingerprint:digest},scope)).rejects.toThrow("scope mismatch");});
 test("C11 human rejects a malformed revision before invoking SDK",async()=>{const f=fixture();await expect(readCapitalDebtResultBytes(f.sdk,{revisionId:"arbitrary",recipeId:recipe,finalFingerprint:digest},scope)).rejects.toThrow("read denied");expect(f.invoke).not.toHaveBeenCalled();});
+
+test("assessment public source client binds the captured snapshot and retained identity",async()=>{
+ const {readAssessmentResearchSourceBytes}=await import("./capital-body-read-client");
+ const f=fixture({"x-offroad-snapshot-id":recipe});
+ await readAssessmentResearchSourceBytes(f.sdk,{jobId:successorJob,capabilityToken:"synthetic-capability"},{snapshotId:recipe,retainedPayloadId:retained},scope);
+ expect(f.invoke.mock.calls[0]?.[1].body).toEqual({kind:"assessment_source",snapshotId:recipe,retainedPayloadId:retained});
+ const changed=fixture({"x-offroad-snapshot-id":originalJob});
+ await expect(readAssessmentResearchSourceBytes(changed.sdk,{jobId:successorJob,capabilityToken:"synthetic-capability"},{snapshotId:recipe,retainedPayloadId:retained},scope)).rejects.toThrow("scope mismatch");
+});

@@ -564,6 +564,36 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-material-production-native-sdk.mjs
 
+      # 3V candidate: transactional drafts first, then one installation solely
+      # in this disposable stack for genuine races and HTTP/Storage consumers.
+      - name: Native assessment and work adoption SQL boundaries
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          ASSESSMENT_DRAFT_IN_TRANSACTION: "1"
+        run: python3 -B scripts/ci/test-assessment-native.py
+      - name: Nonempty institutional configuration captured by the real case consumer
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          ASSESSMENT_DRAFT_IN_TRANSACTION: "1"
+          MATERIAL_DRAFT_IN_TRANSACTION: "0"
+        run: python3 -B scripts/ci/test-assessment-institutional-capture.py
+      - name: Install assessment candidate only on disposable local database
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/install-assessment-native-local.py
+      - name: Native assessment review and revocation two-session races
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-assessment-review-concurrency.py
+      - name: Native assessment consumes licensed physical public bytes through the SDK
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+        # The existing JWT-enabled Edge server above serves the candidate's
+        # capital-body-read handler, including closed assessment_source.
+        run: node scripts/ci/test-assessment-native-public-sdk.mjs
+
       - name: Stop the capital body Edge reader
         if: always()
         run: |
@@ -673,6 +703,11 @@ jobs:
           echo "E2E_MAIL_URL=${MAILPIT_URL:-${INBUCKET_URL:-http://127.0.0.1:54324}}" >> "$GITHUB_ENV"
 
       # NEXT_PUBLIC_* values are inlined at build time, so the build must run after the export above.
+      - name: Install assessment candidate for the disposable browser stack
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: python3 -B scripts/ci/install-assessment-native-local.py
+
       - name: Build the web app against the local stack
         run: pnpm --filter web build
 

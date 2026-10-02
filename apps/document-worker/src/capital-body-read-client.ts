@@ -137,3 +137,8 @@ async function readBytes(sdk: SupabaseClient, job: JobAuthority | null, scope: R
     throw new Error(error instanceof Error && controlled.includes(error.message) ? error.message : "capital capture server read denied");
   }
 }
+
+/** 3V delivered public source: exact server snapshot and retained identity. */
+export function readAssessmentResearchSourceBytes(sdk:SupabaseClient,job:JobAuthority,input:{snapshotId:string;retainedPayloadId:string},scope:ReadScope){
+ return readBytes(sdk,job,scope,{kind:"assessment_source",...input},{"x-offroad-snapshot-id":input.snapshotId,"x-offroad-retained-payload-id":input.retainedPayloadId});
+}
