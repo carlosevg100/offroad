@@ -22,7 +22,12 @@ test("native execution brief binds an explicit human declaration and survives re
   await page.locator('input[name="email"]').fill("native-agent@example.invalid");
   await page.locator('input[name="password"]').fill("brief-isolated-local-ui-password");
   await page.locator("form.auth-form button[type=submit]").click();
-  await expect(page).toHaveURL(/\/pt-BR\/app(?:\?|$)/);
+  await expect(page).toHaveURL(/\/pt-BR\/(?:app|workspaces|onboarding)(?:\?|$)/);
+  // Select the actual customer workspace through the product, rather than
+  // relying on a first membership or injecting a workspace cookie.
+  await page.goto("/pt-BR/workspaces");
+  await page.getByRole("link", {name: "Synthetic native agent", exact: true}).click();
+  await expect(page).toHaveURL(new RegExp(`/pt-BR/app\\?workspace=${org}$`));
   await page.goto(`/pt-BR/app/projects/${workId}`);
   const brief = page.getByTestId("execution-brief");
   await expect(brief).toBeVisible();
