@@ -55705,6 +55705,12 @@
           "line": 75,
           "anchor": "create or replace function private.worker_capture_capital_project_delivery_v1(p_job_id uuid,p_capability_token text,p_capture_id uuid,p_delivery_key text,p_payload jsonb,p_origin_refs jsonb)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002214213_material_public_delivery_context_guard.sql",
+          "line": 2,
+          "anchor": "create or replace function private.worker_capture_capital_project_delivery_v1(p_job_id uuid,p_capability_token text,p_capture_id uuid,p_delivery_key text,p_payload jsonb,p_origin_refs jsonb)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -241556,6 +241562,13 @@
       "decision": "preservar",
       "stage": "20 / 3T",
       "reason": "Comando humano de material que deriva escopo e revisa versão exata no banco."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002214213_material_public_delivery_context_guard.sql",
+      "decision": "preservar",
+      "stage": "20 / 3S–3T",
+      "reason": "Restaurar comparação da assinatura do contexto capturado antes de entrega ou replay público."
     }
   ],
   "staging_archive": [
