@@ -742,7 +742,7 @@ test.describe("Document-first intake (company journey)", () => {
     await page.goto(`/pt-BR/app/projects/${projectId}`);
     const scope = page.getByTestId("receivables-scope-card");
     await expect(scope).toBeVisible();
-    await scope.locator('input[name="primaryTape"]').first().check();
+    await scope.locator("label").filter({hasText: fixture.sources[0]!.name}).filter({has: page.locator('input[name="primaryTape"]')}).locator('input[name="primaryTape"]').check();
     for (const source of fixture.sources.slice(2)) await scope.locator(`input[name="complementDocumentIds"][value="${source.id}"]`).check();
     await scope.locator('input[name="reportingDate"]').fill("2026-08-31");
     await scope.locator('input[name="scopeConfirmed"]').check();
