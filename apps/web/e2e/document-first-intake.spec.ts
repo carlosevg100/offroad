@@ -722,8 +722,9 @@ test.describe("Document-first intake (company journey)", () => {
     } finally {
       await page.setViewportSize(desktopViewport);
     }
-    await declareExecutionBriefReview(approval);
-    await expect(approval.getByRole("button", {name: /aprovar|approve/i})).toBeEnabled();
+    // This fixture keeps the default policy: the preparer cannot self-approve.
+    await expect(approval.getByRole("checkbox")).toHaveCount(0);
+    await expect(approval.getByRole("button", {name: /aprovar|approve/i})).toBeDisabled();
     await expect(page.locator(".intake-review")).toHaveCount(0);
 
     expect(testInfo.attachments.filter((attachment) => attachment.contentType === "image/png")).toHaveLength(2);
