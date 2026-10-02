@@ -7,6 +7,7 @@ import {useRef, useState} from "react";
 import {useFormatter, useTranslations} from "next-intl";
 
 import type {ExecutionBriefApprovalReason, ExecutionBriefApprovalRecord} from "@/lib/advisor/execution-brief-approval";
+import type {ExecutionBriefReviewBasis} from "@/lib/advisor/execution-brief-review-command";
 
 export type ExecutionBriefApproval = {
   status: "awaiting" | "approved" | "superseded" | "unavailable";
@@ -16,6 +17,7 @@ export type ExecutionBriefApproval = {
   /** Decided in Postgres from the project review roles; the card only explains it. */
   reviewMode?: "open" | "assigned";
   callerCanApprove?: boolean;
+  nativeReview?: ExecutionBriefReviewBasis;
   /** Ids come from the projection; the project page resolves the labels it can show. */
   record?: ExecutionBriefApprovalRecord & {preparedByLabel?: string | null; reviewedByLabel?: string | null};
 };
@@ -26,7 +28,7 @@ type Props = {
   approval?: ExecutionBriefApproval;
   disabled?: boolean;
   onRefresh?: () => void;
-  onApprove?: (input: {expectedFingerprint: string; expectedVersion: number}) => Promise<{ok: true} | {ok: false; error: string}>;
+  onApprove?: (input: {expectedFingerprint: string; expectedVersion: number; expectedCaptureId: string; selfApprovalDeclared: boolean}) => Promise<{ok: true} | {ok: false; error: string}>;
   brief: VisibleExecutionBrief;
   changes?: readonly ExecutionBriefChange[];
   onRequestEdit?: (content: string) => Promise<{ok: true} | {ok: false; error: string}>;
@@ -36,6 +38,7 @@ type Props = {
 
 export function ExecutionBriefCard({approval, brief, changes = [], disabled = false, onApprove, onRefresh, onRequestEdit, progress, version}: Props) {
   const t = useTranslations("ExecutionBriefCard");
+  const reviewText = useTranslations("ArtifactRevisionReview");
   const format = useFormatter();
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState("");
@@ -45,6 +48,7 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
   const [approving, setApproving] = useState(false);
   const [approvalError, setApprovalError] = useState("");
   const [submittedFingerprint, setSubmittedFingerprint] = useState<string | null>(null);
+  const [declaration, setDeclaration] = useState<{captureId: string; declared: boolean} | null>(null);
   const approvalStatus = !approval ? "unavailable"
     : approval.fingerprint !== brief.fingerprint || approval.version !== version ? "superseded"
     : approval.status;
@@ -52,14 +56,19 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
   const busy = disabled || submitting || approving || awaitingRefresh;
   const currentApproval = approval && approval.fingerprint === brief.fingerprint && approval.version === version ? approval : undefined;
   const roleBlocked = approvalStatus === "awaiting" && currentApproval?.callerCanApprove === false;
+  const basis = currentApproval?.nativeReview;
+  const selfReview = basis?.preparedBy === basis?.viewerId && Boolean(basis);
+  const selfDeclared = Boolean(basis && declaration?.captureId === basis.captureId && declaration.declared);
+  const declarationBlocked = selfReview && (!basis?.policy.selfApprovalAllowed || !selfDeclared);
   const unknownPerson = t("approval.record.unknownPerson");
   async function approve() {
-    if (!onApprove || approvalStatus !== "awaiting" || busy || editing || roleBlocked || approvalLock.current) return;
+    if (!onApprove || !basis || approvalStatus !== "awaiting" || busy || editing || roleBlocked || declarationBlocked || approvalLock.current) return;
     approvalLock.current = true;
     setApproving(true);
     setApprovalError("");
     try {
-      const result = await onApprove({expectedFingerprint: brief.fingerprint, expectedVersion: version});
+      const result = await onApprove({expectedFingerprint: brief.fingerprint, expectedVersion: version,
+        expectedCaptureId: basis.captureId, selfApprovalDeclared: selfDeclared});
       if (!result.ok) setApprovalError(result.error);
       else setSubmittedFingerprint(brief.fingerprint);
     } catch {
@@ -94,7 +103,10 @@ export function ExecutionBriefCard({approval, brief, changes = [], disabled = fa
           {currentApproval?.record?.decision === "returned" ? <p className="execution-brief-card__record" data-testid="execution-brief-approval-record">{t("approval.record.returned", {reviewer: currentApproval.record.reviewedByLabel ?? unknownPerson})}</p> : null}
           {roleBlocked ? <p className="execution-brief-card__role" data-testid="execution-brief-role-required">{t("approval.roleRequired")}</p> : null}
         </div>
-        {approvalStatus === "awaiting" ? <button disabled={busy || editing || !onApprove || roleBlocked} onClick={() => void approve()} type="button">
+        {approvalStatus === "awaiting" && selfReview ? basis?.policy.selfApprovalAllowed
+          ? <label><input checked={selfDeclared} disabled={busy} onChange={event => setDeclaration({captureId: basis.captureId, declared: event.target.checked})} type="checkbox" />{reviewText("declaration")}</label>
+          : <p>{reviewText("differentReviewer")}</p> : null}
+        {approvalStatus === "awaiting" ? <button disabled={busy || editing || !onApprove || !basis || roleBlocked || declarationBlocked} onClick={() => void approve()} type="button">
           {approving || awaitingRefresh ? <LoaderCircle aria-hidden="true" className="spin" size={14} /> : <Check aria-hidden="true" size={14} />}
           {t(approving ? "approval.saving" : awaitingRefresh ? "approval.refreshing" : approvalError ? "approval.retry" : "approval.approve", {version})}
         </button> : null}

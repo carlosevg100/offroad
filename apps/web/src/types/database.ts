@@ -11453,6 +11453,17 @@ export type Database = {
         }
         Returns: Json
       }
+      approve_advisor_execution_brief_v2: {
+        Args: {
+          p_command_id: string
+          p_execution_brief_id: string
+          p_expected_capture_id: string
+          p_expected_fingerprint: string
+          p_project_id: string
+          p_self_approval_declared: boolean
+        }
+        Returns: Json
+      }
       approve_match_shortlist: {
         Args: {
           p_match_screen_fingerprint: string
@@ -11991,6 +12002,10 @@ export type Database = {
         Returns: string
       }
       read_dossier_v1: { Args: { p_dossier_id: string }; Returns: Json }
+      read_execution_brief_review_basis_v2: {
+        Args: { p_execution_brief_id: string; p_project_id: string }
+        Returns: Json
+      }
       read_governed_evaluation_session_v1: {
         Args: { p_execution_id: string }
         Returns: Json
@@ -13329,6 +13344,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_capture_execution_brief_inputs_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       worker_claim_capital_capture_purge_v1: {
         Args: { p_limit?: number; p_worker_token: string }
         Returns: Json
@@ -14063,6 +14086,22 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_agent_response_and_activate_v7: {
+        Args: {
+          p_activation?: Json
+          p_assistant_message_id: string
+          p_capability_token: string
+          p_capture_id: string
+          p_execution_brief_change_summary?: Json
+          p_execution_brief_internal?: Json
+          p_execution_brief_visible?: Json
+          p_expected_input_fingerprint?: string
+          p_job_id: string
+          p_proposal?: Json
+          p_response: Json
+        }
+        Returns: Json
+      }
       worker_record_agent_stage_event_v1: {
         Args: {
           p_capability_token: string
@@ -14269,6 +14308,18 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_execution_brief_proposal_v2: {
+        Args: {
+          p_capability_token: string
+          p_capture_id: string
+          p_expected_input_fingerprint: string
+          p_internal_snapshot: Json
+          p_job_id: string
+          p_plan?: Json
+          p_visible_snapshot: Json
+        }
+        Returns: Json
+      }
       worker_record_initial_institutional_candidate_v1: {
         Args: {
           p_candidate: Json
@@ -14445,6 +14496,14 @@ export type Database = {
           p_capability_token: string
           p_job_id: string
           p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_recover_execution_brief_product_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_request_id: string
         }
         Returns: Json
       }
@@ -14717,3 +14776,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

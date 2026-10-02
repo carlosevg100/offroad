@@ -324,15 +324,17 @@ export function AdvisorProject(props: Props) {
     return {ok: true, ...outcome.current};
   }
 
-  async function approvePlan(input: {expectedFingerprint: string; expectedVersion: number}): Promise<AdvisorCommandResult> {
+  async function approvePlan(input: {expectedFingerprint: string; expectedVersion: number; expectedCaptureId: string; selfApprovalDeclared: boolean}): Promise<AdvisorCommandResult> {
     const current = props.executionBrief;
-    if (!current || current.brief.fingerprint !== input.expectedFingerprint || current.version !== input.expectedVersion) {
+    if (!current || current.brief.fingerprint !== input.expectedFingerprint || current.version !== input.expectedVersion
+      || current.approval?.nativeReview?.captureId !== input.expectedCaptureId) {
       return {ok: false, error: props.copy.errors.stale};
     }
     if (pending || uploading || active) return {ok: false, error: props.copy.errors.processing};
-    return runCommand(["plan_approval", current.briefId, input.expectedFingerprint], null,
+    return runCommand(["plan_approval", current.briefId, input.expectedFingerprint, input.expectedCaptureId, String(input.selfApprovalDeclared)], null,
       (commandId) => approveAdvisorExecutionBrief({locale: props.locale, projectId: props.projectId,
-        executionBriefId: current.briefId, expectedFingerprint: input.expectedFingerprint, commandId}), undefined, false);
+        executionBriefId: current.briefId, expectedFingerprint: input.expectedFingerprint, expectedCaptureId: input.expectedCaptureId,
+        selfApprovalDeclared: input.selfApprovalDeclared, commandId}), undefined, false);
   }
 
   async function answerInformationRequest(input: {source: "choice" | "custom" | "unavailable"; content: string}): Promise<AdvisorCommandResult> {

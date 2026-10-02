@@ -1,4 +1,4 @@
--- Real deterministic planner bridge, including a legacy case with no persisted plan.
+-- Prospective native brief precursor and atomic human approval. Synthetic rollback fixture.
 -- Snapshots below come from processExecutionBriefProposalJob and the canonical compiler.
 -- All identities and content are synthetic; every row is rolled back.
 begin;
@@ -9,8 +9,8 @@ insert into public.organizations (id,organization_type,name,created_by)
 values ('a8000000-0000-4000-8000-000000000002','company','Synthetic bridge tenant','a8000000-0000-4000-8000-000000000001');
 insert into public.organization_memberships (organization_id,user_id,role,status,joined_at)
 values ('a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000001','owner','active',now());
-insert into public.capital_projects (id,organization_id,project_name,entry_job,access_basis,created_by)
-values ('a8000000-0000-4000-8000-000000000007','a8000000-0000-4000-8000-000000000002','Synthetic private bridge','structure_from_documents','authorized_private','a8000000-0000-4000-8000-000000000001');
+insert into public.capital_projects (id,organization_id,project_name,entry_job,access_basis,created_by,private_access_granted_at,private_access_granted_by)
+values ('a8000000-0000-4000-8000-000000000007','a8000000-0000-4000-8000-000000000002','Synthetic private bridge','structure_from_documents','authorized_private','a8000000-0000-4000-8000-000000000001',now(),'a8000000-0000-4000-8000-000000000001');
 insert into public.document_intake_sessions (id,organization_id,capital_project_id,started_by,journey,locale,capital_objective,company_profile)
 values ('a8000000-0000-4000-8000-000000000003','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000007','a8000000-0000-4000-8000-000000000001','company','pt-BR','Revisar liquidez e alternativas','{"name":"Companhia Sintética Horizonte"}');
 insert into public.agent_conversations(id,organization_id,intake_session_id,state,created_by)
@@ -20,37 +20,48 @@ insert into public.agent_messages(id,organization_id,conversation_id,intake_sess
 ('a8000000-0000-4000-8000-000000000010','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000008','a8000000-0000-4000-8000-000000000003','user','completed','Obrigado, os documentos são esses.','pt-BR','{"kind":"information_request_response"}','a8000000-0000-4000-8000-000000000001',now());
 insert into public.processing_runs (id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
 values ('a8000000-0000-4000-8000-000000000004','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003',1,'manual','queued','planner-bridge-fixture-v1','a8000000-0000-4000-8000-000000000001');
+-- Two real document-version bridges. The compiled snapshot below need not cite
+-- either source: the producer closure still includes every consumed document.
+insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,mime_type,created_by,processing_status,sha256,document_version)
+values('a8000000-0000-4000-8000-000000000011','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003','a8000000-0000-4000-8000-000000000002/fixture/source-one.txt','Synthetic document one','text/plain','a8000000-0000-4000-8000-000000000001','ready',repeat('a',64),1),
+('a8000000-0000-4000-8000-000000000012','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003','a8000000-0000-4000-8000-000000000002/fixture/source-two.txt','Synthetic uncited document','text/plain','a8000000-0000-4000-8000-000000000001','ready',repeat('b',64),1);
+insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by) values('a8000000-0000-4000-8000-000000000002',true,false,'a8000000-0000-4000-8000-000000000001');
+create function pg_temp.fail_native_brief_queue() returns trigger language plpgsql as $$begin
+ if current_setting('test.native_brief_fail_after_queue',true)='yes' and new.id='a8000000-0000-4000-8000-000000000006' and new.status='queued' then raise exception 'synthetic_native_queue_failure' using errcode='P3992';end if;
+ return new;
+end $$;
+create trigger fixture_native_brief_queue_failure after update of status on public.processing_jobs for each row execute function pg_temp.fail_native_brief_queue();
+create function pg_temp.native_brief_effects_exist(p_command uuid) returns boolean language sql security definer set search_path='' as $$
+ select exists(select 1 from public.work_decisions where organization_id='a8000000-0000-4000-8000-000000000002' and command_id=p_command)
+ or exists(select 1 from private.execution_brief_review_projections where organization_id='a8000000-0000-4000-8000-000000000002' and command_id=p_command)
+ or exists(select 1 from private.review_basis_receipts where organization_id='a8000000-0000-4000-8000-000000000002' and work_id='a8000000-0000-4000-8000-000000000007' and basis_kind='execution');
+$$;
+-- Test-only scheduling: advance only this fixture's exact target, preserving
+-- the actual worker claim, capability and all authority checks.
+create function pg_temp.prioritize_native_brief_target() returns void language sql security definer set search_path='' as $$
+ update public.processing_jobs set available_at=(select coalesce(min(available_at),clock_timestamp())-interval '1 second' from public.processing_jobs)
+ where organization_id='a8000000-0000-4000-8000-000000000002' and id='a8000000-0000-4000-8000-000000000006' and status='queued';
+$$;
+set local role authenticated;
+select set_config('request.jwt.claims','{"sub":"a8000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
+select public.set_source_rights_v1('a8000000-0000-4000-8000-000000000011',0,array['read','process','store','derive'],array['analysis'],null,null,gen_random_uuid(),repeat('a',64));
+select public.set_source_rights_v1('a8000000-0000-4000-8000-000000000012',0,array['read','process','store','derive'],array['analysis'],null,null,gen_random_uuid(),repeat('b',64));
+-- Initial human declarations precede queueing: policy changes invalidate
+-- already-enqueued authority and the fixture must obey that barrier.
+reset role;
 insert into public.processing_jobs (id,organization_id,intake_session_id,processing_run_id,kind,status,payload)
 values ('a8000000-0000-4000-8000-000000000006','a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003','a8000000-0000-4000-8000-000000000004','case_analysis','queued','{"analysis_scope":"full_case","locale":"pt-BR"}');
 insert into private.worker_tokens (label,token_sha256)
 values ('execution-bridge-fixture',extensions.digest(repeat('b',64),'sha256'));
--- Proposal v2 commits the product AND closes its producer capability.
--- A closed job cannot recover through a dead lease; committed v7 lease replay
--- is positively covered by execution_brief_native_agent_recovery.sql.
-create function pg_temp.assert_native_brief_committed_job_closed(p_job uuid,p_cap text,p_capture uuid,p_brief uuid)
-returns void language plpgsql security definer set search_path='' as $$
-declare before_capture jsonb; before_completion jsonb; denied boolean:=false;
-begin
- select to_jsonb(c) into strict before_capture from private.execution_brief_input_captures c where c.id=p_capture;
- select to_jsonb(c) into strict before_completion from private.execution_brief_producer_completions c
- where c.capture_id=p_capture and c.producer_job_id=p_job and c.execution_brief_id=p_brief;
- if not exists(select 1 from public.processing_jobs where id=p_job and status='succeeded' and capability_sha256 is null) then raise exception 'native_proposal_producer_not_closed';end if;
- begin perform public.worker_recover_execution_brief_product_v1(p_job,p_cap,p_job);
- exception when insufficient_privilege then denied:=true;end;
- if not denied then raise exception 'closed_producer_capability_recovered';end if;
- if before_capture is distinct from(select to_jsonb(c) from private.execution_brief_input_captures c where c.id=p_capture)
- or before_completion is distinct from(select to_jsonb(c) from private.execution_brief_producer_completions c where c.capture_id=p_capture and c.producer_job_id=p_job)
- then raise exception 'denied_recovery_rewrote_committed_product';end if;
-end $$;
-revoke all on function pg_temp.assert_native_brief_committed_job_closed(uuid,text,uuid,uuid) from public;
-grant execute on function pg_temp.assert_native_brief_committed_job_closed(uuid,text,uuid,uuid) to authenticated;
-
-insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by) values('a8000000-0000-4000-8000-000000000002',true,false,'a8000000-0000-4000-8000-000000000001');
+-- Isolate the synthetic claimant from unrelated staging queue rows. Only this
+-- fixture's planner is moved to the front; authority and lease remain genuine.
+update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '1 second' from public.processing_jobs)
+where organization_id='a8000000-0000-4000-8000-000000000002' and kind='execution_brief_proposal' and status='queued'
+and payload->>'approval_target_job_id'='a8000000-0000-4000-8000-000000000006';
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"a8000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
 do $$
 declare
-  claim jsonb; context jsonb; capture jsonb; recorded jsonb; approval jsonb; brief record;
+  claim jsonb; context jsonb; capture jsonb; recorded jsonb; approval jsonb; command uuid:=gen_random_uuid(); capture_request uuid:=gen_random_uuid(); brief record;
   plan jsonb:=$fixture${"schemaVersion": "capital-project-plan.v1", "compilerVersion": "2026.09.01-v3", "registryVersion": "2026.09.06-v4", "job": {"id": "structure_from_documents", "targetTaskIds": ["S11"], "firstWorkProduct": "diagnostic_recommendation", "confirmationGate": "structure", "accessPolicy": "private_required", "inputPolicy": {"company": "inferable", "documents": "required", "capitalIntent": "inferable", "existingTransaction": "optional", "publicResearch": "required"}}, "taskSpecs": [{"id": "M01", "label": "Resolver companhia, grupo, jurisdição e regime de evidência", "graph": "case", "dependencies": [], "executionClass": "extraction", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["exhaustive_corpus"], "ordinal": 0, "batch": 0}, {"id": "M02", "label": "Normalizar objetivo", "graph": "case", "dependencies": [], "executionClass": "extraction", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["exhaustive_corpus"], "ordinal": 1, "batch": 0}, {"id": "M03", "label": "Registrar restrições", "graph": "case", "dependencies": ["M02"], "executionClass": "extraction", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["exhaustive_corpus"], "ordinal": 2, "batch": 1}, {"id": "M04", "label": "Inferir arquétipos candidatos", "graph": "case", "dependencies": ["M01", "M02"], "executionClass": "judgment", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query", "semantic_retrieval"], "ordinal": 3, "batch": 1}, {"id": "M05", "label": "Definir entregáveis, idioma e audiência", "graph": "case", "dependencies": ["M02", "M03"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 4, "batch": 2}, {"id": "M06", "label": "Compilar plano de tarefas", "graph": "case", "dependencies": ["M04", "M05"], "executionClass": "deterministic", "effect": "commit", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 5, "batch": 3}, {"id": "D01", "label": "Ingerir e versionar arquivos", "graph": "case", "dependencies": ["M06"], "executionClass": "deterministic", "effect": "commit", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 6, "batch": 4}, {"id": "D02", "label": "Classificar documento", "graph": "case", "dependencies": ["D01"], "executionClass": "extraction", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["exhaustive_corpus"], "ordinal": 7, "batch": 5}, {"id": "D03", "label": "Extrair layout e conteúdo", "graph": "case", "dependencies": ["D02"], "executionClass": "extraction", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["exhaustive_corpus"], "ordinal": 8, "batch": 6}, {"id": "D04", "label": "Extrair candidatos a fatos", "graph": "case", "dependencies": ["D03"], "executionClass": "extraction", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["exhaustive_corpus"], "ordinal": 9, "batch": 7}, {"id": "D05", "label": "Resolver entidade, período e unidade", "graph": "case", "dependencies": ["D04"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 10, "batch": 8}, {"id": "D06", "label": "Conciliar fontes", "graph": "case", "dependencies": ["D05"], "executionClass": "deterministic", "effect": "commit", "maturity": "specified", "readingStrategies": ["structured_query", "version_reconciliation"], "ordinal": 11, "batch": 9}, {"id": "D07", "label": "Rodar identidades", "graph": "case", "dependencies": ["D06"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 12, "batch": 10}, {"id": "C01", "label": "Reconstruir modelo de negócio", "graph": "case", "dependencies": ["D06"], "executionClass": "judgment", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query", "semantic_retrieval"], "ordinal": 13, "batch": 10}, {"id": "C02", "label": "Carregar conhecimento aplicável e pesquisar setor e regulação", "graph": "knowledge", "dependencies": ["M01", "M04"], "executionClass": "research", "effect": "none", "maturity": "specified", "readingStrategies": ["exact_search", "semantic_retrieval"], "ordinal": 14, "batch": 2}, {"id": "C03", "label": "Construir spreading", "graph": "case", "dependencies": ["D06", "D07"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 15, "batch": 11}, {"id": "C04", "label": "Analisar qualidade do resultado", "graph": "case", "dependencies": ["C03"], "executionClass": "judgment", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query", "semantic_retrieval"], "ordinal": 16, "batch": 12}, {"id": "C05", "label": "Mapear dívida econômica", "graph": "case", "dependencies": ["D06"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 17, "batch": 10}, {"id": "C06", "label": "Analisar capital de giro", "graph": "case", "dependencies": ["D06"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 18, "batch": 10}, {"id": "C07", "label": "Normalizar projeções", "graph": "case", "dependencies": ["C03", "D06"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 19, "batch": 12}, {"id": "C08", "label": "Rodar cenários e estresses", "graph": "case", "dependencies": ["C03", "C05", "C07"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 20, "batch": 13}, {"id": "C09", "label": "Identificar riscos e mitigantes", "graph": "case", "dependencies": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08"], "executionClass": "judgment", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query", "semantic_retrieval"], "ordinal": 21, "batch": 14}, {"id": "C10", "label": "Calcular capacidade", "graph": "case", "dependencies": ["C05", "C08", "C09"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 22, "batch": 15}, {"id": "C11", "label": "Compilar tese de estruturação", "graph": "case", "dependencies": ["C09", "C10"], "executionClass": "judgment", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query", "semantic_retrieval"], "ordinal": 23, "batch": 16}, {"id": "S01", "label": "Comparar pedido e necessidade", "graph": "case", "dependencies": ["M02", "C06", "C10"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 24, "batch": 16}, {"id": "S02", "label": "Gerar universo de instrumentos", "graph": "case", "dependencies": ["M04", "C10"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 25, "batch": 16}, {"id": "S03", "label": "Aplicar filtros jurídicos, jurisdicionais e econômicos", "graph": "case", "dependencies": ["S02"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 26, "batch": 17}, {"id": "S04", "label": "Mapear garantias e haircuts", "graph": "case", "dependencies": ["D06", "C09"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["exhaustive_corpus", "original_vs_amendment", "structured_query"], "ordinal": 27, "batch": 15}, {"id": "S05", "label": "Desenhar alternativas", "graph": "case", "dependencies": ["S01", "S03", "S04"], "executionClass": "judgment", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query", "semantic_retrieval"], "ordinal": 28, "batch": 18}, {"id": "S06", "label": "Pesquisar preço e termos comparáveis", "graph": "knowledge", "dependencies": ["S05"], "executionClass": "research", "effect": "none", "maturity": "specified", "readingStrategies": ["exact_search", "semantic_retrieval"], "ordinal": 29, "batch": 19}, {"id": "S07", "label": "Calcular custo total", "graph": "case", "dependencies": ["S05", "S06"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 30, "batch": 20}, {"id": "S08", "label": "Definir covenants e proteções", "graph": "case", "dependencies": ["C08", "S05"], "executionClass": "judgment", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["exhaustive_corpus", "original_vs_amendment", "threshold_scan"], "ordinal": 31, "batch": 19}, {"id": "S09", "label": "Fechar sources and uses", "graph": "case", "dependencies": ["S05"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 32, "batch": 19}, {"id": "S10", "label": "Comparar alternativas", "graph": "case", "dependencies": ["S07", "S08", "S09"], "executionClass": "deterministic", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query"], "ordinal": 33, "batch": 21}, {"id": "S11", "label": "Recomendar estrutura-alvo", "graph": "case", "dependencies": ["S10", "C11"], "executionClass": "judgment", "effect": "propose_state", "maturity": "specified", "readingStrategies": ["structured_query", "semantic_retrieval"], "ordinal": 34, "batch": 22}], "parallelBatches": [["M01", "M02"], ["M03", "M04"], ["M05", "C02"], ["M06"], ["D01"], ["D02"], ["D03"], ["D04"], ["D05"], ["D06"], ["D07", "C01", "C05", "C06"], ["C03"], ["C04", "C07"], ["C08"], ["C09"], ["C10", "S04"], ["C11", "S01", "S02"], ["S03"], ["S05"], ["S06", "S08", "S09"], ["S07"], ["S10"], ["S11"]]}$fixture$::jsonb;
   internal_snapshot jsonb:=$fixture${"schemaVersion": "execution-brief.v1", "planVersion": "capital-project-plan.v1:2026.09.01-v3:2026.09.06-v4:a8000000-0000-4000-8000-000000000006", "locale": "pt-BR", "objective": "Revisar liquidez e alternativas", "currentContext": [{"label": "Pedido e contexto deste projeto", "role": "project_context", "informationClass": "private"}], "proposedDeliverable": "Diagnóstico do caso e próximos caminhos fundamentados", "workstreams": [{"key": "scope", "label": "Identificar o mandato econômico contido na pasta de Synthetic Bridge Company", "purpose": "Entender o que está sendo pedido, o que os documentos permitem concluir e quais decisões ainda dependem do usuário.", "sourceTaskIds": ["M01", "M02", "M03", "M04", "M05", "M06"], "sources": [{"key": "project:a8000000-0000-4000-8000-000000000007", "label": "Pedido e contexto deste projeto", "role": "project_context", "status": "available", "informationClass": "private", "authorized": true}, {"key": "required-documents", "label": "Documentos necessários ao caso ainda não disponíveis", "role": "provided_documents", "status": "to_request", "informationClass": "private", "authorized": true}], "analyses": ["Separar fatos conhecidos de hipóteses", "Definir perguntas que realmente alteram o trabalho"], "output": "Perímetro corrigível do trabalho", "inclusionReasons": ["user_requested", "prevents_material_error"], "dependencies": []}, {"key": "evidence", "label": "Transformar os arquivos em uma base reconciliada", "purpose": "Ler o conjunto aplicável, resolver versões, períodos e unidades, conciliar divergências e tornar lacunas visíveis.", "sourceTaskIds": ["D01", "D02", "D03", "D04", "D05", "D06", "D07"], "sources": [{"key": "required-documents", "label": "Documentos necessários ao caso ainda não disponíveis", "role": "provided_documents", "status": "to_request", "informationClass": "private", "authorized": true}], "analyses": ["Inventário e cobertura dos documentos", "Conciliação de números e fontes", "Lacunas priorizadas por impacto"], "output": "Inventário, fatos conciliados, conflitos e pedido de informação priorizado", "inclusionReasons": ["closes_coverage", "resolves_conflict", "prevents_material_error"], "dependencies": ["scope"]}, {"key": "credit", "label": "Testar se o caso se sustenta econômica e financeiramente", "purpose": "Entender negócio e setor, normalizar resultados e projeções, mapear dívida e capital de giro e testar capacidade e downside.", "sourceTaskIds": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10", "C11"], "sources": [{"key": "required-documents", "label": "Documentos necessários ao caso ainda não disponíveis", "role": "provided_documents", "status": "to_request", "informationClass": "private", "authorized": true}], "analyses": ["Drivers operacionais e qualidade do resultado", "Fluxo de caixa, dívida econômica e vencimentos", "Cenários, estresses e capacidade de pagamento"], "output": "Diagnóstico de crédito com premissas e sensibilidades", "inclusionReasons": ["tests_hypothesis", "closes_coverage", "prevents_material_error"], "dependencies": ["evidence", "scope"]}, {"key": "structure", "label": "Desenhar estruturas compatíveis com as evidências disponíveis", "purpose": "Comparar necessidade econômica, instrumentos, custo total, garantias, covenants, fontes e usos e risco de execução.", "sourceTaskIds": ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11"], "sources": [{"key": "required-documents", "label": "Documentos necessários ao caso ainda não disponíveis", "role": "provided_documents", "status": "to_request", "informationClass": "private", "authorized": true}], "analyses": ["Filtros jurídicos, econômicos e jurisdicionais", "Estruturas comparáveis em uma mesma base", "Trade-offs, complexidades e condições de viabilidade"], "output": "Mapa comparável de alternativas e estrutura-alvo indicativa", "inclusionReasons": ["user_requested", "tests_hypothesis", "produces_deliverable"], "dependencies": ["scope", "credit", "evidence"]}], "assumptions": [], "checkpoints": [{"label": "Revisar achados, lacunas e próximos caminhos", "afterWorkstreamKey": "structure", "kind": "choice"}], "executionMode": "confirm_before_expensive_work", "authority": {"evidenceRegime": "private", "executionAuthority": "analysis_only", "establishedBy": "system_policy"}, "fingerprint": "a30a327331275296f33502211b722c264a5137cf986011dc312df168cfc02635"}$fixture$::jsonb;
   visible_snapshot jsonb:=$fixture${"schemaVersion": "execution-brief.v1", "fingerprint": "a30a327331275296f33502211b722c264a5137cf986011dc312df168cfc02635", "locale": "pt-BR", "objective": "Revisar liquidez e alternativas", "currentContext": [{"label": "Pedido e contexto deste projeto", "role": "project_context", "informationClass": "private"}], "proposedDeliverable": "Diagnóstico do caso e próximos caminhos fundamentados", "workstreams": [{"label": "Identificar o mandato econômico contido na pasta de Synthetic Bridge Company", "purpose": "Entender o que está sendo pedido, o que os documentos permitem concluir e quais decisões ainda dependem do usuário.", "sources": [{"label": "Pedido e contexto deste projeto", "status": "available", "informationClass": "private"}, {"label": "Documentos necessários ao caso ainda não disponíveis", "status": "to_request", "informationClass": "private"}], "analyses": ["Separar fatos conhecidos de hipóteses", "Definir perguntas que realmente alteram o trabalho"], "output": "Perímetro corrigível do trabalho", "dependencies": []}, {"label": "Transformar os arquivos em uma base reconciliada", "purpose": "Ler o conjunto aplicável, resolver versões, períodos e unidades, conciliar divergências e tornar lacunas visíveis.", "sources": [{"label": "Documentos necessários ao caso ainda não disponíveis", "status": "to_request", "informationClass": "private"}], "analyses": ["Inventário e cobertura dos documentos", "Conciliação de números e fontes", "Lacunas priorizadas por impacto"], "output": "Inventário, fatos conciliados, conflitos e pedido de informação priorizado", "dependencies": ["Identificar o mandato econômico contido na pasta de Synthetic Bridge Company"]}, {"label": "Testar se o caso se sustenta econômica e financeiramente", "purpose": "Entender negócio e setor, normalizar resultados e projeções, mapear dívida e capital de giro e testar capacidade e downside.", "sources": [{"label": "Documentos necessários ao caso ainda não disponíveis", "status": "to_request", "informationClass": "private"}], "analyses": ["Drivers operacionais e qualidade do resultado", "Fluxo de caixa, dívida econômica e vencimentos", "Cenários, estresses e capacidade de pagamento"], "output": "Diagnóstico de crédito com premissas e sensibilidades", "dependencies": ["Transformar os arquivos em uma base reconciliada", "Identificar o mandato econômico contido na pasta de Synthetic Bridge Company"]}, {"label": "Desenhar estruturas compatíveis com as evidências disponíveis", "purpose": "Comparar necessidade econômica, instrumentos, custo total, garantias, covenants, fontes e usos e risco de execução.", "sources": [{"label": "Documentos necessários ao caso ainda não disponíveis", "status": "to_request", "informationClass": "private"}], "analyses": ["Filtros jurídicos, econômicos e jurisdicionais", "Estruturas comparáveis em uma mesma base", "Trade-offs, complexidades e condições de viabilidade"], "output": "Mapa comparável de alternativas e estrutura-alvo indicativa", "dependencies": ["Identificar o mandato econômico contido na pasta de Synthetic Bridge Company", "Testar se o caso se sustenta econômica e financeiramente", "Transformar os arquivos em uma base reconciliada"]}], "assumptions": [], "checkpoints": [{"label": "Revisar achados, lacunas e próximos caminhos", "afterWorkstreamKey": "structure", "kind": "choice"}], "executionMode": "confirm_before_expensive_work"}$fixture$::jsonb;
@@ -59,11 +70,17 @@ begin
     raise exception 'no-plan bridge fixture unexpectedly has a plan';
   end if;
   claim:=public.worker_claim_job_v3(repeat('b',64),600);
-  if claim->>'kind'<>'execution_brief_proposal' or claim#>>'{payload,approval_target_job_id}'<>'a8000000-0000-4000-8000-000000000006' then
+  if coalesce((claim->>'claimed')::boolean,false) is not true or claim->>'kind'<>'execution_brief_proposal' or claim#>>'{payload,approval_target_job_id}'<>'a8000000-0000-4000-8000-000000000006' then
     raise exception 'held case did not produce claimable planner: %',claim;
   end if;
-  capture:=public.worker_capture_execution_brief_inputs_v1((claim->>'job_id')::uuid,claim->>'capability_token',(claim->>'job_id')::uuid);
+  capture_request:=(claim->>'job_id')::uuid;
+  if public.worker_recover_execution_brief_product_v1((claim->>'job_id')::uuid,claim->>'capability_token',capture_request)->>'state'<>'none' then raise exception 'uncaptured_producer_not_none';end if;
+  capture:=public.worker_capture_execution_brief_inputs_v1((claim->>'job_id')::uuid,claim->>'capability_token',capture_request);
+  if public.worker_capture_execution_brief_inputs_v1((claim->>'job_id')::uuid,claim->>'capability_token',capture_request) is distinct from capture then raise exception 'native_capture_replay_changed';end if;
+  if public.worker_recover_execution_brief_product_v1((claim->>'job_id')::uuid,claim->>'capability_token',capture_request)->>'state'<>'unresolved' then raise exception 'uncommitted_capture_not_unresolved';end if;
+  raise notice 'PASS execution_brief_native_recovery_none_unresolved';
   context:=capture->'context';
+  if capture->>'schemaVersion'<>'execution-brief-input-capture.v1' or(capture->>'sourceCount')::integer<>2 then raise exception 'native_capture_did_not_describe_consumed_inputs';end if;
   if context#>>'{initial_work_request,message_id}' is distinct from 'a8000000-0000-4000-8000-000000000009'
     or context#>>'{initial_work_request,text}' is distinct from 'Compare propostas em leitura documental preliminar.'
     or context->>'objective' is distinct from 'Revisar liquidez e alternativas' then
@@ -81,10 +98,25 @@ begin
   if context->'plan' is distinct from 'null'::jsonb or context->>'target_kind'<>'case_analysis' then
     raise exception 'legacy planner loader did not expose missing-plan case: %',context;
   end if;
+  begin
+    perform public.worker_record_execution_brief_proposal_v1((claim->>'job_id')::uuid,claim->>'capability_token',internal_snapshot,visible_snapshot,context->>'input_fingerprint',plan);
+    raise exception 'old_brief_writer_bypassed_capture';
+  exception when insufficient_privilege then null;end;
+  begin
+    perform public.worker_record_execution_brief_proposal_v2((claim->>'job_id')::uuid,claim->>'capability_token',gen_random_uuid(),internal_snapshot,visible_snapshot,context->>'input_fingerprint',plan);
+    raise exception 'uncaptured_write_was_allowed';
+  exception when insufficient_privilege then null;end;
+  begin
+    perform public.set_source_rights_v1('a8000000-0000-4000-8000-000000000012',1,array['read'],array['analysis'],null,null,gen_random_uuid(),repeat('c',64));
+    begin
+      perform public.worker_record_execution_brief_proposal_v2((claim->>'job_id')::uuid,claim->>'capability_token',(capture->>'captureId')::uuid,internal_snapshot,visible_snapshot,context->>'input_fingerprint',plan);
+      raise exception 'revoked_uncited_source_left_writer_authorized';
+    exception when insufficient_privilege then null;end;
+    raise exception 'fixture_subtransaction_rollback' using errcode='P3991';
+  exception when sqlstate 'P3991' then null;end;
   recorded:=public.worker_record_execution_brief_proposal_v2(
     (claim->>'job_id')::uuid,claim->>'capability_token',(capture->>'captureId')::uuid,internal_snapshot,visible_snapshot,context->>'input_fingerprint',plan
   );
-  perform pg_temp.assert_native_brief_committed_job_closed((claim->>'job_id')::uuid,claim->>'capability_token',(capture->>'captureId')::uuid,(recorded->>'execution_brief_id')::uuid);
   select id,plan_id,brief_fingerprint into strict brief from public.capital_project_execution_briefs where id=(recorded->>'execution_brief_id')::uuid;
   if recorded->>'processing_job_id'<>'a8000000-0000-4000-8000-000000000006' or recorded->>'status'<>'proposed'
     or (select status from public.processing_jobs where id='a8000000-0000-4000-8000-000000000006')<>'awaiting_approval'
@@ -93,11 +125,32 @@ begin
     or exists(select 1 from public.capital_project_execution_brief_dispatches where processing_job_id='a8000000-0000-4000-8000-000000000006' and accepted_at is not null) then
     raise exception 'real planner did not preserve held execution and canonical owner plan';
   end if;
-  perform public.read_execution_brief_review_basis_v2('a8000000-0000-4000-8000-000000000007',brief.id);
-  approval:=public.approve_advisor_execution_brief_v2('a8000000-0000-4000-8000-000000000007',brief.id,brief.brief_fingerprint,(capture->>'captureId')::uuid,gen_random_uuid(),true);
+  -- NATIVE_BRIEF_HUMAN_REVIEW_TESTS_BEGIN
+  begin
+    perform public.approve_advisor_execution_brief_v1('a8000000-0000-4000-8000-000000000007',brief.id,brief.brief_fingerprint,command);
+    raise exception 'old_approval_bypassed_native_basis';
+  exception when insufficient_privilege then null;end;
+  begin
+    perform public.approve_advisor_execution_brief_v2('a8000000-0000-4000-8000-000000000007',brief.id,brief.brief_fingerprint,(capture->>'captureId')::uuid,command,false);
+    raise exception 'self_approval_without_declaration';
+  exception when insufficient_privilege then null;end;
+  if(public.read_execution_brief_review_basis_v2('a8000000-0000-4000-8000-000000000007',brief.id)->>'sourceCount')::integer<>2 then raise exception 'native_review_basis_omitted_uncited_source';end if;
+  perform set_config('test.native_brief_fail_after_queue','yes',true);
+  begin
+    perform public.approve_advisor_execution_brief_v2('a8000000-0000-4000-8000-000000000007',brief.id,brief.brief_fingerprint,(capture->>'captureId')::uuid,command,true);
+    raise exception 'queue_failure_injection_did_not_fire';
+  exception when sqlstate 'P3992' then null;end;
+  perform set_config('test.native_brief_fail_after_queue','no',true);
+  if pg_temp.native_brief_effects_exist(command) or (select status from public.processing_jobs where id='a8000000-0000-4000-8000-000000000006')<>'awaiting_approval' then raise exception 'failed_queue_left_native_decision_receipt_or_dispatch';end if;
+  raise notice 'PASS execution_brief_native_queue_failure_rolls_back_act_receipt_dispatch';
+  approval:=public.approve_advisor_execution_brief_v2('a8000000-0000-4000-8000-000000000007',brief.id,brief.brief_fingerprint,(capture->>'captureId')::uuid,command,true);
+  if approval->>'decisionId' is null or approval->>'basisReceiptId' is null then raise exception 'native_review_missing_receipt_or_act';end if;
+  if(public.approve_advisor_execution_brief_v2('a8000000-0000-4000-8000-000000000007',brief.id,brief.brief_fingerprint,(capture->>'captureId')::uuid,command,true)->>'replayed')::boolean is not true then raise exception 'native_approval_replay_failed';end if;
   if approval->>'processing_job_id'<>'a8000000-0000-4000-8000-000000000006' or approval->>'status'<>'queued' then
     raise exception 'planner brief did not approve its exact target';
   end if;
+  raise notice 'PASS execution_brief_native_capture_approval_replay_no_legacy_shortcut';
+  perform pg_temp.prioritize_native_brief_target();
   claim:=public.worker_claim_job_v3(repeat('b',64),600);
   if claim->>'job_id'<>'a8000000-0000-4000-8000-000000000006' or claim->>'kind'<>'case_analysis' then
     raise exception 'approved real planner target was not resumed: %',claim;
@@ -105,32 +158,20 @@ begin
 end;
 $$;
 reset role;
-do $$
-declare original_fingerprint text;
-begin
-  original_fingerprint:=private.execution_approval_input_fingerprint(
-    'a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003');
-  if not private.execution_dispatch_is_current('a8000000-0000-4000-8000-000000000006',true) then
-    raise exception 'company identity regression lacks a current approved control';
-  end if;
-  update public.document_intake_sessions set company_profile=jsonb_set(company_profile,'{name}','"Outra Companhia Sintética"')
-  where id='a8000000-0000-4000-8000-000000000003';
-  if original_fingerprint=private.execution_approval_input_fingerprint(
-      'a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003')
-    or private.execution_dispatch_is_current('a8000000-0000-4000-8000-000000000006',true) then
-    raise exception 'changed company identity preserved previous approval fingerprint';
-  end if;
-end;
-$$;
-do $$
-declare before_hash text;
-begin
-  before_hash:=private.execution_approval_input_fingerprint('a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003');
-  update public.agent_messages set content='Pedido revisado: preparar a reunião.' where id='a8000000-0000-4000-8000-000000000009';
-  if before_hash=private.execution_approval_input_fingerprint('a8000000-0000-4000-8000-000000000002','a8000000-0000-4000-8000-000000000003') then
-    raise exception 'changed work request preserved approval input identity';
-  end if;
-end;
-$$;
+do $$declare n text;begin
+ foreach n in array array['execution_brief_input_captures','execution_brief_input_source_pins','execution_brief_write_intents','execution_brief_native_bindings','execution_brief_review_projections'] loop
+ if not exists(select 1 from pg_class c join pg_namespace ns on ns.oid=c.relnamespace where ns.nspname='private' and c.relname=n and c.relrowsecurity and c.relforcerowsecurity) then raise exception 'native_brief_rls_missing';end if;
+ if(select count(*) from pg_policies where schemaname='private' and tablename=n)<>4 then raise exception 'native_brief_four_policies_missing';end if;
+ if has_table_privilege('authenticated','private.'||n,'SELECT') then raise exception 'native_brief_metadata_direct_read';end if;
+ end loop;
+ if has_function_privilege('authenticated','private.authorize_execution_brief_write_v1(uuid,text,uuid,jsonb,jsonb)','EXECUTE') or has_function_privilege('authenticated','private.write_execution_brief_before_native_capture_v1(uuid,text,jsonb,jsonb,uuid,jsonb)','EXECUTE') then raise exception 'native_brief_internal_primitive_exposed';end if;
+ raise notice 'PASS execution_brief_native_catalog_rls_no_internal_grants';
+end $$;
+-- Removing an uncited consumed source after approval removes native authority.
+select public.set_source_rights_v1('a8000000-0000-4000-8000-000000000012',1,array['read'],array['analysis'],null,null,gen_random_uuid(),repeat('c',64));
+do $$begin
+ if private.execution_dispatch_is_current('a8000000-0000-4000-8000-000000000006',true) then raise exception 'uncited_source_revocation_left_dispatch_current';end if;
+ raise notice 'PASS execution_brief_native_uncited_source_revocation_reaches_dispatch';
+end $$;
+select jsonb_build_object('status','PASS','suite','execution_brief_native_capture','rollback',true) as eval_result;
 rollback;
-select 'execution_brief_proposal_bridge_passed' as result;

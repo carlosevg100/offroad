@@ -53,6 +53,7 @@ import {activeWorkObjectBindings, activeWorkSourceManifestMembershipFingerprint,
 import {observeIntentObjectiveRoute} from "./intent-objective-resolution";
 import type {PublicSearchProvider} from "@offroad/public-research";
 import {prepareExecutionBrief} from "./execution-brief";
+import {loadExecutionBriefCapture,recoverExecutionBriefProduct,type ExecutionBriefCaptureQueuePort} from "./execution-brief-native";
 import {governedSectorContextInputsSchema} from "./governed-sector-planning";
 import {applyGovernedReceivablesInformationResponse} from "./receivables-information-response";
 import {buildReceivablesMethodFieldRequestProjection} from "./receivables-information-requests";
@@ -168,7 +169,7 @@ const contextSchema = z.object({
 });
 
 export type AgentOperationBriefDependencies = {
-  queue: QueueClient;
+  queue: QueueClient & ExecutionBriefCaptureQueuePort;
   gateway: ModelGateway;
   log: (event: string, detail?: Record<string, unknown>) => void;
   /** Shadow routing records an Intent Envelope per turn for measurement. Off only in tests. */
@@ -311,6 +312,11 @@ export async function processAgentOperationBriefJob(
   // A recomputation the dependency graph scheduled has no message to answer.
   if (job.payload.institutional_recompute_candidate_id) return processInstitutionalRecomputeJob(job, {queue, log});
   try {
+    const recovered=await recoverExecutionBriefProduct(queue,job,job.payload.message_id,"agent_operation_brief");
+    if(recovered){
+      await queue.complete(job,{recovered:true,...recovered,modelCalls:0});
+      return recovered.proposalId?{status:"succeeded",proposalId:recovered.proposalId}:{status:"succeeded"};
+    }
     await queue.writeStage(job, "agent_operation_brief", "started", {messageId: job.payload.message_id});
     const context = contextSchema.parse(await queue.loadAgentContext(job));
     if(context.message_metadata?.kind==="institutional_model_refresh") {
@@ -604,7 +610,7 @@ export async function processAgentOperationBriefJob(
           log("live_preview.research", {job: job.job_id, ...researchRecord.research as Record<string, unknown>});
         }
         const executionBrief = liveDecision.activation
-          ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), liveDecision.activation)
+          ? await prepareCapturedExecutionBrief(queue,job,context,liveDecision.activation)
           : undefined;
         if (liveDecision.activation?.job === "integration_preview") {
           await recordPreviewWorkflowSelection(queue, job, context, liveDecision.activation);
@@ -633,7 +639,7 @@ export async function processAgentOperationBriefJob(
       const previewMessageId = randomUUID();
       const previewResponse = {state: "idle" as const, reply: decision.reply};
       const executionBrief = decision.activation
-        ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), decision.activation)
+        ? await prepareCapturedExecutionBrief(queue,job,context,decision.activation)
         : undefined;
       if (decision.activation?.job === "integration_preview") {
         await recordPreviewWorkflowSelection(queue, job, context, decision.activation);
@@ -755,7 +761,7 @@ export async function processAgentOperationBriefJob(
 
     const assistantMessageId = randomUUID();
     const executionBrief = response.activation
-      ? prepareExecutionBrief(executionBriefContext(context, job.source_pack_id), response.activation)
+      ? await prepareCapturedExecutionBrief(queue,job,context,response.activation)
       : undefined;
     let objectivePreflight: {
       id: string;
@@ -1141,6 +1147,16 @@ async function recordPreviewWorkflowSelection(
     throw new Error(`preview_workflow_selection_not_executable:${compiled.workflowSelection.reason}`);
   }
   return recorded;
+}
+
+async function prepareCapturedExecutionBrief(queue:QueueClient & ExecutionBriefCaptureQueuePort,job:AgentOperationBriefJob,priorContext:AgentContext,activation:WorkspaceJobActivation|PreviewActivation){
+  const capture=await loadExecutionBriefCapture(queue,job,priorContext.message_id);
+  const pinned=contextSchema.parse(capture.context);
+  if(!pinned.project||pinned.project.id!==capture.workId||pinned.session_id!==priorContext.session_id||pinned.message_id!==priorContext.message_id||capture.inputFingerprint!==pinned.approval_input_fingerprint)throw new Error("execution_brief_capture_scope_mismatch");
+  const sourcePackId=z.string().nullable().parse(capture.context.source_pack_id??null);
+  if(sourcePackId!==(job.source_pack_id??null))throw new Error("execution_brief_capture_source_pack_changed");
+  const product=prepareExecutionBrief(executionBriefContext(pinned,sourcePackId),activation);
+  return {...product,captureId:capture.captureId,expectedInputFingerprint:capture.inputFingerprint};
 }
 
 function executionBriefContext(context: AgentContext, sourcePackId?: string | null) {

@@ -1,5 +1,7 @@
 "use server";
 
+import {approveExecutionBriefReview, executionBriefReviewAllowed, loadExecutionBriefReviewBasis} from "@/lib/advisor/execution-brief-review-command";
+
 import {
   canCompileStandaloneDocumentWorkRequest,
   documentWorkPlanSnapshot,
@@ -55,6 +57,8 @@ const projectSchema = z.object({locale: localeSchema, projectId: z.string().uuid
 const executionBriefApprovalSchema = projectSchema.extend({
   executionBriefId: z.uuid(),
   expectedFingerprint: z.string().regex(/^[0-9a-f]{64}$/),
+  expectedCaptureId: z.uuid(),
+  selfApprovalDeclared: z.boolean(),
   commandId: z.uuid(),
 });
 
@@ -260,10 +264,16 @@ export async function approveAdvisorExecutionBrief(input: unknown): Promise<Advi
   const parsed = executionBriefApprovalSchema.safeParse(input);
   if (!parsed.success) return {ok: false, error: "invalid"};
   const {supabase} = await requireUser(parsed.data.locale);
-  const {error} = await supabase.rpc("approve_advisor_execution_brief_v1", {
+  const basis = await loadExecutionBriefReviewBasis(supabase, {workId: parsed.data.projectId,
+    briefId: parsed.data.executionBriefId, fingerprint: parsed.data.expectedFingerprint});
+  if (!basis || basis.captureId !== parsed.data.expectedCaptureId) return {ok: false, error: "stale"};
+  if (!executionBriefReviewAllowed(basis, parsed.data.selfApprovalDeclared)) return {ok: false, error: "role"};
+  const {error} = await approveExecutionBriefReview(supabase, {
     p_project_id: parsed.data.projectId,
     p_execution_brief_id: parsed.data.executionBriefId,
     p_expected_fingerprint: parsed.data.expectedFingerprint,
+    p_expected_capture_id: parsed.data.expectedCaptureId,
+    p_self_approval_declared: parsed.data.selfApprovalDeclared,
     p_command_id: parsed.data.commandId,
   });
   return error ? {ok: false, error: advisorActionError(error)} : {ok: true};

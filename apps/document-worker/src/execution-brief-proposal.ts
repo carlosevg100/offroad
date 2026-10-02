@@ -1,3 +1,4 @@
+import {loadExecutionBriefCapture,recoverExecutionBriefProduct,type ExecutionBriefCaptureQueuePort} from "./execution-brief-native";
 import {compileProviderResearchBrief, compileProviderCaseFitBrief} from "@offroad/work-plan";
 import {compileDocumentWorkBrief, documentWorkPlanSnapshot} from "@offroad/work-plan";
 import {canCompileStandaloneDocumentWorkRequest, documentWorkJob} from "./document-work-input";
@@ -37,15 +38,19 @@ const proposalContextSchema = z.object({
 });
 
 /** Deterministic planning only. The atomic recording RPC binds the held job; it never releases it. */
-export async function processExecutionBriefProposalJob(job: ExecutionBriefProposalJob, queue: Pick<QueueClient, "loadExecutionBriefProposal" | "recordExecutionBriefProposal" | "fail">, options: {documentaryWorkEnabled: boolean} = {documentaryWorkEnabled:false}) {
+export async function processExecutionBriefProposalJob(job: ExecutionBriefProposalJob, queue: Pick<QueueClient, "loadExecutionBriefProposal" | "recordExecutionBriefProposal" | "fail"> & ExecutionBriefCaptureQueuePort, options: {documentaryWorkEnabled: boolean} = {documentaryWorkEnabled:false}) {
   try {
+    const recovered=await recoverExecutionBriefProduct(queue,job,job.job_id,"execution_brief_proposal");
+    if(recovered)return {status:"proposed" as const};
     if (!queue.loadExecutionBriefProposal || !queue.recordExecutionBriefProposal) throw new Error("execution_brief_proposal_commands_unavailable");
-    const context = proposalContextSchema.parse(await queue.loadExecutionBriefProposal(job));
+    const capture=await loadExecutionBriefCapture(queue,job,job.job_id);
+    const context = proposalContextSchema.parse(capture.context);
+    if(capture.workId!==context.project.id||capture.inputFingerprint!==context.input_fingerprint)throw new Error("execution_brief_capture_scope_mismatch");
     if (context.target_job_id !== job.payload.approval_target_job_id || context.locale !== job.payload.locale) throw new Error("execution_brief_proposal_context_mismatch");
     if (!context.plan && context.target_kind !== "case_analysis") throw new Error("execution_brief_proposal_plan_required");
     if (context.plan?.job.firstWorkProduct === "provider_research" || context.plan?.job.firstWorkProduct === "provider_case_fit") {
       const internal = (context.plan.job.firstWorkProduct === "provider_case_fit" ? compileProviderCaseFitBrief : compileProviderResearchBrief)({plan: context.plan as unknown as CapitalProjectPlanSnapshot, revisionContext: context.target_job_id, locale: context.locale, objective: context.initial_work_request?.text ?? context.objective});
-      await queue.recordExecutionBriefProposal(job, internal, visibleExecutionBrief(internal), context.input_fingerprint, null);
+      await queue.recordExecutionBriefProposal(job, internal, visibleExecutionBrief(internal), context.input_fingerprint, null, capture.captureId);
       return {status: "proposed" as const};
     }
     const existingDocumentary = context.plan?.taskSpecs.map(task=>task.id).sort().join(",") === "Q01,Q02,Q03";
@@ -86,7 +91,7 @@ export async function processExecutionBriefProposalJob(job: ExecutionBriefPropos
       sources, authority: {evidenceRegime: context.project.access_basis === "authorized_private" ? "private" : context.documents.length ? "mixed" : "public", executionAuthority: "analysis_only", establishedBy: "system_policy"},
       expensiveWork: true,
     });
-    await queue.recordExecutionBriefProposal(job, internal, visibleExecutionBrief(internal), context.input_fingerprint, bootstrappedPlan);
+    await queue.recordExecutionBriefProposal(job, internal, visibleExecutionBrief(internal), context.input_fingerprint, bootstrappedPlan, capture.captureId);
     return {status: "proposed" as const};
   } catch (error) {
     const failure = describeJobFailure(error, {code: "execution_brief_proposal_failed", stage: "execution_brief_proposal"});

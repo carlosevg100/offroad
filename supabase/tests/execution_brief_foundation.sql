@@ -101,6 +101,16 @@ begin
 end;
 $$;
 
+-- Historical immutability fixture only: a grandfathered product has no native
+-- capture. This rollback-local owner function reaches the revoked historical
+-- primitive explicitly; the public writer below must still deny a new product.
+create function pg_temp.write_grandfathered_execution_brief(p_job uuid,p_cap text,p_internal jsonb,p_visible jsonb,p_parent uuid default null,p_changes jsonb default '[]')
+returns jsonb language sql security definer set search_path='' as $$
+ select private.write_execution_brief_before_native_capture_v1(p_job,p_cap,p_internal,p_visible,p_parent,p_changes);
+$$;
+revoke all on function pg_temp.write_grandfathered_execution_brief(uuid,text,jsonb,jsonb,uuid,jsonb) from public;
+grant execute on function pg_temp.write_grandfathered_execution_brief(uuid,text,jsonb,jsonb,uuid,jsonb) to authenticated;
+
 -- Explicit synthetic worker lease identity; the capability is not transferable between accounts.
 update public.processing_jobs set leased_account_user_id='10000000-0000-4000-8000-000000000603' where organization_id='20000000-0000-4000-8000-000000000601' and status='leased';
 set local role authenticated;
@@ -144,7 +154,11 @@ begin
     'assumptions',jsonb_build_array(),'checkpoints',jsonb_build_array(),
     'executionMode','start_after_display'
   );
-  first_result := public.worker_record_capital_project_execution_brief_v1(
+  begin
+    perform public.worker_record_capital_project_execution_brief_v1('70000000-0000-4000-8000-000000000601',repeat('q',64),internal_v1,visible_v1);
+    raise exception 'public_legacy_writer_admitted_grandfathered_setup';
+  exception when insufficient_privilege then null;end;
+  first_result := pg_temp.write_grandfathered_execution_brief(
     '70000000-0000-4000-8000-000000000601', repeat('q',64),
     internal_v1, visible_v1
   );
@@ -152,7 +166,7 @@ begin
   if first_result ->> 'version' <> '1' or (first_result ->> 'replayed')::boolean then
     raise exception 'first brief was not version one: %', first_result;
   end if;
-  replay_result := public.worker_record_capital_project_execution_brief_v1(
+  replay_result := pg_temp.write_grandfathered_execution_brief(
     '70000000-0000-4000-8000-000000000601', repeat('q',64),
     internal_v1, visible_v1
   );
@@ -161,7 +175,7 @@ begin
   end if;
 
   begin
-    perform public.worker_record_capital_project_execution_brief_v1(
+    perform pg_temp.write_grandfathered_execution_brief(
       '70000000-0000-4000-8000-000000000601', repeat('q',64),
       jsonb_set(internal_v1, '{workstreams,2,sourceTaskIds}', '["NOT_IN_PLAN"]'::jsonb), visible_v1
     );
@@ -171,7 +185,7 @@ begin
   if accepted then raise exception 'brief with a task outside the plan was accepted'; end if;
 
   begin
-    perform public.worker_record_capital_project_execution_brief_v1(
+    perform pg_temp.write_grandfathered_execution_brief(
       '70000000-0000-4000-8000-000000000601', repeat('q',64),
       jsonb_set(internal_v1, '{fingerprint}', to_jsonb(repeat('d',64))),
       jsonb_set(
@@ -193,7 +207,7 @@ begin
     '{assumptions}', '[{"label":"Prazo","value":"60 meses","basis":"Usuário","editable":true}]'::jsonb
   );
   begin
-    perform public.worker_record_capital_project_execution_brief_v1(
+    perform pg_temp.write_grandfathered_execution_brief(
       '70000000-0000-4000-8000-000000000601', repeat('q',64),
       internal_v2, visible_v2, null, '[{"kind":"assumption_added"}]'::jsonb
     );
@@ -202,7 +216,7 @@ begin
   end;
   if accepted then raise exception 'second brief without the latest parent was accepted'; end if;
 
-  second_result := public.worker_record_capital_project_execution_brief_v1(
+  second_result := pg_temp.write_grandfathered_execution_brief(
     '70000000-0000-4000-8000-000000000601', repeat('q',64),
     internal_v2, visible_v2, first_id, '[{"kind":"assumption_added"}]'::jsonb
   );
@@ -214,7 +228,7 @@ begin
     raise exception 'worker principal gained direct visibility into tenant brief history';
   end if;
   begin
-    perform public.worker_record_capital_project_execution_brief_v1(
+    perform pg_temp.write_grandfathered_execution_brief(
       '70000000-0000-4000-8000-000000000601', repeat('x',64), internal_v2, visible_v2, first_id
     );
     accepted := true;
