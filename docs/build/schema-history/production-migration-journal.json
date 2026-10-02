@@ -1723,8 +1723,20 @@
   {
    "version": "20261001205326",
    "name": "capital_body_server_read_boundary"
+  },
+  {
+   "version": "20261002014202",
+   "name": "capital_body_attempt_ledger"
+  },
+  {
+   "version": "20261002014214",
+   "name": "capital_body_attempt_retention_drain"
+  },
+  {
+   "version": "20261002014224",
+   "name": "capital_body_attempt_fk_index"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-10-01T20:58:45.200835+00:00"
+ "captured_at": "2026-10-02T01:45:00.36968+00:00"
 }

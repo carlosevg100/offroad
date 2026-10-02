@@ -1,3 +1,9 @@
+### Revisão do incremento ledger/inputv2, 2 outubro2026
+
+Revisão independente de SQL, factory, SDK, races e forward: nenhum bloqueador estático restante. Corrigido MIN do prazo operacional de cada ancestral, sem usar margem jurídica como prazo de envio. Corrigido ciclo purger/wake com proof interno sem saúde; gates de admissão, leitura e gravação permanecem true e helpers sem EXECUTE API. Novo índice cobre FK completa.
+
+SQL real staging e bloco RLS nove tabelas PASS; SDK original17 checks PASS; corridas reais CI authorize/inputv2/revocation/purge/assurance e namespace v1/v2 PASS. Produção recebeu três carimbos14202/14214/14224, funções46 iguais staging/prod, security0, zero metadata/bytes de fixture em produção. Inventário3085prod/3146stage PASS com journalassertion ativa. Merge/CI final e deploy exato ainda pendentes; M07/outcomes de pós-envio e regime estrito porjob são dependências do próximo incremento20 e não foram ativados.
+
 # Revisão material: corpos retidos na etapa 20 / 3Q
 
 A abertura wave-17 e seu snapshot histórico permanecem intactos. Esta revisão
@@ -107,3 +113,8 @@ Delta material desta revisão de onda: GatewayAttempt imutável com hashes efeti
 Novos negativos e regressões estão em attempt-authority.test.ts, provider-processing.test.ts e model-call-log.test.ts. O próximo incremento SQL ainda deve fechar ledger/inputv2, menor prazo ancestral por recurso e antialtaho v1; este transporte não afirma essas garantias. Gate Node24 quatro fases44/44 e revisão independente passaram. CI, merge e deploy continuam necessários ao completion.
 
 O gate governado inicial da PR861 recusou38predecessores legítimos de fallback pelo pressuposto repair-only. A correção mantém negação de ID forjado/cross-operation, predecessor não imediato/exitoso, guidance fora de repair e lineage em primary/preflight. Testes negativos do avaliador foram ampliados; nova CI completa é obrigatória. Sem mudança de autorização/DDL ou exceção de promoção paga.
+# Revisão adicional: ledger/input v2, 02/10/2026
+
+Mesmo escopo de onda; revisão obrigatória por incremento material antes de merge. O novo caminho conserva capability original, sessão/membership/autoridade humana e referências do próprio tenant. Tabelas privadas de tentativas/componentes com FORCE RLS/negação direta; wrappers invoker e corpos privados com grants mínimos. Negativos exigidos: allowed/decision/job/component falsos, invocations/predecessores estrangeiros, v1 como atalho, deadline legal futuro com purge ancestral vencido, recursos omitidos e revalidação após locks. Shared provider-assurance try-lock não pode esperar sob policy estrangeira.
+
+Dados de corpo continuam somente em Storage finito governado; ledger guarda hashes/identidades/prazos, nunca texto/prompt/schema/credencial. SDK usa fonte retida legítima e reconstrução fechada, verifica redação vigente e não usa modelo pago. Assurances sintéticas ficam em local/staging com identidades isoladas e cleanup; nenhum registro comercial nem controle de produção é alterado. Revisões independentes e resultados efetivos SQL/SDK/races/CI ainda são gates pendentes deste candidato. SEC/IAM/DATA/AI/SDLC e OPS continuam aplicáveis; data de revisão anterior não habilita merge novo por prazo de calendário.

@@ -196823,6 +196823,12 @@
           "line": 314,
           "anchor": "create function private.capital_body_allocation_deadline_v1(p_org uuid,p_allocation uuid,p_subject uuid,p_depth integer default 0)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002014214_capital_body_attempt_retention_drain.sql",
+          "line": 148,
+          "anchor": "create or replace function private.capital_body_allocation_deadline_v1(p_org uuid,p_allocation uuid,p_subject uuid,p_depth integer default 0)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -198143,6 +198149,12 @@
           "line": 435,
           "anchor": "create function private.worker_record_capital_body_accepted_v1(p_job_id uuid,p_capability_token text,p_input_receipt_id uuid,p_accepted jsonb)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 522,
+          "anchor": "create or replace function private.worker_record_capital_body_accepted_v1(p_job_id uuid,p_capability_token text,p_input_receipt_id uuid,p_accepted jsonb)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -198206,6 +198218,12 @@
           "path": "supabase/migrations/20261001205206_capital_body_retention.sql",
           "line": 364,
           "anchor": "create function private.worker_record_capital_body_input_v1(p_job_id uuid,p_capability_token text,p_invocation_id uuid,",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 449,
+          "anchor": "create or replace function private.worker_record_capital_body_input_v1(p_job_id uuid,p_capability_token text,p_invocation_id uuid,",
           "mechanism": "direct_ddl"
         }
       ]
@@ -202064,6 +202082,1850 @@
           "path": "supabase/migrations/20261001205206_capital_body_retention.sql",
           "line": 795,
           "anchor": "create trigger capital_body_binding_wake after update of revoked_at on public.source_bindings for each row execute function private.wake_capital_body_rights_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_components_request_v1(p_org uuid, p_attempt uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_components_request_v1(p_org uuid, p_attempt uuid)",
+          "kind": "function",
+          "name": "capital_body_attempt_components_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_attempt uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_components_request_v1(p_org uuid, p_attempt uuid)",
+          "kind": "function",
+          "name": "capital_body_attempt_components_request_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_attempt uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 154,
+          "anchor": "create function private.capital_body_attempt_components_request_v1(p_org uuid,p_attempt uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_attempt_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_attempt_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 161,
+          "anchor": "create function private.capital_body_attempt_current_v1(p_job public.processing_jobs,p_attempt private.capital_body_gateway_attempts)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_dto_v1(p_attempt private.capital_body_gateway_attempts, p_replayed boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_dto_v1(p_attempt private.capital_body_gateway_attempts, p_replayed boolean)",
+          "kind": "function",
+          "name": "capital_body_attempt_dto_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_attempt private.capital_body_gateway_attempts, p_replayed boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_dto_v1(p_attempt private.capital_body_gateway_attempts, p_replayed boolean)",
+          "kind": "function",
+          "name": "capital_body_attempt_dto_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_attempt private.capital_body_gateway_attempts, p_replayed boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 179,
+          "anchor": "create function private.capital_body_attempt_dto_v1(p_attempt private.capital_body_gateway_attempts,p_replayed boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_sources_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_sources_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_attempt_sources_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_sources_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_attempt_sources_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014214_capital_body_attempt_retention_drain.sql",
+          "line": 142,
+          "anchor": "create or replace function private.capital_body_attempt_sources_current_v1(p_job public.processing_jobs,p_attempt private.capital_body_gateway_attempts)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_sources_proof_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts, p_require_health boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_sources_proof_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts, p_require_health boolean)",
+          "kind": "function",
+          "name": "capital_body_attempt_sources_proof_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts, p_require_health boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_sources_proof_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts, p_require_health boolean)",
+          "kind": "function",
+          "name": "capital_body_attempt_sources_proof_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts, p_require_health boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014214_capital_body_attempt_retention_drain.sql",
+          "line": 115,
+          "anchor": "create function private.capital_body_attempt_sources_proof_v1(p_job public.processing_jobs,p_attempt private.capital_body_gateway_attempts,p_require_health boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_processing_allocation_proof_v1(p_job processing_jobs, p_allocation uuid, p_require_health boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_processing_allocation_proof_v1(p_job processing_jobs, p_allocation uuid, p_require_health boolean)",
+          "kind": "function",
+          "name": "capital_body_processing_allocation_proof_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_allocation uuid, p_require_health boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_processing_allocation_proof_v1(p_job processing_jobs, p_allocation uuid, p_require_health boolean)",
+          "kind": "function",
+          "name": "capital_body_processing_allocation_proof_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_allocation uuid, p_require_health boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014214_capital_body_attempt_retention_drain.sql",
+          "line": 6,
+          "anchor": "create function private.capital_body_processing_allocation_proof_v1(p_job public.processing_jobs,p_allocation uuid,p_require_health boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_processing_allocation_v1(p_job processing_jobs, p_allocation uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_processing_allocation_v1(p_job processing_jobs, p_allocation uuid)",
+          "kind": "function",
+          "name": "capital_body_processing_allocation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_allocation uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_processing_allocation_v1(p_job processing_jobs, p_allocation uuid)",
+          "kind": "function",
+          "name": "capital_body_processing_allocation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_allocation uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014214_capital_body_attempt_retention_drain.sql",
+          "line": 130,
+          "anchor": "create or replace function private.capital_body_processing_allocation_v1(p_job public.processing_jobs,p_allocation uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_processing_components_proof_v1(p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid, p_require_health boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_processing_components_proof_v1(p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid, p_require_health boolean)",
+          "kind": "function",
+          "name": "capital_body_processing_components_proof_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid, p_require_health boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_processing_components_proof_v1(p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid, p_require_health boolean)",
+          "kind": "function",
+          "name": "capital_body_processing_components_proof_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid, p_require_health boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014214_capital_body_attempt_retention_drain.sql",
+          "line": 79,
+          "anchor": "create function private.capital_body_processing_components_proof_v1(p_job public.processing_jobs,p_components jsonb,p_captured_at timestamptz,p_policy_id uuid,p_require_health boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_processing_components_v1(p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_processing_components_v1(p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid)",
+          "kind": "function",
+          "name": "capital_body_processing_components_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_processing_components_v1(p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid)",
+          "kind": "function",
+          "name": "capital_body_processing_components_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_components jsonb, p_captured_at timestamp with time zone, p_policy_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014214_capital_body_attempt_retention_drain.sql",
+          "line": 136,
+          "anchor": "create or replace function private.capital_body_processing_components_v1(p_job public.processing_jobs,p_components jsonb,p_captured_at timestamptz,p_policy_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_processing_origin_v1(p_org uuid, p_origin uuid, p_subject uuid, p_policy uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_processing_origin_v1(p_org uuid, p_origin uuid, p_subject uuid, p_policy uuid)",
+          "kind": "function",
+          "name": "capital_body_processing_origin_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_origin uuid, p_subject uuid, p_policy uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_processing_origin_v1(p_org uuid, p_origin uuid, p_subject uuid, p_policy uuid)",
+          "kind": "function",
+          "name": "capital_body_processing_origin_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_origin uuid, p_subject uuid, p_policy uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 264,
+          "anchor": "create function private.capital_body_processing_origin_v1(p_org uuid,p_origin uuid,p_subject uuid,p_policy uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_capital_body_input_attempt_v1()",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_capital_body_input_attempt_v1()",
+          "kind": "function",
+          "name": "guard_capital_body_input_attempt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_capital_body_input_attempt_v1()",
+          "kind": "function",
+          "name": "guard_capital_body_input_attempt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 92,
+          "anchor": "create function private.guard_capital_body_input_attempt_v1() returns trigger",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.provider_processing_decision_with_body_limit_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.provider_processing_decision_with_body_limit_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone)",
+          "kind": "function",
+          "name": "provider_processing_decision_with_body_limit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.provider_processing_decision_with_body_limit_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone)",
+          "kind": "function",
+          "name": "provider_processing_decision_with_body_limit_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 436,
+          "anchor": "create function private.provider_processing_decision_with_body_limit_v1(p_job public.processing_jobs,p_route jsonb,p_resources text[],p_purpose text,p_body_deadline timestamptz)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.resolve_capital_body_processing_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.resolve_capital_body_processing_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone)",
+          "kind": "function",
+          "name": "resolve_capital_body_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.resolve_capital_body_processing_v1(p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone)",
+          "kind": "function",
+          "name": "resolve_capital_body_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_route jsonb, p_resources text[], p_purpose text, p_body_deadline timestamp with time zone",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 392,
+          "anchor": "create function private.resolve_capital_body_processing_v1(p_job public.processing_jobs,p_route jsonb,p_resources text[],p_purpose text,p_body_deadline timestamptz)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_authorize_capital_body_processing_v1(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_authorize_capital_body_processing_v1(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_authorize_capital_body_processing_v1(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 189,
+          "anchor": "create function private.worker_authorize_capital_body_processing_v1(p_job_id uuid,p_capability_token text,p_attempt jsonb,p_route jsonb,p_resources text[],p_purpose text,p_components jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_record_capital_body_input_v2(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_record_capital_body_input_v2(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+          "kind": "function",
+          "name": "worker_record_capital_body_input_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_record_capital_body_input_v2(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+          "kind": "function",
+          "name": "worker_record_capital_body_input_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 110,
+          "anchor": "create function private.worker_record_capital_body_input_v2(p_job_id uuid,p_capability_token text,p_attempt_receipt_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_authorize_capital_body_processing_v1(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_authorize_capital_body_processing_v1(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_authorize_capital_body_processing_v1(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 634,
+          "anchor": "create function public.worker_authorize_capital_body_processing_v1(p_job_id uuid,p_capability_token text,p_attempt jsonb,p_route jsonb,p_resources text[],p_purpose text,p_components jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_record_capital_body_input_v2(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_record_capital_body_input_v2(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+          "kind": "function",
+          "name": "worker_record_capital_body_input_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_record_capital_body_input_v2(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+          "kind": "function",
+          "name": "worker_record_capital_body_input_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 638,
+          "anchor": "create function public.worker_record_capital_body_input_v2(p_job_id uuid,p_capability_token text,p_attempt_receipt_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempt_components_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempt_components_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar barreira restritiva de API do ledger privado de tentativas e componentes; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 83,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempt_components_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempt_components_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar barreira restritiva de API do ledger privado de tentativas e componentes; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 83,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_select",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempt_components_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_select",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempt_components_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar barreira restritiva de API do ledger privado de tentativas e componentes; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 83,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_update",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempt_components_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_deny_update",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempt_components_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar barreira restritiva de API do ledger privado de tentativas e componentes; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 83,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempts_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar barreira restritiva de API do ledger privado de tentativas e componentes; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 83,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempts_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempts_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar barreira restritiva de API do ledger privado de tentativas e componentes; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 83,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_select",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempts_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_select",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempts_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar barreira restritiva de API do ledger privado de tentativas e componentes; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 83,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_update",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempts_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_gateway_attempts.capital_body_gateway_attempts_deny_update",
+          "kind": "policy",
+          "name": "capital_body_gateway_attempts_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar barreira restritiva de API do ledger privado de tentativas e componentes; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 83,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_body_gateway_attempt_components",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_body_gateway_attempt_components",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_gateway_attempt_components",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_body_gateway_attempt_components",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_gateway_attempt_components",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 42,
+          "anchor": "create table private.capital_body_gateway_attempt_components (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_body_gateway_attempts",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_body_gateway_attempts",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_gateway_attempts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_body_gateway_attempts",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_gateway_attempts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 8,
+          "anchor": "create table private.capital_body_gateway_attempts (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_audit",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempt_components_audit",
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempt_components_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_gateway_attempt_components FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_audit",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempt_components_audit",
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempt_components_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_gateway_attempt_components FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar auditoria, imutabilidade e timestamps do ledger privado, sem conceder leitura ou escrita de API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 88,
+          "anchor": " execute format('create trigger %I after insert or update or delete on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_immutable",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempt_components_immutable",
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempt_components_immutable BEFORE DELETE OR UPDATE ON private.capital_body_gateway_attempt_components FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_immutable",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempt_components_immutable",
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempt_components_immutable BEFORE DELETE OR UPDATE ON private.capital_body_gateway_attempt_components FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar auditoria, imutabilidade e timestamps do ledger privado, sem conceder leitura ou escrita de API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 87,
+          "anchor": " execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempt_components_updated_at",
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempt_components_updated_at BEFORE UPDATE ON private.capital_body_gateway_attempt_components FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_gateway_attempt_components.capital_body_gateway_attempt_components_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempt_components_updated_at",
+          "table": "capital_body_gateway_attempt_components",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempt_components_updated_at BEFORE UPDATE ON private.capital_body_gateway_attempt_components FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar auditoria, imutabilidade e timestamps do ledger privado, sem conceder leitura ou escrita de API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 86,
+          "anchor": " execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated_at',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_audit",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempts_audit",
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempts_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_audit",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempts_audit",
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempts_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar auditoria, imutabilidade e timestamps do ledger privado, sem conceder leitura ou escrita de API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 88,
+          "anchor": " execute format('create trigger %I after insert or update or delete on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_immutable",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempts_immutable",
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempts_immutable BEFORE DELETE OR UPDATE ON private.capital_body_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_immutable",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempts_immutable",
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempts_immutable BEFORE DELETE OR UPDATE ON private.capital_body_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar auditoria, imutabilidade e timestamps do ledger privado, sem conceder leitura ou escrita de API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 87,
+          "anchor": " execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempts_updated_at",
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempts_updated_at BEFORE UPDATE ON private.capital_body_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_gateway_attempts.capital_body_gateway_attempts_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_gateway_attempts_updated_at",
+          "table": "capital_body_gateway_attempts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_gateway_attempts_updated_at BEFORE UPDATE ON private.capital_body_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar auditoria, imutabilidade e timestamps do ledger privado, sem conceder leitura ou escrita de API.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 86,
+          "anchor": " execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated_at',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_invocation_inputs.capital_body_input_attempt_guard",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_invocation_inputs.capital_body_input_attempt_guard",
+          "kind": "trigger",
+          "name": "capital_body_input_attempt_guard",
+          "table": "capital_body_invocation_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_capital_body_input_attempt_v1()",
+          "definition": "CREATE TRIGGER capital_body_input_attempt_guard BEFORE INSERT ON private.capital_body_invocation_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_capital_body_input_attempt_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_invocation_inputs.capital_body_input_attempt_guard",
+          "kind": "trigger",
+          "name": "capital_body_input_attempt_guard",
+          "table": "capital_body_invocation_inputs",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.guard_capital_body_input_attempt_v1()",
+          "definition": "CREATE TRIGGER capital_body_input_attempt_guard BEFORE INSERT ON private.capital_body_invocation_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_capital_body_input_attempt_v1()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar ledger privado de tentativas e componentes, decisões reais de processamento e input vinculado; auxiliares sem acesso de API preservam direitos, prazos ancestrais e drenagem de retenção sem bloquear o próprio wake.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+          "line": 107,
+          "anchor": "create trigger capital_body_input_attempt_guard before insert on private.capital_body_invocation_inputs",
           "mechanism": "direct_ddl"
         }
       ]
@@ -209128,6 +210990,27 @@
       "decision": "preservar",
       "stage": "20 / 3Q",
       "reason": "Instalar o serviço de corpos e fechar leitura física direta sob autoridade por job."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar contrato aplicado de tentativa/input, correção forward da drenagem e índice completo da FK; cliente não recebe DML nem helper de prova sem saúde."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002014214_capital_body_attempt_retention_drain.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar contrato aplicado de tentativa/input, correção forward da drenagem e índice completo da FK; cliente não recebe DML nem helper de prova sem saúde."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002014224_capital_body_attempt_fk_index.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q ledger e input governado",
+      "reason": "Preservar contrato aplicado de tentativa/input, correção forward da drenagem e índice completo da FK; cliente não recebe DML nem helper de prova sem saúde."
     }
   ],
   "staging_archive": [

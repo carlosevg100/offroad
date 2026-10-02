@@ -318,6 +318,7 @@ jobs:
           python3 -B scripts/ci/test-capital-body-retention-storage.py --provision-local
           node scripts/ci/test-capital-body-retention-sdk.mjs --write-accepted-fixture
           python3 -B scripts/ci/test-capital-body-retention-concurrency.py
+          python3 -B scripts/ci/test-capital-body-attempt-concurrency.py
 
       - name: Execution artifact recovery concurrency
         env:
