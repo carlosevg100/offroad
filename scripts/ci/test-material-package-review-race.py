@@ -26,17 +26,43 @@ def sanitized_failure(tool,stderr,code):
   item=kind+':'+name
   if item not in objects:objects.append(item)
  return 'material_race_tool_failed:'+Path(tool).name+':exit='+str(code)+':reason='+reason+':versions='+','.join(versions)+':sqlstates='+','.join(sqlstates)+':objects='+','.join(objects[:8])
+def redacted_error_line(output):
+ raw=output.encode('utf-8') if isinstance(output,str) else output
+ if not raw:return '[empty]'
+ if b'\x00' in raw[:1000] or raw.startswith(b'PGDMP'):return '[binary output suppressed]'
+ text=raw.decode('utf-8','replace')
+ lines=[line.strip() for line in text.splitlines() if line.strip()]
+ if not lines:return '[empty]'
+ # Only one diagnostic line; never emit following DETAIL/CONTEXT/SQL/data lines.
+ line=lines[0][:2000]
+ line=re.sub(r'\x1b\[[0-9;]*[A-Za-z]','',line)
+ line=re.sub(r'[A-Za-z][A-Za-z0-9+.-]*://[^\s]+','[URL]',line)
+ line=re.sub(r'\b(?:Bearer|Basic)\s+[^\s]+','[AUTH]',line,flags=re.I)
+ line=re.sub(r'\b(?:password|passwd|pwd|token|secret|api[_-]?key|authorization)\s*[:=]\s*[^\s]+','[CREDENTIAL]',line,flags=re.I)
+ line=re.sub(r'\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)?','[TOKEN]',line)
+ line=re.sub(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}','[EMAIL]',line)
+ line=re.sub(r'\b[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b','[ID]',line,flags=re.I)
+ line=re.sub(r"'(?:[^'\\]|\\.)*'|\"(?:[^\"\\]|\\.)*\"",'[QUOTED]',line)
+ line=re.sub(r'\b[A-Za-z0-9_+/-]{32,}={0,2}\b','[OPAQUE]',line)
+ line=re.sub(r'\b[0-9]+(?:\.[0-9]+)*\b','[NUMBER]',line)
+ line=''.join(character if character.isprintable() else ' ' for character in line)
+ return line[:600]
+
 def tool_run(args,**kwargs):
  result=subprocess.run(args,capture_output=True,timeout=120,**kwargs)
  if result.returncode:
   logical_tool=next((arg for arg in args if arg in ('pg_dump','pg_restore','psql')),args[0])
   message=sanitized_failure(logical_tool,result.stderr,result.returncode)
-  # Full stderr stays private in the runner temporary directory, never echoed.
+  error_output=result.stderr if result.stderr.strip() else result.stdout
+  error_channel='stderr' if result.stderr.strip() else 'stdout'
+  # Full diagnostic stays private in the runner temporary directory, never echoed.
   descriptor,filename=tempfile.mkstemp(prefix='material-race-private-stderr-',suffix='.txt')
   os.fchmod(descriptor,0o600)
   with os.fdopen(descriptor,'wb') as diagnostic:
-   diagnostic.write(result.stderr.encode('utf-8') if isinstance(result.stderr,str) else result.stderr)
-  print(message+':private_diagnostic='+filename,file=sys.stderr);raise RuntimeError(message)
+   diagnostic.write(error_output.encode('utf-8') if isinstance(error_output,str) else error_output)
+  print(message+':private_diagnostic='+filename,file=sys.stderr)
+  print('material_race_first_error:'+error_channel+':'+redacted_error_line(error_output),file=sys.stderr)
+  raise RuntimeError(message)
  return result
 
 def select_clone_tools():
@@ -91,6 +117,11 @@ if sys.argv[1:]==['--self-test']:
  assert 'BODY' not in catalog and 'CREATE' not in catalog and 'DETAIL' not in catalog
  cron=sanitized_failure('pg_restore','ERROR: can only create extension in database postgres\nHINT: arbitrary private message',1)
  assert 'reason=extension_database_restriction' in cron and 'arbitrary' not in cron
+ redacted=redacted_error_line("pg_restore: error: cannot read archive 'private-body' at postgresql://user:password@host/db token=supersecret 123\nDETAIL: PRIVATE ROW")
+ assert 'cannot read archive' in redacted
+ assert all(value not in redacted for value in ('private-body','postgresql://','user','password','host','supersecret','123','PRIVATE ROW','DETAIL'))
+ assert redacted_error_line(b'PGDMP\x00binary-private')=='[binary output suppressed]'
+ assert redacted_error_line(b'')=='[empty]'
  text=Path(__file__).read_text()
  for guard in ("config['project_id']=='offroad'", "config['db']['major_version']==17", "host_id==container_id", "parsed.port is not None", "archive.startswith(b'PGDMP')", "input=dump.read_bytes()", "MATERIAL_RACE_SYNTHETIC_LOCAL"):
   assert guard in text,guard
