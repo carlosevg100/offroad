@@ -65,6 +65,11 @@ def tool_run(args,**kwargs):
   raise RuntimeError(message)
  return result
 
+def validate_local_admin_probe(host_id,probe):
+ fields=probe.strip().split('|')
+ assert len(fields)==3 and fields[0]=='supabase_admin' and fields[1]=='t','material_race_local_admin_superuser_required'
+ assert re.fullmatch(r'[0-9]+',host_id) and fields[2]==host_id,'material_race_container_database_instance_mismatch'
+
 def select_clone_tools():
  server=tool_run(['psql',origin,'-XAtq','-v','ON_ERROR_STOP=1'],input='show server_version_num;',text=True)
  server_major=int(server.stdout.strip())//10000
@@ -73,7 +78,8 @@ def select_clone_tools():
   executable=shutil.which(tool)
   if executable:
    result=tool_run([executable,'--version'],text=True);local[tool]=(executable,version_major(result.stdout))
- if len(local)==2 and all(value[1]>=server_major for value in local.values()) and local['pg_restore'][1]>=local['pg_dump'][1]:
+ host_superuser=tool_run(['psql',origin,'-XAtq','-v','ON_ERROR_STOP=1'],input='select rolsuper from pg_roles where rolname=current_user;',text=True).stdout.strip()=='t'
+ if host_superuser and len(local)==2 and all(value[1]>=server_major for value in local.values()) and local['pg_restore'][1]>=local['pg_dump'][1]:
   print('PASS material_race_clone_tools_host server_major='+str(server_major)+' dump_major='+str(local['pg_dump'][1])+' restore_major='+str(local['pg_restore'][1]))
   return {tool:[value[0]] for tool,value in local.items()},None
  # Only the exact CLI project container bound to this loopback database is eligible.
@@ -92,16 +98,20 @@ def select_clone_tools():
  env=os.environ.copy()
  if parsed.password is not None:env['PGPASSWORD']=unquote(parsed.password)
  base=['docker','exec','-i','-e','PGPASSWORD',container]
- connection=['--host=127.0.0.1','--port=5432','--username='+username]
+ # Use the server's actual local socket and initialized administrative identity.
+ socket_setting=tool_run(['psql',origin,'-XAtq','-v','ON_ERROR_STOP=1'],input='show unix_socket_directories;',text=True).stdout.strip()
+ socket_directory=socket_setting.split(',')[0].strip()
+ assert re.fullmatch(r'/(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+',socket_directory),'material_race_local_socket_required'
+ connection=['--host='+socket_directory,'--port=5432','--username=supabase_admin']
  host_id=tool_run(['psql',origin,'-XAtq','-v','ON_ERROR_STOP=1'],input='select system_identifier from pg_control_system();',text=True).stdout.strip()
- container_id=tool_run(base+['psql']+connection+['--dbname='+database,'-XAtq','-v','ON_ERROR_STOP=1'],input='select system_identifier from pg_control_system();',text=True,env=env).stdout.strip()
- assert re.fullmatch(r'[0-9]+',host_id) and host_id==container_id,'material_race_container_database_instance_mismatch'
+ admin_probe=tool_run(base+['psql']+connection+['--dbname='+database,'-XAtq','-v','ON_ERROR_STOP=1'],input='select current_user,r.rolsuper,c.system_identifier from pg_roles r cross join pg_control_system() c where r.rolname=current_user;',text=True,env=env).stdout.strip()
+ validate_local_admin_probe(host_id,admin_probe)
  tools={}
  for tool in ('pg_dump','pg_restore'):
   result=tool_run(base+[tool,'--version'],text=True,env=env)
   assert version_major(result.stdout)==server_major,'material_race_container_tool_version_required'
   tools[tool]=base+[tool]+connection
- print('PASS material_race_clone_tools_container project=offroad instance_verified=true server_major=17 dump_major=17 restore_major=17 host_dump_major='+str(local.get('pg_dump',('',0))[1]))
+ print('PASS material_race_clone_tools_container project=offroad instance_verified=true admin=supabase_admin superuser_verified=true socket_from_server=true owners_acls_preserved=true server_major=17 dump_major=17 restore_major=17 host_dump_major='+str(local.get('pg_dump',('',0))[1]))
  return tools,env
 
 if sys.argv[1:]==['--self-test']:
@@ -122,8 +132,13 @@ if sys.argv[1:]==['--self-test']:
  assert all(value not in redacted for value in ('private-body','postgresql://','user','password','host','supersecret','123','PRIVATE ROW','DETAIL'))
  assert redacted_error_line(b'PGDMP\x00binary-private')=='[binary output suppressed]'
  assert redacted_error_line(b'')=='[empty]'
+ validate_local_admin_probe('123','supabase_admin|t|123')
+ for invalid in ('postgres|t|123','supabase_admin|f|123','supabase_admin|t|456','supabase_admin|t'):
+  try:validate_local_admin_probe('123',invalid)
+  except AssertionError:pass
+  else:raise AssertionError('material_race_local_admin_probe_negative_failed')
  text=Path(__file__).read_text()
- for guard in ("config['project_id']=='offroad'", "config['db']['major_version']==17", "host_id==container_id", "parsed.port is not None", "archive.startswith(b'PGDMP')", "input=dump.read_bytes()", "MATERIAL_RACE_SYNTHETIC_LOCAL"):
+ for guard in ("config['project_id']=='offroad'", "config['db']['major_version']==17", "validate_local_admin_probe(host_id,admin_probe)", "host_superuser and len(local)==2", "--username=supabase_admin", "show unix_socket_directories;", "parsed.port is not None", "archive.startswith(b'PGDMP')", "input=dump.read_bytes()", "MATERIAL_RACE_SYNTHETIC_LOCAL"):
   assert guard in text,guard
  print('PASS material_race_tool_version_binary_container_guards_and_sanitized_errors')
  raise SystemExit(0)
