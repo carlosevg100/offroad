@@ -6,11 +6,14 @@ import assert from "node:assert/strict";
 import {z} from "zod";
 import {createClient} from "@supabase/supabase-js";
 import {originationSeniorReadoutSchema} from "@offroad/domain-contracts";
-import {createModelGateway, legacyGatewayFingerprint, type AdapterResponse} from "@offroad/model-gateway";
+import {legacyGatewayFingerprint, type AdapterResponse} from "@offroad/model-gateway";
 import {createCapitalBodyRetention} from "../src/capital-body-retention";
+import {createCapitalBodyProcessingAuthority} from "../src/capital-body-processing";
+import {providerConnectionsSchema} from "../src/provider-processing";
 const PRODUCTION = "ifnogpksgdadruooqydi", STAGING = "gjkkjtbfnssdsbmlhmwk";
 const fixtureSchema = z.object({environment: z.enum(["local", "staging"]), projectRef: z.string().min(1), apiUrl: z.url(), publishableKey: z.string().min(1),
   organizationId: z.uuid(), actorId: z.uuid(), email: z.email(), password: z.string().min(1),
+  providerConnections: providerConnectionsSchema.optional(), providerAssuranceIds: z.array(z.uuid()).length(6).optional(),
   sourceVersionId: z.uuid(), jobs: z.object({baseline: z.object({jobId: z.uuid(), workId: z.uuid(), capabilityToken: z.string().min(1)}), expired: z.object({jobId: z.uuid(), workId: z.uuid(), capabilityToken: z.string().min(1)})}),
 }).passthrough();
 type Fixture = z.infer<typeof fixtureSchema>;
@@ -84,22 +87,26 @@ async function main() {
   const replay = await body.retainContribution(revision, contributionRequestId);
   assert.equal(contribution.retention.retainedPayloadId, replay.retention.retainedPayloadId);
   const exactParent = await body.readOriginal(contribution.retention.retainedPayloadId!, contribution.retention);
-  let syntheticDispatches = 0;
-  const gateway = createModelGateway({adapters: {anthropic: {provider: "anthropic", async complete(request): Promise<AdapterResponse> {
+  if (!f.providerConnections?.anthropic || !f.providerConnections.openai || f.providerAssuranceIds?.length !== 6) throw new Error("reviewed provider fixture required");
+  let syntheticDispatches = 0, primaryDispatches = 0;
+  const primaryAdapter = {provider: "anthropic" as const, async complete(): Promise<AdapterResponse> {
+    primaryDispatches++; throw new Error("SQL denied primary was dispatched");
+  }};
+  const fallbackAdapter = {provider: "openai" as const, async complete(request: import("@offroad/model-gateway").AdapterRequest): Promise<AdapterResponse> {
     syntheticDispatches++; assert.equal(request.input[0]?.type, "text");
     if (request.input[0]?.type === "text") assert.equal(request.input[0].text, new TextDecoder("utf-8", {fatal: true}).decode(exactParent.bytes));
     return {output: structuredClone(output), rawText: "synthetic adapter only", model: request.model, usage: {inputTokens: 1, outputTokens: 1, cachedInputTokens: 0}, stopReason: "end"};
-  }}}, attestInput: async a => {
-    const r = await sdk.rpc("worker_record_capital_body_input_v1", {p_job_id: job.jobId, p_capability_token: job.capabilityToken,
-      p_invocation_id: a.invocationId, p_adapter_request_fingerprint: a.requestFingerprint, p_input_fingerprint: a.inputFingerprint, p_prompt_fingerprint: a.promptFingerprint,
-      p_provider: a.provider, p_model: a.model, p_components: [{kind: "retained_payload", id: contribution.retention.retainedPayloadId}],
-      p_retry_ordinal: a.retryOrdinal, p_is_same_model_repair: a.isSameModelRepair, p_used_provider_fallback: a.usedProviderFallback, p_previous_invocation_id: a.previousInvocationId ?? null});
-    if (r.error) throw new Error("input admission denied");
-    return z.strictObject({receiptId: z.uuid(), invocationId: z.uuid(), requestFingerprint: z.string().regex(/^[a-f0-9]{64}$/)}).parse(r.data);
-  }});
-  const result = await gateway.complete({task: "preliminary_understanding", requireInputAttestation: true, system: "Synthetic SDK protocol evaluation only.",
-    input: [{type: "text", text: new TextDecoder("utf-8", {fatal: true}).decode(exactParent.bytes)}], schema: originationSeniorReadoutSchema,
-    schemaName: "origination_senior_readout_v2", maxOutputTokens: 1000, allowFallback: false});
+  }};
+  const observed: import("@offroad/model-gateway").GatewayCallLog[] = [];
+  const processing = createCapitalBodyProcessingAuthority({supabase: sdk, body, authority: auth, connections: f.providerConnections,
+    adapters: {anthropic: primaryAdapter, openai: fallbackAdapter}, onCall: call => observed.push(call)});
+  const {result} = await processing.run({contributionRevisionId: revision, retentionRequestId: contributionRequestId});
+  assert.equal(primaryDispatches, 0); assert.equal(syntheticDispatches, 1);
+  assert.equal(observed.length, 2); assert.equal(observed[0]?.outcome, "policy_rejected"); assert.equal(observed[0]?.costStatus, "not_called");
+  assert.ok(observed[0]?.processingDecisionId); assert.equal(observed[0]?.inputAttestationReceiptId, undefined);
+  assert.equal(observed[1]?.previousInvocationId, observed[0]?.invocationId); assert.ok(observed[1]?.processingDecisionId);
+  assert.notEqual(observed[0]?.processingDecisionId, observed[1]?.processingDecisionId); assert.ok(observed[1]?.inputAttestationReceiptId);
+  assert.equal(result.acceptedInvocation?.invocationId, observed[1]?.invocationId); assert.equal(result.provider, "openai");
   assert.equal(syntheticDispatches, 1); assert.ok(result.acceptedInvocation?.inputAttestationReceiptId); assert.equal(result.acceptedInvocation?.fromCassette, false);
   const acceptedRequestId = randomUUID(); const accepted = await body.retainAccepted(result, acceptedRequestId);
   assert.equal(legacyGatewayFingerprint(accepted.body), result.acceptedInvocation?.outputFingerprint);
@@ -132,7 +139,7 @@ async function main() {
     else {assert.ok(posted.error); assert.equal(posted.data, null); assert.equal(posted.response?.status, 403);}
   }
   process.stdout.write(JSON.stringify({eval: "capital_body_sdk", result: "PASS", runtime: process.version,
-    checks: ["authenticated-sdk", "human-contribution", "canonical-roundtrip", "concrete-gateway-input-receipt", "parsed-output-bound", "original-job-read", "request-replay-no-model-redispatch", "wrong-capability-denied", "storage-worker-direct-read-denied", "edge-same-url-rechecks-authority", "storage-missing-headers-denied", "storage-wrong-capability-denied", "storage-other-live-job-denied", "storage-wrong-job-denied"],
+    checks: ["authenticated-sdk", "human-contribution", "canonical-roundtrip", "concrete-gateway-input-receipt", "sql-denied-primary-no-dispatch", "allowed-fallback-ledger-and-input-v2", "closed-renderer-source-parity", "parsed-output-bound", "original-job-read", "request-replay-no-model-redispatch", "wrong-capability-denied", "storage-worker-direct-read-denied", "edge-same-url-rechecks-authority", "storage-missing-headers-denied", "storage-wrong-capability-denied", "storage-other-live-job-denied", "storage-wrong-job-denied"],
     providerEgress: "NOT_EVALUATED_SYNTHETIC_ADAPTER", physicalFingerprints: [contribution.retention.payloadFingerprint, accepted.retention.payloadFingerprint]}) + "\n");
 }
 main().catch(() => {process.stderr.write("capital_body_sdk_eval_failed; fixture cleanup required\n"); process.exitCode = 1;});

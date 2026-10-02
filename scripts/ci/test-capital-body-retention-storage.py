@@ -462,6 +462,10 @@ class BodyStorage(base.RetentionStorage):
             'where organization_id=' + base.literal(self.f['organizationId']) + "::uuid and status in ('queued','leased','awaiting_approval');")
         self.sql('update private.worker_tokens set status=\'revoked\',revoked_at=clock_timestamp() where execution_account_user_id='
             + base.literal(self.f['actorId']) + '::uuid and token_sha256=extensions.digest(' + base.literal(self.f['purgeToken']) + ",'sha256');")
+        for assurance_id in self.f.get('providerAssuranceIds', []):
+            uuid.UUID(assurance_id)
+            self.sql('select private.revoke_provider_processing_assurance_v1('
+                + base.literal(assurance_id) + '::uuid,' + base.literal('Synthetic body SDK fixture cleanup') + ');')
         original = self.f['originalControl']
         self.sql('update private.capital_public_retention_controls set enabled=' + ('true' if original['enabled'] else 'false')
                  + ',policy_id=' + base.literal(original['policy']) + '::uuid where singleton;')
@@ -615,6 +619,36 @@ def provision_local():
     includes = '\n'.join(fixture.expand(support / name) for name in
         ('legacy_persistent_work_fixture.sql', 'provider_research_plan_snapshot.sql', 'execution_approval.sql'))
     ids = {k: str(uuid.uuid4()) for k in ('actor','other','org','publisherOrg','publisherWork','source','publicSource','fund','directory')}
+    # Only disposable SQL/SDK evidence, scoped to fresh account identities. No paid
+    # provider key or production assurance is read, replaced or invented here.
+    provider_connections = {provider: {'accountRef': 'synthetic-body-' + ids['org'] + '-' + provider,
+        'projectRef': 'synthetic-sdk', 'credentialBinding': 'synthetic-body-sdk-v1', 'region': 'global'}
+        for provider in ('anthropic', 'openai')}
+    assurance_ids = []
+    assurance_commands = []
+    for provider, model, endpoint in (
+        ('anthropic', 'claude-sonnet-5', 'https://api.anthropic.com/v1/messages'),
+        ('openai', 'gpt-5.6-terra', 'https://api.openai.com/v1/responses')):
+        for resource in ('inference', 'prompt_cache', 'schema_cache'):
+            assurance_id = str(uuid.uuid4()); assurance_ids.append(assurance_id)
+            # SQL terms intentionally differ: primary exceeds every finite body
+            # deadline, fallback has synthetic zero-second retention in this eval.
+            seconds = 31536000 if provider == 'anthropic' else 0
+            document = {**provider_connections[provider], 'id': assurance_id, 'provider': provider,
+                'endpoint': endpoint, 'resource': resource, 'models': [model],
+                'policyVersion': 'offroad-provider-retention-v2', 'eligibility': 'supported',
+                'purposes': ['case_analysis'], 'classifications': ['restricted'], 'rights': ['process'],
+                'trainingUse': 'prohibited', 'zeroRetention': 'not_contracted',
+                'retention': {**{k: seconds for k in ('requestContentSeconds','abuseMonitoringSeconds',
+                    'applicationStateSeconds','cacheSeconds','metadataSeconds')}, 'exceptions': []},
+                'evidence': [{'kind': kind, 'reference': 'synthetic-controlled-sdk-not-commercial-terms',
+                    'sha256': base.digest(('synthetic-' + provider + '-' + resource + '-' + kind).encode())}
+                    for kind in ('provider_terms','account_configuration','credential_binding')],
+                'reviewedBy': 'Synthetic SDK fixture', 'validThrough': None, 'revokedAt': None}
+            # review time is server supplied, never a caller date used as authority.
+            assurance_commands.append('select private.record_provider_processing_assurance_v1('
+                + base.json_literal(document) + "||jsonb_build_object('reviewedAt',clock_timestamp()-interval '1 minute'),"
+                + base.literal('Synthetic body SDK isolated ' + ids['org']) + ');')
     password = uuid.uuid4().hex + uuid.uuid4().hex
     token = uuid.uuid4().hex + uuid.uuid4().hex
     email = 'body-local-' + uuid.uuid4().hex + '@example.invalid'
@@ -625,6 +659,7 @@ def provision_local():
     query = 'begin; set local statement_timeout=\'45s\';' + includes + f"""
 create temp table body_local_jobs(label text,job_id uuid,work_id uuid,capability text);
 create temp table body_local_control as select enabled,policy_id from private.capital_public_retention_controls where singleton;
+{''.join(assurance_commands)}
 -- Fresh CI stack only: enable installed policy during physical eval, restore in cleanup.
 update private.capital_public_retention_controls set enabled=true where singleton;
 do $$ declare actor uuid:={q('actor')};other uuid:={q('other')};org uuid:={q('org')};
@@ -700,7 +735,8 @@ select jsonb_build_object('jobs',(select jsonb_object_agg(j.label,jsonb_build_ob
     f.update({'environment':'local','projectRef':'local','apiUrl':api,'databaseHost':urlparse(database).hostname,
         'publishableKey':key,'organizationId':ids['org'],'actorId':ids['actor'],'email':email,'password':password,
         'purgeToken':token,'sourceVersionId':ids['source'],'otherWorkerAccountId':ids['other'],
-        'requestId':str(uuid.uuid4()),'acceptedRequestId':str(uuid.uuid4())})
+        'requestId':str(uuid.uuid4()),'acceptedRequestId':str(uuid.uuid4()),
+        'providerConnections': provider_connections, 'providerAssuranceIds': assurance_ids})
     validate_environment(f,database)
     fd = os.open(target,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
     with os.fdopen(fd,'w') as out: json.dump(f,out)

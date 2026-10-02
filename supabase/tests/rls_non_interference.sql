@@ -6401,7 +6401,8 @@ begin
   'private.capital_body_origins','private.capital_body_source_pins',
   'private.capital_body_invocation_inputs','private.capital_body_input_components',
   'private.capital_body_accepted_invocations','private.capital_body_bases',
-  'private.capital_body_retention_wakes'
+  'private.capital_body_retention_wakes',
+  'private.capital_body_gateway_attempts','private.capital_body_gateway_attempt_components'
  ] loop
   relation:=tab::regclass;
   if not exists(select 1 from pg_class where oid=relation and relrowsecurity and relforcerowsecurity)
