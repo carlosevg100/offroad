@@ -893,7 +893,7 @@ test.describe("Document-first intake (company journey)", () => {
     };
     await waitForCaseStatus(["awaiting_approval"]);
     await page.reload();
-    await declareExecutionBriefReview(page.getByTestId("execution-brief"));
+    await declareExecutionBriefReview(page.getByTestId("execution-brief"), {required: true});
     await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
     await waitForCaseStatus(["succeeded"]);
     expect(sql("select private.receivables_evidence_scope_context(s.organization_id,s.id)->>'state' from public.document_intake_sessions s where s.id=:'session_id'::uuid;")).toBe("current");
@@ -925,7 +925,7 @@ test.describe("Document-first intake (company journey)", () => {
     await waitForCaseStatus(["awaiting_approval", "succeeded"]);
     if (sql(currentJob) === "awaiting_approval") {
       await page.reload();
-      await declareExecutionBriefReview(page.getByTestId("execution-brief"));
+      await declareExecutionBriefReview(page.getByTestId("execution-brief"), {required: true});
       await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
     }
     await waitForCaseStatus(["succeeded"]);
