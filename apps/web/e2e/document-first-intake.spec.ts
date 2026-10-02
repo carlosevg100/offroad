@@ -674,6 +674,8 @@ test.describe("Document-first intake (company journey)", () => {
       // Only this loopback synthetic target and its own planner jobs are included.
       await testInfo.attach("sector-planner-diagnostic", {body: JSON.stringify({projectId, targetId, diagnostic}, null, 2), contentType: "application/json"});
     }
+    const nativeBasisDiagnostic = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `target_id=${targetId}`, "-v", `owner_email=${account.email}`, "-f", join(__dirname, "support", "execution-brief-sector-diagnostic.sql")], {encoding: "utf8", stdio: ["ignore", "pipe", "pipe"]});
+    await testInfo.attach("sector-native-basis-diagnostic", {body: nativeBasisDiagnostic, contentType: "application/json"});
     const state = diagnostic as ProposalDiagnostic | null;
     expect(state, "The exact synthetic target must exist").not.toBeNull();
     const failureDetail = JSON.stringify(state);

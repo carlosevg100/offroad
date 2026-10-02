@@ -1,4 +1,3 @@
-import {declareExecutionBriefReview} from "./support/brief-approval";
 import {startLegacyConversation} from "./support/legacy-conversation";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {randomBytes} from "node:crypto";
@@ -6,7 +5,7 @@ import {expect, test} from "@playwright/test";
 import {waitForOneTimeCode} from "./support/mail";
 
 // Runs with the normal local worker, without provider credentials, seeded results or model calls.
-test("legacy work preserves approved provider research and keeps private mandates empty", async ({page}) => {
+test("unbound historical provider work cannot authorize research; current market navigation stays isolated", async ({page}) => {
   const base = new URL(process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000");
   if (!["127.0.0.1", "localhost", "[::1]"].includes(base.hostname)) throw new Error("Provider research E2E requires a local synthetic workspace.");
   const id = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
@@ -44,55 +43,14 @@ test("legacy work preserves approved provider research and keeps private mandate
   await expect(brief.locator(".execution-brief-card__workstreams > li")).toHaveCount(3);
   const research = page.getByTestId("provider-research-work");
   await expect(research).toHaveCount(0);
-  await declareExecutionBriefReview(brief);
-  await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
-  await expect(research).toBeVisible({timeout: 120_000});
-  await expect(research.locator("article")).toHaveCount(28);
-  await expect(research.getByRole("link", {name: /Itaú/}).first()).toHaveAttribute("href", "https://www.itau.com.br/empresas/emprestimos-financiamentos");
-  await expect(research).toContainText("Estratégias não equivalem a mandatos atuais");
-  await expect(research.getByRole("checkbox")).toHaveCount(0);
-  const text = await research.textContent();
+  // Historical context has no server-side native capture/review receipt. It is
+  // readable, but cannot authorize work through the retired approval path.
+  await expect(brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i})).toBeDisabled();
+  await expect(brief.getByRole("checkbox")).toHaveCount(0);
   await page.reload();
-  await expect(research).toHaveText(text!);
-  await expect(brief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(3);
-  // Continue inside the same project, with a separate approved case-specific mandate screen.
+  await expect(brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i})).toBeDisabled();
+  await expect(research).toHaveCount(0);
   const projectPath = new URL(page.url()).pathname;
-  await page.locator('.advisor-work-surface__navigation a[href="#work-provider-case-criteria"]').click();
-  const fitForm = page.getByTestId("provider-case-fit-form");
-  await fitForm.locator("summary").click();
-  await fitForm.locator('input[name="asOf"]').fill(new Date(Date.now() - 60_000).toISOString().slice(0, 16));
-  await fitForm.locator('select[name="currency"]').selectOption("BRL");
-  await fitForm.locator('input[name="amount"]').fill("10000000");
-  await fitForm.locator('input[name="sector"]').fill("Serviços");
-  await fitForm.locator('input[name="geography"]').fill("BR");
-  await fitForm.locator('input[type="checkbox"][required]').check();
-  await fitForm.getByRole("button", {name: "Preparar plano de seleção"}).click();
-  await expect(brief.locator('[data-approval-status="awaiting"]')).toBeVisible({timeout: 120_000});
-  expect(new URL(page.url()).pathname).toBe(projectPath);
-  await expect(brief).toContainText("Identificar financiadores aderentes ao caso");
-  await expect(brief.locator(".execution-brief-card__workstreams > li")).toHaveCount(3);
-  await expect(page.getByTestId("provider-case-fit-work")).toHaveCount(0);
-  await declareExecutionBriefReview(brief);
-  await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
-  const fitLink = page.locator('.advisor-work-surface__navigation a[href="#work-provider-case-fit"]');
-  await expect(fitLink).toBeVisible({timeout: 120_000});
-  await fitLink.click();
-  const fit = page.getByTestId("provider-case-fit-work");
-  await expect(fit).toBeVisible();
-  await expect(fit).toContainText("Não há mandatos autorizados disponíveis para comparar");
-  await expect(fit).toContainText("Não autoriza divulgação, contato ou introdução");
-  await expect(fit.getByRole("button")).toHaveCount(0);
-  const fitText = await fit.textContent();
-  await page.reload();
-  expect(new URL(page.url()).pathname).toBe(projectPath);
-  await expect(fit).toHaveText(fitText!);
-  await page.locator('.advisor-work-surface__navigation a[href="#work-provider-history"]').click();
-  const history = page.getByTestId("provider-work-history");
-  await expect(history).toContainText("Não representam a seleção ou o mandato atual");
-  await history.locator("summary").first().click();
-  await expect(history.getByTestId("provider-research-work")).toHaveText(text!);
-  // The initial request remains in the conversation; no workspace restart occurred.
-  await expect(page.locator(".advisor-thread").getByText(request, {exact: true})).toBeVisible();
   // Actual authenticated market navigation exercises client messages, hydration and separation
   // from the already persisted private research artifact. No external links are followed.
   await page.locator('.app-rail__nav a[href="/pt-BR/app/market"]').click();
@@ -114,7 +72,7 @@ test("legacy work preserves approved provider research and keeps private mandate
   await expect(page.locator("main article").filter({hasText: "MOVIB2"})).toContainText("Investidores / financiadores não identificados na fonte.");
   await expect(page.locator("main article").filter({hasText: "MOVIB2"}).getByRole("link")).toHaveAttribute("href", /^https:\/\//);
   await page.goto(projectPath);
-  await expect(page.getByTestId("provider-case-fit-work")).toHaveText(fitText!);
+  await expect(page.getByTestId("provider-research-work")).toHaveCount(0);
 
 
 });
