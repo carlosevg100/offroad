@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {projectExecutionBriefApproval} from "./execution-brief-approval";
+import {projectExecutionBriefApproval, projectNativeExecutionBriefApproval} from "./execution-brief-approval";
 
 const expected = {id: "00000000-0000-4000-8000-000000000001", fingerprint: "a".repeat(64), version: 3};
 const proposed = {status: "proposed", execution_brief_id: expected.id, brief_fingerprint: expected.fingerprint,
@@ -35,5 +35,21 @@ describe("execution brief approval record", () => {
   it("never turns a role flag into an approval state", () => {
     expect(projectExecutionBriefApproval({...proposed, caller_can_approve: true, review_decision: "returned", reviewed_by: "10000000-0000-4000-8000-000000000003"}, expected)).toMatchObject({status: "awaiting", callerCanApprove: true, record: {decision: "returned", preparedBy: null}});
     expect(projectExecutionBriefApproval({...proposed, review_decision: "signed"}, expected).status).toBe("unavailable");
+  });
+});
+
+describe("native approval supersedes historical projection", () => {
+  const workId = "00000000-0000-4000-8000-000000000003";
+  const basis = {schemaVersion:"execution-brief-review-basis.v2",workId,executionBriefId:expected.id,captureId:proposed.processing_job_id,
+    briefFingerprint:expected.fingerprint,payloadFingerprint:"b".repeat(64),inputFingerprint:"c".repeat(64),preparedBy:workId,viewerId:workId,
+    policy:{assignmentRequired:false,selfApprovalAllowed:false,roles:[]},workAccess:true,sourceCount:8,approvalEffective:false};
+  it.each([null, {...proposed,status:"superseded"}, {...proposed,status:"unavailable"}])("uses the exact current native basis even when historical state is absent or obsolete", raw => {
+    expect(projectNativeExecutionBriefApproval(raw,{...expected,workId},basis)).toMatchObject({status:"awaiting",reason:"approval_required"});
+  });
+  it("never substitutes historical approval for a missing or mismatched native basis", () => {
+    const history = {...proposed,status:"approved",accepted_at:"2026-09-08T02:00:00Z"};
+    for (const raw of [null,{...basis,workId:expected.id},{...basis,briefFingerprint:"d".repeat(64)}])
+      expect(projectNativeExecutionBriefApproval(history,{...expected,workId},raw).status).toBe("unavailable");
+    expect(projectNativeExecutionBriefApproval(null,{...expected,workId},{...basis,approvalEffective:true}).status).toBe("approved");
   });
 });
