@@ -61,5 +61,5 @@ export async function receivablesScopeFixture() {
   // The human confirms the same canonical discovery the real worker consumes.
   // Do not synthesize an insertion-order variant of this immutable input.
   const found = discovery.discoverReceivablesEvidence(envelopes, new Map(sources.map((source) => [source.id, source.name])));
-  return {sources, report: {status: "needs_evidence_scope", sourceManifest: found.sourceManifest, candidates: found.candidates}};
+  return {sources, report: {status: "needs_evidence_scope", sourceManifest: found.sourceManifest, candidates: found.candidates, supportSheetCandidates: found.supportSheetCandidates}};
 }
