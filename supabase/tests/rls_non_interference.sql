@@ -6222,7 +6222,7 @@ do $$ declare tab text; api_role text; sig text; begin
    if has_table_privilege(api_role,tab,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE') then raise exception 'review raw table exposed: %, %',tab,api_role; end if;
   end loop;
  end loop;
- foreach sig in array array['private.lock_review_work_v1(uuid)','private.record_review_basis_receipt_v1(uuid,uuid,text,jsonb,uuid[],text)','private.artifact_review_sources_allowed_v1(uuid,uuid,uuid)'] loop
+ foreach sig in array array['private.lock_review_work_v1(uuid)','private.record_review_basis_receipt_v1(uuid,uuid,text,jsonb,uuid[],text)','private.artifact_review_sources_allowed_v1(uuid,uuid,uuid)','private.capital_capture_allocation_deadline_v2(uuid,uuid)'] loop
   foreach api_role in array array['anon','authenticated','service_role'] loop
    if has_function_privilege(api_role,sig,'EXECUTE') then raise exception 'review helper exposed: %, %',sig,api_role; end if;
   end loop;

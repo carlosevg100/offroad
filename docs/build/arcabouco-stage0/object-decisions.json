@@ -2892,11 +2892,6 @@
           "name": "artifact_review_sources_allowed_v1",
           "grants": [
             [
-              "PUBLIC",
-              "EXECUTE",
-              false
-            ],
-            [
               "postgres",
               "EXECUTE",
               false
@@ -2915,11 +2910,6 @@
           "name": "artifact_review_sources_allowed_v1",
           "grants": [
             [
-              "PUBLIC",
-              "EXECUTE",
-              false
-            ],
-            [
               "postgres",
               "EXECUTE",
               false
@@ -2936,7 +2926,7 @@
       "owner": "Engenharia de execução, etapa 20",
       "decision": "preservar",
       "stage": "20 / 2",
-      "reason": "Fundação aditiva de revisões e decisões imutáveis, com autoridade sobre a base exata e histórico de atribuições.",
+      "reason": "Helper interno executado somente pelo proprietário através dos comandos governados; sem grants aos papéis de API.",
       "sources": [
         {
           "path": "supabase/migrations/20260928115102_revision_bound_reviews_and_decisions.sql",
@@ -2973,6 +2963,11 @@
           "line": 159,
           "anchor": "create function private.artifact_review_sources_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002221910_material_internal_helper_execute_grants.sql",
+          "line": 2,
+          "anchor": "revoke all on function private.artifact_review_sources_allowed_v1(uuid,uuid,uuid), private.capital_capture_allocation_deadline_v2(uuid,uuid) from public,anon,authenticated,service_role;"
         }
       ]
     },
@@ -9555,11 +9550,6 @@
           "name": "capital_capture_allocation_deadline_v2",
           "grants": [
             [
-              "PUBLIC",
-              "EXECUTE",
-              false
-            ],
-            [
               "postgres",
               "EXECUTE",
               false
@@ -9578,11 +9568,6 @@
           "name": "capital_capture_allocation_deadline_v2",
           "grants": [
             [
-              "PUBLIC",
-              "EXECUTE",
-              false
-            ],
-            [
               "postgres",
               "EXECUTE",
               false
@@ -9599,7 +9584,7 @@
       "owner": "Engenharia",
       "decision": "preservar",
       "stage": "20 / 3Q",
-      "reason": "Corpos finitos com autoridade corrente, integridade física e leitura POST mediada sem atalho de cache.",
+      "reason": "Helper interno executado somente pelo proprietário através dos comandos governados; sem grants aos papéis de API.",
       "sources": [
         {
           "path": "supabase/migrations/20261001205206_capital_body_retention.sql",
@@ -9618,6 +9603,11 @@
           "line": 287,
           "anchor": "create function private.capital_capture_allocation_deadline_v2(p_org uuid,p_allocation uuid)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002221910_material_internal_helper_execute_grants.sql",
+          "line": 2,
+          "anchor": "revoke all on function private.artifact_review_sources_allowed_v1(uuid,uuid,uuid), private.capital_capture_allocation_deadline_v2(uuid,uuid) from public,anon,authenticated,service_role;"
         }
       ]
     },
@@ -241569,6 +241559,13 @@
       "decision": "preservar",
       "stage": "20 / 3S–3T",
       "reason": "Restaurar comparação da assinatura do contexto capturado antes de entrega ou replay público."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002221910_material_internal_helper_execute_grants.sql",
+      "decision": "preservar",
+      "stage": "20 / materiais",
+      "reason": "Revoga execução de helpers internos recriados; histórico aplicado sem reescrever migrações."
     }
   ],
   "staging_archive": [
