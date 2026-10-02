@@ -11482,6 +11482,15 @@ export type Database = {
         }
         Returns: Json
       }
+      approve_material_production_plan_v1: {
+        Args: {
+          p_command_id: string
+          p_plan_fingerprint: string
+          p_plan_id: string
+          p_work_id: string
+        }
+        Returns: Json
+      }
       attach_intake_session_to_opportunity: {
         Args: {
           p_opportunity_id: string
@@ -11701,6 +11710,19 @@ export type Database = {
           p_note?: string
         }
         Returns: string
+      }
+      decide_material_package_v1: {
+        Args: {
+          p_act: string
+          p_basis_review_id?: string
+          p_command_id: string
+          p_manifest_fingerprint: string
+          p_note: string
+          p_revision_id: string
+          p_self_approval_declared: boolean
+          p_work_id: string
+        }
+        Returns: Json
       }
       decide_offroad_mandate: {
         Args: {
@@ -12032,6 +12054,18 @@ export type Database = {
       }
       read_institutional_workbook_binding_v1: {
         Args: { p_fingerprint: string; p_work: string }
+        Returns: Json
+      }
+      read_material_package_review_basis_v1: {
+        Args: { p_revision_id: string; p_work_id: string }
+        Returns: Json
+      }
+      read_material_production_plan_v1: {
+        Args: { p_plan_id: string; p_work_id: string }
+        Returns: Json
+      }
+      read_material_production_result_v1: {
+        Args: { p_revision_id: string }
         Returns: Json
       }
       read_presentation_template_v1: {
@@ -13352,6 +13386,14 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_capture_material_production_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       worker_claim_capital_capture_purge_v1: {
         Args: { p_limit?: number; p_worker_token: string }
         Returns: Json
@@ -13480,6 +13522,29 @@ export type Database = {
           p_outcome: string
           p_reason: string
           p_result_text: string
+        }
+        Returns: Json
+      }
+      worker_commit_material_production_body_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_storage_object_id: string
+          p_storage_version: string
+          p_verified_sha256: string
+          p_verified_size: number
+        }
+        Returns: Json
+      }
+      worker_commit_material_production_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_package_retained_payload_id: string
+          p_recipe_id: string
+          p_report_retained_payload_id: string
+          p_state_retained_payload_id: string
         }
         Returns: Json
       }
@@ -13910,6 +13975,25 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_prepare_material_production_output_v1: {
+        Args: {
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_kind: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_material_production_plan_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       worker_read_capital_body_allocation_v1: {
         Args: {
           p_allocation_id: string
@@ -13966,6 +14050,18 @@ export type Database = {
           p_job_id: string
           p_retained_payload_id: string
         }
+        Returns: Json
+      }
+      worker_read_material_production_allocation_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_read_material_production_dispatch_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
       worker_read_presentation_template_version_v1: {
@@ -14366,6 +14462,16 @@ export type Database = {
         }
         Returns: string
       }
+      worker_record_material_production_terminal_v1: {
+        Args: {
+          p_capability_token: string
+          p_case_state_retained_payload_id?: string
+          p_job_id: string
+          p_recipe_id: string
+          p_report_retained_payload_id: string
+        }
+        Returns: Json
+      }
       worker_record_objective_plan_preflight_v1: {
         Args: {
           p_capability_token: string
@@ -14507,6 +14613,10 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_recover_material_production_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
       worker_renew_evaluation_v1: {
         Args: {
           p_capability_token: string
@@ -14553,7 +14663,34 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_revalidate_material_production_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
       worker_runtime_schema_contract_v1: { Args: never; Returns: Json }
+      worker_seal_material_production_context_v1: {
+        Args: {
+          p_capability_token: string
+          p_context_retained_payload_id: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_seal_material_production_sources_v1: {
+        Args: {
+          p_capability_token: string
+          p_delivery_ids: string[]
+          p_job_id: string
+          p_recipe_id: string
+          p_research_status: string
+        }
+        Returns: Json
+      }
       worker_settle_evaluation_operation_v1: {
         Args: {
           p_capability_token: string
@@ -14776,4 +14913,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

@@ -93,11 +93,11 @@ export function materialPackageFingerprint(input:{materials:readonly Material[];
   });
 }
 
-function claimRows(block: MaterialBlock, prefix: string): Array<{key:string;value:string;artifactValue:string;supportIds:string[];material:boolean;comparable:boolean}> {
-  if (block.type === "paragraph") return block.material ? [{key:block.claimId??prefix,value:`${block.text.pt}\u0000${block.text.en}`,artifactValue:block.text.pt,supportIds:block.supportIds??[],material:true,comparable:false}] : [];
-  if (block.type === "metrics") return block.items.map((item,index)=>({key:`${prefix}:metric:${index}:${item.supportIds.join("|")}`,value:item.value,artifactValue:item.value,supportIds:item.supportIds,material:true,comparable:true}));
-  if (block.type === "kv") return block.rows.filter((row)=>row.material).map((row,index)=>({key:row.claimId??`${prefix}:kv:${index}:${(row.supportIds??[]).join("|")}`,value:`${row.value.pt}\u0000${row.value.en}`,artifactValue:row.value.pt,supportIds:row.supportIds??[],material:true,comparable:true}));
-  if (block.type === "callout") return block.items.filter((item)=>item.material).map((item,index)=>({key:item.claimId??`${prefix}:callout:${index}:${(item.supportIds??[]).join("|")}`,value:`${item.value.pt}\u0000${item.value.en}`,artifactValue:item.value.pt,supportIds:item.supportIds??[],material:true,comparable:true}));
+function claimRows(block: MaterialBlock, prefix: string): Array<{key:string;value:string;artifactValue:string;supportIds:string[];material:boolean;comparable:boolean;field:string|null}> {
+  if (block.type === "paragraph") return block.material ? [{key:block.claimId??prefix,value:`${block.text.pt}\u0000${block.text.en}`,artifactValue:block.text.pt,supportIds:block.supportIds??[],material:true,comparable:false,field:null}] : [];
+  if (block.type === "metrics") return block.items.map((item,index)=>({key:`${prefix}:metric:${index}:${item.supportIds.join("|")}`,value:item.value,artifactValue:item.value,supportIds:item.supportIds,material:true,comparable:true,field:JSON.stringify([item.label.pt.normalize("NFC"),item.label.en.normalize("NFC")])}));
+  if (block.type === "kv") return block.rows.filter((row)=>row.material).map((row,index)=>({key:row.claimId??`${prefix}:kv:${index}:${(row.supportIds??[]).join("|")}`,value:`${row.value.pt}\u0000${row.value.en}`,artifactValue:row.value.pt,supportIds:row.supportIds??[],material:true,comparable:true,field:JSON.stringify([row.label.pt.normalize("NFC"),row.label.en.normalize("NFC")])}));
+  if (block.type === "callout") return block.items.filter((item)=>item.material).map((item,index)=>({key:item.claimId??`${prefix}:callout:${index}:${(item.supportIds??[]).join("|")}`,value:`${item.value.pt}\u0000${item.value.en}`,artifactValue:item.value.pt,supportIds:item.supportIds??[],material:true,comparable:true,field:JSON.stringify([item.label.pt.normalize("NFC"),item.label.en.normalize("NFC")])}));
   return [];
 }
 
@@ -142,7 +142,11 @@ export function buildMaterialTruthSet(input:{materials:readonly Material[];dataR
   const values=new Map<string,Array<{value:string;kind:MaterialKind}>>();
   for(const material of input.materials) for(const [index,block] of material.blocks.entries()) for(const row of claimRows(block,`${material.kind}:${index}`)){
     if(!row.supportIds.length||!row.comparable)continue;
-    const key=row.supportIds.slice().sort().join("|");
+    // A support set proves provenance; it is not a field identity. The
+    // same structure supports amount, tenor and alternative independently.
+    // Compare the same labelled field under the exact support/context set,
+    // across artifacts as well as repeated rows in one artifact.
+    const key=JSON.stringify([row.field,row.supportIds.slice().sort()]);
     values.set(key,[...(values.get(key)??[]),{value:row.value,kind:material.kind}]);
   }
   const conflicts=[...values.entries()].flatMap(([key,entries])=>{

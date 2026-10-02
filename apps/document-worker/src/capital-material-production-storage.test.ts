@@ -1,0 +1,19 @@
+import {createHash} from 'node:crypto';
+import {describe,it,expect,vi} from 'vitest';
+import type {SupabaseClient} from '@supabase/supabase-js';
+import {createCapitalMaterialStorageTransport} from './capital-material-production-storage';
+import type {MaterialBodyScope} from './capital-material-production-native';
+const u=(n:number)=>`a9300000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+function setup(){const bytes=Buffer.from('{"private":true}');const s:MaterialBodyScope={schemaVersion:'capital-material-body-scope.v1',organizationId:u(1),workId:u(2),recipeId:u(3),allocationId:u(4),retainedPayloadId:null,kind:'context',payloadFingerprint:createHash('sha256').update(bytes).digest('hex'),byteLength:bytes.length,bucket:'capital-input-capture',path:`${u(1)}/${u(4)}/payload.json`,storageObjectId:null,storageVersion:null,expiresAt:'2026-10-03T00:00:00Z',purgeAt:'2026-10-02T23:50:00Z'};
+ let current={...s,storageObjectId:u(5),storageVersion:'v1'};
+ const upload=vi.fn(async()=>({error:null})),invoke=vi.fn(async()=>({error:null,data:new Blob([bytes]),response:new Response(null,{headers:{'content-type':'application/octet-stream','cache-control':'no-store','x-offroad-allocation-id':s.allocationId,'x-offroad-recipe-id':s.recipeId,'x-offroad-work-id':s.workId,'x-offroad-object-id':u(5),'x-offroad-storage-version':'v1','x-offroad-payload-sha256':s.payloadFingerprint}})}));
+ const rpc=vi.fn(async(name:string)=>{if(name==='worker_commit_material_production_body_v1')current={...current,retainedPayloadId:u(6)};return {data:current,error:null};});
+ const client={rpc,storage:{from:vi.fn(()=>({upload}))},functions:{invoke}} as unknown as SupabaseClient;
+ const transport=createCapitalMaterialStorageTransport({client,jobId:u(7),capability:'actual-lease',organizationId:u(1),workId:u(2),now:()=>Date.parse('2026-10-02T12:00:00Z')});return {transport,s,bytes,upload,invoke,rpc};}
+describe('material SDK transport protocol (mock unit, not HTTP proof)',()=>{
+ it('uploads under genuine job headers and verifies before committing physical receipt',async()=>{const t=setup();const r=await t.transport.retain(t.s,t.bytes);expect(r).toMatchObject({retainedPayloadId:u(6)});expect(t.upload).toHaveBeenCalledWith(t.s.path,t.bytes,expect.objectContaining({upsert:false,cacheControl:'0',headers:{'x-offroad-workspace':u(1),'x-offroad-job-id':u(7),'x-offroad-capability':'actual-lease'}}));expect(t.invoke).toHaveBeenCalledWith('capital-body-read',expect.objectContaining({body:{kind:'material_body',allocationId:u(4)}}));expect(t.rpc.mock.calls.filter(([name])=>name==='worker_commit_material_production_body_v1')).toHaveLength(1);});
+ it('denies altered canonical bytes before upload',async()=>{const t=setup();await expect(t.transport.retain(t.s,Buffer.from('{}'))).rejects.toThrow('canonical_bytes_changed');expect(t.upload).not.toHaveBeenCalled();});
+ it('denies cached response and never commits a fabricated verification',async()=>{const t=setup();vi.mocked(t.invoke).mockImplementation(async()=>({error:null,data:new Blob([t.bytes]),response:new Response(null,{headers:{'content-type':'application/octet-stream','cache-control':'public'}})}));await expect(t.transport.retain(t.s,t.bytes)).rejects.toThrow('physical_read_denied');expect(t.rpc.mock.calls.some(([name])=>name==='worker_commit_material_production_body_v1')).toBe(false);});
+ it('denies a changed Storage version at the server boundary',async()=>{const t=setup();const original=t.invoke.getMockImplementation()!;t.invoke.mockImplementation(async()=>{const response=await original();response.response.headers.set('x-offroad-storage-version','changed');return response;});await expect(t.transport.retain(t.s,t.bytes)).rejects.toThrow('physical_version_changed');});
+ it('denies wrong workspace before any request',async()=>{const t=setup();await expect(t.transport.retain({...t.s,organizationId:u(90)},t.bytes)).rejects.toThrow('storage_scope_denied');expect(t.upload).not.toHaveBeenCalled();});
+});

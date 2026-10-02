@@ -16,7 +16,7 @@ import {InstitutionalModelResultWork} from "@/components/advisor/institutional-m
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
 import {institutionalCalculationRuns, jobKindRunning, summarizeWorkActivity} from "@/lib/advisor/work-activity";
 import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
-import {dealStateGapApproval, workbenchAnalysisGap} from "@/lib/deal-state/analysis-gap";
+import {dealStateGapApproval, isNativeMaterialPackageReview, workbenchAnalysisGap} from "@/lib/deal-state/analysis-gap";
 import {loadProviderWorkHistory} from "@/lib/advisor/provider-work-history";
 import {ProviderWorkHistory} from "@/components/advisor/provider-work-history";
 import {ReceivablesSupportPeriods} from "@/components/intake/receivables-support-periods";
@@ -710,6 +710,7 @@ async function ConversationalCapitalProject({
       structure={privateWorkbench.structure}
       structureDecision={privateWorkbench.structureDecision}
     /> : null}{privateWorkbench ? <PrivateMaterialsWork
+      userId={userId}
       gap={analysisGap}
       gapApproval={analysisGapApproval}
       governed={governedMaterials}
@@ -731,7 +732,7 @@ async function ConversationalCapitalProject({
       isProcessing={privateWorkbench.isProcessing}
       locale={locale === "en-US" ? "en-US" : "pt-BR"}
       matchScreen={privateWorkbench.matchScreen}
-      packageApproved={privateWorkbench.packageReview?.status === "approved"}
+      packageApproved={!governedMaterials?.nativeReview && !isNativeMaterialPackageReview(privateWorkbench.packageReview) && privateWorkbench.packageReview?.status === "approved"}
       projectId={project.id}
       representationStatus={session.representation_status}
       sessionId={session.id}

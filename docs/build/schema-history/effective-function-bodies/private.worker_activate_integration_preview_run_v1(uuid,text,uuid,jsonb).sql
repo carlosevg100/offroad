@@ -326,8 +326,6 @@ begin
         'sourceMessageId', source_message.id,
         'assistantMessageId', assistant_message.id
       ),
-      -- Deterministic runs spend nothing; a live run may make one bounded call for the questions
-      -- and, later, one for the synthesis. The worker's own caps still apply on top.
       -- Questions and synthesis in live mode: two bounded calls whose preflight reservations must fit.
       'model_budget', jsonb_build_object('max_cost_usd', 0.60, 'max_calls', 4),
       'preview', jsonb_build_object(

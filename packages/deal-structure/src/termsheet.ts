@@ -138,8 +138,11 @@ export function buildTermSheet(input: TermSheetInput): IndicativeTermSheet {
   const terms: Term[] = [];
 
   // ---- amount ------------------------------------------------------------------------------
-  const recommended = input.capacity.recommended;
   const requested = input.capacity.requested;
+  const capacityCeiling = input.capacity.recommended;
+  // Capacity is a ceiling, never authority to increase the company's ask.
+  const recommended = capacityCeiling === null ? null
+    : compareFigures(capacityCeiling, requested) < 0 ? capacityCeiling : requested;
   // Whether a wall holds the amount below the request, compared exactly (financial-core).
   const constrained = recommended !== null && compareFigures(recommended, requested) < 0;
 

@@ -5294,7 +5294,7 @@ declare
   understanding_retry_id uuid;
   structure_option_id uuid;
   structure_id uuid;
-  production_id uuid;
+  retired_kind text;
   material_id uuid;
   package_id uuid;
   match_id uuid;
@@ -5416,154 +5416,26 @@ begin
   select object_fingerprint into structure_fingerprint
   from public.deal_state_objects where id = structure_id;
 
-  production_id := public.record_deal_state_object(
-    org_a, session_id, 'production_plan', 'approved', repeat('3', 64),
-    '{"artifacts":["teaser","model","indicative_term_sheet"]}'::jsonb,
-    jsonb_build_array(jsonb_build_object(
-      'objectType', 'structure_decision', 'objectFingerprint', structure_fingerprint
-    ))
-  );
-  if production_id is null or (select count(*) from public.deal_state_objects where intake_session_id = session_id) <> 5 then
-    raise exception 'the governed deal-state chain was not persisted';
-  end if;
-  select object_fingerprint into production_fingerprint
-  from public.deal_state_objects where id = production_id;
-
+  -- Native producer/reviewer positive proofs live in the material SDK/SQL gate.
+  -- A case owner cannot revive the retired material approval route, even with
+  -- the genuine current structure dependency established above.
+  foreach retired_kind in array array['production_plan','package_review','release_authorization'] loop
+    begin
+      perform public.record_deal_state_object(org_a,session_id,retired_kind,'approved',repeat('3',64),
+        '{}'::jsonb,jsonb_build_array(jsonb_build_object('objectType','structure_decision','objectFingerprint',structure_fingerprint)));
+      raise exception 'retired material approval accepted: %',retired_kind;
+    exception when insufficient_privilege then null;end;
+  end loop;
   set local role authenticated;
-  perform set_config(
-    'request.jwt.claims',
-    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
-    true
-  );
-  material_id := public.worker_record_deal_state_object(
-    job_id, capability, 'material_artifact', 'pending_confirmation', repeat('4', 64),
-    '{"materials":[],"financialModel":null,"materialTruth":{},"dataRoom":{}}'::jsonb,
-    jsonb_build_array(jsonb_build_object(
-      'objectType', 'production_plan', 'objectFingerprint', production_fingerprint
-    ))
-  );
-  set local role postgres;
-  select object_fingerprint into material_fingerprint
-  from public.deal_state_objects where id = material_id;
-
-  set local role authenticated;
-  perform set_config(
-    'request.jwt.claims',
-    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
-    true
-  );
-  accepted := true;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',true);
   begin
-    perform public.record_deal_state_object(
-      org_a, session_id, 'package_review', 'approved', repeat('5', 64),
-      '{"approval":{"scope":"internal_material_package"}}'::jsonb,
-      jsonb_build_array(jsonb_build_object(
-        'objectType', 'production_plan', 'objectFingerprint', production_fingerprint
-      ))
-    );
-  exception when object_not_in_prerequisite_state then accepted := false;
-  end;
-  if accepted then raise exception 'package review accepted no exact material dependency'; end if;
-
-  package_id := public.record_deal_state_object(
-    org_a, session_id, 'package_review', 'approved', repeat('5', 64),
-    jsonb_build_object('approval', jsonb_build_object(
-      'scope', 'internal_material_package', 'artifactFingerprint', material_fingerprint
-    )),
-    jsonb_build_array(
-      jsonb_build_object('objectType', 'production_plan', 'objectFingerprint', production_fingerprint),
-      jsonb_build_object('objectType', 'material_artifact', 'objectFingerprint', material_fingerprint)
-    )
-  );
-  if package_id is null or (select count(*) from public.deal_state_objects where intake_session_id = session_id) <> 7 then
-    raise exception 'the exact package-review chain was not persisted';
-  end if;
-  select object_fingerprint into package_fingerprint
-  from public.deal_state_objects where id = package_id;
-
+    perform public.worker_record_deal_state_object(job_id,capability,'material_artifact','pending_confirmation',repeat('4',64),
+      '{"materials":[],"financialModel":null,"materialTruth":{},"dataRoom":{}}'::jsonb,'[]'::jsonb);
+    raise exception 'retired raw material writer accepted';
+  exception when insufficient_privilege then null;end;
   set local role authenticated;
-  perform set_config(
-    'request.jwt.claims',
-    '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated","aal":"aal1"}',
-    true
-  );
-  match_id := public.worker_record_deal_state_object(
-    job_id, capability, 'match_screen', 'pending_confirmation', repeat('6', 64),
-    jsonb_build_object(
-      'schemaVersion', '2026.08.29-v3',
-      'packageReviewFingerprint', package_fingerprint,
-      'materialArtifactFingerprint', material_fingerprint,
-      'materialTruthFingerprint', repeat('7', 64),
-      'matchingFingerprint', repeat('8', 64),
-      'candidates', jsonb_build_array(
-        jsonb_build_object(
-          'providerId', '70000000-0000-4000-8000-000000000701',
-          'providerName', 'RLS Governed Retrieval Fund',
-          'providerKind', 'credit_fund',
-          'providerSource', 'directory',
-          'fundDirectoryId', '70000000-0000-4000-8000-000000000701',
-          'providerOrganizationId', null,
-          'providerFundId', null,
-          'mandateFingerprint', repeat('a', 64),
-          'rationale', 'The exact current mandate fits the governed transaction.',
-          'eligibleForShortlist', true
-        ),
-        jsonb_build_object(
-          'providerId', '70000000-0000-4000-8000-000000000702',
-          'providerName', 'Blocked Provider',
-          'providerKind', 'bank',
-          'providerSource', 'directory',
-          'fundDirectoryId', '70000000-0000-4000-8000-000000000702',
-          'providerOrganizationId', null,
-          'providerFundId', null,
-          'mandateFingerprint', repeat('b', 64),
-          'rationale', 'The current mandate has an unresolved governance blocker.',
-          'eligibleForShortlist', false
-        )
-      ),
-      'summary', jsonb_build_object('screened', 2, 'eligible', 1, 'possible', 1, 'excluded', 0, 'blockedByGovernance', 1),
-      'structuralExclusions', '[]'::jsonb,
-      'noContactAuthorized', true
-    ),
-    jsonb_build_array(
-      jsonb_build_object('objectType', 'package_review', 'objectFingerprint', package_fingerprint),
-      jsonb_build_object('objectType', 'material_artifact', 'objectFingerprint', material_fingerprint)
-    )
-  );
-  set local role postgres;
-  select object_fingerprint into match_fingerprint
-  from public.deal_state_objects where id = match_id;
-
-  set local role authenticated;
-  perform set_config(
-    'request.jwt.claims',
-    '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',
-    true
-  );
-  accepted := true;
-  begin
-    perform public.approve_match_shortlist(
-      org_a, session_id, match_fingerprint, array['70000000-0000-4000-8000-000000000702']
-    );
-  exception when object_not_in_prerequisite_state then accepted := false;
-  end;
-  if accepted then raise exception 'a governance-blocked provider entered the approved shortlist'; end if;
-
-  match_plan := public.approve_match_shortlist_and_prepare_plan(
-    org_a, session_id, match_fingerprint, array['70000000-0000-4000-8000-000000000701']
-  );
-  match_id := (match_plan ->> 'match_screen_id')::uuid;
-  select object_fingerprint into match_fingerprint
-  from public.deal_state_objects where id = match_id;
-  if (match_plan ->> 'plan_id') is null
-    or (select count(*) from public.qualified_introduction_targets
-        where intake_session_id = session_id) <> 1
-    or (select provider_source from public.qualified_introduction_targets
-        where intake_session_id = session_id) <> 'directory'
-    or (select contact_status from public.qualified_introduction_targets
-        where intake_session_id = session_id) <> 'unresolved' then
-    raise exception 'the approved shortlist did not compile into one private unresolved target plan';
-  end if;
+  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
+  raise notice 'PASS material_raw_approval_and_worker_writer_denied_with_current_structure';
 
   accepted := true;
   begin
@@ -5582,7 +5454,7 @@ begin
   accepted := true;
   begin
     update public.deal_state_objects set payload = '{"tampered":true}'::jsonb
-    where id = production_id;
+    where id = structure_id;
   exception when insufficient_privilege then accepted := false;
   end;
   if accepted then raise exception 'tenant directly rewrote a governed deal-state object'; end if;
@@ -5598,15 +5470,13 @@ begin
     or case_input #>> '{deal_state_context,understanding_snapshot,payload,summary}' <> 'confirmed understanding'
     or case_input #>> '{deal_state_context,structure_decision,payload,confirmation,decision}' <> 'confirm'
     or case_input #>> '{deal_state_context,structure_option,payload,compiled,proposalFingerprint}' <> repeat('9', 64)
-    or case_input #>> '{deal_state_context,production_plan,status}' <> 'approved'
     or (case_input #>> '{deal_workflow,gates,understandingConfirmed}')::boolean is not true
     or (case_input #>> '{deal_workflow,gates,structureOptionCurrent}')::boolean is not true
     or (case_input #>> '{deal_workflow,gates,structureConfirmed}')::boolean is not true
-    or (case_input #>> '{deal_workflow,gates,productionPlanApproved}')::boolean is not true
-    or (case_input #>> '{deal_workflow,gates,packageApproved}')::boolean is not true
-    or (case_input #>> '{deal_workflow,gates,matchApproved}')::boolean is not true
-    or (case_input #>> '{deal_workflow,gates,releaseAuthorized}')::boolean is true
-    or case_input #>> '{deal_workflow,stage}' <> 'match' then
+    or (case_input #>> '{deal_workflow,gates,productionPlanApproved}')::boolean is true
+    or (case_input #>> '{deal_workflow,gates,packageApproved}')::boolean is true
+    or (case_input #>> '{deal_workflow,gates,matchApproved}')::boolean is true
+    or (case_input #>> '{deal_workflow,gates,releaseAuthorized}')::boolean is true then
     raise exception 'case input did not preserve the governed deal-state payloads and gates: %', case_input;
   end if;
 

@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION private.job_for_capability(p_job_id uuid, p_capability_token text)
- RETURNS processing_jobs
+ RETURNS public.processing_jobs
  LANGUAGE plpgsql
  SECURITY DEFINER
  SET search_path TO ''

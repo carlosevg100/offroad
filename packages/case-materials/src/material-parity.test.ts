@@ -2,6 +2,7 @@ import {createHash} from "node:crypto";
 
 import {describe, expect, it} from "vitest";
 
+import {caseMaterialsVersion} from "./index";
 import {syntheticMaterials, type SyntheticMaterialsVariant} from "./synthetic-materials.test-support";
 
 /**
@@ -53,6 +54,8 @@ import {syntheticMaterials, type SyntheticMaterialsVariant} from "./synthetic-ma
  * amount rule as the other materials. Kernel parity and invalid-input gaps are
  * verified in deal-structure; no financial policy or valid-case number changes.
  */
+/** v10 separates field identity from provenance and caps proposed amount at the
+ * company request. All 22 published Aurora v9 material pins remain unchanged. */
 const sha256 = (value: unknown) => createHash("sha256").update(JSON.stringify(value, null, 1)).digest("hex");
 
 const pins: Record<string, string> = {
@@ -83,7 +86,8 @@ const pins: Record<string, string> = {
 const variants: readonly SyntheticMaterialsVariant[] = ["balanceAboveSchedule", "withinTolerance", "scheduleAboveBalance"];
 
 describe("published materials across the move to financial-core", () => {
-  it("reproduce every pinned material byte for byte", () => {
+  it("reproduce every pinned material byte for byte under prospective v10", () => {
+    expect(caseMaterialsVersion).toBe("2026.10.02-v10");
     const actual: Record<string, string> = {};
     for (const variant of variants) {
       for (const material of syntheticMaterials(variant).materials) actual[`${variant}:${material.kind}`] = sha256(material);

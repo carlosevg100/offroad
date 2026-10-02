@@ -540,6 +540,30 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-capital-m07-native-sdk.mjs
 
+      - name: Native materials SQL production, dispatch and human review
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          MATERIAL_DRAFT_IN_TRANSACTION: "0"
+        run: |
+          set -euo pipefail
+          python3 -B scripts/ci/test-material-production-plan-native.py
+          python3 -B scripts/ci/test-material-runtime-dispatch.py
+          python3 -B scripts/ci/test-material-package-native-review.py
+
+      - name: Native material human review with two concurrent transactions
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          MATERIAL_DRAFT_IN_TRANSACTION: "0"
+          MATERIAL_RACE_SYNTHETIC_LOCAL: "1"
+        run: python3 -B scripts/ci/test-material-package-review-race.py
+
+      - name: Native material production and human review through physical HTTP Storage
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+        run: node scripts/ci/test-material-production-native-sdk.mjs
+
       - name: Stop the capital body Edge reader
         if: always()
         run: |

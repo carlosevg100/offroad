@@ -1819,8 +1819,41 @@
     {
       "version": "20261002183342",
       "name": "execution_brief_native_capture"
+    },
+    {
+      "version": "20261002203533",
+      "name": "material_production_native_capture"
+    },
+    {
+      "version": "20261002203546",
+      "name": "material_production_plan_native"
+    },
+    {
+      "version": "20261002203553",
+      "name": "material_production_consumer_native"
+    },
+    {
+      "version": "20261002203600",
+      "name": "material_production_public_sources"
+    },
+    {
+      "version": "20261002203607",
+      "name": "material_production_cutover"
+    },
+    {
+      "version": "20261002203612",
+      "name": "material_production_terminal"
+    },
+    {
+      "version": "20261002203620",
+      "name": "material_package_native_review"
+    },
+    {
+      "version": "20261002204606",
+      "name": "material_retire_experimental_approvals"
     }
   ],
   "project_id": "gjkkjtbfnssdsbmlhmwk",
-  "captured_at": "2026-10-02T18:54:46.838Z"
+  "captured_at": "2026-10-02T21:08:37.943083+00:00",
+  "source": "Live Supabase migration journal, read after the eight material migrations."
 }
