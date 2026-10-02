@@ -1743,8 +1743,12 @@
   {
    "version": "20261002101604",
    "name": "capital_body_accepted_input_identity_fk_index"
+  },
+  {
+   "version": "20261002113623",
+   "name": "institutional_configuration_review_projection"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-10-02T10:17:06.265328+00:00"
+ "captured_at": "2026-10-02T11:38:24.297116+00:00"
 }

@@ -702,11 +702,13 @@ select pg_temp.expect_error(format('select public.adopt_work_update_v1(%L,%L,%L)
 rollback to savepoint integration_base;
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
 do $$ declare f text;body text;begin
- -- The command and the two review functions it runs in its transaction.
- foreach f in array array['private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text)',
-  'private.review_institutional_configuration_v1(uuid,uuid,text,text,text)','private.review_institutional_configuration_before_sources_v1(uuid,uuid,text,text,text)'] loop
+ -- The prospective command and the actual delegated legacy primitives retain the
+ -- lock contract. Public v1 wrappers now deny native candidates before delegation.
+ foreach f in array array['private.review_institutional_configuration_and_calculate_v2(uuid,uuid,text,text,text,text,uuid,text,boolean)',
+  'private.apply_institutional_configuration_calculation_before_projection_v1(uuid,uuid,text,text,text,uuid,text)',
+  'private.apply_institutional_configuration_review_before_projection_v1(uuid,uuid,text,text,text)','private.review_institutional_configuration_before_sources_v1(uuid,uuid,text,text,text)'] loop
   body:=pg_get_functiondef(f::regprocedure);
-  if position('id=p_project_id for no key update;' in body)=0 or position('id=p_project_id for update;' in body)>0 then
+  if body !~ 'id=p_project_id[^;]*for no key update;' or body ~ 'id=p_project_id[^;]*for update;' then
    raise exception '% does not take the project row for no key update',f;
   end if;
  end loop;

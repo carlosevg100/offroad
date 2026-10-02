@@ -1,11 +1,14 @@
 import {z} from "zod";
 import {fingerprintInstitutionalModelConfiguration, institutionalModelConfigurationSchema, institutionalReviewedSourceSchema} from "@offroad/financial-model";
 import type {InstitutionalSetupContext} from "./institutional-setup-reader";
+import type {SupabaseClient} from "@supabase/supabase-js";
+import type {Database} from "@/types/database";
+import {loadInstitutionalConfigurationReviewBasis, type InstitutionalConfigurationReviewBasis} from "./institutional-configuration-review-command";
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const candidate = z.object({candidateId: z.uuid(), revision: z.number().int().positive(), status: z.enum(["review_required", "approved", "rejected"]), configurationFingerprint: hash, parentFingerprint: hash.nullable(), configuration: institutionalModelConfigurationSchema,
   answerEvidence: z.object({kind: z.literal("initial_configuration"), sourceManifestFingerprint: hash, submittedAt: z.iso.datetime({offset:true}), lineage:z.array(z.object({fieldPath:z.string(),periodEnd:z.string(),entityName:z.string(),sourceDocument:z.string(),sourceVersion:z.string(),sourceHash:hash,value:z.string().regex(/^-?\d+(?:\.\d+)?$/)})).min(1), sourceBindings: z.array(institutionalReviewedSourceSchema).min(1), review: z.object({status: z.enum(["blocked", "review_required", "ready_for_human_review"]), promotionEligible: z.literal(false), findings: z.array(z.object({id:z.string(),severity:z.enum(["blocker","warning","observation"]),period:z.string().optional(),message:z.string(),remediation:z.string()})), coverage:z.array(z.object({domain:z.string(),status:z.enum(["covered","partial","not_examined"]),evidence:z.array(z.string())}))})})});
 export type InstitutionalSetupReview = Omit<z.infer<typeof candidate>, "configuration" | "answerEvidence"> & {
-  canApprove: boolean; currency: string; periods: string[]; submittedAt:string;
+  canApprove: boolean; currency: string; periods: string[]; submittedAt:string;reviewBasis?:InstitutionalConfigurationReviewBasis;
   assumptions: z.infer<typeof institutionalModelConfigurationSchema>["assumptionBook"]["assumptions"];
   sources: Array<{id:string;name:string;version:string;asOfDate:string;currency:string;locator:string;rationale:string}>;
   findings:z.infer<typeof candidate>["answerEvidence"]["review"]["findings"];
@@ -38,4 +41,15 @@ export function parseInstitutionalSetupReviews(context: InstitutionalSetupContex
       canApprove:c.status==="review_required" && !invalidApproved && current && (approved?.configurationFingerprint ?? null)===c.parentFingerprint && historical.every(h=>h.value!==null) && config.assumptionBook.assumptions.every(a=>config.assumptionBook.periods.every(p=>a.values[p]!==undefined)) && e.review.status!=="blocked" && !e.review.findings.some(f=>f.severity==="blocker"),currency:config.currency,periods:config.assumptionBook.periods,submittedAt:e.submittedAt,assumptions:config.assumptionBook.assumptions,
       sources:e.sourceBindings.map(s=>({id:s.sourceDocument,name:sourceName(s.sourceDocument),version:s.version,asOfDate:s.asOfDate,currency:s.currency,locator:s.metadataEvidence.locator,rationale:s.metadataEvidence.rationale})),findings:e.review.findings,coverage:e.review.coverage,historical,debt:config.debtInstruments,debtRateLineage:config.debtRateLineage,capex:config.capex,absence:config.absenceConfirmations}];
   });
+}
+
+export async function loadInstitutionalSetupReviews(client:SupabaseClient<Database>,projectId:string,context:InstitutionalSetupContext) {
+  if(context.projectId!==projectId)return [];
+  const reviews=parseInstitutionalSetupReviews(context);
+  const bound=await Promise.all(reviews.map(async review=>{
+    const basis=await loadInstitutionalConfigurationReviewBasis(client,projectId,review.candidateId);
+    if(!basis||basis.configurationFingerprint!==review.configurationFingerprint||basis.parentFingerprint!==review.parentFingerprint||basis.status!==review.status)return null;
+    return {...review,reviewBasis:basis};
+  }));
+  return bound.filter((review):review is InstitutionalSetupReview & {reviewBasis:InstitutionalConfigurationReviewBasis}=>review!==null);
 }

@@ -69,7 +69,7 @@ import {canShowAdvisorInformationRequests, currentActivityCycle, customerEventTy
 
 import {loadInstitutionalConfigurationReviews} from "@/lib/advisor/institutional-configuration-reviews";
 import {InstitutionalSetupReviewWork} from "@/components/advisor/institutional-setup-review";
-import {parseInstitutionalSetupReviews} from "@/lib/advisor/institutional-setup-reviews";
+import {loadInstitutionalSetupReviews} from "@/lib/advisor/institutional-setup-reviews";
 import {InstitutionalSetupForm} from "@/components/advisor/institutional-setup-form";
 import {loadInstitutionalSetupContext} from "@/lib/advisor/institutional-setup-reader";
 import {InstitutionalConfigurationReviewWork} from "@/components/advisor/institutional-configuration-review";
@@ -570,10 +570,10 @@ async function ConversationalCapitalProject({
   if (institutionalSetup) {
     const setupCopy = await getTranslations({locale, namespace: "InstitutionalSetup"});
     workSections.push({id: "institutional-setup", title: setupCopy("title"), content: <InstitutionalSetupForm context={institutionalSetup} />});
-    const initialReviews = parseInstitutionalSetupReviews(institutionalSetup);
+    const initialReviews = await loadInstitutionalSetupReviews(supabase, project.id, institutionalSetup);
     if (initialReviews.length) {
       const initialReviewCopy = await getTranslations({locale, namespace: "InstitutionalSetupReview"});
-      workSections.push({id: "institutional-setup-review", title: initialReviewCopy("title"), version: initialReviews[0].revision, content: <InstitutionalSetupReviewWork projectId={project.id} reviews={initialReviews} reviewPermissions={reviewContext ? {canApprove: reviewContext.caller.canApprove} : undefined} />});
+      workSections.push({id: "institutional-setup-review", title: initialReviewCopy("title"), version: initialReviews[0].revision, content: <InstitutionalSetupReviewWork projectId={project.id} reviews={initialReviews} />});
     }
   }
   const rolesCopy = await getTranslations({locale, namespace: "ProjectReviewRoles"});

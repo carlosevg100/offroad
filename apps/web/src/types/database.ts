@@ -11991,6 +11991,10 @@ export type Database = {
         Args: { p_execution_id: string }
         Returns: Json
       }
+      read_institutional_configuration_review_basis_v2: {
+        Args: { p_candidate_id: string; p_project_id: string }
+        Returns: Json
+      }
       read_institutional_configuration_reviews_v1: {
         Args: { p_project_id: string }
         Returns: Json
@@ -12506,6 +12510,20 @@ export type Database = {
           p_locale: string
           p_project_id: string
           p_request_id: string
+        }
+        Returns: Json
+      }
+      review_institutional_configuration_and_calculate_v2: {
+        Args: {
+          p_candidate_id: string
+          p_command_id: string
+          p_decision: string
+          p_expected_candidate_fingerprint: string
+          p_expected_lineage_fingerprint: string
+          p_expected_parent_fingerprint: string
+          p_locale: string
+          p_project_id: string
+          p_self_approval_declared: boolean
         }
         Returns: Json
       }

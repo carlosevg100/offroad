@@ -4,9 +4,9 @@ begin;
 \ir support/institutional_contribution_builder.sql
 select set_config('test.parent_contribution',pg_temp.add_ancestry_contribution(current_setting('test.setup_candidate_id')::uuid,'9')::text,true);
 select set_config('test.parent_fp',(select configuration_fingerprint from private.institutional_model_configurations where id=current_setting('test.parent_contribution')::uuid),true);
+update public.agent_messages set status='completed' where organization_id='20000000-0000-4000-8000-000000000881' and status in ('queued','processing');
 set local role authenticated;
-select public.review_institutional_configuration_v1('30000000-0000-4000-8000-000000000881',current_setting('test.parent_contribution')::uuid,current_setting('test.setup_candidate')::jsonb->>'configurationFingerprint','approved',
- current_setting('test.parent_fp'));
+select pg_temp.approve_native_configuration('30000000-0000-4000-8000-000000000881',current_setting('test.parent_contribution')::uuid,gen_random_uuid());
 reset role;
 update public.agent_messages set status='completed' where organization_id='20000000-0000-4000-8000-000000000881' and status in ('queued','processing');
 select set_config('test.next_submission',gen_random_uuid()::text,true);
@@ -29,8 +29,9 @@ end $$;
 -- An intervening approval changes current latest, never the captured parent.
 select set_config('test.intervening',pg_temp.add_ancestry_contribution(current_setting('test.parent_contribution')::uuid,'10')::text,true);
 select set_config('test.intervening_fp',(select configuration_fingerprint from private.institutional_model_configurations where id=current_setting('test.intervening')::uuid),true);
+update public.agent_messages set status='completed' where organization_id='20000000-0000-4000-8000-000000000881' and status in ('queued','processing');
 set local role authenticated;
-select public.review_institutional_configuration_v1('30000000-0000-4000-8000-000000000881',current_setting('test.intervening')::uuid,current_setting('test.parent_fp'),'approved',current_setting('test.intervening_fp'));
+select pg_temp.approve_native_configuration('30000000-0000-4000-8000-000000000881',current_setting('test.intervening')::uuid,gen_random_uuid());
 select set_config('test.next_stored',public.worker_record_initial_institutional_candidate_v2(current_setting('test.next_job')::uuid,repeat('w',64),current_setting('test.next_submission')::uuid,current_setting('test.next_candidate')::jsonb,current_setting('test.next_capture')::jsonb->'setupInputSnapshot')::text,true);
 reset role;
 do $$declare c private.institutional_model_configurations;lineage jsonb;again jsonb;begin

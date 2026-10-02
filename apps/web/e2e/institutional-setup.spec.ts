@@ -146,11 +146,11 @@ test("guided institutional setup calculates only after review and survives resum
  await debtReview.locator("summary").click();
  await expect(debtReview).toContainText("Synthetic reconciled accounts.xlsx");
  await expect(debtReview).not.toContainText(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/);
- await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
+ await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeDisabled();
  await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
  await page.reload();
  await reviewLink.click();
- await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
+ await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeDisabled();
  // Review roles. The account owns the organization, so it may configure them; it also prepared
  // this configuration, so approving its own work needs the explicit self-approval setting.
  await page.locator('.advisor-work-surface__navigation a[href="#work-project-review"]').click();
@@ -167,14 +167,17 @@ test("guided institutional setup calculates only after review and survives resum
  await expect(ownRow.locator('input[value="approver"]')).toBeChecked();
  await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective","false");
  await reviewLink.click();
- await review.getByRole("button",{name:"Aprovar e calcular",exact:true}).click();
- await expect(review.getByRole("alert")).toHaveText(messages.InstitutionalSetupReview.roleRequired);
+ await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeDisabled();
+ await expect(review).toContainText(messages.ArtifactRevisionReview.differentReviewer);
  await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]')).toHaveCount(0);
  await page.locator('.advisor-work-surface__navigation a[href="#work-project-review"]').click();
  await roles.locator('select[name="project_self_approval"]').selectOption("allowed");
  await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective","true");
  await reviewLink.click();
+ await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeDisabled();
+ await review.getByRole("checkbox",{name:messages.ArtifactRevisionReview.declaration}).check();
  await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
+ await test.info().attach("native-configuration-declaration",{body:await page.screenshot({fullPage:true}),contentType:"image/png"});
  await review.getByRole("button",{name:"Aprovar e calcular",exact:true}).click();
  const resultLink=page.locator('.advisor-work-surface__navigation a[href="#work-institutional-model-result"]');
  await expect(resultLink).toBeVisible({timeout:120_000});
@@ -213,7 +216,9 @@ test("guided institutional setup calculates only after review and survives resum
  await expect(page.locator('.advisor-work-surface__navigation a[href="#work-institutional-setup"]')).toHaveAttribute("aria-current","true");
  await submitScenario("40");
  await reviewLink.click();
- await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled({timeout:120_000});
+ await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeDisabled({timeout:120_000});
+ await review.getByRole("checkbox",{name:messages.ArtifactRevisionReview.declaration}).check();
+ await expect(review.getByRole("button",{name:"Aprovar e calcular",exact:true})).toBeEnabled();
  await review.getByRole("button",{name:"Aprovar e calcular",exact:true}).click();
  // The first result is current, so the newer configuration is recalculated through the dependency
  // graph as an update of the work (stage 18, 5C): the recalculation becomes the current result only
