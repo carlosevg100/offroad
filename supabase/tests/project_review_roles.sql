@@ -82,7 +82,10 @@ begin
     or position('institutional_configuration_native_review_required' in pg_get_functiondef('private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text)'::regprocedure))=0
     or position('assert_capital_project_review_action' in pg_get_functiondef('private.start_provider_case_fit_project_v1(uuid,text,text,text,jsonb,uuid,uuid,text,jsonb)'::regprocedure))=0
     or position('review_execution_brief_edit_v1' in pg_get_functiondef('private.submit_advisor_execution_brief_edit_v1(uuid,uuid,text,uuid,text,text)'::regprocedure))=0
-    or position('assert_capital_project_review_action' in pg_get_functiondef('private.approve_advisor_execution_brief_v1(uuid,uuid,text,uuid)'::regprocedure))=0 then
+    or position('apply_execution_brief_approval_before_native_capture_v1' in pg_get_functiondef('private.approve_advisor_execution_brief_v1(uuid,uuid,text,uuid)'::regprocedure))=0
+    or position('execution_brief_native_review_required' in pg_get_functiondef('private.approve_advisor_execution_brief_v1(uuid,uuid,text,uuid)'::regprocedure))=0
+    or position('assert_capital_project_review_action' in pg_get_functiondef('private.apply_execution_brief_approval_before_native_capture_v1(uuid,uuid,text,uuid)'::regprocedure))=0
+    or position('apply_execution_brief_approval_before_native_capture_v1' in pg_get_functiondef('private.approve_advisor_execution_brief_v2(uuid,uuid,text,uuid,uuid,boolean)'::regprocedure))=0 then
     raise exception 'a prepare, return or approve command lost its role gate';
   end if;
 end;
