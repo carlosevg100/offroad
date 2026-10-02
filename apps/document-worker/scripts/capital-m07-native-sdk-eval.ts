@@ -69,7 +69,13 @@ async function main(){
  phase='real-claim';const claimed=await realQueue.claim();if(!claimed||claimed.kind!=='capital_project_analysis'||claimed.payload.analysis_scope!=='origination_thesis')throw new Error('origination required');const job:CapitalProjectAnalysisJob=claimed;
  const purge=await client.rpc('worker_claim_capital_capture_purge_v1',{p_worker_token:'w'.repeat(64),p_limit:100});assert.equal(purge.error,null);
  let sends=0,acknowledgements=0;
- const queue={...realQueue,complete:async(...args:Parameters<typeof realQueue.complete>)=>{acknowledgements++;if(acknowledgements===2)await realQueue.complete(...args);}};
+ const queue={...realQueue,complete:async(...args:Parameters<typeof realQueue.complete>)=>{acknowledgements++;if(acknowledgements===2)await realQueue.complete(...args);},
+  fail:async(...args:Parameters<typeof realQueue.fail>)=>{
+   const failure=args[1];const safe=(value:unknown)=>typeof value==='string'&&/^[a-zA-Z0-9_]{3,120}$/.test(value)?value:null;
+   const cause=failure.cause&&typeof failure.cause==='object'?failure.cause as Record<string,unknown>:{};
+   process.stderr.write(JSON.stringify({eval:'capital_m07_native_sdk',event:'producer-failure',code:safe(failure.code),causeCode:safe(cause.code),causeClass:safe(cause.class),causeMessage:safe(cause.message)})+'\n');
+   return realQueue.fail(...args);
+  }};
  const neverGateway={complete:async()=>{throw new Error('legacy model forbidden');},spent:()=>({costUsd:0,calls:0,unknownCostCalls:0,budgetExposureUsd:0})} as unknown as ModelGateway;
  const output=syntheticOutput();
  const dependencies={queue,gateway:neverGateway,lineage:()=>[],researchProviders:[{id:'source_pack' as const,maxCostUsdPerCall:0,search:async(query:import('@offroad/public-research').ResearchQuery)=>[{provider:'source_pack' as const,topic:query.topic,title:'Synthetic licensed source',url,snippet:'Licensed excerpt only',contentHash:'b'.repeat(64),publishedAt:null,retrievedAt:new Date().toISOString()}]}],m07Runtime:{connections:{openai:{accountRef:'m07-sql-account',projectRef:'m07-sql-project',credentialBinding:'m07-sql-key',region:'global'}},maxCostUsd:1.55,maxCalls:2,researchReserveUsd:0.3,adapters:{openai:{provider:'openai' as const,complete:async(request:import('@offroad/model-gateway').AdapterRequest)=>{sends++;return{output,rawText:JSON.stringify(output),model:request.model,usage:{inputTokens:1000,outputTokens:1000,cachedInputTokens:0},stopReason:'end' as const};}}}}};
