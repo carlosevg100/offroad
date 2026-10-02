@@ -1,3 +1,4 @@
+import {retryCapitalCaptureRpc} from "./capital-capture-rpc-retry";
 /** Native M07 worker commands. SQL owns authority; bodies stay ephemeral or in
  * bounded physical Storage. A missing published source is a gap, never a grant. */
 import {createHash, randomUUID} from "node:crypto";
@@ -28,7 +29,7 @@ export type CapitalM07DeliveredSource={deliveryId:string;source:ResearchSource;r
 export function createCapitalM07QueueAdapter(client:SupabaseClient,job:CapitalProjectAnalysisJob,now:()=>number=Date.now){
  const authority=Object.freeze({jobId:uuid.parse(job.job_id),capabilityToken:z.string().min(1).parse(job.capability_token)});
  const args={p_job_id:authority.jobId,p_capability_token:authority.capabilityToken};
- const rpc=async(name:string,input:Record<string,unknown>={})=>{const result=await client.rpc(name,{...args,...input});if(result.error){if(result.error.message==="capital_m07_budget_denied")throw new Error("capital_m07_budget_denied");throw new Error("capital_m07_database_denied");}return result.data as unknown;};
+ const rpc=async(name:string,input:Record<string,unknown>={})=>{const result=await retryCapitalCaptureRpc(() => client.rpc(name,{...args,...input}));if(result.error){if(result.error.message==="capital_m07_budget_denied")throw new Error("capital_m07_budget_denied");throw new Error("capital_m07_database_denied");}return result.data as unknown;};
  const live=(scope:Scope)=>{if(scope.path!==`${job.organization_id}/${scope.allocationId}/payload.json`||Date.parse(scope.retainedAt)>=Date.parse(scope.purgeAt)||Date.parse(scope.purgeAt)>=Date.parse(scope.expiresAt)||Date.parse(scope.purgeAt)<=now())throw new Error("capital_m07_retention_denied");};
  const readScope=async(allocationId:string)=>{const scope=scopeSchema.parse(await rpc("worker_read_capital_m07_allocation_v1",{p_allocation_id:allocationId}));live(scope);if(scope.allocationId!==allocationId)throw new Error("capital_m07_scope_denied");return scope;};
  const read=async(expected:Scope)=>{live(expected);const before=await readScope(expected.allocationId);const omit=(s:Scope)=>{const{replayed:_,...v}=s;return v;};if(!same(omit(before),omit(expected)))throw new Error("capital_m07_scope_changed");

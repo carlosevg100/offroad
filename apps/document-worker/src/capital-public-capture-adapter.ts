@@ -1,3 +1,4 @@
+import {retryCapitalCaptureRpc} from "./capital-capture-rpc-retry";
 import {createHash} from "node:crypto";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
@@ -30,7 +31,7 @@ export async function openCapitalPublicCaptureAdapter(client: SupabaseClient, au
   const job = Object.freeze({jobId: z.uuid().parse(authority.jobId), capabilityToken: z.string().min(1).parse(authority.capabilityToken)});
   const args = {p_job_id: job.jobId, p_capability_token: job.capabilityToken};
   const rpc = async (name: string, parameters: Record<string, unknown>) => {
-    const result = await client.rpc(name, parameters);
+    const result = await retryCapitalCaptureRpc(() => client.rpc(name, parameters));
     // Neither database messages nor caller content enter logs/errors.
     if (result.error) throw new Error("capital public delivery authority denied");
     return result.data;

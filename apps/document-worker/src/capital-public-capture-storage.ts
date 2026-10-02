@@ -1,3 +1,4 @@
+import {retryCapitalCaptureRpc} from "./capital-capture-rpc-retry";
 import {createHash} from "node:crypto";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
@@ -64,7 +65,7 @@ function assertPath(scope: {allocationId: string; path: string}) {
  */
 export function createCapitalPublicCaptureStorage(supabase: SupabaseClient, now: () => number = Date.now) {
   const rpc = async (name: string, args: Record<string, unknown>): Promise<unknown> => {
-    const result = await supabase.rpc(name, args);
+    const result = await retryCapitalCaptureRpc(() => supabase.rpc(name, args));
     if (result.error) throw new Error("capital capture database authority denied");
     return result.data;
   };

@@ -3428,3 +3428,7 @@ Migrações canônicas de produção: 20261001205206_capital_body_retention.sql,
 ## M07: DDL dinâmico e aliases privados
 
 Revisão adicional de100objetos gerados por loops ou rename na migração20261002125617: políticas restritivas de quatro operações, triggers de timestamp/auditoria/imutabilidade/retensão e nove aliases privados sem grants de API. As fontes de cada objeto fixam a linha da lista de tabelas e a instrução dinâmica efetiva em object-decisions.json. Três wrappers públicos tiveram service_role revogado; permanecem autenticados e sujeitos ao guard nativo. Checkers contra catálogos completos ao vivo: produção3340objetos, staging3401, zero erros ou desvios.
+
+## Etapa20: estabilidade do contexto físico M07
+
+0 objetos novos e 0 atualizados. Vincula a captura pública do M07 ao contexto físico imutável da receita, mantendo revogação, TTL e integridade.

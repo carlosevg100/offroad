@@ -1,3 +1,4 @@
+import {retryCapitalCaptureRpc} from "./capital-capture-rpc-retry";
 /** Read/transform/commit recovery from a server grant. No model SDK, factory,
  * authorization/dispatch RPC or reconstruction from missing historical bytes. */
 import {createHash,randomUUID} from "node:crypto";
@@ -30,7 +31,7 @@ const sha=(v:Uint8Array|string)=>createHash("sha256").update(v).digest("hex"),sa
 const omitReplay=(scope:CapitalM07RetentionScope)=>{const{replayed:_,...identity}=scope;return identity;};
 export async function recoverCapitalM07Existing(client:SupabaseClient,job:CapitalProjectAnalysisJob,transform:CapitalM07RecoveryTransform,now:()=>number=Date.now):Promise<{commit:CapitalM07CommitReceipt;sourceCount:number;researchStatus:z.infer<typeof metadataSchema>["researchStatus"];finalRetainedPayloadId:string}|null>{
  const authority={jobId:uuid.parse(job.job_id),capabilityToken:z.string().min(1).parse(job.capability_token)},args={p_job_id:authority.jobId,p_capability_token:authority.capabilityToken};
- const rpc=async(name:string,input:Record<string,unknown>={})=>{const result=await client.rpc(name,{...args,...input});if(result.error)throw new Error("capital_m07_recovery_denied");return result.data as unknown;};
+ const rpc=async(name:string,input:Record<string,unknown>={})=>{const result=await retryCapitalCaptureRpc(() => client.rpc(name,{...args,...input}));if(result.error)throw new Error("capital_m07_recovery_denied");return result.data as unknown;};
  const discovery=discoverySchema.parse(await rpc("worker_find_capital_m07_recovery_v1"));
  if(discovery.state==="none"){if(discovery.recipeId!==null)throw new Error("capital_m07_recovery_denied");return null;}
  if(discovery.state!=="recovery"||!discovery.recipeId)throw new CapitalM07RecoveryGap();

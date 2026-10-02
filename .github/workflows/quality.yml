@@ -488,6 +488,11 @@ jobs:
       # the boot, so nothing is pulled), and the proof runs on it last.
       # Both steps need the workspace dependencies: after a failed contract test the install above is
       # skipped, and the proof would fail with a missing module instead of being skipped.
+      - name: Native M07 context capture under concurrent task output
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-capital-m07-context-stability-concurrency.py
+
       - name: Rebuild the local database for the wait proof
         id: wait_reset
         if: ${{ !cancelled() && steps.db.outcome == 'success' && steps.database_deps.outcome == 'success' }}

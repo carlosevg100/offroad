@@ -571,6 +571,9 @@ export async function processOriginationThesisJob(
           contentAcquirer: dependencies.contentAcquirer,
         });
 
+    // Observe early failures while independent plan tasks yield. The original
+    // promise still throws below, where the job catch persists the failure.
+    void researchPromise.catch(() => {});
     const researchArtifactsPromise = Promise.all([
       persistTask({
         taskId: "C02",
@@ -598,6 +601,7 @@ export async function processOriginationThesisJob(
       }),
     ]);
 
+    void researchArtifactsPromise.catch(() => {});
     await persistTask({
       taskId: "M05",
       artifactType: "meeting_brief_definition",

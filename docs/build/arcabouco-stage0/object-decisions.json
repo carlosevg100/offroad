@@ -190865,6 +190865,12 @@
           "line": 145,
           "anchor": "create function private.capital_public_capture_context_v1(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002163401_capital_m07_capture_context_stability.sql",
+          "line": 7,
+          "anchor": "create function private.capital_public_capture_context_v1(p_job_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -218333,6 +218339,60 @@
           "mechanism": "dynamic_ddl"
         }
       ]
+    },
+    {
+      "id": "function:private.capital_public_capture_context_before_native_m07_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_public_capture_context_before_native_m07_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "capital_public_capture_context_before_native_m07_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_public_capture_context_before_native_m07_v1(p_job_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "capital_public_capture_context_before_native_m07_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia Offroad, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q / M07",
+      "reason": "Delegação privada do contexto anterior para as famílias sem receita M07; nenhum grant ao cliente.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002163401_capital_m07_capture_context_stability.sql",
+          "line": 5,
+          "anchor": "alter function private.capital_public_capture_context_v1(uuid,text) rename to capital_public_capture_context_before_native_m07_v1;",
+          "mechanism": "rename_function"
+        }
+      ]
     }
   ],
   "repository_items": [
@@ -225450,6 +225510,13 @@
       "decision": "preservar",
       "stage": "20 / 3Q M07",
       "reason": "Preserva contratos e diagnósticos legados fora do M07, mantendo todos os guards de commit e qualidade nativos."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002163401_capital_m07_capture_context_stability.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q / M07",
+      "reason": "Corrige a identidade de entrada sob outputs concorrentes sem reescrever snapshots históricos."
     }
   ],
   "staging_archive": [

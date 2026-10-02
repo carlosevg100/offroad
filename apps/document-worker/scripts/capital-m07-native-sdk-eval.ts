@@ -69,7 +69,12 @@ async function main(){
   if(phase==='producer-http-storage'&&!response.ok){
    const pathname=new URL(input instanceof Request?input.url:String(input)).pathname;
    const operation=/^\/rest\/v1\/rpc\/[a-z0-9_]+$/.test(pathname)?pathname.split('/').at(-1):pathname==='/functions/v1/capital-body-read'?'capital-body-read':'storage';
-   process.stderr.write(JSON.stringify({eval:'capital_m07_native_sdk',event:'http-failure',operation,status:response.status})+'\n');
+   const failure:unknown=await response.clone().json().catch(()=>null);
+   const code=failure&&typeof failure==='object'?(failure as Record<string,unknown>).code:null;
+   const message=failure&&typeof failure==='object'?(failure as Record<string,unknown>).message:null;
+   process.stderr.write(JSON.stringify({eval:'capital_m07_native_sdk',event:'http-failure',operation,status:response.status,
+    code:typeof code==='string'&&/^[A-Z0-9]{5,12}$/.test(code)?code:null,
+    category:typeof message==='string'&&/^[a-z0-9_]{3,120}$/.test(message)?message:null})+'\n');
   }
   return response;
  }},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
@@ -84,7 +89,7 @@ async function main(){
  let sends=0,acknowledgements=0;
  const queue={...realQueue,complete:async(...args:Parameters<typeof realQueue.complete>)=>{acknowledgements++;if(acknowledgements===2)await realQueue.complete(...args);},
   fail:async(...args:Parameters<typeof realQueue.fail>)=>{
-   const failure=args[1];const safe=(value:unknown)=>typeof value==='string'&&/^[a-zA-Z0-9_]{3,120}$/.test(value)?value:null;
+   const supplied=args[1];const failure=supplied&&typeof supplied==='object'?supplied as {code?:unknown;cause?:unknown}:{};const safe=(value:unknown)=>typeof value==='string'&&/^[a-zA-Z0-9_]{3,120}$/.test(value)?value:null;
    const cause=failure.cause&&typeof failure.cause==='object'?failure.cause as Record<string,unknown>:{};
    process.stderr.write(JSON.stringify({eval:'capital_m07_native_sdk',event:'producer-failure',code:safe(failure.code),causeCode:safe(cause.code),causeClass:safe(cause.class),causeMessage:safe(cause.message)})+'\n');
    return realQueue.fail(...args);
