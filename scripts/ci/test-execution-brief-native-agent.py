@@ -7,6 +7,9 @@ ROOT=Path(__file__).resolve().parents[2]
 url=os.environ['DATABASE_URL']
 assert urlparse(url).hostname in ('localhost','127.0.0.1','::1'), 'Local disposable database only'
 http_fixture=os.environ.get('S11_HTTP_FIXTURE')=='1'
+ui_namespace=os.environ.get('BRIEF_UI_NAMESPACE')
+if ui_namespace:
+ assert os.environ.get('BRIEF_UI_FIXTURE')=='1' and re.fullmatch(r'[0-9a-f]{8}',ui_namespace), 'UI namespace must be local and explicit'
 if http_fixture:
  assert not any(os.environ.get(k) for k in ('S11_FIXTURE_CONTINUATION','S11_FIXTURE_RENDERER','S11_FIXTURE_AFTER_RENDERER','S11_FIXTURE_SECOND_AFTER_RENDERER','S11_FIXTURE_REVISION_RENDERER_CONTINUATION')), 'HTTP bootstrap cannot fabricate native bodies'
 def report(lines):
@@ -15,6 +18,8 @@ def expand(p): return re.sub(r'^\\ir (.+)$',lambda m:expand(p.parent/m[1].strip(
 def literal(x): return "'"+str(x).replace("'","''")+"'"
 p=subprocess.Popen(['psql',url,'-XAtq','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
 def phase(sql):
+ if ui_namespace:
+  sql=sql.replace('a8800000',ui_namespace).replace('native-agent@example.invalid','native-agent-'+ui_namespace+'@example.invalid').replace('Synthetic native agent','Synthetic native agent '+ui_namespace).replace("repeat('d',64)","repeat('"+ui_namespace+"',8)")
  p.stdin.write(sql+'\n\\echo PHASE_DONE\n');p.stdin.flush();out=[]
  while True:
   line=p.stdout.readline()

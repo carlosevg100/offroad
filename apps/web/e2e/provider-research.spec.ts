@@ -1,3 +1,4 @@
+import {declareExecutionBriefReview} from "./support/brief-approval";
 import {startLegacyConversation} from "./support/legacy-conversation";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {randomBytes} from "node:crypto";
@@ -43,6 +44,7 @@ test("legacy work preserves approved provider research and keeps private mandate
   await expect(brief.locator(".execution-brief-card__workstreams > li")).toHaveCount(3);
   const research = page.getByTestId("provider-research-work");
   await expect(research).toHaveCount(0);
+  await declareExecutionBriefReview(brief);
   await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
   await expect(research).toBeVisible({timeout: 120_000});
   await expect(research.locator("article")).toHaveCount(28);
@@ -70,6 +72,7 @@ test("legacy work preserves approved provider research and keeps private mandate
   await expect(brief).toContainText("Identificar financiadores aderentes ao caso");
   await expect(brief.locator(".execution-brief-card__workstreams > li")).toHaveCount(3);
   await expect(page.getByTestId("provider-case-fit-work")).toHaveCount(0);
+  await declareExecutionBriefReview(brief);
   await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
   const fitLink = page.locator('.advisor-work-surface__navigation a[href="#work-provider-case-fit"]');
   await expect(fitLink).toBeVisible({timeout: 120_000});

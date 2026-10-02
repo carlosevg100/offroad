@@ -1,3 +1,4 @@
+import {declareExecutionBriefReview} from "./support/brief-approval";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
@@ -95,6 +96,7 @@ test.describe("documentary work products with actual provider execution", () => 
     await expect(brief).toContainText(scenario.request);
     await expect(brief).toContainText("não inclui cálculos financeiros");
     for (const label of ["Conferir os documentos", "Preparar a leitura", "Entregar e revisar"]) await expect(brief).toContainText(label);
+    await declareExecutionBriefReview(brief);
     await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
     const work = page.locator(".advisor-work-surface");
     await expect(work.getByRole("heading", {name: scenario.title, exact: true})).toBeVisible({timeout: 180_000});
@@ -145,6 +147,7 @@ test.describe("documentary work products with actual provider execution", () => 
     expect(page.url().split("#")[0]).toBe(projectUrl);
     await page.reload();
     await expect(brief.locator('[data-approval-status="awaiting"]')).toBeVisible();
+    await declareExecutionBriefReview(brief);
     await brief.locator('[data-approval-status="awaiting"]').getByRole("button", {name: /aprovar|approve/i}).click();
     const work = page.locator(".advisor-work-surface");
     await expect(work.getByRole("heading", {name: "Preparação para a reunião", exact: true})).toBeVisible({timeout: 180_000});

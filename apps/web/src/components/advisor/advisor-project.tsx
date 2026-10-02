@@ -330,7 +330,7 @@ export function AdvisorProject(props: Props) {
       || current.approval?.nativeReview?.captureId !== input.expectedCaptureId) {
       return {ok: false, error: props.copy.errors.stale};
     }
-    if (pending || uploading || active) return {ok: false, error: props.copy.errors.processing};
+    if (pending || uploading) return {ok: false, error: props.copy.errors.processing};
     return runCommand(["plan_approval", current.briefId, input.expectedFingerprint, input.expectedCaptureId, String(input.selfApprovalDeclared)], null,
       (commandId) => approveAdvisorExecutionBrief({locale: props.locale, projectId: props.projectId,
         executionBriefId: current.briefId, expectedFingerprint: input.expectedFingerprint, expectedCaptureId: input.expectedCaptureId,
@@ -408,7 +408,7 @@ export function AdvisorProject(props: Props) {
             if (item.kind === "execution_brief") {
               return <ExecutionBriefCard
                 approval={item.executionBrief.approval}
-                disabled={pending || uploading || active}
+                disabled={pending || uploading}
                 onApprove={approvePlan}
                 onRefresh={() => router.refresh()}
                 brief={item.executionBrief.brief}

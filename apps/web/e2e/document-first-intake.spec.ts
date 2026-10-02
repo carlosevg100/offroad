@@ -1,3 +1,4 @@
+import {declareExecutionBriefReview} from "./support/brief-approval";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {verifyLocalFixtureSources} from "./support/source-verification";
 import {receivablesR01Fixture, refreshReceivablesFixtureDiscovery} from "./support/receivables-r01-fixture";
@@ -49,6 +50,7 @@ async function awaitIntakeAnalysis(page: Page) {
     const approval = panel.locator('[data-approval-status="awaiting"]');
     await expect(approval).toBeVisible({timeout: 120_000});
     await expect(review).toHaveCount(0);
+    await declareExecutionBriefReview(approval);
     await approval.getByRole("button", {name: /aprovar|approve/i}).click();
   }
   await expect(review).toBeVisible({timeout: 120_000});
@@ -593,6 +595,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(page.locator(".advisor-private-work__request")).toBeVisible({timeout: 120_000});
     const approval = page.getByTestId("execution-brief").locator('[data-approval-status="awaiting"]');
     await expect(approval).toBeVisible({timeout: 120_000});
+    await declareExecutionBriefReview(approval);
     await approval.getByRole("button", {name: /aprovar|approve/i}).click();
     const work = page.locator(".advisor-work-surface");
     await expect(work).toBeVisible({timeout: 180_000});
@@ -659,7 +662,7 @@ test.describe("Document-first intake (company journey)", () => {
     try {
       await expect.poll(() => {
         const result = execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `target_id=${targetId}`], {
-          encoding: "utf8", input: `select jsonb_build_object('status',j.status,'lastError',j.last_error,'fingerprint',b.visible_snapshot->>'fingerprint','planners',coalesce((select jsonb_agg(jsonb_build_object('id',p.id,'status',p.status,'lastError',p.last_error)) from public.processing_jobs p where p.organization_id=j.organization_id and p.intake_session_id=j.intake_session_id and p.kind='execution_brief_proposal' and p.payload->>'approval_target_job_id'=j.id::text),'[]'::jsonb)) from public.processing_jobs j left join public.capital_project_execution_brief_dispatches d on d.organization_id=j.organization_id and d.processing_job_id=j.id left join public.capital_project_execution_briefs b on b.organization_id=d.organization_id and b.id=d.execution_brief_id where j.id=:'target_id'::uuid;`,
+          encoding: "utf8", input: `select jsonb_build_object('status',j.status,'lastError',j.last_error,'fingerprint',b.brief_fingerprint,'planners',coalesce((select jsonb_agg(jsonb_build_object('id',p.id,'status',p.status,'lastError',p.last_error)) from public.processing_jobs p where p.organization_id=j.organization_id and p.intake_session_id=j.intake_session_id and p.kind='execution_brief_proposal' and p.payload->>'approval_target_job_id'=j.id::text),'[]'::jsonb)) from public.processing_jobs j left join public.capital_project_execution_brief_dispatches d on d.organization_id=j.organization_id and d.processing_job_id=j.id left join public.capital_project_execution_briefs b on b.organization_id=d.organization_id and b.id=d.execution_brief_id where j.id=:'target_id'::uuid;`,
         });
         diagnostic = JSON.parse(result.trim() || "null") as ProposalDiagnostic | null;
         // Stop waiting as soon as a terminal error exists; assertions below preserve failure.
@@ -717,6 +720,7 @@ test.describe("Document-first intake (company journey)", () => {
     } finally {
       await page.setViewportSize(desktopViewport);
     }
+    await declareExecutionBriefReview(approval);
     await expect(approval.getByRole("button", {name: /aprovar|approve/i})).toBeEnabled();
     await expect(page.locator(".intake-review")).toHaveCount(0);
 
@@ -761,6 +765,7 @@ test.describe("Document-first intake (company journey)", () => {
     await expect(brief).toContainText("2026-08-31");
     await brief.scrollIntoViewIfNeeded();
     await capture("synthetic-approved-scope-plan");
+    await declareExecutionBriefReview(brief);
     await brief.getByRole("button", {name: /aprovar|approve/i}).click();
     await expect.poll(() => sql("select count(*) from public.capital_project_execution_brief_events e where e.capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and e.event_type='accepted' and e.event_payload->>'processingJobId' in (select id::text from public.processing_jobs where processing_run_id=(select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid));").trim(), {timeout: 30_000}).not.toBe("0");
     await expect.poll(() => sql("select result_summary#>>'{case_state,receivablesVertical,status}' from public.document_intake_sessions where id=:'session_id'::uuid;").trim(), {timeout: 120_000}).toBe("analyzed");
@@ -885,6 +890,7 @@ test.describe("Document-first intake (company journey)", () => {
     };
     await waitForCaseStatus(["awaiting_approval"]);
     await page.reload();
+    await declareExecutionBriefReview(page.getByTestId("execution-brief"));
     await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
     await waitForCaseStatus(["succeeded"]);
     expect(sql("select private.receivables_evidence_scope_context(s.organization_id,s.id)->>'state' from public.document_intake_sessions s where s.id=:'session_id'::uuid;")).toBe("current");
@@ -916,6 +922,7 @@ test.describe("Document-first intake (company journey)", () => {
     await waitForCaseStatus(["awaiting_approval", "succeeded"]);
     if (sql(currentJob) === "awaiting_approval") {
       await page.reload();
+      await declareExecutionBriefReview(page.getByTestId("execution-brief"));
       await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
     }
     await waitForCaseStatus(["succeeded"]);

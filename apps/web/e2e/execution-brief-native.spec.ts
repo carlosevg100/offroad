@@ -1,4 +1,5 @@
 import {execFileSync} from "node:child_process";
+import {randomBytes} from "node:crypto";
 import {join} from "node:path";
 import {expect, test} from "@playwright/test";
 import messages from "../messages/pt-BR.json";
@@ -9,24 +10,25 @@ test("native execution brief binds an explicit human declaration and survives re
   const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
   for (const value of [databaseUrl, process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000", process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321"])
     if (!["127.0.0.1", "localhost", "[::1]"].includes(new URL(value).hostname)) throw new Error("Native brief UI proof requires local synthetic services");
+  const namespace = randomBytes(4).toString("hex");
   const root = join(__dirname, "../../..");
   execFileSync("python3", ["-B", join(root, "scripts/ci/test-execution-brief-native-agent.py")], {
-    cwd: root, env: {...process.env, DATABASE_URL: databaseUrl, BRIEF_UI_FIXTURE: "1"}, encoding: "utf8",
+    cwd: root, env: {...process.env, DATABASE_URL: databaseUrl, BRIEF_UI_FIXTURE: "1", BRIEF_UI_NAMESPACE: namespace}, encoding: "utf8",
   });
   const sql = (query: string) => execFileSync("psql", [databaseUrl, "-XqAt", "-v", "ON_ERROR_STOP=1"], {input: query, encoding: "utf8"}).trim();
-  const org = "a8800000-0000-4000-8000-000000000002";
+  const org = `${namespace}-0000-4000-8000-000000000002`;
   const workId = sql(`select work_id from private.execution_brief_native_bindings where organization_id='${org}';`);
   expect(workId).toMatch(/^[0-9a-f-]{36}$/);
   expect(sql(`select count(*) from public.capital_project_execution_brief_dispatches where organization_id='${org}' and approved_brief_fingerprint is not null;`)).toBe("0");
   await page.goto("/pt-BR/login");
-  await page.locator('input[name="email"]').fill("native-agent@example.invalid");
+  await page.locator('input[name="email"]').fill(`native-agent-${namespace}@example.invalid`);
   await page.locator('input[name="password"]').fill("brief-isolated-local-ui-password");
   await page.locator("form.auth-form button[type=submit]").click();
   await expect(page).toHaveURL(/\/pt-BR\/(?:app|workspaces|onboarding)(?:\?|$)/);
   // Select the actual customer workspace through the product, rather than
   // relying on a first membership or injecting a workspace cookie.
   await page.goto("/pt-BR/workspaces");
-  await page.getByRole("link", {name: "Synthetic native agent", exact: true}).click();
+  await page.getByRole("link", {name: `Synthetic native agent ${namespace}`, exact: true}).click();
   await expect(page).toHaveURL(new RegExp(`/pt-BR/app\\?workspace=${org}$`));
   await page.goto(`/pt-BR/app/projects/${workId}`);
   const brief = page.getByTestId("execution-brief");
