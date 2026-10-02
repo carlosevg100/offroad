@@ -3473,7 +3473,7 @@ Revisão adicional de100objetos gerados por loops ou rename na migração2026100
 - `trigger:private.execution_brief_review_projections.execution_brief_review_no_truncate`
 - `trigger:private.execution_brief_review_projections.execution_brief_review_updated`
 
-## Etapa 20 — produção e revisão nativa de materiais
+## Etapa 20: produção e revisão nativa de materiais
 
 203 objetos instalados em produção e staging, com origem e decisão no inventário.
 
