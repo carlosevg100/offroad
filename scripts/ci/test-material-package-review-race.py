@@ -2,10 +2,81 @@
 """Full local migrated snapshot; genuine two-session races in a private clone.
 Data must belong exclusively to disposable synthetic CI fixtures. No remote target.
 """
-import os,subprocess,uuid,tempfile,re,select,time,json
+import os,subprocess,uuid,tempfile,re,select,time,json,sys,tomllib,shutil
 from pathlib import Path
-from urllib.parse import urlparse,urlunparse
+from urllib.parse import urlparse,urlunparse,unquote
 ROOT=Path(__file__).resolve().parents[2]
+def version_major(text):
+ match=re.search(r'PostgreSQL\)?\s+(\d+)',text)
+ assert match,'material_race_tool_version_unrecognized'
+ return int(match.group(1))
+def sanitized_failure(tool,stderr,code):
+ # Do not echo SQL, fixture bodies, URLs, usernames, passwords or arbitrary stderr.
+ text=stderr.decode('utf-8','replace') if isinstance(stderr,bytes) else stderr
+ reason='operation_failed'
+ for phrase,label in [('server version mismatch','server_version_mismatch'),('unsupported version','unsupported_version'),('permission denied','permission_denied'),('connection refused','connection_refused'),('could not connect','connection_failed'),('does not exist','object_missing')]:
+  if phrase in text.lower():reason=label;break
+ versions=re.findall(r'(?:server version|pg_dump version|pg_restore version):\s*([0-9]+(?:\.[0-9]+)*)',text)
+ return 'material_race_tool_failed:'+Path(tool).name+':exit='+str(code)+':reason='+reason+':versions='+','.join(versions)
+def tool_run(args,**kwargs):
+ result=subprocess.run(args,capture_output=True,timeout=120,**kwargs)
+ if result.returncode:
+  message=sanitized_failure(args[0],result.stderr,result.returncode)
+  print(message,file=sys.stderr);raise RuntimeError(message)
+ return result
+
+def select_clone_tools():
+ server=tool_run(['psql',origin,'-XAtq','-v','ON_ERROR_STOP=1'],input='show server_version_num;',text=True)
+ server_major=int(server.stdout.strip())//10000
+ local={}
+ for tool in ('pg_dump','pg_restore'):
+  executable=shutil.which(tool)
+  if executable:
+   result=tool_run([executable,'--version'],text=True);local[tool]=(executable,version_major(result.stdout))
+ if len(local)==2 and all(value[1]>=server_major for value in local.values()) and local['pg_restore'][1]>=local['pg_dump'][1]:
+  print('PASS material_race_clone_tools_host server_major='+str(server_major)+' dump_major='+str(local['pg_dump'][1])+' restore_major='+str(local['pg_restore'][1]))
+  return {tool:[value[0]] for tool,value in local.items()},None
+ # Only the exact CLI project container bound to this loopback database is eligible.
+ config=tomllib.loads((ROOT/'supabase/config.toml').read_text())
+ assert config['project_id']=='offroad' and config['db']['major_version']==17 and server_major==17,'material_race_container_project_version_required'
+ container='supabase_db_offroad'
+ inspected=tool_run(['docker','inspect',container],text=True)
+ data=json.loads(inspected.stdout);assert len(data)==1
+ instance=data[0]
+ assert instance['Name']=='/'+container and instance['State']['Running'],'material_race_container_identity_required'
+ assert 'supabase/postgres:' in instance['Config']['Image'],'material_race_container_postgres_image_required'
+ bindings=instance['NetworkSettings']['Ports'].get('5432/tcp') or []
+ assert parsed.port is not None and any(int(value['HostPort'])==parsed.port for value in bindings),'material_race_container_loopback_port_required'
+ database=parsed.path.lstrip('/');username=parsed.username or 'postgres'
+ assert re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',database) and re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',username),'material_race_container_database_identifier_required'
+ env=os.environ.copy()
+ if parsed.password is not None:env['PGPASSWORD']=unquote(parsed.password)
+ base=['docker','exec','-i','-e','PGPASSWORD',container]
+ connection=['--host=127.0.0.1','--port=5432','--username='+username]
+ host_id=tool_run(['psql',origin,'-XAtq','-v','ON_ERROR_STOP=1'],input='select system_identifier from pg_control_system();',text=True).stdout.strip()
+ container_id=tool_run(base+['psql']+connection+['--dbname='+database,'-XAtq','-v','ON_ERROR_STOP=1'],input='select system_identifier from pg_control_system();',text=True,env=env).stdout.strip()
+ assert re.fullmatch(r'[0-9]+',host_id) and host_id==container_id,'material_race_container_database_instance_mismatch'
+ tools={}
+ for tool in ('pg_dump','pg_restore'):
+  result=tool_run(base+[tool,'--version'],text=True,env=env)
+  assert version_major(result.stdout)==server_major,'material_race_container_tool_version_required'
+  tools[tool]=base+[tool]+connection
+ print('PASS material_race_clone_tools_container project=offroad instance_verified=true server_major=17 dump_major=17 restore_major=17 host_dump_major='+str(local.get('pg_dump',('',0))[1]))
+ return tools,env
+
+if sys.argv[1:]==['--self-test']:
+ assert version_major('pg_dump (PostgreSQL) 17.6')==17
+ assert version_major('pg_restore (PostgreSQL) 16.11')==16
+ diagnostic=sanitized_failure('pg_dump',b'pg_dump: error: aborting because of server version mismatch\nserver version: 17.6; pg_dump version: 16.11\npostgresql://user:secret@host/db\nPRIVATE FIXTURE BODY',1)
+ assert 'server_version_mismatch' in diagnostic and 'versions=17.6,16.11' in diagnostic
+ assert all(value not in diagnostic for value in ('secret','host','user','FIXTURE','postgresql://'))
+ generic=sanitized_failure('pg_restore','PRIVATE CONTENT could not connect to database password=secret',2)
+ assert generic.endswith('reason=connection_failed:versions=') and 'secret' not in generic
+ text=Path(__file__).read_text()
+ for guard in ("config['project_id']=='offroad'", "config['db']['major_version']==17", "host_id==container_id", "parsed.port is not None", "archive.startswith(b'PGDMP')", "input=dump.read_bytes()", "MATERIAL_RACE_SYNTHETIC_LOCAL"):
+  assert guard in text,guard
+ print('PASS material_race_tool_version_binary_container_guards_and_sanitized_errors')
+ raise SystemExit(0)
 origin=os.environ['DATABASE_URL'];parsed=urlparse(origin)
 assert parsed.hostname in('localhost','127.0.0.1','::1') and not parsed.query and not parsed.fragment
 assert os.environ.get('MATERIAL_RACE_SYNTHETIC_LOCAL')=='1','explicit disposable synthetic local database required'
@@ -34,9 +105,19 @@ def literal(v):return "'"+str(v).replace("'","''")+"'"
 try:
  with tempfile.TemporaryDirectory(prefix='material-race-')as temp:
   dump=Path(temp)/'database.dump';os.umask(0o077)
-  command(['pg_dump',origin,'--format=custom','--file',str(dump)])
+  clone_tools,clone_env=select_clone_tools()
+  if clone_env is None:
+   tool_run(clone_tools['pg_dump']+[origin,'--format=custom','--file',str(dump)],text=True)
+  else:
+   # Custom archive is binary: never pass through text decoding or a shell.
+   archive=tool_run(clone_tools['pg_dump']+['--dbname='+parsed.path.lstrip('/'),'--format=custom'],env=clone_env).stdout
+   assert archive.startswith(b'PGDMP'),'material_race_custom_archive_required'
+   dump.write_bytes(archive)
   command(['createdb','--maintenance-db',origin,'--template=template0','--encoding=UTF8',dbname]);created=True
-  command(['pg_restore','--dbname',url,'--exit-on-error',str(dump)])
+  if clone_env is None:
+   tool_run(clone_tools['pg_restore']+['--dbname',url,'--exit-on-error',str(dump)],text=True)
+  else:
+   tool_run(clone_tools['pg_restore']+['--dbname='+dbname,'--exit-on-error'],input=dump.read_bytes(),env=clone_env)
  # Setup operates only the private clone; no body/receipt/approval seeded.
  source=(ROOT/'scripts/ci/test-material-production-plan-native.py').read_text()
  source=source.replace("'material_production_terminal.sql']","'material_production_terminal.sql','material_package_native_review.sql','material_retire_experimental_approvals.sql']")
