@@ -1779,8 +1779,44 @@
   {
    "version": "20261001185956",
    "name": "capital_body_server_read_boundary"
+  },
+  {
+   "version": "20261002010601",
+   "name": "capital_body_attempt_ledger"
+  },
+  {
+   "version": "20261002011300",
+   "name": "capital_body_attempt_retention_drain"
+  },
+  {
+   "version": "20261002012122",
+   "name": "capital_body_attempt_fk_index"
+  },
+  {
+   "version": "20261002031554",
+   "name": "capital_body_attempt_outcomes"
+  },
+  {
+   "version": "20261002032119",
+   "name": "capital_body_accepted_input_identity_fk_index"
+  },
+  {
+   "version": "20261002110724",
+   "name": "institutional_configuration_review_projection"
+  },
+  {
+   "version": "20261002124130",
+   "name": "capital_m07_native_consumption"
+  },
+  {
+   "version": "20261002135521",
+   "name": "capital_m07_legacy_contract_compatibility"
+  },
+  {
+   "version": "20261002163315",
+   "name": "capital_m07_capture_context_stability"
   }
  ],
  "project_id": "gjkkjtbfnssdsbmlhmwk",
- "captured_at": "2026-10-01T20:58:45.200835+00:00"
+ "captured_at": "2026-10-02T16:36:07.171628+00:00"
 }

@@ -252,7 +252,7 @@ async function main(): Promise<void> {
         log("model.call", modelCallLogDetail(job.job_id, call));
       },
     });
-    return {gateway, calls, researchReserveUsd};
+    return {gateway, calls, researchReserveUsd, maxCostUsd: budget.maxCostUsd, maxCalls: budget.maxCalls};
   };
 
   // Storage paths come from the authorized database command, never a payload URL.
@@ -461,6 +461,8 @@ async function main(): Promise<void> {
             ? processOriginationThesisJob(job, {
               queue,
               gateway: gatewayRun.gateway,
+              m07Runtime: {adapters, connections: config.PROVIDER_CONNECTIONS_JSON,
+                maxCostUsd: gatewayRun.maxCostUsd, maxCalls: gatewayRun.maxCalls, researchReserveUsd: gatewayRun.researchReserveUsd},
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
               researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
               ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),

@@ -19240,11 +19240,6 @@
           "authenticated",
           "EXECUTE",
           false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -24770,11 +24765,6 @@
           "authenticated",
           "EXECUTE",
           false
-        ],
-        [
-          "service_role",
-          "EXECUTE",
-          false
         ]
       ],
       "schema": "public",
@@ -26372,11 +26362,6 @@
         ],
         [
           "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -69506,7 +69491,3461 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER institutional_configuration_review_updated BEFORE UPDATE ON private.institutional_configuration_review_projections FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "function:private.artifact_review_sources_allowed_pre_m07_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "artifact_review_sources_allowed_pre_m07_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_revision_release_pre_m07_v1(r artifact_revisions)",
+      "kind": "function",
+      "name": "artifact_revision_release_pre_m07_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "r artifact_revisions",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_capture_allocation_deadline_pre_m07_v2(p_org uuid, p_allocation uuid)",
+      "kind": "function",
+      "name": "capital_capture_allocation_deadline_pre_m07_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_allocation uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_allocation_deadline_v1(p_org uuid, p_allocation uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "capital_m07_allocation_deadline_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_allocation uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_attempt_assurances_current_v1(p_job processing_jobs, p_attempt private.capital_m07_gateway_attempts)",
+      "kind": "function",
+      "name": "capital_m07_attempt_assurances_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job processing_jobs, p_attempt private.capital_m07_gateway_attempts",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_attempt_current_v1(p_job_id uuid, p_capability_token text, p_attempt private.capital_m07_gateway_attempts)",
+      "kind": "function",
+      "name": "capital_m07_attempt_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt private.capital_m07_gateway_attempts",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_attempt_dto_v1(p_attempt private.capital_m07_gateway_attempts, p_replayed boolean)",
+      "kind": "function",
+      "name": "capital_m07_attempt_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_attempt private.capital_m07_gateway_attempts, p_replayed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_attempt_outcome_fingerprint_v1(p_outcome jsonb)",
+      "kind": "function",
+      "name": "capital_m07_attempt_outcome_fingerprint_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_outcome jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_base_authority_fingerprint_v1(p_org uuid, p_job uuid, p_session uuid, p_brief uuid, p_plan uuid, p_subject uuid, p_captured_at timestamp with time zone)",
+      "kind": "function",
+      "name": "capital_m07_base_authority_fingerprint_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_job uuid, p_session uuid, p_brief uuid, p_plan uuid, p_subject uuid, p_captured_at timestamp with time zone",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_body_dto_v1(p_org uuid, p_allocation uuid, p_deadline timestamp with time zone, p_replayed boolean)",
+      "kind": "function",
+      "name": "capital_m07_body_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_allocation uuid, p_deadline timestamp with time zone, p_replayed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_commit_result_core_v1(p_org uuid, p_recipe uuid, p_accepted uuid, p_parsed uuid, p_final uuid, p_final_fingerprint text, p_quality_results jsonb)",
+      "kind": "function",
+      "name": "capital_m07_commit_result_core_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid, p_accepted uuid, p_parsed uuid, p_final uuid, p_final_fingerprint text, p_quality_results jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_dispatch_policy_v1(p_model text, p_input_bytes bigint)",
+      "kind": "function",
+      "name": "capital_m07_dispatch_policy_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_model text, p_input_bytes bigint",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_native_ancestry_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "capital_m07_native_ancestry_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_native_read_allowed_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "capital_m07_native_read_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_quality_failure_dto_v1(p_org uuid, p_recipe uuid)",
+      "kind": "function",
+      "name": "capital_m07_quality_failure_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_recipe_deadline_v1(p_org uuid, p_recipe uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "capital_m07_recipe_deadline_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_recipe_dto_v1(p_org uuid, p_recipe uuid)",
+      "kind": "function",
+      "name": "capital_m07_recipe_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_m07_storage_allowed_v1(p_allocation uuid, p_mode text)",
+      "kind": "function",
+      "name": "capital_m07_storage_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_allocation uuid, p_mode text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.decide_capital_project_artifact_pre_m07(p_artifact_id uuid, p_artifact_fingerprint text, p_decision text, p_note text)",
+      "kind": "function",
+      "name": "decide_capital_project_artifact_pre_m07",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_artifact_id uuid, p_artifact_fingerprint text, p_decision text, p_note text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_capital_m07_legacy_input_v1()",
+      "kind": "function",
+      "name": "guard_capital_m07_legacy_input_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.guard_capital_m07_native_write_v1()",
+      "kind": "function",
+      "name": "guard_capital_m07_native_write_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.lock_capital_m07_operation_v1(p_org uuid, p_recipe uuid)",
+      "kind": "function",
+      "name": "lock_capital_m07_operation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.project_legacy_artifact_revision_pre_m07_v1(p_table text, p_org uuid, p_row uuid)",
+      "kind": "function",
+      "name": "project_legacy_artifact_revision_pre_m07_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_table text, p_org uuid, p_row uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_artifact_revision_pre_m07_v1(p_revision uuid)",
+      "kind": "function",
+      "name": "read_artifact_revision_pre_m07_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_capital_m07_result_v1(p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_capital_m07_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.require_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)",
+      "kind": "function",
+      "name": "require_capital_m07_recipe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.review_basis_receipt_authority_pre_m07_v1(p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid)",
+      "kind": "function",
+      "name": "review_basis_receipt_authority_pre_m07_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_work uuid, p_kind text, p_reference jsonb, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.wake_capital_m07_retention_v1()",
+      "kind": "function",
+      "name": "wake_capital_m07_retention_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_authorize_capital_m07_processing_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text)",
+      "kind": "function",
+      "name": "worker_authorize_capital_m07_processing_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_commit_capital_m07_body_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)",
+      "kind": "function",
+      "name": "worker_commit_capital_m07_body_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_commit_capital_m07_recovered_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)",
+      "kind": "function",
+      "name": "worker_commit_capital_m07_recovered_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_commit_capital_m07_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)",
+      "kind": "function",
+      "name": "worker_commit_capital_m07_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_finalize_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid, p_components jsonb, p_reconstruction_fingerprint text, p_prompt_fingerprint text, p_primary_request_fingerprint text, p_fallback_request_fingerprint text, p_operator_budget_micro_usd bigint, p_operator_max_dispatches integer, p_research_status text)",
+      "kind": "function",
+      "name": "worker_finalize_capital_m07_recipe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid, p_components jsonb, p_reconstruction_fingerprint text, p_prompt_fingerprint text, p_primary_request_fingerprint text, p_fallback_request_fingerprint text, p_operator_budget_micro_usd bigint, p_operator_max_dispatches integer, p_research_status text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_find_capital_m07_recovery_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_find_capital_m07_recovery_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_finish_capital_project_task_pre_m07(p_job_id uuid, p_capability_token text, p_task_run_id uuid, p_status text, p_output_reference jsonb, p_output_fingerprint text, p_quality_results jsonb, p_usage jsonb, p_error jsonb)",
+      "kind": "function",
+      "name": "worker_finish_capital_project_task_pre_m07",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_task_run_id uuid, p_status text, p_output_reference jsonb, p_output_fingerprint text, p_quality_results jsonb, p_usage jsonb, p_error jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_prepare_capital_m07_context_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_prepare_capital_m07_output_core_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid, p_recovery boolean)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_output_core_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid, p_recovery boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_prepare_capital_m07_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_output_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_prepare_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_recipe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_prepare_capital_m07_recovered_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_recovered_output_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_read_capital_m07_allocation_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid)",
+      "kind": "function",
+      "name": "worker_read_capital_m07_allocation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_read_capital_m07_recovery_body_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_read_capital_m07_recovery_body_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_read_capital_m07_recovery_source_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_read_capital_m07_recovery_source_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_capital_m07_accepted_v1(p_job_id uuid, p_capability_token text, p_input_receipt_id uuid, p_accepted jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_m07_accepted_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_input_receipt_id uuid, p_accepted jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_capital_m07_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_m07_attempt_outcome_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_capital_m07_execution_failure_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_reason text, p_outcome_ids uuid[])",
+      "kind": "function",
+      "name": "worker_record_capital_m07_execution_failure_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_reason text, p_outcome_ids uuid[]",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_capital_m07_input_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+      "kind": "function",
+      "name": "worker_record_capital_m07_input_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_capital_m07_quality_failure_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_m07_quality_failure_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_capital_project_artifact_pre_m07(p_job_id uuid, p_capability_token text, p_task_run_id uuid, p_artifact_type text, p_schema_version text, p_status text, p_input_fingerprint text, p_content jsonb, p_evidence_refs jsonb, p_dependencies jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_project_artifact_pre_m07",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_task_run_id uuid, p_artifact_type text, p_schema_version text, p_status text, p_input_fingerprint text, p_content jsonb, p_evidence_refs jsonb, p_dependencies jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_recover_capital_m07_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)",
+      "kind": "function",
+      "name": "worker_recover_capital_m07_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_revalidate_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)",
+      "kind": "function",
+      "name": "worker_revalidate_capital_m07_recipe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:public.read_capital_m07_result_v1(p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_capital_m07_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_authorize_capital_m07_processing_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text)",
+      "kind": "function",
+      "name": "worker_authorize_capital_m07_processing_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_commit_capital_m07_body_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)",
+      "kind": "function",
+      "name": "worker_commit_capital_m07_body_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_commit_capital_m07_recovered_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)",
+      "kind": "function",
+      "name": "worker_commit_capital_m07_recovered_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_commit_capital_m07_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)",
+      "kind": "function",
+      "name": "worker_commit_capital_m07_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_finalize_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid, p_components jsonb, p_reconstruction_fingerprint text, p_prompt_fingerprint text, p_primary_request_fingerprint text, p_fallback_request_fingerprint text, p_operator_budget_micro_usd bigint, p_operator_max_dispatches integer, p_research_status text)",
+      "kind": "function",
+      "name": "worker_finalize_capital_m07_recipe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid, p_components jsonb, p_reconstruction_fingerprint text, p_prompt_fingerprint text, p_primary_request_fingerprint text, p_fallback_request_fingerprint text, p_operator_budget_micro_usd bigint, p_operator_max_dispatches integer, p_research_status text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_find_capital_m07_recovery_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_find_capital_m07_recovery_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_prepare_capital_m07_context_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_prepare_capital_m07_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_output_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_prepare_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_recipe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_prepare_capital_m07_recovered_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_prepare_capital_m07_recovered_output_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_accepted_invocation_id uuid, p_body jsonb, p_output_fingerprint text, p_parent_retained_payload_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_read_capital_m07_allocation_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid)",
+      "kind": "function",
+      "name": "worker_read_capital_m07_allocation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_read_capital_m07_recovery_body_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_read_capital_m07_recovery_body_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_read_capital_m07_recovery_source_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_read_capital_m07_recovery_source_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_retained_payload_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_capital_m07_accepted_v1(p_job_id uuid, p_capability_token text, p_input_receipt_id uuid, p_accepted jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_m07_accepted_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_input_receipt_id uuid, p_accepted jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_capital_m07_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_m07_attempt_outcome_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_capital_m07_execution_failure_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_reason text, p_outcome_ids uuid[])",
+      "kind": "function",
+      "name": "worker_record_capital_m07_execution_failure_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_reason text, p_outcome_ids uuid[]",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_capital_m07_input_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+      "kind": "function",
+      "name": "worker_record_capital_m07_input_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_record_capital_m07_quality_failure_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb)",
+      "kind": "function",
+      "name": "worker_record_capital_m07_quality_failure_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_accepted_invocation_id uuid, p_parsed_retained_payload_id uuid, p_final_retained_payload_id uuid, p_final_fingerprint text, p_quality_results jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_recover_capital_m07_result_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)",
+      "kind": "function",
+      "name": "worker_recover_capital_m07_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_revalidate_capital_m07_recipe_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)",
+      "kind": "function",
+      "name": "worker_revalidate_capital_m07_recipe_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "policy:private.capital_m07_accepted_invocations.deny_clients_delete",
+      "kind": "policy",
+      "name": "deny_clients_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_accepted_invocations",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_accepted_invocations.deny_clients_insert",
+      "kind": "policy",
+      "name": "deny_clients_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_accepted_invocations",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_accepted_invocations.deny_clients_select",
+      "kind": "policy",
+      "name": "deny_clients_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_accepted_invocations",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_accepted_invocations.deny_clients_update",
+      "kind": "policy",
+      "name": "deny_clients_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_accepted_invocations",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_attempt_outcomes.deny_clients_delete",
+      "kind": "policy",
+      "name": "deny_clients_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_attempt_outcomes",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_attempt_outcomes.deny_clients_insert",
+      "kind": "policy",
+      "name": "deny_clients_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_attempt_outcomes",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_attempt_outcomes.deny_clients_select",
+      "kind": "policy",
+      "name": "deny_clients_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_attempt_outcomes",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_attempt_outcomes.deny_clients_update",
+      "kind": "policy",
+      "name": "deny_clients_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_attempt_outcomes",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_body_bases.capital_m07_body_bases_deny_delete",
+      "kind": "policy",
+      "name": "capital_m07_body_bases_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_body_bases",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_body_bases.capital_m07_body_bases_deny_insert",
+      "kind": "policy",
+      "name": "capital_m07_body_bases_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_body_bases",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_body_bases.capital_m07_body_bases_deny_select",
+      "kind": "policy",
+      "name": "capital_m07_body_bases_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_body_bases",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_body_bases.capital_m07_body_bases_deny_update",
+      "kind": "policy",
+      "name": "capital_m07_body_bases_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_body_bases",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_execution_failures.capital_m07_execution_failures_deny_delete",
+      "kind": "policy",
+      "name": "capital_m07_execution_failures_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_execution_failures",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_execution_failures.capital_m07_execution_failures_deny_insert",
+      "kind": "policy",
+      "name": "capital_m07_execution_failures_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_execution_failures",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_execution_failures.capital_m07_execution_failures_deny_select",
+      "kind": "policy",
+      "name": "capital_m07_execution_failures_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_execution_failures",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_execution_failures.capital_m07_execution_failures_deny_update",
+      "kind": "policy",
+      "name": "capital_m07_execution_failures_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_execution_failures",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_gateway_attempts.deny_clients_delete",
+      "kind": "policy",
+      "name": "deny_clients_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_gateway_attempts",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_gateway_attempts.deny_clients_insert",
+      "kind": "policy",
+      "name": "deny_clients_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_gateway_attempts",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_gateway_attempts.deny_clients_select",
+      "kind": "policy",
+      "name": "deny_clients_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_gateway_attempts",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_gateway_attempts.deny_clients_update",
+      "kind": "policy",
+      "name": "deny_clients_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_gateway_attempts",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_input_dispatches.deny_clients_delete",
+      "kind": "policy",
+      "name": "deny_clients_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_input_dispatches",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_input_dispatches.deny_clients_insert",
+      "kind": "policy",
+      "name": "deny_clients_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_input_dispatches",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_input_dispatches.deny_clients_select",
+      "kind": "policy",
+      "name": "deny_clients_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_input_dispatches",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_input_dispatches.deny_clients_update",
+      "kind": "policy",
+      "name": "deny_clients_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_input_dispatches",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_native_bindings.capital_m07_native_deny_delete",
+      "kind": "policy",
+      "name": "capital_m07_native_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_native_bindings",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_native_bindings.capital_m07_native_deny_insert",
+      "kind": "policy",
+      "name": "capital_m07_native_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_native_bindings",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_native_bindings.capital_m07_native_deny_select",
+      "kind": "policy",
+      "name": "capital_m07_native_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_native_bindings",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_native_bindings.capital_m07_native_deny_update",
+      "kind": "policy",
+      "name": "capital_m07_native_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_native_bindings",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_operations.deny_clients_delete",
+      "kind": "policy",
+      "name": "deny_clients_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_operations",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_operations.deny_clients_insert",
+      "kind": "policy",
+      "name": "deny_clients_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_operations",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_operations.deny_clients_select",
+      "kind": "policy",
+      "name": "deny_clients_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_operations",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_operations.deny_clients_update",
+      "kind": "policy",
+      "name": "deny_clients_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_operations",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_quality_failures.capital_m07_quality_failures_deny_delete",
+      "kind": "policy",
+      "name": "capital_m07_quality_failures_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_quality_failures",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_quality_failures.capital_m07_quality_failures_deny_insert",
+      "kind": "policy",
+      "name": "capital_m07_quality_failures_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_quality_failures",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_quality_failures.capital_m07_quality_failures_deny_select",
+      "kind": "policy",
+      "name": "capital_m07_quality_failures_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_quality_failures",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_quality_failures.capital_m07_quality_failures_deny_update",
+      "kind": "policy",
+      "name": "capital_m07_quality_failures_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_quality_failures",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_recipe_components.capital_m07_recipe_components_deny_delete",
+      "kind": "policy",
+      "name": "capital_m07_recipe_components_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipe_components",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_recipe_components.capital_m07_recipe_components_deny_insert",
+      "kind": "policy",
+      "name": "capital_m07_recipe_components_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipe_components",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_recipe_components.capital_m07_recipe_components_deny_select",
+      "kind": "policy",
+      "name": "capital_m07_recipe_components_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipe_components",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_recipe_components.capital_m07_recipe_components_deny_update",
+      "kind": "policy",
+      "name": "capital_m07_recipe_components_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipe_components",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_recipe_seals.capital_m07_recipe_seals_deny_delete",
+      "kind": "policy",
+      "name": "capital_m07_recipe_seals_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipe_seals",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_recipe_seals.capital_m07_recipe_seals_deny_insert",
+      "kind": "policy",
+      "name": "capital_m07_recipe_seals_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipe_seals",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_recipe_seals.capital_m07_recipe_seals_deny_select",
+      "kind": "policy",
+      "name": "capital_m07_recipe_seals_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipe_seals",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_recipe_seals.capital_m07_recipe_seals_deny_update",
+      "kind": "policy",
+      "name": "capital_m07_recipe_seals_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipe_seals",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_recipes.capital_m07_recipes_deny_delete",
+      "kind": "policy",
+      "name": "capital_m07_recipes_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipes",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_recipes.capital_m07_recipes_deny_insert",
+      "kind": "policy",
+      "name": "capital_m07_recipes_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipes",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.capital_m07_recipes.capital_m07_recipes_deny_select",
+      "kind": "policy",
+      "name": "capital_m07_recipes_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipes",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.capital_m07_recipes.capital_m07_recipes_deny_update",
+      "kind": "policy",
+      "name": "capital_m07_recipes_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "capital_m07_recipes",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "r:private.capital_m07_accepted_invocations",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_accepted_invocations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_attempt_outcomes",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_attempt_outcomes",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_body_bases",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_body_bases",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_execution_failures",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_execution_failures",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_gateway_attempts",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_gateway_attempts",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_input_dispatches",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_input_dispatches",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_native_bindings",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_native_bindings",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_operations",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_operations",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_quality_failures",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_quality_failures",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_recipe_components",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_recipe_components",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_recipe_seals",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_recipe_seals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.capital_m07_recipes",
+      "rls": true,
+      "kind": "table",
+      "name": "capital_m07_recipes",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "trigger:private.access_group_memberships.access_group_memberships_wake_m07",
+      "kind": "trigger",
+      "name": "access_group_memberships_wake_m07",
+      "table": "access_group_memberships",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER access_group_memberships_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON private.access_group_memberships FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:private.barrier_memberships.barrier_memberships_wake_m07",
+      "kind": "trigger",
+      "name": "barrier_memberships_wake_m07",
+      "table": "barrier_memberships",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER barrier_memberships_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON private.barrier_memberships FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:private.capital_body_invocation_inputs.capital_m07_legacy_input_guard",
+      "kind": "trigger",
+      "name": "capital_m07_legacy_input_guard",
+      "table": "capital_body_invocation_inputs",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.guard_capital_m07_legacy_input_v1()",
+      "definition": "CREATE TRIGGER capital_m07_legacy_input_guard BEFORE INSERT ON private.capital_body_invocation_inputs FOR EACH ROW EXECUTE FUNCTION private.guard_capital_m07_legacy_input_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_accepted_invocations.capital_m07_accepted_invocations_audit",
+      "kind": "trigger",
+      "name": "capital_m07_accepted_invocations_audit",
+      "table": "capital_m07_accepted_invocations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_accepted_invocations_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_accepted_invocations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_accepted_invocations.capital_m07_accepted_invocations_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_accepted_invocations_immutable",
+      "table": "capital_m07_accepted_invocations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_accepted_invocations_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_accepted_invocations FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_accepted_invocations.capital_m07_accepted_invocations_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_accepted_invocations_updated_at",
+      "table": "capital_m07_accepted_invocations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_accepted_invocations_updated_at BEFORE UPDATE ON private.capital_m07_accepted_invocations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_attempt_outcomes.capital_m07_attempt_outcomes_audit",
+      "kind": "trigger",
+      "name": "capital_m07_attempt_outcomes_audit",
+      "table": "capital_m07_attempt_outcomes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_attempt_outcomes_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_attempt_outcomes.capital_m07_attempt_outcomes_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_attempt_outcomes_immutable",
+      "table": "capital_m07_attempt_outcomes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_attempt_outcomes_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_attempt_outcomes.capital_m07_attempt_outcomes_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_attempt_outcomes_updated_at",
+      "table": "capital_m07_attempt_outcomes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_attempt_outcomes_updated_at BEFORE UPDATE ON private.capital_m07_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_body_bases.capital_m07_body_bases_audit",
+      "kind": "trigger",
+      "name": "capital_m07_body_bases_audit",
+      "table": "capital_m07_body_bases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_body_bases_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_body_bases FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_body_bases.capital_m07_body_bases_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_body_bases_immutable",
+      "table": "capital_m07_body_bases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_body_bases_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_body_bases FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_body_bases.capital_m07_body_bases_no_truncate",
+      "kind": "trigger",
+      "name": "capital_m07_body_bases_no_truncate",
+      "table": "capital_m07_body_bases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_body_bases_no_truncate BEFORE TRUNCATE ON private.capital_m07_body_bases FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_body_bases.capital_m07_body_bases_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_body_bases_updated_at",
+      "table": "capital_m07_body_bases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_body_bases_updated_at BEFORE UPDATE ON private.capital_m07_body_bases FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_execution_failures.capital_m07_execution_failure_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_execution_failure_immutable",
+      "table": "capital_m07_execution_failures",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_execution_failure_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_execution_failures FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_execution_failures.capital_m07_execution_failure_no_truncate",
+      "kind": "trigger",
+      "name": "capital_m07_execution_failure_no_truncate",
+      "table": "capital_m07_execution_failures",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_execution_failure_no_truncate BEFORE TRUNCATE ON private.capital_m07_execution_failures FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_execution_failures.capital_m07_execution_failures_audit",
+      "kind": "trigger",
+      "name": "capital_m07_execution_failures_audit",
+      "table": "capital_m07_execution_failures",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_execution_failures_audit AFTER INSERT ON private.capital_m07_execution_failures FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_execution_failures.capital_m07_execution_failures_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_execution_failures_updated_at",
+      "table": "capital_m07_execution_failures",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_execution_failures_updated_at BEFORE UPDATE ON private.capital_m07_execution_failures FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_gateway_attempts.capital_m07_gateway_attempts_audit",
+      "kind": "trigger",
+      "name": "capital_m07_gateway_attempts_audit",
+      "table": "capital_m07_gateway_attempts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_gateway_attempts_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_gateway_attempts.capital_m07_gateway_attempts_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_gateway_attempts_immutable",
+      "table": "capital_m07_gateway_attempts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_gateway_attempts_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_gateway_attempts.capital_m07_gateway_attempts_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_gateway_attempts_updated_at",
+      "table": "capital_m07_gateway_attempts",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_gateway_attempts_updated_at BEFORE UPDATE ON private.capital_m07_gateway_attempts FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_input_dispatches.capital_m07_input_dispatches_audit",
+      "kind": "trigger",
+      "name": "capital_m07_input_dispatches_audit",
+      "table": "capital_m07_input_dispatches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_input_dispatches_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_input_dispatches FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_input_dispatches.capital_m07_input_dispatches_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_input_dispatches_immutable",
+      "table": "capital_m07_input_dispatches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_input_dispatches_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_input_dispatches FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_input_dispatches.capital_m07_input_dispatches_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_input_dispatches_updated_at",
+      "table": "capital_m07_input_dispatches",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_input_dispatches_updated_at BEFORE UPDATE ON private.capital_m07_input_dispatches FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_native_bindings.capital_m07_native_audit",
+      "kind": "trigger",
+      "name": "capital_m07_native_audit",
+      "table": "capital_m07_native_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER capital_m07_native_audit AFTER INSERT ON private.capital_m07_native_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_native_bindings.capital_m07_native_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_native_immutable",
+      "table": "capital_m07_native_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_native_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_native_bindings FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_native_bindings.capital_m07_native_no_truncate",
+      "kind": "trigger",
+      "name": "capital_m07_native_no_truncate",
+      "table": "capital_m07_native_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_native_no_truncate BEFORE TRUNCATE ON private.capital_m07_native_bindings FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_native_bindings.capital_m07_native_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_native_updated_at",
+      "table": "capital_m07_native_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_native_updated_at BEFORE UPDATE ON private.capital_m07_native_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_operations.capital_m07_operations_audit",
+      "kind": "trigger",
+      "name": "capital_m07_operations_audit",
+      "table": "capital_m07_operations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_operations_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_operations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_operations.capital_m07_operations_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_operations_immutable",
+      "table": "capital_m07_operations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_operations_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_operations FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_operations.capital_m07_operations_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_operations_updated_at",
+      "table": "capital_m07_operations",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_operations_updated_at BEFORE UPDATE ON private.capital_m07_operations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_quality_failures.capital_m07_quality_failures_audit",
+      "kind": "trigger",
+      "name": "capital_m07_quality_failures_audit",
+      "table": "capital_m07_quality_failures",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_quality_failures_audit AFTER INSERT ON private.capital_m07_quality_failures FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_quality_failures.capital_m07_quality_failures_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_quality_failures_updated_at",
+      "table": "capital_m07_quality_failures",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_quality_failures_updated_at BEFORE UPDATE ON private.capital_m07_quality_failures FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_quality_failures.capital_m07_quality_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_quality_immutable",
+      "table": "capital_m07_quality_failures",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_quality_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_quality_failures FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_quality_failures.capital_m07_quality_no_truncate",
+      "kind": "trigger",
+      "name": "capital_m07_quality_no_truncate",
+      "table": "capital_m07_quality_failures",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_quality_no_truncate BEFORE TRUNCATE ON private.capital_m07_quality_failures FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipe_components.capital_m07_recipe_components_audit",
+      "kind": "trigger",
+      "name": "capital_m07_recipe_components_audit",
+      "table": "capital_m07_recipe_components",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_recipe_components_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_recipe_components FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipe_components.capital_m07_recipe_components_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_recipe_components_immutable",
+      "table": "capital_m07_recipe_components",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_recipe_components_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_recipe_components FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipe_components.capital_m07_recipe_components_no_truncate",
+      "kind": "trigger",
+      "name": "capital_m07_recipe_components_no_truncate",
+      "table": "capital_m07_recipe_components",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_recipe_components_no_truncate BEFORE TRUNCATE ON private.capital_m07_recipe_components FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipe_components.capital_m07_recipe_components_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_recipe_components_updated_at",
+      "table": "capital_m07_recipe_components",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_recipe_components_updated_at BEFORE UPDATE ON private.capital_m07_recipe_components FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipe_seals.capital_m07_recipe_seals_audit",
+      "kind": "trigger",
+      "name": "capital_m07_recipe_seals_audit",
+      "table": "capital_m07_recipe_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_recipe_seals_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_recipe_seals FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipe_seals.capital_m07_recipe_seals_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_recipe_seals_immutable",
+      "table": "capital_m07_recipe_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_recipe_seals_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_recipe_seals FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipe_seals.capital_m07_recipe_seals_no_truncate",
+      "kind": "trigger",
+      "name": "capital_m07_recipe_seals_no_truncate",
+      "table": "capital_m07_recipe_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_recipe_seals_no_truncate BEFORE TRUNCATE ON private.capital_m07_recipe_seals FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipe_seals.capital_m07_recipe_seals_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_recipe_seals_updated_at",
+      "table": "capital_m07_recipe_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_recipe_seals_updated_at BEFORE UPDATE ON private.capital_m07_recipe_seals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipes.capital_m07_recipes_audit",
+      "kind": "trigger",
+      "name": "capital_m07_recipes_audit",
+      "table": "capital_m07_recipes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_audit_event()",
+      "definition": "CREATE TRIGGER capital_m07_recipes_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_m07_recipes FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipes.capital_m07_recipes_immutable",
+      "kind": "trigger",
+      "name": "capital_m07_recipes_immutable",
+      "table": "capital_m07_recipes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_source_version_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_recipes_immutable BEFORE DELETE OR UPDATE ON private.capital_m07_recipes FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipes.capital_m07_recipes_no_truncate",
+      "kind": "trigger",
+      "name": "capital_m07_recipes_no_truncate",
+      "table": "capital_m07_recipes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER capital_m07_recipes_no_truncate BEFORE TRUNCATE ON private.capital_m07_recipes FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.capital_m07_recipes.capital_m07_recipes_updated_at",
+      "kind": "trigger",
+      "name": "capital_m07_recipes_updated_at",
+      "table": "capital_m07_recipes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER capital_m07_recipes_updated_at BEFORE UPDATE ON private.capital_m07_recipes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.capital_public_payload_purge_queue.capital_purge_wake_m07",
+      "kind": "trigger",
+      "name": "capital_purge_wake_m07",
+      "table": "capital_public_payload_purge_queue",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER capital_purge_wake_m07 AFTER UPDATE OF status ON private.capital_public_payload_purge_queue FOR EACH ROW WHEN ((new.status IS DISTINCT FROM old.status)) EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:private.resource_access_grants.resource_access_grants_wake_m07",
+      "kind": "trigger",
+      "name": "resource_access_grants_wake_m07",
+      "table": "resource_access_grants",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER resource_access_grants_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON private.resource_access_grants FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:private.source_rights_versions.source_rights_versions_wake_m07",
+      "kind": "trigger",
+      "name": "source_rights_versions_wake_m07",
+      "table": "source_rights_versions",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER source_rights_versions_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON private.source_rights_versions FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.capital_project_artifacts.capital_artifact_native_m07_guard",
+      "kind": "trigger",
+      "name": "capital_artifact_native_m07_guard",
+      "table": "capital_project_artifacts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_capital_m07_native_write_v1()",
+      "definition": "CREATE TRIGGER capital_artifact_native_m07_guard BEFORE INSERT ON public.capital_project_artifacts FOR EACH ROW EXECUTE FUNCTION private.guard_capital_m07_native_write_v1()"
+    },
+    {
+      "id": "trigger:public.capital_project_artifacts.capital_artifact_wake_m07",
+      "kind": "trigger",
+      "name": "capital_artifact_wake_m07",
+      "table": "capital_project_artifacts",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER capital_artifact_wake_m07 AFTER UPDATE OF status ON public.capital_project_artifacts FOR EACH ROW WHEN (((new.status IS DISTINCT FROM old.status) AND (new.status = ANY (ARRAY['stale'::text, 'superseded'::text])))) EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.capital_project_briefs.capital_project_briefs_wake_m07",
+      "kind": "trigger",
+      "name": "capital_project_briefs_wake_m07",
+      "table": "capital_project_briefs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER capital_project_briefs_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON public.capital_project_briefs FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.capital_project_plans.capital_project_plans_wake_m07",
+      "kind": "trigger",
+      "name": "capital_project_plans_wake_m07",
+      "table": "capital_project_plans",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER capital_project_plans_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON public.capital_project_plans FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.capital_project_task_runs.capital_task_native_m07_guard",
+      "kind": "trigger",
+      "name": "capital_task_native_m07_guard",
+      "table": "capital_project_task_runs",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.guard_capital_m07_native_write_v1()",
+      "definition": "CREATE TRIGGER capital_task_native_m07_guard BEFORE UPDATE OF status, output_reference, output_fingerprint, quality_results, error ON public.capital_project_task_runs FOR EACH ROW EXECUTE FUNCTION private.guard_capital_m07_native_write_v1()"
+    },
+    {
+      "id": "trigger:public.capital_projects.capital_projects_wake_m07",
+      "kind": "trigger",
+      "name": "capital_projects_wake_m07",
+      "table": "capital_projects",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER capital_projects_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON public.capital_projects FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.document_intake_sessions.capital_session_wake_m07",
+      "kind": "trigger",
+      "name": "capital_session_wake_m07",
+      "table": "document_intake_sessions",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER capital_session_wake_m07 AFTER UPDATE OF company_profile, locale, privacy_status, representation_status ON public.document_intake_sessions FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.institution_capability_profiles.institution_capability_profiles_wake_m07",
+      "kind": "trigger",
+      "name": "institution_capability_profiles_wake_m07",
+      "table": "institution_capability_profiles",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER institution_capability_profiles_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON public.institution_capability_profiles FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.organization_memberships.organization_memberships_wake_m07",
+      "kind": "trigger",
+      "name": "organization_memberships_wake_m07",
+      "table": "organization_memberships",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER organization_memberships_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON public.organization_memberships FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.organization_methodologies.organization_methodologies_wake_m07",
+      "kind": "trigger",
+      "name": "organization_methodologies_wake_m07",
+      "table": "organization_methodologies",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER organization_methodologies_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON public.organization_methodologies FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.professional_context_profiles.professional_context_profiles_wake_m07",
+      "kind": "trigger",
+      "name": "professional_context_profiles_wake_m07",
+      "table": "professional_context_profiles",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER professional_context_profiles_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON public.professional_context_profiles FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "trigger:public.source_bindings.source_bindings_wake_m07",
+      "kind": "trigger",
+      "name": "source_bindings_wake_m07",
+      "table": "source_bindings",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.wake_capital_m07_retention_v1()",
+      "definition": "CREATE TRIGGER source_bindings_wake_m07 AFTER INSERT OR DELETE OR UPDATE ON public.source_bindings FOR EACH ROW EXECUTE FUNCTION private.wake_capital_m07_retention_v1()"
+    },
+    {
+      "id": "function:private.capital_public_capture_context_before_native_m07_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "capital_public_capture_context_before_native_m07_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
     }
   ],
-  "captured_at": "2026-10-02T11:36:45.397402+00:00"
+  "captured_at": "2026-10-02T16:35:51.787889+00:00"
 }

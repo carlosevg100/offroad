@@ -1,3 +1,4 @@
+import {createCapitalM07QueueAdapter, type CapitalM07QueueAdapter} from "./capital-m07-queue-adapter";
 import {institutionalResultReceiptSchema, type InstitutionalResultReceipt, type InstitutionalResultInput} from "./institutional-model-runtime";
 import {retrieveGoverned} from "@offroad/governed-retrieval";
 import type {InstitutionalModelConfiguration} from "@offroad/financial-model";
@@ -183,6 +184,7 @@ export type StageStatus = "started" | "succeeded" | "failed" | "skipped";
 export type CapitalTaskFinishStatus = "waiting_user" | "blocked" | "succeeded" | "failed" | "cancelled";
 
 export type QueueClient = {
+  createCapitalM07Adapter?(job:CapitalProjectAnalysisJob):CapitalM07QueueAdapter;
   loadWorkTurn?(job: WorkConversationJob): Promise<unknown>;
   commitWorkTurn?(job: WorkConversationJob, fingerprint: string, response: unknown, spend: unknown): Promise<unknown>;
   loadExecutionBriefProposal?(job: ExecutionBriefProposalJob): Promise<unknown>;
@@ -498,6 +500,7 @@ export function createQueueClient(
   };
 
   return {
+    createCapitalM07Adapter: (job:CapitalProjectAnalysisJob)=>createCapitalM07QueueAdapter(supabase,job),
     async claim() {
       const data = await call("worker_claim_job_v4", {
         p_worker_token: options.workerToken,

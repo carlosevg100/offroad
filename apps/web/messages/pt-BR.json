@@ -2701,6 +2701,7 @@
       "continueLabel": "Continuar"
     },
     "advisorProject": {
+      "artifactReadUnavailable": "Não foi possível ler esta versão com segurança. Tente novamente.",
       "continuation": {
         "recorded": "Continuação registrada a partir de {label} (revisão {revision}).",
         "note": "Continuação a partir de {label}, revisão {revision}",

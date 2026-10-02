@@ -11966,6 +11966,10 @@ export type Database = {
         Args: { p_revision_id: string }
         Returns: Json
       }
+      read_capital_m07_result_v1: {
+        Args: { p_revision_id: string }
+        Returns: Json
+      }
       read_capital_project_execution_brief_narrative_v1: {
         Args: { p_execution_brief_id: string }
         Returns: Json
@@ -13269,6 +13273,18 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_authorize_capital_m07_processing_v1: {
+        Args: {
+          p_attempt: Json
+          p_capability_token: string
+          p_job_id: string
+          p_purpose: string
+          p_recipe_id: string
+          p_resources: string[]
+          p_route: Json
+        }
+        Returns: Json
+      }
       worker_authorize_capital_project_material_upload_v1: {
         Args: {
           p_byte_length: number
@@ -13354,6 +13370,44 @@ export type Database = {
           p_storage_version: string
           p_verified_sha256: string
           p_verified_size: number
+        }
+        Returns: Json
+      }
+      worker_commit_capital_m07_body_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_storage_object_id: string
+          p_storage_version: string
+          p_verified_sha256: string
+          p_verified_size: number
+        }
+        Returns: Json
+      }
+      worker_commit_capital_m07_recovered_result_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_commit_capital_m07_result_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
         }
         Returns: Json
       }
@@ -13530,6 +13584,27 @@ export type Database = {
           p_retry_in_seconds?: number
           p_retryable?: boolean
         }
+        Returns: Json
+      }
+      worker_finalize_capital_m07_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_components: Json
+          p_context_retained_payload_id: string
+          p_fallback_request_fingerprint: string
+          p_job_id: string
+          p_operator_budget_micro_usd: number
+          p_operator_max_dispatches: number
+          p_primary_request_fingerprint: string
+          p_prompt_fingerprint: string
+          p_recipe_id: string
+          p_reconstruction_fingerprint: string
+          p_research_status: string
+        }
+        Returns: Json
+      }
+      worker_find_capital_m07_recovery_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
         Returns: Json
       }
       worker_finish_capital_project_task: {
@@ -13761,6 +13836,47 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_prepare_capital_m07_context_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_m07_output_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_kind: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id?: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
+      worker_prepare_capital_m07_recipe_v1: {
+        Args: { p_capability_token: string; p_job_id: string }
+        Returns: Json
+      }
+      worker_prepare_capital_m07_recovered_output_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_body: Json
+          p_capability_token: string
+          p_job_id: string
+          p_kind: string
+          p_output_fingerprint: string
+          p_parent_retained_payload_id?: string
+          p_recipe_id: string
+          p_request_id: string
+        }
+        Returns: Json
+      }
       worker_prepare_capital_public_payload_v1: {
         Args: {
           p_capability_token: string
@@ -13783,6 +13899,32 @@ export type Database = {
         Args: {
           p_capability_token: string
           p_job_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_m07_allocation_v1: {
+        Args: {
+          p_allocation_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_m07_recovery_body_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+          p_retained_payload_id: string
+        }
+        Returns: Json
+      }
+      worker_read_capital_m07_recovery_source_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
           p_retained_payload_id: string
         }
         Returns: Json
@@ -13997,6 +14139,55 @@ export type Database = {
           p_attempt_receipt_id: string
           p_capability_token: string
           p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_m07_accepted_v1: {
+        Args: {
+          p_accepted: Json
+          p_capability_token: string
+          p_input_receipt_id: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_m07_attempt_outcome_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_outcome: Json
+        }
+        Returns: Json
+      }
+      worker_record_capital_m07_execution_failure_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_outcome_ids?: string[]
+          p_reason: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_m07_input_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_m07_quality_failure_v1: {
+        Args: {
+          p_accepted_invocation_id: string
+          p_capability_token: string
+          p_final_fingerprint: string
+          p_final_retained_payload_id: string
+          p_job_id: string
+          p_parsed_retained_payload_id: string
+          p_quality_results: Json
+          p_recipe_id: string
         }
         Returns: Json
       }
@@ -14249,6 +14440,14 @@ export type Database = {
         Args: { p_capability_token: string; p_chunks: Json; p_job_id: string }
         Returns: Json
       }
+      worker_recover_capital_m07_result_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
+        }
+        Returns: Json
+      }
       worker_renew_evaluation_v1: {
         Args: {
           p_capability_token: string
@@ -14284,6 +14483,14 @@ export type Database = {
           p_purge_id: string
           p_reason: string
           p_worker_token: string
+        }
+        Returns: Json
+      }
+      worker_revalidate_capital_m07_recipe_v1: {
+        Args: {
+          p_capability_token: string
+          p_job_id: string
+          p_recipe_id: string
         }
         Returns: Json
       }

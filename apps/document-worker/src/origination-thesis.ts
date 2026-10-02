@@ -14,7 +14,7 @@ import {
   originationSeniorReadoutSchema as seniorReadoutSchema,
   originationThesisBriefSchema,
 } from "@offroad/domain-contracts";
-import {providerDataPolicyVersion, type GatewayCallLog, type ModelGateway} from "@offroad/model-gateway";
+import {legacyGatewayFingerprint, providerDataPolicyVersion, type GatewayCallLog, type ModelGateway, type ModelGatewayConfig} from "@offroad/model-gateway";
 import {
   buildOriginationResearchPlan,
   runPublicResearch,
@@ -24,6 +24,11 @@ import {
   type ResearchSource,
 } from "@offroad/public-research";
 
+import type {ProviderConnections} from "./provider-processing";
+import {prepareCapitalPublicTaskRecipe} from "./capital-public-task-recipe";
+import {createCapitalM07Processing, type CapitalM07RecipeReceipt} from "./capital-m07-processing";
+import type {CapitalPublicRecipeComponent} from "./capital-public-task-recipe";
+import type {CapitalM07DeliveredSource, CapitalM07QueueAdapter} from "./capital-m07-queue-adapter";
 import {completeAdvisorSpecializedWork} from "./advisor-specialized-completion";
 import {institutionCapabilitiesSchema, organizationMethodologySchema} from "./advisor-context";
 import {ambiguousDebtAmount} from "./debt-amount-units";
@@ -85,6 +90,7 @@ const contextSchema = z.object({
     task_id: z.enum(["M06", "C02", "K04"]),
     id: z.uuid(),
     artifact_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    artifact_version:z.number().int().positive().optional(),
     content: recordSchema,
     evidence_refs: z.array(recordSchema),
   })).default([]),
@@ -92,6 +98,7 @@ const contextSchema = z.object({
     task_id: z.string().regex(/^[A-Z][0-9]{2}$/),
     id: z.uuid(),
     artifact_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    artifact_version:z.number().int().positive().optional(),
     content: recordSchema,
     evidence_refs: z.array(recordSchema),
   })).default([]),
@@ -187,12 +194,13 @@ const EXECUTOR_VERSION = "2026.09.03-v6";
 const ARTIFACT_SCHEMA_VERSION = "capital-artifact.v1";
 
 type Context = z.infer<typeof contextSchema>;
-type ArtifactRef = {taskId: string; id: string; artifactFingerprint: string};
+type ArtifactRef = {taskId: string; id: string; artifactFingerprint: string; artifactVersion?:number};
 type QualityResult = {id: string; passed: boolean; detail: string};
 
 export type OriginationThesisDependencies = {
   queue: QueueClient;
   gateway: ModelGateway;
+  m07Runtime?: {adapters:ModelGatewayConfig["adapters"];connections:ProviderConnections;maxCostUsd:number;maxCalls:number;researchReserveUsd:number};
   lineage: () => GatewayCallLog[];
   researchProviders: PublicSearchProvider[];
   officialResearchProviderFactory?: WorkerOfficialResearchProviderFactory;
@@ -206,9 +214,23 @@ export async function processOriginationThesisJob(
   dependencies: OriginationThesisDependencies,
 ): Promise<{status: "succeeded" | "failed"; artifactId?: string}> {
   const log = dependencies.log ?? (() => {});
+  const nativeCalls:GatewayCallLog[]=[];
+  const getLineage=()=>[...dependencies.lineage(),...nativeCalls];
+  let nativeSpend:ReturnType<ModelGateway["spent"]>|undefined;
   await dependencies.queue.writeStage(job, "origination_thesis", "started");
   try {
-    const context = contextSchema.parse(await dependencies.queue.loadCapitalProjectContext(job));
+    const native = dependencies.m07Runtime ? dependencies.queue.createCapitalM07Adapter?.(job) : undefined;
+    if(dependencies.m07Runtime&&!native)throw codedError("capital_m07_runtime_required");
+    const recovered=native?await native.recoverExisting(transformCapitalM07FinalProduct):null;
+    if(recovered){
+      const artifact={taskId:"M07",id:recovered.commit.capitalArtifactId,artifactFingerprint:recovered.commit.artifactFingerprint,artifactVersion:recovered.commit.artifactVersion};
+      await dependencies.queue.writeStage(job,"origination_thesis","succeeded",{artifactId:artifact.id,recovered:true,publicResearchStatus:recovered.researchStatus,publicSourceCount:recovered.sourceCount,executedTaskCount:0});
+      await completeAdvisorSpecializedWork({queue:dependencies.queue,job,artifact,result:{capital_project_id:job.payload.capital_project_id,meeting_brief_artifact_id:artifact.id,artifact_fingerprint:artifact.artifactFingerprint,
+        recovery:{recipeId:recovered.commit.recipeId,revisionId:recovered.commit.revisionId,replayed:recovered.commit.replayed},model_lineage:[],spend:{costUsd:0,calls:0,unknownCostCalls:0,budgetExposureUsd:0,externalSearchCostExposureUsd:0}}});
+      return{status:"succeeded",artifactId:artifact.id};
+    }
+    const base = native ? await native.begin() : undefined;
+    const context = contextSchema.parse(base ? base.context : await dependencies.queue.loadCapitalProjectContext(job));
     assertExactTaskPlan(job, context);
     const taskById = new Map(context.tasks.map((task) => [task.id, task]));
     const artifacts = new Map<string, ArtifactRef>();
@@ -218,6 +240,7 @@ export async function processOriginationThesisJob(
           taskId: completed.task_id,
           id: completed.id,
           artifactFingerprint: completed.artifact_fingerprint,
+          ...(completed.artifact_version ? {artifactVersion:completed.artifact_version}:{}),
         });
       }
     }
@@ -298,7 +321,7 @@ export async function processOriginationThesisJob(
           qualityResults: evaluatedQuality,
           usage: built.usage ?? {},
         });
-        const ref = {taskId: input.taskId, id: artifact.id, artifactFingerprint: artifact.artifactFingerprint};
+        const ref = {taskId: input.taskId, id: artifact.id, artifactFingerprint: artifact.artifactFingerprint,artifactVersion:artifact.artifactVersion};
         artifacts.set(input.taskId, ref);
         return ref;
       } catch (error) {
@@ -329,7 +352,7 @@ export async function processOriginationThesisJob(
       }));
       const modelInput = {
         locale: context.session.locale,
-        asOfDate: (dependencies.now ?? (() => new Date()))().toISOString().slice(0, 10),
+        asOfDate: base?.asOfDate ?? (dependencies.now ?? (() => new Date()))().toISOString().slice(0, 10),
         company: {name: companyName, website: website ?? null},
         meetingBrief: context.brief.content,
 
@@ -349,6 +372,28 @@ export async function processOriginationThesisJob(
           priorWorkProduct: context.revision.prior_content,
         } : {}),
       };
+      if(native && dependencies.m07Runtime && base){
+        if(!research.deliveredSources)throw codedError("capital_m07_published_source_required");
+        const component=(slot:CapitalPublicRecipeComponent["slot"],id:string,version:number,body:unknown):CapitalPublicRecipeComponent=>({slot,id,version,body,bodyFingerprint:legacyGatewayFingerprint(body)});
+        const depRefs=["M06","C02","K04"].map(id=>{const value=artifacts.get(id);if(!value?.artifactVersion)throw codedError("capital_m07_dependency_version_required");return value;});
+        const bodies=capitalM07BaseBodies(context,job.attempt,research.status,research.deliveredSources.map(value=>value.deliveryId));
+        const components=[component("company",context.session.id,1,bodies.company),component("brief",context.brief.id,context.brief.version,bodies.brief),
+          component("institution",context.plan.id,context.plan.version,bodies.institution),component("revision",job.job_id,1,bodies.revision),component("quality_retry",job.job_id,1,bodies.quality_retry),
+          component("research",base.recipeId,1,bodies.research),...research.deliveredSources.map(value=>component("source",value.deliveryId,1,value.source)),
+          ...depRefs.map(value=>component("dependency",value.id,value.artifactVersion!,{artifactFingerprint:value.artifactFingerprint}))];
+        const receipt=await native.seal({system:ORIGINATION_THESIS_SYSTEM,components,budget:{maxCostUsd:dependencies.m07Runtime.maxCostUsd,maxCalls:dependencies.m07Runtime.maxCalls,researchReserveUsd:dependencies.m07Runtime.researchReserveUsd}});
+        const processing=createCapitalM07Processing({jobId:job.job_id,ports:native.ports,connections:dependencies.m07Runtime.connections,adapters:dependencies.m07Runtime.adapters,
+          budget:{maxCostUsd:dependencies.m07Runtime.maxCostUsd,maxCalls:dependencies.m07Runtime.maxCalls},onCall:call=>nativeCalls.push(call)});
+        const result=await processing.run(receipt.taskRunId);
+        if(result.recovered)throw codedError("capital_m07_recovery_identity_required");
+        nativeSpend=result.spend;
+        const sanitized=sanitizeCitations(normalizeReadout(result.output),allowedUrls),quality=validateMeetingBrief(sanitized,allowedUrls,modelInput);
+        const body=buildOriginationFinalProduct(context,modelInput.asOfDate,modelInput.company,sanitized,research.status,research.sources,{provider:result.acceptedInvocation.provider,model:result.acceptedInvocation.reportedModel});
+        const committed=await native.commitFinal({body,quality});
+        const finalArtifact={taskId:"M07",id:committed.capitalArtifactId,artifactFingerprint:committed.artifactFingerprint,artifactVersion:committed.artifactVersion};
+        artifacts.set("M07",finalArtifact);
+        return{completion:{output:result.output,provider:"openai",model:body.provenance.model,usage:result.usage},finalArtifact,readout:sanitized};
+      }
       const completion = await dependencies.gateway.complete({
         task: "origination_thesis",
         system: ORIGINATION_THESIS_SYSTEM,
@@ -372,21 +417,7 @@ export async function processOriginationThesisJob(
         artifactType: "meeting_brief",
         status: "pending_confirmation",
         build: async () => ({
-          content: {
-            schemaVersion: "origination-senior-readout.v3",
-            asOfDate: modelInput.asOfDate,
-            company: modelInput.company,
-            ...sanitized,
-            sources: selectReferencedSources(sanitized, research.sources).map((source) => ({
-              title: source.title, url: source.url, topic: source.topic,
-              publishedAt: source.publishedAt, provider: source.provider,
-            })),
-            researchStatus: research.status,
-            scopeBoundary: context.session.locale === "pt-BR"
-              ? "Leitura baseada somente em informações públicas e no contexto informado. As alternativas são hipóteses para investigação; não representam decisão de crédito, confirmação de mandato ou garantia de financiamento."
-              : "This reading uses public information and the supplied context only. Financing angles are hypotheses to investigate, not a credit decision, mandate confirmation or assurance of financing.",
-            provenance: {provider: completion.provider, model: completion.model, executorVersion: EXECUTOR_VERSION},
-          },
+          content: buildOriginationFinalProduct(context,modelInput.asOfDate,modelInput.company,sanitized,research.status,research.sources,{provider:completion.provider,model:completion.model}),
           evidenceRefs: sourceEvidence(research.researchRunId, research.sources),
           quality,
           usage: completion.usage as unknown as Record<string, unknown>,
@@ -401,7 +432,7 @@ export async function processOriginationThesisJob(
       usage: Record<string, number>,
       readout: z.infer<typeof seniorReadoutSchema>,
     ) => {
-      await dependencies.queue.recordAgentAssessment?.(job, buildOriginationCoverageAssessment({
+      if(!native)await dependencies.queue.recordAgentAssessment?.(job, buildOriginationCoverageAssessment({
         projectId: context.project.id,
         briefId: context.brief.id,
         briefFingerprint: context.brief.content_fingerprint,
@@ -418,7 +449,7 @@ export async function processOriginationThesisJob(
         executedTaskCount: context.revision ? 1 : artifacts.size,
         revision: Boolean(context.revision),
       }, usage);
-      const spend = dependencies.gateway.spent();
+      const spend = nativeSpend??dependencies.gateway.spent();
       await completeAdvisorSpecializedWork({queue: dependencies.queue, job, artifact: finalArtifact, result: {
         capital_project_id: context.project.id,
         meeting_brief_artifact_id: finalArtifact.id,
@@ -428,7 +459,7 @@ export async function processOriginationThesisJob(
           revision_of_artifact_id: context.revision.of_artifact_id,
           correction_decision_id: context.revision.decision_id,
         } : {}),
-        model_lineage: dependencies.lineage(),
+        model_lineage: getLineage(),
         spend: {
           ...spend,
           costUsd: spend.costUsd + research.costExposureUsd,
@@ -445,6 +476,7 @@ export async function processOriginationThesisJob(
     };
 
     if (context.revision) {
+      if(native)throw codedError("capital_m07_revision_source_recovery_required");
       for (const dependency of context.dependency_artifacts) {
         artifacts.set(dependency.task_id, {
           taskId: dependency.task_id,
@@ -525,7 +557,7 @@ export async function processOriginationThesisJob(
     const reusableResearch = context.completed_artifacts.filter((artifact) =>
       artifact.task_id === "C02" || artifact.task_id === "K04",
     );
-    const researchPromise = reusableResearch.length === 2
+    const researchPromise = !native && reusableResearch.length === 2
       ? Promise.resolve(researchFromDependencyArtifacts(reusableResearch))
       : collectOriginationResearch({
           job,
@@ -533,11 +565,15 @@ export async function processOriginationThesisJob(
           companyName,
           ...(website ? {website} : {}),
           queue: dependencies.queue,
+          ...(native?{native}:{}),
           discoveryProviders: dependencies.researchProviders,
           officialProviderFactory: dependencies.officialResearchProviderFactory,
           contentAcquirer: dependencies.contentAcquirer,
         });
 
+    // Observe early failures while independent plan tasks yield. The original
+    // promise still throws below, where the job catch persists the failure.
+    void researchPromise.catch(() => {});
     const researchArtifactsPromise = Promise.all([
       persistTask({
         taskId: "C02",
@@ -565,6 +601,7 @@ export async function processOriginationThesisJob(
       }),
     ]);
 
+    void researchArtifactsPromise.catch(() => {});
     await persistTask({
       taskId: "M05",
       artifactType: "meeting_brief_definition",
@@ -608,21 +645,70 @@ export async function processOriginationThesisJob(
     return {status: "succeeded", artifactId: finalArtifact.id};
   } catch (error) {
     const code = errorCode(error);
-    const modelAttempts = summarizeModelAttempts(dependencies.lineage());
+    const modelAttempts = summarizeModelAttempts(getLineage());
     await dependencies.queue.writeStage(job, "origination_thesis", "failed", {code, modelAttempts}).catch(() => undefined);
-    const spend = dependencies.gateway.spent();
+    const spend = nativeSpend??dependencies.gateway.spent();
     const nonRetryable = new Set([
       "origination_task_plan_mismatch",
       "origination_persisted_plan_invalid",
       "origination_revision_scope_invalid",
       "origination_task_plan_incomplete",
       "origination_task_dependencies_invalid",
+      "capital_m07_published_source_required",
+      "capital_m07_retained_recovery_required",
+      "quality_gate_m07_failed", "capital_m07_execution_failed_terminal",
+      "capital_m07_revision_source_recovery_required",
+      "capital_m07_dependency_version_required",
     ]);
     const retryable = !nonRetryable.has(code);
     await dependencies.queue.fail(job, describeJobFailure(error, {code, stage: "origination_thesis", spend, modelAttempts}), {retryable, retryInSeconds: 30});
     log("origination_thesis.failed", {job: job.job_id, code, modelAttempts});
     return {status: "failed"};
   }
+}
+
+function capitalM07BaseBodies(context:Context,originalAttempt:number,researchStatus:ResearchRun["status"],sourceIds:string[]):Record<string,unknown>{
+  return{company:{name:stringValue(context.session.company_profile.name),website:optionalString(context.session.company_profile.website)??null},brief:context.brief.content,institution:context.institution_capabilities??null,
+    revision:context.revision?{correctionNote:context.revision.correction_note,priorContent:context.revision.prior_content}:null,
+    quality_retry:originalAttempt>1||context.prior_failed_task_feedback.length>0?{attempt:originalAttempt,failedTaskFeedback:context.prior_failed_task_feedback.filter(value=>value.task_id==="M07")}:null,
+    research:{status:researchStatus,sourceIds}};
+}
+/** Reconstructs only from immutable server references and authorized body readers.
+ * Both physical recovery and fresh dispatch use the same component assembler. */
+export function reconstructCapitalM07Preparation(input:{recipe:CapitalM07RecipeReceipt;originalContext:unknown;sources:{deliveryId:string;source:ResearchSource}[];originalAttempt:number;researchStatus:ResearchRun["status"];dependencies:{id:string;artifactFingerprint:string}[]}){
+  const context=contextSchema.parse(input.originalContext),recipe=input.recipe;
+  if(context.project.organization_id!==recipe.organizationId||context.project.id!==recipe.workId||context.plan.id!==recipe.planId||context.plan.fingerprint!==recipe.planFingerprint||context.session.locale!==recipe.locale||!Number.isInteger(input.originalAttempt)||input.originalAttempt<1)throw codedError("capital_m07_reconstruction_denied");
+  const expectedRefs={company:{id:context.session.id,version:1},brief:{id:context.brief.id,version:context.brief.version},institution:{id:context.plan.id,version:context.plan.version},revision:{id:recipe.jobId,version:1},quality_retry:{id:recipe.jobId,version:1},research:{id:recipe.recipeId,version:1}};
+  for(const [slot,expected] of Object.entries(expectedRefs)){const ref=recipe.components.find(value=>value.slot===slot);if(!ref||ref.id!==expected.id||ref.version!==expected.version)throw codedError("capital_m07_reconstruction_denied");}
+  const sourceIds=recipe.components.filter(value=>value.slot==="source").map(value=>value.id);
+  const bodyBySlot=capitalM07BaseBodies(context,input.originalAttempt,input.researchStatus,sourceIds);
+  const components=recipe.components.map(ref=>{let body:unknown;
+    if(ref.slot==="source"){const source=input.sources.find(value=>value.deliveryId===ref.id);if(!source)throw codedError("capital_m07_source_reconstruction_denied");body=source.source;}
+    else if(ref.slot==="dependency"){const dependency=input.dependencies.find(value=>value.id===ref.id);if(!dependency)throw codedError("capital_m07_dependency_reconstruction_denied");body={artifactFingerprint:dependency.artifactFingerprint};}
+    else body=bodyBySlot[ref.slot];
+    if(legacyGatewayFingerprint(body)!==ref.bodyFingerprint)throw codedError("capital_m07_reconstruction_denied");return{...ref,body};});
+  if(input.sources.length!==components.filter(ref=>ref.slot==="source").length||input.dependencies.length!==components.filter(ref=>ref.slot==="dependency").length)throw codedError("capital_m07_reconstruction_denied");
+  const preparation={basis:{jobId:recipe.jobId,organizationId:recipe.organizationId,workId:recipe.workId,planId:recipe.planId,planFingerprint:recipe.planFingerprint,locale:recipe.locale,asOfDate:recipe.asOfDate},components,system:ORIGINATION_THESIS_SYSTEM};
+  const reconstruction=prepareCapitalPublicTaskRecipe(preparation);if(reconstruction.recipe.reconstructionFingerprint!==recipe.reconstructionFingerprint)throw codedError("capital_m07_reconstruction_denied");
+  return{preparation,reconstruction,modelInput:JSON.parse((reconstruction.prepared.input[0] as {text:string}).text) as Record<string,unknown>};
+}
+
+/** One versioned final projection used by fresh execution and physical recovery. */
+function buildOriginationFinalProduct(context:Context,asOfDate:string,company:{name:string;website:string|null},readout:z.infer<typeof seniorReadoutSchema>,researchStatus:ResearchRun["status"],sources:ResearchSource[],provenance:{provider:"openai"|"anthropic";model:string}){
+  return{schemaVersion:"origination-senior-readout.v3",asOfDate,company,...readout,
+    sources:selectReferencedSources(readout,sources).map(source=>({title:source.title,url:source.url,topic:source.topic,publishedAt:source.publishedAt,provider:source.provider})),
+    researchStatus,scopeBoundary:context.session.locale==="pt-BR"
+      ? "Leitura baseada somente em informações públicas e no contexto informado. As alternativas são hipóteses para investigação; não representam decisão de crédito, confirmação de mandato ou garantia de financiamento."
+      : "This reading uses public information and the supplied context only. Financing angles are hypotheses to investigate, not a credit decision, mandate confirmation or assurance of financing.",
+    provenance:{...provenance,executorVersion:EXECUTOR_VERSION}};
+}
+export function transformCapitalM07FinalProduct(input:{parsed:unknown;originalContext:unknown;sources:ResearchSource[];asOfDate:string;accepted:{provider:"openai";reportedModel:string;outputFingerprint:string};researchStatus:ResearchRun["status"];modelInput:Record<string,unknown>}){
+  const context=contextSchema.parse(input.originalContext),parsed=seniorReadoutSchema.strict().parse(input.parsed);
+  if(legacyGatewayFingerprint(parsed)!==input.accepted.outputFingerprint||input.modelInput.asOfDate!==input.asOfDate||input.modelInput.locale!==context.session.locale)throw codedError("capital_m07_recovery_pins_invalid");
+  const company={name:stringValue(context.session.company_profile.name),website:optionalString(context.session.company_profile.website)??null};
+  if(legacyGatewayFingerprint(input.modelInput.company)!==legacyGatewayFingerprint(company))throw codedError("capital_m07_recovery_pins_invalid");
+  const allowedUrls=new Set(input.sources.map(source=>source.url)),readout=sanitizeCitations(normalizeReadout(parsed),allowedUrls),qualityResults=validateMeetingBrief(readout,allowedUrls,input.modelInput);
+  return{finalProduct:buildOriginationFinalProduct(context,input.asOfDate,company,readout,input.researchStatus,input.sources,{provider:input.accepted.provider,model:input.accepted.reportedModel}),qualityResults:qualityResults.map(({id,passed})=>({id,passed}))};
 }
 
 function assertExactTaskPlan(job: CapitalProjectAnalysisJob, context: Context): void {
@@ -725,6 +811,7 @@ type ResearchSummary = {
   costExposureUsd: number;
   sources: ResearchSource[];
   failures: ResearchRun["failures"];
+  deliveredSources?:CapitalM07DeliveredSource[];
 };
 
 async function collectOriginationResearch(input: {
@@ -734,6 +821,7 @@ async function collectOriginationResearch(input: {
   website?: string;
   queue: QueueClient;
   discoveryProviders: PublicSearchProvider[];
+  native?:CapitalM07QueueAdapter;
   officialProviderFactory?: WorkerOfficialResearchProviderFactory | undefined;
   contentAcquirer?: ((input: {url: string; issuerDomains?: readonly string[]}) => Promise<AcquiredPublicContent>) | undefined;
 }): Promise<ResearchSummary> {
@@ -755,9 +843,9 @@ async function collectOriginationResearch(input: {
     jurisdiction: runtime.strategy.jurisdiction,
     jurisdictionNeedsConfirmation: runtime.jurisdictionNeedsConfirmation,
   });
-  const cache = createWorkerPublicResearchCache(input.queue, input.job);
-  const companySubject = await verifiedCompanyMemorySubject(input.queue, input.job, subject);
-  const companyMemory = createWorkerPublicCompanyMemory(input.queue, input.job);
+  const cache = input.native?undefined:createWorkerPublicResearchCache(input.queue, input.job);
+  const companySubject = input.native?undefined:await verifiedCompanyMemorySubject(input.queue, input.job, subject);
+  const companyMemory = input.native?undefined:createWorkerPublicCompanyMemory(input.queue, input.job);
   const result = await runPublicResearch({
     plan, providers: runtime.providers, maxSourcesPerQuery: 5,
     ...(cache ? {cache} : {}),
@@ -768,9 +856,11 @@ async function collectOriginationResearch(input: {
     input.contentAcquirer,
     input.website ? [new URL(input.website).hostname] : [],
   );
+  const deliveredSources=input.native?await input.native.captureSources(safeSources):undefined;
+  const licensedSources=deliveredSources?.map(value=>value.source)??safeSources;
   const persisted: ResearchRun & {providerChain: string[]; debtResearchStrategy: typeof runtime.strategy} = {
     ...result,
-    sources: safeSources,
+    sources: input.native?[]:safeSources,
     providerChain: runtime.providers.map((provider) => provider.id),
     debtResearchStrategy: runtime.strategy,
   };
@@ -786,10 +876,13 @@ async function collectOriginationResearch(input: {
     researchMetrics: result.metrics,
     researchStrategyFingerprint: runtime.strategy.fingerprint,
   }, {external_search_cost_usd: costExposureUsd});
-  return {status: result.status, researchRunId, costExposureUsd, sources: safeSources, failures: result.failures};
+  return {status: result.status, researchRunId, costExposureUsd, sources: licensedSources, failures: result.failures,...(deliveredSources?{deliveredSources}:{})};
 }
 
 function researchArtifactContent(research: ResearchSummary, sources: ResearchSource[]): Record<string, unknown> {
+  if(research.deliveredSources)return{schemaVersion:"capital-m07-research-references.v1",status:research.status,researchRunId:research.researchRunId,sourceCount:sources.length,
+    deliveries:research.deliveredSources.filter(value=>sources.some(source=>source.topic===value.source.topic&&source.url===value.source.url)).map(value=>({deliveryId:value.deliveryId,retainedPayloadId:value.retainedPayloadId,topic:value.source.topic})),
+    classification:"external_context_not_company_truth"};
   return {
     status: research.status,
     researchRunId: research.researchRunId,

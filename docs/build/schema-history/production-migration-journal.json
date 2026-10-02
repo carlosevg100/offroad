@@ -1747,8 +1747,20 @@
   {
    "version": "20261002113623",
    "name": "institutional_configuration_review_projection"
+  },
+  {
+   "version": "20261002125617",
+   "name": "capital_m07_native_consumption"
+  },
+  {
+   "version": "20261002135718",
+   "name": "capital_m07_legacy_contract_compatibility"
+  },
+  {
+   "version": "20261002163401",
+   "name": "capital_m07_capture_context_stability"
   }
  ],
  "project_id": "ifnogpksgdadruooqydi",
- "captured_at": "2026-10-02T11:38:24.297116+00:00"
+ "captured_at": "2026-10-02T16:35:51.787889+00:00"
 }
