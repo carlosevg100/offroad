@@ -1,3 +1,4 @@
+import {parseExecutionBriefReviewBasis} from "./execution-brief-review-command";
 import {z} from "zod";
 
 const reasonSchema = z.enum(["awaiting_preliminary_confirmation", "required_information_missing", "plan_generation_pending", "dispatch_unavailable", "context_changed", "approval_required", "approved"]);
@@ -66,4 +67,14 @@ export function projectExecutionBriefApproval(raw: unknown, expected: {id: strin
     ...(value.review_mode ? {reviewMode: value.review_mode} : {}),
     ...(value.caller_can_approve !== undefined ? {callerCanApprove: value.caller_can_approve} : {}),
   };
+}
+
+/** The current native basis owns approval state; historical projections only supply labels. */
+export function projectNativeExecutionBriefApproval(raw: unknown, expected: {id: string; fingerprint: string; version: number; workId: string}, nativeRaw: unknown): ExecutionBriefApprovalProjection {
+  const basis = parseExecutionBriefReviewBasis(nativeRaw, {workId: expected.workId, briefId: expected.id, fingerprint: expected.fingerprint});
+  if (!basis) return {status: "unavailable", fingerprint: expected.fingerprint, version: expected.version, reason: "dispatch_unavailable", callerCanApprove: false};
+  const history = projectExecutionBriefApproval(raw, expected);
+  return {...history, status: basis.approvalEffective ? "approved" : "awaiting",
+    reason: basis.approvalEffective ? "approved" : "approval_required",
+    callerCanApprove: basis.workAccess && (!basis.policy.assignmentRequired || basis.policy.roles.includes("approver"))};
 }

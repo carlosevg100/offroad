@@ -59,7 +59,7 @@ import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
-import {projectExecutionBriefApproval} from "@/lib/advisor/execution-brief-approval";
+import {projectNativeExecutionBriefApproval} from "@/lib/advisor/execution-brief-approval";
 import {loadProjectReviewPolicyContext} from "@/lib/advisor/project-review-policy-context";
 import {loadProjectReviewContext, reviewMemberLabels} from "@/lib/advisor/project-review-context";
 import {loadProjectWorkRequests} from "@/lib/advisor/project-work-requests";
@@ -164,13 +164,10 @@ async function ConversationalCapitalProject({
   ]);
   const memberLabels = reviewMemberLabels(reviewContext);
   const describeApproval = (raw: unknown, expected: {id: string; fingerprint: string; version: number}): ExecutionBriefApproval => {
-    const approval = projectExecutionBriefApproval(raw, expected);
+    const approval = projectNativeExecutionBriefApproval(raw, {...expected, workId: project.id}, nativeExecutionBriefReview);
     return {
-      status: !nativeExecutionBriefReview ? "unavailable" : nativeExecutionBriefReview.approvalEffective
-        ? "approved" : approval.status === "approved" ? "awaiting" : approval.status,
-      fingerprint: approval.fingerprint, version: approval.version,
-      reason: !nativeExecutionBriefReview ? "dispatch_unavailable" : !nativeExecutionBriefReview.approvalEffective && approval.status === "approved"
-        ? "approval_required" : approval.reason,
+      status: approval.status, fingerprint: approval.fingerprint, version: approval.version,
+      reason: approval.reason,
       ...(approval.reviewMode ? {reviewMode: approval.reviewMode} : {}),
       ...(nativeExecutionBriefReview ? {nativeReview: nativeExecutionBriefReview,
         callerCanApprove: nativeExecutionBriefReview.workAccess && (!nativeExecutionBriefReview.policy.assignmentRequired
