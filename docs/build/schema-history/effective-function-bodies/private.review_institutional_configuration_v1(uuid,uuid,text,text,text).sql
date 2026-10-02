@@ -4,16 +4,17 @@ CREATE OR REPLACE FUNCTION private.review_institutional_configuration_v1(p_proje
  SECURITY DEFINER
  SET search_path TO ''
 AS $function$
-declare org_id uuid;session_id uuid;provenance jsonb;current_context jsonb;
+declare c private.institutional_model_configurations; p private.institutional_configuration_review_projections; proof jsonb;
 begin
- select organization_id into org_id from public.capital_projects where id=p_project_id;
- if org_id is null or not private.can_access_capital_project(org_id,p_project_id) then raise exception 'institutional_review_forbidden' using errcode='42501';end if;
- perform 1 from public.capital_projects where organization_id=org_id and id=p_project_id for no key update;
- provenance:=private.institutional_configuration_provenance(org_id,p_candidate_id);
- if p_decision='approved' and provenance is not null then
-  select intake_session_id into session_id from private.institutional_model_setup_submissions where organization_id=org_id and id=(provenance->>'submissionId')::uuid and capital_project_id=p_project_id;
-  current_context:=private.institutional_source_context(org_id,session_id);
-  if provenance->>'sourceManifestFingerprint' is distinct from current_context->>'sourceManifestFingerprint' then raise exception 'institutional_review_sources_changed' using errcode='40001';end if;
+ select * into c from private.institutional_model_configurations where id=p_candidate_id and capital_project_id=p_project_id;
+ if c.id is null or not private.can_access_capital_project(c.organization_id,p_project_id) then raise exception 'institutional_review_forbidden' using errcode='42501';end if;
+ proof:=private.institutional_configuration_ancestry_before_review_projection_v1(c.organization_id,p_project_id,c.id);
+ select * into p from private.institutional_configuration_review_projections where organization_id=c.organization_id and configuration_id=c.id;
+ if proof->>'state'='captured_lineage' or private.institutional_configuration_requires_native_review_v1(c.organization_id,c.id) then
+  -- Only the v2 transaction has just inserted an exact server projection while still pending.
+  if p.id is null or c.status<>'review_required' or (p.actor_id,p.outcome) is distinct from (auth.uid(),p_decision)
+   or not exists(select 1 from public.work_decisions d where (d.organization_id,d.id,d.command_id)=(p.organization_id,p.decision_id,p.command_id)
+    and d.outcome=p_decision and d.decided_by=auth.uid()) then raise exception 'institutional_configuration_native_review_required' using errcode='42501';end if;
  end if;
- return private.review_institutional_configuration_before_sources_v1(p_project_id,p_candidate_id,p_expected_parent_fingerprint,p_decision,p_expected_candidate_fingerprint);
+ return private.apply_institutional_configuration_review_before_projection_v1(p_project_id,p_candidate_id,p_expected_parent_fingerprint,p_decision,p_expected_candidate_fingerprint);
 end $function$
