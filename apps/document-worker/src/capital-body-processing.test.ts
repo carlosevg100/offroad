@@ -3,7 +3,7 @@ import {describe, expect, it, vi} from "vitest";
 import {z} from "zod";
 import {originationSeniorReadoutSchema} from "@offroad/domain-contracts";
 import * as gatewayModule from "@offroad/model-gateway";
-import {legacyGatewayFingerprint, retentionMatrixVersion, type AdapterRequest, type GatewayCallLog} from "@offroad/model-gateway";
+import {conservativeMicroUsd, legacyGatewayFingerprint, retentionMatrixVersion, type AdapterRequest, type GatewayCallLog} from "@offroad/model-gateway";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {createCapitalBodyProcessingAuthority, type CapitalBodyProcessingConfig} from "./capital-body-processing";
 type FixtureSchema = {const?: unknown; enum?: unknown[]; anyOf?: FixtureSchema[]; type?: string; required?: string[]; properties?: Record<string, FixtureSchema>; items?: FixtureSchema; minItems?: number; format?: string; pattern?: string; minLength?: number; minimum?: number};
@@ -19,7 +19,7 @@ function synthetic(s: FixtureSchema): unknown {
   if (s.type === "null") return null;
   throw new Error("unsupported test schema");
 }
-function harness(options: {primaryAllowed?: boolean; invalidOutput?: boolean; decisionPatch?: Record<string, unknown>; wrongReceipt?: boolean;
+function harness(options: {primaryAllowed?: boolean; invalidOutput?: boolean; invalidPrimary?: boolean; decisionPatch?: Record<string, unknown>; inputPatch?: Record<string, unknown>; outcomePatch?: Record<string, unknown>; wrongReceipt?: boolean;
   errors?: Array<{code: string; message: string}>; denyRead?: number; changedBytes?: number; changedScope?: number; badBody?: boolean; beforeRpc?: () => void} = {}) {
   const content = {schemaVersion: "capital-body.contribution.v1", content: "Synthetic authorized contribution: CPF 123.456.789-09, ação € 漢字"};
   const bytes = Buffer.from(options.badBody ? '{"unknown":"sensitive"}' : JSON.stringify(content));
@@ -34,25 +34,42 @@ function harness(options: {primaryAllowed?: boolean; invalidOutput?: boolean; de
       scope: reads === options.changedScope ? {...receipt, bodyBasisId: randomUUID()} : {...receipt, replayed: true}};
   })} as unknown as CapitalBodyProcessingConfig["body"];
   const requests: Array<{name: string; args: Record<string, unknown>}> = [], decisions = new Map<string, {attempt: Record<string, unknown>; id: string}>();
+  const operationId = randomUUID(), rootAttemptReceiptId = randomUUID();
+  const inputs = new Map<string, string>();
   const rpc = vi.fn(async (name: string, args: Record<string, unknown>) => {
     requests.push({name, args}); options.beforeRpc?.();
     if (options.errors?.length) return {data: null, error: options.errors.shift()};
-    if (name === "worker_authorize_capital_body_processing_v1") {
+    if (name === "worker_authorize_capital_body_processing_v2") {
       const attempt = args.p_attempt as Record<string, unknown>, id = randomUUID(); decisions.set(id, {attempt, id});
       const allowed = Boolean(attempt.usedProviderFallback) || options.primaryAllowed === true;
       const assurances = [randomUUID(), randomUUID(), randomUUID()];
-      return {error: null, data: {schemaVersion: "capital-body-processing-decision.v1", allowed, policyVersion: retentionMatrixVersion,
+      return {error: null, data: {schemaVersion: "capital-body-processing-decision.v2", allowed, policyVersion: retentionMatrixVersion,
         assuranceId: null, assuranceIds: allowed ? assurances : [], decisionId: randomUUID(), classification: "restricted",
         reasons: allowed ? [] : ["processing_resource_ineligible:inference"], attemptReceiptId: id, invocationId: attempt.invocationId,
-        requestFingerprint: attempt.requestFingerprint, eligibilityFingerprint: "d".repeat(64), replayed: false, ...options.decisionPatch}};
+        requestFingerprint: attempt.requestFingerprint, eligibilityFingerprint: "d".repeat(64), replayed: false, operationId, rootAttemptReceiptId, ...options.decisionPatch}};
     }
     const record = decisions.get(args.p_attempt_receipt_id as string)!;
-    return {error: null, data: {receiptId: randomUUID(), invocationId: options.wrongReceipt ? randomUUID() : record.attempt.invocationId, requestFingerprint: record.attempt.requestFingerprint}};
+    if (name === "worker_record_capital_body_attempt_outcome_v1") {
+      const outcome = args.p_outcome as Record<string, unknown>;
+      return {error: null, data: {schemaVersion: "capital-body-attempt-outcome-receipt.v1", receiptId: randomUUID(), operationId, rootAttemptReceiptId,
+        attemptReceiptId: record.id, inputReceiptId: inputs.get(record.id), invocationId: outcome.invocationId, requestFingerprint: outcome.requestFingerprint,
+        fingerprintVersion: outcome.fingerprintVersion, outcomeFingerprint: outcome.outcomeFingerprint, outcome: outcome.outcome, failureCode: outcome.failureCode, replayed: false, ...options.outcomePatch}};
+    }
+    const receiptId = randomUUID(); inputs.set(record.id, receiptId);
+    return {error: null, data: {schemaVersion: "capital-body-input-dispatch.v3", receiptId, invocationId: options.wrongReceipt ? randomUUID() : record.attempt.invocationId,
+      requestFingerprint: record.attempt.requestFingerprint, operationId, rootAttemptReceiptId, attemptReceiptId: record.id, dispatchClaimId: randomUUID(),
+      rendererPolicyFingerprint: gatewayModule.ordinalGatewayFingerprint(["capital-body-dispatch-policy.v1", "capital-body-contribution-renderer.v1",
+        record.attempt.usedProviderFallback ? "openai" : "anthropic", record.attempt.usedProviderFallback ? "gpt-5.6-terra" : "claude-sonnet-5",
+        "926c94492e1ff85de2b9b0be7803ce5ebb4e0ce358b908b5b665188434143a29", 128,
+        record.attempt.usedProviderFallback ? "2e71ff14ecbc6727c8cd56fbd96009850d368bfddf8e36472d9b67eb2785d29d" : "9ff59776a5ad01758912a6ec57f9468d3068b3e23604932761ddf548e2cb640b",
+        record.attempt.usedProviderFallback ? 5630 : 10656, 1024, 100000, 1000, 2000000, 2500000, record.attempt.usedProviderFallback ? 12000000 : 10000000,
+        11,10,record.attempt.usedProviderFallback ? 272000 : 0,record.attempt.usedProviderFallback ? 2 : 1,1,record.attempt.usedProviderFallback ? 3 : 1,record.attempt.usedProviderFallback ? 2 : 1]),
+      reservationMicroUsd: conservativeMicroUsd(record.attempt.reservationUsd as number), serverReservationMicroUsd: conservativeMicroUsd(record.attempt.reservationUsd as number), dispatchAllowed: true, replayed: false, ...options.inputPatch}};
   });
   const sends: Array<{provider: string; request: AdapterRequest}> = [], logs: GatewayCallLog[] = [];
   const output = originationSeniorReadoutSchema.parse(synthetic(z.toJSONSchema(originationSeniorReadoutSchema) as FixtureSchema));
   const adapters = Object.fromEntries(["anthropic", "openai"].map(provider => [provider, {provider, async complete(request: AdapterRequest) {
-    sends.push({provider, request}); return {output: options.invalidOutput ? {} : structuredClone(output), model: request.model,
+    sends.push({provider, request}); return {output: options.invalidOutput || options.invalidPrimary && provider === "anthropic" ? {} : structuredClone(output), model: request.model,
       usage: {inputTokens: 1, outputTokens: 1, cachedInputTokens: 0}, stopReason: "end"};
   }}])) as CapitalBodyProcessingConfig["adapters"];
   const binding = {accountRef: "synthetic-account", projectRef: "synthetic-project", credentialBinding: "synthetic-version", region: "global"};
@@ -67,7 +84,7 @@ describe("closed capital body processing authority", () => {
     expect(h.sends.map(send => send.provider)).toEqual(["openai"]);
     expect(h.sends[0]!.request.input[0]).toMatchObject({type: "text"});
     expect(JSON.stringify(h.sends[0]!.request.input)).not.toContain("123.456.789-09");
-    const attempts = h.requests.filter(row => row.name === "worker_authorize_capital_body_processing_v1");
+    const attempts = h.requests.filter(row => row.name === "worker_authorize_capital_body_processing_v2");
     expect(attempts).toHaveLength(2);
     expect(attempts[1]!.args.p_attempt).toMatchObject({previousInvocationId: (attempts[0]!.args.p_attempt as {invocationId: string}).invocationId,
       inputFingerprint: legacyGatewayFingerprint(h.sends[0]!.request.input)});
@@ -76,19 +93,19 @@ describe("closed capital body processing authority", () => {
       expect(row.args.p_components).toEqual([{kind: "retained_payload", id: h.receipt.retainedPayloadId}]);
       expect(JSON.stringify(row.args)).not.toContain("123.456.789-09");
     }
-    expect(h.requests.filter(row => row.name === "worker_record_capital_body_input_v2")).toHaveLength(1);
+    expect(h.requests.filter(row => row.name === "worker_record_capital_body_input_v3")).toHaveLength(1);
     expect(result.acceptedInvocation?.invocationId).toBe((attempts[1]!.args.p_attempt as {invocationId: string}).invocationId);
     expect(result.acceptedInvocation?.inputAttestationReceiptId).toBeTruthy();
   });
   it("admits a primary success without creating an artificial fallback", async () => {
     const h = harness({primaryAllowed: true}); await h.factory.run(h.command);
     expect(h.sends.map(send => send.provider)).toEqual(["anthropic"]);
-    expect(h.requests.filter(row => row.name === "worker_authorize_capital_body_processing_v1")).toHaveLength(1);
+    expect(h.requests.filter(row => row.name === "worker_authorize_capital_body_processing_v2")).toHaveLength(1);
   });
-  it("does not turn sent primary rejection into proven predecessor outcome", async () => {
+  it("closes sent primary rejection before eligible fallback and conserves the shared two-send limit", async () => {
     const h = harness({primaryAllowed: true, invalidOutput: true}); await expect(h.factory.run(h.command)).rejects.toThrow("capital_body_processing_denied");
-    expect(h.sends.map(send => send.provider)).toEqual(["anthropic"]);
-    expect(h.requests.filter(row => row.name === "worker_authorize_capital_body_processing_v1")).toHaveLength(1);
+    expect(h.sends.map(send => send.provider)).toEqual(["anthropic", "openai"]);
+    expect(h.requests.filter(row => row.name === "worker_record_capital_body_attempt_outcome_v1")).toHaveLength(2);
   });
   it.each([{prompt: "private extra prompt"}, {components: [{kind: "contribution", id: randomUUID()}]}, {input: []}])("rejects arbitrary renderer inputs before source or SQL access (%j)", async extra => {
     const h = harness(); await expect(h.factory.run({...h.command, ...extra})).rejects.toThrow("capital_body_processing_denied");
@@ -160,5 +177,23 @@ describe("closed capital body processing authority", () => {
     const h = harness(); delete h.config.connections.openai;
     expect(() => createCapitalBodyProcessingAuthority(h.config)).toThrow("capital_body_processing_denied");
     expect(h.body.retainContribution).not.toHaveBeenCalled();
+  });
+  it("authorizes fallback only after real primary failure has a bound terminal SQL outcome", async () => {
+    const h = harness({primaryAllowed: true, invalidPrimary: true}); const {result} = await h.factory.run(h.command);
+    expect(h.sends.map(send => send.provider)).toEqual(["anthropic", "openai"]);
+    const outcomes=h.requests.filter(r => r.name === "worker_record_capital_body_attempt_outcome_v1");
+    expect(outcomes.map(r => (r.args.p_outcome as {outcome:string}).outcome)).toEqual(["invalid_output", "accepted"]);
+    expect(JSON.stringify(outcomes)).not.toContain("123.456.789-09"); expect(JSON.stringify(outcomes)).not.toContain('"path"');
+    expect(result.attemptOutcomeReceipt?.invocationId).toBe(result.acceptedInvocation?.invocationId);
+  });
+  it.each([{replayed:true},{dispatchAllowed:false},{serverReservationMicroUsd:0},{rendererPolicyFingerprint:"a".repeat(64)},{operationId:randomUUID()}])("denies reused, underreserved or unbound dispatch grant (%j)", async inputPatch => {
+    const h=harness({inputPatch}); await expect(h.factory.run(h.command)).rejects.toThrow("capital_body_processing_denied"); expect(h.sends).toHaveLength(0);
+  });
+  it.each([{invocationId:randomUUID()},{outcomeFingerprint:"a".repeat(64)},{operationId:randomUUID()},{privateCanaryKey:"SECRET_CANARY"}])("blocks fallback when failure outcome receipt is unbound or contains private fields (%j)", async outcomePatch => {
+    const h=harness({primaryAllowed:true,invalidPrimary:true,outcomePatch}); await expect(h.factory.run(h.command)).rejects.toThrow(/^capital_body_processing_denied$/); expect(h.sends.map(s=>s.provider)).toEqual(["anthropic"]);
+  });
+  it("leaves revocation after dispatch unresolved with no outcome or second send", async () => {
+    const h=harness({primaryAllowed:true,invalidPrimary:true,denyRead:4}); await expect(h.factory.run(h.command)).rejects.toThrow("capital_body_processing_denied");
+    expect(h.sends.map(s=>s.provider)).toEqual(["anthropic"]); expect(h.requests.filter(r=>r.name==="worker_record_capital_body_attempt_outcome_v1")).toHaveLength(0);
   });
 });

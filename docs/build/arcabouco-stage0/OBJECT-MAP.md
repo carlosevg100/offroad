@@ -3261,3 +3261,50 @@ Os 35 objetos de policy e trigger restantes são gerados pelo laço SQL da migra
 As sete tabelas privadas de corpos, wrappers worker, guards e wakes entram como preservação aditiva de referências, direitos, prazo e auditoria, com acesso direto negado. O transporte consumer GET/info/HEAD/sign de capital-input-capture é substituído por capital-body-read POST autenticado e reautorizado; o purger preserva lease/info/delete. Upload das duas famílias exige job/capability exatos. Não existe produtor M07 ou recuperação histórica ativada.
 
 Migrações canônicas de produção: 20261001205206_capital_body_retention.sql, 20261001205251_typedbody_storage_job_authority.sql, 20261001205326_capital_body_server_read_boundary.sql. As fatias de staging permanecem no journal próprio; SQL idêntico conferido sem reaplicação. Catálogo produção 3051/staging 3112, decisões e 42 âncoras de políticas/triggers dinâmicos reconciliadas; checker de ambos com zero erros e 18 unidades PASS. Tipos são agora da produção. Edge produção versão 1 ACTIVE/JWT/source SHA conferidos; controle de admissão suspenso até deploy exato, sob restauração CAS exclusiva do executor principal. CI final/merge/deploy continuam gates; etapa 20 aberta.
+
+## Etapa 20 / 3Q outcomes e orçamento durável: 2 de outubro de 2026
+
+20 objetos novos por DDL direto; quatro comandos existentes recebem a âncora adicional da redefinição, conservando o contrato de catálogo. Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.
+- `function:private.capital_body_attempt_assurances_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)`
+- `function:private.capital_body_attempt_outcome_dto_v1(p_outcome private.capital_body_attempt_outcomes, p_root uuid, p_replayed boolean)`
+- `function:private.capital_body_attempt_outcome_fingerprint_v1(p_outcome jsonb)`
+- `function:private.capital_body_attempt_predecessor_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)`
+- `function:private.capital_body_dispatch_policy_v1(p_provider text, p_model text, p_byte_length bigint)`
+- `function:private.capital_body_operation_basis_v1(p_job processing_jobs, p_components jsonb)`
+- `function:private.capital_body_operation_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)`
+- `function:private.capital_body_operation_origins_v1(p_org uuid, p_resolved_components jsonb)`
+- `function:private.guard_capital_body_legacy_origins_v1(p_org uuid, p_work uuid, p_resolved_components jsonb)`
+- `function:private.lock_capital_body_operation_origins_v1(p_org uuid, p_work uuid, p_origins uuid[])`
+- `function:private.worker_authorize_capital_body_processing_core_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb, p_terminal_outcome_required boolean)`
+- `function:private.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)`
+- `function:private.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)`
+- `function:private.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)`
+- `function:public.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)`
+- `function:public.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)`
+- `function:public.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)`
+- `r:private.capital_body_attempt_outcomes`
+- `r:private.capital_body_operation_dispatches`
+- `r:private.capital_body_processing_operations`
+
+21 políticas e triggers dinâmicos adicionais foram conferidos no catálogo vivo, com âncoras do DDL e decisão de preservar. Produção `20261002101548`/`20261002101604`; staging `20261002031554`/`20261002032119`, SQL idêntico nos dois ambientes. Nenhum novo caminho de leitura direta de API.
+- `policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_delete`
+- `policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_insert`
+- `policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_select`
+- `policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_update`
+- `policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_delete`
+- `policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_insert`
+- `policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_select`
+- `policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_update`
+- `policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_delete`
+- `policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_insert`
+- `policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_select`
+- `policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_update`
+- `trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_audit`
+- `trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_immutable`
+- `trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_updated_at`
+- `trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_audit`
+- `trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_immutable`
+- `trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_updated_at`
+- `trigger:private.capital_body_processing_operations.capital_body_processing_operations_audit`
+- `trigger:private.capital_body_processing_operations.capital_body_processing_operations_immutable`
+- `trigger:private.capital_body_processing_operations.capital_body_processing_operations_updated_at`

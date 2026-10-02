@@ -27,5 +27,6 @@ export * from "./cassette";
 export * from "./gateway";
 export * from "./effective-input";
 export * from "./input-serialization";
+export * from "./attempt-outcome";
 export {createAnthropicAdapter, buildAnthropicParams, mapAnthropicStopReason, mapAnthropicUsage, safeJsonParse, promptedJsonInstruction, extractJsonText} from "./adapters/anthropic";
 export {createOpenAIAdapter, buildOpenAIParams, toOpenAIStrictSchema, stripOpenAIOptionalNulls, mapOpenAIStopReason, mapOpenAIUsage} from "./adapters/openai";

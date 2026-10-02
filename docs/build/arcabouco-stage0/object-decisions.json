@@ -198155,6 +198155,12 @@
           "line": 522,
           "anchor": "create or replace function private.worker_record_capital_body_accepted_v1(p_job_id uuid,p_capability_token text,p_input_receipt_id uuid,p_accepted jsonb)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 766,
+          "anchor": "create or replace function private.worker_record_capital_body_accepted_v1(p_job_id uuid,p_capability_token text,p_input_receipt_id uuid,p_accepted jsonb)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -198223,6 +198229,12 @@
         {
           "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
           "line": 449,
+          "anchor": "create or replace function private.worker_record_capital_body_input_v1(p_job_id uuid,p_capability_token text,p_invocation_id uuid,",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 520,
           "anchor": "create or replace function private.worker_record_capital_body_input_v1(p_job_id uuid,p_capability_token text,p_invocation_id uuid,",
           "mechanism": "direct_ddl"
         }
@@ -202849,6 +202861,12 @@
           "line": 189,
           "anchor": "create function private.worker_authorize_capital_body_processing_v1(p_job_id uuid,p_capability_token text,p_attempt jsonb,p_route jsonb,p_resources text[],p_purpose text,p_components jsonb)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 826,
+          "anchor": "create or replace function private.worker_authorize_capital_body_processing_v1(p_job_id uuid,p_capability_token text,p_attempt jsonb,p_route jsonb,p_resources text[],p_purpose text,p_components jsonb)",
+          "mechanism": "direct_ddl"
         }
       ]
     },
@@ -202912,6 +202930,12 @@
           "path": "supabase/migrations/20261002014202_capital_body_attempt_ledger.sql",
           "line": 110,
           "anchor": "create function private.worker_record_capital_body_input_v2(p_job_id uuid,p_capability_token text,p_attempt_receipt_id uuid)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 591,
+          "anchor": "create or replace function private.worker_record_capital_body_input_v2(p_job_id uuid,p_capability_token text,p_attempt_receipt_id uuid)",
           "mechanism": "direct_ddl"
         }
       ]
@@ -203927,6 +203951,2256 @@
           "line": 107,
           "anchor": "create trigger capital_body_input_attempt_guard before insert on private.capital_body_invocation_inputs",
           "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_assurances_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_assurances_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_attempt_assurances_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_assurances_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_attempt_assurances_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 319,
+          "anchor": "create function private.capital_body_attempt_assurances_current_v1(p_job public.processing_jobs,p_attempt private.capital_body_gateway_attempts)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_outcome_dto_v1(p_outcome private.capital_body_attempt_outcomes, p_root uuid, p_replayed boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_outcome_dto_v1(p_outcome private.capital_body_attempt_outcomes, p_root uuid, p_replayed boolean)",
+          "kind": "function",
+          "name": "capital_body_attempt_outcome_dto_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_outcome private.capital_body_attempt_outcomes, p_root uuid, p_replayed boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_outcome_dto_v1(p_outcome private.capital_body_attempt_outcomes, p_root uuid, p_replayed boolean)",
+          "kind": "function",
+          "name": "capital_body_attempt_outcome_dto_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_outcome private.capital_body_attempt_outcomes, p_root uuid, p_replayed boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 701,
+          "anchor": "create function private.capital_body_attempt_outcome_dto_v1(p_outcome private.capital_body_attempt_outcomes,p_root uuid,p_replayed boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_outcome_fingerprint_v1(p_outcome jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_outcome_fingerprint_v1(p_outcome jsonb)",
+          "kind": "function",
+          "name": "capital_body_attempt_outcome_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_outcome jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_outcome_fingerprint_v1(p_outcome jsonb)",
+          "kind": "function",
+          "name": "capital_body_attempt_outcome_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_outcome jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 130,
+          "anchor": "create function private.capital_body_attempt_outcome_fingerprint_v1(p_outcome jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_attempt_predecessor_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_attempt_predecessor_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_attempt_predecessor_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_attempt_predecessor_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_attempt_predecessor_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 372,
+          "anchor": "create function private.capital_body_attempt_predecessor_current_v1(p_job public.processing_jobs,p_attempt private.capital_body_gateway_attempts)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_dispatch_policy_v1(p_provider text, p_model text, p_byte_length bigint)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_dispatch_policy_v1(p_provider text, p_model text, p_byte_length bigint)",
+          "kind": "function",
+          "name": "capital_body_dispatch_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_provider text, p_model text, p_byte_length bigint",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_dispatch_policy_v1(p_provider text, p_model text, p_byte_length bigint)",
+          "kind": "function",
+          "name": "capital_body_dispatch_policy_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_provider text, p_model text, p_byte_length bigint",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 293,
+          "anchor": "create function private.capital_body_dispatch_policy_v1(p_provider text,p_model text,p_byte_length bigint)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_operation_basis_v1(p_job processing_jobs, p_components jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_operation_basis_v1(p_job processing_jobs, p_components jsonb)",
+          "kind": "function",
+          "name": "capital_body_operation_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_components jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_operation_basis_v1(p_job processing_jobs, p_components jsonb)",
+          "kind": "function",
+          "name": "capital_body_operation_basis_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_components jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 268,
+          "anchor": "create function private.capital_body_operation_basis_v1(p_job public.processing_jobs,p_components jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_operation_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_operation_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_operation_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_operation_current_v1(p_job processing_jobs, p_attempt private.capital_body_gateway_attempts)",
+          "kind": "function",
+          "name": "capital_body_operation_current_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job processing_jobs, p_attempt private.capital_body_gateway_attempts",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 626,
+          "anchor": "create function private.capital_body_operation_current_v1(p_job public.processing_jobs,p_attempt private.capital_body_gateway_attempts)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.capital_body_operation_origins_v1(p_org uuid, p_resolved_components jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.capital_body_operation_origins_v1(p_org uuid, p_resolved_components jsonb)",
+          "kind": "function",
+          "name": "capital_body_operation_origins_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_resolved_components jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.capital_body_operation_origins_v1(p_org uuid, p_resolved_components jsonb)",
+          "kind": "function",
+          "name": "capital_body_operation_origins_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_resolved_components jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 211,
+          "anchor": "create function private.capital_body_operation_origins_v1(p_org uuid,p_resolved_components jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.guard_capital_body_legacy_origins_v1(p_org uuid, p_work uuid, p_resolved_components jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.guard_capital_body_legacy_origins_v1(p_org uuid, p_work uuid, p_resolved_components jsonb)",
+          "kind": "function",
+          "name": "guard_capital_body_legacy_origins_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_resolved_components jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.guard_capital_body_legacy_origins_v1(p_org uuid, p_work uuid, p_resolved_components jsonb)",
+          "kind": "function",
+          "name": "guard_capital_body_legacy_origins_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_resolved_components jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 256,
+          "anchor": "create function private.guard_capital_body_legacy_origins_v1(p_org uuid,p_work uuid,p_resolved_components jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.lock_capital_body_operation_origins_v1(p_org uuid, p_work uuid, p_origins uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.lock_capital_body_operation_origins_v1(p_org uuid, p_work uuid, p_origins uuid[])",
+          "kind": "function",
+          "name": "lock_capital_body_operation_origins_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_origins uuid[]",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.lock_capital_body_operation_origins_v1(p_org uuid, p_work uuid, p_origins uuid[])",
+          "kind": "function",
+          "name": "lock_capital_body_operation_origins_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_origins uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 246,
+          "anchor": "create function private.lock_capital_body_operation_origins_v1(p_org uuid,p_work uuid,p_origins uuid[])",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_authorize_capital_body_processing_core_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb, p_terminal_outcome_required boolean)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_authorize_capital_body_processing_core_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb, p_terminal_outcome_required boolean)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_core_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb, p_terminal_outcome_required boolean",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_authorize_capital_body_processing_core_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb, p_terminal_outcome_required boolean)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_core_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb, p_terminal_outcome_required boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 395,
+          "anchor": "create function private.worker_authorize_capital_body_processing_core_v2(p_job_id uuid,p_capability_token text,p_attempt jsonb,p_route jsonb,p_resources text[],p_purpose text,p_components jsonb,p_terminal_outcome_required boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 830,
+          "anchor": "create function private.worker_authorize_capital_body_processing_v2(p_job_id uuid,p_capability_token text,p_attempt jsonb,p_route jsonb,p_resources text[],p_purpose text,p_components jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+          "kind": "function",
+          "name": "worker_record_capital_body_attempt_outcome_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+          "kind": "function",
+          "name": "worker_record_capital_body_attempt_outcome_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 709,
+          "anchor": "create function private.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid,p_capability_token text,p_attempt_receipt_id uuid,p_outcome jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:private.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:private.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+          "kind": "function",
+          "name": "worker_record_capital_body_input_v3",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+          "security_definer": true
+        },
+        "staging": {
+          "id": "function:private.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+          "kind": "function",
+          "name": "worker_record_capital_body_input_v3",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 647,
+          "anchor": "create function private.worker_record_capital_body_input_v3(p_job_id uuid,p_capability_token text,p_attempt_receipt_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_authorize_capital_body_processing_v2(p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb)",
+          "kind": "function",
+          "name": "worker_authorize_capital_body_processing_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt jsonb, p_route jsonb, p_resources text[], p_purpose text, p_components jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 834,
+          "anchor": "create function public.worker_authorize_capital_body_processing_v2(p_job_id uuid,p_capability_token text,p_attempt jsonb,p_route jsonb,p_resources text[],p_purpose text,p_components jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+          "kind": "function",
+          "name": "worker_record_capital_body_attempt_outcome_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb)",
+          "kind": "function",
+          "name": "worker_record_capital_body_attempt_outcome_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid, p_outcome jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 842,
+          "anchor": "create function public.worker_record_capital_body_attempt_outcome_v1(p_job_id uuid,p_capability_token text,p_attempt_receipt_id uuid,p_outcome jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "function:public.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "production": {
+          "id": "function:public.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+          "kind": "function",
+          "name": "worker_record_capital_body_input_v3",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+          "security_definer": false
+        },
+        "staging": {
+          "id": "function:public.worker_record_capital_body_input_v3(p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid)",
+          "kind": "function",
+          "name": "worker_record_capital_body_input_v3",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_job_id uuid, p_capability_token text, p_attempt_receipt_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 838,
+          "anchor": "create function public.worker_record_capital_body_input_v3(p_job_id uuid,p_capability_token text,p_attempt_receipt_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_attempt_outcomes_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_attempt_outcomes_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_attempt_outcomes_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_attempt_outcomes_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_select",
+          "kind": "policy",
+          "name": "capital_body_attempt_outcomes_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_select",
+          "kind": "policy",
+          "name": "capital_body_attempt_outcomes_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_update",
+          "kind": "policy",
+          "name": "capital_body_attempt_outcomes_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_deny_update",
+          "kind": "policy",
+          "name": "capital_body_attempt_outcomes_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_operation_dispatches_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_operation_dispatches_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_operation_dispatches_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_operation_dispatches_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_select",
+          "kind": "policy",
+          "name": "capital_body_operation_dispatches_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_select",
+          "kind": "policy",
+          "name": "capital_body_operation_dispatches_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_update",
+          "kind": "policy",
+          "name": "capital_body_operation_dispatches_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_operation_dispatches.capital_body_operation_dispatches_deny_update",
+          "kind": "policy",
+          "name": "capital_body_operation_dispatches_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_delete",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_processing_operations_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_delete",
+          "kind": "policy",
+          "name": "capital_body_processing_operations_deny_delete",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "command": "DELETE",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_insert",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_processing_operations_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_insert",
+          "kind": "policy",
+          "name": "capital_body_processing_operations_deny_insert",
+          "qual": null,
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "command": "INSERT",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_select",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_select",
+          "kind": "policy",
+          "name": "capital_body_processing_operations_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        },
+        "staging": {
+          "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_select",
+          "kind": "policy",
+          "name": "capital_body_processing_operations_deny_select",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "command": "SELECT",
+          "permissive": "RESTRICTIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_update",
+      "kind": "policy",
+      "catalogues": {
+        "production": {
+          "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_update",
+          "kind": "policy",
+          "name": "capital_body_processing_operations_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        },
+        "staging": {
+          "id": "policy:private.capital_body_processing_operations.capital_body_processing_operations_deny_update",
+          "kind": "policy",
+          "name": "capital_body_processing_operations_deny_update",
+          "qual": "false",
+          "roles": [
+            "anon",
+            "authenticated"
+          ],
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "command": "UPDATE",
+          "permissive": "RESTRICTIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 119,
+          "anchor": " execute format('create policy %I on private.%I as restrictive for %s to anon,authenticated %s',t||'_deny_'||cmd,t,cmd,",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_body_attempt_outcomes",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_body_attempt_outcomes",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_attempt_outcomes",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_body_attempt_outcomes",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_attempt_outcomes",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 79,
+          "anchor": "create table private.capital_body_attempt_outcomes (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_body_operation_dispatches",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_body_operation_dispatches",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_operation_dispatches",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_body_operation_dispatches",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_operation_dispatches",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 57,
+          "anchor": "create table private.capital_body_operation_dispatches (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "r:private.capital_body_processing_operations",
+      "kind": "table",
+      "catalogues": {
+        "production": {
+          "id": "r:private.capital_body_processing_operations",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_processing_operations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        },
+        "staging": {
+          "id": "r:private.capital_body_processing_operations",
+          "rls": true,
+          "kind": "table",
+          "name": "capital_body_processing_operations",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar operação por origem real, dispatch único e outcome terminal sem conteúdo; orçamento conservador, direitos atuais e linhagem impedem novo envio por replay ou fallback sem conclusão factual.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 21,
+          "anchor": "create table private.capital_body_processing_operations (",
+          "mechanism": "direct_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_audit",
+          "kind": "trigger",
+          "name": "capital_body_attempt_outcomes_audit",
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_attempt_outcomes_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_audit",
+          "kind": "trigger",
+          "name": "capital_body_attempt_outcomes_audit",
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_attempt_outcomes_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 124,
+          "anchor": " execute format('create trigger %I after insert or update or delete on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_immutable",
+          "kind": "trigger",
+          "name": "capital_body_attempt_outcomes_immutable",
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_attempt_outcomes_immutable BEFORE DELETE OR UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_immutable",
+          "kind": "trigger",
+          "name": "capital_body_attempt_outcomes_immutable",
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_attempt_outcomes_immutable BEFORE DELETE OR UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 123,
+          "anchor": " execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_attempt_outcomes_updated_at",
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_attempt_outcomes_updated_at BEFORE UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_attempt_outcomes.capital_body_attempt_outcomes_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_attempt_outcomes_updated_at",
+          "table": "capital_body_attempt_outcomes",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_attempt_outcomes_updated_at BEFORE UPDATE ON private.capital_body_attempt_outcomes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 122,
+          "anchor": " execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated_at',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_audit",
+          "kind": "trigger",
+          "name": "capital_body_operation_dispatches_audit",
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_operation_dispatches_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_audit",
+          "kind": "trigger",
+          "name": "capital_body_operation_dispatches_audit",
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_operation_dispatches_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 124,
+          "anchor": " execute format('create trigger %I after insert or update or delete on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_immutable",
+          "kind": "trigger",
+          "name": "capital_body_operation_dispatches_immutable",
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_operation_dispatches_immutable BEFORE DELETE OR UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_immutable",
+          "kind": "trigger",
+          "name": "capital_body_operation_dispatches_immutable",
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_operation_dispatches_immutable BEFORE DELETE OR UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 123,
+          "anchor": " execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_operation_dispatches_updated_at",
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_operation_dispatches_updated_at BEFORE UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_operation_dispatches.capital_body_operation_dispatches_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_operation_dispatches_updated_at",
+          "table": "capital_body_operation_dispatches",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_operation_dispatches_updated_at BEFORE UPDATE ON private.capital_body_operation_dispatches FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 122,
+          "anchor": " execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated_at',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_audit",
+          "kind": "trigger",
+          "name": "capital_body_processing_operations_audit",
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_processing_operations_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_audit",
+          "kind": "trigger",
+          "name": "capital_body_processing_operations_audit",
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_audit_event()",
+          "definition": "CREATE TRIGGER capital_body_processing_operations_audit AFTER INSERT OR DELETE OR UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.capture_audit_event()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 124,
+          "anchor": " execute format('create trigger %I after insert or update or delete on private.%I for each row execute function private.capture_audit_event()',t||'_audit',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_immutable",
+          "kind": "trigger",
+          "name": "capital_body_processing_operations_immutable",
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_processing_operations_immutable BEFORE DELETE OR UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_immutable",
+          "kind": "trigger",
+          "name": "capital_body_processing_operations_immutable",
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_source_version_mutation_v1()",
+          "definition": "CREATE TRIGGER capital_body_processing_operations_immutable BEFORE DELETE OR UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.reject_source_version_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 123,
+          "anchor": " execute format('create trigger %I before update or delete on private.%I for each row execute function private.reject_source_version_mutation_v1()',t||'_immutable',t);",
+          "mechanism": "dynamic_ddl"
+        }
+      ]
+    },
+    {
+      "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_updated_at",
+      "kind": "trigger",
+      "catalogues": {
+        "production": {
+          "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_processing_operations_updated_at",
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_processing_operations_updated_at BEFORE UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        },
+        "staging": {
+          "id": "trigger:private.capital_body_processing_operations.capital_body_processing_operations_updated_at",
+          "kind": "trigger",
+          "name": "capital_body_processing_operations_updated_at",
+          "table": "capital_body_processing_operations",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER capital_body_processing_operations_updated_at BEFORE UPDATE ON private.capital_body_processing_operations FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução e segurança, etapa 20",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Preservar barreira restritiva de API, auditoria e imutabilidade da operação, dispatch e outcome privados; somente comandos explícitos autorizam uso.",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+          "line": 122,
+          "anchor": " execute format('create trigger %I before update on private.%I for each row execute function private.set_updated_at()',t||'_updated_at',t);",
+          "mechanism": "dynamic_ddl"
         }
       ]
     }
@@ -211011,6 +213285,20 @@
       "decision": "preservar",
       "stage": "20 / 3Q ledger e input governado",
       "reason": "Preservar contrato aplicado de tentativa/input, correção forward da drenagem e índice completo da FK; cliente não recebe DML nem helper de prova sem saúde."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002101548_capital_body_attempt_outcomes.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Instalar outcomes privados e orçamento durável sem reaplicação do legado nem ativação de M07."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261002101604_capital_body_accepted_input_identity_fk_index.sql",
+      "decision": "preservar",
+      "stage": "20 / 3Q outcomes e orçamento durável",
+      "reason": "Instalar outcomes privados e orçamento durável sem reaplicação do legado nem ativação de M07."
     }
   ],
   "staging_archive": [

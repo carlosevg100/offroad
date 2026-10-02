@@ -13239,6 +13239,18 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_authorize_capital_body_processing_v2: {
+        Args: {
+          p_attempt: Json
+          p_capability_token: string
+          p_components: Json
+          p_job_id: string
+          p_purpose: string
+          p_resources: string[]
+          p_route: Json
+        }
+        Returns: Json
+      }
       worker_authorize_capital_project_material_upload_v1: {
         Args: {
           p_byte_length: number
@@ -13927,6 +13939,15 @@ export type Database = {
         }
         Returns: Json
       }
+      worker_record_capital_body_attempt_outcome_v1: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+          p_outcome: Json
+        }
+        Returns: Json
+      }
       worker_record_capital_body_input_v1: {
         Args: {
           p_adapter_request_fingerprint: string
@@ -13946,6 +13967,14 @@ export type Database = {
         Returns: Json
       }
       worker_record_capital_body_input_v2: {
+        Args: {
+          p_attempt_receipt_id: string
+          p_capability_token: string
+          p_job_id: string
+        }
+        Returns: Json
+      }
+      worker_record_capital_body_input_v3: {
         Args: {
           p_attempt_receipt_id: string
           p_capability_token: string

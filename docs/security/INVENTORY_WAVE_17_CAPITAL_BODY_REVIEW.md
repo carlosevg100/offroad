@@ -1,3 +1,15 @@
+## Evidência outcomes em 02/10/2026
+
+Revisão independente sem achados críticos/altos; TaskKind genérico corrigido para registry pinado com negativo dedicado. SQL staging PASS com rollback. Migrações prod101548/101604 e staging031554/032119 têm MD5 idêntico. Advisors segurança0/0; produção sem operações/outcomes/objetos de fixture. Gate local completo44/44 passou; CI, corrida de duas sessões/SDK no banco descartável, merge e deploy final permanecem gates de publicação, não declarados completos.
+
+## 2026-10-02: ledger fechado e revisão do incremento outcomes
+
+PR862/main0886e45b: Quality/Security PR e main SUCCESS, web e worker512 no commit exato, boot/pins reais conferidos. As pendências de publicação ledger/inputv2 abaixo são históricas e foram superadas pelo completion. Produção sem fixtures, journals14202/14214/14224 conciliados e advisors0/0. Relatório externo outputs/etapa-20-2026-10-02-3q-ledger/COMPLETION-3Q-LEDGER.md.
+
+Novo delta material da mesma onda, TRUST-AI-01/TRUST-DATA-01/TRUST-APP-01/TRUST-SDLC-01: callback de outcome aguardado fora do catch do provedor, tuple versionada comum Node/SQL sem corpos/paths/mensagens; operação por origem humana real, reserva e dispatch claim atômicos one-use no banco; nenhum novo job/factory/renderer reinicia orçamento ou renova prazo. Reserva observada do gateway é distinta do bound conservador derivado pelo servidor. Recibo histórico anterior não recebe outcome fabricado. Revogação ou encerramento perdido permanece unresolved e bloqueia novo envio. Não introduzir autoridade privilegiada factual, M07 ou repair nativo nesse corte.
+
+Abusos e eval exigidos: hash/ordem/enum/decimal divergentes entre runtimes, reserva zero/subestimada, origem/job/versão trocados, reset em duas factories, rota/resource/pino inválidos, legacy root/input nas duas ordens, claim replay e resposta perdida sem redispatch, accepted vs failure concorrentes, revogação durante envio, callback lento/falso/mutável e onCall lançando sem próximo send. SQL/RLS, SDK/Storage reais e corridas em CI, staging com cleanup, catálogo/journals/advisors e produção no merge exato continuam gates pendentes. Revisão independente de protocolo apontou reserva circular; o desenho escolheu bound server-derived distinto, a implementação ainda precisa provar isso. Não declarar PASS por este texto.
+
 ### Revisão do incremento ledger/inputv2, 2 outubro2026
 
 Revisão independente de SQL, factory, SDK, races e forward: nenhum bloqueador estático restante. Corrigido MIN do prazo operacional de cada ancestral, sem usar margem jurídica como prazo de envio. Corrigido ciclo purger/wake com proof interno sem saúde; gates de admissão, leitura e gravação permanecem true e helpers sem EXECUTE API. Novo índice cobre FK completa.
@@ -106,7 +118,7 @@ Merge, CI final reconciliada, web e worker no commit mesclado e verificação fi
 
 ## 2026-10-01: transporte de autoridade por tentativa na mesma onda
 
-Baseline publicada fdf209a2: serviço de corpos/POST, três journals de produção, HTTP/SDK/races, CI main, web, ECS510 e boot/23 artefatos verificados; admissão original restaurada. Registros anteriores de pendência são históricos.
+Baseline publicada fdf209a2: serviço de corpos/POST, três journals de produção, HTTP/SDK/races, CI main, web, ECS510 e boot/dois artefatos verificados (errata conciliada com CloudWatch em02/10); admissão original restaurada. Registros anteriores de pendência são históricos.
 
 Delta material desta revisão de onda: GatewayAttempt imutável com hashes efetivos e linhagem, identity decisionId SQL preservada no worker, projeções explícitas e schemas fechados atualizados. TRUST-AI-01/TRUST-SDLC-01: não incluir conteúdo no DTO/log, não permitir callback mudar hashes, não fabricar recibo para negativa, não confundir ID de decisão de rota com vínculo de receita. Sem alteração de grants/RLS, DDL, credenciais, egress, endpoints ou controles de retenção. A revisão segue a cadência da onda e se renova quando houver mudança material, sem janela artificial de sete dias.
 
