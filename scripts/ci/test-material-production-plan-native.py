@@ -48,6 +48,15 @@ do $$declare p jsonb;r jsonb;r2 jsonb;command uuid:=gen_random_uuid();begin
  raise notice 'PASS material_native_plan_server_producer_human_read_approval_exact_replay';
 end$$;
 reset role;
+do $$declare a jsonb;j public.processing_jobs;r public.processing_runs;begin
+ select value::jsonb into strict a from route_proof where label='native_approval';
+ select * into strict j from public.processing_jobs where id=(a->>'jobId')::uuid;
+ select * into strict r from public.processing_runs where id=(a->>'runId')::uuid;
+ if j.payload->'model_budget' is distinct from jsonb_build_object('max_cost_usd',3.10,'max_calls',4)
+ or (r.budget->>'max_cost_usd')::numeric is distinct from 3.10 or (r.budget->>'case_max_cost_usd')::numeric is distinct from 3.10
+ or (r.budget->>'max_calls')::integer is distinct from 4 then raise exception 'native_material_approval_budget_unbounded';end if;
+ raise notice 'PASS material_native_actual_approval_effect_has_run_and_job_budget';
+end$$;
 do $$begin if(select count(*) from private.material_production_plan_approvals where organization_id='d5200000-0000-4000-8000-000000000001')<>1 then raise exception 'native_plan_approval_count';end if;if exists(select 1 from private.case_execution_inputs where organization_id='d5200000-0000-4000-8000-000000000001') then raise exception 'raw_input_copied';end if;raise notice 'PASS material_native_plan_no_raw_input_persistence';end$$;
 '''
 consumer=expand(ROOT/'supabase/tests/support/material_production_native_consumer.sql')
