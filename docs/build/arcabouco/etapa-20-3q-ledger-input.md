@@ -12,8 +12,16 @@ Antes da ativação dos produtores: outcomes de repair/fallback após envio, reg
 
 Rollout: staging primeiro, negativos e concorrência reais, produção com journal/carimbo/catálogo conciliados, CI de PR/main e web/worker no merge exato. Sem alteração de controles globais de produção para obter teste verde. Rollback fecha admissão do novo produtor, conserva recibos/ledger e purge e usa migração forward-only; não retorna invocation capturada ao caminho legado. Etapa20 só termina com a sequência restante comprovada, não com este contrato.
 
-## Evidência intermediária de staging — 2 outubro 2026
+## Evidência intermediária de staging em 2 outubro 2026
 
 Ledger aplicado sob carimbo `20261002010601`. O ensaio real identificou um ciclo entre o drain de retenção e o gate de saúde; a migração forward separada `capital_body_attempt_retention_drain` preserva os gates de consumo e separa a prova interna usada pelo purger. A aplicada não foi editada. O SQL `capital_body_attempt_ledger` passou em staging após a forward e o processamento canônico dos wakes de fixture. O bloco canônico RLS das nove tabelas passou; security advisor retornou zero lints.
 
 Qualidade local Node24: lint, typecheck, testes e build PASS, worker1100/web1209/evals272. A primeira execução confinada falhou em sete testes por IPC `tsx` EPERM; a execução autorizada com IPC local passou. SDK/Storage e concorrência CI ainda pendentes. Nenhum resultado desse ensaio autoriza afirmar produção ou etapa20 concluídas.
+
+## Publicação do schema e integração comprovada
+
+Produção recebeu `20261002014202_capital_body_attempt_ledger`, `20261002014214_capital_body_attempt_retention_drain` e `20261002014224_capital_body_attempt_fk_index`. Staging usa respectivamente `20261002010601`, `20261002011300` e seu carimbo de índice conferido no journal. As46 funções desta fronteira são iguais nos dois catálogos; security advisors0, índice válido, produção com zero attempts, zero objetos físicos e zero purge pendente. Nenhuma fixture em produção.
+
+SDK original em staging:17 checks PASS, primary0/fallback1, source/request/parsed output vinculados, replay sem nova chamada, Storage direto/info negados e POST reavaliado por escopo. Quatro corpos de fixture foram apagados por DELETE/INFO404/ACK com catálogo0. Jobs, token e login da fixture encerrados; controls globais não foram modificados. Provedor controlado sintético, sem afirmar egress comercial.
+
+Run candidato Quality36950623145: SQLsuite, HTTP/SDK reais, todas as corridas ledger/inputv2, snapshots efetivos e E2E passaram. Gate de inventário recusou corretamente as versões antes do refresh productionjournal. O gate web detectou um travessão acrescentado na documentação depois da execução local; correção focal5/5 PASS. Nova execução completa no commit final e rollout web/worker permanecem obrigatórios.

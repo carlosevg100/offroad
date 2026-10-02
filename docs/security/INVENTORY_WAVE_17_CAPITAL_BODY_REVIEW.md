@@ -1,3 +1,9 @@
+### Revisão do incremento ledger/inputv2, 2 outubro2026
+
+Revisão independente de SQL, factory, SDK, races e forward: nenhum bloqueador estático restante. Corrigido MIN do prazo operacional de cada ancestral, sem usar margem jurídica como prazo de envio. Corrigido ciclo purger/wake com proof interno sem saúde; gates de admissão, leitura e gravação permanecem true e helpers sem EXECUTE API. Novo índice cobre FK completa.
+
+SQL real staging e bloco RLS nove tabelas PASS; SDK original17 checks PASS; corridas reais CI authorize/inputv2/revocation/purge/assurance e namespace v1/v2 PASS. Produção recebeu três carimbos14202/14214/14224, funções46 iguais staging/prod, security0, zero metadata/bytes de fixture em produção. Inventário3085prod/3146stage PASS com journalassertion ativa. Merge/CI final e deploy exato ainda pendentes; M07/outcomes de pós-envio e regime estrito porjob são dependências do próximo incremento20 e não foram ativados.
+
 # Revisão material: corpos retidos na etapa 20 / 3Q
 
 A abertura wave-17 e seu snapshot histórico permanecem intactos. Esta revisão
