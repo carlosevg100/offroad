@@ -49,7 +49,7 @@ import {createCapitalCompanyDebtNativeRuntime} from "./capital-company-debt-nati
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
-import {processIntegrationPreviewRunJob} from "./integration-preview";
+import {processNativePreviewJob,previewPublishedBasisFromEnvironment} from "./integration-preview-native-processor";
 import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
@@ -445,12 +445,10 @@ async function main(): Promise<void> {
           : job.payload.analysis_scope === "integration_preview"
           // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.
           ? (job.integration_preview === true
-              ? processIntegrationPreviewRunJob(job, {
-                  queue,
-                  log,
-                  gateway: gatewayRun.gateway,
-                  ...(materialInspector ? {materialInspector} : {}),
-                  presentationTemplate,
+              ? processNativePreviewJob(job, {queue,client:supabase,log,adapters,connections:config.PROVIDER_CONNECTIONS_JSON,
+                  budget:{maxCostUsd:gatewayRun.maxCostUsd,maxCalls:gatewayRun.maxCalls},
+                  publishedBasis:previewPublishedBasisFromEnvironment(process.env.OFFROAD_PREVIEW_PUBLISHED_BASIS_JSON),
+                  ...(process.env.OFFROAD_PREVIEW_EVIDENCE_DIR?{evidenceDir:process.env.OFFROAD_PREVIEW_EVIDENCE_DIR}:{}),
                 })
               : queue.fail(job, describeJobFailure(new Error("integration_preview run claimed without the grant"), {code: "integration_preview_not_granted", stage: "integration_preview", retryable: false}), {retryable: false}).then(() => ({status: "failed" as const})))
           : job.payload.analysis_scope === "company_debt_view"

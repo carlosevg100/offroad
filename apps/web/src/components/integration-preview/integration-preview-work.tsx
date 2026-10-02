@@ -15,6 +15,8 @@ export type PreviewArtifactView = {
   status: string;
   createdAt: string;
   content: unknown;
+  nativeReadWithheld?: boolean;
+  nativePhysical?: boolean;
 };
 
 type Props = {artifacts: PreviewArtifactView[]; locale: "pt-BR" | "en-US"; materialHref?: string};
@@ -78,6 +80,7 @@ export function IntegrationPreviewWork({artifacts, locale, materialHref}: Props)
         <p>{t("intro")}</p>
       </header>
       {sections.map((artifact) => {
+        if (artifact.nativeReadWithheld) return <section className="preview-work__section is-blocked" data-artifact-type={artifact.type} key={artifact.id}><h3>{t(`methods.${artifact.type}`)}</h3><p>{locale === "pt-BR" ? "Esta prévia está indisponível para seu acesso atual." : "This preview is unavailable under your current access."}</p></section>;
         const content = isRecord(artifact.content) ? artifact.content : {};
         const preview = isRecord(content.preview) ? content.preview : {};
         const output = isRecord(content.output) ? content.output : {};
@@ -109,7 +112,7 @@ export function IntegrationPreviewWork({artifacts, locale, materialHref}: Props)
             </div> : null}
               {synthesis ? (
               <div className="preview-work__synthesis" data-source={String(synthesisSource?.kind ?? "")}>
-                {materialHref ? <p className="preview-work__downloads"><a href={`${materialHref}?format=docx`}>{t("download")}</a></p> : null}
+                {materialHref && !artifact.nativePhysical ? <p className="preview-work__downloads"><a href={`${materialHref}?format=docx`}>{t("download")}</a></p> : null}
                 {synthesisSource ? <p className="preview-work__note">{t("source")}: {String(synthesisSource.kind)}{synthesisSource.model ? ` · ${String(synthesisSource.model)}` : ""}{typeof synthesisSource.costUsd === "number" ? ` · US$ ${formatPreviewNumber(synthesisSource.costUsd, locale)}` : ""}</p> : null}
                 {synthesis.map((section) => (
                   <section key={section.id}>

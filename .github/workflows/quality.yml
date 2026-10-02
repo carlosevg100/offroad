@@ -622,6 +622,18 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-capital-native-provider-sdk.mjs
 
+      - name: Finite native preview through real Storage, two paid boundaries and replay
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+          PREVIEW_DRAFTS_IN_LOCAL_STACK: "1"
+          PREVIEW_HTTP_NAMESPACE: a8830001
+        run: |
+          python3 -B scripts/ci/test-capital-preview-sdk.py
+          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
+          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_native_consumption.sql
+
       - name: Stop the capital body Edge reader
         if: always()
         run: |
