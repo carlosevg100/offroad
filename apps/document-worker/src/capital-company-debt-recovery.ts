@@ -5,7 +5,7 @@ import {companyDebtDiagnosticSchema,capitalPublicLicensedPayloadSchema} from "@o
 import {researchSourceSchema,type ResearchSource} from "@offroad/public-research";
 import {legacyGatewayFingerprint,prepareGatewayInput,retentionMatrixVersion} from "@offroad/model-gateway";
 import {capitalCompanyDebtRecipeReceiptSchema,capitalCompanyDebtFinalOutputFingerprint} from "./capital-company-debt-processing";
-import {prepareCapitalCompanyDebtRecipe,reconstructCapitalCompanyDebtRequest} from "./capital-company-debt-recipe";
+import {prepareCapitalCompanyDebtRecipe,capitalCompanyDebtExecutionPins} from "./capital-company-debt-recipe";
 import {reconstructCapitalCompanyDebtComponents} from "./capital-company-debt-native-consumer";
 import {validateCompanyDebtDiagnostic} from "./company-debt-view";
 import {transformCapitalCompanyDebtFinalProduct} from "./capital-company-debt-final";
@@ -48,7 +48,7 @@ export async function recoverCapitalCompanyDebt(job:{jobId:string;organizationId
  }
  const reconstructed=reconstructCapitalCompanyDebtComponents({recipe:grant.recipe,originalContext,sources,metadata:grant.reconstructionMetadata}),reconstruction=prepareCapitalCompanyDebtRecipe({basis:{jobId:grant.originalJobId,organizationId:job.organizationId,workId:job.workId,planId:grant.recipe.planId,planFingerprint:grant.recipe.planFingerprint,locale:grant.recipe.locale,asOfDate:grant.recipe.asOfDate},components:reconstructed.components});
  const prepared=prepareGatewayInput({...reconstruction.prepared.request,requireInputAttestation:true,outputMode:"structured",timeoutMs:240000,dataHandling:{classification:"confidential",purpose:"case_analysis",requiredPolicyVersion:retentionMatrixVersion}});
- const primary=reconstructCapitalCompanyDebtRequest({...reconstruction,prepared},{provider:"anthropic",model:"claude-sonnet-5",effort:"medium"}).ordinalFingerprints(),fallback=reconstructCapitalCompanyDebtRequest({...reconstruction,prepared},{provider:"openai",model:"gpt-5.6-terra",effort:"medium"}).ordinalFingerprints();
+ const primary=capitalCompanyDebtExecutionPins({...reconstruction,prepared},{provider:"anthropic",model:"claude-sonnet-5",effort:"medium"}),fallback=capitalCompanyDebtExecutionPins({...reconstruction,prepared},{provider:"openai",model:"gpt-5.6-terra",effort:"medium"});
  if(prepared.inputFingerprint!==grant.recipe.reconstructionFingerprint||primary.promptFingerprint!==grant.requestPins.promptFingerprint||primary.requestFingerprint!==grant.requestPins.primaryRequestFingerprint||fallback.requestFingerprint!==grant.requestPins.fallbackRequestFingerprint)throw new CapitalCompanyDebtRecoveryGap();
  const parsed=companyDebtDiagnosticSchema.parse(await body(grant.parsed));if(legacyGatewayFingerprint(parsed)!==grant.accepted.outputFingerprint)throw new CapitalCompanyDebtRecoveryGap();
  if(grant.state==="quality_failed"){
