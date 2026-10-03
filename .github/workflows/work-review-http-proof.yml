@@ -23,7 +23,7 @@ jobs:
     - name: Checkout immutable production runtime candidate
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
-        ref: bfe29fb78c86ba7553114d19888ba46cc1fff58d
+        ref: 3c84fd08b8612376aa03e216e2e81f8591bfb7f2
         path: runtime
     - name: Install pnpm
       uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
