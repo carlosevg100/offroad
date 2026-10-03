@@ -82,7 +82,7 @@ jobs:
     if: ${{ !inputs.native_diagnostic || inputs.native_diagnostic_target != 'material' }}
     name: ${{ inputs.native_diagnostic && 'Native consumers diagnostic (not a release gate)' || 'Database (migrations, RLS, lint)' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout

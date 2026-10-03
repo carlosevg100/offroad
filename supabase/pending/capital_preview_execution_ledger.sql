@@ -279,8 +279,8 @@ begin
  if jsonb_typeof(p_attempt)is distinct from 'object' or octet_length(p_attempt::text)>4096
  or not(p_attempt?&array['adapterInputVersion','task','schemaName','requestFingerprint','inputFingerprint','promptFingerprint','invocationId','retryOrdinal','isSameModelRepair','usedProviderFallback','reservationUsd'])
  or p_attempt-array['adapterInputVersion','task','schemaName','requestFingerprint','inputFingerprint','promptFingerprint','invocationId','retryOrdinal','isSameModelRepair','usedProviderFallback','reservationUsd','previousInvocationId']<>'{}'::jsonb
- or p_attempt->>'adapterInputVersion'is distinct from 'gateway-adapter-input.v1' or p_attempt->>'task'is distinct from case when recipe.boundary='questions'then'preview_questions'else'preview_synthesis'end
- or p_attempt->>'schemaName'is distinct from case when recipe.boundary='questions'then'preview_questions_output'else'preview_synthesis_output'end
+ or p_attempt->>'adapterInputVersion'is distinct from 'gateway-adapter-input.v1' or p_attempt->>'task'is distinct from (case when recipe.boundary='questions'then'preview_questions'else'preview_synthesis'end)
+ or p_attempt->>'schemaName'is distinct from (case when recipe.boundary='questions'then'preview_questions_output'else'preview_synthesis_output'end)
  or exists(select 1 from unnest(array['requestFingerprint','inputFingerprint','promptFingerprint'])k where jsonb_typeof(p_attempt->k)is distinct from 'string' or p_attempt->>k !~'^[a-f0-9]{64}$')
  or jsonb_typeof(p_attempt->'invocationId')is distinct from 'string' or p_attempt->>'invocationId'!~'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'
  or jsonb_typeof(p_attempt->'retryOrdinal')is distinct from 'number' or p_attempt->>'retryOrdinal'is distinct from '0'
@@ -434,7 +434,7 @@ begin
  or p_accepted->>'schemaVersion'is distinct from 'gateway-accepted-invocation.v1'
  or p_accepted->>'adapterInputVersion'is distinct from 'gateway-adapter-input.v1' or p_accepted->>'outputFingerprintVersion'is distinct from 'gateway-parsed-output.v1'
  or p_accepted->>'provider'is distinct from a.route->>'provider' or p_accepted->>'configuredModel'is distinct from a.model or p_accepted->>'reportedModel'is distinct from a.model
- or p_accepted->>'schemaName'is distinct from case when recipe.boundary='questions'then'preview_questions_output'else'preview_synthesis_output'end or p_accepted->>'invocationId'is distinct from a.invocation_id::text
+ or p_accepted->>'schemaName'is distinct from (case when recipe.boundary='questions'then'preview_questions_output'else'preview_synthesis_output'end) or p_accepted->>'invocationId'is distinct from a.invocation_id::text
  or p_accepted->>'inputAttestationReceiptId'is distinct from claim.id::text or p_accepted->>'adapterRequestFingerprint'is distinct from a.request_fingerprint
  or p_accepted->>'inputFingerprint'is distinct from a.input_fingerprint or p_accepted->>'promptFingerprint'is distinct from a.prompt_fingerprint
  or p_accepted->>'outputFingerprint'is distinct from outcome_row.observation->>'outputFingerprint'

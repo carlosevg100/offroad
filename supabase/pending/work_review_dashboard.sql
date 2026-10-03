@@ -21,7 +21,7 @@ declare org uuid:=private.lock_review_work_v1(p_work_id);actor uuid:=auth.uid();
  d public.work_decisions;x jsonb;revisions jsonb:='[]';decisions jsonb:='[]';assignments jsonb:='[]';change jsonb;policy jsonb;pending boolean;row_count int:=0;more boolean:=false;last_id uuid;decision_count int:=0;decision_more boolean:=false;last_decision_id uuid;h record;eligible jsonb;roles text[];before_revision_at timestamptz;before_decision_at timestamptz;
 begin
  if p_before_id is not null then
-  select r.created_at into before_revision_at from public.artifact_revisions r join public.artifacts a on(a.organization_id,a.id)=(r.organization_id,r.artifact_id)where r.organization_id=org and a.work_id=p_work_id and r.id=p_before_id;
+  select candidate.created_at into before_revision_at from public.artifact_revisions candidate join public.artifacts a on(a.organization_id,a.id)=(candidate.organization_id,candidate.artifact_id)where candidate.organization_id=org and a.work_id=p_work_id and candidate.id=p_before_id;
   if not found then raise exception 'review_cursor_access_required'using errcode='42501';end if;
  end if;
  if p_before_decision_id is not null then
@@ -29,8 +29,8 @@ begin
   if not found then raise exception 'review_cursor_access_required'using errcode='42501';end if;
  end if;
  policy:=private.review_policy_snapshot_v1(org,p_work_id,actor);
- for r in select r.* from public.artifact_revisions r join public.artifacts a on(a.organization_id,a.id)=(r.organization_id,r.artifact_id)
- where r.organization_id=org and a.work_id=p_work_id and(p_before_id is null or(r.created_at,r.id)<(before_revision_at,p_before_id))order by r.created_at desc,r.id desc limit 101 loop
+ for r in select candidate.* from public.artifact_revisions candidate join public.artifacts a on(a.organization_id,a.id)=(candidate.organization_id,candidate.artifact_id)
+ where candidate.organization_id=org and a.work_id=p_work_id and(p_before_id is null or(candidate.created_at,candidate.id)<(before_revision_at,p_before_id))order by candidate.created_at desc,candidate.id desc limit 101 loop
   row_count:=row_count+1;if row_count>100 then more:=true;exit;end if;last_id:=r.id;
   -- Never return withheld notes, source pins, actors or classification.
   v:=private.read_artifact_revision_reviews_v1(r.id);

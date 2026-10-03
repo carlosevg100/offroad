@@ -2,7 +2,7 @@ begin;
 \ir artifact_revision_setup.sql
 -- No private receipt or native producer is forged: this fixture authors ordinary
 -- governed answer revisions through the installed human writer.
-do $$declare b jsonb;m jsonb;r1 jsonb;r2 jsonb;a1 jsonb;dash jsonb;report jsonb;contested jsonb;work uuid:='a11b0000-0000-4000-9000-000000000002';org uuid:='a11b0000-0000-4000-9000-000000000001';actor uuid:='a11b0000-0000-4000-8000-000000000001';before_jobs bigint;after_jobs bigint;contest_command uuid:=gen_random_uuid();replay jsonb;original jsonb;precedence jsonb;foreign_revision jsonb;foreign_report jsonb;expected jsonb;
+do $$declare b jsonb;m jsonb;r1 jsonb;r2 jsonb;a1 jsonb;dash jsonb;report jsonb;contested jsonb;work uuid:='a11b0000-0000-4000-9000-000000000002';org uuid:='a11b0000-0000-4000-9000-000000000001';actor uuid:='a11b0000-0000-4000-8000-000000000001';before_jobs bigint;after_jobs bigint;contest_command uuid:=gen_random_uuid();replay jsonb;original jsonb;precedence jsonb;foreign_revision jsonb;foreign_report jsonb;expected jsonb;valid_cursor uuid;
 begin
  insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by)values(org,true,false,actor)on conflict(organization_id)do update set self_approval_allowed=true,assignment_required=false;
  b:=jsonb_build_array(pg_temp.block('paragraph','paragraph','{"text":"Synthetic unchanged recommendation"}'));
@@ -14,6 +14,12 @@ begin
  m:=jsonb_set(m,'{template,templateVersionId}','"review-layout-next"');r2:=pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
  set local role authenticated;
  dash:=public.read_work_review_dashboard_v1(work);
+ if jsonb_array_length(dash->'revisions')<2 then raise exception 'dashboard_nonempty_human_history_required';end if;
+ valid_cursor:=(dash#>>'{revisions,0,revisionId}')::uuid;
+ replay:=public.read_work_review_dashboard_v1(work,valid_cursor,null);
+ if replay->>'workId'<>work::text or jsonb_array_length(replay->'revisions')<1
+ or exists(select 1 from jsonb_array_elements(replay->'revisions')item where item->>'revisionId'=valid_cursor::text)
+ then raise exception 'dashboard_authorized_revision_cursor_invalid';end if;
  if dash->>'workId'<>work::text or not exists(select 1 from jsonb_array_elements(dash->'revisions')r where r->>'revisionId'=r2->>'revision_id'and r#>>'{change,outcome}'='cosmetic'and(r->>'canReaffirm')::boolean)then raise exception 'dashboard_cosmetic_missing';end if;
  perform public.reaffirm_work_revision_v1(work,(r2->>'revision_id')::uuid,r2->>'manifest_fingerprint',(a1->>'reviewId')::uuid,'Same basis, updated layout',true,gen_random_uuid());
  reset role;
