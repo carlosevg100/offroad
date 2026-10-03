@@ -87,16 +87,6 @@ jobs:
       env:
         DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       run: python3 -B scripts/ci/install-assessment-native-local.py
-    - name: Install provider contract only, no external calls
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
-        OFFROAD_NATIVE_PROVIDER_DRAFT_INSTALL: isolated-loopback-ci
-      run: python3 -B scripts/ci/install-capital-provider-ci-draft.py
-    - name: Install frozen finite preview contracts only
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
-        OFFROAD_REVIEW_HTTP_PROOF: isolated-loopback-ci
-      run: python3 -B ../audit/scripts/ci/work-review-http-proof.py --install-preview
     - name: Install review dashboard on the disposable browser stack
       env:
         DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
