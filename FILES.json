@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "core-canonical-start-ci-cut.v1",
+  "files": [
+    {
+      "path": ".github/workflows/core-canonical-start-sql-proof.yml",
+      "sha256": "6a47ae70d8de9b4953994e621a82c060362311f702267ee8165f7307819ebc14"
+    },
+    {
+      "path": "scripts/ci/test-core-canonical-start.py",
+      "sha256": "6ea451d751f9e21fc3f2f780cfb27b9bf055a0be84649ad1c7ed437bd0118a8b"
+    },
+    {
+      "path": "CORE-CANONICAL-SOURCES.json",
+      "sha256": "8d086807cf34bb4431efc4657a876891f84a6f1ae325c80b8454fdfb0797774a"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4175247d5b57867eb7c99f6b34ef3913ecb4eb3bf7842280ef76da211cdedcbb"
+    }
+  ],
+  "publishedPaths": [
+    ".github/workflows/core-canonical-start-sql-proof.yml",
+    "scripts/ci/test-core-canonical-start.py",
+    "CORE-CANONICAL-SOURCES.json",
+    "FILES.json"
+  ],
+  "trackedAutoSQLFiles": 174,
+  "passed": [
+    "python-syntax",
+    "loopback-explicit-opt-in-guards",
+    "frozen11hashes",
+    "closed-diagnostic-unit",
+    "workflow-noassessment-alwayscleanup"
+  ],
+  "unexecuted": [
+    "early-install11-realSupabase",
+    "all174-existingSQL-after-install"
+  ],
+  "noSourceChanges": true
+}

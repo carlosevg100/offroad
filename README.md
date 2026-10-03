@@ -1,62 +1,11 @@
-# Offroad Capital
+# Core installed before all SQL contracts
 
-Monorepo oficial da Offroad Capital, o advisor AI-native especialista em dívida que ajuda
-companhias e profissionais do mercado a pensar, investigar, analisar, decidir, estruturar e
-executar trabalhos relacionados a dívida. Este repositório contém o site institucional bilíngue,
-a aplicação autenticada e os núcleos determinísticos de domínio.
+Temporary audit only. Workflow on-push branch `codex/etapa20-core-canonical-start-proof` uses a fresh real Supabase stack, baseline `16fb3a0b` and frozen core `fcb09c92`. It installs all eleven prospective core drafts **before** running the exact root-only `supabase/tests/*.sql` enumeration from the existing Quality database job. No assessment six, journal stamps or mock Supabase interfaces are added.
 
-## Estado atual
+Each checked-in test is executed unchanged, in lexical order, via its own psql connection, with cwd at the core checkout. Test-local transactions and rollback remain intact. The harness continues after every failed file and prints the complete failure list once; it does not hide or delete failing tests. Captured failures expose only filename, SQLSTATE and literal exception identifiers parsed from checked-in tests/contracts; arbitrary stderr, data, DETAIL and CONTEXT do not escape. A timeout closes that psql session and is reported as TIMEOUT, never PASS.
 
-- Produção: <https://offroad.capital> (Vercel, deploy a partir de `main`; `www` redireciona para o apex; site permanece `noindex` até a liberação de marca).
-- Backend: projeto Supabase `offroad-development` (São Paulo, `sa-east-1`), Auth (código de 6 dígitos por e-mail via Resend), Postgres 17 com RLS em todas as tabelas, Storage privado. É o único projeto: **não há staging separado**.
-- Operacional hoje: site bilíngue, cadastro/verificação/recuperação, onboarding por perfil, workspace autenticado, novo case (documentos primeiro ou manual), upload privado com SHA-256 e revisão de evidências, pacote de aceitação Rede Horizonte verificado por hash, núcleos `financial-core`/`matching-core`/`domain-contracts` iniciais.
-- Ainda não operacional: extração geral de documentos (OCR/parsers/LLM), sala de crédito completa, matching persistido e discovery de provedores, outputs gerados, agentes, admin interno, Sentry/PostHog externos, MFA.
+Publish the workflow, script, CORE-CANONICAL-SOURCES.json and FILES.json on the **separate temporary branch**. The already green seventeen-draft audit stays unchanged and its branch filter prevents an unnecessary repeat. Node24/.nvmrc, pnpm10.32.1, Supabase2.114.0, pinned actions and stack boot/cleanup mirror current Quality setup. Dependencies use the immutable core lockfile.
 
-A orientação completa (produto, arquitetura, rotas, dados, segurança, dívidas e próximos passos) está em [`handoff.md`](handoff.md). As regras de trabalho para agentes e humanos estão em [`AGENTS.md`](AGENTS.md).
+Syntax, self-test guards/hash11/diagnostic allowlist and workflow structural checks passed at preparation. Actual canonical-from-start installation and all174 SQL tests are UNEXECUTED until this CI runs. Once results exist, classify each legacy positive failure against the current contract before changing a fixture; never restore an old access shortcut or remove the test.
 
-## Produto e fontes de verdade
-
-- Constituição vigente: `docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`
-- Motor de profundidade combinável: `docs/build/COMPOSABLE_DCM_DEPTH_ENGINE.md`
-- Blueprint v3.0: snapshot histórico; seu posicionamento origination-first foi superado pela Constituição 2.2 e pela ADR 0019
-- Plano por gates: `docs/build/MASTER_PLAN.md`
-- Estado e evidências: `docs/build/BUILD_STATE.md`, `docs/build/ACCEPTANCE_EVIDENCE.md`
-- Decisões arquiteturais: `docs/adr/`
-
-## Desenvolvimento local
-
-Requisitos: Node.js 24 (`.nvmrc`; use `fnm`/`nvm`) e pnpm 10.32.1.
-
-```bash
-pnpm install --frozen-lockfile
-pnpm dev
-```
-
-A aplicação sobe em `http://localhost:3000`. Sem `NEXT_PUBLIC_SUPABASE_URL` e
-`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` as páginas públicas funcionam e as rotas
-autenticadas informam que a identidade não está configurada. Copie apenas valores públicos
-aprovados para um `.env.local` ignorado pelo Git (ou use `vercel env pull`).
-
-Quality gate completo (obrigatório antes de abrir PR; é o mesmo que roda no CI):
-
-```bash
-pnpm check
-```
-
-Nenhum segredo pertence ao repositório. `.env.example` é apenas o catálogo de variáveis;
-valores reais vivem nos secret stores de cada ambiente.
-
-## Banco de dados e migrations
-
-O schema muda somente por migrations em `supabase/migrations/`. O fluxo (aplicar via
-Supabase MCP ou `supabase db push`, alinhar o nome do arquivo à versão registrada,
-regenerar `apps/web/src/types/database.ts`, rodar advisors e o teste de RLS) está em
-`AGENTS.md` §6. O CI sobe um stack Supabase local, aplica todas as migrations do zero e
-executa `supabase/tests/rls_non_interference.sql` a cada PR.
-
-## Arquitetura operacional
-
-- Frontend e rotas server-side: Next.js 16 (App Router, Server Actions) na Vercel
-- Auth, Postgres (RLS como fronteira de autorização) e Storage privado: Supabase
-- Observabilidade: adapters privacy-first para Sentry e PostHog (no-op até os projetos externos serem criados)
-- Workers assíncronos: não há hoje; serão introduzidos com o pipeline de extração de documentos, com job, modelo de ameaça e gate explícitos
+No Git refs, remote DDL or shared sources were altered by this preparation. The temporary workflow is not a release gate and is never merged; retire after proof and canonical promotion.
