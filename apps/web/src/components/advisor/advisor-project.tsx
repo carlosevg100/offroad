@@ -20,6 +20,7 @@ import {
   type ContinuationOutcome,
 } from "@/app/[locale]/app/advisor-actions";
 import {milestoneLabelText, type MilestoneLabelKey} from "@/lib/advisor/work-update-view";
+import {AssessmentReview} from "./assessment-review";
 import {ContinuationQuestion, type ContinuationQuestionState} from "./continuation-question";
 import {CitedResultLinks} from "./cited-result-links";
 import {requestProjectWork} from "@/app/[locale]/app/projects/[projectId]/work-request-actions";
@@ -524,7 +525,7 @@ export function AdvisorProject(props: Props) {
         </section> : null}
         {props.decisionRecords.length ? <section className="advisor-context-section">
           <div><strong>{props.copy.decisions}</strong><small>{props.decisionRecords.length}</small></div>
-          <ul>{props.decisionRecords.map((decision) => <li key={decision.id}><Circle aria-hidden="true" size={12} /><span><strong>{decision.recommendation ?? decision.question}</strong><small>{decision.status}</small></span></li>)}</ul>
+          <ul>{props.decisionRecords.map((decision) => <li key={decision.id}><Circle aria-hidden="true" size={12} /><span><strong>{decision.recommendation ?? decision.question}</strong><small>{decision.status}</small><AssessmentReview locale={props.locale} projectId={props.projectId} assessmentId={decision.id}/></span></li>)}</ul>
         </section> : null}
         <section className="advisor-context-section advisor-context-section--activity">
           <div><strong>{props.copy.plan}</strong><small>{completed}/{props.tasks.length}</small></div>

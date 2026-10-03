@@ -1,7 +1,6 @@
 import {declareExecutionBriefReview} from "./support/brief-approval";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {verifyLocalFixtureSources} from "./support/source-verification";
-import {receivablesR01Fixture, refreshReceivablesFixtureDiscovery} from "./support/receivables-r01-fixture";
 import {receivablesScopeFixture} from "./support/receivables-scope-fixture";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
@@ -730,7 +729,7 @@ test.describe("Document-first intake (company journey)", () => {
     expect(testInfo.attachments.filter((attachment) => attachment.contentType === "image/png")).toHaveLength(2);
     // Leave substantive work held: this test exercises no provider and grants no dispatch.
   });
-  test("confirms a synthetic pool and reporting date before approving its real worker plan", async ({}, testInfo) => {
+  test("persists human scope and plan but denies unverified synthetic sources to native assessment", async ({}, testInfo) => {
     const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
     const address = new URL(databaseUrl);
     if (!["127.0.0.1", "localhost", "[::1]"].includes(address.hostname) || address.port !== "54322" || address.pathname !== "/postgres") throw new Error("Scope fixture requires the isolated local database.");
@@ -771,232 +770,26 @@ test.describe("Document-first intake (company journey)", () => {
     await declareExecutionBriefReview(brief);
     await brief.getByRole("button", {name: /aprovar|approve/i}).click();
     await expect.poll(() => sql("select count(*) from public.capital_project_execution_brief_events e where e.capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and e.event_type='accepted' and e.event_payload->>'processingJobId' in (select id::text from public.processing_jobs where processing_run_id=(select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid));").trim(), {timeout: 30_000}).not.toBe("0");
-    await expect.poll(() => sql("select result_summary#>>'{case_state,receivablesVertical,status}' from public.document_intake_sessions where id=:'session_id'::uuid;").trim(), {timeout: 120_000}).toBe("analyzed");
-    // A persisted report is not proof of completion: the operating-control write follows it.
-    await expect.poll(() => sql("select j.status from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;").trim(), {timeout: 120_000}).toBe("succeeded");
-    const report = sql("select result_summary#>'{case_state,receivablesVertical}' from public.document_intake_sessions where id=:'session_id'::uuid;");
-    const result = JSON.parse(report);
-    expect(result.pipeline.phaseOne.universe.reportingDate).toBe("2026-08-31");
-    expect(result.pipeline.phaseOne.universe.id).toContain(fixture.sources[0]!.id);
-    // Assert the economic result, not substrings that might also occur inside source hashes.
-    expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.titleCount.value)).toBe(1);
-    expect(Number(result.pipeline.phaseOne.staticMetrics.portfolio.totalOpenValue.value)).toBe(1000);
-    const storedScope = JSON.parse(sql("select jsonb_build_object('id', id, 'fingerprint', fingerprint) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;"));
-    expect(result.evidenceScope).toEqual(storedScope);
-    const periods = result.supportPeriodAssessment;
-    expect(periods.schemaVersion).toBe("receivables-support-periods.v1");
-    expect(periods.entries).toHaveLength(37);
-    expect(periods.reportingDate).toBe("2026-08-31");
-    expect(periods.entries).toEqual(expect.arrayContaining([
-      expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: "2026-08-31", qualification: "included"}),
-      expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: "2026-09-01", qualification: "subsequent"}),
-      expect.objectContaining({sourceId: fixture.sources[2]!.id, rawDate: null, qualification: "missing"}),
-      expect.objectContaining({sourceId: fixture.sources[3]!.id, rawDate: "09/2026", qualification: "subsequent"}),
-      expect.objectContaining({sourceId: fixture.sources[5]!.id, rawDate: "2026-09-02T12:00:00-03:00", qualification: "subsequent"}),
-    ]));
-    expect(result.balanceSourceAssessment.schemaVersion).toBe("balance-source-proposals.v1");
-    expect(result.balanceSourceAssessment.reportingDate).toBe("2026-08-31");
-    expect(result.balanceSourceAssessment.proposals).toHaveLength(1);
-    const balanceProposal = result.balanceSourceAssessment.proposals[0];
-    expect(balanceProposal).toMatchObject({sourceId: fixture.sources[4]!.id, sourceHash: fixture.sources[4]!.sourceHash, documentVersion: 1, reviewState: "proposed", calculationUse: "not_permitted"});
-    expect(balanceProposal.columns.map((column: {role: string}) => column.role)).toEqual(["opening_balance", "closing_balance"]);
-    expect(balanceProposal.context).toEqual(expect.arrayContaining([
-      expect.objectContaining({kind: "period", anchor: expect.objectContaining({text: "Periodo 01/01/2026 a 31/08/2026"})}),
-      expect.objectContaining({kind: "issued_at", anchor: expect.objectContaining({text: "Emissao 02/09/2026"})}),
-    ]));
-    expect(balanceProposal.rows[0].cells.map((cell: {text: string}) => cell.text)).toEqual(["1", "Saldo sintetico", "700", "100", "999999"]);
-    expect(balanceProposal.amount).toBeUndefined();
-    expect(result.evidenceCoverage.complete).toBe(false);
-    expect(result.methodReadiness.methodExecutionAllowed).toBe(false);
-    expect(result.defects.find((defect: {id: string}) => defect.id === "accounting_reconciliation_difference")?.measured).toBeUndefined();
-    expect(result.defects.some((defect: {id: string}) => defect.id === "cancelled_invoice_open")).toBe(false);
-    expect(result.defects.find((defect: {id: string}) => defect.id === "dilution_misclassification")?.measured.value).toBe("100.00");
+    // Direct SQL metadata and compressed fragments are deliberately unverified.
+    // They are not Storage/scanner/worker receipts and cannot enter native input.
+    const sourceIds = fixture.sources.map(source => {
+      expect(source.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+      return `'${source.id}'::uuid`;
+    }).join(",");
+    expect(sql(`select count(*) from private.source_version_verifications where source_version_id in (${sourceIds});`).trim()).toBe("0");
+    const currentJob = "select j.id from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1";
+    await expect.poll(() => sql(`select status from public.processing_jobs where id=(${currentJob});`).trim(), {timeout: 30_000}).toBe("failed");
+    const denial = JSON.parse(sql(`select jsonb_build_object('phase',last_error->>'failure_phase','cause',last_error#>>'{cause,message}') from public.processing_jobs where id=(${currentJob});`));
+    expect(denial).toEqual({phase: "load_case_input", cause: "assessment_capture_denied"});
+    expect(sql(`select count(*) from private.assessment_input_snapshots where job_id=(${currentJob});`).trim()).toBe("0");
+    expect(sql(`select count(*) from private.assessment_proposal_receipts where job_id=(${currentJob});`).trim()).toBe("0");
+    expect(sql("select result_summary#>>'{case_state,receivablesVertical,status}' from public.document_intake_sessions where id=:'session_id'::uuid;").trim()).toBe("needs_evidence_scope");
+    expect(sql("select result_summary#>'{case_state,receivablesVertical,pipeline}' is null from public.document_intake_sessions where id=:'session_id'::uuid;").trim()).toBe("t");
+    // The negative does not erase the person's actual scope and accepted plan.
+    expect(sql("select count(*) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid;").trim()).toBe("1");
     await page.reload();
-    const assessment = page.getByTestId("receivables-support-periods");
-    await expect(assessment).toBeVisible();
-    await expect(assessment.locator('[data-period-qualification]')).toHaveCount(25);
-    const nextPage = assessment.getByRole("button", {name: "Próxima"});
-    await nextPage.click();
-    await expect(assessment.locator('[data-period-qualification]')).toHaveCount(periods.entries.length - 25);
-    await assessment.getByRole("button", {name: "Anterior"}).click();
-    await expect(assessment.locator('[data-period-qualification]')).toHaveCount(25);
-    await nextPage.click();
-    await assessment.locator('[data-period-qualification="missing"] > summary').first().click();
-    await assessment.scrollIntoViewIfNeeded();
-    await capture("synthetic-support-periods-pt");
-    const balancePanel = page.getByTestId("balance-source-proposals");
-    await expect(balancePanel).toBeVisible();
-    await balancePanel.locator("details > summary").first().click();
-    await expect(balancePanel).toContainText("Synthetic balance.csv");
-    await expect(balancePanel).toContainText("Saldo atual");
-    await expect(balancePanel).toContainText("Emissao 02/09/2026");
-    await expect(balancePanel).not.toContainText("999999");
-    await balancePanel.scrollIntoViewIfNeeded();
-    await capture("synthetic-balance-proposals-pt");
-    await page.goto(`/en-US/app/projects/${projectId}`);
-    const englishAssessment = page.getByTestId("receivables-support-periods");
-    await expect(englishAssessment).toBeVisible();
-    await expect(englishAssessment.locator('[data-period-qualification]')).toHaveCount(25);
-    await englishAssessment.getByRole("button", {name: "Next"}).click();
-    await expect(englishAssessment.locator('[data-period-qualification]')).toHaveCount(periods.entries.length - 25);
-    await englishAssessment.locator('[data-period-qualification="missing"] > summary').first().click();
-    await englishAssessment.scrollIntoViewIfNeeded();
-    await capture("synthetic-support-periods-en");
-    const englishBalances = page.getByTestId("balance-source-proposals");
-    await expect(englishBalances).toBeVisible();
-    await englishBalances.locator("details > summary").first().click();
-    await expect(englishBalances).toContainText("References for reviewing balances");
-    await expect(englishBalances).toContainText("Saldo atual");
-    await expect(englishBalances).not.toContainText("999999");
-    await englishBalances.scrollIntoViewIfNeeded();
-    await capture("synthetic-balance-proposals-en");
-  });
-
-  test("collects a governed R01 premise beside source diligence and persists only internal validation", async ({}, testInfo) => {
-    const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
-    const address = new URL(databaseUrl);
-    if (!["127.0.0.1", "localhost", "[::1]"].includes(address.hostname) || address.port !== "54322" || address.pathname !== "/postgres") throw new Error("R01 fixture requires the isolated local database.");
-    const sessionId = new URL(primaryProjectUrl, "http://localhost").searchParams.get("session")!;
-    const fixture = await receivablesR01Fixture();
-    const sql = (query: string) => execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`], {encoding: "utf8", input: query}).trim();
-    try {
-    execFileSync("psql", [databaseUrl, "-qAt", "-v", "ON_ERROR_STOP=1", "-v", `session_id=${sessionId}`, "-v", `owner_email=${account.email}`, "-v", `fixture=${JSON.stringify(fixture)}`, "-f", join(__dirname, "support", "receivables-scope-local.sql")], {stdio: ["ignore", "pipe", "pipe"]});
-    const discovery = refreshReceivablesFixtureDiscovery(databaseUrl, sessionId, account.email);
-    expect(discovery.sourceManifest.sources.length).toBeGreaterThan(fixture.sources.length);
-    const projectId = sql("select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid;");
-    await page.goto(`/pt-BR/app/projects/${projectId}`);
-    const scope = page.getByTestId("receivables-scope-card");
-    await scope.locator("label").filter({hasText: "Synthetic governed R01.xlsx"}).filter({hasText: "CARTEIRA"}).filter({has: page.locator('input[name="primaryTape"]')}).locator("input").check();
-    for (const support of await scope.locator('input[name="complementDocumentIds"]').all()) await support.uncheck();
-    for (const supportSheet of await scope.locator('input[name="primarySupportSheets"]').all()) await supportSheet.check();
-    await expect(scope.locator('input[name="primarySupportSheets"][value="Excluded pool"]')).toHaveCount(0);
-    await scope.locator('input[name="reportingDate"]').fill("2026-08-31");
-    await scope.locator('input[name="scopeConfirmed"]').check();
-    await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
-    const currentJob = "select j.status from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;";
-    const waitForCaseStatus = async (allowed: string[]) => {
-      const deadline = Date.now() + 120_000;
-      let status = "";
-      while (Date.now() < deadline) {
-        status = sql(currentJob);
-        if (allowed.includes(status)) return status;
-        if (["failed", "cancelled", "dead_letter"].includes(status)) {
-          // Restricted above to this test owner's synthetic loopback session.
-          const diagnostic = sql("select jsonb_build_object('status',j.status,'failure',j.last_error,'stages',r.stages) from public.processing_jobs j join public.document_intake_sessions s on s.id=j.intake_session_id join public.processing_runs r on r.id=j.processing_run_id where s.id=:'session_id'::uuid and j.processing_run_id=s.current_run_id and j.kind='case_analysis' order by j.created_at desc limit 1;");
-          await testInfo.attach("r01-synthetic-worker-failure", {body: diagnostic, contentType: "application/json"});
-          throw new Error(`Synthetic R01 worker failed: ${diagnostic}`);
-        }
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      }
-      expect(status, `R01 job did not reach ${allowed.join(" or ")}`).toBe(allowed[0]);
-      return status;
-    };
-    await waitForCaseStatus(["awaiting_approval"]);
-    await page.reload();
-    await declareExecutionBriefReview(page.getByTestId("execution-brief"), {required: true});
-    await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
-    await waitForCaseStatus(["succeeded"]);
-    expect(sql("select private.receivables_evidence_scope_context(s.organization_id,s.id)->>'state' from public.document_intake_sessions s where s.id=:'session_id'::uuid;")).toBe("current");
-    const selectedScope = JSON.parse(sql("select scope from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;"));
-    expect(selectedScope.schemaVersion).toBe("receivables-evidence-scope.v2");
-    expect(selectedScope.primarySupportSheets).toEqual(["CEDENTE", "CONTABIL", "ESTRUTURA", "POLITICA", "RECEBIMENTOS"]);
-    const initialRun = sql("select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid;");
-    const initialDraft = JSON.parse(sql("select draft from private.receivables_method_supplement_drafts where intake_session_id=:'session_id'::uuid order by created_at desc,revision desc limit 1;"));
-    expect(initialDraft.fields["/structure/advanceRate"]).toBeUndefined();
-    expect(initialDraft.sections.titles.value).toHaveLength(2);
-    expect(sql("select count(*) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_evidence' and status='open';")).not.toBe("0");
-    const request = JSON.parse(sql("select jsonb_build_object('id',id,'question',question) from public.capital_project_information_requests where capital_project_id=(select capital_project_id from public.document_intake_sessions where id=:'session_id'::uuid) and source_namespace='receivables_method_r01_fields' and status='open' order by created_at desc limit 1;"));
-    // While the method still misses an input the page keeps the compact card, and it does so
-    // because nothing was computed yet, not because anyone had to open a concession: no
-    // organization row exists anywhere and the release is the platform's own, under the approval.
-    await page.reload();
-    await expect(page.getByTestId("receivables-current-result")).toBeVisible();
-    await expect(page.getByTestId("receivables-released-result")).toHaveCount(0);
-    expect(sql("select count(*) from private.receivables_analytical_release_grants;")).toBe("0");
-    expect(JSON.parse(sql("select jsonb_build_object('released',released,'exposure',exposure,'maturity',method_maturity,'approvedBy',approved_by,'approvedAt',approved_at) from private.platform_capability_releases where capability_key='finance.receivables-released-analysis';"))).toMatchObject({
-      released: true, exposure: "universal", maturity: "production",
-      approvedBy: "Carlos Eduardo Galves", approvedAt: "2026-09-10",
-    });
-    await page.locator('.information-request-card__selector select').selectOption(request.id);
-    const answer = page.locator('article.information-request-card').filter({has: page.getByRole("heading", {name: request.question, exact: true})});
-    await answer.locator('input[type="number"]').fill("50");
-    await answer.locator('button[type="submit"]').click();
-    await expect.poll(() => sql("select current_run_id from public.document_intake_sessions where id=:'session_id'::uuid;"), {timeout: 120_000}).not.toBe(initialRun);
-    await waitForCaseStatus(["awaiting_approval", "succeeded"]);
-    if (sql(currentJob) === "awaiting_approval") {
-      await page.reload();
-      await declareExecutionBriefReview(page.getByTestId("execution-brief"), {required: true});
-      await page.getByTestId("execution-brief").getByRole("button", {name: /aprovar|approve/i}).click();
-    }
-    await waitForCaseStatus(["succeeded"]);
-    const refreshed = JSON.parse(sql("select draft from private.receivables_method_supplement_drafts where intake_session_id=:'session_id'::uuid order by created_at desc,revision desc limit 1;"));
-    expect(refreshed.fields["/structure/advanceRate"].value).toBe("0.5");
-    expect(refreshed.sections.titles).toEqual(initialDraft.sections.titles);
-    const result = JSON.parse(sql("select result_summary#>'{case_state,receivablesVertical}' from public.document_intake_sessions where id=:'session_id'::uuid;"));
-    expect(result.methodExecution).toMatchObject({status: "succeeded", mode: "internal_shadow", externalEffectAllowed: false});
-    const persisted = JSON.parse(sql("select jsonb_build_object('outputFingerprint',r.output_fingerprint,'inputFingerprint',r.input_fingerprint) from private.receivables_specialist_shadow_runs r join public.document_intake_sessions s on s.id=r.intake_session_id where s.id=:'session_id'::uuid and r.processing_run_id=s.current_run_id order by r.created_at desc limit 1;"));
-    expect(result.methodExecution.outputFingerprint).toBe(persisted.outputFingerprint);
-    expect(result.methodExecution.inputFingerprint).toBe(persisted.inputFingerprint);
-    await page.reload();
-    await expect(page.locator('.information-request-card__selector option').filter({hasText: request.question})).toHaveCount(0);
-    await testInfo.attach("r01-current-internal-validation", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
-
-    // The released result is the same calculation, bound to the confirmed selection and its dataset,
-    // and it reached this organization with no concession of its own and no operator step.
-    expect(sql("select count(*) from private.receivables_analytical_release_grants;")).toBe("0");
-    const released = JSON.parse(sql("select jsonb_build_object('outputFingerprint',r.output_fingerprint,'inputFingerprint',r.input_fingerprint,'scopeFingerprint',r.evidence_scope_fingerprint,'datasetHash',r.source_dataset_hash,'maturity',r.method_maturity,'maximumEffect',r.release->>'maximumEffect') from private.receivables_released_results r join public.document_intake_sessions s on s.id=r.intake_session_id where s.id=:'session_id'::uuid and r.processing_run_id=s.current_run_id order by r.created_at desc limit 1;"));
-    expect(released.outputFingerprint).toBe(persisted.outputFingerprint);
-    expect(released.inputFingerprint).toBe(persisted.inputFingerprint);
-    expect(released.scopeFingerprint).toBe(JSON.parse(sql("select to_jsonb(fingerprint) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid order by confirmed_at desc,id desc limit 1;")));
-    expect(released.datasetHash).toBe(JSON.parse(sql("select to_jsonb(source_dataset_hash) from private.receivables_method_input_assemblies where intake_session_id=:'session_id'::uuid order by created_at desc limit 1;")));
-    expect(released.maturity).toBe("production");
-    expect(released.maximumEffect).toBe("none");
-    const releasedSection = page.getByTestId("receivables-released-result");
-    await expect(releasedSection).toBeVisible();
-    await expect(page.getByTestId("receivables-current-result")).toHaveCount(0);
-    // The rung the founder approved is what the reading states, with the date of that approval.
-    await expect(releasedSection).toHaveAttribute("data-method-maturity", "production");
-    await expect(releasedSection.getByTestId("receivables-released-founder-approval")).toContainText("10 de setembro de 2026");
-    for (const block of ["receivables-released-base", "receivables-released-facility", "receivables-released-concentration", "receivables-released-waterfall", "receivables-released-triggers", "receivables-released-gaps", "receivables-released-coverage", "receivables-released-evidence", "receivables-released-limitations"]) {
-      await expect(releasedSection.getByTestId(block)).toBeVisible();
-    }
-    // Historical coverage is stated per family; an unmeasured family is never shown as a zero.
-    await expect(releasedSection.getByTestId("receivables-released-coverage").locator("[data-coverage-status]")).toHaveCount(6);
-    await expect(releasedSection.getByTestId("receivables-released-coverage")).toContainText("Agregados informados por título");
-    await expect(releasedSection.getByTestId("receivables-released-waterfall")).toContainText("Ordem fixa");
-    await expect(releasedSection.getByTestId("receivables-released-limitations")).toContainText("Não há aprovação de crédito neste resultado.");
-    await testInfo.attach("r01-released-analysis", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
-
-    // A new confirmed selection turns the stored result into history, never into a current answer.
-    // The session may already hold more than one confirmed scope from the steps above, so the
-    // proof is one more row and a newer confirmation, not an absolute count.
-    const scopesBefore = Number(sql("select count(*) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid;"));
-    await scope.locator("label").filter({hasText: "Synthetic governed R01.xlsx"}).filter({hasText: "CARTEIRA"}).filter({has: page.locator('input[name="primaryTape"]')}).locator("input").check();
-    for (const supportSheet of await scope.locator('input[name="primarySupportSheets"]').all()) await supportSheet.check();
-    await scope.locator('input[name="reportingDate"]').fill("2026-08-30");
-    await scope.locator('input[name="scopeConfirmed"]').check();
-    await scope.getByRole("button", {name: "Confirmar escopo e revisar plano"}).click();
-    await expect.poll(() => Number(sql("select count(*) from private.receivables_evidence_scopes where intake_session_id=:'session_id'::uuid;")), {timeout: 120_000}).toBe(scopesBefore + 1);
-    // The new run waits for its own approval, so the previous result stays visible as history.
-    await waitForCaseStatus(["awaiting_approval"]);
-    await page.reload();
-    const supersededSection = page.getByTestId("receivables-released-superseded");
-    await expect(supersededSection).toBeVisible();
-    await expect(supersededSection).not.toHaveAttribute("data-superseded-reason", "unknown");
-    await expect(page.getByTestId("receivables-released-result")).toHaveCount(0);
-    await testInfo.attach("r01-released-superseded", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});
-    } catch (error) {
-      // Print immediately: CI exposes this before the remaining browser suite completes.
-      console.error("R01_SYNTHETIC_JOURNEY_FAILED", error instanceof Error ? error.stack : String(error));
-      try {
-        const diagnostic = sql("select coalesce(jsonb_agg(to_jsonb(recent) order by recent.created_at desc),'[]'::jsonb) from (select j.id,j.kind,j.status,j.processing_run_id,j.last_error,j.created_at,r.stages->-1 as last_stage from public.processing_jobs j join public.processing_runs r on r.id=j.processing_run_id where j.intake_session_id=:'session_id'::uuid order by j.created_at desc limit 6) recent;");
-        console.error("R01_SYNTHETIC_RECENT_JOBS", diagnostic);
-        await testInfo.attach("r01-synthetic-recent-jobs", {body: diagnostic, contentType: "application/json"});
-      } catch {
-        console.error("R01_SYNTHETIC_DIAGNOSTIC_UNAVAILABLE");
-      }
-      throw error;
-    }
+    await expect(page.getByTestId("execution-brief")).toContainText("2026-08-31");
+    await testInfo.attach("native-assessment-unverified-source-denial", {body: JSON.stringify(denial), contentType: "application/json"});
   });
 
 });

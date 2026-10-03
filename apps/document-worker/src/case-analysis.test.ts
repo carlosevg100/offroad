@@ -137,7 +137,7 @@ describe("worker case analysis", () => {
     expect(JSON.stringify(validation)).not.toContain("unexpected-private-value");
   });
 
-  it("runs the first understanding as one bounded read without loading or executing the full case DAG", async () => {
+  it.each([false,true])("runs the first understanding as one bounded read (native capture=%s) without loading or executing the full case DAG", async (native) => {
     const preliminaryJob: CaseAnalysisJob = {
       ...job,
       kind: "preliminary_analysis",
@@ -275,6 +275,7 @@ describe("worker case analysis", () => {
     const gateway = {
       complete: async (request: {task: string; maxOutputTokens?: number; input: Array<{type: string; text?: string}>}) => {
         calls.push(request.task);
+        if(native){expect(consumed).toEqual(["primary_capture","public_capture"]);consumed.push("inference");}
         requestedMaxOutputTokens = request.maxOutputTokens;
         narrativeInput = JSON.parse(request.input[0]?.text ?? "{}") as Record<string, unknown>;
         spent = {costUsd: 0.08, calls: 1};
@@ -310,13 +311,29 @@ describe("worker case analysis", () => {
       spent: () => spent,
     } as unknown as ModelGateway;
 
+    const consumed: string[] = [];
+    const originalLoad = queue.loadPreliminaryInput;
+    const originalRecord = queue.recordAgentAssessment!;
+    const assessmentRuntime = native ? {forJob: (bound: CaseAnalysisJob) => {
+      expect(bound).toBe(preliminaryJob);
+      return {
+        loadPreliminaryInput: async () => {consumed.push("primary_capture");return originalLoad(preliminaryJob);},
+        publicResearch: async () => {consumed.push("public_capture");return {status:"succeeded" as const,sourceCount:1,topicCounts:{company:1},researchRunId:null,costExposureUsd:0,sources:[{provider:"publisher",topic:"company",title:"Licensed physical source",url:"https://example.com/identity",snippet:"Contexto público verificado.",publishedAt:null,retrievedAt:"2026-08-31T12:00:00.000Z",contentHash:"b".repeat(64)}]};},
+        recordAssessment: async (assessment:Parameters<typeof originalRecord>[1]) => {consumed.push("native_writer");return originalRecord(preliminaryJob,assessment);},
+      };
+    }} as unknown as NonNullable<Parameters<typeof processCaseAnalysisJob>[1]["assessmentRuntime"]> : undefined;
+    if(native){
+      queue.loadPreliminaryInput=async()=>{throw new Error("legacy primary loader must stay closed");};
+      queue.recordAgentAssessment=async()=>{throw new Error("legacy assessment writer must stay closed");};
+    }
     const outcome = await processCaseAnalysisJob(preliminaryJob, {
       queue,
       gateway,
+      ...(assessmentRuntime ? {assessmentRuntime} : {}),
       lineage: () => [],
       researchProviders: [{
         id: "perplexity",
-        search: async (query) => [{
+        search: async (query) => {if(native)throw new Error("uncaptured research must stay closed");return [{
           provider: "perplexity",
           topic: query.topic,
           title: `Fonte ${query.topic}`,
@@ -325,12 +342,13 @@ describe("worker case analysis", () => {
           publishedAt: null,
           retrievedAt: "2026-08-31T12:00:00.000Z",
           contentHash: "b".repeat(64),
-        }],
+        }];},
       }],
       now: () => new Date("2026-08-31T12:00:00.000Z"),
     });
 
     expect(outcome).toEqual({status: "succeeded"});
+    if(native)expect(consumed).toEqual(["primary_capture","public_capture","inference","native_writer"]);
     expect(calls).toEqual(["preliminary_understanding"]);
     expect(requestedMaxOutputTokens).toBe(8_000);
     expect(narrativeInput).toMatchObject({

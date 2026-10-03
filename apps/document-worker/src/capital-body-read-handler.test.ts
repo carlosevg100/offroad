@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {createHash, randomUUID} from "node:crypto";
 import {createCapitalBodyReadHandler, capitalBodyReadServerConfigFromEnvironment} from "./capital-body-read-handler";
 const token = (role: string, sub: string) => `synthetic.${Buffer.from(JSON.stringify({role, sub})).toString("base64url")}.signature`;
-function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: boolean; wrongInfo?: boolean; oversized?: boolean; changedScope?: boolean; expiresDuring?: boolean; wrongActor?: boolean; publicSource?: boolean; modernKeys?: boolean; pending?: number; pendingForever?: boolean; pendingMessage?: string; throwTransport?: boolean; human?: boolean; wrongRevision?: boolean; extraScopeField?: boolean; humanAllocated?: boolean; recovery?: boolean; recoverySource?: boolean; wrongRetained?: boolean; changedNativeProof?: boolean; invalidNativeProof?: boolean; revision?: boolean; revisionSource?: boolean; s11?: boolean; task?: boolean; recoveredTask?: boolean; revisionTask?: boolean; material?: boolean; wrongMaterialKind?: boolean; wrongMaterialWork?: boolean; materialExtra?: boolean; debt?: boolean} = {}) {
+function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: boolean; wrongInfo?: boolean; oversized?: boolean; changedScope?: boolean; expiresDuring?: boolean; wrongActor?: boolean; publicSource?: boolean; modernKeys?: boolean; pending?: number; pendingForever?: boolean; pendingMessage?: string; throwTransport?: boolean; human?: boolean; wrongRevision?: boolean; extraScopeField?: boolean; humanAllocated?: boolean; recovery?: boolean; recoverySource?: boolean; wrongRetained?: boolean; changedNativeProof?: boolean; invalidNativeProof?: boolean; revision?: boolean; revisionSource?: boolean; s11?: boolean; task?: boolean; recoveredTask?: boolean; revisionTask?: boolean; material?: boolean; wrongMaterialKind?: boolean; wrongMaterialWork?: boolean; materialExtra?: boolean; debt?: boolean; assessment?:boolean} = {}) {
   let clock = Date.parse("2026-10-01T00:00:00Z"), scopes = 0;
   const actor = randomUUID(), org = randomUUID(), job = randomUUID(), allocation = randomUUID(), objectId = randomUUID(), revision = randomUUID();
   const bytes = new TextEncoder().encode('{"text":"ação € 漢字 🧮"}');
@@ -28,7 +28,7 @@ function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: 
         scopes++;
         if (opts.throwTransport) throw new Error("sensitive transport message");
         if (opts.pendingForever || (opts.pending ?? 0) >= scopes) return bodyJSON({code: "40001", message: opts.pendingMessage ?? "sensitive SQL pending"}, 409); assert.equal(new Headers(init.headers).get("authorization"), `Bearer ${token("authenticated", actor)}`);
-        assert.deepEqual(JSON.parse(String(init.body)), opts.human ? {p_revision_id: revision} : opts.task ? {p_job_id: job, p_capability_token: "synthetic-job-capability", ...(!opts.revisionTask ? {p_recipe_id: revision} : {}), p_task_run_id: retainedPayloadId} : opts.revision ? {p_job_id: job, p_capability_token: "synthetic-job-capability", p_retained_payload_id: retainedPayloadId} : opts.recovery ? {p_job_id: job, p_capability_token: "synthetic-job-capability", p_recipe_id: revision, p_retained_payload_id: retainedPayloadId} : {p_job_id: job, p_capability_token: "synthetic-job-capability", p_allocation_id: allocation});
+        assert.deepEqual(JSON.parse(String(init.body)), opts.assessment ? {p_job_id:job,p_capability_token:"synthetic-job-capability",p_snapshot_id:revision,p_retained_payload_id:retainedPayloadId} : opts.human ? {p_revision_id: revision} : opts.task ? {p_job_id: job, p_capability_token: "synthetic-job-capability", ...(!opts.revisionTask ? {p_recipe_id: revision} : {}), p_task_run_id: retainedPayloadId} : opts.revision ? {p_job_id: job, p_capability_token: "synthetic-job-capability", p_retained_payload_id: retainedPayloadId} : opts.recovery ? {p_job_id: job, p_capability_token: "synthetic-job-capability", p_recipe_id: revision, p_retained_payload_id: retainedPayloadId} : {p_job_id: job, p_capability_token: "synthetic-job-capability", p_allocation_id: allocation});
         if (opts.revision) assert.ok(path.endsWith(`/worker_read_capital_${opts.debt ? "debt" : opts.s11 ? "s11" : "m07"}_revision_${opts.revisionSource ? "source" : "body"}_v1`));
         if (opts.recovery) assert.ok(path.endsWith(`/worker_read_capital_${opts.debt ? "debt" : opts.s11 ? "s11" : "m07"}_recovery_${opts.recoverySource ? "source" : "body"}_v1`));
         if (opts.task) assert.ok(path.endsWith(opts.revisionTask ? opts.debt ? "/worker_read_capital_debt_revision_task_v1" : "/worker_read_capital_s11_revision_task_v1" : opts.debt ? "/worker_read_capital_debt_recovered_task_body_v1" : opts.recoveredTask ? "/worker_read_capital_s11_recovered_task_body_v1" : "/worker_read_capital_s11_task_body_v1"));
@@ -48,8 +48,8 @@ function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: 
             ...(opts.extraScopeField ? {body: "PRIVATE_CANARY"} : {})});
           return bodyJSON(result);
         }
-        const resolved = {...opts.publicSource ? publicScope : scope, ...(opts.changedScope && scopes > 1 ? {storageVersion: randomUUID()} : {})};
-        if (opts.recovery || opts.revision || opts.task) return bodyJSON({...resolved, ...(opts.recoverySource || opts.revisionSource ? {state: "complete"} : {retentionState: "retained"}), retainedPayloadId: opts.wrongRetained ? randomUUID() : retainedPayloadId});
+        const resolved = {...opts.assessment || opts.publicSource ? publicScope : scope, ...(opts.changedScope && scopes > 1 ? {storageVersion: randomUUID()} : {})};
+        if (opts.assessment || opts.recovery || opts.revision || opts.task) return bodyJSON({...resolved, ...(opts.assessment || opts.recoverySource || opts.revisionSource ? {state: "complete"} : {retentionState: "retained"}), retainedPayloadId: opts.wrongRetained ? randomUUID() : retainedPayloadId});
         if (opts.debt && !opts.human) {
           assert.ok(path.endsWith("/worker_read_capital_debt_allocation_v1"));
           return bodyJSON({schemaVersion: "capital-debt-worker-read-scope.v1", recipeId: opts.changedNativeProof && scopes > 1 ? randomUUID() : allocation,
@@ -460,3 +460,18 @@ test("C11 capture_retry retries only exact same command and authority within bou
 });
 test("C11 capture_retry exhaustion denies without Storage",async()=>{const f=fixture({debt:true,pendingForever:true,pendingMessage:"capital_capture_retry"});assert.equal((await f.handler(f.request())).status,403);assert.equal(f.calls.filter(c=>c.path.includes("/rest/")).length,3);assert.equal(f.calls.some(c=>c.path.includes("/storage/")),false);});
 test("C11 human rejects malformed native recipe identity",async()=>{const f=fixture({debt:true,human:true,invalidNativeProof:true});assert.equal((await f.handler(f.request())).status,403);});
+
+test("assessment research reads exact physical source under two capability and snapshot scopes",async()=>{
+ const f=fixture({assessment:true});const request={kind:"assessment_source",snapshotId:f.revision,retainedPayloadId:f.retainedPayloadId};
+ const result=await f.handler(f.request(request));assert.equal(result.status,200);assert.equal(result.headers.get("x-offroad-snapshot-id"),f.revision);
+ assert.equal(f.calls.filter(c=>c.path.endsWith("/worker_read_assessment_research_source_v1")).length,2);
+ assert.deepEqual(new Uint8Array(await result.arrayBuffer()),f.bytes);
+});
+for(const opts of [{denyBefore:true},{denyAfter:true},{wrongInfo:true},{wrongBytes:true},{wrongRetained:true},{changedScope:true},{expiresDuring:true},{pendingForever:true,pendingMessage:"context_changed"}])test(`assessment source refuses stale authority or bytes ${JSON.stringify(opts)}`,async()=>{
+ const f=fixture({assessment:true,...opts});assert.equal((await f.handler(f.request({kind:"assessment_source",snapshotId:f.revision,retainedPayloadId:f.retainedPayloadId}))).status,403);
+});
+test("assessment source rejects arbitrary paths, missing capability and extra scope",async()=>{
+ const f=fixture({assessment:true});const body={kind:"assessment_source",snapshotId:f.revision,retainedPayloadId:f.retainedPayloadId};
+ for(const extra of [{path:"arbitrary"},{recipeId:f.revision},{sourceCount:0}])assert.equal((await f.handler(f.request({...body,...extra}))).status,403);
+ assert.equal((await f.handler(f.request(body,{"x-offroad-capability":""}))).status,403);assert.equal(f.calls.length,0);
+});

@@ -193,14 +193,25 @@ test("a new version of a source is recomputed by the local worker, and the perso
   // 5. Adoption behind a confirmation. The earlier result and every decision stay as they were.
   const history = () => sql(`select coalesce(string_agg(id::text||':'||xmin::text,',' order by id),'') from public.work_milestones where work_id='${projectId}' and kind in ('execution_result','decision');`);
   const before = history();
+  // The owner prepared these results. Its actual project policy must allow
+  // self-review before the separate native adoption declaration can authorize it.
+  await page.locator('.advisor-work-surface__navigation a[href="#work-project-review"]').click();
+  await page.getByTestId("project-review-roles").locator('select[name="project_self_approval"]').selectOption("allowed");
+  await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective", "true");
+  await page.locator('.advisor-work-surface__navigation a[href="#work-updates"]').click();
   await ready.getByRole("button", {name: updates.adopt.action, exact: true}).click();
-  await ready.getByRole("button", {name: updates.adopt.confirm, exact: true}).click();
+  const adoptBase = ready.getByRole("button", {name: "Adotar esta base", exact: true});
+  await expect(adoptBase).toBeDisabled();
+  await ready.getByRole("checkbox", {name: "Declaro que estou adotando resultados preparados sob meu acesso.", exact: true}).check();
+  await expect(adoptBase).toBeEnabled();
+  await adoptBase.click();
   await expect.poll(() => sql(`select status from public.work_continuation_requests where id='${updateId}';`), {timeout: 30_000}).toBe("adopted");
   const results = (execution: string) => sql(`select id from public.work_milestones where kind='execution_result' and subject_id='${execution}';`);
   expect(sql(`select m.outcome||'|'||m.label||'|'||array_to_string(m.reference_milestone_ids,',') from public.work_milestones m where m.kind='update_adopted' and m.subject_id='${updateId}';`))
     .toBe(`approved|dependency_update_adopted|${results(recomputed)},${results(rootId)}`);
   expect(history()).toBe(before);
   await page.reload();
+  expect(sql(`select status from public.work_continuation_requests where id='${updateId}';`)).toBe("adopted");
   const closed = page.locator("details.work-updates__group");
   await closed.locator("summary").click();
   await expect(closed.locator('article.work-update[data-status="adopted"]')).toContainText(updates.status.adopted);
