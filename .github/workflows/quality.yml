@@ -206,6 +206,13 @@ jobs:
         id: database_deps
         run: pnpm install --frozen-lockfile
 
+      - name: Install unpublished native consumer drafts in isolated CI only
+        id: native_consumers_install
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
+        run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
+
       - name: Native materials SQL production, dispatch and human review
         if: ${{ !inputs.native_diagnostic }}
         env:
@@ -622,13 +629,6 @@ jobs:
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-material-production-native-sdk.mjs
-
-      - name: Install unpublished native consumer drafts in isolated CI only
-        id: native_consumers_install
-        env:
-          DATABASE_URL: ${{ steps.db.outputs.url }}
-          OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
-        run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
 
       - name: Native debt and S11 catalogue and hostile commands
         id: native_consumers_catalogue

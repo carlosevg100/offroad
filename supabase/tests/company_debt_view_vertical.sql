@@ -1,5 +1,5 @@
 -- Public company debt view: exact 24-task plan, capability-scoped execution, tenant isolation,
--- idempotent start and C11-only correction. Every fixture is rolled back.
+-- idempotent start and denial of obsolete generic producer/return ports. Every fixture is rolled back.
 
 begin;
 \ir support/legacy_workspace_capabilities.sql
@@ -191,114 +191,55 @@ begin
     raise exception 'company debt worker context was incomplete: %', context;
   end if;
 
-  foreach v_task_id in array array[
-    'M01','M02','M03','M04','M05','C02','M06','D01','D02','D03','D04','D05','D06','D07',
-    'C01','C03','C04','C05','C06','C07','C08','C09','C10','C11'
-  ]::text[] loop
-    v_input_fingerprint := encode(extensions.digest(convert_to('company-debt-test:' || v_task_id, 'utf8'), 'sha256'), 'hex');
-    v_task_run_id := public.worker_start_capital_project_task(
-      (claim ->> 'job_id')::uuid, claim ->> 'capability_token', v_task_id,
-      'offroad.company_debt_view', '2026.09.01-v1', v_input_fingerprint,
-      jsonb_build_object('schemaVersion', 'capital-context-manifest.v1')
-    );
-    select coalesce(jsonb_agg(jsonb_build_object(
-      'artifactId', dependency_artifact.id,
-      'artifactFingerprint', dependency_artifact.artifact_fingerprint
-    ) order by dependency_task.task_id), '[]'::jsonb)
-    into v_dependencies
-    from public.capital_project_plan_tasks current_task
-    cross join lateral unnest(current_task.dependencies) dependency_id
-    join public.capital_project_plan_tasks dependency_task
-      on dependency_task.organization_id = current_task.organization_id
-      and dependency_task.plan_id = current_task.plan_id
-      and dependency_task.task_id = dependency_id
-    join public.capital_project_task_runs dependency_run
-      on dependency_run.organization_id = dependency_task.organization_id
-      and dependency_run.plan_task_id = dependency_task.id
-      and dependency_run.status = 'succeeded'
-    join public.capital_project_artifacts dependency_artifact
-      on dependency_artifact.organization_id = dependency_run.organization_id
-      and dependency_artifact.task_run_id = dependency_run.id
-      and dependency_artifact.status not in ('stale', 'superseded')
-    where current_task.organization_id = (claim ->> 'organization_id')::uuid
-      and current_task.plan_id = (context #>> '{plan,id}')::uuid
-      and current_task.task_id = v_task_id;
-
-    v_artifact := public.worker_record_capital_project_artifact(
-      (claim ->> 'job_id')::uuid, claim ->> 'capability_token', v_task_run_id,
-      case when v_task_id = 'C11' then 'company_debt_diagnostic' else 'company_debt_' || lower(v_task_id) end,
-      'capital-artifact.v1', case when v_task_id = 'C11' then 'pending_confirmation' else 'draft' end,
-      v_input_fingerprint, jsonb_build_object('taskId', v_task_id, 'fixture', true),
-      case when v_task_id in ('C09','C10') then jsonb_build_array(jsonb_build_object('sourceType', 'public_research_run', 'sourceId', '80000000-0000-4000-8000-000000000211')) else jsonb_build_array() end,
-      v_dependencies
-    );
-    perform public.worker_finish_capital_project_task(
-      (claim ->> 'job_id')::uuid, claim ->> 'capability_token', v_task_run_id,
-      'succeeded', jsonb_build_object('type', 'capital_project_artifact', 'id', v_artifact ->> 'id'),
-      v_artifact ->> 'artifact_fingerprint', jsonb_build_array(jsonb_build_object('id', 'contract', 'passed', true)),
-      jsonb_build_object(), null
-    );
-    if v_task_id = 'C11' then
-      v_final_artifact_id := (v_artifact ->> 'id')::uuid;
-      v_final_fingerprint := v_artifact ->> 'artifact_fingerprint';
-    end if;
-  end loop;
-  perform public.worker_complete_job((claim ->> 'job_id')::uuid, claim ->> 'capability_token', jsonb_build_object('artifactId', v_final_artifact_id));
-
-  revision_result := public.request_company_debt_view_revision_v1(
-    v_final_artifact_id, v_final_fingerprint,
-    'Deixar explícito que o capital de giro ainda não foi conciliado.'
+  -- Public start/plan/tenant/budget/context above remain genuine. A prospective
+  -- debt task cannot publish or succeed through the generic JSON writer. The
+  -- native24-task positive and C11-only human return are covered by the real SDK,
+  -- rather than synthetic accepted/source/projection rows in this old fixture.
+  v_task_id := 'M01';
+  v_input_fingerprint := encode(extensions.digest(convert_to('company-debt-test:M01','utf8'),'sha256'),'hex');
+  v_task_run_id := public.worker_start_capital_project_task(
+    (claim->>'job_id')::uuid,claim->>'capability_token',v_task_id,
+    'offroad.company_debt_view','2026.09.01-v1',v_input_fingerprint,
+    jsonb_build_object('schemaVersion','capital-context-manifest.v1')
   );
-  if revision_result ->> 'replayed' <> 'false'
-    or (select status from public.capital_project_artifacts where id = v_final_artifact_id) <> 'superseded'
-    or (select status from public.capital_project_task_runs where id = v_task_run_id) <> 'invalidated'
-    or (select count(*) from public.capital_project_task_runs run join public.capital_project_plan_tasks task on task.id = run.plan_task_id where run.organization_id = (claim ->> 'organization_id')::uuid and task.task_id in ('C09','C10') and run.status = 'succeeded') <> 2 then
-    raise exception 'company debt revision did not preserve C09/C10: %', revision_result;
+  begin
+    perform public.worker_record_capital_project_artifact(
+      (claim->>'job_id')::uuid,claim->>'capability_token',v_task_run_id,
+      'company_debt_m01','capital-artifact.v1','draft',v_input_fingerprint,
+      jsonb_build_object('taskId','M01','fixture',true),'[]'::jsonb,'[]'::jsonb
+    );
+    raise exception 'debt_legacy_writer_native_shortcut';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_debt_native_task_projection_required' then raise;end if;
+  end;
+  begin
+    perform public.worker_finish_capital_project_task(
+      (claim->>'job_id')::uuid,claim->>'capability_token',v_task_run_id,'succeeded',
+      jsonb_build_object('type','capital_project_artifact','id',gen_random_uuid()),
+      v_input_fingerprint,jsonb_build_array(jsonb_build_object('id','contract','passed',true)),
+      '{}'::jsonb,null
+    );
+    raise exception 'debt_legacy_finish_native_shortcut';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_debt_native_task_projection_required' then raise;end if;
+  end;
+  if exists(select 1 from public.capital_project_artifacts where task_run_id=v_task_run_id)
+    or (select status from public.capital_project_task_runs where id=v_task_run_id)<>'running'
+    or exists(select 1 from public.processing_jobs where payload#>>'{trigger_event,type}'='artifact_correction_requested'and payload->>'analysis_scope'='company_debt_view') then
+    raise exception 'debt_denied_legacy_ports_left_effects';
   end if;
-  revision_replay := public.request_company_debt_view_revision_v1(v_final_artifact_id, v_final_fingerprint, 'Deixar explícito que o capital de giro ainda não foi conciliado.');
-  if revision_replay ->> 'replayed' <> 'true'
-    or revision_replay ->> 'job_id' <> revision_result ->> 'job_id' then
-    raise exception 'company debt revision replay failed: %', revision_replay;
-  end if;
+  begin
+    perform public.request_company_debt_view_revision_v1(gen_random_uuid(),repeat('1',64),'Synthetic old return must be denied.');
+    raise exception 'debt_legacy_return_native_shortcut';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_artifact_review_upgrade_required' then raise;end if;
+  end;
+  raise notice 'PASS debt_public_start_plan_tenant_budget old_generic_writer_finish_return_denied';
 
-  perform pg_temp.fixture_approve_pending_executions();
-  revision_claim := public.worker_claim_job_v3(repeat('v', 64), 600);
-  if revision_claim #>> '{payload,analysis_scope}' <> 'company_debt_view'
-    or revision_claim #>> '{payload,capital_task_ids,0}' <> 'C11'
-    or jsonb_array_length(revision_claim #> '{payload,capital_task_ids}') <> 1
-    or revision_claim #>> '{payload,model_budget,max_cost_usd}' <> '0.85'
-    or revision_claim #>> '{payload,model_budget,max_calls}' <> '1' then
-    raise exception 'worker did not claim C11-only revision: %', revision_claim;
-  end if;
-  revision_context := public.worker_load_capital_project_context((revision_claim ->> 'job_id')::uuid, revision_claim ->> 'capability_token');
-  if revision_context #>> '{revision,of_artifact_id}' <> v_final_artifact_id::text
-    or jsonb_array_length(revision_context -> 'dependency_artifacts') <> 2
-    or not (select bool_and((item ->> 'task_id') in ('C09','C10')) from jsonb_array_elements(revision_context -> 'dependency_artifacts') item) then
-    raise exception 'company debt revision context escaped dependency boundary: %', revision_context;
-  end if;
 end;
 $$;
 
 reset role;
-do $$
-declare
-  v_job public.processing_jobs;
-  v_run public.processing_runs;
-begin
-  select job.* into strict v_job
-  from public.processing_jobs job
-  where job.payload #>> '{trigger_event,type}' = 'artifact_correction_requested'
-    and job.payload ->> 'analysis_scope' = 'company_debt_view';
-  select run.* into strict v_run from public.processing_runs run where run.id = v_job.processing_run_id;
-  if v_job.payload #>> '{model_budget,max_cost_usd}' <> '0.85'
-    or v_job.payload #>> '{model_budget,max_calls}' <> '1'
-    or v_run.budget ->> 'maxCostUsd' <> '0.85'
-    or v_run.budget ->> 'maxCalls' <> '1'
-    or v_run.budget ->> 'externalSearchMaxUsd' <> '0' then
-    raise exception 'company debt revision budget escaped its ceiling: job=%, run=%', v_job.payload, v_run.budget;
-  end if;
-end;
-$$;
 
 rollback;
 

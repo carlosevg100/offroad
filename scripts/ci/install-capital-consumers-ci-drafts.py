@@ -13,6 +13,7 @@ DRAFTS = (
  'capital_s11_task_projections.sql', 'capital_s11_native_commit.sql', 'capital_s11_native_revision.sql',
  'capital_debt_native_consumption.sql', 'capital_debt_execution_ledger.sql',
  'capital_debt_task_projections.sql', 'capital_debt_native_commit.sql', 'capital_debt_native_revision.sql',
+ 'artifact_native_inherited_restriction.sql',
 )
 def validate(env):
  p = urlparse(env.get('DATABASE_URL', ''))
