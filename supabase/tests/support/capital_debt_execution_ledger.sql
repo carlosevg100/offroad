@@ -3,6 +3,16 @@
 -- human-approved fixture; this file never fabricates a recipe, seal or receipt.
 begin;
 set local search_path='';
+do $$declare def text;begin
+ if has_function_privilege('anon','private.capital_debt_physical_allocation_bound_v1(uuid,uuid,uuid)','EXECUTE') or has_function_privilege('authenticated','private.capital_debt_physical_allocation_bound_v1(uuid,uuid,uuid)','EXECUTE') or has_function_privilege('service_role','private.capital_debt_physical_allocation_bound_v1(uuid,uuid,uuid)','EXECUTE') then raise exception 'debt_physical_bound_authority_grant';end if;
+ select pg_get_functiondef('private.capital_debt_allocation_deadline_v1(uuid,uuid,uuid)'::regprocedure) into def;
+ if position('private.capital_debt_recipe_deadline_v1(p_org,b.recipe_id,p_subject)' in def)=0 or position('private.capital_debt_physical_allocation_bound_v1(p_org,p_allocation,b.recipe_id)' in def)=0 then raise exception 'debt_current_authority_or_physical_bound_missing';end if;
+ select pg_get_functiondef('private.capital_debt_physical_allocation_bound_v1(uuid,uuid,uuid)'::regprocedure) into def;
+ if position('private.capital_debt_recipe_deadline_v1' in def)>0 or position('b.recipe_id is distinct from p_recipe' in def)=0 or position('private.capital_body_physical_receipt_v1' in def)=0 or position('q.status=''pending''' in def)=0 then raise exception 'debt_physical_bound_not_closed';end if;
+ select prosrc into strict def from pg_proc p join pg_namespace ns on ns.oid=p.pronamespace where ns.nspname='private' and p.proname='capital_debt_native_read_before_revision_v1';
+ if position('private.capital_debt_allocation_deadline_v1' in def)>0 or position('private.capital_debt_recipe_deadline_v1(p_org,b.recipe_id,p_actor)' in def)=0 or position('projection_count<>23' in def)=0 or position('projection.task_status is distinct from ''succeeded''' in def)=0 or position('projection.current_fingerprint is distinct from projection.artifact_fingerprint' in def)=0 then raise exception 'debt_current_read_or_projection_proof_missing';end if;
+ raise notice 'PASS debt_physical_bound_owner_only_current_source_and_23_task_proofs';
+end $$;
 do $$declare t text;role_name text;n integer;p jsonb;f text;begin
  foreach t in array array['capital_debt_operations','capital_debt_gateway_attempts','capital_debt_input_dispatches','capital_debt_attempt_outcomes','capital_debt_accepted_invocations']loop
   if not exists(select 1 from pg_class c join pg_namespace ns on ns.oid=c.relnamespace where ns.nspname='private' and c.relname=t and c.relrowsecurity and c.relforcerowsecurity)then raise exception 'debt_ledger_rls_missing:%',t;end if;
