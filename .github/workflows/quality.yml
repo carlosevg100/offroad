@@ -13,6 +13,12 @@ on:
         type: boolean
         required: false
         default: false
+      native_diagnostic_target:
+        description: Isolate one independent family only when native_diagnostic is true
+        type: choice
+        required: false
+        default: both
+        options: [both, debt]
 
 permissions:
   contents: read
@@ -632,6 +638,7 @@ jobs:
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_s11_task_projections.sql
 
       - name: Native S11 initial and human return through real Storage and Edge
+        if: ${{ !inputs.native_diagnostic || inputs.native_diagnostic_target != 'debt' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
