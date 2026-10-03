@@ -1,6 +1,7 @@
 import {resolveCapitalPreviewRows} from "@/lib/artifacts/capital-preview-result";
 import {resolveNativeProviderResultRows} from "@/lib/artifacts/capital-native-provider-result";
 import {loadExecutionBriefReviewBasis} from "@/lib/advisor/execution-brief-review-command";
+import {MaterialPackageReview} from "@/components/advisor/material-package-review";
 import {effectiveTaskRunStatus} from "@/lib/advisor/task-run-status";
 import {loadInstitutionalReview} from "@/lib/artifacts/institutional-review";
 import {isCapitalM07Projection, readCapitalM07Result} from "@/lib/artifacts/capital-m07-result";
@@ -56,7 +57,7 @@ import {PrivateMaterialsWork} from "@/components/advisor/private-materials-work"
 import {PrivateStructureWork} from "@/components/advisor/private-structure-work";
 import {AdvisorDecisionWork} from "@/components/integration-preview/advisor-decision-work";
 import {requireWorkspace} from "@/lib/auth/workspace";
-import {loadGovernedMaterialPackage} from "@/lib/deal-state/materials";
+import {loadGovernedMaterialPackage, loadNativeMaterialReviewForWork} from "@/lib/deal-state/materials";
 import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
@@ -254,6 +255,10 @@ async function ConversationalCapitalProject({
     ? await loadGovernedMaterialPackage(supabase, organization.id, session.id)
     : null;
   // A decision whose result is missing while no analysis runs is a gap with its next step.
+  // A native material remains reviewable under its physical/current basis even
+  // when this work started as capital planning. Historical case sections stay gated.
+  const standaloneMaterialReview = privateWorkbench ? null
+    : await loadNativeMaterialReviewForWork(supabase, organization.id, session.id, project.id);
   const analysisGap = privateWorkbench ? workbenchAnalysisGap(privateWorkbench, governedMaterials !== null) : null;
   const [{data: introductionPlans}, {data: introductionTargets}, {data: introductionRecipients}] = privateWorkbench?.matchScreen
     ? await Promise.all([
@@ -538,6 +543,11 @@ async function ConversationalCapitalProject({
     + (requirementCoverage ?? []).filter((item) => !expectedKeys.has(item.requirement_key)).length;
 
   const workSections: AdvisorWorkSection[] = [];
+  if (standaloneMaterialReview) {
+    const materialCopy = await getTranslations({locale, namespace: "MaterialPackageReview"});
+    workSections.push({id: "native-material-review", title: materialCopy("title"),
+      content: <MaterialPackageReview basis={standaloneMaterialReview} userId={userId} />});
+  }
   // The updates are read once, before the result they may replace: the results panel points to the
   // update whose recalculated result waits for adoption, and the Updates section shows the same read.
   const updates = await loadWorkUpdates(supabase, project.id, locale === "en-US" ? "en-US" : "pt-BR");

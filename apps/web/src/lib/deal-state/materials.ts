@@ -191,6 +191,17 @@ export async function loadGovernedMaterialPackage(
   } catch {return null;}
 }
 
+/** A native product follows its current work binding, independently of entry-job
+ * labels. Reuse the physical reader and current human basis; never expose a
+ * historical inline package through this route. */
+export async function loadNativeMaterialReviewForWork(
+  supabase: SupabaseClient<Database>, organizationId: string, sessionId: string, workId: string,
+): Promise<MaterialPackageReviewContext | null> {
+  const product = await loadGovernedMaterialPackage(supabase, organizationId, sessionId);
+  const basis = product?.nativeReview;
+  return basis?.workId === workId ? basis : null;
+}
+
 const planKindForMaterial: Partial<Record<MaterialKind, GovernedMaterialPackage["plannedArtifacts"][number]>> = {
   teaser: "teaser",
   term_sheet: "indicative_term_sheet",
