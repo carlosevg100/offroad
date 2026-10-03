@@ -1,3 +1,4 @@
+import {loadExecutionBriefReviewBasis} from "@/lib/advisor/execution-brief-review-command";
 import {effectiveTaskRunStatus} from "@/lib/advisor/task-run-status";
 import {loadInstitutionalReview} from "@/lib/artifacts/institutional-review";
 import {isCapitalM07Projection, readCapitalM07Result} from "@/lib/artifacts/capital-m07-result";
@@ -58,7 +59,7 @@ import {loadDealStateWorkbench} from "@/lib/deal-state/workbench";
 import {loadIntakeChecklist} from "@/lib/intake/checklist";
 import {loadPreliminaryUnderstanding} from "@/lib/intake/preliminary-understanding";
 import {advisorActivities} from "@/lib/advisor/activity";
-import {projectExecutionBriefApproval} from "@/lib/advisor/execution-brief-approval";
+import {projectNativeExecutionBriefApproval} from "@/lib/advisor/execution-brief-approval";
 import {loadProjectReviewPolicyContext} from "@/lib/advisor/project-review-policy-context";
 import {loadProjectReviewContext, reviewMemberLabels} from "@/lib/advisor/project-review-context";
 import {loadProjectWorkRequests} from "@/lib/advisor/project-work-requests";
@@ -163,12 +164,14 @@ async function ConversationalCapitalProject({
   ]);
   const memberLabels = reviewMemberLabels(reviewContext);
   const describeApproval = (raw: unknown, expected: {id: string; fingerprint: string; version: number}): ExecutionBriefApproval => {
-    const approval = projectExecutionBriefApproval(raw, expected);
+    const approval = projectNativeExecutionBriefApproval(raw, {...expected, workId: project.id}, nativeExecutionBriefReview);
     return {
       status: approval.status, fingerprint: approval.fingerprint, version: approval.version,
-      ...(approval.reason ? {reason: approval.reason} : {}),
+      reason: approval.reason,
       ...(approval.reviewMode ? {reviewMode: approval.reviewMode} : {}),
-      ...(approval.callerCanApprove !== undefined ? {callerCanApprove: approval.callerCanApprove} : {}),
+      ...(nativeExecutionBriefReview ? {nativeReview: nativeExecutionBriefReview,
+        callerCanApprove: nativeExecutionBriefReview.workAccess && (!nativeExecutionBriefReview.policy.assignmentRequired
+          || nativeExecutionBriefReview.policy.roles.includes("approver"))} : {callerCanApprove: false}),
       ...(approval.record ? {record: {
         ...approval.record,
         preparedByLabel: approval.record.preparedBy ? memberLabels[approval.record.preparedBy] ?? null : null,
@@ -211,6 +214,9 @@ async function ConversationalCapitalProject({
     : [{data: null}, {data: null}, {data: null}, {data: null}];
   const parsedExecutionBriefProgress = executionBriefProgressSchema.safeParse(executionBriefProgressRaw);
   const parsedExecutionBriefNarrative = executionBriefNarrativeSchema.safeParse(executionBriefNarrativeRaw);
+  const nativeExecutionBriefReview = executionBriefRow && parsedExecutionBrief?.success
+    ? await loadExecutionBriefReviewBasis(supabase, {workId: project.id, briefId: executionBriefRow.id,
+      fingerprint: parsedExecutionBrief.data.fingerprint}) : null;
   const executionBriefProgress = parsedExecutionBrief?.success
     && parsedExecutionBriefProgress.success
     && parsedExecutionBriefProgress.data.briefId === executionBriefRow?.id

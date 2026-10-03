@@ -348,6 +348,17 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-setup-capture-concurrency.py
 
+      - name: Native execution brief activation with the real compiler
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          S11_FIXTURE_CONTINUATION: supabase/tests/support/execution_brief_native_agent_recovery.sql
+        run: python3 -B scripts/ci/test-execution-brief-native-agent.py
+
+      - name: Native execution brief review and revocation concurrency
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-execution-brief-native-concurrency.py
+
       - name: Institutional contribution concurrency
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}

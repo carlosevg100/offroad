@@ -1,0 +1,21 @@
+import {expect,it} from "vitest";
+import {fingerprintJson} from "@offroad/case-understanding";
+import {receivablesScopeFixture} from "../../../e2e/support/receivables-scope-fixture";
+import {buildReceivablesVertical} from "../../../../document-worker/src/case-analysis";
+import {discoverReceivablesEvidence} from "../../../../document-worker/src/receivables-scope-resolution";
+it("scope browser fixture preserves the real worker discovery instead of changing the approved input when the report is written",async()=>{
+ const fixture=await receivablesScopeFixture();
+ const envelopes=fixture.sources.map(source=>({source_document_id:source.id,document_version:1,content_kind:source.contentKind,schema_version:"2026.08.28-v1",source_sha256:source.sourceHash,content_sha256:source.contentHash,payload_sha256:source.payloadHash,codec:"gzip-json-v1",uncompressed_bytes:source.bytes,payload_base64:source.payload}));
+ const actual=discoverReceivablesEvidence(envelopes,new Map(fixture.sources.map(source=>[source.id,source.name])));
+ expect(fixture.report.sourceManifest).toEqual(actual.sourceManifest);expect(fixture.report.candidates).toEqual(actual.candidates);
+ const primary=actual.candidates.find(candidate=>candidate.documentId===fixture.sources[0].id);
+ const selectedIds=new Set([fixture.sources[0].id,...fixture.sources.slice(2).map(source=>source.id)]);
+ const scope={schemaVersion:"receivables-evidence-scope.v2",id:"a1110000-0000-4000-8000-000000000001",fingerprint:"a".repeat(64),sourceManifestFingerprint:actual.sourceManifest.fingerprint,primaryTape:{documentId:primary.documentId,sheet:primary.sheet,headerRow:primary.headerRow},primarySupportSheets:[],complementDocumentIds:fixture.sources.slice(2).map(source=>source.id).sort(),sourceRevisions:actual.sourceManifest.sources.filter(source=>selectedIds.has(source.sourceDocumentId)),reportingDate:"2026-08-31",confirmedBy:"a1110000-0000-4000-8000-000000000002",confirmedAt:"2026-10-02T12:00:00Z"};
+ const context=report=>({sourceManifest:report.sourceManifest,candidates:report.candidates??report.scopeIssue?.candidates??[],supportSheetCandidates:report.supportSheetCandidates??[],scope,state:"current"});
+ const result=buildReceivablesVertical({session:{id:"a1110000-0000-4000-8000-000000000003",requested_amount:1000},_execution:{id:"a1110000-0000-4000-8000-000000000004",mode:"primary",input_fingerprint:"b".repeat(64),pipeline_version:"synthetic",model_policy_version:"synthetic"},documents:fixture.sources.map(source=>({id:source.id,original_name:source.name})),receivables_evidence:envelopes,confirmed_receivables_scope:context(fixture.report),receivables_method_input_assembly:null,receivables_method_supplement_draft:null,receivables_provider_context:{programs:[],observations:[]}},"2026-10-02",false);
+ expect(result.publicReport.status).toBe("analyzed");
+ expect(context(fixture.report)).toEqual(context(result.publicReport));
+ expect(fingerprintJson(context(fixture.report))).toBe(fingerprintJson(context(result.publicReport)));
+ expect(Number(result.publicReport.pipeline.phaseOne.staticMetrics.portfolio.totalOpenValue.value)).toBe(1000);
+ expect(actual.candidates).toHaveLength(2);expect(actual.candidates.find(candidate=>candidate.documentId===fixture.sources[0].id)?.fileName).toBe("Synthetic selected pool.csv");
+});

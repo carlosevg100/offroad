@@ -3432,3 +3432,43 @@ Revisão adicional de100objetos gerados por loops ou rename na migração2026100
 ## Etapa20: estabilidade do contexto físico M07
 
 0 objetos novos e 0 atualizados. Vincula a captura pública do M07 ao contexto físico imutável da receita, mantendo revogação, TTL e integridade.
+
+## Etapa 20 / 3U: brief de execução nativo
+
+36 objetos novos e 1 atualizados. Captura anterior à compilação e aprovação humana vinculada ao brief, às fontes e à política atual.
+- `function:private.approve_advisor_execution_brief_v2(p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_expected_capture_id uuid, p_command_id uuid, p_self_approval_declared boolean)`
+- `function:private.authorize_execution_brief_write_v1(p_job uuid, p_capability text, p_capture uuid, p_internal jsonb, p_visible jsonb)`
+- `function:private.execution_brief_capture_context_v1(p_job uuid, p_capability text)`
+- `function:private.execution_brief_capture_projection_v1(p_context jsonb, p_kind text)`
+- `function:private.execution_brief_capture_source_ids_v1(p_context jsonb)`
+- `function:private.execution_brief_capture_sources_current_v1(p_org uuid, p_capture uuid, p_subject uuid)`
+- `function:private.execution_brief_native_basis_current_v1(p_org uuid, p_brief uuid, p_subject uuid)`
+- `function:private.execution_brief_native_review_effective_v1(p_org uuid, p_brief uuid)`
+- `function:private.execution_brief_post_write_context_fingerprint_v1(p_org uuid, p_session uuid, p_work uuid, p_plan uuid)`
+- `function:private.read_execution_brief_review_basis_v2(p_project_id uuid, p_execution_brief_id uuid)`
+- `function:private.record_execution_brief_native_receipt_v1(p_org uuid, p_work uuid, p_brief uuid, p_reference jsonb, p_versions uuid[])`
+- `function:private.record_execution_brief_producer_completion_v1(p_job uuid, p_capture uuid, p_result jsonb)`
+- `function:private.worker_capture_execution_brief_inputs_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)`
+- `function:private.worker_record_agent_response_and_activate_v7(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_assistant_message_id uuid, p_response jsonb, p_proposal jsonb, p_activation jsonb, p_execution_brief_internal jsonb, p_execution_brief_visible jsonb, p_execution_brief_change_summary jsonb, p_expected_input_fingerprint text)`
+- `function:private.worker_record_execution_brief_proposal_v2(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_internal_snapshot jsonb, p_visible_snapshot jsonb, p_expected_input_fingerprint text, p_plan jsonb)`
+- `function:private.worker_recover_execution_brief_product_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)`
+- `function:public.approve_advisor_execution_brief_v2(p_project_id uuid, p_execution_brief_id uuid, p_expected_fingerprint text, p_expected_capture_id uuid, p_command_id uuid, p_self_approval_declared boolean)`
+- `function:public.read_execution_brief_review_basis_v2(p_project_id uuid, p_execution_brief_id uuid)`
+- `function:public.worker_capture_execution_brief_inputs_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)`
+- `function:public.worker_record_agent_response_and_activate_v7(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_assistant_message_id uuid, p_response jsonb, p_proposal jsonb, p_activation jsonb, p_execution_brief_internal jsonb, p_execution_brief_visible jsonb, p_execution_brief_change_summary jsonb, p_expected_input_fingerprint text)`
+- `function:public.worker_record_execution_brief_proposal_v2(p_job_id uuid, p_capability_token text, p_capture_id uuid, p_internal_snapshot jsonb, p_visible_snapshot jsonb, p_expected_input_fingerprint text, p_plan jsonb)`
+- `function:public.worker_recover_execution_brief_product_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)`
+- `policy:private.execution_brief_review_projections.execution_brief_review_no_delete`
+- `policy:private.execution_brief_review_projections.execution_brief_review_no_insert`
+- `policy:private.execution_brief_review_projections.execution_brief_review_no_select`
+- `policy:private.execution_brief_review_projections.execution_brief_review_no_update`
+- `r:private.execution_brief_input_captures`
+- `r:private.execution_brief_input_source_pins`
+- `r:private.execution_brief_native_bindings`
+- `r:private.execution_brief_producer_completions`
+- `r:private.execution_brief_review_projections`
+- `r:private.execution_brief_write_intents`
+- `trigger:private.execution_brief_review_projections.execution_brief_review_audit`
+- `trigger:private.execution_brief_review_projections.execution_brief_review_immutable`
+- `trigger:private.execution_brief_review_projections.execution_brief_review_no_truncate`
+- `trigger:private.execution_brief_review_projections.execution_brief_review_updated`

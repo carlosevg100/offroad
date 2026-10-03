@@ -253,3 +253,39 @@ describe("execution brief review roles", () => {
     expect(html).toContain("Devolvido para ajustes por Carla");
   });
 });
+
+const nativeBasis = {
+  schemaVersion: "execution-brief-review-basis.v2" as const,
+  workId: "10000000-0000-4000-8000-000000000001", executionBriefId: "10000000-0000-4000-8000-000000000002",
+  captureId: "10000000-0000-4000-8000-000000000003", briefFingerprint: brief.fingerprint,
+  payloadFingerprint: "b".repeat(64), inputFingerprint: "c".repeat(64),
+  preparedBy: "10000000-0000-4000-8000-000000000004", viewerId: "10000000-0000-4000-8000-000000000004",
+  policy: {assignmentRequired: false, selfApprovalAllowed: true, roles: []}, workAccess: true, sourceCount: 2, approvalEffective: false,
+};
+it.each(["pt-BR", "en-US"] as const)("%s: native self review starts undeclared and approval disabled", locale => {
+  const messages = locale === "pt-BR" ? pt : en;
+  const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale={locale} messages={messages}>
+    <ExecutionBriefCard brief={{...brief, locale}} version={2} onApprove={async () => ({ok: true})}
+      approval={{status: "awaiting", fingerprint: brief.fingerprint, version: 2, nativeReview: nativeBasis}} />
+  </NextIntlClientProvider>);
+  expect(html).toContain(messages.ArtifactRevisionReview.declaration);
+  expect(html).toContain('type="checkbox"'); expect(html).not.toContain('checked=""');
+  expect(html).toContain('<button disabled=""');
+});
+it("native self review prohibited by policy asks for another person, without declaration checkbox", () => {
+  const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}>
+    <ExecutionBriefCard brief={brief} version={2} onApprove={async () => ({ok: true})}
+      approval={{status: "awaiting", fingerprint: brief.fingerprint, version: 2,
+        nativeReview: {...nativeBasis, policy: {...nativeBasis.policy, selfApprovalAllowed: false}}}} />
+  </NextIntlClientProvider>);
+  expect(html).toContain(pt.ArtifactRevisionReview.differentReviewer);
+  expect(html).not.toContain('type="checkbox"'); expect(html).toContain('<button disabled=""');
+});
+it("a different reviewer does not inherit a self declaration from the preparer", () => {
+  const html = renderToStaticMarkup(<NextIntlClientProvider timeZone="UTC" locale="pt-BR" messages={pt}>
+    <ExecutionBriefCard brief={brief} version={2} onApprove={async () => ({ok: true})}
+      approval={{status: "awaiting", fingerprint: brief.fingerprint, version: 2,
+        nativeReview: {...nativeBasis, viewerId: "10000000-0000-4000-8000-000000000005"}}} />
+  </NextIntlClientProvider>);
+  expect(html).not.toContain('type="checkbox"'); expect(html).not.toContain('<button disabled=""');
+});

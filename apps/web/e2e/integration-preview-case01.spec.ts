@@ -4,19 +4,13 @@ import {randomBytes} from "node:crypto";
 import {mkdirSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
 
-import {expect, test, type BrowserContext, type Page, type Route} from "@playwright/test";
+import {expect, test, type BrowserContext, type Page} from "@playwright/test";
 
 import {waitForOneTimeCode} from "./support/mail";
 
-/**
- * The Case 01 endgame inside the product, in integration_preview mode, against a local stack
- * running the worker: prompt → alignment → research and analysis → first readout with objects,
- * sources, gaps and alternatives → "vamos preparar o material" → material plan → question about a
- * number → premise change → incremental update. Every assistant message carries the preview mark,
- * every object comes from an executor of a method in the implemented rung, and no model is called.
- *
- * The run is recorded (video on) and its transcript is written next to the test results.
- */
+/** Historical preview is readable only. Its unbound approval may never launch
+ * analysis or materials. Native capture, licensed sources and execution are
+ * verified by the replacement preview consumer gate, not by replaying this route. */
 // Playwright loads specs as CommonJS here, so the directory comes from __dirname, as the other journey does.
 const here = __dirname;
 const runId = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
@@ -43,53 +37,6 @@ async function waitForAssistant(page: Page, pattern: RegExp, timeoutMs = 180_000
     await page.reload();
   }
   throw new Error(`no assistant message matched ${pattern} within ${timeoutMs} ms; last messages: ${JSON.stringify(await assistantMessages(page)).slice(0, 2_000)}`);
-}
-
-/** Approval is explicit for each newly proposed immutable plan. Reload proves durable state. */
-async function approveCurrentPlan(page: Page, loseAcceptedResponse = false) {
-  const panel = page.locator('.execution-brief-card__approval');
-  await expect.poll(async () => {
-    await page.reload();
-    return panel.getAttribute("data-approval-status");
-  }, {timeout: 180_000}).toBe("awaiting");
-  // Read the semantic text; innerText can apply CSS uppercase before/after hydration.
-  const version = await page.getByTestId("execution-brief").locator(":scope > header > small").textContent();
-  if (!version) throw new Error("the proposed execution brief has no displayed version");
-  await page.reload();
-  await expect(panel).toHaveAttribute("data-approval-status", "awaiting");
-  await expect(page.getByTestId("execution-brief").locator(":scope > header > small")).toHaveText(version);
-  let replayed = false;
-  let responseLost = false;
-  const replayAndLoseResponse = async (route: Route) => {
-    if (!replayed && route.request().method() === "POST" && route.request().headers()["next-action"]) {
-      replayed = true;
-      // Two concurrent deliveries of one command, then a lost client acknowledgement.
-      // The database must preserve one accepted execution and reload must recover it.
-      await Promise.all([route.fetch(), route.fetch()]);
-      await route.abort("failed");
-      responseLost = true;
-    } else await route.continue();
-  };
-  if (loseAcceptedResponse) await page.route("**/*", replayAndLoseResponse);
-  try {
-    await panel.getByRole("button").click();
-    if (loseAcceptedResponse) await expect.poll(() => responseLost, {timeout: 60_000}).toBe(true);
-    await expect.poll(async () => {
-      await page.reload();
-      return panel.getAttribute("data-approval-status");
-    }, {timeout: 60_000}).toBe("approved");
-    if (loseAcceptedResponse) expect(replayed).toBe(true);
-    await expect(panel.locator('[role="alert"]')).toHaveCount(0);
-  } finally {
-    if (loseAcceptedResponse) await page.unroute("**/*", replayAndLoseResponse);
-  }
-}
-
-async function send(page: Page, message: string) {
-  transcript.push(`\n**Analista:** ${message}\n`);
-  await page.locator(".advisor-composer textarea").fill(message);
-  await page.locator(".advisor-composer__send").click();
-  await expect(page.locator(".advisor-thread__message.is-user").last()).toContainText(message.slice(0, 40));
 }
 
 function record(step: string, message: string) {
@@ -177,216 +124,16 @@ test.describe("integration_preview: Case 01 end to end", () => {
     await page.screenshot({path: join(outputDirectory, "02-alignment.png"), fullPage: true});
   });
 
-  test("approval: proposed work survives reload and cannot produce a readout before acceptance", async () => {
+  test("an unbound historical preview remains readable but cannot authorize a readout", async () => {
+    const panel = page.locator('.execution-brief-card__approval');
+    await expect(panel).toHaveAttribute("data-approval-status", "awaiting");
+    await expect(panel.getByRole("button")).toBeDisabled();
     await expect(page.getByTestId("preview-decision-artifact")).toHaveCount(0);
     expect((await assistantMessages(page)).join("\n")).not.toMatch(/Concluí a primeira leitura financeira/);
-    await approveCurrentPlan(page, true);
-    record("aprovação", "A versão exibida foi aprovada explicitamente antes da análise.");
-  });
-
-  test("research and analysis: the first readout stops at the nine-step meeting plan", async () => {
-    const readout = await waitForAssistant(page, /Concluí a primeira leitura financeira/, 240_000);
-    expect(readout).toContain(MARK);
-    expect(readout).toMatch(/Dívida bruta contábil: R\$\s?5\.670,2 milhões/);
-    expect(readout).toMatch(/Pico de vencimentos — 2026\/27: R\$\s?1\.229,8 milhões/);
-    expect(readout).toMatch(/Covenants e headroom ainda condicionais/);
-    expect(readout).toMatch(/Modelo prospectivo integrado incompleto/);
-    expect(readout).toMatch(/Para alinhar com o VP/);
-    record("primeira devolutiva", readout);
-    const work = page.getByTestId("preview-decision-artifact");
-    await expect(work).toBeVisible();
-    await expect(work.locator(".decision-work__metric")).toHaveCount(6);
-    await expect(work.locator(".decision-work__metric").first()).toContainText("Dívida bruta contábil");
-    await expect(work.locator(".decision-work__metric details")).toHaveCount(6);
-    await expect(work.locator(".decision-work__section--gaps article")).toHaveCount(7);
-    await expect(work).toContainText("O que ainda muda a decisão");
-    await expect(work).toContainText("Covenants e headroom ainda condicionais");
-    await expect(work.getByRole("link", {name: "Baixar planilha"})).toHaveCount(0);
-    // Inspect an actual claim with the keyboard, follow its source and return to the finding.
-    const sourceRegister = work.locator(".decision-work__source-register");
-    await expect(sourceRegister).not.toHaveAttribute("open", "");
-    const claim = work.locator(".decision-work__metric").first();
-    const trace = claim.locator("details");
-    await trace.locator("summary").focus();
-    await page.keyboard.press("Enter");
-    await expect(trace).toHaveAttribute("open", "");
-    const sourceLink = trace.locator('a[href*="-source-"]').first();
-    const sourceTarget = (await sourceLink.getAttribute("href"))!.slice(1);
-    await sourceLink.focus();
-    await page.keyboard.press("Enter");
-    const source = page.locator(`[id="${sourceTarget}"]`);
-    await expect(sourceRegister).toHaveAttribute("open", "");
-    await expect(source).toBeFocused();
-    const returnLink = source.locator(".decision-work__backlinks a").filter({hasText: "Dívida bruta contábil"}).first();
-    await returnLink.focus();
-    await page.keyboard.press("Enter");
-    await expect(claim).toBeFocused();
-    await sourceRegister.locator(":scope > summary").focus();
-    await page.keyboard.press("Enter");
-    await expect(sourceRegister).not.toHaveAttribute("open", "");
-    await expect(work.locator(".decision-work__series table tbody tr")).not.toHaveCount(0);
-    await expect(work.locator(".decision-series-chart")).not.toHaveCount(0);
-    // The executive projection must not hide the full financial methods and meeting brief.
-    const methods = page.getByTestId("decision-method-inspection");
-    await expect(methods.locator("[data-artifact-type]")).toHaveCount(0);
-    await methods.locator(":scope > summary").focus();
-    await page.keyboard.press("Enter");
-    await expect(methods).toHaveAttribute("open", "");
-    await expect(methods.locator('[data-artifact-type="preview_debt_ledger"]')).toBeVisible();
-    await expect(methods.locator('[data-artifact-type="preview_meeting_brief"]')).toBeVisible();
-    await page.screenshot({path: join(outputDirectory, "03-readout-methods.png"), fullPage: true});
-    await methods.locator(":scope > summary").click();
-    await expect(methods.locator("[data-artifact-type]")).toHaveCount(0);
-    await page.setViewportSize({width: 390, height: 844});
-    // Mobile presents conversation and results as separate views. Inspect the visible
-    // conversation header first, then use the actual work control to inspect the trace.
-    const mobileNavigation = page.locator(".advisor-work-mobile-nav");
-    await mobileNavigation.getByRole("button", {name: "Conversa", exact: true}).click();
-    await expect(page.locator(".advisor-project__header")).toBeVisible();
-    const headerBounds = await page.locator(".advisor-project__header, .advisor-project__header > div, .advisor-project__header h1, .advisor-project__header > span").evaluateAll((elements) => elements.map((element) => {
-      const {left, right} = element.getBoundingClientRect();
-      return {left, right, viewport: window.innerWidth};
-    }));
-    expect(headerBounds).toHaveLength(4);
-    for (const bounds of headerBounds) {
-      expect(bounds.left).toBeGreaterThanOrEqual(-1);
-      expect(bounds.right).toBeLessThanOrEqual(bounds.viewport + 1);
-    }
-    const openWork = mobileNavigation.getByRole("button", {name: /^Trabalho/});
-    await openWork.focus();
-    await page.keyboard.press("Enter");
-    await expect(openWork).toHaveAttribute("aria-pressed", "true");
-    await expect(work).toBeVisible();
-    await claim.scrollIntoViewIfNeeded();
-    await expect(trace).toHaveAttribute("open", "");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-    expect(await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) <= window.innerWidth + 1)).toBe(true);
-    const mobileScreenshot = await page.screenshot({path: join(outputDirectory, "03-readout-mobile-trace.png"), fullPage: true, scale: "css"});
-    // PNG IHDR stores image width at byte 16; full-page captures expose hidden body overflow.
-    expect(mobileScreenshot.toString("ascii", 12, 16)).toBe("IHDR");
-    expect(mobileScreenshot.readUInt32BE(16)).toBe(390);
-    await page.setViewportSize({width: 1366, height: 900});
-
-    const executionBrief = page.getByTestId("execution-brief");
-    await expect(executionBrief.locator('.execution-brief-card__workstreams > li[data-progress="completed"]')).toHaveCount(4);
-    await expect(executionBrief.locator(".execution-brief-card__progress")).toHaveCount(4);
-    await expect(executionBrief.locator(".execution-brief-card__progress").first()).toContainText("Concluída");
-    const workstreamNarrative = page.getByTestId("execution-brief-activity");
-    await expect(workstreamNarrative).toHaveCount(8);
-    await expect(page.locator('[data-testid="execution-brief-activity"][data-kind="completed"]')).toHaveCount(4);
-    await expect(workstreamNarrative.filter({hasText: "Conferir balanço, caixa e dívida da Camil"})).toHaveCount(2);
-    const narrativeBeforeRefresh = await workstreamNarrative.allTextContents();
-    expect(narrativeBeforeRefresh.join(" ")).not.toMatch(/TaskSpec|sourceTaskIds|executor|provider|processing_job|\b[CDKMSA][0-9]{2}\b/);
     await page.reload();
-    await expect(page.getByTestId("execution-brief-activity")).toHaveCount(8);
-    expect(await page.getByTestId("execution-brief-activity").allTextContents()).toEqual(narrativeBeforeRefresh);
-    const firstActivity = page.locator(".advisor-thread__activity-event").first();
-    await expect(firstActivity).toBeVisible();
-    expect(await page.locator('[data-testid="execution-brief"], .advisor-thread__activity-event')
-      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-testid") ?? "activity")))
-      .toEqual(expect.arrayContaining(["execution-brief", "activity"]));
-    expect(await page.locator('[data-testid="execution-brief"], .advisor-thread__activity-event')
-      .first()
-      .getAttribute("data-testid"))
-      .toBe("execution-brief");
-    await page.screenshot({path: join(outputDirectory, "03-readout.png"), fullPage: true});
-  });
-
-  test("governed context: the workflow asks one useful question and the answer advances the project", async () => {
-    const question = page.locator(".information-request-card");
-    await expect(question).toBeVisible();
-    await expect(question.locator("h2")).toContainText("Leitura de refinanciamento");
-    await expect(question).toContainText("Por que pergunto");
-    await expect(question).toContainText("O que pode mudar");
-    await expect(question).toContainText("2 perguntas depois desta");
-    await question.getByRole("button", {name: "Alternativas de estrutura de capital mais amplas"}).click();
-    await expect(page.locator(".advisor-thread__message.is-user").last()).toContainText("Alternativas de estrutura de capital mais amplas");
-    const acknowledgement = await waitForAssistant(page, /Resposta vinculada à pergunta em aberto/);
-    record("resposta governada", acknowledgement);
-    await approveCurrentPlan(page);
-    await expect.poll(async () => {
-      await page.reload();
-      return page.locator(".advisor-project__header > span").innerText();
-    }, {timeout: 240_000}).toContain("Pronto para continuar");
-    // The answered stable key remains closed after the workflow runs again; the next question is
-    // shown instead of silently reopening the first one.
-    await expect(page.locator(".information-request-card h2")).toContainText("Reunião exploratória");
-    await expect(page.locator(".information-request-card h2")).not.toContainText("Leitura de refinanciamento");
-    await page.screenshot({path: join(outputDirectory, "03a-governed-question.png"), fullPage: true});
-  });
-
-  test("plan control: an adjustment is bound to the displayed version and returns as a visible diff", async () => {
-    const brief = page.getByTestId("execution-brief");
-    const displayedVersion = async () => {
-      const label = await page.getByTestId("execution-brief").locator(":scope > header > small").textContent();
-      const match = label?.match(/Versão\s+(\d+)/i);
-      if (!match) throw new Error(`the execution brief has no numeric version: ${label}`);
-      return Number(match[1]);
-    };
-    const versionBefore = await displayedVersion();
-    await brief.getByRole("button", {name: "Ajustar este plano"}).click();
-    await expect(brief.locator(".execution-brief-card__edit form")).toBeVisible();
-    const adjustment = "Na comparação, priorize flexibilidade antes de custo e retire qualquer bloco de rating sem evidência.";
-    await brief.locator(".execution-brief-card__edit textarea").fill(adjustment);
-    await brief.getByRole("button", {name: "Enviar ajuste"}).click();
-    await expect(page.locator(".advisor-thread__message.is-user").last()).toContainText("priorize flexibilidade");
-    const acknowledgement = await waitForAssistant(page, /Ajuste recebido sobre a versão exibida/);
-    record("ajuste governado do plano", acknowledgement);
-    await expect.poll(async () => {
-      await page.reload();
-      return displayedVersion();
-    }, {timeout: 180_000}).toBeGreaterThan(versionBefore);
-    const changes = page.getByTestId("execution-brief-changes");
-    await expect(changes).toBeVisible();
-    await expect(changes).toContainText("O que mudou nesta versão");
-    await approveCurrentPlan(page);
-    await expect(page.locator(".advisor-project__header > span")).toContainText("Pronto para continuar", {timeout: 240_000});
-    await page.screenshot({path: join(outputDirectory, "03b-governed-plan-edit.png"), fullPage: true});
-  });
-
-  test("material: the transition plans three pitch pages from the signed objects", async () => {
-    await send(page, "Vamos preparar o material: meu VP quer três páginas de pitch, situação atual, alternativas e impacto nos indicadores.");
-    const acknowledged = await waitForAssistant(
-      page,
-      /Vou planejar o material a partir das informações governadas e rastreáveis: 3 páginas/,
-    );
-    record("transição para o material", acknowledged);
-    await approveCurrentPlan(page);
-    const plan = await waitForAssistant(page, /Plano do material a partir das informações governadas e rastreáveis/);
-    expect(plan).toMatch(/Estado do plano: (planejado|proposto|proposed)/);
-    record("plano do material", plan);
-    const decisionArtifact = page.getByTestId("preview-decision-artifact");
-    await expect(decisionArtifact).toBeVisible();
-    // Planning a material does not publish an improvised file. A download only appears when a
-    // renderer has stored exact bytes and bound their immutable fingerprint to the contract.
-    await expect(decisionArtifact.getByRole("link", {name: "Baixar planilha"})).toHaveCount(0);
-    await page.screenshot({path: join(outputDirectory, "04-material-plan.png"), fullPage: true});
-  });
-
-  test("question: a number is traced back to its object, definition and anchors", async () => {
-    await send(page, "De onde saiu essa alavancagem de 4,7x?");
-    const answer = await waitForAssistant(page, /reconcile-covenant-definitions/);
-    expect(answer).toContain(MARK);
-    expect(answer).toMatch(/deb-1[1345]/);
-    record("origem do número", answer);
-  });
-
-  test("premise change: only the alternatives and the plan recompute, the rest replays by fingerprint", async () => {
-    await send(page, "Altere a taxa da nova dívida para 15,50% a.a.");
-    const acknowledged = await waitForAssistant(page, /Premissa registrada \(taxa da nova dívida 15[.,]50% a\.a\.\)/);
-    record("premissa alterada", acknowledged);
-    await approveCurrentPlan(page);
-    const updated = await waitForAssistant(page, /7 de 9 etapas foram reaproveitadas sem recálculo/);
-    expect(updated).toContain(MARK);
-    record("atualização incremental", updated);
-    const decisionArtifact = page.getByTestId("preview-decision-artifact");
-    await expect(decisionArtifact).toContainText("Taxa anual da nova dívida");
-    await expect(decisionArtifact).toContainText("15,5% a.a.");
-    const briefChanges = page.getByTestId("execution-brief-changes");
-    await expect(briefChanges).toBeVisible();
-    await expect(briefChanges).toContainText("O que mudou nesta versão");
-    await expect(briefChanges).toContainText("Taxa anual da nova dívida");
-    await page.screenshot({path: join(outputDirectory, "05-incremental-update.png"), fullPage: true});
-    expect(projectUrl).toMatch(/\/pt-BR\/app\/projects\//);
+    expect(page.url()).toBe(projectUrl);
+    await expect(panel.getByRole("button")).toBeDisabled();
+    await expect(page.getByTestId("preview-decision-artifact")).toHaveCount(0);
+    record("barreira", "O executor histórico sem captura/revisão nativa não autoriza análise ou materiais.");
   });
 });

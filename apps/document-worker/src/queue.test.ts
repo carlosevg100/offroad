@@ -472,12 +472,12 @@ describe("execution-brief activation", () => {
       {state: "idle", reply: "Vou começar."},
       undefined,
       {job: "company_debt_view"},
-      {internal, visible, changeSummary: [{kind: "turn_activation"}], expectedInputFingerprint: context.approval_input_fingerprint},
+      {internal, visible, captureId: "90000000-0000-4000-8000-000000000001", changeSummary: [{kind: "turn_activation"}], expectedInputFingerprint: context.approval_input_fingerprint},
     )).resolves.toEqual({
       activation: {job_id: "70000000-0000-4000-8000-000000000001"},
       executionBrief: {id: "80000000-0000-4000-8000-000000000001", version: 2, replayed: false},
     });
-    expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v6", {
+    expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v7", {
       p_job_id: advisorJob.job_id,
       p_capability_token: advisorJob.capability_token,
       p_assistant_message_id: "60000000-0000-4000-8000-000000000001",
@@ -488,6 +488,7 @@ describe("execution-brief activation", () => {
       p_execution_brief_visible: visible,
       p_execution_brief_change_summary: [{kind: "turn_activation"}],
       p_expected_input_fingerprint: inputFingerprint,
+      p_capture_id: "90000000-0000-4000-8000-000000000001",
     });
   });
 
@@ -861,10 +862,10 @@ it("uses only capability-scoped proposal RPCs and forwards the loaded input fing
   const queue = createQueueClient({rpc} as unknown as SupabaseClient, {workerToken: "worker", leaseSeconds: 60});
   const proposal = {...job, kind: "execution_brief_proposal" as const, payload: {approval_target_job_id: "10000000-0000-4000-8000-000000000005", locale: "pt-BR" as const}};
   await queue.loadExecutionBriefProposal!(proposal);
-  await queue.recordExecutionBriefProposal!(proposal, {internal: true}, {visible: true}, "a".repeat(64));
+  await queue.recordExecutionBriefProposal!(proposal, {internal: true}, {visible: true}, "a".repeat(64), undefined, "90000000-0000-4000-8000-000000000001");
   expect(rpc.mock.calls).toEqual([
     ["worker_load_execution_brief_proposal_v4", {p_job_id: job.job_id, p_capability_token: job.capability_token}],
-    ["worker_record_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: {internal: true}, p_visible_snapshot: {visible: true}, p_expected_input_fingerprint: "a".repeat(64), p_plan: null}],
+    ["worker_record_execution_brief_proposal_v2", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: {internal: true}, p_visible_snapshot: {visible: true}, p_expected_input_fingerprint: "a".repeat(64), p_plan: null, p_capture_id: "90000000-0000-4000-8000-000000000001"}],
   ]);
 });
 
@@ -940,3 +941,27 @@ describe("institutional contribution capture writer",()=>{
   const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
   expect(await queue.recordInstitutionalModelResult!({...job,kind:"agent_operation_brief",payload:{message_id:"90000000-0000-4000-8000-000000000881",locale:"pt-BR"}},{status:"completed",artifact:{},inputSnapshot:{id:"95000000-0000-4000-8000-000000000881",fingerprint:"c".repeat(64)}})).toEqual(receipt);
  });
+
+
+it("captures brief inputs through the exact lease and request, with no old loader fallback",async()=>{
+ const rpc=vi.fn().mockResolvedValue({data:{captureId:"90000000-0000-4000-8000-000000000001"},error:null});
+ const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+ const requestId="90000000-0000-4000-8000-000000000002";
+ await queue.captureExecutionBriefInputs!(job,requestId);
+ expect(rpc.mock.calls).toEqual([["worker_capture_execution_brief_inputs_v1",{p_job_id:job.job_id,p_capability_token:job.capability_token,p_request_id:requestId}]]);
+});
+it("denies proposal and activation writes without a native capture before any RPC",async()=>{
+ const rpc=vi.fn();const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+ const proposal={...job,kind:"execution_brief_proposal" as const,payload:{approval_target_job_id:"10000000-0000-4000-8000-000000000005",locale:"pt-BR" as const}};
+ const agent={...job,kind:"agent_operation_brief" as const,payload:{message_id:"50000000-0000-4000-8000-000000000001",locale:"pt-BR" as const}};
+ await expect(queue.recordExecutionBriefProposal!(proposal,{},{},"a".repeat(64))).rejects.toThrow("execution_brief_capture_required");
+ await expect(queue.recordAgentResponse(agent,"60000000-0000-4000-8000-000000000001",{},undefined,{job:"company_debt_view"})).rejects.toThrow("execution_brief_capture_required");
+ await expect(queue.recordAgentResponse(agent,"60000000-0000-4000-8000-000000000001",{},undefined,undefined,{internal:{},visible:{}})).rejects.toThrow("execution_brief_capture_required");
+ expect(rpc).not.toHaveBeenCalled();
+});
+it("preserves plain advisor turns through v7 without manufacturing a brief capture",async()=>{
+ const rpc=vi.fn().mockResolvedValue({data:{},error:null});const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+ const agent={...job,kind:"agent_operation_brief" as const,payload:{message_id:"50000000-0000-4000-8000-000000000001",locale:"pt-BR" as const}};
+ await queue.recordAgentResponse(agent,"60000000-0000-4000-8000-000000000001",{reply:"Resposta"});
+ expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v7",expect.objectContaining({p_capture_id:null,p_activation:null,p_execution_brief_internal:null,p_execution_brief_visible:null}));
+});

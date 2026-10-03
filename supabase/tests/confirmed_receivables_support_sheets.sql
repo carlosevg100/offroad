@@ -50,6 +50,28 @@ do $$ declare rejected boolean:=false; begin
  update public.document_intake_sessions set status='review_ready' where id='40000000-0000-4000-8000-000000000901';
  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
 end; $$;
+-- Proposal v2 commits the product AND closes its producer capability.
+-- A closed job cannot recover through a dead lease; committed v7 lease replay
+-- is positively covered by execution_brief_native_agent_recovery.sql.
+create function pg_temp.assert_native_brief_committed_job_closed(p_job uuid,p_cap text,p_capture uuid,p_brief uuid)
+returns void language plpgsql security definer set search_path='' as $$
+declare before_capture jsonb; before_completion jsonb; denied boolean:=false;
+begin
+ select to_jsonb(c) into strict before_capture from private.execution_brief_input_captures c where c.id=p_capture;
+ select to_jsonb(c) into strict before_completion from private.execution_brief_producer_completions c
+ where c.capture_id=p_capture and c.producer_job_id=p_job and c.execution_brief_id=p_brief;
+ if not exists(select 1 from public.processing_jobs where id=p_job and status='succeeded' and capability_sha256 is null) then raise exception 'native_proposal_producer_not_closed';end if;
+ begin perform public.worker_recover_execution_brief_product_v1(p_job,p_cap,p_job);
+ exception when insufficient_privilege then denied:=true;end;
+ if not denied then raise exception 'closed_producer_capability_recovered';end if;
+ if before_capture is distinct from(select to_jsonb(c) from private.execution_brief_input_captures c where c.id=p_capture)
+ or before_completion is distinct from(select to_jsonb(c) from private.execution_brief_producer_completions c where c.capture_id=p_capture and c.producer_job_id=p_job)
+ then raise exception 'denied_recovery_rewrote_committed_product';end if;
+end $$;
+revoke all on function pg_temp.assert_native_brief_committed_job_closed(uuid,text,uuid,uuid) from public;
+grant execute on function pg_temp.assert_native_brief_committed_job_closed(uuid,text,uuid,uuid) to authenticated;
+
+insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by) values('20000000-0000-4000-8000-000000000901',true,false,'10000000-0000-4000-8000-000000000901');
 set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000902","role":"authenticated"}',true);
 do $$ declare rejected boolean:=false; begin
@@ -127,28 +149,30 @@ do $$ declare prior private.receivables_evidence_scopes; future_id uuid:=gen_ran
  if latest_id::text<>result#>>'{scope,id}' or (result#>>'{scope,confirmedAt}')::timestamptz<=future_time then raise exception 'confirmation order did not follow serialized write'; end if;
 end; $$;
 -- Record a real new proposal: omission fails, exact visible/internal scope binding succeeds.
-do $$ declare j uuid; ctx jsonb; sc jsonb; src jsonb; b public.capital_project_execution_briefs; internal jsonb; visible jsonb; assumptions jsonb; result jsonb; rejected boolean:=false; begin
+do $$ declare j uuid; ctx jsonb; capture jsonb; sc jsonb; src jsonb; b public.capital_project_execution_briefs; internal jsonb; visible jsonb; assumptions jsonb; result jsonb; rejected boolean:=false; begin
  select job.id into j from public.processing_jobs job join private.receivables_evidence_scopes scope_row on scope_row.processing_run_id=job.processing_run_id
   where scope_row.organization_id='20000000-0000-4000-8000-000000000901' and job.kind='execution_brief_proposal' order by scope_row.confirmed_at desc limit 1;
  update public.processing_jobs set status='leased',capability_sha256=extensions.digest(repeat('c',64),'sha256'),lease_expires_at=now()+interval '10 minutes' where id=j;
- ctx:=public.worker_load_execution_brief_proposal_v4(j,repeat('c',64)); sc:=ctx#>'{confirmed_receivables_scope,scope}'; src:=sc#>'{sourceRevisions,0}';
+ capture:=public.worker_capture_execution_brief_inputs_v1(j,repeat('c',64),j);ctx:=capture->'context'; sc:=ctx#>'{confirmed_receivables_scope,scope}'; src:=sc#>'{sourceRevisions,0}';
  select * into b from public.capital_project_execution_briefs where organization_id='20000000-0000-4000-8000-000000000901' order by brief_version desc limit 1;
  -- Bounded storage fixture covers the actual active plan task IDs in one workstream.
  internal:=jsonb_build_object('schemaVersion','execution-brief.v1','fingerprint',repeat('e',64),'planVersion','scope-test-v1','authority','{}'::jsonb,
   'objective','Validate synthetic scope','proposedDeliverable','Synthetic scope contract','executionMode','confirm_before_expensive_work','currentContext','[]'::jsonb,'assumptions','[]'::jsonb,'checkpoints','[]'::jsonb,
   'workstreams',jsonb_build_array(jsonb_build_object('key','scope','label','Scope','purpose','Validate scope','output','Scope contract','sourceTaskIds',b.internal_snapshot#>'{workstreams,0,sourceTaskIds}','sources','[]'::jsonb,'analyses','[]'::jsonb,'dependencies','[]'::jsonb)));
  visible:=(internal-array['planVersion','authority'])||jsonb_build_object('workstreams',jsonb_build_array((internal#>'{workstreams,0}')-array['key','sourceTaskIds']));
- begin perform public.worker_record_execution_brief_proposal_v1(j,repeat('c',64),internal,visible,ctx->>'input_fingerprint',null);
+ begin perform public.worker_record_execution_brief_proposal_v2(j,repeat('c',64),(capture->>'captureId')::uuid,internal,visible,ctx->>'input_fingerprint',null);
  exception when invalid_parameter_value then rejected:=true; end;
  if not rejected then raise exception 'proposal omitted confirmed scope'; end if;
  assumptions:=jsonb_build_array(jsonb_build_object('label','Confirmed scope','value','Synthetic pool and user-confirmed date','editable',true,
   'basis',jsonb_build_object('scopeFingerprint',sc->>'fingerprint','reportingDate',sc->>'reportingDate','primaryDocumentId',sc#>>'{primaryTape,documentId}',
    'primarySupportSheetCount',jsonb_array_length(sc->'primarySupportSheets'),'headerRow',sc#>'{primaryTape,headerRow}','selectedSourceCount',jsonb_array_length(sc->'sourceRevisions'),'documentVersion',src->'documentVersion','sourceSha256',src->>'sourceSha256','contentSha256',src->>'contentSha256')::text));
  internal:=jsonb_set(internal,'{assumptions}',assumptions); visible:=jsonb_set(visible,'{assumptions}',assumptions);
- result:=public.worker_record_execution_brief_proposal_v1(j,repeat('c',64),internal,visible,ctx->>'input_fingerprint',null);
+ result:=public.worker_record_execution_brief_proposal_v2(j,repeat('c',64),(capture->>'captureId')::uuid,internal,visible,ctx->>'input_fingerprint',null);
+ perform pg_temp.assert_native_brief_committed_job_closed(j,repeat('c',64),(capture->>'captureId')::uuid,(result->>'execution_brief_id')::uuid);
  if result->>'status'<>'proposed' then raise exception 'bound scope proposal did not persist'; end if;
  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
- perform public.approve_advisor_execution_brief_v1((ctx#>>'{project,id}')::uuid,(result->>'execution_brief_id')::uuid,repeat('e',64),gen_random_uuid());
+ perform public.read_execution_brief_review_basis_v2((ctx#>>'{project,id}')::uuid,(result->>'execution_brief_id')::uuid);
+ perform public.approve_advisor_execution_brief_v2((ctx#>>'{project,id}')::uuid,(result->>'execution_brief_id')::uuid,repeat('e',64),(capture->>'captureId')::uuid,gen_random_uuid(),true);
  perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000901","role":"authenticated"}',true);
  j:=(result->>'processing_job_id')::uuid;
  update public.processing_jobs set status='leased',capability_sha256=extensions.digest(repeat('z',64),'sha256'),lease_expires_at=now()+interval '10 minutes' where id=j;

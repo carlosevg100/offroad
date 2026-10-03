@@ -8,7 +8,11 @@ const job: ExecutionBriefProposalJob = {claimed: true, kind: "execution_brief_pr
 function context(access_basis = "authorized_private") {
   return {target_kind: "case_analysis", input_fingerprint: "f".repeat(64), target_job_id: id(5), locale: "pt-BR", project: {entry_job: "structure_from_documents", id: id(6), name: "Company", access_basis}, objective: "Revisar posição de liquidez e próximos caminhos", documents: [{id: id(7), name: "Budget.xlsx"}], plan: capitalProjectPlanSnapshot("structure_from_documents")};
 }
-function queue(value: unknown) {return {loadExecutionBriefProposal: vi.fn().mockResolvedValue(value), recordExecutionBriefProposal: vi.fn().mockResolvedValue({status: "proposed"}), fail: vi.fn()};}
+function queue(value: unknown) {
+ const q={loadExecutionBriefProposal:vi.fn().mockResolvedValue(value),recordExecutionBriefProposal:vi.fn().mockResolvedValue({status:"proposed"}),fail:vi.fn(),captureExecutionBriefInputs:vi.fn()};
+ q.captureExecutionBriefInputs.mockImplementation(async()=>{const c=await q.loadExecutionBriefProposal();return {schemaVersion:"execution-brief-input-capture.v1",captureId:id(8),producerJobId:job.job_id,workId:c.project.id,inputFingerprint:c.input_fingerprint,contextFingerprint:"a".repeat(64),context:c,sourceCount:c.documents.length};});
+ return q;
+}
 describe("execution brief proposal", () => {
   it("binds standalone provider research to its exact plan without requesting company documents", async () => {
     const base = context();
@@ -289,4 +293,15 @@ it.each(["company_debt_view", "origination_thesis", "capital_planning", "structu
   expect(await processExecutionBriefProposalJob(nextJob, second, {documentaryWorkEnabled: true})).toEqual({status: "proposed"});
   expect(second.recordExecutionBriefProposal.mock.calls[0]![1].fingerprint).not.toBe(internal.fingerprint);
   expect(second.recordExecutionBriefProposal.mock.calls[0]![2].objective).toBe("Compare estas propostas.");
+});
+
+
+it.each(["missing", "foreign_job", "foreign_work", "changed_input"])("denies native proposal capture %s without falling back to the old loader or recording", async mode => {
+  const q=queue(context());
+  if(mode==="missing") Object.assign(q,{captureExecutionBriefInputs:undefined});
+  else q.captureExecutionBriefInputs.mockResolvedValue({schemaVersion:"execution-brief-input-capture.v1",captureId:id(8),producerJobId:mode==="foreign_job"?id(99):job.job_id,workId:mode==="foreign_work"?id(99):context().project.id,inputFingerprint:mode==="changed_input"?"e".repeat(64):context().input_fingerprint,contextFingerprint:"a".repeat(64),context:context(),sourceCount:1});
+  expect(await processExecutionBriefProposalJob(job,q)).toEqual({status:"failed"});
+  expect(q.loadExecutionBriefProposal).not.toHaveBeenCalled();
+  expect(q.recordExecutionBriefProposal).not.toHaveBeenCalled();
+  expect(q.fail).toHaveBeenCalledOnce();
 });

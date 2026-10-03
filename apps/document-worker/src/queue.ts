@@ -188,7 +188,9 @@ export type QueueClient = {
   loadWorkTurn?(job: WorkConversationJob): Promise<unknown>;
   commitWorkTurn?(job: WorkConversationJob, fingerprint: string, response: unknown, spend: unknown): Promise<unknown>;
   loadExecutionBriefProposal?(job: ExecutionBriefProposalJob): Promise<unknown>;
-  recordExecutionBriefProposal?(job: ExecutionBriefProposalJob, internal: unknown, visible: unknown, expectedInputFingerprint: string, plan?: unknown): Promise<unknown>;
+  captureExecutionBriefInputs?(job: {job_id: string; capability_token: string}, requestId: string): Promise<unknown>;
+  recoverExecutionBriefProduct?(job: {job_id: string; capability_token: string}, requestId: string): Promise<unknown>;
+  recordExecutionBriefProposal?(job: ExecutionBriefProposalJob, internal: unknown, visible: unknown, expectedInputFingerprint: string, plan?: unknown, captureId?: string): Promise<unknown>;
   claim(): Promise<ClaimedJob | null>;
   heartbeat(job: ClaimedJob): Promise<void>;
   writeStage(job: ClaimedJob, stage: string, status: StageStatus, detail?: unknown, usage?: Record<string, number>): Promise<void>;
@@ -394,7 +396,7 @@ export type QueueClient = {
     response: unknown,
     proposal?: unknown,
     activation?: unknown,
-    executionBrief?: {internal: unknown; visible: unknown; changeSummary?: unknown[]; expectedInputFingerprint?: string},
+    executionBrief?: {internal: unknown; visible: unknown; changeSummary?: unknown[]; expectedInputFingerprint?: string; captureId?: string},
   ): Promise<{activation?: unknown; executionBrief?: {id: string; version: number; replayed: boolean}}>;
   recordAgentFailure(job: AgentOperationBriefJob, errorCode: string): Promise<void>;
   recordIntentEnvelope(job: AgentOperationBriefJob, input: {envelope: unknown; classifier: unknown; model: string; costUsd: number}): Promise<void>;
@@ -1072,8 +1074,15 @@ export function createQueueClient(
     async loadExecutionBriefProposal(job) {
       return call("worker_load_execution_brief_proposal_v4", {p_job_id: job.job_id, p_capability_token: job.capability_token});
     },
-    async recordExecutionBriefProposal(job, internal, visible, expectedInputFingerprint, plan) {
-      return call("worker_record_execution_brief_proposal_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: internal, p_visible_snapshot: visible, p_expected_input_fingerprint: expectedInputFingerprint, p_plan: plan ?? null});
+    async captureExecutionBriefInputs(job, requestId) {
+      return call("worker_capture_execution_brief_inputs_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_request_id: requestId});
+    },
+    async recoverExecutionBriefProduct(job, requestId) {
+      return call("worker_recover_execution_brief_product_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_request_id: requestId});
+    },
+    async recordExecutionBriefProposal(job, internal, visible, expectedInputFingerprint, plan, captureId) {
+      if (!captureId) throw new Error("execution_brief_capture_required");
+      return call("worker_record_execution_brief_proposal_v2", {p_job_id: job.job_id, p_capability_token: job.capability_token, p_internal_snapshot: internal, p_visible_snapshot: visible, p_expected_input_fingerprint: expectedInputFingerprint, p_plan: plan ?? null, p_capture_id: captureId});
     },
     async loadWorkTurn(job) {
       return call("worker_load_work_turn_v1", {p_job_id: job.job_id, p_capability_token: job.capability_token});
@@ -1207,7 +1216,8 @@ export function createQueueClient(
     },
 
     async recordAgentResponse(job, assistantMessageId, response, proposal, activation, executionBrief) {
-      const data = await call("worker_record_agent_response_and_activate_v6", {
+      if ((activation || executionBrief) && !executionBrief?.captureId) throw new Error("execution_brief_capture_required");
+      const data = await call("worker_record_agent_response_and_activate_v7", {
         p_job_id: job.job_id,
         p_capability_token: job.capability_token,
         p_assistant_message_id: assistantMessageId,
@@ -1218,6 +1228,7 @@ export function createQueueClient(
         p_execution_brief_visible: executionBrief?.visible ?? null,
         p_execution_brief_change_summary: executionBrief?.changeSummary ?? [],
         p_expected_input_fingerprint: executionBrief?.expectedInputFingerprint ?? null,
+        p_capture_id: executionBrief?.captureId ?? null,
       });
       const parsed = z.object({
         activation: z.unknown().optional(),

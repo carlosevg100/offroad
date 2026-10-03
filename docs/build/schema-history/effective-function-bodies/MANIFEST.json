@@ -25,7 +25,7 @@
     {
       "signature": "private.approve_advisor_execution_brief_v1(uuid,uuid,text,uuid)",
       "file": "private.approve_advisor_execution_brief_v1(uuid,uuid,text,uuid).sql",
-      "sha256": "692d68dda498fd2b18eda8140213f411b2bad084cbb6eb2b7001ea1184ed041e"
+      "sha256": "1af081f246b9baefb64de88e0d2a5701207f73f28a571e0879f76405c5b300e6"
     },
     {
       "signature": "private.attest_platform_method_candidate_v1(uuid,uuid,text,text,text,jsonb)",
@@ -455,7 +455,7 @@
     {
       "signature": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)",
       "file": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb).sql",
-      "sha256": "276a595e3f1f9825aa8326c377f1bd9593154a42d8b5664485c4f21ae0fbbb3f"
+      "sha256": "a9555895c9ee7a1a275621cdec0712c1ff29396759163becf5d5a65043dea5ce"
     },
     {
       "signature": "private.worker_record_execution_brief_proposal_v1(uuid,text,jsonb,jsonb,text,jsonb)",
