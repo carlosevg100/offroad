@@ -219,7 +219,7 @@ grant execute on function private.worker_record_agent_assessment_v2(uuid,text,js
 create function private.worker_record_m07_assessment_index_v1(p_job_id uuid,p_capability_token text,p_recipe_id uuid,p_final_retained_payload_id uuid)
 returns jsonb language plpgsql volatile security definer set search_path='' as $$
 declare j public.processing_jobs;sid uuid;s private.assessment_input_snapshots;old public.capital_project_decisions;d public.capital_project_decisions;
- receipt private.assessment_proposal_receipts;fp text;inputs_fp text;assessment_ref text;new_id uuid;
+ receipt private.assessment_proposal_receipts;fp text;inputs_fp text;native_assessment_ref text;new_id uuid;
 begin
  j:=private.job_for_capability(p_job_id,p_capability_token);
  if j.kind<>'capital_project_analysis' then raise exception 'assessment_m07_job_required' using errcode='42501';end if;
@@ -229,11 +229,11 @@ begin
  perform pg_advisory_xact_lock_shared(hashtextextended('resource-policy:'||j.organization_id::text,0));
  if private.assessment_input_snapshot_authority_v1(j.organization_id,s.id,j.authorization_subject_id)<>'allowed' then
   raise exception 'assessment_input_authority_denied' using errcode='42501';end if;
- assessment_ref:='m07-index:'||p_recipe_id::text;
+ native_assessment_ref:='m07-index:'||p_recipe_id::text;
  fp:=encode(extensions.digest(jsonb_build_object('schema','m07-assessment-index.v1','recipeId',p_recipe_id,
   'finalRetainedPayloadId',p_final_retained_payload_id,'snapshotFingerprint',s.content_fingerprint)::text,'sha256'),'hex');
  inputs_fp:=encode(extensions.digest(jsonb_build_array(jsonb_build_object('id',s.id,'fingerprint',s.content_fingerprint))::text,'sha256'),'hex');
- select p.* into receipt from private.assessment_proposal_receipts p where p.organization_id=j.organization_id and p.work_id=s.work_id and p.assessment_ref=worker_record_m07_assessment_index_v1.assessment_ref and p.job_id=j.id;
+ select p.* into receipt from private.assessment_proposal_receipts p where p.organization_id=j.organization_id and p.work_id=s.work_id and p.assessment_ref=native_assessment_ref and p.job_id=j.id;
  if receipt.id is not null then
   if receipt.assessment_fingerprint<>fp or receipt.input_fingerprint<>inputs_fp or receipt.prepared_by<>j.authorization_subject_id then
    raise exception 'assessment_proposal_replay_changed' using errcode='23505';end if;
@@ -250,11 +250,11 @@ begin
   decision_fingerprint,assessment_ref,created_by)
  values(new_id,j.organization_id,s.work_id,'capital_strategy.assessment_review',coalesce(old.revision,0)+1,'open',
   'A análise está pronta para confirmação humana?',null,'[]','Índice da análise; conteúdo sujeito à política de retenção.',
-  '[]','[]','[]','insufficient','deal_captain',null,old.id,'dcm-decision.v1',fp,assessment_ref,j.authorization_subject_id)
+  '[]','[]','[]','insufficient','deal_captain',null,old.id,'dcm-decision.v1',fp,native_assessment_ref,j.authorization_subject_id)
  returning * into d;
  insert into private.assessment_proposal_receipts(organization_id,work_id,assessment_decision_id,decision_key,decision_revision,decision_fingerprint,
   job_id,prepared_by,assessment_ref,assessment_fingerprint,input_fingerprint,snapshot_ids,source_count,corpus_count,public_source_count)
- values(j.organization_id,s.work_id,d.id,d.decision_key,d.revision,d.decision_fingerprint,j.id,j.authorization_subject_id,assessment_ref,fp,inputs_fp,array[s.id],0,0,s.public_source_count)
+ values(j.organization_id,s.work_id,d.id,d.decision_key,d.revision,d.decision_fingerprint,j.id,j.authorization_subject_id,native_assessment_ref,fp,inputs_fp,array[s.id],0,0,s.public_source_count)
  returning * into receipt;
  if private.assessment_proposal_authority_v1(j.organization_id,receipt.id,j.authorization_subject_id)<>'allowed' then
   raise exception 'assessment_input_authority_denied' using errcode='42501';end if;
