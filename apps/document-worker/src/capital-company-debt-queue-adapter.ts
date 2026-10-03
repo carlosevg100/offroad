@@ -7,7 +7,7 @@ import {legacyGatewayFingerprint, prepareGatewayInput, retentionMatrixVersion, t
 import {researchSourceSchema, type ResearchSource} from "@offroad/public-research";
 import {openCapitalPublicCaptureAdapter} from "./capital-public-capture-adapter";
 import {capitalCompanyDebtRecipeReceiptSchema, capitalCompanyDebtFinalOutputFingerprint, type CapitalCompanyDebtProcessingPorts, type CapitalCompanyDebtRetainedOutput} from "./capital-company-debt-processing";
-import {prepareCapitalCompanyDebtRecipe, reconstructCapitalCompanyDebtRequest,capitalCompanyDebtDispatchPins, type CapitalCompanyDebtComponent} from "./capital-company-debt-recipe";
+import {prepareCapitalCompanyDebtRecipe, capitalCompanyDebtExecutionPins,capitalCompanyDebtDispatchPins, type CapitalCompanyDebtComponent} from "./capital-company-debt-recipe";
 import {capitalCompanyDebtCommitReceiptSchema,capitalCompanyDebtTaskProjectionReceiptSchema,capitalCompanyDebtRetentionScopeSchema,capitalCompanyDebtQualityResultsSchema,capitalCompanyDebtQualityFailureReceiptSchema,CapitalCompanyDebtQualityFailure} from "./capital-company-debt-protocol";
 export {capitalCompanyDebtCommitReceiptSchema} from "./capital-company-debt-protocol";
 export type {CapitalCompanyDebtCommitReceipt} from "./capital-company-debt-protocol";
@@ -58,7 +58,7 @@ export function createCapitalCompanyDebtQueueAdapter(client:SupabaseClient,job:C
    const reconstruction=prepareCapitalCompanyDebtRecipe(preparation);const prepared=prepareGatewayInput({...reconstruction.prepared.request,requireInputAttestation:true,outputMode:"structured",timeoutMs:240000,
     dataHandling:{classification:"confidential",purpose:"case_analysis",requiredPolicyVersion:retentionMatrixVersion}});
    const actual={...reconstruction,prepared};const routes=[{provider:"anthropic" as const,model:"claude-sonnet-5",effort:"medium" as const},{provider:"openai" as const,model:"gpt-5.6-terra",effort:"medium" as const}];
-   const pins=routes.map(route=>reconstructCapitalCompanyDebtRequest(actual,route).ordinalFingerprints());
+   const pins=routes.map(route=>capitalCompanyDebtExecutionPins(actual,route));
    routes.forEach(route=>capitalCompanyDebtDispatchPins(actual,route));
    receipt=capitalCompanyDebtRecipeReceiptSchema.parse(await rpc("worker_finalize_capital_debt_recipe_v1",{p_recipe_id:state.base.recipeId,p_context_retained_payload_id:state.contextScope.retainedPayloadId,
     p_components:reconstruction.recipe.components,p_reconstruction_fingerprint:prepared.inputFingerprint,p_prompt_fingerprint:pins[0]!.promptFingerprint,

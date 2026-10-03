@@ -1,10 +1,21 @@
 import {randomUUID} from 'node:crypto';
 import {describe,it,expect} from 'vitest';
-import {legacyGatewayFingerprint,buildEffectiveAdapterRequest} from '@offroad/model-gateway';
-import {capitalCompanyDebtDispatchPins,prepareCapitalCompanyDebtRecipe,reconstructCapitalCompanyDebtRequest,type CapitalCompanyDebtComponent} from './capital-company-debt-recipe';
+import {legacyGatewayFingerprint,buildEffectiveAdapterRequest,createModelGateway} from '@offroad/model-gateway';
+import {capitalCompanyDebtExecutionPins,capitalCompanyDebtDispatchPins,prepareCapitalCompanyDebtRecipe,reconstructCapitalCompanyDebtRequest,type CapitalCompanyDebtComponent} from './capital-company-debt-recipe';
 const c=(slot:CapitalCompanyDebtComponent['slot'],body:unknown):CapitalCompanyDebtComponent=>({slot,id:randomUUID(),version:1,bodyFingerprint:legacyGatewayFingerprint(body),body});
 function fixture(){const source=c('source',{topic:'identity',provider:'official',retrievedAt:'2026-10-02T00:00:00Z',contentHash:'c'.repeat(64),title:'Synthetic source',url:'https://example.test/debt',snippet:'Public evidence',publishedAt:'2026-10-01'});return {basis:{jobId:randomUUID(),organizationId:randomUUID(),workId:randomUUID(),planId:randomUUID(),planFingerprint:'a'.repeat(64),locale:'pt-BR' as const,asOfDate:'2026-10-02'},components:[c('company',{name:'PRIVATE_CANARY',website:null}),c('brief',{focus:'Understand public company debt evidence.'}),c('institution',null),c('research',{status:'succeeded',sourceIds:[source.id]}),source,c('revision',null),c('execution_plan',{taskId:'M06',taskRunId:randomUUID(),capitalArtifactId:randomUUID(),artifactFingerprint:'b'.repeat(64)})]};}
 describe('company-debt closed renderer only',()=>{
+ it('seals the actual gateway V1 request rather than the distinct ordinal V2 namespace',async()=>{
+  const p=prepareCapitalCompanyDebtRecipe(fixture()),route={provider:'anthropic' as const,model:'claude-sonnet-5',effort:'medium' as const};
+  const sealed=capitalCompanyDebtExecutionPins(p,route),built=reconstructCapitalCompanyDebtRequest(p,route);
+  expect(sealed.requestFingerprint).toBe(built.requestFingerprintV1);expect(sealed.requestFingerprint).not.toBe(built.ordinalFingerprints().requestFingerprint);
+  let calls=0;
+  const gateway=createModelGateway({adapters:{anthropic:{provider:'anthropic',complete:async()=>{throw new Error('denied_attempt_must_not_dispatch');}}},
+   processingEligibility:async({attempt})=>{calls++;expect(attempt.adapterInputVersion).toBe('gateway-adapter-input.v1');
+    expect(attempt.requestFingerprint).toBe(sealed.requestFingerprint);expect(attempt.promptFingerprint).toBe(sealed.promptFingerprint);expect(attempt.inputFingerprint).toBe(sealed.inputFingerprint);
+    return {allowed:false,policyVersion:'offroad-provider-retention-v2',assuranceId:null,reasons:['processing_resource_ineligible:inference']};}});
+  await expect(gateway.complete({...p.prepared.request,dataHandling:{classification:'confidential',purpose:'case_analysis',requiredPolicyVersion:'offroad-provider-retention-v2'}})).rejects.toThrow();expect(calls).toBeGreaterThan(0);
+ });
  it('uses common builder, real C11/M06 semantics and emits unresolved metadata without bodies',()=>{const p=prepareCapitalCompanyDebtRecipe(fixture()),route={provider:'anthropic' as const,model:'claude-sonnet-5',effort:'medium' as const};const actual=reconstructCapitalCompanyDebtRequest(p,route);expect(actual.adapterRequest).toEqual(buildEffectiveAdapterRequest(p.prepared,route,{maxOutputTokens:8000,timeoutMs:240000}).adapterRequest);expect(p.recipe.taskId).toBe('C11');expect(p.recipe.executionPlanTaskId).toBe('M06');expect(p.recipe.state).toBe('unresolved');expect(JSON.stringify(p.recipe)).not.toContain('PRIVATE_CANARY');expect(JSON.stringify(p.recipe)).not.toContain('example.test');});
  it('denies unsupported route or changed schema',()=>{const p=prepareCapitalCompanyDebtRecipe(fixture());expect(()=>reconstructCapitalCompanyDebtRequest(p,{provider:'openai',model:'gpt-5.6-sol',effort:'medium'})).toThrow();});
  it('denies substituted component without observed body pin',()=>{const f=fixture();f.components[0]!.body={name:'Changed',website:null};expect(()=>prepareCapitalCompanyDebtRecipe(f)).toThrow();});
