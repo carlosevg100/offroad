@@ -4,7 +4,7 @@ export function materialReviewFixture() {
   const basis = {schemaVersion: "capital-material-package-review-basis.v1", ...expected, manifestFingerprint: "a".repeat(64),
     productionPlanId: u(5), preparedBy: u(6), audience: "internal", activeApprovalReviewIds: [],
     review: {revisionId: expected.revisionId, withheld: false,
-      artifact: {id: u(7), workId: expected.workId, kind: "work_product", subject: "Material production package"},
+      artifact: {id: u(7), workId: expected.workId, kind: "work_product", subject: "Material production package", headRevisionId: expected.revisionId},
       snapshot: {revision: {id: expected.revisionId, revisionNo: 1, manifestFingerprint: "a".repeat(64), audience: "internal", createdAt: "2026-10-02T12:00:00Z"}, blocks: []},
       policy: {assignmentRequired: false, selfApprovalAllowed: true, roles: []}, preparedBy: u(6),
       release: "internal", freshness: "current", reviews: []}};
