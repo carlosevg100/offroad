@@ -7,6 +7,12 @@ on:
     branches: [main]
   # Repeated runs of one commit measure flakiness without a new merge or a rerun.
   workflow_dispatch:
+    inputs:
+      assessment_diagnostic:
+        description: Isolated assessment diagnosis only; never a release gate
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -19,7 +25,8 @@ concurrency:
 
 jobs:
   check:
-    name: Lint, typecheck, test, build
+    name: ${{ inputs.assessment_diagnostic && 'Skipped lint (assessment diagnostic only)' || 'Lint, typecheck, test, build' }}
+    if: ${{ !inputs.assessment_diagnostic }}
     runs-on: ubuntu-latest
     # The whole monorepo gate took 13.8 to 14.7 minutes on main in September 2026; the same
     # 30-minute ceiling as the database and E2E jobs keeps a slow runner from failing a green tree.
@@ -65,7 +72,7 @@ jobs:
         run: pnpm check
 
   database:
-    name: Database (migrations, RLS, lint)
+    name: ${{ inputs.assessment_diagnostic && 'Assessment diagnostic (not a release gate)' || 'Database (migrations, RLS, lint)' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -74,6 +81,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Verify recovered schema history and archive isolation
+        if: ${{ !inputs.assessment_diagnostic }}
         run: |
           python3 scripts/ci/verify-recovered-schema.py
           python3 scripts/ci/test_verify_recovered_schema.py
@@ -161,11 +169,13 @@ jobs:
       # Every SQL contract is a gate by default. A newly added workspace, cache or
       # RLS regression test must not depend on someone remembering to register it here.
       - name: Verify effective function bodies match the committed snapshot
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/verify-effective-function-bodies.py
 
       - name: Check stage-zero access surface and every file version against production journal
+        if: ${{ !inputs.assessment_diagnostic }}
         run: |
           set -euo pipefail
           python3 -B scripts/ci/test_check_stage0_inventory.py
@@ -189,6 +199,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Native materials SQL production, dispatch and human review
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           MATERIAL_DRAFT_IN_TRANSACTION: "0"
@@ -199,6 +210,7 @@ jobs:
           python3 -B scripts/ci/test-material-package-native-review.py
 
       - name: Native material human review with two concurrent transactions
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           MATERIAL_DRAFT_IN_TRANSACTION: "0"
@@ -214,6 +226,7 @@ jobs:
           MATERIAL_DRAFT_IN_TRANSACTION: "0"
         run: python3 -B scripts/ci/test-assessment-case-writer-guards.py
       - name: Run all database contract tests
+        if: ${{ !inputs.assessment_diagnostic }}
         run: |
           set -euo pipefail
           for test_file in supabase/tests/*.sql; do
@@ -222,24 +235,29 @@ jobs:
           done
 
       - name: Verify review change classification against shared domain fixtures
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-review-change-parity.py
 
       - name: Verify review authority and competing decisions with two real sessions
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-review-concurrency.py
       - name: Review regime CAS and legacy authority concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
         run: python3 -B scripts/ci/test-review-regime-concurrency.py
       - name: Institutional configuration native review and revocation concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-configuration-review-concurrency.py
       - name: Capital public capture authority and lock concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
@@ -260,6 +278,7 @@ jobs:
           python3 -B scripts/ci/verify-capital-body-edge-ready.py
 
       - name: Capital public retention with physical Storage
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -267,6 +286,7 @@ jobs:
           OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
         run: python3 -B scripts/ci/test-capital-public-retention-storage.py
       - name: Capital public retention two-session races
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -274,6 +294,7 @@ jobs:
           OFFROAD_REPOSITORY_ROOT: ${{ github.workspace }}
         run: python3 -B scripts/ci/test-capital-public-retention-concurrency.py
       - name: Capital typed bodies with physical HTTP Storage
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -303,6 +324,7 @@ jobs:
           python3 -B scripts/ci/test-capital-body-retention-storage.py
 
       - name: Capital typed bodies through the real Node24 SDK and gateway
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -332,6 +354,7 @@ jobs:
           node scripts/ci/test-capital-body-retention-sdk.mjs
 
       - name: Capital typed body revocation and purge with two real SQL sessions
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -363,89 +386,107 @@ jobs:
           python3 -B scripts/ci/test-capital-body-outcome-concurrency.py
 
       - name: Capital body SQL and Node outcome protocol gold
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-capital-body-outcome-protocol.py
 
       - name: Execution artifact recovery concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-execution-artifact-recovery-concurrency.py
       - name: Execution source closure revocation concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-execution-source-closure-concurrency.py
       - name: Institutional input capture concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-capture-concurrency.py
 
       - name: Institutional setup capture concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-setup-capture-concurrency.py
 
       - name: Native execution brief activation with the real compiler
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           S11_FIXTURE_CONTINUATION: supabase/tests/support/execution_brief_native_agent_recovery.sql
         run: python3 -B scripts/ci/test-execution-brief-native-agent.py
 
       - name: Native execution brief review and revocation concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-execution-brief-native-concurrency.py
 
       - name: Institutional contribution concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-contribution-concurrency.py
 
       - name: Institutional source closure concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-closure-concurrency.py
 
       - name: Institutional native projection concurrency
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-native-concurrency.py
 
       - name: Verify competing ownership transfers serialize without residual authority
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-owner-transfer-concurrency.py
 
       - name: Verify contextual adoption compare-and-swap with two real sessions
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-adoption-concurrency.py
 
       - name: Verify contribution branches with two real concurrent sessions
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-contribution-concurrency.py
       - name: Concurrent human vault publication
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-vault-publication-concurrency.py
 
       - name: Concurrent method publication and adoption
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-method-publication-concurrency.py
 
       - name: Concurrent platform method publication
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-platform-method-concurrency.py
 
       - name: Concurrent pinned execution claims, operations and revocation
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-execution-concurrency.py
 
       - name: Concurrent governed evaluation reservation and assurance revocation
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-evaluation-concurrency.py
@@ -456,6 +497,7 @@ jobs:
       # provider key in its environment, once through to its run record and once with the
       # assurance revoked. No provider key, no network beyond the local stack, synthetic data only.
       - name: Governed evaluation through the worker consumer and the baseline script, with a cassette provider
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
         run: |
@@ -470,6 +512,7 @@ jobs:
       # basis plans one zero-budget candidate, and the loop produces it once for the original
       # requester. No model, no provider key, no network beyond the local stack, synthetic data only.
       - name: Dependency recompute through the worker loop, once, against the local stack
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
         run: |
@@ -479,32 +522,37 @@ jobs:
             node scripts/ci/verify-dependency-recompute.mjs
 
       - name: Concurrent R01 pause, release and policy revocation
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-r01-release-concurrency.py
 
       - name: Concurrent R01 evidence mutation and preparation
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-r01-integrity-concurrency.py
 
       - name: Concurrent dependency changes merge into one open update request
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-dependency-update-concurrency.py
 
       - name: Two workers racing for one recompute candidate lease it once
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-dependency-recompute-concurrency.py
 
       - name: Approval and planner, decline and worker, in both orders without a deadlock
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-work-update-integration-concurrency.py
 
       - name: Preserve stage-zero replay catalogue for drift diagnosis
-        if: always()
+        if: ${{ always() && !inputs.assessment_diagnostic }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: stage0-replay-catalogue
@@ -512,6 +560,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Schema lint (public, private)
+        if: ${{ !inputs.assessment_diagnostic }}
         # Runs whenever the stack is up, even after an earlier contract step failed: a migration that
         # still fails the inventory check before it is applied must be linted before it is applied.
         if: ${{ !cancelled() && steps.db.outcome == 'success' }}
@@ -525,11 +574,13 @@ jobs:
       # Both steps need the workspace dependencies: after a failed contract test the install above is
       # skipped, and the proof would fail with a missing module instead of being skipped.
       - name: Native M07 context capture under concurrent task output
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-capital-m07-context-stability-concurrency.py
 
       - name: Rebuild the local database for the wait proof
+        if: ${{ !inputs.assessment_diagnostic }}
         id: wait_reset
         if: ${{ !cancelled() && steps.db.outcome == 'success' && steps.database_deps.outcome == 'success' }}
         # No step env here: the registry the boot used comes from GITHUB_ENV, and a step env would
@@ -545,6 +596,7 @@ jobs:
       # authorization the restarted loop produces it once, with lineage. Synthetic data only, no
       # model, no provider key, no network beyond the local stack.
       - name: Dependency wait across a worker restart, against the rebuilt local stack
+        if: ${{ !inputs.assessment_diagnostic }}
         if: ${{ !cancelled() && steps.db.outcome == 'success' && steps.database_deps.outcome == 'success' && steps.wait_reset.outcome == 'success' }}
         env:
           OFFROAD_E2E_DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -559,6 +611,7 @@ jobs:
       # Keep append-only M07 evidence isolated from the earlier claim/race fixtures.
       # The always-run Supabase stop below destroys this local database and Storage.
       - name: Native M07 producer and physical recovery through the SDK
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -566,6 +619,7 @@ jobs:
         run: node scripts/ci/test-capital-m07-native-sdk.mjs
 
       - name: Native material production and human review through physical HTTP Storage
+        if: ${{ !inputs.assessment_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -629,7 +683,8 @@ jobs:
         run: supabase stop --no-backup
 
   e2e:
-    name: E2E (local Supabase + Playwright)
+    name: ${{ inputs.assessment_diagnostic && 'Skipped browser (assessment diagnostic only)' || 'E2E (local Supabase + Playwright)' }}
+    if: ${{ !inputs.assessment_diagnostic }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
