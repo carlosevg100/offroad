@@ -32,8 +32,10 @@ const proofTransport:{operation:string;status:number;code:string|null}[]=[];
 function closedProofError(error:unknown){
  const name=error instanceof Error?error.name:'';
  const message=error instanceof Error?error.message:'';
+ const bodyPhases=new Set(["idle", "scope_path", "scope_ttl", "reader_request", "reader_bytes", "read_authorization_before", "read_receipt_identity", "read_authorization_after", "read_revalidation", "prepare_receipt", "canonical_byte_identity", "upload_expiry", "upload_http", "commit_receipt", "commit_identity"]);
+ const bodyPhase=(error as {previewBodyPhase?:unknown}|null)?.previewBodyPhase;
  const known=new Map([['capital capture database authority denied','capture_database_authority_denied'],['capital capture retention expired','capture_retention_expired'],['capital capture purge lease expired','capture_purge_lease_expired'],['capital capture receipt mismatch','capture_receipt_mismatch']]);
- return{name:['AssertionError','ZodError','Error'].includes(name)?name:null,code:proofErrorCodes.has(message)?message:known.get(message)??null,
+ return{bodyPhase:typeof bodyPhase==="string"&&bodyPhases.has(bodyPhase)?bodyPhase:null,name:['AssertionError','ZodError','Error'].includes(name)?name:null,code:proofErrorCodes.has(message)?message:known.get(message)??null,
  ...(error instanceof z.ZodError?{issues:error.issues.slice(0,12).map(issue=>({code:issue.code,pathDepth:Math.min(issue.path.length,8)}))}:{})};
 }
 
@@ -42,8 +44,8 @@ async function main(){
  assert.equal(process.argv.length,2);const api=process.env.OFFROAD_E2E_API_URL!,db=process.env.DATABASE_URL!,key=process.env.OFFROAD_E2E_PUBLISHABLE_KEY!;local(api,'http:');local(db,'postgresql:');assert.ok(key&&!key.startsWith('sb_secret_'));anonKey(key);
  let stopAtFinalize=true;
  const client=createClient(api,key,{global:{headers:{'x-offroad-workspace':organization},fetch:(input,init)=>{if(stopAtFinalize&&(input instanceof Request?input.url:String(input)).includes('/rpc/worker_finalize_capital_preview_run_v1')){stopAtFinalize=false;return Promise.resolve(new Response(JSON.stringify({code:'synthetic_stop_after_terminal_task',message:'Synthetic fault before final marker'}),{status:409,headers:{'Content-Type':'application/json'}}));}return fetch(input,{...init,redirect:'error'}).then(async response=>{
- const path=new URL(input instanceof Request?input.url:String(input)).pathname,operation=path.startsWith('/rest/v1/rpc/')?path.slice('/rest/v1/rpc/'.length):path==='/functions/v1/capital-body-read'?'capital_body_read':null;
- if(operation&&(proofRpcNames.has(operation)||operation==='capital_body_read')){let code:string|null=null;if(!response.ok){try{const failure=await response.clone().json();if(typeof failure?.code==='string'&&proofSqlCodes.has(failure.code))code=failure.code;}catch{}}
+ const path=new URL(input instanceof Request?input.url:String(input)).pathname,operation=path.startsWith('/rest/v1/rpc/')?path.slice('/rest/v1/rpc/'.length):path==='/functions/v1/capital-body-read'?'capital_body_read':path.startsWith('/storage/v1/object/capital-input-capture/')&&String(init?.method??(input instanceof Request?input.method:'GET')).toUpperCase()==='POST'?'capital_storage_upload':null;
+ if(operation&&(proofRpcNames.has(operation)||operation==='capital_body_read'||operation==='capital_storage_upload')){let code:string|null=null;if(!response.ok){try{const failure=await response.clone().json();if(typeof failure?.code==='string'&&proofSqlCodes.has(failure.code))code=failure.code;}catch{}}
  proofTransport.push({operation,status:response.status,code});if(proofTransport.length>24)proofTransport.shift();}return response;
  });}},auth:{persistSession:false}});
  phase='actual-auth';const login=await client.auth.signInWithPassword({email:`native-agent-${namespace}@example.invalid`,password:'preview-isolated-local-eval-password'});assert.equal(login.error,null);assert.equal(login.data.user?.id,actor);

@@ -173,6 +173,8 @@ jobs:
       run: cp ../audit/supabase/tests/support/capital_preview_native_http_setup.sql supabase/tests/support/capital_preview_native_http_setup.sql
     - name: Map internal publisher fixture to valid historical journey
       run: cp ../audit/supabase/tests/support/legacy_persistent_work_fixture.sql supabase/tests/support/legacy_persistent_work_fixture.sql
+    - name: Overlay fixed physical boundary diagnostic only
+      run: cp ../audit/apps/document-worker/src/integration-preview-body-storage.ts apps/document-worker/src/integration-preview-body-storage.ts
     - name: Overlay closed preview failure diagnostics without request bodies
       run: cp ../audit/apps/document-worker/scripts/capital-preview-native-sdk-eval.ts apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
     - name: Finite native preview through real Storage, two paid boundaries and replay
