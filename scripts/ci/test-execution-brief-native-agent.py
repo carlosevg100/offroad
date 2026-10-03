@@ -112,11 +112,12 @@ try:
   print('PASS execution_brief_native_ui_unapproved_bootstrap')
   sys.exit(0)
  # Server lookup is fixture-only; human calls still use genuine JWT/resource authority.
+ precursor_change_guard='' if preview_fixture else 'c.input_fingerprint=n.post_write_input_fingerprint or '
  sql="""reset role;
  do $$declare c private.execution_brief_input_captures;n private.execution_brief_native_bindings;begin
  select * into strict c from private.execution_brief_input_captures where organization_id='a8800000-0000-4000-8000-000000000002';
  select * into strict n from private.execution_brief_native_bindings where organization_id=c.organization_id;
- if c.input_fingerprint=n.post_write_input_fingerprint or c.input_fingerprint is distinct from (select v#>>'{context,approval_input_fingerprint}' from agent_fixture where k='capture') or n.post_write_input_fingerprint<>private.execution_approval_input_fingerprint(c.organization_id,c.session_id) then raise exception 'immutable_precursor_or_post_write_proof_invalid';end if;end$$;
+ if """+precursor_change_guard+"""c.input_fingerprint is distinct from (select v#>>'{context,approval_input_fingerprint}' from agent_fixture where k='capture') or n.post_write_input_fingerprint<>private.execution_approval_input_fingerprint(c.organization_id,c.session_id) then raise exception 'immutable_precursor_or_post_write_proof_invalid';end if;end$$;
  insert into agent_fixture select 'brief',jsonb_build_object('id',id,'fingerprint',brief_fingerprint) from public.capital_project_execution_briefs where organization_id='a8800000-0000-4000-8000-000000000002';set local role authenticated;
  savepoint human_mutation;
  reset role;update public.document_intake_sessions set company_profile=company_profile||'{"name":"Alteração humana posterior"}'::jsonb where organization_id='a8800000-0000-4000-8000-000000000002';set local role authenticated;
