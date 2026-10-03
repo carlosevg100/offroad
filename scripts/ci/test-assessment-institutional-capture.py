@@ -3,9 +3,10 @@
 Local PG interfaces are not an HTTP/physical Storage proof.
 The two isolated dead-hold subscenarios belong to the separate material route
 suite: their no-active-turn premise is false after real institutional approval
-queues its calculation. This fixture preserves that real pending turn.
+queues its calculation. This fixture runs the current deterministic consumer
+against the actual public loader before settling that turn via public writers.
 """
-import os,re,runpy,subprocess
+import os,re,runpy,subprocess,json,shlex,tempfile
 from urllib.parse import urlparse
 from pathlib import Path
 from unittest.mock import patch
@@ -35,7 +36,7 @@ start=s.index('-- Dead hold 1, rolled back afterwards:')
 end_marker='rollback to savepoint dead_after_newer_brief;'
 end=s.index(end_marker,start)+len(end_marker)
 assert 'savepoint dead_after_edit;'in s[start:end] and 'savepoint dead_after_newer_brief;'in s[start:end]
-s=s[:start]+"-- Institutional capture fixture keeps its real queued calculation turn;\n-- independent dead-hold scenarios execute in the separate material route gate.\n"+s[end:]
+s=s[:start]+"-- Institutional capture fixture executes its real queued calculation turn;\n-- independent dead-hold scenarios execute in the separate material route gate.\n"+s[end:]
 drafts='' if mode=='0' else ''.join((ROOT/'supabase/pending'/(n+'.sql')).read_text()+'\n'for n in ['assessment_input_capture','assessment_review_projection','assessment_effective_case_input','work_update_native_adoption','assessment_institutional_capture','assessment_research_capture'])
 if mode=='1':s=s.replace('begin;','begin;\n'+drafts,1)
 # Publish both source rights and the real initial configuration/human approval
@@ -56,5 +57,60 @@ tag='assessment-institutional-'+prefix
 for person in ('owner','worker','outsider'):s=s.replace('route-'+person+'@',tag+'-'+person+'@')
 s=re.sub(r"repeat\('r',\s*64\)","'"+(prefix+'3v-native-institutional').ljust(64,'0')+"'",s)
 assert not re.search(r'd5[a-f0-9]{6}-',s),'unmapped shared fixture identity'
-result=subprocess.run(['psql',os.environ['DATABASE_URL'],'-X','-v','ON_ERROR_STOP=1'],input=s,text=True,capture_output=True,timeout=90)
-print(result.stdout[-1500:]);print(result.stderr[-12000:]);raise SystemExit(result.returncode)
+# The SQL transaction cannot expose uncommitted context over another HTTP/DB
+# connection. Relay the actual public loader result to the current deterministic
+# consumer, then deliver its exact write payload back to the public SQL command.
+# No receipt/ack is simulated; the Node consumer stops at its transport boundary.
+with tempfile.TemporaryDirectory(prefix='offroad-assessment-institutional-calc-') as directory:
+ tmp=Path(directory);context_path=tmp/'context.json';result_path=tmp/'result.json';entry=tmp/'consumer.mjs'
+ for path in(context_path,result_path):path.touch(mode=0o600)
+ source=r"""
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,statSync} from 'node:fs';
+import {processInstitutionalModelResult} from './src/institutional-model-runtime';
+const [contextPath,resultPath]=process.argv.slice(2);
+assert.equal(Number(process.versions.node.split('.')[0]),24);
+assert.equal(statSync(contextPath).mode&0o077,0);assert.equal(statSync(resultPath).mode&0o077,0);
+const {job,context}=JSON.parse(readFileSync(contextPath,'utf8'));
+assert.equal(job.kind,'agent_operation_brief');assert.equal(job.payload.message_id,context.modelResultRequest.id);
+assert.equal(context.approvedConfigurations.length,1);
+assert.equal(context.modelResultRequest.status,'queued');
+assert.ok(context.inputSnapshot?.id);assert.ok(context.inputSnapshot?.fingerprint);
+class DeferredWrite extends Error{}
+let writes=0;
+try{await processInstitutionalModelResult({job,queue:{loadInstitutionalModelContext:async()=>context,recordInstitutionalModelResult:async(actualJob,result)=>{
+ assert.equal(actualJob,job);assert.equal(result.status,'completed');assert.deepEqual(result.inputSnapshot,context.inputSnapshot);
+ writes++;writeFileSync(resultPath,JSON.stringify(result),{mode:0o600});throw new DeferredWrite();
+}}});throw new Error('actual_consumer_did_not_prepare_write');}catch(error){if(!(error instanceof DeferredWrite))throw error;}
+assert.equal(writes,1);
+"""
+ bundler=r"""import {createRequire} from 'node:module';
+const requireWorker=createRequire(WORKER_PACKAGE);
+const {build}=requireWorker('esbuild');
+await build({stdin:{contents:SOURCE,resolveDir:WORKER_DIR,sourcefile:'assessment-institutional-current-consumer.js',loader:'js'},outfile:OUTPUT,
+ bundle:true,platform:'node',format:'esm',target:'node24',logLevel:'silent',plugins:[{name:'external-third-party',setup(b){
+ b.onResolve({filter:/^[^.\/]/},async args=>{if(args.path.startsWith('@offroad/')||args.pluginData?.externalized)return null;
+ const resolved=await b.resolve(args.path,{resolveDir:args.resolveDir,kind:args.kind,pluginData:{externalized:true}});
+ if(resolved.errors.length)throw new Error('dependency_resolution_failed');return{path:resolved.path,external:true};});}}]});
+"""
+ worker=ROOT/'apps/document-worker'
+ for name,value in [('WORKER_PACKAGE',str(worker/'package.json')),('WORKER_DIR',str(worker)),('SOURCE',source),('OUTPUT',str(entry))]:bundler=bundler.replace(name,json.dumps(value))
+ built=subprocess.run(['node','--input-type=module'],input=bundler,text=True,capture_output=True,timeout=60)
+ if built.returncode:raise SystemExit('assessment_actual_institutional_consumer_bundle_failed')
+ relay=r"""\pset format unaligned
+\pset tuples_only on
+select jsonb_build_object('job',current_setting('test.setup_calculation_claim')::jsonb,'context',current_setting('test.setup_calculation_context')::jsonb)
+\g CONTEXT_PATH
+\! node NODE_ENTRY CONTEXT_ARG RESULT_ARG
+\if :SHELL_ERROR
+\quit 3
+\endif
+\set setup_calculation_result `cat RESULT_ARG`
+\pset tuples_only off
+\pset format aligned
+"""
+ for name,value in [('CONTEXT_PATH',str(context_path)),('NODE_ENTRY',shlex.quote(str(entry))),('CONTEXT_ARG',shlex.quote(str(context_path))),('RESULT_ARG',shlex.quote(str(result_path)))]:relay=relay.replace(name,value)
+ assert s.count('__ASSESSMENT_CALCULATION_RELAY__')==1
+ s=s.replace('__ASSESSMENT_CALCULATION_RELAY__',relay)
+ result=subprocess.run(['psql',os.environ['DATABASE_URL'],'-X','-v','ON_ERROR_STOP=1'],input=s,text=True,capture_output=True,timeout=90)
+ print(result.stdout[-1500:]);print(result.stderr[-12000:]);raise SystemExit(result.returncode)
