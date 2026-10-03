@@ -9,7 +9,7 @@ import {assembleCapitalCompanyDebtComponents} from "./capital-company-debt-nativ
 import {prepareCapitalCompanyDebtRecipe,capitalCompanyDebtExecutionPins} from "./capital-company-debt-recipe";
 import {capitalCompanyDebtRecipeReceiptSchema,capitalCompanyDebtFinalOutputFingerprint} from "./capital-company-debt-processing";
 import {transformCapitalCompanyDebtFinalProduct} from "./capital-company-debt-final";
-import {recoverCapitalCompanyDebt,capitalCompanyDebtRecoveryGrantSchema,type CapitalCompanyDebtRecoveryPorts} from "./capital-company-debt-recovery";
+import {recoverCapitalCompanyDebt,CapitalCompanyDebtRecoveryGap,capitalCompanyDebtRecoveryGrantSchema,type CapitalCompanyDebtRecoveryPorts} from "./capital-company-debt-recovery";
 import type {CapitalCompanyDebtRetentionScope} from "./capital-company-debt-protocol";
 function harness(){
  const originalJob=randomUUID(),currentJob=randomUUID(),org=randomUUID(),work=randomUUID(),recipeId=randomUUID(),producer=randomUUID();
@@ -37,6 +37,7 @@ function harness(){
  return{job:{jobId:currentJob,organizationId:org,workId:work},ports,grant,receipt,physical};
 }
 describe("C11 physical recovery, pure unit ports",()=>{
+ it("keeps denial identity while distinguishing a closed RPC cancellation",()=>{const error=new CapitalCompanyDebtRecoveryGap("capital_debt_recovery_rpc_cancelled");expect(error.code).toBe("capital_debt_retained_recovery_required");expect(error.message).toBe("capital_debt_recovery_rpc_cancelled");});
  it("replays a committed original product under a successor grant without any model/research/derive port",async()=>{
   const h=harness();expect(await recoverCapitalCompanyDebt(h.job,h.ports,()=>Date.parse("2026-10-02T01:00:00Z"))).toMatchObject(h.receipt);
   expect(h.ports.deriveTasks).not.toHaveBeenCalled();expect(h.ports.retainFinal).not.toHaveBeenCalled();expect(h.ports.commit).toHaveBeenCalledOnce();
@@ -47,7 +48,7 @@ describe("C11 physical recovery, pure unit ports",()=>{
   if(kind==="source_tamper"){const original=h.ports.readSource;h.ports.readSource=vi.fn(async ref=>({...await original(ref),bytes:Buffer.from("tampered")}));}
   await expect(recoverCapitalCompanyDebt(h.job,h.ports,()=>Date.parse("2026-10-02T01:00:00Z"))).rejects.toThrow();expect(h.ports.commit).not.toHaveBeenCalled();expect(h.ports.deriveTasks).not.toHaveBeenCalled();
  });
- it("denies a narrower reader deadline rather than comparing only physical hashes",async()=>{const h=harness(),read=h.ports.readBody;h.ports.readBody=vi.fn(async expected=>{const actual=await read(expected);return expected.retainedPayloadId===h.grant.final?.retainedPayloadId?{...actual,scope:{...(actual.scope as CapitalCompanyDebtRetentionScope),expiresAt:"2029-12-31T00:00:00Z",purgeAt:"2029-12-30T00:00:00Z"}}:actual;});await expect(recoverCapitalCompanyDebt(h.job,h.ports,()=>Date.parse("2026-10-02T01:00:00Z"))).rejects.toThrow("capital_debt_retained_recovery_required");expect(h.ports.commit).not.toHaveBeenCalled();});
+ it("denies a narrower reader deadline rather than comparing only physical hashes",async()=>{const h=harness(),read=h.ports.readBody;h.ports.readBody=vi.fn(async expected=>{const actual=await read(expected);return expected.retainedPayloadId===h.grant.final?.retainedPayloadId?{...actual,scope:{...(actual.scope as CapitalCompanyDebtRetentionScope),expiresAt:"2029-12-31T00:00:00Z",purgeAt:"2029-12-30T00:00:00Z"}}:actual;});await expect(recoverCapitalCompanyDebt(h.job,h.ports,()=>Date.parse("2026-10-02T01:00:00Z"))).rejects.toThrow("capital_debt_recovery_body_identity_changed");expect(h.ports.commit).not.toHaveBeenCalled();});
  it("returns no recipe only for actual server none, while unresolved never starts a model path",async()=>{
   const h=harness();h.ports.discover=vi.fn(async()=>({schemaVersion:"capital-debt-recovery-discovery.v1",state:"none",recipeId:null}));expect(await recoverCapitalCompanyDebt(h.job,h.ports)).toBeNull();expect(h.ports.grant).not.toHaveBeenCalled();
   h.ports.discover=vi.fn(async()=>({schemaVersion:"capital-debt-recovery-discovery.v1",state:"unresolved",recipeId:h.grant.recipeId}));await expect(recoverCapitalCompanyDebt(h.job,h.ports)).rejects.toThrow("capital_debt_retained_recovery_required");expect(h.ports.commit).not.toHaveBeenCalled();
