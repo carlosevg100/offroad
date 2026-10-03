@@ -1,5 +1,5 @@
 import {spawn, execFileSync} from "node:child_process";
-import {existsSync, readFileSync, statSync, unlinkSync} from "node:fs";
+import {constants, existsSync, readFileSync, openSync, fstatSync, closeSync, mkdirSync, rmSync} from "node:fs";
 import {randomUUID} from "node:crypto";
 import {join} from "node:path";
 import {z} from "zod";
@@ -11,7 +11,10 @@ test("native internal material approval and revocation use the same exact basis 
   const api = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54321";
   for (const address of [db, api, process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000"])
     if (!["localhost", "127.0.0.1", "[::1]"].includes(new URL(address).hostname)) throw new Error("Synthetic material proof requires local services");
-  const root = join(__dirname, "../../.."), file = `${process.platform === "darwin" ? "/private/tmp" : "/tmp"}/offroad-material-ui-${randomUUID()}.json`;
+  const root = join(__dirname, "../../..");
+  const directory = `${process.platform === "darwin" ? "/private/tmp" : "/tmp"}/offroad-material-ui-${randomUUID()}`;
+  mkdirSync(directory, {mode: 0o700});
+  const file = join(directory, "fixture.json");
   const child = spawn(process.execPath, [join(root, "scripts/ci/test-material-production-native-sdk.mjs")], {
     cwd: root, env: {...process.env, DATABASE_URL: db, OFFROAD_E2E_API_URL: api,
       OFFROAD_E2E_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
@@ -48,10 +51,19 @@ test("native internal material approval and revocation use the same exact basis 
       if (exited) throw new Error(failure);
       return "running";
     }, {timeout: 120000}).toBe("ready");
-    expect(statSync(file).mode & 0o777).toBe(0o600);
+    const fd = openSync(file, constants.O_RDONLY | constants.O_NOFOLLOW);
+    let fixture: unknown;
+    try {
+      const metadata = fstatSync(fd);
+      expect(metadata.isFile()).toBe(true);
+      expect(metadata.mode & 0o777).toBe(0o600);
+      expect(metadata.uid).toBe(process.getuid?.());
+      expect(metadata.size).toBeLessThanOrEqual(16_384);
+      fixture = JSON.parse(readFileSync(fd, "utf8"));
+    } finally {closeSync(fd);}
     const f = z.object({schemaVersion: z.literal("material-native-ui-fixture.v1"), organizationId: z.uuid(), workId: z.uuid(),
       sessionId: z.uuid(), revisionId: z.uuid(), approved: z.literal(false), physical: z.boolean().optional(),
-      email: z.email(), password: z.string().min(20)}).parse(JSON.parse(readFileSync(file, "utf8")));
+      email: z.email(), password: z.string().min(20)}).parse(fixture);
     // Historical customer onboarding is explicit fixture setup. The prospective
     // package, capture, Storage objects and approvals are produced by real APIs.
     sql(`insert into public.onboarding_progress(organization_id,user_id,journey,current_step,completed_at)
@@ -89,6 +101,6 @@ test("native internal material approval and revocation use the same exact basis 
   } finally {
     if (!exited) {child.kill("SIGTERM"); await new Promise<void>(resolve => {const timer = setTimeout(resolve, 5000); child.once("exit", () => {clearTimeout(timer); resolve();});});}
     if (!exited) child.kill("SIGKILL");
-    if (existsSync(file)) unlinkSync(file);
+    rmSync(directory, {recursive: true, force: true});
   }
 });
