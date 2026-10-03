@@ -1,8 +1,8 @@
 import {randomUUID} from "node:crypto";
 import {describe,expect,it} from "vitest";
 import {capitalPlanningCompatibilityPolicy} from "@offroad/credit-playbook";
-import {buildEffectiveAdapterRequest,legacyGatewayFingerprint} from "@offroad/model-gateway";
-import {prepareCapitalS11Recipe,reconstructCapitalS11Request,capitalS11DispatchPins,type CapitalS11Component} from "./capital-s11-recipe";
+import {buildEffectiveAdapterRequest,legacyGatewayFingerprint,createModelGateway} from "@offroad/model-gateway";
+import {prepareCapitalS11Recipe,reconstructCapitalS11Request,capitalS11DispatchPins,capitalS11ExecutionPins,type CapitalS11Component} from "./capital-s11-recipe";
 const component=(slot:CapitalS11Component["slot"],body:unknown):CapitalS11Component=>({slot,id:randomUUID(),version:1,bodyFingerprint:legacyGatewayFingerprint(body),body});
 function fixture(){const source=component("source",{topic:"identity",provider:"official",retrievedAt:"2026-10-02T00:00:00Z",contentHash:"c".repeat(64),title:"Synthetic source",url:"https://example.test/s11",snippet:"Source evidence",publishedAt:"2026-10-01"});return {
   basis:{jobId:randomUUID(),organizationId:randomUUID(),workId:randomUUID(),planId:randomUUID(),planFingerprint:"a".repeat(64),locale:"pt-BR" as const,asOfDate:"2026-10-02"},
@@ -11,6 +11,19 @@ function fixture(){const source=component("source",{topic:"identity",provider:"o
 const payload=(value:ReturnType<typeof prepareCapitalS11Recipe>)=>JSON.parse((value.prepared.input[0] as {text:string}).text);
 const rehash=(value:CapitalS11Component)=>{value.bodyFingerprint=legacyGatewayFingerprint(value.body);};
 describe("prospective S11 recipe, unit reconstruction only",()=>{
+  it("seals the V1 identity of the real gateway attempt instead of the ordinal V2 namespace",async()=>{
+    const value=prepareCapitalS11Recipe(fixture()),route={provider:"anthropic" as const,model:"claude-sonnet-5",effort:"medium" as const};
+    const sealed=capitalS11ExecutionPins(value,route),built=reconstructCapitalS11Request(value,route);
+    expect(sealed.requestFingerprint).toBe(built.requestFingerprintV1);
+    expect(sealed.requestFingerprint).not.toBe(built.ordinalFingerprints().requestFingerprint);
+    let calls=0;
+    const gateway=createModelGateway({adapters:{anthropic:{provider:"anthropic",complete:async()=>{throw new Error("denied_attempt_must_not_dispatch");}}},
+      processingEligibility:async({attempt})=>{calls++;expect(attempt.adapterInputVersion).toBe("gateway-adapter-input.v1");
+        expect(attempt.requestFingerprint).toBe(sealed.requestFingerprint);expect(attempt.promptFingerprint).toBe(sealed.promptFingerprint);expect(attempt.inputFingerprint).toBe(sealed.inputFingerprint);
+        return {allowed:false,policyVersion:"offroad-provider-retention-v2",assuranceId:null,reasons:["processing_resource_ineligible:inference"]};}});
+    await expect(gateway.complete({...value.prepared.request,dataHandling:{classification:"confidential",purpose:"case_analysis",requiredPolicyVersion:"offroad-provider-retention-v2"}})).rejects.toThrow();
+    expect(calls).toBeGreaterThan(0);
+  });
   it("uses actual policy and common request builder without inventing authority",()=>{
     const value=prepareCapitalS11Recipe(fixture());const route={provider:"anthropic" as const,model:"claude-sonnet-5",effort:"medium" as const};
     const actual=reconstructCapitalS11Request(value,route),expected=buildEffectiveAdapterRequest(value.prepared,route,{maxOutputTokens:8000,timeoutMs:240000});

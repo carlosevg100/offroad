@@ -5,7 +5,7 @@ import {capitalPlanningMapSchema,capitalPublicLicensedPayloadSchema} from "@offr
 import {researchSourceSchema,type ResearchSource} from "@offroad/public-research";
 import {legacyGatewayFingerprint,prepareGatewayInput,retentionMatrixVersion} from "@offroad/model-gateway";
 import {capitalS11RecipeReceiptSchema,capitalS11FinalOutputFingerprint} from "./capital-s11-processing";
-import {prepareCapitalS11Recipe,reconstructCapitalS11Request} from "./capital-s11-recipe";
+import {prepareCapitalS11Recipe,capitalS11ExecutionPins} from "./capital-s11-recipe";
 import {reconstructCapitalS11Components} from "./capital-s11-native-consumer";
 import {transformCapitalS11FinalProduct} from "./capital-s11-final";
 import {capitalS11RetentionScopeSchema,capitalS11CommitReceiptSchema,capitalS11QualityFailureSchema,capitalS11QualityFailureReceiptSchema,CapitalS11QualityFailure,type CapitalS11RetentionScope} from "./capital-s11-protocol";
@@ -47,7 +47,7 @@ export async function recoverCapitalS11(job:{jobId:string;organizationId:string;
  }
  const reconstructed=reconstructCapitalS11Components({recipe:grant.recipe,originalContext,sources,metadata:grant.reconstructionMetadata}),reconstruction=prepareCapitalS11Recipe({basis:{jobId:grant.originalJobId,organizationId:job.organizationId,workId:job.workId,planId:grant.recipe.planId,planFingerprint:grant.recipe.planFingerprint,locale:grant.recipe.locale,asOfDate:grant.recipe.asOfDate},components:reconstructed.components});
  const prepared=prepareGatewayInput({...reconstruction.prepared.request,requireInputAttestation:true,outputMode:"structured",timeoutMs:240000,dataHandling:{classification:"confidential",purpose:"case_analysis",requiredPolicyVersion:retentionMatrixVersion}});
- const primary=reconstructCapitalS11Request({...reconstruction,prepared},{provider:"anthropic",model:"claude-sonnet-5",effort:"medium"}).ordinalFingerprints(),fallback=reconstructCapitalS11Request({...reconstruction,prepared},{provider:"openai",model:"gpt-5.6-terra",effort:"medium"}).ordinalFingerprints();
+ const primary=capitalS11ExecutionPins({...reconstruction,prepared},{provider:"anthropic",model:"claude-sonnet-5",effort:"medium"}),fallback=capitalS11ExecutionPins({...reconstruction,prepared},{provider:"openai",model:"gpt-5.6-terra",effort:"medium"});
  if(prepared.inputFingerprint!==grant.recipe.reconstructionFingerprint||primary.promptFingerprint!==grant.requestPins.promptFingerprint||primary.requestFingerprint!==grant.requestPins.primaryRequestFingerprint||fallback.requestFingerprint!==grant.requestPins.fallbackRequestFingerprint)throw new CapitalS11RecoveryGap();
  const parsed=capitalPlanningMapSchema.parse(await body(grant.parsed));if(legacyGatewayFingerprint(parsed)!==grant.accepted.outputFingerprint)throw new CapitalS11RecoveryGap();
  if(grant.state==="quality_failed"){
