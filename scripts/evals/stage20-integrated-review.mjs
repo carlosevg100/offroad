@@ -3,12 +3,19 @@ import {createHash, randomUUID} from 'node:crypto';
 import {readFileSync, statSync, writeFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
+import {createMcpReadOnlyBridge, validateMaterialBody, validateMaterialScope} from './stage20-material-review-adapter.mjs';
 
 const staging = 'gjkkjtbfnssdsbmlhmwk';
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 let phase = 'target_validation';
-export function validateTarget(api, database, allowStaging) {
-  const a = new URL(api), d = new URL(database);
+export function validateTarget(api, database, allowStaging, operatorMode = false) {
+  const a = new URL(api);
+  if (operatorMode) {
+    assert.equal(database, undefined, 'MCP mode carries no database credentials');
+    assert.equal(allowStaging, staging);assert.equal(a.origin, `https://${staging}.supabase.co`);
+    assert(!a.username && !a.password && !a.search && !a.hash && a.pathname === '/');return 'staging';
+  }
+  const d = new URL(database);
   assert(!a.username && !a.password && !a.search && !a.hash && ['/', ''].includes(a.pathname), 'closed API root required');
   assert(['postgresql:', 'postgres:'].includes(d.protocol) && !d.search && !d.hash, 'closed PostgreSQL target required');
   const local = ['127.0.0.1', 'localhost', '[::1]'];
@@ -23,8 +30,10 @@ export function validateTarget(api, database, allowStaging) {
   return 'staging';
 }
 export function validateFixture(f) {
-  assert.deepEqual(Object.keys(f).sort(), ['artifactId', 'cleanupOwner', 'namespace', 'organizationId', 'ownerId', 'recipeId', 'retainedPayloadId', 'reviewerId', 'revisionId', 'schemaVersion', 'workId'].sort());
-  assert.equal(f.schemaVersion, 'stage20-integrated-review-fixture.v1');
+  const material = f.schemaVersion === 'stage20-integrated-review-fixture.v2';
+  assert.deepEqual(Object.keys(f).sort(), [...(material ? ['nativeKind'] : []), 'artifactId', 'cleanupOwner', 'namespace', 'organizationId', 'ownerId', 'recipeId', 'retainedPayloadId', 'reviewerId', 'revisionId', 'schemaVersion', 'workId'].sort());
+  assert(['stage20-integrated-review-fixture.v1','stage20-integrated-review-fixture.v2'].includes(f.schemaVersion));
+  if (material) assert.equal(f.nativeKind, 'material');
   for (const key of ['artifactId', 'namespace', 'organizationId', 'ownerId', 'recipeId', 'retainedPayloadId', 'reviewerId', 'revisionId', 'workId']) assert(uuid.test(f[key]), `${key} invalid`);
   assert.notEqual(f.ownerId, f.reviewerId, 'two actual humans required');
   assert.equal(typeof f.cleanupOwner, 'string');
@@ -34,18 +43,19 @@ export function validateFixture(f) {
 
 export async function run(env = process.env) {
   const api = env.REVIEW_EVAL_API_URL, db = env.REVIEW_EVAL_DATABASE_URL;
-  const target = validateTarget(api, db, env.REVIEW_EVAL_STAGING_PROJECT);
+  const operatorMode = env.REVIEW_EVAL_OPERATOR_MODE === 'mcp_readonly';
+  const target = validateTarget(api, db, env.REVIEW_EVAL_STAGING_PROJECT, operatorMode);
   assert.equal(statSync(env.REVIEW_EVAL_FIXTURE).mode & 0o077, 0, 'fixture file must be private');
   const f = validateFixture(JSON.parse(readFileSync(env.REVIEW_EVAL_FIXTURE, 'utf8')));
   const key = env.REVIEW_EVAL_PUBLISHABLE_KEY;
   assert(key && !key.startsWith('sb_secret_'), 'publishable key only');
   if (!key.startsWith('sb_publishable_')) assert.equal(JSON.parse(Buffer.from(key.split('.')[1], 'base64url')).role, 'anon');
-  const sql = query => execFileSync('psql', [db, '-XqAt', '-v', 'ON_ERROR_STOP=1'], {input: `begin read only;${query}commit;`, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']}).trim();
+  const sql = operatorMode ? createMcpReadOnlyBridge(env.REVIEW_EVAL_OPERATOR_DIR) : query => execFileSync('psql', [db, '-XqAt', '-v', 'ON_ERROR_STOP=1'], {input: `begin read only;${query}commit;`, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe']}).trim();
   // The operator connection only reads bounded fixture identity and aggregate evidence.
-  const own = JSON.parse(sql(`select jsonb_build_object('organizationId',o.id,'workId',p.id,'label',p.project_name) from public.capital_projects p join public.organizations o on o.id=p.organization_id where p.id='${f.workId}' and o.id='${f.organizationId}';`));
+  const own = JSON.parse(await sql(`select jsonb_build_object('organizationId',o.id,'workId',p.id,'label',p.project_name) from public.capital_projects p join public.organizations o on o.id=p.organization_id where p.id='${f.workId}' and o.id='${f.organizationId}';`));
   assert.equal(own.workId, f.workId);
   assert(/synthetic/i.test(own.label), 'unlabelled operational work denied');
-  const effects = () => JSON.parse(sql(`select jsonb_build_object('jobs',(select count(*) from public.processing_jobs where organization_id='${f.organizationId}'),'vault',(select count(*) from public.vault_publications where organization_id='${f.organizationId}'),'introductions',(select count(*) from public.qualified_introduction_plans where organization_id='${f.organizationId}'));`));
+  const effects = async () => JSON.parse(await sql(`select jsonb_build_object('jobs',(select count(*) from public.processing_jobs where organization_id='${f.organizationId}'),'vault',(select count(*) from public.vault_publications where organization_id='${f.organizationId}'),'introductions',(select count(*) from public.qualified_introduction_plans where organization_id='${f.organizationId}'));`));
   const headers = token => ({apikey: key, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'x-offroad-workspace': f.organizationId});
   const request = async (url, body, h) => {
     const r = await fetch(url, {method: 'POST', headers: h, redirect: 'error', body: JSON.stringify(body), signal: AbortSignal.timeout(15000)});
@@ -69,25 +79,32 @@ export async function run(env = process.env) {
   const deny = async (fn, reason) => {await assert.rejects(fn, e => e.reason === reason);};
   const proof = [];
   const checked = name => proof.push({name, result: 'PASS'});
-  const basis = token => rpc(token, 'read_capital_project_artifact_review_v2', {p_project_id: f.workId, p_artifact_id: f.artifactId, p_revision_id: f.revisionId});
+  const material = f.nativeKind === 'material';
+  const basis = token => rpc(token, material ? 'read_material_package_review_basis_v1' : 'read_capital_project_artifact_review_v2', material ? {p_work_id:f.workId,p_revision_id:f.revisionId} : {p_project_id: f.workId, p_artifact_id: f.artifactId, p_revision_id: f.revisionId});
   const a = await basis(owner), b = await basis(reviewer);
-  assert(a.workAccess && b.workAccess && a.preparedBy === f.ownerId && a.policy.assignmentRequired && b.policy.roles.includes('approver') && b.policy.roles.includes('preparer'), 'native exact scope and assigned review required');
+  const ar=material?a.review:a, br=material?b.review:b;
+  assert((material ? !ar.withheld && !br.withheld && ar.artifact.id===f.artifactId && br.artifact.workId===f.workId && a.recipeId===f.recipeId && b.recipeId===f.recipeId : a.workAccess && b.workAccess) && a.preparedBy===f.ownerId && ar.policy.assignmentRequired && br.policy.roles.includes('approver') && br.policy.roles.includes('preparer'), 'native exact scope and assigned review required');
   assert.equal(a.manifestFingerprint, b.manifestFingerprint);
-  const response = await fetch(`${api}/functions/v1/capital-body-read`, {method: 'POST', headers: headers(reviewer), redirect: 'error', body: JSON.stringify({kind: 'preview_result', revisionId: f.revisionId}), signal: AbortSignal.timeout(15000)});
+  const nativeScope=material?await rpc(reviewer,'read_material_production_result_v1',{p_revision_id:f.revisionId}):null;
+  if(material)validateMaterialScope(nativeScope,f);
+  const response = await fetch(`${api}/functions/v1/capital-body-read`, {method: 'POST', headers: headers(reviewer), redirect: 'error', body: JSON.stringify({kind: material ? 'material_result' : 'preview_result', revisionId: f.revisionId}), signal: AbortSignal.timeout(15000)});
   assert.equal(response.status, 200);
   const bytes = Buffer.from(await response.arrayBuffer());
   assert.equal(createHash('sha256').update(bytes).digest('hex'), response.headers.get('x-offroad-payload-sha256'));
   assert.equal(response.headers.get('x-offroad-recipe-id'), f.recipeId);
-  for (const [header, expected] of [['x-offroad-work-id',f.workId],['x-offroad-artifact-id',f.artifactId],['x-offroad-revision-id',f.revisionId],['x-offroad-organization-id',f.organizationId]]) assert.equal(response.headers.get(header),expected);
+  for (const [header, expected] of (material ? [['x-offroad-work-id',f.workId],['x-offroad-revision-id',f.revisionId]] : [['x-offroad-work-id',f.workId],['x-offroad-artifact-id',f.artifactId],['x-offroad-revision-id',f.revisionId],['x-offroad-organization-id',f.organizationId]])) assert.equal(response.headers.get(header),expected);
   assert.equal(Number(response.headers.get('x-offroad-byte-length')),bytes.length);
   const body = JSON.parse(bytes.toString('utf8'));
-  assert.deepEqual(Object.keys(body).sort(),['schemaVersion','runId','taskId','role','artifactType','inputFingerprint','content'].sort());
+  if(material) validateMaterialBody(body, response.headers, bytes, b, nativeScope.scope);
+  else {assert.deepEqual(Object.keys(body).sort(),['schemaVersion','runId','taskId','role','artifactType','inputFingerprint','content'].sort());
   assert.equal(body.schemaVersion, 'capital-preview-json-body.v1');assert.equal(body.runId, f.recipeId);
   assert(['task_output','decision_contract'].includes(body.role));assert.equal(typeof body.taskId,'string');assert.equal(typeof body.artifactType,'string');assert(/^[a-f0-9]{64}$/.test(body.inputFingerprint));assert(body.content && typeof body.content==='object' && !Array.isArray(body.content));
+  }
+  if(material)assert.deepEqual(await rpc(reviewer,'read_material_production_result_v1',{p_revision_id:f.revisionId}),nativeScope);
   assert.deepEqual(await basis(reviewer), b, 'review closure changed during physical read');checked('native_physical_read_exact_revision');
-  const decide = (token, target, declared) => rpc(token, 'decide_capital_project_artifact_v2', {p_project_id: f.workId, p_artifact_id: f.artifactId, p_revision_id: f.revisionId, p_manifest_fingerprint: target.manifestFingerprint, p_artifact_fingerprint: target.artifactFingerprint, p_decision: 'confirm', p_note: null, p_self_approval_declared: declared, p_command_id: randomUUID()});
+  const decide = (token, target, declared) => material ? rpc(token,'decide_material_package_v1',{p_work_id:f.workId,p_revision_id:f.revisionId,p_manifest_fingerprint:target.manifestFingerprint,p_act:'approve',p_note:'Synthetic integrated native material review',p_self_approval_declared:declared,p_command_id:randomUUID(),p_basis_review_id:null}) : rpc(token, 'decide_capital_project_artifact_v2', {p_project_id: f.workId, p_artifact_id: f.artifactId, p_revision_id: f.revisionId, p_manifest_fingerprint: target.manifestFingerprint, p_artifact_fingerprint: target.artifactFingerprint, p_decision: 'confirm', p_note: null, p_self_approval_declared: declared, p_command_id: randomUUID()});
   await deny(() => decide(owner, a, false), 'capital_project_self_approval_forbidden');checked('preparer_cannot_implicitly_self_approve');
-  await decide(reviewer, b, false);assert((await basis(reviewer)).approvalActive);checked('second_human_approves_exact_native_revision');
+  await decide(reviewer, b, false);assert(material ? (await basis(reviewer)).activeApprovalReviewIds.length===1 : (await basis(reviewer)).approvalActive);checked('second_human_approves_exact_native_revision');
   const subject = `synthetic-integrated-review-${f.namespace}`;
   const manifest = template => ({schemaVersion: 'artifact-manifest.2026.09.26-v1', kind: 'answer', audience: 'internal', format: 'json', bytes: null, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [], claims: [], traces: [], template: null, provenance: {producer: 'synthetic-stage20-human-review', jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null});
   const write = (token, text, template, sub = subject) => rpc(token, 'create_artifact_revision_v1', {p_work: f.workId, p_kind: 'answer', p_subject: sub, p_audience: 'internal', p_manifest: manifest(template), p_blocks: (template==='synthetic-review-layout'?[{blockKey:'closing',kind:'paragraph',content:{text:'Synthetic presentation only.'},claims:[]},{blockKey:'explanation',kind:'paragraph',content:{text},claims:[]}]:[{blockKey:'explanation',kind:'paragraph',content:{text},claims:[]},{blockKey:'closing',kind:'paragraph',content:{text:'Synthetic presentation only.'},claims:[]}]), p_links: [], p_content_sha256: null, p_byte_length: null});
@@ -114,10 +131,10 @@ export async function run(env = process.env) {
   await review(owner, pending, 'approve');
   const oldHistory = await rpc(owner, 'read_artifact_revision_reviews_v1', {p_revision_id: r3.revision_id});
   assert(oldHistory.reviews.some(v => v.act === 'approve' && v.reviewerId === f.reviewerId));checked('reassignment_keeps_original_approval_author');
-  const before = effects();
+  const before = await effects();
   const report = await rpc(owner, 'record_work_report_v1', {p_work_id: f.workId, p_key: `${subject}-report`, p_report: {decidedBy: 'Synthetic committee', forum: 'Synthetic meeting', decidedOn: '2026-10-02', evidenceSourceVersionId: null}, p_note: 'Synthetic reported decision; no external action.', p_command_id: randomUUID()});
   const reported = await rpc(owner, 'read_work_decision_v1', {p_decision_id: report.decisionId});
-  assert.equal(reported.decision.origin, 'reported');assert.deepEqual(reported.decision.effects, ['none']);assert.deepEqual(effects(), before);checked('reported_decision_creates_no_job_publication_or_introduction');
+  assert.equal(reported.decision.origin, 'reported');assert.deepEqual(reported.decision.effects, ['none']);assert.deepEqual(await effects(), before);checked('reported_decision_creates_no_job_publication_or_introduction');
   const evidence = {schemaVersion: 'stage20-integrated-review-eval.v1', target, synthetic: true, organizationId: f.organizationId, workId: f.workId, revisionId: f.revisionId, proof, cleanup: {state: 'integrator_required', owner: f.cleanupOwner, preserveImmutableEvidence: true, archiveWorkId: f.workId, revokeIdentityIds: [f.ownerId, f.reviewerId], purgeRetainedPayloadIds: [f.retainedPayloadId], instructions: 'Use current work archival, access/identity revocation and physical purge contracts. Verify denied reads and authenticated physical absence. Never delete audit/review history or disable guards.'}};
   assert(env.REVIEW_EVAL_OUTPUT, 'private evidence output required');writeFileSync(env.REVIEW_EVAL_OUTPUT, JSON.stringify(evidence, null, 2) + '\n', {mode: 0o600, flag: 'wx'});
   console.log(`stage20_integrated_review: ${proof.length} PASS; cleanup remains required`);

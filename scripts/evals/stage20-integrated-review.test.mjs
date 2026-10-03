@@ -24,3 +24,12 @@ test('fixture carries exact physical target and two different humans, never perm
   assert.throws(()=>validateFixture({...f,accepted:true}));
   assert.throws(()=>validateFixture({...f,cleanupOwner:''}));
 });
+
+
+test('material fixture is explicit; preview v1 remains closed and unchanged',()=>{
+ const f={schemaVersion:'stage20-integrated-review-fixture.v2',nativeKind:'material',namespace:randomUUID(),organizationId:randomUUID(),workId:randomUUID(),artifactId:randomUUID(),revisionId:randomUUID(),recipeId:randomUUID(),retainedPayloadId:randomUUID(),ownerId:randomUUID(),reviewerId:randomUUID(),cleanupOwner:'stage20 integration'};
+ assert.equal(validateFixture(f),f);assert.throws(()=>validateFixture({...f,nativeKind:'preview'}));assert.throws(()=>validateFixture({...f,schemaVersion:'stage20-integrated-review-fixture.v1'}));
+ assert.equal(validateTarget('https://gjkkjtbfnssdsbmlhmwk.supabase.co',undefined,'gjkkjtbfnssdsbmlhmwk',true),'staging');
+ for(const api of['https://production.supabase.co','http://127.0.0.1:54321','https://gjkkjtbfnssdsbmlhmwk.supabase.co/other'])assert.throws(()=>validateTarget(api,undefined,'gjkkjtbfnssdsbmlhmwk',true));
+ assert.throws(()=>validateTarget('https://gjkkjtbfnssdsbmlhmwk.supabase.co','postgresql://postgres:secret@db.gjkkjtbfnssdsbmlhmwk.supabase.co/postgres','gjkkjtbfnssdsbmlhmwk',true));
+});
