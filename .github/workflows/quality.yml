@@ -207,12 +207,12 @@ jobs:
 
       # This complete isolated rollback proof is independent of SDK state. Fail here
       # before the unrelated contract/concurrency suite if its authority is denied.
-      - name: Nonempty institutional configuration captured by the real case consumer
+      - name: Assessment writer denies missing captures and invalid authority
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           ASSESSMENT_DRAFT_IN_TRANSACTION: "1"
           MATERIAL_DRAFT_IN_TRANSACTION: "0"
-        run: python3 -B scripts/ci/test-assessment-institutional-capture.py
+        run: python3 -B scripts/ci/test-assessment-case-writer-guards.py
       - name: Run all database contract tests
         run: |
           set -euo pipefail
@@ -587,6 +587,19 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-assessment-review-concurrency.py
+      - name: Start the existing governed documentary scanner for own-source assessment
+        env:
+          CLAMD_HOST: 127.0.0.1
+          CLAMD_PORT: "3310"
+        run: bash scripts/ci/start-documentary-scanner.sh start
+      - name: Nonempty institutional configuration through verified own-source physical SDK
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+          CLAMD_HOST: 127.0.0.1
+          CLAMD_PORT: "3310"
+        run: node scripts/ci/test-assessment-institutional-native-sdk.mjs
       - name: Native assessment consumes licensed physical public bytes through the SDK
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -595,6 +608,10 @@ jobs:
         # The existing JWT-enabled Edge server above serves the candidate's
         # capital-body-read handler, including closed assessment_source.
         run: node scripts/ci/test-assessment-native-public-sdk.mjs
+
+      - name: Stop the owned documentary scanner
+        if: always()
+        run: bash scripts/ci/start-documentary-scanner.sh stop
 
       - name: Stop the capital body Edge reader
         if: always()
