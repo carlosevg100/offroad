@@ -3,11 +3,11 @@
   "files": [
     {
       "path": ".github/workflows/combined-native-sql-proof.yml",
-      "sha256": "b31e4b6a7d2823523c7f87b51751b5e6baedfcd1d298600e28171b4d2ac8c3e7"
+      "sha256": "f587996625a13867ac64ad26896adf53cdfefb4e2fd0fd0e078f6d804b1c0293"
     },
     {
       "path": "scripts/ci/test-combined-native-consumers-assessment.py",
-      "sha256": "03aaed0b3e179abcbf9da1fd7d407757c6f86faacfc27f62350749e41a2b2593"
+      "sha256": "f7c151f364523f8bf665516355792b6bd8ad82e740347d6dc0455b19feeae74e"
     },
     {
       "path": "supabase/tests/support/combined_native_wrapper_chain.sql",
@@ -15,7 +15,7 @@
     },
     {
       "path": "COMBINED-SOURCES.json",
-      "sha256": "cbedf2b39fbf98b27176f79475497cb0bcc843dd1a0606715e6c33be8ad55c4c"
+      "sha256": "f8f91c6db9a152ba1f171265430520c46c9a7849b5688d780193c5b4c50ccdc0"
     },
     {
       "path": "README.md",
@@ -28,7 +28,8 @@
     "frozen-draft-hashes-17-current-heads",
     "workflow-YAML-dispatch-only-11-steps-3-pinned-checkouts-always-cleanup",
     "closed-diagnostic-unit-exact-suite-SQLSTATE-static-test-literal-no-raw",
-    "static-contract-context-allowlist-unit"
+    "static-contract-context-allowlist-unit",
+    "assessment-CWD-real-nonempty-packet-unit"
   ],
   "unexecuted": [
     "workflow-dispatch",
@@ -55,19 +56,37 @@
   },
   "baselineSourceProof": "git diff --name-only 16fb3a0b e48084c4 -- supabase/migrations returned empty",
   "latestActualCI": {
-    "run": 37097867804,
-    "head": "ffe2d340ad2a1f2310799062f381c3d215a60a04",
+    "run": 37098198160,
     "passed": [
-      "install11-consumers",
-      "install6-assessment",
-      "wrapper-chain-ACL",
-      "S11-debt-hostile",
+      "install11",
+      "install6",
+      "chain-ACL",
+      "S11-debt-negative",
       "assessment-review",
       "assessment-rejection",
       "assessment-public-research"
     ],
     "failed": "work_update_native_adoption",
     "sqlstate": "22023",
-    "cause": "Contract exception code not yet exposed; no SQL changes."
-  }
+    "staticException": "execution_json_size_invalid",
+    "functions": [
+      "execution_json_projection_v1",
+      "settle_execution_operation_v2"
+    ],
+    "cause": "Harness cwd was multi-checkout parent: relative cat packages/domain-contracts/src/fixtures/execution-result-packet.json returned empty. Fix assessment suite cwd to its frozen checkout; no SQL/test semantics changed."
+  },
+  "sources": {
+    "baseline": "16fb3a0bf303f85ba637aba458c68925e1908a5b",
+    "consumers": "fcb09c9243e8ad6be93c0e90886cc22322ad1802",
+    "assessment": "5fe11f9a5be67e229f1515ba1708e751e891c4fa"
+  },
+  "publishPaths": [
+    ".github/workflows/combined-native-sql-proof.yml",
+    "scripts/ci/test-combined-native-consumers-assessment.py",
+    "COMBINED-SOURCES.json",
+    "FILES.json"
+  ],
+  "unchangedSQL": "combined_native_wrapper_chain.sql unchanged; 17 inputs hash-pinned from canonical frozen heads. No contracts edited.",
+  "finalFrozenConsumersHead": "fcb09c9243e8ad6be93c0e90886cc22322ad1802",
+  "afterSQL": "unexecuted until real CI"
 }

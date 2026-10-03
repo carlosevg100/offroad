@@ -1,9 +1,9 @@
 {
-  "consumersHead": "e48084c4c2b0b82b9955e50f7f3eb2885cc096c6",
+  "consumersHead": "fcb09c9243e8ad6be93c0e90886cc22322ad1802",
   "assessmentHead": "5fe11f9a5be67e229f1515ba1708e751e891c4fa",
   "consumers": {
     "capital_public_artifact_review_cutover": "9a315c26be6b5fddcdf5adf36cc6e85183196df95c47925172f803b037eb180e",
-    "capital_s11_native_consumption": "da9d4fe63362ede4ae1aa1ab8359c707601c4498d800f37710747c01548ffc5a",
+    "capital_s11_native_consumption": "a09ae95dea3ce1b58fe2eaefa0ed73a70af4f279ddc487e29cf80c7c1fa03793",
     "capital_s11_execution_ledger": "2b00bb2e6809ffaa7113baf64bcb98d2f3b55504f9c140059cbd4bc6f73939bc",
     "capital_s11_task_projections": "a17edee0b05458c0bd4cb66b80a82b573a29137d5cb94bce67bb6c1cf40bce7f",
     "capital_s11_native_commit": "ce6d900e3039821d6a4642babd7ecc6edd833afd40a892f0000c877be001a407",

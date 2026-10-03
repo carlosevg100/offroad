@@ -26,7 +26,7 @@ jobs:
       - name: Checkout frozen consumers installer and contracts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: e48084c4c2b0b82b9955e50f7f3eb2885cc096c6
+          ref: fcb09c9243e8ad6be93c0e90886cc22322ad1802
           path: consumers
       - name: Checkout frozen assessment installer and contracts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1

@@ -13,8 +13,8 @@ def validate(env):
  if p.scheme!='postgresql' or p.hostname not in('127.0.0.1','localhost','::1') or p.path in('', '/') or p.query or p.fragment:raise ValueError('Dedicated disposable loopback PostgreSQL only')
  if env.get('OFFROAD_COMBINED_NATIVE_EVAL')!='isolated-loopback-ci':raise ValueError('Explicit combined disposable evaluation required')
  return env['DATABASE_URL']
-def run(command,env,phase,input=None):
- result=subprocess.run(command,env=env,input=input,text=True,capture_output=True,timeout=300)
+def run(command,env,phase,input=None,cwd=None):
+ result=subprocess.run(command,env=env,input=input,text=True,capture_output=True,timeout=300,cwd=cwd)
  if result.returncode:
   # Existing fixture output stays synthetic and local; report a bounded phase,
   # never the connection URL, credentials or arbitrary SQL error/body text.
@@ -77,5 +77,5 @@ def expand(path):
  return re.sub(r'^\\ir (.+)$',lambda m:expand(path.parent/m[1].strip()),path.read_text(),flags=re.M)
 for name in ('assessment_review_projection','assessment_rejection_and_revision','assessment_public_research_denial','work_update_native_adoption'):
  test=v/'supabase/tests/support'/('assessment_native_'+name+'.sql')
- run(psql,env,'assessment-'+name,expand(test))
+ run(psql,env,'assessment-'+name,expand(test),cwd=v)
 print(json.dumps({'eval':'combined_native_install_and_SQL','result':'PASS','drafts':17,'order':'11-consumers-then6-assessment','evidence':'real disposable SQL; not SDK HTTP or production'}))
