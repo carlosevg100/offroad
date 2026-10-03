@@ -3,6 +3,25 @@
 import json,os,re,subprocess,sys
 from pathlib import Path
 from urllib.parse import urlparse
+def debt_http_namespace_sql(sql,namespace):
+ assert re.fullmatch(r'a882[0-9a-f]{4}',namespace), 'Closed C11 HTTP namespace required'
+ sql=sql.replace('a8800000',namespace).replace('native-agent@example.invalid',f'debt-{namespace}@example.invalid').replace('debt-publisher@example.invalid',f'debt-publisher-{namespace}@example.invalid').replace("repeat('d',64)","repeat('9',64)").replace('https://example.invalid/capture-licensed',f'https://example.invalid/debt/{namespace}/capture-licensed').replace('debt-sql-account',f'debt-http-{namespace}').replace('debt-sql-project',f'debt-http-project-{namespace}').replace('debt-sql-key',f'debt-http-key-{namespace}')
+ # Genuine publisher objects are separate per family and per local namespace.
+ # Do not reuse a prior user's publication, grant or source license.
+ for old,suffix in [('10000000-0000-4000-8000-000000000993','993'),('20000000-0000-4000-8000-000000000993','994'),('30000000-0000-4000-8000-000000000993','995')]:
+  sql=sql.replace(old,f'{namespace}-0000-4000-8000-000000000{suffix}')
+ return sql
+if sys.argv[1:]==['--namespace-self-test']:
+ seed="10000000-0000-4000-8000-000000000993 20000000-0000-4000-8000-000000000993 30000000-0000-4000-8000-000000000993 debt-publisher@example.invalid https://example.invalid/capture-licensed"
+ a=debt_http_namespace_sql(seed,'a8820001');b=debt_http_namespace_sql(seed,'a8820002')
+ assert '10000000-' not in a and '20000000-' not in a and '30000000-' not in a
+ assert all(f'a8820001-0000-4000-8000-000000000{x}' in a for x in ['993','994','995'])
+ assert a!=b and 'debt-publisher-a8820001@example.invalid' in a and 'https://example.invalid/debt/a8820001/capture-licensed' in a
+ try: debt_http_namespace_sql(seed,'a8810001')
+ except AssertionError: pass
+ else: raise AssertionError('S11 publisher namespace admitted')
+ print('debt_http_publisher_namespace: PASS (distinct real fixture object references; no SQL executed)');sys.exit(0)
+
 ROOT=Path(__file__).resolve().parents[2]
 url=os.environ['DATABASE_URL']
 assert urlparse(url).hostname in ('localhost','127.0.0.1','::1'), 'Local disposable database only'
@@ -18,7 +37,7 @@ def literal(x): return "'"+str(x).replace("'","''")+"'"
 p=subprocess.Popen(['psql',url,'-XAtq','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
 def phase(sql):
  if http_fixture:
-  sql=sql.replace('a8800000',http_namespace).replace('native-agent@example.invalid',f'debt-{http_namespace}@example.invalid').replace("repeat('d',64)","repeat('9',64)").replace('https://example.invalid/capture-licensed',f'https://example.invalid/debt/{http_namespace}/capture-licensed').replace('debt-sql-account',f'debt-http-{http_namespace}').replace('debt-sql-project',f'debt-http-project-{http_namespace}').replace('debt-sql-key',f'debt-http-key-{http_namespace}')
+  sql=debt_http_namespace_sql(sql,http_namespace)
  p.stdin.write(sql+'\n\\echo PHASE_DONE\n');p.stdin.flush();out=[]
  while True:
   line=p.stdout.readline()
