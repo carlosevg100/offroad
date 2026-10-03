@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Rollback SQL proof using the real approved material case producer/lease.
 Local PG interfaces are not an HTTP/physical Storage proof.
+The two isolated dead-hold subscenarios belong to the separate material route
+suite: their no-active-turn premise is false after real institutional approval
+queues its calculation. This fixture preserves that real pending turn.
 """
 import os,re,runpy,subprocess
 from urllib.parse import urlparse
@@ -26,6 +29,13 @@ with patch.dict(os.environ,{'MATERIAL_FIXTURE_PREFIX':'d5','MATERIAL_FIXTURE_TAG
  except SystemExit as e:assert e.code==0
 assert len(fixture)==1
 s=fixture[0]
+# Do not fake-finish the legitimate calculation turn just to reuse historical
+# dead-hold scenarios. Their standalone material SQL gate remains unchanged.
+start=s.index('-- Dead hold 1, rolled back afterwards:')
+end_marker='rollback to savepoint dead_after_newer_brief;'
+end=s.index(end_marker,start)+len(end_marker)
+assert 'savepoint dead_after_edit;'in s[start:end] and 'savepoint dead_after_newer_brief;'in s[start:end]
+s=s[:start]+"-- Institutional capture fixture keeps its real queued calculation turn;\n-- independent dead-hold scenarios execute in the separate material route gate.\n"+s[end:]
 drafts='' if mode=='0' else ''.join((ROOT/'supabase/pending'/(n+'.sql')).read_text()+'\n'for n in ['assessment_input_capture','assessment_review_projection','assessment_effective_case_input','work_update_native_adoption','assessment_institutional_capture','assessment_research_capture'])
 if mode=='1':s=s.replace('begin;','begin;\n'+drafts,1)
 # Publish both source rights and the real initial configuration/human approval
