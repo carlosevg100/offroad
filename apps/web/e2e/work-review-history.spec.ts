@@ -59,7 +59,7 @@ test("two real humans use exact review history, reaffirm, reassignment and close
   await expect(history.getByRole('button',{name:copy.WorkReviewHistory.reaffirm,exact:true})).toHaveCount(0);
   await expect(history).toContainText('Same evidence; layout only');
   expect(sql(`select count(*)from public.artifact_reviews where revision_id='${r2.revision_id}'and act='reaffirm'and reviewer_id='${reviewer}'and basis_review_id='${approval.reviewId}';`)).toBe('1');
-  const r3=author(sql,f,'layout-2','Synthetic materially changed explanation');history=await panel(page,f);
+  const r3=author(sql,f,'layout-3','Synthetic materially changed explanation');history=await panel(page,f);
   await expect(history).toContainText(copy.WorkReviewHistory.change.material);await expect(history.getByRole('button',{name:copy.WorkReviewHistory.reaffirm,exact:true})).toHaveCount(0);
   const original=sql(`select row_to_json(r)::text from public.artifact_reviews r where id='${approval.reviewId}';`);
   await history.locator('textarea[name="review_history_reason"]').fill('Reassign the pending revision to its eligible reviewer');
