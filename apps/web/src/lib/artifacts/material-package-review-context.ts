@@ -3,7 +3,7 @@ import {artifactReviewContextSchema} from "./institutional-review";
 import {materialPackageReviewBasisSchema} from "./material-package-review";
 
 const reviewSchema = artifactReviewContextSchema.extend({
-  artifact: z.strictObject({id: z.uuid(), workId: z.uuid(), kind: z.literal("work_product"), subject: z.literal("Material production package")}),
+  artifact: z.strictObject({id: z.uuid(), workId: z.uuid(), kind: z.literal("work_product"), subject: z.literal("Material production package"), headRevisionId: z.uuid().nullable()}),
   release: z.enum(["internal", "blocked"]),
 });
 export const materialPackageReviewContextSchema = materialPackageReviewBasisSchema.extend({review: reviewSchema});
@@ -18,7 +18,7 @@ export function parseMaterialPackageReviewContext(value: unknown, expected: {
   const b = parsed.data, r = b.review;
   if (b.workId !== expected.workId || b.revisionId !== expected.revisionId || b.recipeId !== expected.recipeId
     || b.bundleFingerprint !== expected.bundleFingerprint || b.materialObjectId !== expected.materialObjectId
-    || r.artifact.workId !== b.workId || r.revisionId !== b.revisionId || r.snapshot.revision.id !== b.revisionId
+    || r.artifact.workId !== b.workId || r.artifact.headRevisionId !== b.revisionId || r.revisionId !== b.revisionId || r.snapshot.revision.id !== b.revisionId
     || r.snapshot.revision.manifestFingerprint !== b.manifestFingerprint || r.snapshot.revision.audience !== "internal"
     || r.preparedBy !== b.preparedBy || r.freshness !== "current"
     || new Set(b.activeApprovalReviewIds).size !== b.activeApprovalReviewIds.length
