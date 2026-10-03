@@ -18,7 +18,7 @@ on:
         type: choice
         required: false
         default: both
-        options: [both, debt]
+        options: [both, debt, material]
 
 permissions:
   contents: read
@@ -79,6 +79,7 @@ jobs:
         run: pnpm check
 
   database:
+    if: ${{ !inputs.native_diagnostic || inputs.native_diagnostic_target != 'material' }}
     name: ${{ inputs.native_diagnostic && 'Native consumers diagnostic (not a release gate)' || 'Database (migrations, RLS, lint)' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -672,8 +673,8 @@ jobs:
         run: supabase stop --no-backup
 
   e2e:
-    name: ${{ inputs.native_diagnostic && 'Skipped browser (native diagnostic only)' || 'E2E (local Supabase + Playwright)' }}
-    if: ${{ !inputs.native_diagnostic }}
+    name: ${{ inputs.native_diagnostic && 'Native material browser diagnostic (not a release gate)' || 'E2E (local Supabase + Playwright)' }}
+    if: ${{ !inputs.native_diagnostic || inputs.native_diagnostic_target == 'material' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -847,6 +848,7 @@ jobs:
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
       - name: Start the worker
+        if: ${{ !inputs.native_diagnostic }}
         run: |
           set -euo pipefail
           eval "$(supabase status -o env)"
@@ -865,11 +867,13 @@ jobs:
           grep -q '"event":"worker.signed_in"' worker.log || (sleep 10; grep -q '"event":"worker.signed_in"' worker.log || (cat worker.log; exit 1))
 
       - name: Verify pinned execution through the deployed worker
+        if: ${{ !inputs.native_diagnostic }}
         env:
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
         run: node scripts/ci/verify-pinned-consumer.mjs
 
       - name: Run end-to-end tests
+        if: ${{ !inputs.native_diagnostic }}
         # The native material case above already ran with its own queue consumer.
         run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$'
         env:
