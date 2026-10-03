@@ -4,9 +4,9 @@
  */
 import assert from 'node:assert/strict';
 import {randomUUID,createHash} from 'node:crypto';
-import {readFileSync,writeFileSync,chmodSync} from 'node:fs';
+import {readFileSync,writeFileSync,chmodSync,lstatSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
-import {join,resolve,dirname} from 'node:path';
+import {join,resolve,dirname,basename} from 'node:path';
 import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import {z} from 'zod';
 import {caseMaterialsVersion} from '@offroad/case-materials';
@@ -75,7 +75,7 @@ async function run(mode:'success'|'compiler_failed'|'domain_blocked'){
   phase='success_complete_material_producer';await queue.complete(job,first);
   assert.equal(sql(db,`select status from public.processing_jobs where id='${job.job_id}';`),'succeeded');
   if(uiFixture){
-   const output=resolve(process.env.MATERIAL_UI_FIXTURE_OUTPUT??`/private/tmp/offroad-material-ui-${randomUUID()}.json`);assert.ok(['/private/tmp','/tmp'].includes(dirname(output))&&output.endsWith('.json'));
+   const output=resolve(process.env.MATERIAL_UI_FIXTURE_OUTPUT!);const outputDirectory=dirname(output);assert.ok(['/private/tmp','/tmp'].includes(dirname(outputDirectory))&&/^offroad-material-ui-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(basename(outputDirectory))&&basename(output)==='fixture.json');const directoryStat=lstatSync(outputDirectory);assert.ok(directoryStat.isDirectory()&&!directoryStat.isSymbolicLink()&&(directoryStat.mode&0o777)===0o700&&directoryStat.uid===process.getuid?.());
    const proof={schemaVersion:'material-native-ui-fixture.v1',organizationId:org,workId,sessionId:session,recipeId:committed.recipeId,revisionId:committed.revisionId,bundleFingerprint:committed.bundleFingerprint,manifestFingerprint:basis.manifestFingerprint,materialCompilerVersion:caseMaterialsVersion,approved:false,email:`material-${mode}-owner@example.invalid`,password:fixturePassword,apiUrl:api};
    writeFileSync(output,JSON.stringify(proof),{mode:0o600,flag:'wx'});chmodSync(output,0o600);
    process.stdout.write(JSON.stringify({eval:'material_native_ui_fixture',result:'READY_FOR_UI',organizationId:org,workId,revisionId:committed.revisionId,fixtureFile:output,approved:false,physical:true,historicalBaseline:'structure/facts only; not 3X'})+'\n');
