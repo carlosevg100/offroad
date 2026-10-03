@@ -17,7 +17,7 @@ export default defineConfig({
   failOnFlakyTests: !!process.env.CI,
   timeout: 240_000,
   expect: {timeout: 30_000},
-  reporter: process.env.CI ? [["list"], ["html", {open: "never", outputFolder: "playwright-report"}]] : "list",
+  reporter: process.env.CI ? [["list"], ["html", {open: "never", outputFolder: process.env.PLAYWRIGHT_HTML_OUTPUT_DIR ?? "playwright-report"}]] : "list",
   use: {
     baseURL,
     locale: "pt-BR",
