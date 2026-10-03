@@ -130,6 +130,8 @@ jobs:
       run: |
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_storage_job_authority.sql
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_storage_job_authority.sql
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_native_artifact_publication.sql
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_native_artifact_publication.sql
     - name: Overlay three exact current capture-denial assertions
       run: |-
         for name in provider_research_persistence provider_research_public_catalog_v2 provider_case_fit_persistence capital_native_provider_results; do
@@ -180,7 +182,9 @@ jobs:
     - name: Map internal publisher fixture to valid historical journey
       run: cp ../audit/supabase/tests/support/legacy_persistent_work_fixture.sql supabase/tests/support/legacy_persistent_work_fixture.sql
     - name: Overlay actual allocation authority regression proof
-      run: cp ../audit/supabase/tests/support/capital_preview_storage_job_authority_actual.sql supabase/tests/support/capital_preview_storage_job_authority_actual.sql
+      run: |
+        cp ../audit/supabase/tests/support/capital_preview_storage_job_authority_actual.sql supabase/tests/support/capital_preview_storage_job_authority_actual.sql
+        cp ../audit/supabase/tests/support/capital_preview_native_artifact_publication_actual.sql supabase/tests/support/capital_preview_native_artifact_publication_actual.sql
     - name: Overlay fixed physical boundary diagnostic only
       run: cp ../audit/apps/document-worker/src/integration-preview-body-storage.ts apps/document-worker/src/integration-preview-body-storage.ts
     - name: Overlay closed preview failure diagnostics without request bodies
