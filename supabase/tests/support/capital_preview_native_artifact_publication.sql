@@ -19,6 +19,16 @@ do $$declare core_source text;clone_source text;marker text;replacement text;rol
  foreach signature in array array['private.capital_preview_revision_storage_allowed_v1(uuid,uuid,uuid,uuid,text,jsonb,jsonb,jsonb,text,bigint)','private.create_capital_preview_artifact_revision_v1(uuid,uuid,text,text,text,text,jsonb,jsonb,jsonb,text,bigint,jsonb,uuid,uuid,uuid,boolean)']loop
  foreach role_name in array array['anon','authenticated','service_role']loop
  if has_function_privilege(role_name,signature,'EXECUTE')then raise exception 'preview_publication_private_helper_exposed';end if;end loop;end loop;
+ -- The original worker command has an invoker public wrapper: its private
+ -- command grant is part of the existing contract, unlike owner-only helpers.
+ if not has_function_privilege('authenticated','private.worker_commit_capital_preview_task_v1(uuid,text,uuid,uuid,uuid,text)','EXECUTE')
+ or not has_function_privilege('authenticated','public.worker_commit_capital_preview_task_v1(uuid,text,uuid,uuid,uuid,text)','EXECUTE')
+ or has_function_privilege('anon','private.worker_commit_capital_preview_task_v1(uuid,text,uuid,uuid,uuid,text)','EXECUTE')
+ or has_function_privilege('service_role','private.worker_commit_capital_preview_task_v1(uuid,text,uuid,uuid,uuid,text)','EXECUTE')
+ or has_function_privilege('anon','public.worker_commit_capital_preview_task_v1(uuid,text,uuid,uuid,uuid,text)','EXECUTE')
+ or has_function_privilege('service_role','public.worker_commit_capital_preview_task_v1(uuid,text,uuid,uuid,uuid,text)','EXECUTE')
+ or (select prosecdef from pg_proc where oid='public.worker_commit_capital_preview_task_v1(uuid,text,uuid,uuid,uuid,text)'::regprocedure)
+ then raise exception 'preview_publication_original_command_acl_lost';end if;
  if private.capital_preview_revision_storage_allowed_v1(gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),gen_random_uuid(),'Preview fake','{}','[]','[]',repeat('a',64),1)then raise exception 'preview_publication_unbound_allowed';end if;
  begin
  perform private.create_capital_preview_artifact_revision_v1(gen_random_uuid(),gen_random_uuid(),'work_product','Preview fake','internal','worker','{}','[]','[]',repeat('a',64),1,null,null,null,gen_random_uuid(),true);

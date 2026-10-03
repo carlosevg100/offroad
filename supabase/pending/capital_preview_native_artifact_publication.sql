@@ -78,4 +78,5 @@ do $patch$declare target regprocedure:='private.worker_commit_capital_preview_ta
  definition:=replace(definition,'''key'',''preview-result''','''blockKey'',''preview-result''');
  execute definition;
 end;$patch$;
-revoke all on function private.worker_commit_capital_preview_task_v1(uuid,text,uuid,uuid,uuid,text)from public,anon,authenticated,service_role;
+-- CREATE OR REPLACE preserves the original legitimate command ACL.
+-- Its SECURITY INVOKER public wrapper requires existing authenticated EXECUTE.
