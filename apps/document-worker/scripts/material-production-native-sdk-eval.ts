@@ -11,7 +11,7 @@ import {createClient,type SupabaseClient} from '@supabase/supabase-js';
 import {z} from 'zod';
 import {caseMaterialsVersion} from '@offroad/case-materials';
 let phase='startup';
-let diagnostic: {rpc?:string;rpcCode?:string;sqlstate?:string;httpStatus?:number;claimedCount?:number} = {};
+let diagnostic: {rpc?:string;rpcCode?:string;sqlstate?:string;httpStatus?:number;claimedCount?:number;metadataRows?:number;projectionVisible?:boolean;inputCurrent?:boolean;sourcesCurrent?:boolean;precursorCurrent?:boolean;physicalCount?:number} = {};
 function mark(next:string){phase=next;diagnostic={};}
 const uiFixture=process.env.MATERIAL_UI_FIXTURE==='1';
 function missing(status:number,value:unknown){if(!value||typeof value!=='object'||Array.isArray(value))return false;const v=value as Record<string,unknown>;return[400,404].includes(status)&&String(v.statusCode)==='404'&&['not_found','Not Found'].includes(String(v.error))&&['object not found','the resource was not found'].includes(String(v.message).toLowerCase());}
@@ -78,6 +78,25 @@ async function run(mode:'success'|'compiler_failed'|'domain_blocked'){
   await assert.rejects(()=>rpc(owner,'decide_material_package_v1',{p_work_id:workId,p_revision_id:committed.revisionId,p_manifest_fingerprint:basis.manifestFingerprint,p_act:'approve',p_note:'Synthetic followup denied while original producer remains leased',p_self_approval_declared:true,p_command_id:randomUUID(),p_basis_review_id:null}),/55000$/);
   phase='success_complete_material_producer';await queue.complete(job,first);
   assert.equal(sql(db,`select status from public.processing_jobs where id='${job.job_id}';`),'succeeded');
+  // Prove the same authenticated human reads after the normal acknowledgement.
+  // Scalar-only local oracle diagnoses denial; it never substitutes for authority.
+  mark('success_post_complete_metadata');
+  const metadata=await owner.from('deal_state_objects').select('id,object_type,object_version,status,object_fingerprint,payload,dependencies')
+   .eq('organization_id',org).eq('intake_session_id',session).in('object_type',['structure_option','structure_decision','production_plan','material_artifact']).order('object_version',{ascending:false}).limit(100);
+  diagnostic={rpc:'deal_state_objects_select',rpcCode:metadata.error?.code};assert.equal(metadata.error,null);
+  const projectionVisible=!!metadata.data?.some(row=>row.object_type==='material_artifact'&&row.id===committed.materialObjectId&&row.payload&&typeof row.payload==='object'&&!Array.isArray(row.payload)&&row.payload.schemaVersion==='capital-material-projection.v1');
+  diagnostic={metadataRows:metadata.data?.length??0,projectionVisible};assert.equal(projectionVisible,true);
+  mark('success_post_complete_physical_read');
+  const afterCompletion=await owner.functions.invoke('capital-body-read',{method:'POST',body:{kind:'material_result',revisionId:committed.revisionId},headers:{'x-offroad-workspace':org}});
+  const scalarOracle=z.strictObject({inputCurrent:z.boolean(),sourcesCurrent:z.boolean(),precursorCurrent:z.boolean(),physicalCount:z.number().int().min(0).max(3)}).parse(JSON.parse(sql(db,`select jsonb_build_object(
+   'inputCurrent',r.input_fingerprint=private.material_production_input_fingerprint_v1(r.organization_id,r.session_id,r.production_plan_id),
+   'sourcesCurrent',private.material_production_sources_current_v1(r.organization_id,r.id,'${actor}'::uuid),
+   'precursorCurrent',exists(select 1 from private.material_production_plan_approvals a where(a.organization_id,a.approved_plan_id,a.effect_job_id)=(r.organization_id,r.production_plan_id,r.producer_job_id) and private.material_plan_precursor_current_v1(r.organization_id,a.precursor_id,'${actor}'::uuid)),
+   'physicalCount',(select count(*) from unnest(array[b.report_retained_payload_id,b.state_retained_payload_id,b.package_retained_payload_id])q(id) where private.capital_body_physical_receipt_v1(r.organization_id,q.id)))
+   from private.material_production_recipes r join private.material_production_bindings b on(b.organization_id,b.recipe_id)=(r.organization_id,r.id) where(r.organization_id,r.id)=('${org}'::uuid,'${committed.recipeId}'::uuid);`)));
+  diagnostic={httpStatus:afterCompletion.response?.status,metadataRows:metadata.data?.length??0,projectionVisible,...scalarOracle};assert.equal(afterCompletion.error,null);assert.ok(afterCompletion.data instanceof Blob);
+  mark('success_post_complete_review_basis');const completedBasis=await readBasis();assert.equal(completedBasis.manifestFingerprint,basis.manifestFingerprint);
+
   if(uiFixture){
    const output=resolve(process.env.MATERIAL_UI_FIXTURE_OUTPUT!);const outputDirectory=dirname(output);assert.ok(['/private/tmp','/tmp'].includes(dirname(outputDirectory))&&basename(outputDirectory)===`offroad-material-ui-${namespace}`&&basename(output)==='fixture.json');const directoryStat=lstatSync(outputDirectory);assert.ok(directoryStat.isDirectory()&&!directoryStat.isSymbolicLink()&&(directoryStat.mode&0o777)===0o700&&directoryStat.uid===process.getuid?.());
    const proof={schemaVersion:'material-native-ui-fixture.v1',organizationId:org,workId,sessionId:session,recipeId:committed.recipeId,revisionId:committed.revisionId,bundleFingerprint:committed.bundleFingerprint,manifestFingerprint:basis.manifestFingerprint,materialCompilerVersion:caseMaterialsVersion,approved:false,email:email('owner'),password:fixturePassword,apiUrl:api};
