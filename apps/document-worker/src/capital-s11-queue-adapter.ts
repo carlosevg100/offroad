@@ -7,7 +7,7 @@ import {legacyGatewayFingerprint, prepareGatewayInput, retentionMatrixVersion, t
 import {researchSourceSchema, type ResearchSource} from "@offroad/public-research";
 import {openCapitalPublicCaptureAdapter} from "./capital-public-capture-adapter";
 import {capitalS11RecipeReceiptSchema, capitalS11FinalOutputFingerprint, type CapitalS11ProcessingPorts, type CapitalS11RetainedOutput} from "./capital-s11-processing";
-import {prepareCapitalS11Recipe, reconstructCapitalS11Request,capitalS11DispatchPins, type CapitalS11Component} from "./capital-s11-recipe";
+import {prepareCapitalS11Recipe, capitalS11ExecutionPins,capitalS11DispatchPins, type CapitalS11Component} from "./capital-s11-recipe";
 import {capitalS11CommitReceiptSchema,capitalS11TaskProjectionReceiptSchema,capitalS11RetentionScopeSchema,capitalS11QualityResultsSchema,capitalS11QualityFailureReceiptSchema,CapitalS11QualityFailure} from "./capital-s11-protocol";
 export {capitalS11CommitReceiptSchema} from "./capital-s11-protocol";
 export type {CapitalS11CommitReceipt} from "./capital-s11-protocol";
@@ -60,7 +60,7 @@ export function createCapitalS11QueueAdapter(client:SupabaseClient,job:CapitalPr
    const reconstruction=prepareCapitalS11Recipe(preparation);const prepared=prepareGatewayInput({...reconstruction.prepared.request,requireInputAttestation:true,outputMode:"structured",timeoutMs:240000,
     dataHandling:{classification:"confidential",purpose:"case_analysis",requiredPolicyVersion:retentionMatrixVersion}});
    const actual={...reconstruction,prepared};const routes=[{provider:"anthropic" as const,model:"claude-sonnet-5",effort:"medium" as const},{provider:"openai" as const,model:"gpt-5.6-terra",effort:"medium" as const}];
-   const pins=routes.map(route=>reconstructCapitalS11Request(actual,route).ordinalFingerprints());
+   const pins=routes.map(route=>capitalS11ExecutionPins(actual,route));
    routes.forEach(route=>capitalS11DispatchPins(actual,route));
    receipt=capitalS11RecipeReceiptSchema.parse(await rpc("worker_finalize_capital_s11_recipe_v1",{p_recipe_id:state.base.recipeId,p_context_retained_payload_id:state.contextScope.retainedPayloadId,
     p_components:reconstruction.recipe.components,p_reconstruction_fingerprint:prepared.inputFingerprint,p_prompt_fingerprint:pins[0]!.promptFingerprint,

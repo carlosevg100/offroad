@@ -71,6 +71,12 @@ export function reconstructCapitalS11Request(preparation:ReturnType<typeof prepa
   return buildEffectiveAdapterRequest(preparation.prepared,route,{maxOutputTokens:8000,timeoutMs:240000});
 }
 
+/** Identity of the current gateway-adapter-input.v1 send, also fixed by the SQL seal. */
+export function capitalS11ExecutionPins(preparation:ReturnType<typeof prepareCapitalS11Recipe>,route:ModelRef) {
+  const actual=reconstructCapitalS11Request(preparation,route);
+  return Object.freeze({requestFingerprint:actual.requestFingerprintV1,promptFingerprint:actual.promptFingerprint,inputFingerprint:actual.inputFingerprint});
+}
+
 /** Observed namespace for future server pin parity, not an authorization receipt or budget. */
 export function capitalS11DispatchPins(preparation:ReturnType<typeof prepareCapitalS11Recipe>,route:ModelRef) {
   const actual=reconstructCapitalS11Request(preparation,route),anthropic=route.provider==="anthropic",price=listPrices[route.model];
