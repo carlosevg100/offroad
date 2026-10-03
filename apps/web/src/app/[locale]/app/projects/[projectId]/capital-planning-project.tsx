@@ -6,11 +6,14 @@ import {notFound} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {isCapitalS11Projection} from "@/lib/artifacts/capital-s11-result";
+import {loadCapitalPlanningNativeResult} from "@/lib/artifacts/capital-planning-native-result";
 import {jobKindRunning, workShouldRefresh} from "@/lib/advisor/work-activity";
 import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
 import "@/app/work-activity.css";
 
 import {OriginationDecision} from "./origination-decision";
+import {CapitalPlanningNativeReview} from "./capital-planning-native-review";
 
 type Props = {locale: string; projectId: string};
 
@@ -51,7 +54,12 @@ export async function CapitalPlanningProject({locale, projectId}: Props) {
   for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
   const artifact = artifacts?.find((item) => item.artifact_type === "alternative_map" && item.status !== "superseded");
-  const parsed = artifact ? capitalPlanningMapArtifactSchema.safeParse(artifact.content) : null;
+  const native = Boolean(artifact && isCapitalS11Projection(artifact.content));
+  const retained = native && artifact ? await loadCapitalPlanningNativeResult(supabase, {organizationId: organization.id, workId: project.id, artifact}) : null;
+  // A marked native projection never falls back to an inline legacy body.
+  const parsed = artifact ? capitalPlanningMapArtifactSchema.safeParse(native ? retained?.ok ? retained.content : null : artifact.content) : null;
+  const reviewBasis = retained?.ok ? retained.review : null;
+  const artifactStatus = reviewBasis?.status ?? artifact?.status;
   const decision = artifact ? decisions?.find((item) => item.artifact_id === artifact.id) : null;
   // The analysis runs only while its job is queued or leased; a missing result is a gap, not work.
   const analysisRunning = jobKindRunning(activity, ["capital_project_analysis"]);
@@ -88,7 +96,7 @@ export async function CapitalPlanningProject({locale, projectId}: Props) {
           )
           ) : parsed?.success ? (
             <article className="origination-brief capital-planning-map">
-              <header><div><p className="section-kicker">{t("map.kicker")}</p><h2>{t("map.title")}</h2><p>{t("map.asOf", {date: parsed.data.asOfDate})}</p></div><span className={`origination-status origination-status--${artifact.status}`}><Check aria-hidden="true" size={12} />{t(`artifactStatus.${artifact.status}`)}</span></header>
+              <header><div><p className="section-kicker">{t("map.kicker")}</p><h2>{t("map.title")}</h2><p>{t("map.asOf", {date: parsed.data.asOfDate})}</p></div><span className={`origination-status origination-status--${artifactStatus}`}><Check aria-hidden="true" size={12} />{t(`artifactStatus.${artifactStatus}`)}</span></header>
 
               <section className="origination-brief__executive"><span>{t("map.executiveRead")}</span><p>{parsed.data.executiveRead}</p></section>
               <section className="origination-brief__section">
@@ -137,7 +145,7 @@ export async function CapitalPlanningProject({locale, projectId}: Props) {
               <section className="origination-sources"><span>{t("map.sourceList")}</span><ul>{parsed.data.sources.map((source) => <li key={`${source.topic}-${source.url}`}><small>{t(`sourceTopics.${source.topic}`)}</small><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={11} /></a></li>)}</ul></section>
               <p className="origination-brief__boundary"><AlertCircle aria-hidden="true" size={14} />{parsed.data.scopeBoundary}</p>
 
-              {artifact.status === "pending_confirmation" ? <OriginationDecision artifactId={artifact.id} copy={{confirm: t("decision.confirm"), confirmed: t("decision.confirmed"), errorInvalid: t("decision.errors.invalid"), errorSave: t("decision.errors.save"), errorStale: t("decision.errors.stale"), note: t("decision.note"), notePlaceholder: t("decision.notePlaceholder"), requestChanges: t("decision.requestChanges"), requested: t("decision.requested"), title: t("decision.title")}} fingerprint={artifact.artifact_fingerprint} locale={locale} projectId={project.id} /> : decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{decision.decision === "confirm" ? t("decision.confirmed") : t("decision.requested")}</p> : null}
+              {native ? (retained?.ok ? <CapitalPlanningNativeReview locale={locale} basis={retained.review} /> : null) : artifactStatus === "pending_confirmation" ? <OriginationDecision artifactId={artifact.id} reviewBasis={reviewBasis} copy={{confirm: t("decision.confirm"), confirmed: t("decision.confirmed"), errorInvalid: t("decision.errors.invalid"), errorSave: t("decision.errors.save"), errorStale: t("decision.errors.stale"), note: t("decision.note"), notePlaceholder: t("decision.notePlaceholder"), requestChanges: t("decision.requestChanges"), requested: t("decision.requested"), title: t("decision.title")}} fingerprint={artifact.artifact_fingerprint} locale={locale} projectId={project.id} /> : decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{decision.decision === "confirm" ? t("decision.confirmed") : t("decision.requested")}</p> : null}
             </article>
           ) : <div className="origination-working"><AlertCircle aria-hidden="true" size={23} /><h2>{t("project.invalidArtifactTitle")}</h2><p>{t("project.invalidArtifactBody")}</p></div>}
         </section>

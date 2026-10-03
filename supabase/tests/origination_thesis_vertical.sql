@@ -260,14 +260,14 @@ begin
  begin
   perform public.request_origination_thesis_revision_v1(artifact_id,artifact_fp,'Priorizar capital de giro; a hipótese de refinanciamento não reflete a conversa.');
  exception when insufficient_privilege then
-  if sqlerrm<>'capital_m07_revision_review_required' then raise;end if;blocked:=true;
+  if sqlerrm<>'capital_artifact_review_upgrade_required' then raise;end if;blocked:=true;
  end;
  if not blocked then raise exception 'origination_old_revision_native_shortcut';end if;
  blocked:=false;
  begin
   perform public.submit_advisor_artifact_revision_turn_v1(project_id,'90000000-0000-4000-8000-000000000201','pt-BR','Priorizar capital de giro; a hipótese de refinanciamento não reflete a conversa.');
  exception when insufficient_privilege then
-  if sqlerrm<>'capital_m07_revision_review_required' then raise;end if;blocked:=true;
+  if sqlerrm<>'capital_artifact_review_upgrade_required' then raise;end if;blocked:=true;
  end;
  if not blocked then raise exception 'origination_old_chat_revision_native_shortcut';end if;
  if(select count(*) from public.processing_jobs where work_id=project_id)<>prior_jobs

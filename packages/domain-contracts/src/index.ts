@@ -264,14 +264,14 @@ export const companyDebtDiagnosticSchema = z.object({
     disconfirmers: z.array(z.string().min(8).max(600)).min(1).max(8),
     sourceUrls: z.array(z.url()).min(1).max(4),
   })).max(6),
-  // The residual batch is asked whole, each request with its reason; twenty-four is a technical
-  // bound on one artifact, not a product cap, and an empty batch is a legitimate outcome.
+  // Ask the complete residual with reasons; transport/output limits are enforced separately.
+  // An empty batch is a legitimate outcome.
   informationRequests: z.array(z.object({
     request: z.string().min(8).max(500),
     whyItMatters: z.string().min(15).max(700),
     decisionImpact: z.string().min(15).max(700),
     acceptableEvidence: z.array(z.string().min(3).max(300)).min(1).max(5),
-  })).max(24),
+  })),
   questions: z.array(z.object({
     question: z.string().min(10).max(500),
     whyItMatters: z.string().min(10).max(700),

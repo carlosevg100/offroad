@@ -1,0 +1,13 @@
+import {describe,it,expect} from "vitest";
+import {capitalProjectReviewCommand,capitalProjectRevisionTurnCommand} from "./capital-project-review";
+const basis={projectId:"10000000-0000-4000-8000-000000000001",artifactId:"20000000-0000-4000-8000-000000000001",revisionId:"30000000-0000-4000-8000-000000000001",
+ manifestFingerprint:"a".repeat(64),artifactFingerprint:"b".repeat(64),preparedBy:"40000000-0000-4000-8000-000000000001",viewerId:"40000000-0000-4000-8000-000000000001",workAccess:true,
+ policy:{assignmentRequired:false,selfApprovalAllowed:true,roles:[]},status:"pending_confirmation",approvalActive:false,sourceCount:3};
+const intent={commandId:"50000000-0000-4000-8000-000000000001",decision:"confirm" as const,note:null,selfApprovalDeclared:true};
+describe("capital native artifact review command",()=>{
+ it("sends the displayed immutable target and the stable command",()=>{const c=capitalProjectReviewCommand(basis,intent);expect(c.rpc).toBe("decide_capital_project_artifact_v2");expect(c.args).toMatchObject({p_artifact_id:basis.artifactId,p_revision_id:basis.revisionId,p_artifact_fingerprint:basis.artifactFingerprint,p_command_id:intent.commandId});expect(capitalProjectReviewCommand(basis,intent)).toEqual(c);});
+ it("requires explicit self declaration and current permission",()=>{expect(()=>capitalProjectReviewCommand(basis,{...intent,selfApprovalDeclared:false})).toThrow("self_approval");expect(()=>capitalProjectReviewCommand({...basis,policy:{...basis.policy,selfApprovalAllowed:false}},intent)).toThrow("self_approval");});
+ it("requires work authority as well as the assigned reviewer",()=>{expect(()=>capitalProjectReviewCommand({...basis,workAccess:false,policy:{...basis.policy,assignmentRequired:true,roles:["approver"]}},intent)).toThrow("assignment");});
+ it("denies inactive targets and empty return notes",()=>{expect(()=>capitalProjectReviewCommand({...basis,status:"superseded"},intent)).toThrow("inactive");expect(()=>capitalProjectReviewCommand(basis,{...intent,decision:"request_changes",note:" "})).toThrow("return_note");});
+ it("conversation has only return with the explicit target and exact message ID",()=>{const c=capitalProjectRevisionTurnCommand(basis,{messageId:intent.commandId,locale:"pt-BR",content:"Rever as premissas"});expect(c.rpc).toBe("submit_advisor_artifact_revision_turn_v2");expect(c.args).toMatchObject({p_revision_id:basis.revisionId,p_message_id:intent.commandId,p_content:"Rever as premissas"});expect(c.args).not.toHaveProperty("p_decision");expect(()=>capitalProjectRevisionTurnCommand(null,{messageId:intent.commandId,locale:"pt-BR",content:"Aprovar"})).toThrow();});
+});

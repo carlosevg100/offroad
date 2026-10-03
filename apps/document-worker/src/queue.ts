@@ -1,3 +1,7 @@
+import {createCapitalS11QueueAdapter, type CapitalS11QueueAdapter} from "./capital-s11-queue-adapter";
+import {createCapitalS11RecoveryQueueAdapter} from "./capital-s11-recovery-queue-adapter";
+import {createCapitalS11RevisionQueueAdapter} from "./capital-s11-revision-queue-adapter";
+import {readCapitalCaptureBytes, readCapitalS11RevisionBodyBytes, readCapitalS11RevisionTaskBytes, readCapitalS11RevisionSourceBytes} from "./capital-body-read-client";
 import {createCapitalM07QueueAdapter, type CapitalM07QueueAdapter} from "./capital-m07-queue-adapter";
 import {institutionalResultReceiptSchema, type InstitutionalResultReceipt, type InstitutionalResultInput} from "./institutional-model-runtime";
 import {retrieveGoverned} from "@offroad/governed-retrieval";
@@ -110,6 +114,8 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
     /** Every production DAG requires an artifact per succeeded run; the preview run carries false so a replayed step may point at the object of an earlier plan. */
     capital_artifact_required: z.boolean(),
     revision_of_artifact_id: z.uuid().optional(),
+    revision_of_native_revision_id: z.uuid().optional(),
+    revision_review_id: z.uuid().optional(),
     correction_decision_id: z.uuid().optional(),
     trigger_event: z.record(z.string(), z.unknown()).default({}),
     model_budget: z.object({
@@ -127,6 +133,10 @@ export const capitalProjectAnalysisJobSchema = claimedJobBase.extend({
   }).refine((payload) => Boolean(payload.revision_of_artifact_id) === Boolean(payload.correction_decision_id), {
     message: "revision artifact and decision must be supplied together",
   }).superRefine((payload, ctx) => {
+    if (Boolean(payload.revision_review_id) !== Boolean(payload.revision_of_native_revision_id)
+      || (payload.revision_review_id && !payload.revision_of_artifact_id)) {
+      ctx.addIssue({code: "custom", path: ["revision_review_id"], message: "native revision requires its exact review and artifact"});
+    }
     if ((payload.analysis_scope === "provider_research" || payload.analysis_scope === "provider_case_fit") ? (payload.model_budget.max_cost_usd !== 0 || payload.model_budget.max_calls !== 0) : (payload.model_budget.max_cost_usd <= 0 || payload.model_budget.max_calls <= 0)) {
       ctx.addIssue({code: "custom", path: ["model_budget"], message: "provider research requires zero model budget; other scopes require a positive budget"});
     }
@@ -185,6 +195,8 @@ export type CapitalTaskFinishStatus = "waiting_user" | "blocked" | "succeeded" |
 
 export type QueueClient = {
   createCapitalM07Adapter?(job:CapitalProjectAnalysisJob):CapitalM07QueueAdapter;
+  createCapitalS11Adapter?(job:CapitalProjectAnalysisJob):CapitalS11QueueAdapter;
+  createCapitalS11RecoveryAdapter?(job:CapitalProjectAnalysisJob):ReturnType<typeof createCapitalS11RecoveryQueueAdapter>;
   loadWorkTurn?(job: WorkConversationJob): Promise<unknown>;
   commitWorkTurn?(job: WorkConversationJob, fingerprint: string, response: unknown, spend: unknown): Promise<unknown>;
   loadExecutionBriefProposal?(job: ExecutionBriefProposalJob): Promise<unknown>;
@@ -503,6 +515,20 @@ export function createQueueClient(
 
   return {
     createCapitalM07Adapter: (job:CapitalProjectAnalysisJob)=>createCapitalM07QueueAdapter(supabase,job),
+    createCapitalS11Adapter: (job:CapitalProjectAnalysisJob)=>{
+      const readBytes = (authority:{jobId:string;capabilityToken:string},scope:Parameters<typeof readCapitalCaptureBytes>[2]) => readCapitalCaptureBytes(supabase,authority,scope,"s11_body");
+      if (!job.payload.revision_of_artifact_id) return createCapitalS11QueueAdapter(supabase,job,readBytes);
+      const authority = {jobId:job.job_id,capabilityToken:job.capability_token};
+      return createCapitalS11RevisionQueueAdapter(supabase,job,readBytes,{
+        prior: scope=>{
+          if (!scope.retainedPayloadId) throw new Error("capital_s11_revision_retained_body_required");
+          return readCapitalS11RevisionBodyBytes(supabase,authority,{retainedPayloadId:scope.retainedPayloadId},scope);
+        },
+        task: (scope,taskRunId)=>readCapitalS11RevisionTaskBytes(supabase,authority,{taskRunId},scope),
+        source: scope=>readCapitalS11RevisionSourceBytes(supabase,authority,{retainedPayloadId:scope.retainedPayloadId},scope),
+      });
+    },
+    createCapitalS11RecoveryAdapter: (job:CapitalProjectAnalysisJob)=>createCapitalS11RecoveryQueueAdapter(supabase,job),
     async claim() {
       const data = await call("worker_claim_job_v4", {
         p_worker_token: options.workerToken,
