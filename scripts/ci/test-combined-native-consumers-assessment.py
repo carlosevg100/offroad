@@ -3,7 +3,7 @@
 No stack startup/reset, remote target, migration journal, or privileged fake receipt.
 Run once on a fresh CI stack, separate from other fixture consumers.
 """
-import argparse,hashlib,json,os,pathlib,subprocess,sys
+import argparse,hashlib,json,os,pathlib,re,subprocess,sys
 from urllib.parse import urlparse
 ROOT=pathlib.Path(__file__).resolve().parents[2]
 CONSUMERS=('capital_public_artifact_review_cutover','capital_s11_native_consumption','capital_s11_execution_ledger','capital_s11_task_projections','capital_s11_native_commit','capital_s11_native_revision','capital_debt_native_consumption','capital_debt_execution_ledger','capital_debt_task_projections','capital_debt_native_commit','capital_debt_native_revision')
@@ -18,6 +18,14 @@ def run(command,env,phase,input=None):
  if result.returncode:
   # Existing fixture output stays synthetic and local; report a bounded phase,
   # never the connection URL, credentials or arbitrary SQL error/body text.
+  diagnostic=result.stdout+'\n'+result.stderr
+  states=sorted(set(re.findall(r'(?:ERROR|FATAL):\s+([0-9A-Z]{5}):',diagnostic)))
+  allowed=set()
+  for test in (v/'supabase/tests/support').glob('*.sql'):
+   allowed.update(re.findall(r"raise exception '([a-zA-Z0-9_]+)'",test.read_text(),re.I))
+  allowed.update(re.findall(r"raise exception '([a-zA-Z0-9_]+)'",(ROOT/'supabase/tests/support/combined_native_wrapper_chain.sql').read_text(),re.I))
+  literals=sorted(name for name in allowed if re.search(r'(?:ERROR|FATAL):\s+(?:[0-9A-Z]{5}:\s+)?'+re.escape(name)+r'(?=\s|$)',diagnostic))
+  print(json.dumps({'eval':'combined_native_sql','phase':phase,'result':'FAIL','sqlStates':states[:8],'staticTestAssertions':literals[:8]}))
   raise RuntimeError('combined_native_phase_failed:'+phase)
  print(json.dumps({'eval':'combined_native_sql','phase':phase,'result':'PASS'}))
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('--consumers-root',required=True);p.add_argument('--assessment-root',required=True);p.add_argument('--self-test',action='store_true');a=p.parse_args()
@@ -38,7 +46,7 @@ if a.self_test:
  else:raise AssertionError('Implicit fixture target admitted')
  print('combined_native_harness_guard: PASS; hashes17 confirmed; no SQL executed');sys.exit(0)
 url=validate(os.environ);env=dict(os.environ)
-psql=['psql',url,'-X','-v','ON_ERROR_STOP=1']
+psql=['psql',url,'-X','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose']
 # Do not reuse any root/WB stack with already installed candidates. The canonical
 # M07/material baseline is a prerequisite and never fabricated by this harness.
 preflight="""do $$begin
@@ -52,6 +60,12 @@ run([sys.executable,str(v/'scripts/ci/install-assessment-native-local.py')],env,
 run(psql+['-f',str(ROOT/'supabase/tests/support/combined_native_wrapper_chain.sql')],env,'wrapper-chain-and-ACL')
 for name in ('capital_debt_execution_ledger','capital_s11_task_projections'):
  run(psql+['-f',str(c/'supabase/tests/support'/(name+'.sql'))],env,name+'-catalogue-hostile-commands')
-env['ASSESSMENT_DRAFT_IN_TRANSACTION']='0'
-run([sys.executable,str(v/'scripts/ci/test-assessment-native.py')],env,'assessment-four-real-rollback-suites')
+# Reuse the exact four checked-in rollback inputs and include expansion used by
+# test-assessment-native.py, but separate phases and SQLSTATE diagnostics.
+# All six drafts are already installed; no test/query semantic changes.
+def expand(path):
+ return re.sub(r'^\\ir (.+)$',lambda m:expand(path.parent/m[1].strip()),path.read_text(),flags=re.M)
+for name in ('assessment_review_projection','assessment_rejection_and_revision','assessment_public_research_denial','work_update_native_adoption'):
+ test=v/'supabase/tests/support'/('assessment_native_'+name+'.sql')
+ run(psql,env,'assessment-'+name,expand(test))
 print(json.dumps({'eval':'combined_native_install_and_SQL','result':'PASS','drafts':17,'order':'11-consumers-then6-assessment','evidence':'real disposable SQL; not SDK HTTP or production'}))

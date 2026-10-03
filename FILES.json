@@ -7,7 +7,7 @@
     },
     {
       "path": "scripts/ci/test-combined-native-consumers-assessment.py",
-      "sha256": "b94dd26aae613f34faaec78c21c2e3ff98bc3ce30cbe9f39db982a8a3496d0a3"
+      "sha256": "e99a6d614a6610726392bd8e40bb2cb6d33af8e8528f61ff04c6c73581d571aa"
     },
     {
       "path": "supabase/tests/support/combined_native_wrapper_chain.sql",
@@ -26,7 +26,8 @@
     "python-syntax",
     "harness-loopback-explicit-opt-in-guard",
     "frozen-draft-hashes-17-current-heads",
-    "workflow-YAML-dispatch-only-11-steps-3-pinned-checkouts-always-cleanup"
+    "workflow-YAML-dispatch-only-11-steps-3-pinned-checkouts-always-cleanup",
+    "closed-diagnostic-unit-exact-suite-SQLSTATE-static-test-literal-no-raw"
   ],
   "unexecuted": [
     "workflow-dispatch",
@@ -36,5 +37,19 @@
     "assessment-four-real-rollback-suites"
   ],
   "retirement": "Temporary audit branch/workflow: never merge; retire after combined PASS and canonical promotions installed.",
-  "activation": "push to dedicated temporary audit branch; workflow_dispatch on non-default new workflow is not assumed"
+  "activation": "push to dedicated temporary audit branch; workflow_dispatch on non-default new workflow is not assumed",
+  "actualCI": {
+    "run": 37097473159,
+    "head": "958b3cc5acc12e19d2bf3fcf35011134025cfc93",
+    "passed": [
+      "canonical-replay",
+      "install11-consumers",
+      "install6-assessment",
+      "wrapper-chain-and-ACL",
+      "debt-ledger-hostile",
+      "S11-task-hostile"
+    ],
+    "failed": "assessment-four-real-rollback-suites",
+    "cause": "Not exposed by first harness; closed diagnostic replay required."
+  }
 }
