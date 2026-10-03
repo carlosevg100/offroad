@@ -44,7 +44,7 @@ async function main(){
  // Run the actual production cleanup transport throughout the long job and
  // human-return chain. A leased item is deleted/acknowledged, never abandoned
  // to simulate a heartbeat; failures remain a failing gate.
- const janitor=createCapitalPublicCaptureStorage(client);const initialPurge=await janitor.purgeOnce('9'.repeat(64),100);assert.ok(initialPurge.every(result=>result.state==='purged'));janitorPolls++;
+ const janitor=createCapitalPublicCaptureStorage(client);const initialPurge=await janitor.purgeOnce('9'.repeat(64),20);assert.ok(initialPurge.every(result=>result.state==='purged'));janitorPolls++;
  maintenance=setInterval(()=>{if(pendingJanitor)return;pendingJanitor=janitor.purgeOnce('9'.repeat(64),20).then(results=>{janitorPolls++;if(results.some(result=>result.state!=='purged'))janitorFailure=new Error('capital_debt_real_janitor_retry_required');},error=>{janitorFailure=error;}).finally(()=>{pendingJanitor=undefined;});},20000);maintenance.unref();
 
  let sends=0,researchCalls=0,acks=0;const connections={anthropic:{accountRef:`debt-http-${namespace}`,projectRef:`debt-http-project-${namespace}`,credentialBinding:`debt-http-key-${namespace}`,region:'global'},openai:{accountRef:`debt-http-fallback-${namespace}`,projectRef:`debt-http-project-${namespace}`,credentialBinding:`debt-http-fallback-key-${namespace}`,region:'global'}};
