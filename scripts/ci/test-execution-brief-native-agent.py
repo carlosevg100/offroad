@@ -52,6 +52,10 @@ try:
  set local role authenticated;
  select set_config('request.jwt.claims','{"sub":"a8800000-0000-4000-8000-000000000001","role":"authenticated"}',true);
  """
+ # The preview's published entry is origination_thesis. Its fresh company
+ # workspace needs the explicit owner act, not a worker/private capability grant.
+ if preview_fixture:
+  prefix+="select public.set_workspace_capability_v1('origination_representation',true,0);\n"
  prefix+="insert into agent_fixture values('start',public.start_work_v1('a8800000-0000-4000-8000-000000000010','pt-BR','Synthetic capital planning','Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','capital_planning','public_information',"+literal(json.dumps(plan))+"::jsonb,null,false));"
  prefix+="""
  insert into agent_fixture values('session',to_jsonb(pg_temp.legacy_intake_for_work((select(v->>'workId')::uuid from agent_fixture where k='start'))));

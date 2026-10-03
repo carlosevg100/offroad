@@ -163,6 +163,8 @@ jobs:
         OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
         OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
       run: node scripts/ci/test-capital-native-provider-sdk.mjs
+    - name: Overlay preview-only owner bootstrap through public capability command
+      run: cp ../audit/scripts/ci/test-execution-brief-native-agent.py scripts/ci/test-execution-brief-native-agent.py
     - name: Finite native preview through real Storage, two paid boundaries and replay
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
