@@ -617,12 +617,14 @@ jobs:
         run: node scripts/ci/test-material-production-native-sdk.mjs
 
       - name: Install unpublished native consumer drafts in isolated CI only
+        id: native_consumers_install
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
         run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
 
       - name: Native debt and S11 catalogue and hostile commands
+        id: native_consumers_catalogue
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: |
@@ -638,6 +640,8 @@ jobs:
         run: python3 -B scripts/ci/test-capital-s11-sdk.py
 
       - name: Native C11 initial and human return through real Storage and Edge
+        # Independent families keep their failures visible in the same run.
+        if: ${{ always() && steps.native_consumers_install.outcome == 'success' && steps.native_consumers_catalogue.outcome == 'success' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
