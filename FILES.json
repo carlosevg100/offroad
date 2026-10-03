@@ -7,7 +7,7 @@
     },
     {
       "path": "scripts/ci/test-combined-native-consumers-assessment.py",
-      "sha256": "e99a6d614a6610726392bd8e40bb2cb6d33af8e8528f61ff04c6c73581d571aa"
+      "sha256": "03aaed0b3e179abcbf9da1fd7d407757c6f86faacfc27f62350749e41a2b2593"
     },
     {
       "path": "supabase/tests/support/combined_native_wrapper_chain.sql",
@@ -27,7 +27,8 @@
     "harness-loopback-explicit-opt-in-guard",
     "frozen-draft-hashes-17-current-heads",
     "workflow-YAML-dispatch-only-11-steps-3-pinned-checkouts-always-cleanup",
-    "closed-diagnostic-unit-exact-suite-SQLSTATE-static-test-literal-no-raw"
+    "closed-diagnostic-unit-exact-suite-SQLSTATE-static-test-literal-no-raw",
+    "static-contract-context-allowlist-unit"
   ],
   "unexecuted": [
     "workflow-dispatch",
@@ -51,5 +52,22 @@
     ],
     "failed": "assessment-four-real-rollback-suites",
     "cause": "Not exposed by first harness; closed diagnostic replay required."
+  },
+  "baselineSourceProof": "git diff --name-only 16fb3a0b e48084c4 -- supabase/migrations returned empty",
+  "latestActualCI": {
+    "run": 37097867804,
+    "head": "ffe2d340ad2a1f2310799062f381c3d215a60a04",
+    "passed": [
+      "install11-consumers",
+      "install6-assessment",
+      "wrapper-chain-ACL",
+      "S11-debt-hostile",
+      "assessment-review",
+      "assessment-rejection",
+      "assessment-public-research"
+    ],
+    "failed": "work_update_native_adoption",
+    "sqlstate": "22023",
+    "cause": "Contract exception code not yet exposed; no SQL changes."
   }
 }

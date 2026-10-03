@@ -25,7 +25,17 @@ def run(command,env,phase,input=None):
    allowed.update(re.findall(r"raise exception '([a-zA-Z0-9_]+)'",test.read_text(),re.I))
   allowed.update(re.findall(r"raise exception '([a-zA-Z0-9_]+)'",(ROOT/'supabase/tests/support/combined_native_wrapper_chain.sql').read_text(),re.I))
   literals=sorted(name for name in allowed if re.search(r'(?:ERROR|FATAL):\s+(?:[0-9A-Z]{5}:\s+)?'+re.escape(name)+r'(?=\s|$)',diagnostic))
-  print(json.dumps({'eval':'combined_native_sql','phase':phase,'result':'FAIL','sqlStates':states[:8],'staticTestAssertions':literals[:8]}))
+  # Core canonical migrations are byte-identical to baseline16fb (read-only
+  # git diff proof); draft filenames are the seventeen hash-pinned inputs.
+  sources=list((c/'supabase/migrations').glob('*.sql'))+[c/'supabase/pending'/(n+'.sql') for n in CONSUMERS]+[v/'supabase/pending'/(n+'.sql') for n in ASSESSMENT]
+  contract_literals=set();function_names=set()
+  for source in sources:
+   text=source.read_text()
+   contract_literals.update(re.findall(r"raise exception '([a-zA-Z0-9_]+)'",text,re.I))
+   function_names.update(re.findall(r'create\s+(?:or\s+replace\s+)?function\s+(?:[a-zA-Z0-9_]+\.)?([a-zA-Z0-9_]+)\s*\(',text,re.I))
+  codes=sorted(name for name in contract_literals if re.search(r'(?:ERROR|FATAL):\s+(?:[0-9A-Z]{5}:\s+)?'+re.escape(name)+r'(?=\s|$)',diagnostic))
+  frames=sorted(set(re.findall(r'PL/pgSQL function (?:[a-zA-Z0-9_]+\.)?([a-zA-Z0-9_]+)\(',diagnostic))&function_names)
+  print(json.dumps({'eval':'combined_native_sql','phase':phase,'result':'FAIL','sqlStates':states[:8],'staticTestAssertions':literals[:8],'staticContractExceptions':codes[:8],'checkedInContextFunctions':frames[:16]}))
   raise RuntimeError('combined_native_phase_failed:'+phase)
  print(json.dumps({'eval':'combined_native_sql','phase':phase,'result':'PASS'}))
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('--consumers-root',required=True);p.add_argument('--assessment-root',required=True);p.add_argument('--self-test',action='store_true');a=p.parse_args()
