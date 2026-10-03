@@ -410,7 +410,9 @@ begin
     perform public.worker_record_agent_assessment_v1(ids.job_id,repeat('c',64),pending);
     if not exists(select 1 from public.capital_project_decisions d where d.id=decision_id and d.status='superseded')
       or not exists(select 1 from public.capital_project_decisions d where d.supersedes_decision_id=decision_id and d.revision=2 and d.status='directional') then raise exception 'actual recommendations no longer revisioned'; end if;
-    foreach review_status in array array['directional','confirmed','rejected'] loop
+    -- Rejection can close an unanswered demand without inventing a recommendation.
+    -- Directional and confirmed conclusions still require a recommendation (SQLSTATE 23514).
+    foreach review_status in array array['directional','confirmed'] loop
       begin
         perform pg_temp.fixture_review_placeholder(review_status,null,'user');
         raise exception 'recommendation constraint was weakened';
@@ -420,6 +422,11 @@ begin
         if rejected_constraint not in ('capital_project_decisions_check','assessment_status_recommendation_required') then raise; end if;
       end;
     end loop;
+    perform pg_temp.fixture_review_placeholder('rejected',null,'user');
+    if not exists(select 1 from public.capital_project_decisions where id='82000000-0000-4000-8000-000000000393'
+      and status='rejected' and recommendation is null and reviewed_by='user') then
+      raise exception 'rejection invented a recommendation or lost its reviewer';
+    end if;
     begin
       perform pg_temp.fixture_review_placeholder('confirmed','Uma recomendação real.',null);
       raise exception 'confirmed decision lost reviewer constraint';

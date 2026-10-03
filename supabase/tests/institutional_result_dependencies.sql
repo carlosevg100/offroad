@@ -493,18 +493,23 @@ delete from public.source_documents where id=pg_temp.id('D1');
 insert into inst select 'E_D2',id from private.domain_events where aggregate_kind='source_version' and aggregate_id=pg_temp.id('D');
 select pg_temp.drain_outbox();
 do $$ declare f private.institutional_result_invalidations;h private.institutional_recompute_holds;q public.work_continuation_requests;begin
- select * into strict f from private.institutional_result_invalidations where event_id=pg_temp.id('E_D2');
+ -- The graph records each completed unsuperseded result, not only the reader's established R0.
+ select * into strict f from private.institutional_result_invalidations where event_id=pg_temp.id('E_D2') and result_id=pg_temp.id('R0');
+ if (select array_agg(result_id order by result_id) from private.institutional_result_invalidations where event_id=pg_temp.id('E_D2'))
+  is distinct from (select array_agg(id order by id) from inst where name in ('R0','R1','R3')) then
+  raise exception 'source invalidation omitted or invented a completed unsuperseded lineage result';
+ end if;
  if f.result_id<>pg_temp.id('R0') or f.dependency_kind<>'source_version' or f.reason_class<>'data_change' or f.pinned->>'versionId'<>pg_temp.id('D1')::text
  or f.head->>'versionId'<>pg_temp.id('D2')::text or f.via_source_version_ids<>'{}' then
   raise exception 'source impact mismatch: %',to_jsonb(f);
  end if;
  select * into strict q from public.work_continuation_requests where status='open';
  select * into strict h from private.institutional_recompute_holds where request_id=q.id;
- if h.hold_kind<>'configuration_behind_source' or h.signal<>'institutional_configuration:c5a10000-0000-4000-9000-000000000010' or h.result_id<>pg_temp.id('R0')
+ if h.hold_kind<>'configuration_behind_source' or h.signal<>'institutional_configuration:c5a10000-0000-4000-9000-000000000010' or h.result_id<>pg_temp.id('R3')
  or h.released_at is not null or exists(select 1 from public.institutional_recompute_candidates where request_id=q.id) then
   raise exception 'hold mismatch: %',to_jsonb(h);
  end if;
- if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleInstitutionalResults'<>'1' then raise exception 'the held result is not counted as stale'; end if;
+ if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleInstitutionalResults'<>'3' then raise exception 'the three completed unsuperseded results are not counted as stale'; end if;
  raise notice 'PASS: a newer version of a document it read makes the result stale, held until a configuration is approved over the current documents';
 end $$;
 select pg_temp.configuration('C5','c5a10000-0000-4000-9000-000000000010','c5a10000-0000-4000-9000-000000000011',5,'C4',array['D2','E1']);
@@ -725,8 +730,8 @@ do $$ declare attempt text;rejected boolean;visible bigint;
 end $$;
 
 -- 11. The worker reads freshness for the case analysis it holds, through that job's capability, and
--- only for that kind: the stale dependents of the job's work (R0, whose document moved, until its
--- recomputation R4 completes).
+-- only for that kind: the graph keeps R0/R1/R3 live until superseded even though only R0 is
+-- established for the human reader. All three consumed the document that moved.
 insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
 values('c5a10000-0000-4000-9000-000000000032','c5a10000-0000-4000-9000-000000000001','c5a10000-0000-4000-9000-000000000011',
  (select coalesce(max(run_no),0)+1 from public.processing_runs where intake_session_id='c5a10000-0000-4000-9000-000000000011'),
@@ -742,7 +747,7 @@ do $$ declare body jsonb;rejected boolean:=false;other uuid:=pg_temp.job_of('c5a
  perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000009');
  set local role authenticated;
  body:=public.worker_load_work_freshness_v1('c5a10000-0000-4000-9000-000000000033',repeat('w',64));
- if body<>'{"workId": "c5a10000-0000-4000-9000-000000000010", "schemaVersion": "work-freshness.v1", "staleExecutions": 0, "staleDependents": 1, "staleInstitutionalResults": 1}'::jsonb then
+ if body<>'{"workId": "c5a10000-0000-4000-9000-000000000010", "schemaVersion": "work-freshness.v1", "staleExecutions": 0, "staleDependents": 3, "staleInstitutionalResults": 3}'::jsonb then
   raise exception 'freshness of the case work mismatch: %',body;
  end if;
  begin
