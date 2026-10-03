@@ -45,6 +45,7 @@ async function main(){
  let stopAtFinalize=true,storageAuthorityProved=false;
  const client=createClient(api,key,{global:{headers:{'x-offroad-workspace':organization},fetch:(input,init)=>{if(stopAtFinalize&&(input instanceof Request?input.url:String(input)).includes('/rpc/worker_finalize_capital_preview_run_v1')){stopAtFinalize=false;return Promise.resolve(new Response(JSON.stringify({code:'synthetic_stop_after_terminal_task',message:'Synthetic fault before final marker'}),{status:409,headers:{'Content-Type':'application/json'}}));}return fetch(input,{...init,redirect:'error'}).then(async response=>{
   if(!storageAuthorityProved&&response.ok&&new URL(input instanceof Request?input.url:String(input)).pathname==='/rest/v1/rpc/worker_prepare_capital_preview_body_v1'){
+   if(!job)throw Error('capital_preview_exact_fixture_job_required');
    const allocation=z.object({allocationId:z.uuid(),retentionState:z.literal('allocated')}).parse(await response.clone().json());
    const quote=(value:string)=>"'"+value.replace(/'/g,"''")+"'";
    const testSql=readFileSync(new URL('../../../supabase/tests/support/capital_preview_storage_job_authority_actual.sql',import.meta.url),'utf8');
