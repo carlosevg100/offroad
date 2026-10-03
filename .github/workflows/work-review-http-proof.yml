@@ -94,6 +94,8 @@ jobs:
       run: python3 -B scripts/ci/install-work-review-dashboard-ci-draft.py
     - name: Install exact focused HTTP diagnostic probe
       run: cp ../audit/apps/web/e2e/work-review-history.spec.ts apps/web/e2e/work-review-history.spec.ts
+    - name: Install exact standalone route correction
+      run: cp ../audit/apps/web/src/components/advisor/standalone-work.tsx apps/web/src/components/advisor/standalone-work.tsx
     - name: Build the web app against the local stack
       run: pnpm --filter web build
     - name: Cache Playwright browser
