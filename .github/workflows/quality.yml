@@ -630,6 +630,15 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-material-production-native-sdk.mjs
 
+      # The wait proof reset destroyed the first disposable database. Install the
+      # same immutable consumers into this second stack before physical SDKs.
+      - name: Reinstall native consumers after the disposable database reset
+        id: native_consumers_reinstall
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
+        run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
+
       - name: Native debt and S11 catalogue and hostile commands
         id: native_consumers_catalogue
         env:
