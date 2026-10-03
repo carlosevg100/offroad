@@ -1,0 +1,5 @@
+{
+ "extends":"../tsconfig.json",
+ "compilerOptions":{"rootDir":"..","noEmit":true},
+ "include":["capital-preview-native-sdk-eval.ts","execution-brief-native-preview-fixture.ts","package-preview-consumed-corpus.ts"]
+}

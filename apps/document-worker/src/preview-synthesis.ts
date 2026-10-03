@@ -71,17 +71,13 @@ function objectsForModel(outputs: Map<string, preview.PreviewStepOutput>): Recor
   return view;
 }
 
-export async function writePreviewSynthesis(input: PreviewSynthesisInput): Promise<preview.SynthesisOutput> {
-  const {skeleton} = input;
-  if (!input.gateway) return {...skeleton, source: {...skeleton.source, reason: "no model gateway for this run"}};
-  const spentBefore = input.gateway.spent().costUsd;
-  const startedAt = Date.now();
-  try {
-    const completion = await input.gateway.complete({
-      task: "preview_synthesis",
+/** Single effective request constructor shared by runtime and native pinning. */
+export function preparePreviewSynthesisGatewayRequest(input: PreviewSynthesisInput) {
+  return {
+      task: "preview_synthesis" as const,
       system: PREVIEW_SYNTHESIS_SYSTEM,
       input: [{
-        type: "text",
+        type: "text" as const,
         text: JSON.stringify({
           locale: input.locale,
           request: input.request,
@@ -92,17 +88,35 @@ export async function writePreviewSynthesis(input: PreviewSynthesisInput): Promi
       }],
       schema: synthesisModelOutputSchema,
       schemaName: "preview_synthesis_output",
-      thinking: "off",
+      thinking: "off" as const,
       metadata: {surface: "preview_synthesis"},
-    });
+    };
+}
+
+export async function writePreviewSynthesis(input: PreviewSynthesisInput): Promise<preview.SynthesisOutput> {
+  const {skeleton} = input;
+  if (!input.gateway) return {...skeleton, source: {...skeleton.source, reason: "no model gateway for this run"}};
+  const spentBefore = input.gateway.spent().costUsd;
+  const startedAt = Date.now();
+  try {
+    const completion = await input.gateway.complete(preparePreviewSynthesisGatewayRequest(input));
     const costUsd = Math.max(0, input.gateway.spent().costUsd - spentBefore);
     const latencyMs = Date.now() - startedAt;
-    if (completion.output.abstain) {
-      return {...skeleton, source: {kind: "skeleton", model: completion.model, costUsd, latencyMs, reason: completion.output.abstainReason ?? "the model abstained"}};
+    return projectAcceptedPreviewSynthesis(input,completion.output,{model:completion.model,costUsd,latencyMs});
+  } catch (error) {
+    return {...skeleton, source: {...skeleton.source, costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore), latencyMs: Date.now() - startedAt, reason: `model call failed: ${error instanceof Error ? error.message.slice(0, 160) : "unknown"}`}};
+  }
+}
+
+/** Shared deterministic number guard; recovery never calls a model again. */
+export function projectAcceptedPreviewSynthesis(input:PreviewSynthesisInput,raw:unknown,execution:{model:string;costUsd:number;latencyMs:number}):preview.SynthesisOutput{
+ const output=synthesisModelOutputSchema.parse(raw),{skeleton}=input;
+    if (output.abstain) {
+      return {...skeleton, source: {kind: "skeleton", model: execution.model, costUsd:execution.costUsd, latencyMs:execution.latencyMs, reason: output.abstainReason ?? "the model abstained"}};
     }
-    const checked = validateSynthesisNumbers(completion.output.sections, numberVocabulary(input.outputs));
+    const checked = validateSynthesisNumbers(output.sections, numberVocabulary(input.outputs));
     if (checked.sections.length === 0) {
-      return {...skeleton, numbers: {verified: checked.verified, removed: checked.removed}, source: {kind: "skeleton", model: completion.model, costUsd, latencyMs, reason: "every sentence carried a number the objects do not hold"}};
+      return {...skeleton, numbers: {verified: checked.verified, removed: checked.removed}, source: {kind: "skeleton", model: execution.model, costUsd:execution.costUsd, latencyMs:execution.latencyMs, reason: "every sentence carried a number the objects do not hold"}};
     }
     const drafted: Omit<preview.SynthesisOutput, "trace"> = {
       schema_version: "preview-synthesis.v1",
@@ -111,10 +125,7 @@ export async function writePreviewSynthesis(input: PreviewSynthesisInput): Promi
       numbers: {verified: checked.verified, removed: checked.removed},
       objects_read: input.objectFingerprints,
       change_note: synthesisChangeNote(input.previous?.objects_read ?? null, input.objectFingerprints, input.locale),
-      source: {kind: "model", model: completion.model, costUsd, latencyMs, reason: null},
+      source: {kind: "model", model: execution.model, costUsd:execution.costUsd, latencyMs:execution.latencyMs, reason: null},
     };
     return {...drafted, trace: {outputFingerprint: synthesisFingerprint(drafted)}};
-  } catch (error) {
-    return {...skeleton, source: {...skeleton.source, latencyMs: Date.now() - startedAt, reason: `model call failed: ${error instanceof Error ? error.message.slice(0, 160) : "unknown"}`}};
-  }
 }

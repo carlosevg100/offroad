@@ -7015,5 +7015,90 @@
     "title": "Revisar estes materiais",
     "scope": "A aprovação vale para uso interno. O próximo trabalho terá um brief próprio para você autorizar.",
     "approved": "Materiais aprovados para uso interno. O brief do próximo trabalho aguarda autorização."
+  },
+  "WorkReviewHistory": {
+    "title": "Revisões, pendências e decisões",
+    "scope": "O histórico respeita seu acesso atual. Uma revisão ou relato não autoriza envio a terceiros.",
+    "unavailable": "O histórico está indisponível para seu acesso atual.",
+    "historicalActor": "Responsável do histórico",
+    "reason": "Motivo ou observação",
+    "declaration": "Declaro que posso revisar este conteúdo em nome da organização.",
+    "withheld": "Conteúdo restrito pelo acesso atual.",
+    "revision": "Revisão {number}",
+    "pending": "Aguardando revisão",
+    "reviewed": "Revisada",
+    "preparedBy": "Preparado por {name}",
+    "change": {
+      "cosmetic": "Mudança cosmética: aprovação anterior pode ser reafirmada",
+      "material": "Mudança material: exige novo ato de aprovação",
+      "other": "A base da revisão mudou",
+      "identical": "Base sem alterações"
+    },
+    "reasons": {
+      "manifest_context": "Contexto e dependências",
+      "content": "Conteúdo",
+      "sources": "Fontes",
+      "claims": "Conclusões",
+      "audience": "Destinatários",
+      "claim_set": "Conjunto de conclusões",
+      "claim_value": "Valores das conclusões",
+      "block_content": "Conteúdo",
+      "claim_support": "Evidências das conclusões",
+      "source_versions": "Versões das fontes",
+      "method_release": "Versão do método",
+      "execution": "Execução",
+      "institutional_result": "Resultado institucional",
+      "unverified_bytes": "Arquivo ou verificação dos bytes",
+      "invalid_snapshot": "Base de comparação inválida"
+    },
+    "historyAct": "Ato do histórico",
+    "acts": {
+      "approve": "Aprovação",
+      "reaffirm": "Aprovação reafirmada",
+      "revoke_approval": "Aprovação revogada",
+      "return": "Devolução",
+      "comment": "Comentário",
+      "reassign": "Responsabilidade reassociada"
+    },
+    "reaffirm": "Reafirmar aprovação anterior",
+    "more": "Carregar histórico anterior",
+    "reassignFrom": "Reassociar pendências de {name}",
+    "selectRecipient": "Selecione responsável elegível",
+    "decisions": "Decisões registradas",
+    "origin": {
+      "reported": "Relato de decisão externa",
+      "in_product": "Decisão no produto"
+    },
+    "precedence": {
+      "empty": "Sem decisão",
+      "current": "Base vigente",
+      "contested": "Base contestada: nenhuma vencedora presumida"
+    },
+    "contest": "Contestar esta base",
+    "decisionsTruncated": "Há decisões adicionais. Consulte sua referência específica.",
+    "report": "Relatar decisão tomada fora do produto",
+    "reportScope": "Registra o relato, sem publicar, enviar material, iniciar execução ou autorizar introdução. Não substitui evidência documental.",
+    "decisionKey": "Assunto da decisão",
+    "decidedBy": "Quem decidiu",
+    "forum": "Em qual reunião ou fórum",
+    "date": "Data da decisão",
+    "saveReport": "Registrar relato",
+    "errors": {
+      "invalid": "Revise os campos.",
+      "denied": "Seu acesso não permite este ato.",
+      "changed": "A base mudou. Atualize antes de decidir.",
+      "save": "Não foi possível registrar. Tente novamente."
+    },
+    "moreDecisions": "Carregar decisões anteriores",
+    "decisionKinds": {
+      "authorize_execution": "Autorizar execução",
+      "approve_material_package": "Aprovar materiais",
+      "approve_configuration": "Aprovar configuração",
+      "adopt_update": "Adotar atualização",
+      "adopt_import": "Adotar importação",
+      "choose_alternative": "Escolher alternativa",
+      "confirm_assessment": "Confirmar análise",
+      "record_report": "Relatar decisão"
+    }
   }
 }

@@ -74,21 +74,13 @@ export type PreviewQuestionsResult = {
 };
 
 /** One call, bounded and audited: every kept question cites a gap of the base. */
-export async function generatePreviewQuestions(input: PreviewQuestionsInput): Promise<PreviewQuestionsResult> {
-  const fallback = (source: "fixed" | "none", reason: string | null, extra: Partial<PreviewQuestionsResult> = {}): PreviewQuestionsResult => ({
-    questions: source === "fixed" ? input.fixed : [], source, model: null, costUsd: 0, latencyMs: 0, dropped: 0, reason, citations: {}, ...extra,
-  });
-  if (!input.gateway) return fallback(input.fixed.length ? "fixed" : "none", "no model gateway for this run");
-  if (input.gaps.length === 0) return fallback("none", "the objects declare no gap");
-  const gapIds = new Set(input.gaps.map((gap) => gap.id));
-  const spentBefore = input.gateway.spent().costUsd;
-  const startedAt = Date.now();
-  try {
-    const completion = await input.gateway.complete({
-      task: "preview_questions",
+/** Single effective request constructor shared by runtime and native pinning. */
+export function preparePreviewQuestionsGatewayRequest(input: PreviewQuestionsInput) {
+  return {
+      task: "preview_questions" as const,
       system: PREVIEW_QUESTIONS_SYSTEM,
       input: [{
-        type: "text",
+        type: "text" as const,
         text: JSON.stringify({
           locale: input.locale,
           request: input.request,
@@ -99,18 +91,40 @@ export async function generatePreviewQuestions(input: PreviewQuestionsInput): Pr
       }],
       schema: previewQuestionsOutputSchema,
       schemaName: "preview_questions_output",
-      thinking: "off",
+      thinking: "off" as const,
       metadata: {surface: "preview_questions"},
-    });
+    };
+}
+
+export async function generatePreviewQuestions(input: PreviewQuestionsInput): Promise<PreviewQuestionsResult> {
+  const fallback = (source: "fixed" | "none", reason: string | null, extra: Partial<PreviewQuestionsResult> = {}): PreviewQuestionsResult => ({
+    questions: source === "fixed" ? input.fixed : [], source, model: null, costUsd: 0, latencyMs: 0, dropped: 0, reason, citations: {}, ...extra,
+  });
+  if (!input.gateway) return fallback(input.fixed.length ? "fixed" : "none", "no model gateway for this run");
+  if (input.gaps.length === 0) return fallback("none", "the objects declare no gap");
+  const spentBefore = input.gateway.spent().costUsd;
+  const startedAt = Date.now();
+  try {
+    const completion = await input.gateway.complete(preparePreviewQuestionsGatewayRequest(input));
     const costUsd = Math.max(0, input.gateway.spent().costUsd - spentBefore);
     const latencyMs = Date.now() - startedAt;
+    return projectAcceptedPreviewQuestions(input,completion.output,{model:completion.model,costUsd,latencyMs});
+  } catch (error) {
+    return fallback(input.fixed.length ? "fixed" : "none", `model call failed: ${error instanceof Error ? error.message.slice(0, 160) : "unknown"}`, {costUsd: Math.max(0, input.gateway.spent().costUsd - spentBefore), latencyMs: Date.now() - startedAt});
+  }
+}
+
+/** The same bounded projection is used after a native accepted physical body. */
+export function projectAcceptedPreviewQuestions(input:PreviewQuestionsInput,raw:unknown,execution:{model:string;costUsd:number;latencyMs:number}):PreviewQuestionsResult{
+ const output=previewQuestionsOutputSchema.parse(raw),gapIds=new Set(input.gaps.map(gap=>gap.id));
+ const fallback=(source:"fixed"|"none",reason:string|null,extra:Partial<PreviewQuestionsResult>={}):PreviewQuestionsResult=>({questions:source==="fixed"?input.fixed:[],source,model:null,costUsd:0,latencyMs:0,dropped:0,reason,citations:{},...extra});
     const answeredIds = new Set(input.answered.map((answer) => answer.questionId));
     const kept: CandidateQuestion[] = [];
     const citations: Record<string, string[]> = {};
     let dropped = 0;
     const seen = new Set<string>();
     const slug = (value: string) => `q-${value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/^q[-_]?/, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "x"}`;
-    for (const question of [...completion.output.questions].sort((a, b) => (a.priority ?? 9) - (b.priority ?? 9))) {
+    for (const question of [...output.questions].sort((a, b) => (a.priority ?? 9) - (b.priority ?? 9))) {
       const cited = question.gapIds.filter((id) => gapIds.has(id));
       const id = slug(question.id);
       if (cited.length === 0 || seen.has(id) || answeredIds.has(id)) { dropped += 1; continue; }
@@ -120,10 +134,7 @@ export async function generatePreviewQuestions(input: PreviewQuestionsInput): Pr
       if (kept.length === 4) break;
     }
     if (kept.length === 0) {
-      return fallback(input.fixed.length ? "fixed" : "none", completion.output.abstainReason ?? "the model returned no question grounded in a gap", {model: completion.model, costUsd, latencyMs, dropped});
+      return fallback(input.fixed.length ? "fixed" : "none", output.abstainReason ?? "the model returned no question grounded in a gap", {model: execution.model, costUsd:execution.costUsd, latencyMs:execution.latencyMs, dropped});
     }
-    return {questions: kept, source: "model", model: completion.model, costUsd, latencyMs, dropped, reason: null, citations};
-  } catch (error) {
-    return fallback(input.fixed.length ? "fixed" : "none", `model call failed: ${error instanceof Error ? error.message.slice(0, 160) : "unknown"}`, {latencyMs: Date.now() - startedAt});
-  }
+    return {questions: kept, source: "model", model: execution.model, costUsd:execution.costUsd, latencyMs:execution.latencyMs, dropped, reason: null, citations};
 }

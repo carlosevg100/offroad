@@ -7015,5 +7015,90 @@
     "title": "Review these materials",
     "scope": "Approval is for internal use. The next work will have its own brief for you to authorize.",
     "approved": "Materials approved for internal use. The next work brief awaits authorization."
+  },
+  "WorkReviewHistory": {
+    "title": "Reviews, pending responsibilities and decisions",
+    "scope": "History respects your current access. A review or report does not authorize delivery to third parties.",
+    "unavailable": "History is unavailable under your current access.",
+    "historicalActor": "Historical participant",
+    "reason": "Reason or comment",
+    "declaration": "I declare that I may review this content on behalf of the organization.",
+    "withheld": "Content withheld under current access.",
+    "revision": "Revision {number}",
+    "pending": "Awaiting review",
+    "reviewed": "Reviewed",
+    "preparedBy": "Prepared by {name}",
+    "change": {
+      "cosmetic": "Cosmetic change: prior approval may be reaffirmed",
+      "material": "Material change: requires a new approval",
+      "other": "The review basis changed",
+      "identical": "Unchanged basis"
+    },
+    "reasons": {
+      "manifest_context": "Context and dependencies",
+      "content": "Content",
+      "sources": "Sources",
+      "claims": "Conclusions",
+      "audience": "Audience",
+      "claim_set": "Claim set",
+      "claim_value": "Claim values",
+      "block_content": "Content",
+      "claim_support": "Claim evidence",
+      "source_versions": "Source versions",
+      "method_release": "Method version",
+      "execution": "Execution",
+      "institutional_result": "Institutional result",
+      "unverified_bytes": "File or byte verification",
+      "invalid_snapshot": "Invalid comparison basis"
+    },
+    "historyAct": "Historical act",
+    "acts": {
+      "approve": "Approval",
+      "reaffirm": "Reaffirmed approval",
+      "revoke_approval": "Revoked approval",
+      "return": "Returned",
+      "comment": "Comment",
+      "reassign": "Reassigned responsibility"
+    },
+    "reaffirm": "Reaffirm prior approval",
+    "more": "Load earlier history",
+    "reassignFrom": "Reassign pending reviews from {name}",
+    "selectRecipient": "Select eligible participant",
+    "decisions": "Recorded decisions",
+    "origin": {
+      "reported": "Reported external decision",
+      "in_product": "Decision in the product"
+    },
+    "precedence": {
+      "empty": "No decision",
+      "current": "Current basis",
+      "contested": "Contested basis: no presumed winner"
+    },
+    "contest": "Contest this basis",
+    "decisionsTruncated": "More decisions exist. Consult their specific reference.",
+    "report": "Report a decision made outside the product",
+    "reportScope": "Records a report without publishing, delivering material, starting execution or authorizing an introduction. It does not replace documentary evidence.",
+    "decisionKey": "Decision subject",
+    "decidedBy": "Who decided",
+    "forum": "Meeting or forum",
+    "date": "Decision date",
+    "saveReport": "Record report",
+    "errors": {
+      "invalid": "Check the fields.",
+      "denied": "Your access does not permit this act.",
+      "changed": "The basis changed. Refresh before deciding.",
+      "save": "Could not record this act. Please retry."
+    },
+    "moreDecisions": "Load earlier decisions",
+    "decisionKinds": {
+      "authorize_execution": "Authorize execution",
+      "approve_material_package": "Approve materials",
+      "approve_configuration": "Approve configuration",
+      "adopt_update": "Adopt update",
+      "adopt_import": "Adopt import",
+      "choose_alternative": "Choose alternative",
+      "confirm_assessment": "Confirm assessment",
+      "record_report": "Report decision"
+    }
   }
 }

@@ -1,3 +1,4 @@
+import {nativeProviderCataloguePublicationFromEnvironment} from "./capital-native-provider-config";
 import {createFairExecutionPoller} from "./execution-poll";
 import {createExecutionQueue} from "./execution-queue";
 import {processPinnedExecution} from "./process-pinned-execution";
@@ -9,7 +10,7 @@ import {createProviderResearchTransport} from "./provider-research-transport";
 import {createProviderProcessingAuthorizer} from "./provider-processing";
 import {createEventOutboxConsumer} from "./event-outbox";
 import {createDependencyRecomputeQueue, createRecomputeHealthMonitor, runDependencyRecomputePass} from "./dependency-recompute";
-import {processProviderResearchJob} from "./provider-research";
+import {processNativeProviderJob} from "./capital-native-provider-processor";
 import {processExecutionBriefProposalJob} from "./execution-brief-proposal";
 import {readFile} from "node:fs/promises";
 import {join} from "node:path";
@@ -39,16 +40,17 @@ import {
 import {rotateLegacyStorage} from "./storage-rotation";
 import {createCapitalPublicCaptureStorage} from "./capital-public-capture-storage";
 import {createJobStorageClient} from "./job-storage";
-import {processProviderCaseFitJob} from "./provider-case-fit";
 import {processCaseAnalysisJob} from "./case-analysis";
 import {processWorkConversationJob} from "./work-conversation";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
 import {createCapitalMaterialRuntime} from "./capital-material-production-runtime";
+import {createCapitalCompanyDebtNativeRuntime} from "./capital-company-debt-native-runtime";
+import {createAssessmentNativeRuntime} from "./assessment-native-runtime";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
-import {processIntegrationPreviewRunJob} from "./integration-preview";
+import {processNativePreviewJob,previewPublishedBasisFromEnvironment} from "./integration-preview-native-processor";
 import {describeJobFailure} from "./job-failure";
 import {createResearchRouter} from "./research-routing";
 import {loadSourcePack} from "./source-pack-runtime";
@@ -109,9 +111,11 @@ async function main(): Promise<void> {
 
   await rotateLegacyStorage(supabase, config.OFFROAD_WORKER_TOKEN, () => log("worker.storage_rotation_completed"));
 
+  const nativeProviderCataloguePublication = nativeProviderCataloguePublicationFromEnvironment(process.env.CAPITAL_NATIVE_PROVIDER_CATALOGUE_PUBLICATION_JSON);
   const queue = createQueueClient(supabase, {
     workerToken: config.OFFROAD_WORKER_TOKEN,
     leaseSeconds: config.LEASE_SECONDS,
+    ...(nativeProviderCataloguePublication ? {nativeProviderCataloguePublication} : {}),
   });
 
   const eventOutbox = createEventOutboxConsumer(supabase, config.OFFROAD_WORKER_TOKEN, log);
@@ -424,6 +428,7 @@ async function main(): Promise<void> {
       ? processCaseAnalysisJob(job, {
           queue,
           materialRuntime: createCapitalMaterialRuntime(supabase),
+          assessmentRuntime: createAssessmentNativeRuntime(supabase),
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
           researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
@@ -436,23 +441,22 @@ async function main(): Promise<void> {
         })
       : job.kind === "capital_project_analysis"
         ? job.payload.analysis_scope === "provider_case_fit"
-          ? processProviderCaseFitJob(job, {queue})
+          ? processNativeProviderJob(job, {queue})
           : job.payload.analysis_scope === "provider_research"
-          ? processProviderResearchJob(job, {queue})
+          ? processNativeProviderJob(job, {queue})
           : job.payload.analysis_scope === "integration_preview"
           // Internal validation: the Case 01 methods run on the frozen evidence, with the grant carried by the claim.
           ? (job.integration_preview === true
-              ? processIntegrationPreviewRunJob(job, {
-                  queue,
-                  log,
-                  gateway: gatewayRun.gateway,
-                  ...(materialInspector ? {materialInspector} : {}),
-                  presentationTemplate,
+              ? processNativePreviewJob(job, {queue,client:supabase,log,adapters,connections:config.PROVIDER_CONNECTIONS_JSON,
+                  budget:{maxCostUsd:gatewayRun.maxCostUsd,maxCalls:gatewayRun.maxCalls},
+                  publishedBasis:previewPublishedBasisFromEnvironment(process.env.OFFROAD_PREVIEW_PUBLISHED_BASIS_JSON),
+                  ...(process.env.OFFROAD_PREVIEW_EVIDENCE_DIR?{evidenceDir:process.env.OFFROAD_PREVIEW_EVIDENCE_DIR}:{}),
                 })
               : queue.fail(job, describeJobFailure(new Error("integration_preview run claimed without the grant"), {code: "integration_preview_not_granted", stage: "integration_preview", retryable: false}), {retryable: false}).then(() => ({status: "failed" as const})))
           : job.payload.analysis_scope === "company_debt_view"
           ? processCompanyDebtViewJob(job, {
               queue,
+              nativeRuntime: createCapitalCompanyDebtNativeRuntime(supabase, {adapters, connections: config.PROVIDER_CONNECTIONS_JSON, maxCostUsd: gatewayRun.maxCostUsd, maxCalls: gatewayRun.maxCalls, researchReserveUsd: gatewayRun.researchReserveUsd}),
               gateway: gatewayRun.gateway,
               lineage: () => gatewayRun.calls.map((call) => ({...call})),
               researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
@@ -474,6 +478,7 @@ async function main(): Promise<void> {
             : processCapitalPlanningJob(job, {
                 queue,
                 gateway: gatewayRun.gateway,
+                s11Runtime: {adapters, connections: config.PROVIDER_CONNECTIONS_JSON, maxCostUsd: gatewayRun.maxCostUsd, maxCalls: gatewayRun.maxCalls, researchReserveUsd: gatewayRun.researchReserveUsd},
                 lineage: () => gatewayRun.calls.map((call) => ({...call})),
                 researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],
                 ...(research.officialResearchProviderFactory ? {officialResearchProviderFactory: research.officialResearchProviderFactory} : {}),

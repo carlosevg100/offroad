@@ -3682,3 +3682,11 @@ Revisão adicional de100objetos gerados por loops ou rename na migração2026100
 | `trigger:private.material_production_terminals.material_production_terminals_no_truncate` | preservar | Captura, produção e revisão humana nativas de materiais; aprovações históricas retiradas. | `supabase/migrations/20261002210243_material_production_terminal.sql:19` |
 | `trigger:private.material_production_terminals.material_production_terminals_updated_at` | preservar | Captura, produção e revisão humana nativas de materiais; aprovações históricas retiradas. | `supabase/migrations/20261002210243_material_production_terminal.sql:20` |
 | `trigger:public.artifact_reviews.material_package_review_projection` | preservar | Captura, produção e revisão humana nativas de materiais; aprovações históricas retiradas. | `supabase/migrations/20261002210249_material_package_native_review.sql:100` |
+
+## Etapa 20: consumidor de revisão e jornada integrada
+
+| Caminho | Decisão | Motivo |
+| --- | --- | --- |
+| `apps/web/src/app/[locale]/app/projects/[projectId]/work-review-actions.ts` | preservar | Revisão exata e reassociação autorizadas; relatos e contestação sem efeito operacional. |
+
+O SQL de `supabase/pending/work_review_dashboard.sql` é candidato de teste no stack descartável; não afirma instalação em staging ou produção. O catálogo será conciliado com a migração efetivamente aplicada antes da publicação.

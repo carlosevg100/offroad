@@ -1,3 +1,7 @@
+import type {SupabaseClient} from "@supabase/supabase-js";
+import {loadWorkReviewDashboard} from "@/lib/advisor/work-review-dashboard";
+import {resolveCapitalPreviewRows} from "@/lib/artifacts/capital-preview-result";
+import {resolveNativeProviderResultRows} from "@/lib/artifacts/capital-native-provider-result";
 import {loadExecutionBriefReviewBasis} from "@/lib/advisor/execution-brief-review-command";
 import {MaterialPackageReview} from "@/components/advisor/material-package-review";
 import {effectiveTaskRunStatus} from "@/lib/advisor/task-run-status";
@@ -311,9 +315,10 @@ async function ConversationalCapitalProject({
   const latestRunByTask = new Map<string, {status: string}>();
   for (const run of effectiveRuns) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
-  const providerCaseFit = currentProviderCaseFit(artifacts ?? [], effectiveRuns, plan
+  const providerResultRows = await resolveNativeProviderResultRows(supabase, artifacts ?? [], {organizationId: organization.id, workId: project.id});
+  const providerCaseFit = currentProviderCaseFit(providerResultRows, effectiveRuns, plan
     ? {organizationId: organization.id, projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
-  const providerResearch = currentProviderResearch(artifacts ?? [], effectiveRuns, plan
+  const providerResearch = currentProviderResearch(providerResultRows, effectiveRuns, plan
     ? {projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
 
   const {data: agentPlan} = await supabase.from("capital_project_agent_plans")
@@ -366,10 +371,11 @@ async function ConversationalCapitalProject({
 
   const copy = await advisorProjectCopy(locale);
   const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
-  const previewArtifacts = (artifacts ?? []).filter((artifact) => artifact.artifact_type.startsWith("preview_") && artifact.status !== "superseded").map((artifact) => ({
-    id: artifact.id, type: artifact.artifact_type, version: artifact.artifact_version, status: artifact.status, createdAt: artifact.created_at, content: artifact.content,
+  const previewRows = await resolveCapitalPreviewRows(supabase, artifacts ?? [], {organizationId: organization.id, workId: project.id});
+  const previewArtifacts = previewRows.filter((artifact) => artifact.artifact_type.startsWith("preview_") && artifact.status !== "superseded").map((artifact) => ({
+    id: artifact.id, type: artifact.artifact_type, version: artifact.artifact_version, status: artifact.status, createdAt: artifact.created_at, content: artifact.content, nativeReadWithheld: artifact.nativeReadWithheld, nativePhysical: artifact.nativePhysical,
   }));
-  const decisionArtifactRow = (artifacts ?? []).find((artifact) => artifact.artifact_type === "preview_decision_contract" && artifact.status !== "superseded");
+  const decisionArtifactRow = previewRows.find((artifact) => artifact.artifact_type === "preview_decision_contract" && artifact.status !== "superseded");
   const decisionArtifactContent = decisionArtifactRow?.content && typeof decisionArtifactRow.content === "object" && !Array.isArray(decisionArtifactRow.content)
     ? decisionArtifactRow.content as Record<string, unknown>
     : null;
@@ -611,9 +617,10 @@ async function ConversationalCapitalProject({
       workSections.push({id: "institutional-setup-review", title: initialReviewCopy("title"), version: initialReviews[0].revision, content: <InstitutionalSetupReviewWork projectId={project.id} reviews={initialReviews} />});
     }
   }
+  const reviewDashboard = reviewPolicyContext ? await loadWorkReviewDashboard(async(name,args)=>{const r=await (supabase as SupabaseClient).rpc(name,args);return {data:r.data,error:r.error};},project.id,organization.id,userId) : null;
   const rolesCopy = await getTranslations({locale, namespace: "ProjectReviewRoles"});
   workSections.push({id: "project-review", title: rolesCopy("contentTitle"), status: reviewPolicyContext ? rolesCopy(`regime.${reviewPolicyContext.regime}`) : undefined,
-    content: reviewPolicyContext ? <ProjectReviewRoles context={reviewPolicyContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} /> : <p role="status">{rolesCopy("unavailable")}</p>});
+    content: reviewPolicyContext ? <ProjectReviewRoles dashboard={reviewDashboard} context={reviewPolicyContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} /> : <p role="status">{rolesCopy("unavailable")}</p>});
   const templateContext = await loadPresentationTemplateContext(supabase, project.id);
   if (templateContext) {
     const templateCopy = await getTranslations({locale, namespace: "PresentationTemplate"});

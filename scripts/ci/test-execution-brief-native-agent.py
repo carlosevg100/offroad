@@ -6,8 +6,14 @@ from urllib.parse import urlparse
 ROOT=Path(__file__).resolve().parents[2]
 url=os.environ['DATABASE_URL']
 assert urlparse(url).hostname in ('localhost','127.0.0.1','::1'), 'Local disposable database only'
-http_fixture=os.environ.get('S11_HTTP_FIXTURE')=='1'
+preview_fixture=os.environ.get('PREVIEW_HTTP_FIXTURE')=='1'
+assert not(preview_fixture and os.environ.get('S11_HTTP_FIXTURE')=='1'), 'Preview and S11 modes are distinct'
+http_fixture=preview_fixture or os.environ.get('S11_HTTP_FIXTURE')=='1'
 ui_namespace=os.environ.get('BRIEF_UI_NAMESPACE')
+http_namespace=(os.environ.get('PREVIEW_HTTP_NAMESPACE','a8830001') if preview_fixture else os.environ.get('S11_HTTP_NAMESPACE','a8810001')) if http_fixture else None
+if http_namespace:
+ assert re.fullmatch(r'[0-9a-f]{8}',http_namespace), 'Closed S11 HTTP namespace required'
+ assert not ui_namespace, 'HTTP and UI fixture modes are distinct'
 if ui_namespace:
  assert os.environ.get('BRIEF_UI_FIXTURE')=='1' and re.fullmatch(r'[0-9a-f]{8}',ui_namespace), 'UI namespace must be local and explicit'
 if http_fixture:
@@ -18,8 +24,13 @@ def expand(p): return re.sub(r'^\\ir (.+)$',lambda m:expand(p.parent/m[1].strip(
 def literal(x): return "'"+str(x).replace("'","''")+"'"
 p=subprocess.Popen(['psql',url,'-XAtq','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
 def phase(sql):
+ if preview_fixture:
+  sql=sql.replace('preview-http','preview-http-'+http_namespace).replace('preview-publisher@example.invalid','preview-publisher-'+http_namespace+'@example.invalid').replace('Synthetic capital planning','Synthetic finite preview').replace('Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','Preparar material para reunião interna da Camil, somente validação sintética.').replace("'capital_planning','public_information'","'origination_thesis','public_information'")
  if ui_namespace:
   sql=sql.replace('a8800000',ui_namespace).replace('native-agent@example.invalid','native-agent-'+ui_namespace+'@example.invalid').replace('Synthetic native agent','Synthetic native agent '+ui_namespace).replace("repeat('d',64)","repeat('"+ui_namespace+"',8)")
+ if http_namespace:
+  sql=sql.replace('a8800000',http_namespace).replace('native-agent@example.invalid','native-agent-'+http_namespace+'@example.invalid').replace('s11-publisher@example.invalid','s11-publisher-'+http_namespace+'@example.invalid').replace("repeat('d',64)","repeat('"+http_namespace+"',8)").replace('https://example.invalid/capture-licensed','https://example.invalid/s11/'+http_namespace+'/capture-licensed').replace('s11-sql-account','s11-http-'+http_namespace+'-account').replace('s11-sql-project','s11-http-'+http_namespace+'-project').replace('s11-sql-key','s11-http-'+http_namespace+'-key')
+  for old,new in [('10000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000994'),('20000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000995'),('30000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000996')]:sql=sql.replace(old,new)
  p.stdin.write(sql+'\n\\echo PHASE_DONE\n');p.stdin.flush();out=[]
  while True:
   line=p.stdout.readline()
@@ -27,7 +38,7 @@ def phase(sql):
   if line.strip()=='PHASE_DONE': return out
   out.append(line.rstrip())
 try:
- compiler=['node',str(next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/cli.mjs'))),str(ROOT/'apps/document-worker/scripts/execution-brief-native-agent-fixture.ts')]
+ compiler=['node',str(next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/cli.mjs'))),str(ROOT/('apps/document-worker/scripts/execution-brief-native-preview-fixture.ts' if preview_fixture else 'apps/document-worker/scripts/execution-brief-native-agent-fixture.ts'))]
  plan_command=subprocess.run(compiler+['--plan'],text=True,capture_output=True,cwd=ROOT,timeout=30)
  assert plan_command.returncode==0,plan_command.stderr
  plan=json.loads(plan_command.stdout)
@@ -55,10 +66,12 @@ try:
  select v->'context' from agent_fixture where k='capture';
  """
  if os.environ.get('BRIEF_DRAFT_IN_TRANSACTION')=='1': prefix=prefix.replace('begin;','begin;'+(ROOT/'supabase/pending/execution_brief_native_capture.sql').read_text(),1)
+ if preview_fixture:
+  prefix=prefix.replace(" create temp table agent_fixture", " insert into private.integration_preview_grants(organization_id,enabled,granted_by,note,mode)values('a8800000-0000-4000-8000-000000000002',true,'Local CI operator','Synthetic closed native preview eval','live');\n create temp table agent_fixture",1)
  lines=phase(prefix)
  contexts=[json.loads(x) for x in lines if x.startswith('{') and 'active_plan' in x]
  assert len(contexts)==1,lines
- compiled=subprocess.run(['node',str(next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/cli.mjs'))),str(ROOT/'apps/document-worker/scripts/execution-brief-native-agent-fixture.ts')],input=json.dumps(contexts[0]),text=True,capture_output=True,cwd=ROOT,timeout=30)
+ compiled=subprocess.run(['node',str(next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/cli.mjs'))),str(ROOT/('apps/document-worker/scripts/execution-brief-native-preview-fixture.ts' if preview_fixture else 'apps/document-worker/scripts/execution-brief-native-agent-fixture.ts'))],input=json.dumps(contexts[0]),text=True,capture_output=True,cwd=ROOT,timeout=30)
  assert compiled.returncode==0,compiled.stdout+compiled.stderr
  product=json.loads(compiled.stdout)
  sql="insert into agent_fixture values('product',"+literal(json.dumps(product))+"::jsonb);"
@@ -143,9 +156,9 @@ try:
   assert continuation.is_relative_to(ROOT) and continuation.is_file(), 'Continuation must be a checked-in local project file'
   print('\n'.join(phase(expand(continuation))))
  if http_fixture:
-  phase(expand(ROOT/'supabase/tests/support/capital_s11_native_http_setup.sql'))
+  phase(expand(ROOT/('supabase/tests/support/capital_preview_native_http_setup.sql' if preview_fixture else 'supabase/tests/support/capital_s11_native_http_setup.sql')))
   phase('commit;')
-  print(json.dumps({'eval':'capital_s11_http_human_bootstrap','result':'PASS','organizationId':'a8800000-0000-4000-8000-000000000002'}))
+  print(json.dumps({'eval':'capital_preview_http_human_bootstrap' if preview_fixture else 'capital_s11_http_human_bootstrap','result':'PASS','organizationId':http_namespace+'-0000-4000-8000-000000000002'}))
  else:
   phase('rollback;')
   print('PASS native_agent_activation_normalization_and_human_review')

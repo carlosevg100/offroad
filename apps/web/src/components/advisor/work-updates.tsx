@@ -6,11 +6,12 @@ import {useFormatter, useTranslations} from "next-intl";
 import {useRouter} from "next/navigation";
 import {useEffect, useRef, useState, useSyncExternalStore} from "react";
 
-import {adoptWorkUpdate, authorizeWorkUpdate, declineWorkUpdate, type WorkUpdateActionResult} from "@/app/[locale]/app/projects/[projectId]/work-update-actions";
+import {authorizeWorkUpdate, declineWorkUpdate, type WorkUpdateActionResult} from "@/app/[locale]/app/projects/[projectId]/work-update-actions";
 import {
   declineReasonCodes, type DeclineReasonCode, type WorkFollowupItem, type WorkUpdateChange, type WorkUpdateItem, type WorkUpdateRecomputation, type WorkUpdatesModel,
 } from "@/lib/advisor/work-updates";
 
+import {WorkUpdateAdoptionConfirmation} from "./work-update-adoption-confirmation";
 import {workSectionTargetFromHash} from "./advisor-work-links";
 
 import "@/app/work-updates.css";
@@ -104,7 +105,7 @@ function WorkUpdateCard({item, locale, targeted}: {item: WorkUpdateItem; locale:
   const date = (value: string) => format.dateTime(new Date(value), {dateStyle: "medium", timeStyle: "short"});
   const cost = (microusd: number) => format.number(microusd / 1_000_000, {style: "currency", currency: "USD"});
 
-  async function run(pending: Pending) {
+  async function run(pending: Exclude<Pending, {kind: "adopt"}>) {
     if (busy) return;
     setBusy(true);
     setError("");
@@ -112,8 +113,7 @@ function WorkUpdateCard({item, locale, targeted}: {item: WorkUpdateItem; locale:
     let result: WorkUpdateActionResult;
     try {
       const shared = {locale, commandId: commands.get(key)};
-      result = pending.kind === "adopt" ? await adoptWorkUpdate({...shared, updateId: item.updateId, expectedRevision: item.revision})
-        : pending.kind === "decline" ? await declineWorkUpdate({...shared, updateId: item.updateId, expectedRevision: item.revision, reason, candidateId: null})
+      result = pending.kind === "decline" ? await declineWorkUpdate({...shared, updateId: item.updateId, expectedRevision: item.revision, reason, candidateId: null})
           : pending.kind === "authorize" ? await authorizeWorkUpdate({...shared, candidateId: pending.candidateId, expectedRevision: pending.revision})
             : await declineWorkUpdate({...shared, updateId: item.updateId, expectedRevision: pending.revision, reason, candidateId: pending.candidateId});
     } catch {
@@ -123,7 +123,7 @@ function WorkUpdateCard({item, locale, targeted}: {item: WorkUpdateItem; locale:
     if (result.ok) {
       commands.forget(key);
       setConfirming(null);
-      setDone(t(pending.kind === "adopt" ? "done.adopted" : pending.kind === "authorize" ? "done.authorized" : "done.declined"));
+      setDone(t(pending.kind === "authorize" ? "done.authorized" : "done.declined"));
       router.refresh();
       return;
     }
@@ -193,10 +193,7 @@ function WorkUpdateCard({item, locale, targeted}: {item: WorkUpdateItem; locale:
     </section> : <p className="work-update__decided">{decidedText(item, t, date)}</p>}
 
     {item.open ? <footer className="work-update__actions">
-      {confirming?.kind === "adopt" ? <div className="work-update__confirm" role="group">
-        <button className="button button--small" disabled={busy} onClick={() => void run({kind: "adopt"})} type="button">{busy ? <LoaderCircle aria-hidden="true" className="spin" size={14} /> : <Check aria-hidden="true" size={14} />}{t("adopt.confirm")}</button>
-        <button className="button button--small button--ghost" disabled={busy} onClick={() => setConfirming(null)} type="button">{t("cancel")}</button>
-      </div> : confirming?.kind === "decline" ? <DeclineConfirmation busy={busy} explanation={t("decline.explanation")} onCancel={() => setConfirming(null)} onConfirm={() => void run({kind: "decline"})} reason={reason} setReason={setReason} />
+      {confirming?.kind === "adopt" ? <WorkUpdateAdoptionConfirmation locale={locale} updateId={item.updateId} expectedRevision={item.revision} onCancel={()=>setConfirming(null)} onAdopted={()=>{setConfirming(null);setDone(t("done.adopted"));router.refresh();}}/> : confirming?.kind === "decline" ? <DeclineConfirmation busy={busy} explanation={t("decline.explanation")} onCancel={() => setConfirming(null)} onConfirm={() => void run({kind: "decline"})} reason={reason} setReason={setReason} />
         : <>
           {item.canAdopt ? <button className="button button--small" disabled={busy} onClick={() => {setDone(""); setConfirming({kind: "adopt"});}} type="button"><Check aria-hidden="true" size={14} />{t("adopt.action")}</button> : null}
           {item.canDecline ? <button className="button button--small button--outline" disabled={busy} onClick={() => {setDone(""); setConfirming({kind: "decline"});}} type="button"><X aria-hidden="true" size={14} />{t("decline.action")}</button> : null}
@@ -223,7 +220,7 @@ function WorkFollowupCard({item, locale, workId}: {item: WorkFollowupItem; local
   const [done, setDone] = useState("");
   const date = (value: string) => format.dateTime(new Date(value), {dateStyle: "medium", timeStyle: "short"});
 
-  async function run(kind: "adopt" | "decline") {
+  async function run(kind: "decline") {
     if (busy) return;
     setBusy(true);
     setError("");
@@ -231,7 +228,7 @@ function WorkFollowupCard({item, locale, workId}: {item: WorkFollowupItem; local
     let result: WorkUpdateActionResult;
     try {
       const shared = {locale, commandId: commands.get(key), updateId: item.requestId, expectedRevision: item.revision};
-      result = kind === "adopt" ? await adoptWorkUpdate(shared) : await declineWorkUpdate({...shared, reason, candidateId: null});
+      result = await declineWorkUpdate({...shared, reason, candidateId: null});
     } catch {
       result = {ok: false, error: "save"};
     }
@@ -239,7 +236,7 @@ function WorkFollowupCard({item, locale, workId}: {item: WorkFollowupItem; local
     if (result.ok) {
       commands.forget(key);
       setConfirming(null);
-      setDone(t(kind === "adopt" ? "followups.done.adopted" : "done.declined"));
+      setDone(t("done.declined"));
       router.refresh();
       return;
     }
@@ -262,11 +259,7 @@ function WorkFollowupCard({item, locale, workId}: {item: WorkFollowupItem; local
       <p>{item.execution ? t(`followups.execution.${item.execution.state}`, {name: item.execution.name}) : item.open ? t("followups.execution.none") : null}</p>
     </section>
     {item.open ? <footer className="work-update__actions">
-      {confirming === "adopt" ? <div className="work-update__confirm" role="group">
-        <p>{t("followups.adoptExplanation")}</p>
-        <button className="button button--small" disabled={busy} onClick={() => void run("adopt")} type="button">{busy ? <LoaderCircle aria-hidden="true" className="spin" size={14} /> : <Check aria-hidden="true" size={14} />}{t("followups.adoptConfirm")}</button>
-        <button className="button button--small button--ghost" disabled={busy} onClick={() => setConfirming(null)} type="button">{t("cancel")}</button>
-      </div> : confirming === "decline" ? <DeclineConfirmation busy={busy} explanation={t("followups.declineExplanation")} onCancel={() => setConfirming(null)} onConfirm={() => void run("decline")} reason={reason} setReason={setReason} />
+      {confirming === "adopt" ? <WorkUpdateAdoptionConfirmation locale={locale} updateId={item.requestId} expectedRevision={item.revision} onCancel={()=>setConfirming(null)} onAdopted={()=>{setConfirming(null);setDone(t("followups.done.adopted"));router.refresh();}}/> : confirming === "decline" ? <DeclineConfirmation busy={busy} explanation={t("followups.declineExplanation")} onCancel={() => setConfirming(null)} onConfirm={() => void run("decline")} reason={reason} setReason={setReason} />
         : <>
           {item.canAdopt ? <button className="button button--small" disabled={busy} onClick={() => {setDone(""); setConfirming("adopt");}} type="button"><Check aria-hidden="true" size={14} />{t("followups.adopt")}</button> : null}
           {item.canRequestExecution ? <Link className="button button--small button--outline work-update__request" href={`/${locale}/app/projects/${workId}/executions?followup=${item.requestId}`}>

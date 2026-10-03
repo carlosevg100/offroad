@@ -9,10 +9,13 @@ import {projectReviewPolicyCommand, organizationReviewPolicyCommand} from "@/lib
 import type {ProjectReviewPolicyContext} from "@/lib/advisor/project-review-policy-context";
 import styles from "./project-review-roles.module.css";
 
+import {WorkReviewHistory} from "./work-review-history";
+import type {WorkReviewDashboard} from "@/lib/advisor/work-review-dashboard";
+
 const roles = projectReviewRoleSchema.options;
 
 /** Configures content-review policy; an exact revision reader still decides every available act. */
-export function ProjectReviewRoles({context, locale, projectId}: {context: ProjectReviewPolicyContext; locale: "pt-BR" | "en-US"; projectId: string}) {
+export function ProjectReviewRoles({context, locale, projectId, dashboard = null}: {dashboard?: WorkReviewDashboard|null; context: ProjectReviewPolicyContext; locale: "pt-BR" | "en-US"; projectId: string}) {
   const t = useTranslations("ProjectReviewRoles");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -61,6 +64,7 @@ export function ProjectReviewRoles({context, locale, projectId}: {context: Proje
         onChange={event => run(() => setOrganizationReviewPolicyV2(organizationReviewPolicyCommand(context, locale, {selfApprovalAllowed: event.target.checked})))}/>{t("selfApproval.organization")}</label>
     </div> : <p className={styles.muted}>{t("contentReadOnly")}</p>}
     <p className={styles.muted}>{t("profileNote")}</p>
+    <WorkReviewHistory dashboard={dashboard} locale={locale} projectId={projectId} labels={Object.fromEntries(context.members.map(m=>[m.userId,m.fullName?.trim()||m.email?.trim()||t("unnamedMember",{number:context.members.indexOf(m)+1})]))}/>
     {pending ? <p className={styles.muted} role="status">{t("saving")}</p> : null}
     {error ? <p role="alert">{t(`errors.${error}`)}</p> : null}
   </section>;

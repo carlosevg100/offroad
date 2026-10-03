@@ -101,3 +101,13 @@ describe("integration preview review surface", () => {
     expect(html).toContain("final");
   });
 });
+
+it("withheld native preview never displays raw output or material downloads",()=>{
+ const input={...artifact({state:"complete",sections:[{id:"x",title:"PRIVATE_FALLBACK",paragraphs:[]}]},"preview_material"),nativeReadWithheld:true};
+ const html=render([input]);expect(html).toContain("indisponível");expect(html).not.toContain("PRIVATE_FALLBACK");expect(html).not.toContain("format=docx");
+});
+
+it("native JSON material displays its actual sections without advertising legacy Office bytes",()=>{
+ const html=render([{...artifact({sections:[{id:"x",title:"Physical native section",paragraphs:[]}]},"preview_material"),nativePhysical:true}]);
+ expect(html).toContain("Physical native section");expect(html).not.toContain("format=docx");
+});

@@ -7,7 +7,7 @@ import {
   capitalPlanningMapArtifactSchema,
   capitalPlanningMapSchema,
 } from "@offroad/domain-contracts";
-import type {GatewayCallLog, ModelGateway} from "@offroad/model-gateway";
+import type {GatewayCallLog, ModelGateway, ModelGatewayConfig} from "@offroad/model-gateway";
 import {
   buildCompanyDebtResearchPlan,
   runPublicResearch,
@@ -25,6 +25,8 @@ import {createWorkerPublicCompanyMemory, verifiedCompanyMemorySubject} from "./p
 import type {CapitalProjectAnalysisJob, QueueClient} from "./queue";
 import {buildPublicWorkAssessment} from "./agent-assessment";
 import {describeJobFailure} from "./job-failure";
+import type {ProviderConnections} from "./provider-processing";
+import {consumeCapitalS11Initial,consumeCapitalS11Revision} from "./capital-s11-native-consumer";
 
 const recordSchema = z.record(z.string(), z.unknown());
 const taskSchema = z.object({
@@ -77,7 +79,9 @@ const REQUIRED_TASKS = [
   "S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11",
 ] as const;
 
-type Context = z.infer<typeof contextSchema>;
+export const capitalPlanningContextSchema=contextSchema;
+export type CapitalPlanningContext = z.infer<typeof contextSchema>;
+type Context = CapitalPlanningContext;
 type ArtifactRef = {taskId: string; id: string; artifactFingerprint: string};
 type ResearchSummary = {
   status: ResearchRun["status"];
@@ -86,6 +90,7 @@ type ResearchSummary = {
   sources: ResearchSource[];
   failures: ResearchRun["failures"];
 };
+export type NativeCapitalPlanningResearchSummary = Omit<ResearchSummary,"researchRunId"> & {recipeId:string};
 
 export type CapitalPlanningDependencies = {
   queue: QueueClient;
@@ -93,6 +98,7 @@ export type CapitalPlanningDependencies = {
   lineage: () => GatewayCallLog[];
   researchProviders: PublicSearchProvider[];
   officialResearchProviderFactory?: WorkerOfficialResearchProviderFactory;
+  s11Runtime?: {adapters:ModelGatewayConfig["adapters"];connections:ProviderConnections;maxCostUsd:number;maxCalls:number;researchReserveUsd:number};
   now?: () => Date;
   monotonicNow?: () => number;
   log?: (event: string, detail?: Record<string, unknown>) => void;
@@ -107,6 +113,7 @@ export async function processCapitalPlanningJob(
   const startedAt = monotonicNow();
   await dependencies.queue.writeStage(job, "capital_planning", "started");
   try {
+    if(dependencies.s11Runtime) return await processNativeCapitalS11(job,dependencies,startedAt,monotonicNow);
     const context = contextSchema.parse(await dependencies.queue.loadCapitalProjectContext(job));
     assertExactTaskPlan(job, context);
     const companyName = stringValue(context.session.company_profile.name);
@@ -367,13 +374,56 @@ export async function processCapitalPlanningJob(
   }
 }
 
-function planningTaskArtifact(taskId: string, input: {
+/** Native execution never falls back to legacy loaders, caches or writers.
+ * Recovery starts from the server's original physical grant before any research. */
+async function processNativeCapitalS11(job:CapitalProjectAnalysisJob,dependencies:CapitalPlanningDependencies,startedAt:number,monotonicNow:()=>number){
+ const runtime=dependencies.s11Runtime;
+ if(!runtime||!dependencies.queue.createCapitalS11Adapter||!dependencies.queue.createCapitalS11RecoveryAdapter)throw codedError("capital_s11_runtime_required");
+ const recovered=await dependencies.queue.createCapitalS11RecoveryAdapter(job).recover();
+ const receipt=recovered??(job.payload.revision_of_artifact_id?await consumeCapitalS11Revision(job,{adapter:dependencies.queue.createCapitalS11Adapter(job),adapters:runtime.adapters,connections:runtime.connections,budget:runtime}):await consumeCapitalS11Initial(job,{adapter:dependencies.queue.createCapitalS11Adapter(job),queue:dependencies.queue,
+  adapters:runtime.adapters,connections:runtime.connections,budget:runtime,
+  research:async context=>{
+   const name=stringValue(context.session.company_profile.name),website=optionalString(context.session.company_profile.website),geography=optionalString(context.session.company_profile.geography);
+   if(!name)throw codedError("capital_s11_company_identity_missing");
+   const subject={legalName:name,...(website?{website}:{}),...(geography?{geography}:{})};
+   const researchRuntime=prepareWorkerDebtResearch({work:"capital_planning",locale:context.session.locale,subject,discoveryProviders:dependencies.researchProviders,officialProviderFactory:dependencies.officialResearchProviderFactory,evidenceBasis:"public_information"});
+   const jurisdiction=researchRuntime.strategy.jurisdiction;
+   if(jurisdiction!=="BR"&&jurisdiction!=="US")throw codedError("capital_s11_jurisdiction_unresolved");
+   const plan=buildCompanyDebtResearchPlan(subject);
+   await dependencies.queue.writeStage(job,"public_research","started",{queryCount:plan.length,researchStrategyFingerprint:researchRuntime.strategy.fingerprint});
+   const result=await runPublicResearch({plan,providers:researchRuntime.providers,maxSourcesPerQuery:5});
+   const sources=result.sources.filter(source=>source.url.startsWith("https://"));
+   const costExposureUsd=Object.values(result.metrics.maxCostExposureUsdByProvider).reduce((sum,value)=>sum+value,0);
+   await dependencies.queue.writeStage(job,"public_research","succeeded",{status:result.status,sourceCount:sources.length,costExposureUsd,researchStrategyFingerprint:researchRuntime.strategy.fingerprint},{external_search_cost_usd:costExposureUsd});
+   return{status:sources.length?result.status:"abstained",sources,costExposureUsd,jurisdiction,jurisdictionNeedsConfirmation:researchRuntime.jurisdictionNeedsConfirmation,strategyFingerprint:researchRuntime.strategy.fingerprint};
+  }}));
+ const firstUsefulArtifact=capitalPlanningArtifactTiming(startedAt,monotonicNow());
+ const artifact={id:receipt.capitalArtifactId,artifactFingerprint:receipt.artifactFingerprint};
+ await dependencies.queue.writeStage(job,"capital_planning","succeeded",{artifactId:artifact.id,recipeId:receipt.recipeId,firstUsefulArtifact,replayed:receipt.replayed});
+ await completeAdvisorSpecializedWork({queue:dependencies.queue,job,artifact,result:{capital_project_id:job.payload.capital_project_id,alternative_map_artifact_id:artifact.id,artifact_fingerprint:artifact.artifactFingerprint,recipe_id:receipt.recipeId,revision_id:receipt.revisionId,firstUsefulArtifact,replayed:receipt.replayed}});
+ dependencies.log?.("capital_planning.succeeded",{job:job.job_id,recipeId:receipt.recipeId,replayed:receipt.replayed,firstUsefulArtifactMs:firstUsefulArtifact.durationMs});
+ return{status:"succeeded" as const,artifactId:artifact.id};
+}
+
+/** Deterministic prelude, available before model dispatch. Shared by the
+ * existing renderer and native physical projections; no empty planning map. */
+export function planningPreludeTaskArtifact(taskId:"M01"|"M02"|"M03",input:{context:Context;companyName:string;website:string|null}):{type:string;content:Record<string,unknown>;publicEvidence:boolean}{
+ const outputs={
+  M01:{type:"company_scope",content:{company:input.companyName,website:input.website,legalEntity:"pending_official_resolution_or_user_confirmation"}},
+  M02:{type:"capital_intent",content:{capitalIntent:input.context.brief.content.capitalIntent,informationClass:"user_declaration"}},
+  M03:{type:"constraint_register",content:{knownConstraints:input.context.brief.content.knownConstraints??null,boundaries:["no_underwriting","no_sizing_without_reconciled_inputs","no_live_pricing","no_lender_contact"]}},
+ };
+ return{...outputs[taskId],publicEvidence:false};
+}
+
+export function planningTaskArtifact(taskId: string, input: {
   context: Context;
   planningMap: z.infer<typeof capitalPlanningMapSchema>;
-  research: ResearchSummary;
+  research: ResearchSummary | NativeCapitalPlanningResearchSummary;
   companyName: string;
   website: string | null;
 }): {type: string; content: Record<string, unknown>; publicEvidence: boolean} {
+  if(taskId==="M01"||taskId==="M02"||taskId==="M03")return planningPreludeTaskArtifact(taskId,input);
   const status = (reason: string) => ({status: "not_computable_public_only", reason});
   // An insufficient base forces no alternative universe and no comparison: the tasks that would
   // carry them record the outcome and the size of the residual batch asked instead.
@@ -384,9 +434,6 @@ function planningTaskArtifact(taskId: string, input: {
   } : null;
   const publicEvidence = ["C01", "C02", "C09", "C11", "S02", "S05", "S06", "S10"].includes(taskId);
   const byTask: Record<string, {type: string; content: Record<string, unknown>}> = {
-    M01: {type: "company_scope", content: {company: input.companyName, website: input.website, legalEntity: "pending_official_resolution_or_user_confirmation"}},
-    M02: {type: "capital_intent", content: {capitalIntent: input.context.brief.content.capitalIntent, informationClass: "user_declaration"}},
-    M03: {type: "constraint_register", content: {knownConstraints: input.context.brief.content.knownConstraints ?? null, boundaries: ["no_underwriting", "no_sizing_without_reconciled_inputs", "no_live_pricing", "no_lender_contact"]}},
     M04: {type: "candidate_archetypes", content: insufficientBase ?? {families: input.planningMap.alternatives.map((alternative) => ({id: alternative.id, family: alternative.family, status: alternative.status}))}},
     M05: {type: "deliverable_definition", content: {workProduct: "alternative_map", gate: "user_confirmation_before_structuring"}},
     M06: {type: "capital_planning_execution_plan", content: {planId: input.context.plan.id, planFingerprint: input.context.plan.fingerprint, tasks: input.context.tasks.map((task) => ({id: task.id, batch: task.batch, dependencies: task.dependencies})), modelCalls: [{taskId: "S11", maximum: 1}], externalSearchQueries: 8}},
@@ -424,7 +471,7 @@ function planningTaskArtifact(taskId: string, input: {
   return {...selected, publicEvidence};
 }
 
-function assertExactTaskPlan(job: CapitalProjectAnalysisJob, context: Context): void {
+export function assertExactTaskPlan(job: CapitalProjectAnalysisJob, context: Context): void {
   if (job.payload.analysis_scope !== "capital_planning"
     || context.project.id !== job.payload.capital_project_id
     || context.plan.id !== job.payload.capital_project_plan_id
@@ -532,10 +579,10 @@ function researchFromPrior(context: Context): ResearchSummary {
   };
 }
 
-function researchContent(research: ResearchSummary, topics: ResearchSource["topic"][]): Record<string, unknown> {
+function researchContent(research: ResearchSummary | NativeCapitalPlanningResearchSummary, topics: ResearchSource["topic"][]): Record<string, unknown> {
   const sources = research.sources.filter((source) => topics.includes(source.topic));
   return {
-    status: research.status, researchRunId: research.researchRunId,
+    status: research.status, ...("recipeId" in research ? {recipeId:research.recipeId} : {researchRunId:research.researchRunId}),
     sources: sources.map((source) => ({
       provider: source.provider, topic: source.topic, title: source.title, url: source.url,
       snippet: source.snippet, publishedAt: source.publishedAt, retrievedAt: source.retrievedAt,

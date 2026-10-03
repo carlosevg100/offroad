@@ -237,9 +237,16 @@ test("guided institutional setup calculates only after review and survives resum
  await expect(update).toHaveAttribute("data-targeted","true");
  await expect(page.locator('.advisor-work-surface__navigation a[href="#work-updates"]')).toHaveAttribute("aria-current","true");
  await update.getByRole("button",{name:messages.App.workUpdates.adopt.action,exact:true}).click();
- await update.getByRole("button",{name:messages.App.workUpdates.adopt.confirm,exact:true}).click();
+ // Native adoption fixes the displayed basis and requires a new explicit
+ // declaration when the current viewer prepared its results.
+ const adoptBase=update.getByRole("button",{name:"Adotar esta base",exact:true});
+ await expect(adoptBase).toBeDisabled();
+ await update.getByRole("checkbox",{name:"Declaro que estou adotando resultados preparados sob meu acesso.",exact:true}).check();
+ await expect(adoptBase).toBeEnabled();
+ await adoptBase.click();
  await expect.poll(latestUpdate,{timeout:30_000}).toBe("adopted");
  await page.reload();
+ expect(latestUpdate()).toBe("adopted");
  await resultLink.click();
  await expect(result.getByRole("status")).toHaveText(messages.InstitutionalModelResult.status.completed,{timeout:120_000});
  await expect(xlsx).not.toHaveAttribute("href",resultUrl!);
