@@ -12,13 +12,14 @@ test("native internal material approval and revocation use the same exact basis 
   for (const address of [db, api, process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000"])
     if (!["localhost", "127.0.0.1", "[::1]"].includes(new URL(address).hostname)) throw new Error("Synthetic material proof requires local services");
   const root = join(__dirname, "../../..");
-  const directory = `${process.platform === "darwin" ? "/private/tmp" : "/tmp"}/offroad-material-ui-${randomUUID()}`;
+  const namespace = randomUUID();
+  const directory = `${process.platform === "darwin" ? "/private/tmp" : "/tmp"}/offroad-material-ui-${namespace}`;
   mkdirSync(directory, {mode: 0o700});
   const file = join(directory, "fixture.json");
   const child = spawn(process.execPath, [join(root, "scripts/ci/test-material-production-native-sdk.mjs")], {
     cwd: root, env: {...process.env, DATABASE_URL: db, OFFROAD_E2E_API_URL: api,
       OFFROAD_E2E_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-      MATERIAL_UI_FIXTURE: "1", MATERIAL_UI_FIXTURE_OUTPUT: file}, stdio: ["ignore", "pipe", "pipe"],
+      MATERIAL_UI_FIXTURE: "1", MATERIAL_UI_NAMESPACE: namespace, MATERIAL_UI_FIXTURE_OUTPUT: file}, stdio: ["ignore", "pipe", "pipe"],
   });
   let exited = false;
   let failure = "material_fixture_child_exited";

@@ -9,7 +9,7 @@ vi.mock("@/lib/artifacts/material-package-review", async importOriginal => {
   const actual = await importOriginal<typeof import("@/lib/artifacts/material-package-review")>();
   return {...actual, createMaterialPackageReviewPort: () => ({read: mocks.basis})};
 });
-import {loadGovernedMaterialPackage} from "./materials";
+import {loadGovernedMaterialPackage, loadNativeMaterialReviewForWork} from "./materials";
 
 function setup() {
   const f = materialReviewFixture(), organizationId = f.u(40), sessionId = f.u(41);
@@ -64,4 +64,21 @@ describe("native material package loading", () => {
     s.rows[2]!.dependencies = [];
     expect(await loadGovernedMaterialPackage(s.client, s.organizationId, s.sessionId)).toBeNull();
   });
+  it("loads a capital-planning work's native material review without a historical private-case gate", async () => {
+    const s = setup();
+    expect(await loadNativeMaterialReviewForWork(s.client, s.organizationId, s.sessionId, s.f.expected.workId))
+      .toMatchObject({workId: s.f.expected.workId, recipeId: s.f.expected.recipeId});
+  });
+  it("withholds native work review when physical access or exact work binding is denied", async () => {
+    const s = setup();
+    expect(await loadNativeMaterialReviewForWork(s.client, s.organizationId, s.sessionId, s.f.u(99))).toBeNull();
+    mocks.physical.mockResolvedValue({ok: false, error: "capital_material_result_withheld"});
+    expect(await loadNativeMaterialReviewForWork(s.client, s.organizationId, s.sessionId, s.f.expected.workId)).toBeNull();
+  });
+  it("does not turn an inline historical material into an independent native review", async () => {
+    const s = setup(); s.rows[3]!.payload = s.content as DealStateRow["payload"];
+    expect(await loadNativeMaterialReviewForWork(s.client, s.organizationId, s.sessionId, s.f.expected.workId)).toBeNull();
+    expect(mocks.physical).not.toHaveBeenCalled(); expect(mocks.basis).not.toHaveBeenCalled();
+  });
+
 });
