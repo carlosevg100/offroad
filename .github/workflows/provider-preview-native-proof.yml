@@ -126,7 +126,7 @@ jobs:
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_native_case_fit_result_contract.sql
     - name: Apply guarded preview-only Storage job authority forward on cold stack
       env:
-        DATABASE_URL: ${{ steps.database.outputs.url }}
+        DATABASE_URL: ${{ steps.db.outputs.url }}
       run: |
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_storage_job_authority.sql
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_storage_job_authority.sql
