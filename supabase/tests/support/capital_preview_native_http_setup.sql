@@ -10,6 +10,12 @@ insert into public.capital_projects(id,organization_id,project_name,created_by)v
 -- publisher identity and workspace before invoking it, preserving its authority gate.
 select set_config('request.jwt.claims','{"sub":"a8800000-0000-4000-8000-000000000993","role":"authenticated"}',true);
 select set_config('request.headers','{"x-offroad-workspace":"a8800000-0000-4000-8000-000000000994"}',true);
+-- The publisher declares rights over its own synthetic inputs before ingestion.
+-- Actual source-version triggers derive the initial private rights from this act;
+-- verification cannot run on an unlicensed source and must retain that gate.
+set local role authenticated;
+select public.accept_private_workspace_terms('pt-BR','Synthetic preview publisher','Publisher',true,true);
+reset role;
 create temp table preview_publisher_session as select pg_temp.legacy_intake_for_work('a8800000-0000-4000-8000-000000000995')id;
 -- The scanner capability must bind a current worker token to the same publisher
 -- Auth identity. Keep it distinct from the owner SDK worker token in this namespace.
@@ -45,7 +51,7 @@ select set_config('request.headers','{"x-offroad-workspace":"a8800000-0000-4000-
 select pg_temp.verify_preview_documents();
 do $$declare d record;begin
  for d in select*from pg_temp.preview_verified_documents loop
- perform public.declare_public_source_reuse_v1(d.id,0,d.source_url,d.public_payload_sha256,clock_timestamp()+interval '2 days',clock_timestamp()+interval '2 days',d.id,d.sha);
+ perform public.declare_public_source_reuse_v1(d.id,1,d.source_url,d.public_payload_sha256,clock_timestamp()+interval '2 days',clock_timestamp()+interval '2 days',d.id,d.sha);
  end loop;
  insert into pg_temp.agent_fixture values('preview_basis',public.publish_capital_preview_consumed_basis_v1(gen_random_uuid(),(select jsonb_agg(jsonb_build_object('file',file_name,'sourceVersionId',id,'sourceBindingId',binding_id)order by file_name)from pg_temp.preview_verified_documents),clock_timestamp()+interval '1 day'));
 end$$;
