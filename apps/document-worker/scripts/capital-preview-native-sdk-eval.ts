@@ -43,7 +43,14 @@ async function main(){
  if(process.argv[2]==='--self-test'){previewQuestionsOutputSchema.parse(questions);synthesisModelOutputSchema.parse(synthesis);assert.throws(()=>local('https://example.supabase.co','http:'));assert.throws(()=>local('postgresql://example.org/db','postgresql:'));assert.throws(()=>anonKey('sb_secret_forbidden'));console.log('capital_preview_sdk_static: PASS (schemas and loopback guards only)');return;}
  assert.equal(process.argv.length,2);const api=process.env.OFFROAD_E2E_API_URL!,db=process.env.DATABASE_URL!,key=process.env.OFFROAD_E2E_PUBLISHABLE_KEY!;local(api,'http:');local(db,'postgresql:');assert.ok(key&&!key.startsWith('sb_secret_'));anonKey(key);
  let stopAtFinalize=true,storageAuthorityProved=false,nativePublicationProved=false;
- const client=createClient(api,key,{global:{headers:{'x-offroad-workspace':organization},fetch:(input,init)=>{if(stopAtFinalize&&(input instanceof Request?input.url:String(input)).includes('/rpc/worker_finalize_capital_preview_run_v1')){stopAtFinalize=false;return Promise.resolve(new Response(JSON.stringify({code:'synthetic_stop_after_terminal_task',message:'Synthetic fault before final marker'}),{status:409,headers:{'Content-Type':'application/json'}}));}return fetch(input,{...init,redirect:'error'}).then(async response=>{
+ const client=createClient(api,key,{global:{headers:{'x-offroad-workspace':organization},fetch:(input,init)=>{if(stopAtFinalize&&(input instanceof Request?input.url:String(input)).includes('/rpc/worker_finalize_capital_preview_run_v1')){stopAtFinalize=false;return Promise.resolve(new Response(JSON.stringify({code:'synthetic_stop_after_terminal_task',message:'Synthetic fault before final marker'}),{status:409,headers:{'Content-Type':'application/json'}}));}if(new URL(input instanceof Request?input.url:String(input)).pathname==='/rest/v1/rpc/worker_seal_capital_preview_boundary_v1'){
+   assert.equal(typeof init?.body,'string');
+   const args=JSON.parse(init!.body as string) as {p_model_input?:unknown};
+   const body=z.strictObject({schemaVersion:z.literal('capital-preview-model-input.v1'),boundary:z.enum(['questions','synthesis']),input:z.array(z.strictObject({type:z.literal('text'),text:z.string()})).min(1)}).parse(args.p_model_input);
+   const inputTextBytes=body.input.reduce((sum,part)=>sum+Buffer.byteLength(part.text,'utf8'),0);
+   console.log(JSON.stringify({eval:'capital_preview_seal_input_bytes',boundary:body.boundary,inputTextBytes,partCount:body.input.length,withinLegacy100k:inputTextBytes<=100000,withinPhysical1MiB:inputTextBytes<=1048576}));
+  }
+  return fetch(input,{...init,redirect:'error'}).then(async response=>{
 
   if(!nativePublicationProved&&response.ok&&new URL(input instanceof Request?input.url:String(input)).pathname==='/rest/v1/rpc/worker_commit_capital_preview_task_v1'){
    if(!job)throw Error('capital_preview_exact_fixture_job_required');
