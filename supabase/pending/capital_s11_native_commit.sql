@@ -39,14 +39,18 @@ create trigger capital_s11_native_audit after insert on private.capital_s11_nati
 create function private.capital_s11_native_read_allowed_v1(p_org uuid,p_revision uuid,p_actor uuid)
 returns boolean language plpgsql volatile security definer set search_path='' as $$
 declare b private.capital_s11_native_bindings;a private.capital_public_payload_allocations;d timestamptz;r public.artifact_revisions;
- projection record;projection_deadline timestamptz;projection_count integer:=0;
+ projection record;projection_deadline timestamptz;projection_count integer:=0;recipe_bound timestamptz;
 begin
  select * into b from private.capital_s11_native_bindings where organization_id=p_org and revision_id=p_revision;
  if b.id is null then return true;end if;
  if not private.capital_body_subject_allowed_v1(p_org,b.work_id,p_actor) then return false;end if;
  select * into r from public.artifact_revisions where organization_id=p_org and id=p_revision;
  select x.* into a from private.capital_public_retained_payloads q join private.capital_public_payload_allocations x on x.organization_id=q.organization_id and x.id=q.allocation_id where q.organization_id=p_org and q.id=b.final_retained_payload_id;
- d:=private.capital_s11_allocation_deadline_v1(p_org,a.id,p_actor);
+ recipe_bound:=private.capital_s11_recipe_deadline_v1(p_org,b.recipe_id,p_actor);
+ if recipe_bound is null then return false;end if;
+ d:=private.capital_s11_physical_allocation_bound_v1(p_org,a.id,b.recipe_id);
+ if d is null then return false;end if;
+ d:=least(recipe_bound,d);
  if r.id is null or a.id is null or d is null or not exists(select 1 from public.capital_project_artifacts c where c.organization_id=p_org and c.id=b.capital_artifact_id and c.status not in ('stale','superseded'))
  or r.content_sha256 is distinct from a.payload_fingerprint or r.byte_length is distinct from a.byte_length
  or not private.capital_body_physical_receipt_v1(p_org,b.final_retained_payload_id)
@@ -63,7 +67,7 @@ begin
  join public.capital_project_artifacts c on c.organization_id=p.organization_id and c.id=p.capital_artifact_id
  where p.organization_id=p_org and p.recipe_id=b.recipe_id loop
   projection_count:=projection_count+1;
-  projection_deadline:=private.capital_s11_allocation_deadline_v1(p_org,projection.allocation_id,p_actor);
+  projection_deadline:=private.capital_s11_physical_allocation_bound_v1(p_org,projection.allocation_id,b.recipe_id);
   if projection_deadline is null or projection.task_status is distinct from 'succeeded'
    or projection.output_fingerprint is distinct from projection.artifact_fingerprint
    or projection.current_fingerprint is distinct from projection.artifact_fingerprint
@@ -360,14 +364,14 @@ end; $$;
 
 -- MIN inheritance includes the parsed object itself, not just its recipe's
 -- licensed sources. Purged/changed parent bytes deny the derivative immediately.
-create or replace function private.capital_s11_allocation_deadline_v1(p_org uuid,p_allocation uuid,p_subject uuid)
+create function private.capital_s11_physical_allocation_bound_v1(p_org uuid,p_allocation uuid,p_recipe uuid)
 returns timestamptz language plpgsql volatile security definer set search_path='' as $$
 declare a private.capital_public_payload_allocations;b private.capital_s11_body_bases;d timestamptz;parent private.capital_public_payload_allocations;pb private.capital_s11_body_bases;
 begin
  select * into a from private.capital_public_payload_allocations where organization_id=p_org and id=p_allocation and content_kind='s11_body';
  select * into b from private.capital_s11_body_bases where organization_id=p_org and id=a.s11_body_basis_id;
- if b.id is null then return null;end if;
- d:=private.capital_s11_recipe_deadline_v1(p_org,b.recipe_id,p_subject);
+ if b.id is null or b.recipe_id is distinct from p_recipe then return null;end if;
+ d:=a.expires_at;
  if d is null or not exists(select 1 from private.capital_public_payload_purge_queue q where q.organization_id=p_org and q.allocation_id=a.id and q.status='pending') then return null;end if;
  if b.kind in('final','derived','prelude') then
  select x.* into parent from private.capital_public_retained_payloads q join private.capital_public_payload_allocations x on x.organization_id=q.organization_id and x.id=q.allocation_id where q.organization_id=p_org and q.id=b.parent_retained_payload_id and x.content_kind='s11_body';
@@ -383,13 +387,30 @@ begin
   -- or purged predecessor also closes the final artifact's physical lineage.
   if exists(select 1 from private.capital_s11_task_projections bridge where bridge.organization_id=p_org and bridge.recipe_id=b.recipe_id and
    ((bridge.accepted_invocation_id is not null and bridge.accepted_invocation_id is distinct from b.accepted_invocation_id) or not private.capital_body_physical_receipt_v1(p_org,bridge.derived_retained_payload_id)
-   or private.capital_s11_allocation_deadline_v1(p_org,(select allocation_id from private.capital_public_retained_payloads where organization_id=p_org and id=bridge.derived_retained_payload_id),p_subject) is null)) then return null;end if;
+   or private.capital_s11_physical_allocation_bound_v1(p_org,(select allocation_id from private.capital_public_retained_payloads where organization_id=p_org and id=bridge.derived_retained_payload_id),p_recipe) is null)) then return null;end if;
   select least(d,min(x.purge_at),min(x.expires_at)) into d from private.capital_s11_task_projections bridge
   join private.capital_public_retained_payloads receipt on receipt.organization_id=bridge.organization_id and receipt.id=bridge.derived_retained_payload_id
   join private.capital_public_payload_allocations x on x.organization_id=receipt.organization_id and x.id=receipt.allocation_id
   where bridge.organization_id=p_org and bridge.recipe_id=b.recipe_id;
  end if;
  return case when least(d,a.expires_at,a.purge_at)>clock_timestamp() then least(d,a.expires_at) end;
+end; $$;
+revoke all on function private.capital_s11_physical_allocation_bound_v1(uuid,uuid,uuid) from public,anon,authenticated,service_role;
+
+-- Authority/source closure remains current once per call. Physical ancestry is
+-- evaluated under that exact recipe; the owner-only bound cannot grant access.
+create or replace function private.capital_s11_allocation_deadline_v1(p_org uuid,p_allocation uuid,p_subject uuid)
+returns timestamptz language plpgsql volatile security definer set search_path='' as $$
+declare b private.capital_s11_body_bases;d timestamptz;physical_bound timestamptz;
+begin
+ select z.* into b from private.capital_public_payload_allocations a join private.capital_s11_body_bases z on(z.organization_id,z.id)=(a.organization_id,a.s11_body_basis_id)
+ where a.organization_id=p_org and a.id=p_allocation and a.content_kind='s11_body';
+ if b.id is null then return null;end if;
+ d:=private.capital_s11_recipe_deadline_v1(p_org,b.recipe_id,p_subject);
+ if d is null then return null;end if;
+ physical_bound:=private.capital_s11_physical_allocation_bound_v1(p_org,p_allocation,b.recipe_id);
+ if physical_bound is null then return null;end if;
+ return case when least(d,physical_bound)>clock_timestamp() then least(d,physical_bound) end;
 end; $$;
 
 -- A successor may read immutable retained bytes, but its grant never authorizes

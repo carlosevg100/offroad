@@ -18,7 +18,7 @@ const projectionStateSchema=z.strictObject({schemaVersion:z.literal("capital-deb
 const same=(a:unknown,b:unknown)=>legacyGatewayFingerprint(a)===legacyGatewayFingerprint(b),sha=(bytes:Uint8Array)=>createHash("sha256").update(bytes).digest("hex");
 export function createCapitalCompanyDebtRecoveryQueueAdapter(client:SupabaseClient,job:CapitalProjectAnalysisJob,now:()=>number=Date.now){
  const authority=Object.freeze({jobId:uuid.parse(job.job_id),capabilityToken:z.string().min(1).parse(job.capability_token)});
- const rpc=async(name:string,input:Record<string,unknown>={})=>{const args={p_job_id:authority.jobId,p_capability_token:authority.capabilityToken,...input};const result=await retryCapitalCaptureRpc(()=>client.rpc(name,args));if(result.error)throw new CapitalCompanyDebtRecoveryGap();return result.data as unknown;};
+ const rpc=async(name:string,input:Record<string,unknown>={})=>{const args={p_job_id:authority.jobId,p_capability_token:authority.capabilityToken,...input};const result=await retryCapitalCaptureRpc(()=>client.rpc(name,args));if(result.error)throw new CapitalCompanyDebtRecoveryGap(result.error.code==="57014"?"capital_debt_recovery_rpc_cancelled":result.error.code==="42501"?"capital_debt_recovery_rpc_denied":result.error.code==="40001"?"capital_debt_recovery_rpc_retry_exhausted":"capital_debt_recovery_rpc_failed");return result.data as unknown;};
  const physical=createCapitalCompanyDebtPhysicalStore(client,job,(auth,scope)=>readCapitalDebtBodyBytes(client,auth,{recipeId:needRecipe()},scope),now);
  let recipeId:string|undefined;
  const needRecipe=()=>{if(!recipeId)throw new CapitalCompanyDebtRecoveryGap();return recipeId;};
