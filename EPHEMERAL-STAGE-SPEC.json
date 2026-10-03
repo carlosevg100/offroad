@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "stage20-ephemeral-worker-spec.v1",
+  "status": "OPERATOR-PLAN-NOT-DEPLOYED",
+  "image": {
+    "tag": "389642461544.dkr.ecr.sa-east-1.amazonaws.com/offroad/document-worker:stage20-eval-3c84fd08b861",
+    "runtimeCommit": "3c84fd08b8612376aa03e216e2e81f8591bfb7f2",
+    "requireDigestFromBuild": true
+  },
+  "cloneFromActualTaskDefinitionRevision": 519,
+  "retainActualMetadata": [
+    "networkMode",
+    "requiresCompatibilities",
+    "cpu",
+    "memory",
+    "runtimePlatform",
+    "executionRoleArn",
+    "taskRoleArn",
+    "containerDefinitions.name",
+    "containerDefinitions.essential",
+    "containerDefinitions.stopTimeout",
+    "containerDefinitions.logConfiguration",
+    "containerDefinitions.linuxParameters",
+    "containerDefinitions.readonlyRootFilesystem",
+    "containerDefinitions.volumes/mountPoints"
+  ],
+  "removeRegistrationResponseOnlyFields": [
+    "taskDefinitionArn",
+    "revision",
+    "status",
+    "requiresAttributes",
+    "compatibilities",
+    "registeredAt",
+    "registeredBy",
+    "deregisteredAt"
+  ],
+  "family": "offroad-document-worker-stage20-eval",
+  "replaceEnvironment": {
+    "SUPABASE_URL": "https://gjkkjtbfnssdsbmlhmwk.supabase.co",
+    "DOCUMENTARY_WORK_PLANNING_ENABLED": "true",
+    "MAX_CONCURRENT_JOBS": "1",
+    "REQUIRE_VIRUS_SCAN": "true"
+  },
+  "replaceSecretsRequired": [
+    "SUPABASE_PUBLISHABLE_KEY",
+    "WORKER_ACCOUNT_EMAIL",
+    "WORKER_ACCOUNT_PASSWORD",
+    "OFFROAD_WORKER_TOKEN"
+  ],
+  "stageSecretReferences": "Operator supplies actual protected stage Secret ARNs/JSON fields; no plaintext environment/override or secret output. Existing execution role must already read those references; inability is a blocker, never expand IAM. Remove every production reference for these four names before registration.",
+  "preserveProviderSecrets": "Only exact currently reviewed provider secret versions and matching PROVIDER_CONNECTIONS_JSON, under existing processing/retention eligibility. No new provider/key/region or rights inferred.",
+  "accountPreflight": [
+    "Actual stage signIn/getUser UUID matches active worker_tokens.execution_account_user_id",
+    "Dedicated account has no tenant membership",
+    "Token/account/capability guards stay unchanged",
+    "Candidate runtime schema and method pins boot verified"
+  ],
+  "launch": {
+    "mode": "one-off Fargate run-task; no update-service or new ECS service",
+    "cluster": "offroad",
+    "network": "Actual subnet/securityGroup configuration read from existing service, not fabricated",
+    "maximumWallClockMinutes": 60,
+    "startupGate": "No task launch before real preview forward authority9checks passes",
+    "queue": "Global stage queue; inspect current pending/leased metadata and avoid competing runtime. Do not modify the three old expired leased fixture jobs."
+  },
+  "cleanup": [
+    "Record own task ARN/start/deadline with protected metadata before launch; operator sets external 60-minute stop deadline independent of worker.",
+    "Send stop-task to this exact task only; await STOPPED and verify no further claims/outbox polls from its credential.",
+    "Revoke only a NEW dedicated evaluation worker credential/account when task has stopped. An existing credential is not automatically revoked or rotated.",
+    "Remove/revoke only newly created stage secret versions/references according to existing retention; never delete shared provider secrets.",
+    "Deregister only the new evaluation task-definition revision; no production family/service mutation.",
+    "Preserve proof/task/image digest metadata; delete only this evaluation ECR tag after proof archived and task stopped.",
+    "Retire temporary audit branch/workflow after image/task evidence; never merge it into main."
+  ]
+}
