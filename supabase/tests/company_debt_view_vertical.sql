@@ -224,8 +224,7 @@ begin
     if sqlerrm<>'capital_debt_native_task_projection_required' then raise;end if;
   end;
   if exists(select 1 from public.capital_project_artifacts where task_run_id=v_task_run_id)
-    or (select status from public.capital_project_task_runs where id=v_task_run_id)<>'running'
-    or exists(select 1 from public.processing_jobs where payload#>>'{trigger_event,type}'='artifact_correction_requested'and payload->>'analysis_scope'='company_debt_view') then
+    or (select status from public.capital_project_task_runs where id=v_task_run_id)<>'running' then
     raise exception 'debt_denied_legacy_ports_left_effects';
   end if;
   begin
@@ -240,6 +239,14 @@ end;
 $$;
 
 reset role;
+-- Inspect fixture metadata as the test owner; authenticated workers deliberately
+-- have no direct SELECT on processing_jobs. This is never a worker authority path.
+do $$begin
+  if exists(select 1 from public.processing_jobs where payload#>>'{trigger_event,type}'='artifact_correction_requested'
+    and payload->>'analysis_scope'='company_debt_view') then
+    raise exception 'debt_denied_legacy_return_left_job';
+  end if;
+end $$;
 
 rollback;
 

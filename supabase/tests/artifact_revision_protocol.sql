@@ -193,8 +193,8 @@ begin
 end $$;
 
 -- 9. Release: an external revision is blocked for the head reader and the exact reader alike until a
--- human approval names its exact revision and fingerprint; then both say released. Internal stays internal.
-do $$ declare m jsonb;b jsonb;r jsonb;x jsonb;h jsonb;plan uuid;run uuid;art uuid;
+-- human approval records an exact review; external publication remains a separate authority. Internal stays internal.
+do $$ declare m jsonb;b jsonb;r jsonb;x jsonb;h jsonb;approval jsonb;
 begin
  b:=jsonb_build_array(pg_temp.block('teaser','section','{"title":"Teaser"}',jsonb_build_array(pg_temp.claim('revenue-2025','980'))));
  m:=pg_temp.manifest('material','external','[]',pg_temp.summary(b));
@@ -209,16 +209,29 @@ begin
  values('a11b0000-0000-4000-9000-000000000001',true,false,'a11b0000-0000-4000-8000-000000000001');
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
  set local role authenticated;
- perform public.review_artifact_revision_v1((r->>'revision_id')::uuid,r->>'manifest_fingerprint','approve',null,null,true,gen_random_uuid());
+ approval:=public.review_artifact_revision_v1((r->>'revision_id')::uuid,r->>'manifest_fingerprint','approve',null,null,true,gen_random_uuid());
  reset role;
+ if not private.artifact_review_is_active_v1('a11b0000-0000-4000-9000-000000000001',(approval->>'reviewId')::uuid)
+ or not exists(select 1 from public.artifact_reviews v where v.id=(approval->>'reviewId')::uuid
+  and v.organization_id='a11b0000-0000-4000-9000-000000000001' and v.work_id='a11b0000-0000-4000-9000-000000000002'
+  and v.revision_id=(r->>'revision_id')::uuid and v.manifest_fingerprint=r->>'manifest_fingerprint'
+  and v.audience='external' and v.act='approve' and v.self_approval_declared) then
+  raise exception 'exact human approval was not recorded';
+ end if;
+ -- A review of generic authored material is not external publication authority.
+ -- No CPA fingerprint surrogate, native binding or publication receipt is fabricated.
  x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',(r->>'revision_id')::uuid);
  h:=pg_temp.head_as('a11b0000-0000-4000-8000-000000000001','material','teaser');
- if x->>'release'<>'released' or h->>'release'<>'released' or jsonb_typeof(x->'restriction')<>'null' or jsonb_array_length(x->'blocks')<>1 or h#>'{blocks}'<>x#>'{blocks}' then
-  raise exception 'human approval on the exact revision did not release for both readers: % %',x,h; end if;
+ if x->>'release'<>'blocked' or h->>'release'<>'blocked'
+  or x#>>'{restriction,kind}'<>'release' or h#>>'{restriction,kind}'<>'release'
+  or x->'blocks'<>'[]'::jsonb or h->'blocks'<>'[]'::jsonb
+  or x#>'{revision,manifest}' is distinct from 'null'::jsonb or h#>'{revision,manifest}' is distinct from 'null'::jsonb then
+  raise exception 'human review substituted for external publication authority';
+ end if;
  x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',pg_temp.val('r2','revision_id')::uuid);
  h:=pg_temp.head_as('a11b0000-0000-4000-8000-000000000001','answer','q1');
  if x->>'release'<>'internal' or h->>'release'<>'internal' or h#>>'{revision,id}'<>pg_temp.val('r2','revision_id') then raise exception 'internal revision not internal alike: % %',x,h; end if;
- raise notice 'PASS: external is blocked for preview and download alike, released after human approval on its exact revision; head and exact readers decide equal';
+ raise notice 'PASS: exact human approval is recorded; external material remains blocked without separate publication authority, for both readers';
 end $$;
 
 -- 10. The worker command: refused with a capability that is not artifact-revision.v1, refused with
