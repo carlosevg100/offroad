@@ -1,13 +1,13 @@
 {
-  "schemaVersion": "combined-native-sql-eval-cut.v2",
+  "schemaVersion": "combined-native18-sql-eval-cut.v1",
   "files": [
     {
       "path": ".github/workflows/combined-native-sql-proof.yml",
-      "sha256": "f587996625a13867ac64ad26896adf53cdfefb4e2fd0fd0e078f6d804b1c0293"
+      "sha256": "199e1a471132f9f2fe64f75d15d07d278f83d740fb7e73720591f7f749f73c21"
     },
     {
       "path": "scripts/ci/test-combined-native-consumers-assessment.py",
-      "sha256": "f7c151f364523f8bf665516355792b6bd8ad82e740347d6dc0455b19feeae74e"
+      "sha256": "104a8c095ad3b15c0a32257fbe2a6c8548dceb0c4a6dd21a8016cd9a13fb76e0"
     },
     {
       "path": "supabase/tests/support/combined_native_wrapper_chain.sql",
@@ -15,78 +15,41 @@
     },
     {
       "path": "COMBINED-SOURCES.json",
-      "sha256": "f8f91c6db9a152ba1f171265430520c46c9a7849b5688d780193c5b4c50ccdc0"
+      "sha256": "eaf928d9fc3f5a252ccfa8d302955ab7e924910cfffb8a5bd3cec0be8feb4521"
     },
     {
       "path": "README.md",
-      "sha256": "1bf2034f130bd912df5f33cc31fbc8532d62dd5d1bf221954b16f47b05d0dd33"
+      "sha256": "3bddc467f04a3af8aadde8bac1019bf7261d4bdee6e3f3f1adea026617ddee30"
     }
   ],
-  "passed": [
-    "python-syntax",
-    "harness-loopback-explicit-opt-in-guard",
-    "frozen-draft-hashes-17-current-heads",
-    "workflow-YAML-dispatch-only-11-steps-3-pinned-checkouts-always-cleanup",
-    "closed-diagnostic-unit-exact-suite-SQLSTATE-static-test-literal-no-raw",
-    "static-contract-context-allowlist-unit",
-    "assessment-CWD-real-nonempty-packet-unit"
-  ],
-  "unexecuted": [
-    "workflow-dispatch",
-    "combined-install-11-then-6",
-    "wrapper-chain-ACL-SQL",
-    "S11-debt-negatives",
-    "assessment-four-real-rollback-suites"
-  ],
-  "retirement": "Temporary audit branch/workflow: never merge; retire after combined PASS and canonical promotions installed.",
-  "activation": "push to dedicated temporary audit branch; workflow_dispatch on non-default new workflow is not assumed",
-  "actualCI": {
-    "run": 37097473159,
-    "head": "958b3cc5acc12e19d2bf3fcf35011134025cfc93",
-    "passed": [
-      "canonical-replay",
-      "install11-consumers",
-      "install6-assessment",
-      "wrapper-chain-and-ACL",
-      "debt-ledger-hostile",
-      "S11-task-hostile"
-    ],
-    "failed": "assessment-four-real-rollback-suites",
-    "cause": "Not exposed by first harness; closed diagnostic replay required."
-  },
-  "baselineSourceProof": "git diff --name-only 16fb3a0b e48084c4 -- supabase/migrations returned empty",
-  "latestActualCI": {
-    "run": 37098198160,
-    "passed": [
-      "install11",
-      "install6",
-      "chain-ACL",
-      "S11-debt-negative",
-      "assessment-review",
-      "assessment-rejection",
-      "assessment-public-research"
-    ],
-    "failed": "work_update_native_adoption",
-    "sqlstate": "22023",
-    "staticException": "execution_json_size_invalid",
-    "functions": [
-      "execution_json_projection_v1",
-      "settle_execution_operation_v2"
-    ],
-    "cause": "Harness cwd was multi-checkout parent: relative cat packages/domain-contracts/src/fixtures/execution-result-packet.json returned empty. Fix assessment suite cwd to its frozen checkout; no SQL/test semantics changed."
-  },
-  "sources": {
-    "baseline": "16fb3a0bf303f85ba637aba458c68925e1908a5b",
-    "consumers": "fcb09c9243e8ad6be93c0e90886cc22322ad1802",
-    "assessment": "5fe11f9a5be67e229f1515ba1708e751e891c4fa"
-  },
   "publishPaths": [
     ".github/workflows/combined-native-sql-proof.yml",
     "scripts/ci/test-combined-native-consumers-assessment.py",
+    "supabase/tests/support/combined_native_wrapper_chain.sql",
     "COMBINED-SOURCES.json",
+    "README.md",
     "FILES.json"
   ],
-  "unchangedSQL": "combined_native_wrapper_chain.sql unchanged; 17 inputs hash-pinned from canonical frozen heads. No contracts edited.",
-  "finalFrozenConsumersHead": "fcb09c9243e8ad6be93c0e90886cc22322ad1802",
-  "afterSQL": "unexecuted until real CI"
+  "passed": [
+    "Python syntax",
+    "18 frozen source hashes exact",
+    "11 original core and6 assessment hashes unchanged",
+    "Installer order matches12 pinned sources",
+    "Exact prior wrapper-chain/ACL SQL unchanged",
+    "Loopback explicit-opt-in and remote/ambiguous-target denial",
+    "Assessment cwd retained for nonempty packet",
+    "Workflow exact pinned commits and always-cleanup",
+    "Workflow YAML parsed, single dedicated11-step job, pinned actions",
+    "Closed diagnostic unit: exact22023 checked-in exception/context, arbitrary body withheld",
+    "Read-only Git diff canonical migrations16fb\u2192d1d89 empty"
+  ],
+  "unexecuted": [
+    "Combined18 actual SQL and real CI"
+  ],
+  "sourceHeads": {
+    "consumersHead": "d1d89e1ff55236d0a167b9011f9878bc6e98e998",
+    "assessmentHead": "2592359307a648091047ca9cf05717a0c132795a",
+    "baselineHead": "16fb3a0bf303f85ba637aba458c68925e1908a5b"
+  },
+  "retirement": "Temporary audit workflow/branch only; never merge into product; retire after canonical promotion proofs."
 }

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""17-draft proof on a dedicated disposable loopback Supabase baseline only.
+"""18-draft proof on a dedicated disposable loopback Supabase baseline only.
 No stack startup/reset, remote target, migration journal, or privileged fake receipt.
 Run once on a fresh CI stack, separate from other fixture consumers.
 """
 import argparse,hashlib,json,os,pathlib,re,subprocess,sys
 from urllib.parse import urlparse
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-CONSUMERS=('capital_public_artifact_review_cutover','capital_s11_native_consumption','capital_s11_execution_ledger','capital_s11_task_projections','capital_s11_native_commit','capital_s11_native_revision','capital_debt_native_consumption','capital_debt_execution_ledger','capital_debt_task_projections','capital_debt_native_commit','capital_debt_native_revision')
+CONSUMERS=('capital_public_artifact_review_cutover','capital_s11_native_consumption','capital_s11_execution_ledger','capital_s11_task_projections','capital_s11_native_commit','capital_s11_native_revision','capital_debt_native_consumption','capital_debt_execution_ledger','capital_debt_task_projections','capital_debt_native_commit','capital_debt_native_revision','artifact_native_inherited_restriction')
 ASSESSMENT=('assessment_input_capture','assessment_review_projection','assessment_effective_case_input','work_update_native_adoption','assessment_institutional_capture','assessment_research_capture')
 def validate(env):
  p=urlparse(env.get('DATABASE_URL',''))
@@ -26,7 +26,7 @@ def run(command,env,phase,input=None,cwd=None):
   allowed.update(re.findall(r"raise exception '([a-zA-Z0-9_]+)'",(ROOT/'supabase/tests/support/combined_native_wrapper_chain.sql').read_text(),re.I))
   literals=sorted(name for name in allowed if re.search(r'(?:ERROR|FATAL):\s+(?:[0-9A-Z]{5}:\s+)?'+re.escape(name)+r'(?=\s|$)',diagnostic))
   # Core canonical migrations are byte-identical to baseline16fb (read-only
-  # git diff proof); draft filenames are the seventeen hash-pinned inputs.
+  # git diff proof); draft filenames are the eighteen hash-pinned inputs.
   sources=list((c/'supabase/migrations').glob('*.sql'))+[c/'supabase/pending'/(n+'.sql') for n in CONSUMERS]+[v/'supabase/pending'/(n+'.sql') for n in ASSESSMENT]
   contract_literals=set();function_names=set()
   for source in sources:
@@ -54,7 +54,7 @@ if a.self_test:
  try:validate({'DATABASE_URL':good['DATABASE_URL']})
  except ValueError:pass
  else:raise AssertionError('Implicit fixture target admitted')
- print('combined_native_harness_guard: PASS; hashes17 confirmed; no SQL executed');sys.exit(0)
+ print('combined_native_harness_guard: PASS; hashes18 confirmed; no SQL executed');sys.exit(0)
 url=validate(os.environ);env=dict(os.environ)
 psql=['psql',url,'-X','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose']
 # Do not reuse any root/WB stack with already installed candidates. The canonical
@@ -65,7 +65,7 @@ if to_regclass('private.capital_s11_recipes')is not null or to_regclass('private
 end$$;"""
 run(psql,env,'fresh-baseline',preflight)
 env['OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL']='isolated-loopback-ci'
-run([sys.executable,str(c/'scripts/ci/install-capital-consumers-ci-drafts.py')],env,'install11-consumers')
+run([sys.executable,str(c/'scripts/ci/install-capital-consumers-ci-drafts.py')],env,'install12-consumers')
 run([sys.executable,str(v/'scripts/ci/install-assessment-native-local.py')],env,'install6-assessment')
 run(psql+['-f',str(ROOT/'supabase/tests/support/combined_native_wrapper_chain.sql')],env,'wrapper-chain-and-ACL')
 for name in ('capital_debt_execution_ledger','capital_s11_task_projections'):
@@ -78,4 +78,4 @@ def expand(path):
 for name in ('assessment_review_projection','assessment_rejection_and_revision','assessment_public_research_denial','work_update_native_adoption'):
  test=v/'supabase/tests/support'/('assessment_native_'+name+'.sql')
  run(psql,env,'assessment-'+name,expand(test),cwd=v)
-print(json.dumps({'eval':'combined_native_install_and_SQL','result':'PASS','drafts':17,'order':'11-consumers-then6-assessment','evidence':'real disposable SQL; not SDK HTTP or production'}))
+print(json.dumps({'eval':'combined_native_install_and_SQL','result':'PASS','drafts':18,'order':'11-original-consumers-then1-correction-then6-assessment','evidence':'real disposable SQL; not SDK HTTP or production'}))

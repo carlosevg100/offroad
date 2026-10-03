@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   combined-sql:
-    name: Frozen eleven consumers then six assessment SQL
+    name: Frozen eleven consumers, correction, then six assessment SQL
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -26,12 +26,12 @@ jobs:
       - name: Checkout frozen consumers installer and contracts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: fcb09c9243e8ad6be93c0e90886cc22322ad1802
+          ref: d1d89e1ff55236d0a167b9011f9878bc6e98e998
           path: consumers
       - name: Checkout frozen assessment installer and contracts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: 5fe11f9a5be67e229f1515ba1708e751e891c4fa
+          ref: 2592359307a648091047ca9cf05717a0c132795a
           path: assessment
       - name: Set up canonical Node24
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -67,7 +67,7 @@ jobs:
             supabase stop --no-backup || true
             sleep 90
           done
-      - name: Install seventeen frozen drafts and prove combined contracts
+      - name: Install eighteen frozen drafts and prove combined contracts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           OFFROAD_COMBINED_NATIVE_EVAL: isolated-loopback-ci

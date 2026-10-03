@@ -1,6 +1,6 @@
 {
-  "consumersHead": "fcb09c9243e8ad6be93c0e90886cc22322ad1802",
-  "assessmentHead": "5fe11f9a5be67e229f1515ba1708e751e891c4fa",
+  "consumersHead": "d1d89e1ff55236d0a167b9011f9878bc6e98e998",
+  "assessmentHead": "2592359307a648091047ca9cf05717a0c132795a",
   "consumers": {
     "capital_public_artifact_review_cutover": "9a315c26be6b5fddcdf5adf36cc6e85183196df95c47925172f803b037eb180e",
     "capital_s11_native_consumption": "a09ae95dea3ce1b58fe2eaefa0ed73a70af4f279ddc487e29cf80c7c1fa03793",
@@ -12,7 +12,8 @@
     "capital_debt_execution_ledger": "e27536745119e4ffda55df5dd2ec25bc21a93a5ecef6eeb2681eb944df3c521a",
     "capital_debt_task_projections": "fc4c8e012b8413578a197c0d576ad19880c2a457987642c08dc6cc24b21670c7",
     "capital_debt_native_commit": "3cbcc795ae0f323a1e914edcb7483bbd42cbcb002e432ebd8624de1bbb9f5e5b",
-    "capital_debt_native_revision": "024c64f3aac426563b34ad5407fab9915d8e83b0f8d2d732a857004f456d193e"
+    "capital_debt_native_revision": "024c64f3aac426563b34ad5407fab9915d8e83b0f8d2d732a857004f456d193e",
+    "artifact_native_inherited_restriction": "c2de869517dc785807325a19e4a754d15b6c40a0bdef3014c3953ce41cdfe39d"
   },
   "assessment": {
     "assessment_input_capture": "34bbb5cc8d9c5244a12ee1dfa37354befb96256eb0d766cb996389dc6889a3ff",
