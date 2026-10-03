@@ -11,6 +11,10 @@ insert into public.capital_projects(id,organization_id,project_name,created_by)v
 select set_config('request.jwt.claims','{"sub":"a8800000-0000-4000-8000-000000000993","role":"authenticated"}',true);
 select set_config('request.headers','{"x-offroad-workspace":"a8800000-0000-4000-8000-000000000994"}',true);
 create temp table preview_publisher_session as select pg_temp.legacy_intake_for_work('a8800000-0000-4000-8000-000000000995')id;
+-- The scanner capability must bind a current worker token to the same publisher
+-- Auth identity. Keep it distinct from the owner SDK worker token in this namespace.
+insert into private.worker_tokens(label,token_sha256,execution_account_user_id)
+values('Synthetic preview publisher scanner',extensions.digest(repeat(md5('a8800000-preview-publisher'),2),'sha256'),'a8800000-0000-4000-8000-000000000993');
 create temp table preview_verified_documents(id uuid,job_id uuid,file_name text,sha text,size bigint,binding_id uuid,source_url text,public_payload_sha256 text);
 insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,budget,versions,created_by)
 select 'a8800000-0000-4000-8000-000000000997','a8800000-0000-4000-8000-000000000994',id,1,'manual','running','preview-ci-verification','{}','{}','a8800000-0000-4000-8000-000000000993'from preview_publisher_session;
@@ -19,8 +23,8 @@ do $$declare e jsonb;doc uuid;scanner_job uuid;binding uuid;begin
  doc:=gen_random_uuid();scanner_job:=gen_random_uuid();
  insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,sha256,byte_size,processing_status,scan_result,created_by)
  select doc,'a8800000-0000-4000-8000-000000000994',id,'a8800000-0000-4000-8000-000000000994/preview-ci/'||doc,e->>'file',e->>'sha256',(e->>'bytes')::bigint,'ready','{"verdict":"clean"}','a8800000-0000-4000-8000-000000000993'from preview_publisher_session;
- insert into public.processing_jobs(id,organization_id,processing_run_id,intake_session_id,source_document_id,kind,status,payload,leased_account_user_id,lease_expires_at,capability_sha256)
- select scanner_job,'a8800000-0000-4000-8000-000000000994','a8800000-0000-4000-8000-000000000997',id,doc,'document_pipeline','leased',jsonb_build_object('document_version',1,'sha256',e->>'sha256'),'a8800000-0000-4000-8000-000000000993',clock_timestamp()+interval '10 minutes',extensions.digest(repeat('d',64),'sha256')from preview_publisher_session;
+ insert into public.processing_jobs(id,organization_id,processing_run_id,intake_session_id,source_document_id,kind,status,payload,leased_account_user_id,leased_by,lease_expires_at,capability_sha256)
+ select scanner_job,'a8800000-0000-4000-8000-000000000994','a8800000-0000-4000-8000-000000000997',id,doc,'document_pipeline','leased',jsonb_build_object('document_version',1,'sha256',e->>'sha256'),'a8800000-0000-4000-8000-000000000993',(select id from private.worker_tokens where token_sha256=extensions.digest(repeat(md5('a8800000-preview-publisher'),2),'sha256')and execution_account_user_id='a8800000-0000-4000-8000-000000000993'),clock_timestamp()+interval '10 minutes',extensions.digest(repeat(md5('a8800000-preview-publisher'),2),'sha256')from preview_publisher_session;
  select id into binding from public.source_bindings where organization_id='a8800000-0000-4000-8000-000000000994'and source_version_id=doc and resource_id='a8800000-0000-4000-8000-000000000995';
  if binding is null then insert into public.source_bindings(organization_id,source_version_id,resource_id,resource_reference,request_id,created_by)values('a8800000-0000-4000-8000-000000000994',doc,'a8800000-0000-4000-8000-000000000995','a8800000-0000-4000-8000-000000000995',gen_random_uuid(),'a8800000-0000-4000-8000-000000000993')returning id into binding;end if;
  -- Calculate the public payload hash as the fixture operator, without granting
@@ -32,7 +36,7 @@ do $$declare e jsonb;doc uuid;scanner_job uuid;binding uuid;begin
 end$$;
 create function pg_temp.verify_preview_documents()returns void language plpgsql security definer set search_path=''as $$declare d record;begin
  for d in select*from pg_temp.preview_verified_documents loop
- perform private.register_source_verification_v1(d.job_id,repeat('d',64),jsonb_build_object('verdict','clean','organizationId','a8800000-0000-4000-8000-000000000994','sourceDocumentId',d.id,'operationId',d.job_id,'documentVersion',1,'observedSha256',d.sha,'expectedSha256',d.sha,'observedByteSize',d.size,'expectedByteSize',d.size,'receiptId','sha256:'||d.sha));
+ perform private.register_source_verification_v1(d.job_id,repeat(md5('a8800000-preview-publisher'),2),jsonb_build_object('verdict','clean','organizationId','a8800000-0000-4000-8000-000000000994','sourceDocumentId',d.id,'operationId',d.job_id,'documentVersion',1,'observedSha256',d.sha,'expectedSha256',d.sha,'observedByteSize',d.size,'expectedByteSize',d.size,'receiptId','sha256:'||d.sha));
  end loop;end$$;
 grant select on preview_verified_documents to authenticated;
 set local role authenticated;
