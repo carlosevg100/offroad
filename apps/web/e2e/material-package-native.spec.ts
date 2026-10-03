@@ -17,12 +17,37 @@ test("native internal material approval and revocation use the same exact basis 
       OFFROAD_E2E_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
       MATERIAL_UI_FIXTURE: "1", MATERIAL_UI_FIXTURE_OUTPUT: file}, stdio: ["ignore", "pipe", "pipe"],
   });
-  let exited = false; child.once("exit", () => {exited = true;});
-  // Keep secret credentials in the local 0600 fixture file, never in test logs.
-  child.stdout?.resume(); child.stderr?.resume();
+  let exited = false;
+  let failure = "material_fixture_child_exited";
+  child.once("close", () => {exited = true;});
+  // Accept only closed diagnostic fields. Never retain raw output: it may contain
+  // credentials from the 0600 fixture or request bodies from a failed assertion.
+  const collect = () => {
+    let pending = "";
+    return (chunk: Buffer) => {
+      pending = (pending + chunk.toString("utf8")).slice(-4096);
+      const lines = pending.split("\n"); pending = lines.pop() ?? "";
+      for (const line of lines) {
+        if (line === "material_sdk_launcher_failed") {failure = line; continue;}
+        try {
+          const value = JSON.parse(line) as Record<string, unknown>;
+          if (value.eval !== "material_native_sdk_http" || value.result !== "FAIL") continue;
+          const safe = (field: unknown) => typeof field === "string" && /^[a-zA-Z0-9_]{1,80}$/.test(field) ? field : "unknown";
+          const status = Number.isInteger(value.httpStatus) && Number(value.httpStatus) >= 100 && Number(value.httpStatus) <= 599 ? value.httpStatus : "unknown";
+          const count = value.claimedCount === 0 || value.claimedCount === 1 ? value.claimedCount : "unknown";
+          failure = `material_fixture_failed phase=${safe(value.phase)} code=${safe(value.code)} rpc=${safe(value.rpc)} rpcCode=${safe(value.rpcCode)} sqlstate=${safe(value.sqlstate)} httpStatus=${status} claimedCount=${count}`;
+        } catch { /* Non-protocol output is deliberately discarded. */ }
+      }
+    };
+  };
+  child.stdout?.on("data", collect()); child.stderr?.on("data", collect());
   const sql = (query: string) => execFileSync("psql", [db, "-XqAt", "-v", "ON_ERROR_STOP=1"], {input: query, encoding: "utf8"}).trim();
   try {
-    await expect.poll(() => existsSync(file) ? "ready" : exited ? "failed" : "running", {timeout: 120000}).toBe("ready");
+    await expect.poll(() => {
+      if (existsSync(file)) return "ready";
+      if (exited) throw new Error(failure);
+      return "running";
+    }, {timeout: 120000}).toBe("ready");
     expect(statSync(file).mode & 0o777).toBe(0o600);
     const f = z.object({schemaVersion: z.literal("material-native-ui-fixture.v1"), organizationId: z.uuid(), workId: z.uuid(),
       sessionId: z.uuid(), revisionId: z.uuid(), approved: z.literal(false), physical: z.boolean().optional(),
