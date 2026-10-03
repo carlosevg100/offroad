@@ -39,6 +39,16 @@ if mode=='1':s=s.replace('begin;','begin;\n'+drafts,1)
 needle="insert into route_proof values('native_claim',claim::text);"
 assert s.count(needle)==1
 s=s.replace(needle,needle+"\nbegin perform public.worker_record_agent_assessment_v1(job,claim->>'capability_token','{}');raise exception 'v1_case_before_capture_accepted';exception when insufficient_privilege then if sqlerrm<>'assessment_native_writer_required'then raise;end if;end;\nbegin perform public.worker_load_assessment_institutional_context_v1(job,repeat('x',64));raise exception 'wrong_capture_capability_accepted';exception when insufficient_privilege then null;end;\nbegin perform public.worker_record_agent_assessment_v1(job,claim->>'capability_token','{}');raise exception 'v1_case_after_capture_denial_accepted';exception when insufficient_privilege then if sqlerrm<>'assessment_native_writer_required'then raise;end if;end;\nraise notice 'PASS assessment_case_v1_42501_before_capture_after_denial_same_cap';\ninsert into route_proof values('assessment_institutional',public.worker_load_assessment_institutional_context_v1(job,claim->>'capability_token')::text);\n",1)
+# This gate owns only the genuine case lease and assessment ports. The separate
+# material gate proves material capture; do not execute its body fixture here.
+material_start=s.index(" begin perform public.worker_freeze_case_input(job,claim->>'capability_token','{}');")
+material_end=s.index('end$$;',material_start)
+s=s[:material_start]+""" a:=public.worker_load_assessment_retrieval_v2(job,claim->>'capability_token','assessment synthetic uncited query', '{}',null,20);
+ if jsonb_typeof(a) is distinct from 'object' or jsonb_typeof(a->'results') is distinct from 'array'
+  or not(a ? 'playbook_version') or (a->>'abstained')::boolean is distinct from (jsonb_array_length(a->'results')=0)
+ then raise exception 'assessment_retrieval_delivered_contract_changed';end if;
+ raise notice 'PASS assessment_retrieval_canonical_context_captured';
+"""+s[material_end:]
 s=s[:s.index('-- Actual upload policy under the genuine lease/capability.')]+"\nrollback;"
 prefix=os.environ.get('ASSESSMENT_INSTITUTIONAL_FIXTURE_PREFIX','a6')
 assert re.fullmatch('[a-f0-9]{2}',prefix) and prefix not in('00','ff','d5')

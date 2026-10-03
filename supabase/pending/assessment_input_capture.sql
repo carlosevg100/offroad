@@ -166,8 +166,17 @@ declare j public.processing_jobs;answer jsonb;item jsonb;versions uuid[]:='{}';s
 begin
  j:=private.job_for_capability(p_job_id,p_capability_token);
  answer:=private.worker_load_retrieval_before_assessment_capture_v1(p_job_id,p_capability_token,p_query,p_allowed_fund_ids,p_precedent_purpose,p_limit);
- if jsonb_typeof(answer) is distinct from 'array' then raise exception 'assessment_retrieval_capture_invalid' using errcode='42501';end if;
- for item in select value from jsonb_array_elements(answer) loop
+ if jsonb_typeof(answer) is distinct from 'object'
+  or jsonb_typeof(answer->'results') is distinct from 'array'
+  or jsonb_typeof(answer->'abstained') is distinct from 'boolean'
+  or jsonb_typeof(answer->'playbook_version') not in ('string','null')
+  or not(answer ? 'playbook_version') then
+  raise exception 'assessment_retrieval_capture_invalid' using errcode='42501';
+ end if;
+ if (answer->>'abstained')::boolean is distinct from (jsonb_array_length(answer->'results')=0) then
+  raise exception 'assessment_retrieval_capture_invalid' using errcode='42501';
+ end if;
+ for item in select value from jsonb_array_elements(answer->'results') loop
   source:=null;
   case item->>'source'
    when 'case' then
@@ -191,11 +200,11 @@ begin
   if item->>'source'<>'house_playbook' and source is null then raise exception 'assessment_retrieval_capture_denied' using errcode='42501';end if;
   if source is not null then versions:=array_append(versions,source);end if;
  end loop;
- select count(*) into house_count from jsonb_array_elements(answer) i where i->>'source'='house_playbook';
+ select count(*) into house_count from jsonb_array_elements(answer->'results') i where i->>'source'='house_playbook';
  sid:=private.capture_assessment_document_input_v1(j.id,p_capability_token,'retrieval',
   jsonb_build_object('queryHash',encode(extensions.digest(convert_to(p_query,'utf8'),'sha256'),'hex'),'allowedFunds',to_jsonb(p_allowed_fund_ids),
-   'precedentPurpose',p_precedent_purpose,'results',answer),versions,house_count);
- for item in select value from jsonb_array_elements(answer) where value->>'source'<>'case' loop
+   'precedentPurpose',p_precedent_purpose,'context',answer),versions,house_count);
+ for item in select value from jsonb_array_elements(answer->'results') where value->>'source'<>'case' loop
   governance:=null;
   case item->>'source'
    when 'house_playbook' then select playbook_version_id into governance from public.house_playbook_chunks where id=(item->>'id')::uuid;

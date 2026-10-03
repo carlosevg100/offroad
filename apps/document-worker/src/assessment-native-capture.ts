@@ -1,4 +1,5 @@
 import {z} from "zod";
+import {authorizedRetrievalContextSchema} from "@offroad/governed-retrieval";
 
 /** Prospectively published 3V ports. SQL captures delivered inputs and derives
  * authority; the caller supplies no source count, preparer or review permission. */
@@ -31,10 +32,10 @@ export function createAssessmentNativeCapture(authority:AssessmentCaptureAuthori
   async loadInstitutionalContext(){return capturedInput.parse(await call("worker_load_assessment_institutional_context_v1",args));},
   async loadPreliminaryInput(){return capturedInput.parse(await call("worker_load_preliminary_assessment_input_v3",args));},
   async retrieval(input:{query:string;allowedFundIds?:readonly string[];precedentPurpose?:string;limit?:number}){
-   const limit=z.number().int().min(1).max(100).parse(input.limit??20);
+   const limit=z.number().int().min(1).max(50).parse(input.limit??20);
    const result=await call("worker_load_assessment_retrieval_v2",{...args,p_query:z.string().min(1).parse(input.query),
     p_allowed_fund_ids:z.array(uuid).parse(input.allowedFundIds??[]),p_precedent_purpose:input.precedentPurpose??null,p_limit:limit});
-   return z.array(z.unknown()).parse(result);
+   return authorizedRetrievalContextSchema.parse(result);
   },
   async recordAssessment(assessment:unknown){
    const data=assessmentReceipt.parse(await call("worker_record_agent_assessment_v2",{...args,p_assessment:assessment}));

@@ -16,6 +16,17 @@ describe("prospective assessment capture",()=>{
   expect(call).toHaveBeenCalledWith("worker_load_case_assessment_input_v5",{p_job_id:jobId,p_capability_token:"token"});
   call.mockResolvedValue({documents:[]});await expect(createAssessmentNativeCapture(authority,call).loadCaseInput()).rejects.toThrow();
  });
+ it("preserves the canonical retrieval envelope and rejects array or inconsistent abstention",async()=>{
+  const context={playbook_version:null,results:[],abstained:true};
+  const call=vi.fn().mockResolvedValue(context);const ports=createAssessmentNativeCapture(authority,call);
+  expect(await ports.retrieval({query:"synthetic evidence"})).toEqual(context);
+  const selected={playbook_version:"approved-v1",results:[{source:"case",id:jobId,content:"Own verified evidence",citation:{key:"source:1",label:"Own source"},score:0.4}],abstained:false};
+  call.mockResolvedValue(selected);expect(await ports.retrieval({query:"synthetic evidence"})).toEqual(selected);
+  for(const invalid of [[],{...context,abstained:false},{...selected,abstained:true},{results:[],abstained:true}]){
+   call.mockResolvedValue(invalid);await expect(ports.retrieval({query:"synthetic evidence"})).rejects.toThrow();
+  }
+  const calls=call.mock.calls.length;await expect(ports.retrieval({query:"synthetic evidence",limit:51})).rejects.toThrow();expect(call.mock.calls).toHaveLength(calls);
+ });
  it("cannot fall back to the historical writer after database denial",async()=>{
   const call=vi.fn().mockRejectedValue(new Error("assessment_primary_capture_required"));
   await expect(createAssessmentNativeCapture(authority,call).recordAssessment({})).rejects.toThrow("assessment_primary_capture_required");
