@@ -416,7 +416,8 @@ begin
         raise exception 'recommendation constraint was weakened';
       exception when check_violation then
         get stacked diagnostics rejected_constraint=constraint_name;
-        if rejected_constraint <> 'capital_project_decisions_check' then raise; end if;
+        -- Both installed checks enforce the same recommendation requirement.
+        if rejected_constraint not in ('capital_project_decisions_check','assessment_status_recommendation_required') then raise; end if;
       end;
     end loop;
     begin

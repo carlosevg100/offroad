@@ -84,6 +84,18 @@ jobs:
           python3 -B scripts/ci/install-capital-provider-ci-draft.py
           python3 -B scripts/ci/install-capital-preview-ci-drafts.py
           python3 -B scripts/ci/install-work-review-dashboard-ci-draft.py
+      - name: Overlay nine reviewed current-contract fixtures
+        run: |
+          set -euo pipefail
+          cp audit/supabase/tests/agentic_dcm_work_system.sql consumers/supabase/tests/agentic_dcm_work_system.sql
+          cp audit/supabase/tests/institutional_result_dependencies.sql consumers/supabase/tests/institutional_result_dependencies.sql
+          cp audit/supabase/tests/institutional_setup_input_snapshots.sql consumers/supabase/tests/institutional_setup_input_snapshots.sql
+          cp audit/supabase/tests/company_debt_view_vertical.sql consumers/supabase/tests/company_debt_view_vertical.sql
+          cp audit/supabase/tests/project_company_scope.sql consumers/supabase/tests/project_company_scope.sql
+          cp audit/supabase/tests/work_dependencies_projection.sql consumers/supabase/tests/work_dependencies_projection.sql
+          cp audit/supabase/tests/rls_non_interference.sql consumers/supabase/tests/rls_non_interference.sql
+          cp audit/supabase/tests/work_continuation_commands.sql consumers/supabase/tests/work_continuation_commands.sql
+          cp audit/supabase/tests/work_update_integration.sql consumers/supabase/tests/work_update_integration.sql
       - name: Run every actual root SQL contract with all25 already installed
         working-directory: consumers
         env:

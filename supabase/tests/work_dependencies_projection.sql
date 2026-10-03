@@ -398,7 +398,7 @@ do $$ declare attempt text;role_name text;begin
  foreach attempt in array array[
   'update public.work_milestones set label=label',
   'delete from public.work_milestones',
-  'truncate public.work_milestones'] loop
+  'truncate public.work_milestones,private.work_update_milestone_receipts'] loop
   begin execute attempt; raise exception 'privileged mutation of milestones: %',attempt;
   exception when check_violation then
    if sqlerrm<>'work_continuity_history_immutable' then raise; end if;
