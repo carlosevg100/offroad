@@ -84,13 +84,13 @@ begin
     perform public.worker_record_capital_project_artifact(f.job_id,cap,task_run,'provider_research_scope','provider-research-scope.v1','draft',repeat('a',64),'{"synthetic":true}','[]','[]');
     raise exception 'legacy provider writer accepted';
   exception when insufficient_privilege then
-    if sqlerrm<>'capital_native_provider_commit_required' then raise; end if;
+    if sqlerrm<>'capital_capture_denied' then raise; end if;
   end;
   begin
     perform public.worker_finish_capital_project_task(f.job_id,cap,task_run,'succeeded',null,repeat('a',64),'[]','{}',null);
     raise exception 'legacy provider finish accepted';
   exception when insufficient_privilege then
-    if sqlerrm<>'capital_native_provider_commit_required' then raise; end if;
+    if sqlerrm<>'capital_capture_denied' then raise; end if;
   end;
   begin
     perform public.worker_complete_job(f.job_id,cap,jsonb_build_object('provider_research_artifact_id',gen_random_uuid(),'artifact_fingerprint',repeat('a',64)));
