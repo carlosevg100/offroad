@@ -89,6 +89,21 @@ begin
  return result;
 end; $$;
 
+-- C11 is shared by several task DAGs; only its fixed company-debt job/plan
+-- family belongs to this native writer. Current project entry is not authority.
+create function private.capital_debt_native_task_family_v1(p_org uuid,p_task_run_id uuid)
+returns boolean language sql stable security definer set search_path='' as $$
+ select exists(select 1 from public.capital_project_task_runs tr
+ join public.capital_project_plan_tasks pt on(pt.organization_id,pt.id,pt.plan_id)=(tr.organization_id,tr.plan_task_id,tr.plan_id)
+ join public.capital_project_plans p on(p.organization_id,p.id,p.capital_project_id)=(tr.organization_id,tr.plan_id,tr.capital_project_id)
+ join public.processing_jobs j on(j.organization_id,j.id)=(tr.organization_id,tr.processing_job_id)
+ where tr.organization_id=p_org and tr.id=p_task_run_id and pt.capital_project_id=tr.capital_project_id
+ and p.entry_job='company_debt_view' and p.snapshot#>>'{job,id}'='company_debt_view'
+ and j.payload->>'analysis_scope'='company_debt_view' and j.payload->>'capital_project_plan_id'=p.id::text
+ and j.payload->>'capital_project_id'=p.capital_project_id::text and(j.work_id is null or j.work_id=p.capital_project_id));
+$$;
+revoke all on function private.capital_debt_native_task_family_v1(uuid,uuid) from public,anon,authenticated,service_role;
+
 -- Close the historical C11 writer by actual TaskSpec, not a caller-selected
 -- content schema. Its other task families keep the original function unchanged.
 alter function private.worker_record_capital_project_artifact(uuid,text,uuid,text,text,text,text,jsonb,jsonb,jsonb) rename to worker_record_capital_project_artifact_pre_debt;
@@ -97,7 +112,7 @@ create function private.worker_record_capital_project_artifact(p_job_id uuid,p_c
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare j public.processing_jobs:=private.job_for_capability(p_job_id,p_capability_token);
 begin
- if (p_artifact_type='company_debt_diagnostic' and j.payload->>'analysis_scope'='company_debt_view') or exists(select 1 from public.capital_project_task_runs tr join public.capital_project_plan_tasks pt on pt.organization_id=tr.organization_id and pt.id=tr.plan_task_id where tr.organization_id=j.organization_id and tr.id=p_task_run_id and pt.task_id='C11') then raise exception 'capital_debt_native_commit_required' using errcode='42501';end if;
+ if private.capital_debt_native_task_family_v1(j.organization_id,p_task_run_id) and ((p_artifact_type='company_debt_diagnostic' and j.payload->>'analysis_scope'='company_debt_view') or exists(select 1 from public.capital_project_task_runs tr join public.capital_project_plan_tasks pt on pt.organization_id=tr.organization_id and pt.id=tr.plan_task_id where tr.organization_id=j.organization_id and tr.id=p_task_run_id and pt.task_id='C11')) then raise exception 'capital_debt_native_commit_required' using errcode='42501';end if;
  return private.worker_record_capital_project_artifact_pre_debt(p_job_id,p_capability_token,p_task_run_id,p_artifact_type,p_schema_version,p_status,p_input_fingerprint,p_content,p_evidence_refs,p_dependencies);
 end; $$;
 revoke all on function private.worker_record_capital_project_artifact_pre_debt(uuid,text,uuid,text,text,text,text,jsonb,jsonb,jsonb) from public,anon,authenticated,service_role;
@@ -109,7 +124,7 @@ returns uuid language plpgsql security definer set search_path='' as $$
 declare j public.processing_jobs:=private.job_for_capability(p_job_id,p_capability_token);
 begin
  if p_status='failed' and exists(select 1 from private.capital_debt_recipe_seals z where z.organization_id=j.organization_id and z.execution_plan_task_run_id=p_task_run_id) then raise exception 'capital_debt_native_quality_required' using errcode='42501';end if;
- if p_status='succeeded' and exists(select 1 from public.capital_project_task_runs tr join public.capital_project_plan_tasks pt on pt.organization_id=tr.organization_id and pt.id=tr.plan_task_id where tr.organization_id=j.organization_id and tr.id=p_task_run_id and pt.task_id='C11') then raise exception 'capital_debt_native_commit_required' using errcode='42501';end if;
+ if p_status='succeeded' and private.capital_debt_native_task_family_v1(j.organization_id,p_task_run_id) and exists(select 1 from public.capital_project_task_runs tr join public.capital_project_plan_tasks pt on pt.organization_id=tr.organization_id and pt.id=tr.plan_task_id where tr.organization_id=j.organization_id and tr.id=p_task_run_id and pt.task_id='C11') then raise exception 'capital_debt_native_commit_required' using errcode='42501';end if;
  return private.worker_finish_capital_project_task_pre_debt(p_job_id,p_capability_token,p_task_run_id,p_status,p_output_reference,p_output_fingerprint,p_quality_results,p_usage,p_error);
 end; $$;
 revoke all on function private.worker_finish_capital_project_task_pre_debt(uuid,text,uuid,text,jsonb,text,jsonb,jsonb,jsonb) from public,anon,authenticated,service_role;
@@ -649,11 +664,11 @@ create function private.guard_capital_debt_native_write_v1() returns trigger
 language plpgsql security definer set search_path='' as $$
 begin
  if tg_table_name='capital_project_artifacts' then
- if exists(select 1 from public.capital_project_task_runs tr join public.capital_project_plan_tasks pt on pt.organization_id=tr.organization_id and pt.id=tr.plan_task_id where tr.organization_id=new.organization_id and tr.id=new.task_run_id and(pt.task_id='C11' or(new.artifact_type='company_debt_diagnostic' and exists(select 1 from public.processing_jobs j where j.organization_id=tr.organization_id and j.id=tr.processing_job_id and j.payload->>'analysis_scope'='company_debt_view'))))
+ if private.capital_debt_native_task_family_v1(new.organization_id,new.task_run_id) and exists(select 1 from public.capital_project_task_runs tr join public.capital_project_plan_tasks pt on pt.organization_id=tr.organization_id and pt.id=tr.plan_task_id where tr.organization_id=new.organization_id and tr.id=new.task_run_id and(pt.task_id='C11' or(new.artifact_type='company_debt_diagnostic' and exists(select 1 from public.processing_jobs j where j.organization_id=tr.organization_id and j.id=tr.processing_job_id and j.payload->>'analysis_scope'='company_debt_view'))))
  and not exists(select 1 from private.capital_debt_native_bindings b where b.organization_id=new.organization_id and b.task_run_id=new.task_run_id and b.capital_artifact_id=new.id and new.content->>'schemaVersion'='capital-debt-projection.v1' and new.content->>'revisionId'=b.revision_id::text) then raise exception 'capital_debt_native_commit_required' using errcode='42501';end if;
  elsif new.status='failed' and exists(select 1 from private.capital_debt_recipe_seals z where z.organization_id=new.organization_id and z.execution_plan_task_run_id=new.id) then
  raise exception 'capital_debt_execution_plan_immutable' using errcode='42501';
- elsif new.status='succeeded' and exists(select 1 from public.capital_project_plan_tasks pt where pt.organization_id=new.organization_id and pt.id=new.plan_task_id and pt.task_id='C11')
+ elsif new.status='succeeded' and private.capital_debt_native_task_family_v1(new.organization_id,new.id) and exists(select 1 from public.capital_project_plan_tasks pt where pt.organization_id=new.organization_id and pt.id=new.plan_task_id and pt.task_id='C11')
  and not exists(select 1 from private.capital_debt_native_bindings b join public.capital_project_artifacts c on c.organization_id=b.organization_id and c.id=b.capital_artifact_id where b.organization_id=new.organization_id and b.task_run_id=new.id and new.output_reference->>'id'=c.id::text and new.output_fingerprint=c.artifact_fingerprint) then raise exception 'capital_debt_native_commit_required' using errcode='42501';end if;
  return new;
 end; $$;
