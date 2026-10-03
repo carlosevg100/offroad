@@ -2,7 +2,7 @@
 """Rollback SQL proof using the real approved material case producer/lease.
 Local PG interfaces are not an HTTP/physical Storage proof.
 """
-import os,runpy,subprocess
+import os,re,runpy,subprocess
 from urllib.parse import urlparse
 from pathlib import Path
 from unittest.mock import patch
@@ -19,7 +19,9 @@ class Captured:
 fixture=[]
 def capture(*args,**kwargs):
  fixture.append(kwargs['input']);return Captured()
-with patch.object(subprocess,'run',capture):
+# Capture the canonical d5 template, then remap the complete concatenated
+# fixture once. The prior physical SDK deliberately retains its own d5 rows.
+with patch.dict(os.environ,{'MATERIAL_FIXTURE_PREFIX':'d5','MATERIAL_FIXTURE_TAG':''}), patch.object(subprocess,'run',capture):
  try:runpy.run_path(str(ROOT/'scripts/ci/test-material-production-plan-native.py'))
  except SystemExit as e:assert e.code==0
 assert len(fixture)==1
@@ -36,5 +38,12 @@ needle="insert into route_proof values('native_claim',claim::text);"
 assert s.count(needle)==1
 s=s.replace(needle,needle+"\nbegin perform public.worker_record_agent_assessment_v1(job,claim->>'capability_token','{}');raise exception 'v1_case_before_capture_accepted';exception when insufficient_privilege then if sqlerrm<>'assessment_native_writer_required'then raise;end if;end;\nbegin perform public.worker_load_assessment_institutional_context_v1(job,repeat('x',64));raise exception 'wrong_capture_capability_accepted';exception when insufficient_privilege then null;end;\nbegin perform public.worker_record_agent_assessment_v1(job,claim->>'capability_token','{}');raise exception 'v1_case_after_capture_denial_accepted';exception when insufficient_privilege then if sqlerrm<>'assessment_native_writer_required'then raise;end if;end;\nraise notice 'PASS assessment_case_v1_42501_before_capture_after_denial_same_cap';\ninsert into route_proof values('assessment_institutional',public.worker_load_assessment_institutional_context_v1(job,claim->>'capability_token')::text);\n",1)
 s=s[:s.index('-- Actual upload policy under the genuine lease/capability.')]+(ROOT/'supabase/tests/support/assessment_native_assessment_institutional_capture.sql').read_text()+'\nrollback;'
+prefix=os.environ.get('ASSESSMENT_INSTITUTIONAL_FIXTURE_PREFIX','a6')
+assert re.fullmatch('[a-f0-9]{2}',prefix) and prefix not in('00','ff','d5')
+s=re.sub(r'd5(?=[a-f0-9]{6}-)',prefix,s)
+tag='assessment-institutional-'+prefix
+for person in ('owner','worker','outsider'):s=s.replace('route-'+person+'@',tag+'-'+person+'@')
+s=re.sub(r"repeat\('r',\s*64\)","'"+(prefix+'3v-native-institutional').ljust(64,'0')+"'",s)
+assert not re.search(r'd5[a-f0-9]{6}-',s),'unmapped shared fixture identity'
 result=subprocess.run(['psql',os.environ['DATABASE_URL'],'-X','-v','ON_ERROR_STOP=1'],input=s,text=True,capture_output=True,timeout=90)
 print(result.stdout[-1500:]);print(result.stderr[-3500:]);raise SystemExit(result.returncode)
