@@ -118,6 +118,12 @@ jobs:
         DATABASE_URL: ${{ steps.db.outputs.url }}
         OFFROAD_WORK_REVIEW_DRAFT_INSTALL: isolated-loopback-ci
       run: python3 -B scripts/ci/install-work-review-dashboard-ci-draft.py
+    - name: Apply new case-fit result contract correction after immutable all25
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
+      run: |
+        cp ../audit/supabase/tests/support/capital_native_provider_results.sql supabase/tests/support/capital_native_provider_results.sql
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_native_case_fit_result_contract.sql
     - name: Overlay three exact current capture-denial assertions
       run: |-
         for name in provider_research_persistence provider_research_public_catalog_v2 provider_case_fit_persistence capital_native_provider_results; do

@@ -91,7 +91,16 @@ begin
  foreach task in array array['M01','K01','K02']loop
  content:=jsonb_build_object('schemaVersion',case task when'M01'then'provider-case-fit-scope.v1'when'K01'then'provider-case-fit-sources.v1'else'provider-case-fit.v1'end,
  'projectId',closed->>'workId','planId',closed->>'planId','asOf',f.frozen->>'asOf','objective',f.frozen->>'objective','fixture',true);
- if task='K02'then content:=content||'{"scope":"research_case_fit","shortlistAuthorized":false,"externalEffectAllowed":false}'::jsonb;end if;
+ if task='K02'then
+ -- Published strict case-fit output has no objective field. The current plan
+ -- and user-confirmed criteria remain exact inputs; caller-added objective is denied.
+ content:=(content-array['objective','fixture'])||jsonb_build_object('organizationId',closed->>'organizationId','caseFingerprint',repeat('1',64),'sourceFingerprint',repeat('2',64),'candidates','[]'::jsonb,'structuralExclusions','[]'::jsonb,'fingerprint',repeat('3',64),'scope','research_case_fit','shortlistAuthorized',false,'externalEffectAllowed',false,
+ 'planFingerprint',f.frozen->>'planFingerprint','caseCriteria',f.frozen->'caseCriteria');
+ begin perform private.worker_prepare_capital_native_result_v1(f.job_id,cap,r,task,'provider_case_fit',content||jsonb_build_object('objective',f.frozen->>'objective'),previous);raise exception 'case fit fabricated objective accepted';exception when invalid_parameter_value then if sqlerrm<>'capital_native_result_content_denied'then raise;end if;end;
+ begin perform private.worker_prepare_capital_native_result_v1(f.job_id,cap,r,task,'provider_case_fit',jsonb_set(content,'{organizationId}','"20000000-0000-4000-8000-000000000972"'),previous);raise exception 'case fit changed organization accepted';exception when invalid_parameter_value then if sqlerrm<>'capital_native_result_content_denied'then raise;end if;end;
+ begin perform private.worker_prepare_capital_native_result_v1(f.job_id,cap,r,task,'provider_case_fit',jsonb_set(content,'{planFingerprint}',to_jsonb(repeat('f',64))),previous);raise exception 'case fit changed plan accepted';exception when invalid_parameter_value then if sqlerrm<>'capital_native_result_content_denied'then raise;end if;end;
+ begin perform private.worker_prepare_capital_native_result_v1(f.job_id,cap,r,task,'provider_case_fit',jsonb_set(content,'{caseCriteria,amount}','"9000000"'),previous);raise exception 'case fit changed criteria accepted';exception when invalid_parameter_value then if sqlerrm<>'capital_native_result_content_denied'then raise;end if;end;
+ end if;
  begin perform private.worker_prepare_capital_native_result_v1(f.job_id,cap,r,task,'provider_research',content,previous);raise exception 'wrong family accepted';exception when invalid_parameter_value then null;end;
  begin perform private.worker_prepare_capital_native_result_v1(f.job_id,cap,r,task,'provider_case_fit'||case task when'M01'then'_scope'when'K01'then'_sources'else''end,content||'{"grantsApproval":true}',previous);raise exception 'caller approval accepted';exception when invalid_parameter_value then null;end;
  seal:=private.worker_prepare_capital_native_result_v1(f.job_id,cap,r,task,'provider_case_fit'||case task when'M01'then'_scope'when'K01'then'_sources'else''end,content,previous);
