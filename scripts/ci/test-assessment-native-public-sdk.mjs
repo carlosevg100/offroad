@@ -17,6 +17,15 @@ try {
   const isolated=value=>value.replaceAll('-000000000201','-000000000711').replaceAll('-000000000202','-000000000712').replaceAll('-000000000993','-000000000713').replaceAll('origination-owner@','assessment-public-owner@').replaceAll('other-tenant@','assessment-public-outsider@').replaceAll('m07-publisher@','assessment-public-publisher@');
   let source=await readFile(join(worker,"scripts","capital-m07-native-sdk-eval.ts"),"utf8");
   source=isolated(source);
+  // Keep the inherited runtime body untouched. Diagnose only PostgreSQL's
+  // missing SQL identifier, never the raw error or source/model content.
+  const identifier=(code,message)=>{if(code!=='42P01'||typeof message!=='string')return {};const relation=/relation "([a-z_][a-z0-9_.]{0,126})" does not exist/.exec(message)?.[1];const alias=/missing FROM-clause entry for table "([a-z_][a-z0-9_]{0,62})"/.exec(message)?.[1];return relation?{missingRelation:relation}:alias?{missingFromAlias:alias}:{};};
+  if(identifier('42P01','relation "private.synthetic_relation" does not exist').missingRelation!=='private.synthetic_relation'||identifier('42P01','missing FROM-clause entry for table "synthetic_alias"').missingFromAlias!=='synthetic_alias'||Object.keys(identifier('42501','relation "private.synthetic_relation" does not exist')).length||Object.keys(identifier('42P01','raw body or values')).length)throw new Error('assessment_public_identifier_diagnostic_invalid');
+  const errorCategory="category:typeof message==='string'&&/^[a-z0-9_]{3,120}$/.test(message)?message:null";
+  if(source.split(errorCategory).length!==2)throw new Error('assessment_public_error_diagnostic_contract_changed');
+  source=source.replace(errorCategory,errorCategory+",...assessmentSqlIdentifier(code,message)");
+  source='const assessmentSqlIdentifier='+identifier.toString()+';\n'+source;
+
   const expandReturn="return readFileSync(path,'utf8').replace";
   if(!source.includes(expandReturn))throw new Error('assessment_sdk_expand_contract_changed');
   source=source.replace(expandReturn,"return isolated(readFileSync(path,'utf8').replace").replace("reference.trim())));}","reference.trim()))));}");
