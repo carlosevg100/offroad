@@ -1,12 +1,11 @@
 "use client";
 
 import {Check, Download, FileText, LoaderCircle, ShieldCheck} from "lucide-react";
-import {useActionState} from "react";
+import {useActionState, useState} from "react";
 import {useFormStatus} from "react-dom";
 import {useTranslations} from "next-intl";
 
 import {
-  approvePrivateProjectMaterialPackage,
   approvePrivateProjectProductionPlan,
   type PrivateGovernedDecisionState,
 } from "@/app/[locale]/app/projects/[projectId]/actions";
@@ -14,10 +13,12 @@ import type {GovernedMaterialPackage} from "@/lib/deal-state/materials";
 import type {DealStateGap, DealStateGapApproval} from "@/lib/deal-state/analysis-gap";
 import type {DealStateWorkbench} from "@/lib/deal-state/workbench";
 
+import {MaterialPackageReview} from "./material-package-review";
 import {PrivateAnalysisGap} from "./private-analysis-gap";
-import {privateMaterialArtifacts, privateMaterialPackageApproved} from "./private-material-artifacts";
+import {privateMaterialArtifacts} from "./private-material-artifacts";
 
 type Props = {
+  userId?: string;
   /** The preparation result missing while no analysis runs, if any. */
   gap: DealStateGap | null;
   /** The analysis of the gap is held until a person approves its execution brief. */
@@ -49,6 +50,7 @@ export function PrivateMaterialsWork(props: Props) {
 function ProductionPlan({locale, plan, projectId, sessionId}: Props & {plan: NonNullable<Props["productionPlan"]>}) {
   const t = useTranslations("App.privateCase");
   const [state, action] = useActionState(approvePrivateProjectProductionPlan, initialState);
+  const [commandId] = useState(() => crypto.randomUUID());
   return (
     <section className="advisor-private-materials">
       <header><span>{t("productionKicker")}</span><h2>{t("productionTitle")}</h2><p>{t("productionBody")}</p></header>
@@ -60,6 +62,7 @@ function ProductionPlan({locale, plan, projectId, sessionId}: Props & {plan: Non
         <input name="project_id" type="hidden" value={projectId} />
         <input name="session_id" type="hidden" value={sessionId} />
         <input name="plan_fingerprint" type="hidden" value={plan.row.object_fingerprint} />
+        <input name="command_id" type="hidden" value={commandId} />
         <div><FileText aria-hidden="true" size={16} /><span><strong>{t("productionApprovalTitle")}</strong><p>{t("productionApprovalBody")}</p></span></div>
         <SubmitButton idle={t("productionApprove")} pending={t("productionApproving")} />
       </form>
@@ -69,28 +72,20 @@ function ProductionPlan({locale, plan, projectId, sessionId}: Props & {plan: Non
   );
 }
 
-function PackageReview({governed, locale, packageReview, projectId, sessionId}: Props & {governed: GovernedMaterialPackage}) {
+function PackageReview({governed, locale, sessionId, userId}: Props & {governed: GovernedMaterialPackage}) {
   const t = useTranslations("App.privateCase");
-  const [state, action] = useActionState(approvePrivateProjectMaterialPackage, initialState);
   const artifacts = privateMaterialArtifacts(governed, locale, sessionId);
   const complete = artifacts.length > 0 && artifacts.every((artifact) => artifact.available);
-  const approved = privateMaterialPackageApproved(packageReview, governed.artifactFingerprint);
+  const native = governed.nativeReview;
+  const approved = Boolean(native && native.activeApprovalReviewIds.length > 0);
   return (
     <section className="advisor-private-materials">
       <header><span>{approved ? t("materialsApprovedKicker") : t("materialsKicker")}</span><h2>{approved ? t("materialsApprovedTitle") : t("materialsTitle")}</h2><p>{approved ? t("materialsApprovedBody") : t("materialsBody")}</p></header>
       <div className="advisor-private-materials__files">
         {artifacts.map((artifact, index) => <section className={artifact.available ? "is-ready" : "is-blocked"} key={artifact.id}><span>{artifact.available ? <Check aria-hidden="true" size={13} /> : String(index + 1).padStart(2, "0")}</span><div><strong>{t(`artifacts.${artifact.id}.title`)}</strong><p>{artifact.available ? t("materialsReady") : t("materialsPending")}</p></div>{artifact.available ? <div className="advisor-private-materials__file-actions">{artifact.actions.map((item) => <a href={item.href} key={item.kind} rel="noreferrer" target="_blank"><Download aria-hidden="true" size={13} />{t(`materialActions.${item.kind}`)}</a>)}</div> : <small>{t("materialsBlocked")}</small>}</section>)}
       </div>
-      {complete && !approved ? <form action={action} className="advisor-private-materials__decision">
-        <input name="locale" type="hidden" value={locale} />
-        <input name="project_id" type="hidden" value={projectId} />
-        <input name="session_id" type="hidden" value={sessionId} />
-        <input name="artifact_fingerprint" type="hidden" value={governed.artifactFingerprint} />
-        <div><ShieldCheck aria-hidden="true" size={16} /><span><strong>{t("materialsApprovalTitle")}</strong><p>{t("materialsApprovalBody")}</p></span></div>
-        <SubmitButton idle={t("materialsApprove")} pending={t("materialsApproving")} />
-      </form> : !complete ? <p className="advisor-private-materials__incomplete">{t("materialsIncomplete")}</p> : null}
+      {native ? (userId ? <MaterialPackageReview basis={native} userId={userId} /> : null) : !complete ? <p className="advisor-private-materials__incomplete">{t("materialsIncomplete")}</p> : null}
       <p className="advisor-private-materials__boundary"><ShieldCheck aria-hidden="true" size={13} />{t("materialsBoundary")}</p>
-      {!state.ok && state.code ? <p className="form-notice form-notice--error" role="alert">{t(`governedErrors.${state.code}`)}</p> : null}
     </section>
   );
 }

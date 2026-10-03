@@ -49,3 +49,14 @@ describe("M7 material truth",()=>{
     expect(truth.releaseDecision).toBe("internal_only");
   });
 });
+
+
+describe("governed material field identity",()=>{
+ const row=(label:string,value:string,supportIds=["structure.v1","period.2025"])=>({label:{pt:label,en:label},value:{pt:value,en:value},material:true,supportIds});
+ const withRows=(kind:Material["kind"],rows:ReturnType<typeof row>[]):Material=>({...material(kind),blocks:[{type:"kv",rows},disclaimer]});
+ const consistency=(source:Material[])=>buildMaterialTruthSet({materials:source,dataRoom:room,financialModel:null}).consistency;
+ it("separates amount, tenor and structure backed by the same evidence",()=>expect(consistency([withRows("financial_model",[row("Amount","10000000"),row("Tenor","48 months"),row("Selected structure","ccb")])]).status).toBe("pass"));
+ it("blocks divergent values for the same field within an artifact",()=>expect(consistency([withRows("financial_model",[row("Amount","10000000"),row("Amount","12000000")])]).status).toBe("blocked"));
+ it("blocks the same metric and period diverging across artifacts",()=>expect(consistency([withRows("teaser",[row("EBITDA","25000000")]),withRows("credit_memo",[row("EBITDA","21000000")])]).status).toBe("blocked"));
+ it("keeps genuinely different periods separate",()=>expect(consistency([withRows("teaser",[row("EBITDA","25000000",["audited.2025"])]),withRows("credit_memo",[row("EBITDA","21000000",["audited.2024"])])]).status).toBe("pass"));
+});

@@ -1,3 +1,6 @@
+import {buildCapitalMaterialCompilerBundle,validateCapitalMaterialCompilerBundle} from "./capital-material-production-adapter";
+import type {CapitalMaterialRuntime,MaterialDispatch} from "./capital-material-production-runtime";
+import {capitalMaterialCommitSchema,capitalMaterialTerminalSchema,type MaterialBundle,type MaterialCapture,type MaterialResearchInput} from "./capital-material-production-native";
 import {publishedMethodBindingSchema} from "./published-method-binding";
 import {institutionalModelRuntimeContextSchema} from "@offroad/financial-model";
 import {
@@ -442,6 +445,7 @@ const preliminaryCaseInputSchema = z.object({
 });
 
 export type CaseAnalysisDependencies = {
+  materialRuntime?: CapitalMaterialRuntime;
   queue: QueueClient;
   gateway: ModelGateway;
   lineage: () => GatewayCallLog[];
@@ -839,7 +843,16 @@ export async function processCaseAnalysisJob(
       return await processPreliminaryUnderstanding(job, raw, dependencies);
     }
     failurePhase = "load_case_input";
-    const raw = rawCaseInputSchema.parse(await dependencies.queue.loadCaseInput(job));
+    // Runtime dispatch and recovery precede any current context/catalog load.
+    const dispatch: MaterialDispatch | null = dependencies.materialRuntime ? await dependencies.materialRuntime.classify(job) : null;
+    if (dispatch?.mode === "plan") {
+      await dependencies.materialRuntime!.preparePlan(job,dispatch);
+      await dependencies.queue.writeStage(job,stageName,"succeeded");
+      await dependencies.queue.complete(job,{status:"production_plan_prepared",work_id:dispatch.workId});
+      return {status:"succeeded"};
+    }
+    const runCaptured = async(raw:z.infer<typeof rawCaseInputSchema>,native?:{context:Record<string,unknown>;capture:MaterialCapture;sealResearch:(research:MaterialResearchInput)=>Promise<void>}):Promise<CaseAnalysisOutcome|MaterialBundle>=>{
+    if (native && raw.document_work_request) throw new Error("material_document_work_incompatible");
     if (raw.document_work_request && (raw.document_work_request.projectId !== raw.session.capital_project_id || raw.document_work_request.jobId !== job.job_id)) throw new Error("document_work_request_binding_invalid");
     if (raw.document_work_request && canCompileStandaloneDocumentWorkRequest(raw.document_work_request) && raw.document_work_request.executionScope !== "documentary_only") throw new Error("document_work_authoritative_scope_missing");
     if (raw.document_work_request?.executionScope === "documentary_only"
@@ -856,7 +869,10 @@ export async function processCaseAnalysisJob(
       const priorLineage = gatewayCallLogSchema.array().safeParse(raw.model_lineage);
       return await processStandaloneDocumentWork({job,binding:raw.document_work_request,documentInput,economics:economicInput(raw),extractionVersion:stringOr(raw.session.extraction_version,"unknown"),priorModelLineage:priorLineage.success ? priorLineage.data.map(call => call as GatewayCallLog) : [],expectedPriorModelCalls:raw.expected_model_calls},dependencies);
     }
+    const analysisDate = native ? z.iso.date().parse(native.context.material_reference_date) : referenceDate(dependencies.now);
     const executionPlan = caseAnalysisExecutionPlan(raw.deal_workflow);
+    if (dispatch?.mode === "case" && (executionPlan.produceMaterials || raw.deal_workflow.gates.structureConfirmed && !raw.deal_workflow.gates.productionPlanApproved)) throw new Error("material_native_dispatch_required");
+    if (native && (raw.session.capital_project_id !== dispatch?.workId || raw._execution.mode !== "primary" || !executionPlan.produceMaterials)) throw new Error("material_native_context_binding_invalid");
     const useShadow = raw._execution.mode === "shadow";
     const locale = raw.session.locale === "en-US" ? "en" : "pt";
     const archetypeId = archetypeIdSchema.catch("other").parse(raw.session.archetype);
@@ -880,9 +896,9 @@ export async function processCaseAnalysisJob(
       ? [
           ...raw.directory_mandates.map(directoryMandate),
           ...raw.registered_mandates.map(registeredMandate),
-        ].map((mandate) => resolveMandate(mandate, {asOf: referenceDate(dependencies.now)}))
+        ].map((mandate) => resolveMandate(mandate, {asOf: analysisDate}))
       : [];
-    const publicResearch = await collectPublicResearch({
+    const publicResearch: PublicResearchSummary = native ? {status:"abstained",sourceCount:0,topicCounts:{},researchRunId:null,costExposureUsd:0,sources:[]} : await collectPublicResearch({
       queue: dependencies.queue,
       job,
       candidates,
@@ -896,7 +912,7 @@ export async function processCaseAnalysisJob(
     // It may guide the analysis, but it is never evidence about this company. Case passages stay
     // out of the writer input because the brief is allowed to use only reconciled facts.
     const primaryQuery = retrievalQuery(archetypeId);
-    const primaryRetrieval = await loadRetrieval(
+    const primaryRetrieval = native ? retrievalContextSchema.parse(native.context.primary_retrieval) : await loadRetrieval(
       dependencies.queue,
       job,
       primaryQuery,
@@ -919,17 +935,23 @@ export async function processCaseAnalysisJob(
     const informationAnswers = informationAnswersFrom(raw.answers);
     const caseReviewFeedback = informationAnswers.case_review_feedback;
     failurePhase = "execute_case_engine";
-    const institutionalContext = !useShadow && executionPlan.produceMaterials
+    const institutionalContext = native ? institutionalModelRuntimeContextSchema.parse(native.context.institutional_model_context) : !useShadow && executionPlan.produceMaterials
       && plannedMaterialKindsFrom(raw.deal_state_context, raw.deal_workflow)?.includes("financial_model")
       && dependencies.queue.loadInstitutionalModelContext
       ? institutionalModelRuntimeContextSchema.parse(await dependencies.queue.loadInstitutionalModelContext(job)) : null;
+    if (native) {
+      // No unlicensed collector result reaches inference; actual closure is
+      // already retained and SQL seals the honest abstention before callbacks.
+      await native.sealResearch({deliveryIds:[],researchStatus:"abstained"});
+      await dependencies.queue.writeStage(job,"public_research","skipped",{code:"material_licensed_research_unavailable"});
+    }
     const result = await executeCaseEngine({
       ...(institutionalContext ? {institutionalModelContext:institutionalContext} : {}),
       runId: job.processing_run_id,
       caseId: job.intake_session_id,
       archetypeId,
       locale,
-      referenceDate: referenceDate(dependencies.now),
+      referenceDate: analysisDate,
       candidates,
       documents,
       roomDocuments,
@@ -970,7 +992,7 @@ export async function processCaseAnalysisJob(
           system: STRUCTURE_DESIGN_SYSTEM,
           input: [{type: "text", text: buildStructureDesignInput({
             context,
-            asOf: referenceDate(dependencies.now),
+            asOf: analysisDate,
             playbookLines,
             requestedChanges: requestedStructureChanges,
           })}],
@@ -1111,6 +1133,8 @@ export async function processCaseAnalysisJob(
       },
     });
 
+    if (native) return buildCapitalMaterialCompilerBundle(result,{sessionId:job.intake_session_id,runId:job.processing_run_id});
+
     // Only mandates that already passed every structured criterion may unlock their open notes.
     // Semantic retrieval can add context after that decision; it cannot rescue an excluded or
     // incomplete mandate. UUID validation also prevents fixture labels or malformed ids from
@@ -1148,7 +1172,7 @@ export async function processCaseAnalysisJob(
         modelCalls: 0,
       });
     }
-    const receivables = buildReceivablesVertical(raw, referenceDate(dependencies.now), executionPlan.screenMandates);
+    const receivables = buildReceivablesVertical(raw, analysisDate, executionPlan.screenMandates);
     const receivablesVertical = receivables?.publicReport ?? null;
     if (receivables?.documentSupplement?.patch) {
       if (!dependencies.queue.applyReceivablesMethodSupplementPatch) throw new Error("receivables_document_supplement_persistence_unavailable");
@@ -1481,6 +1505,36 @@ export async function processCaseAnalysisJob(
       comparisonPassed: comparison?.passed,
     });
     return {status: "succeeded", ...(manifestId ? {manifestId} : {})};
+    };
+    if (dispatch?.mode === "material") {
+      const receipt = await dependencies.materialRuntime!.produce(job,dispatch,async(context,capture,sealResearch)=>{
+        try {
+          const result=await runCaptured(rawCaseInputSchema.parse(context),{context,capture,sealResearch});
+          if (!("calculationReport" in result)) throw new Error("material_compiler_bundle_missing");
+          return result;
+        } catch(error) {
+          // Only the actual compiler's validated diagnostic can become a native
+          // terminal. Authorization/transport failures never manufacture reports.
+          const failed=z.object({report:caseRunReportSchema}).safeParse(error);
+          if (!failed.success || !["failed","blocked"].includes(failed.data.report.status)) throw error;
+          return validateCapitalMaterialCompilerBundle({calculationReport:failed.data.report,caseState:{},materialPackage:{}},{sessionId:job.intake_session_id,runId:job.processing_run_id});
+        }
+      });
+      const terminal=capitalMaterialTerminalSchema.safeParse(receipt);
+      if (terminal.success) {
+        await dependencies.queue.writeStage(job,stageName,"failed",{code:terminal.data.reason,report_status:terminal.data.reportStatus,recipe_id:terminal.data.recipeId});
+        await dependencies.queue.fail(job,describeJobFailure(new Error(terminal.data.reason),{reason:terminal.data.reason,code:terminal.data.reason,stage:stageName,report_status:terminal.data.reportStatus,recipe_id:terminal.data.recipeId,retryable:false}),{retryable:false});
+        return {status:"failed"};
+      }
+      const committed=capitalMaterialCommitSchema.parse(receipt);
+      await dependencies.queue.writeStage(job,stageName,"succeeded");
+      await dependencies.queue.complete(job,{status:"native_material_processed",receipt:committed});
+      return {status:"succeeded"};
+    }
+    const result=await runCaptured(rawCaseInputSchema.parse(await dependencies.queue.loadCaseInput(job)));
+    if ("calculationReport" in result) throw new Error("material_dispatch_denied");
+    return result;
+
   } catch (error) {
     const validation = caseInputValidationDetail(error);
     await dependencies.queue.writeStage(job, stageName, "failed", {code: errorCode(error)});

@@ -160,6 +160,51 @@ jobs:
 
       # Every SQL contract is a gate by default. A newly added workspace, cache or
       # RLS regression test must not depend on someone remembering to register it here.
+      - name: Verify effective function bodies match the committed snapshot
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/verify-effective-function-bodies.py
+
+      - name: Check stage-zero access surface and every file version against production journal
+        run: |
+          set -euo pipefail
+          python3 -B scripts/ci/test_check_stage0_inventory.py
+          psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage0-replay-catalogue.json"
+          python3 -B scripts/ci/check-stage0-inventory.py --catalogue "$RUNNER_TEMP/stage0-replay-catalogue.json" --environment replay --production-journal docs/build/schema-history/production-migration-journal.json
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 10.32.1
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        id: database_deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Native materials SQL production, dispatch and human review
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          MATERIAL_DRAFT_IN_TRANSACTION: "0"
+        run: |
+          set -euo pipefail
+          python3 -B scripts/ci/test-material-production-plan-native.py
+          python3 -B scripts/ci/test-material-runtime-dispatch.py
+          python3 -B scripts/ci/test-material-package-native-review.py
+
+      - name: Native material human review with two concurrent transactions
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          MATERIAL_DRAFT_IN_TRANSACTION: "0"
+          MATERIAL_RACE_SYNTHETIC_LOCAL: "1"
+        run: python3 -B scripts/ci/test-material-package-review-race.py
+
       - name: Run all database contract tests
         run: |
           set -euo pipefail
@@ -186,22 +231,6 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-configuration-review-concurrency.py
-      - name: Install pnpm
-        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: 10.32.1
-          run_install: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install dependencies
-        id: database_deps
-        run: pnpm install --frozen-lockfile
-
       - name: Capital public capture authority and lock concurrency
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -374,11 +403,6 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-institutional-native-concurrency.py
 
-      - name: Verify effective function bodies match the committed snapshot
-        env:
-          DATABASE_URL: ${{ steps.db.outputs.url }}
-        run: python3 -B scripts/ci/verify-effective-function-bodies.py
-
       - name: Verify competing ownership transfers serialize without residual authority
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -471,13 +495,6 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-work-update-integration-concurrency.py
 
-      - name: Check stage-zero access surface and every file version against production journal
-        run: |
-          set -euo pipefail
-          python3 -B scripts/ci/test_check_stage0_inventory.py
-          psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage0-replay-catalogue.json"
-          python3 -B scripts/ci/check-stage0-inventory.py --catalogue "$RUNNER_TEMP/stage0-replay-catalogue.json" --environment replay --production-journal docs/build/schema-history/production-migration-journal.json
-
       - name: Preserve stage-zero replay catalogue for drift diagnosis
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -539,6 +556,13 @@ jobs:
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-capital-m07-native-sdk.mjs
+
+      - name: Native material production and human review through physical HTTP Storage
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+        run: node scripts/ci/test-material-production-native-sdk.mjs
 
       - name: Stop the capital body Edge reader
         if: always()
@@ -677,6 +701,52 @@ jobs:
           out=$(cd "$RUNNER_TEMP/worker" && env -i PATH="$PATH" HOME=/tmp node dist/main.js 2>&1 || true)
           printf '%s' "$out" | grep -q 'worker configuration is invalid or incomplete' || { printf '%s\n' "$out" | head -5; echo 'the deployed worker bundle does not boot'; exit 1; }
 
+      - name: Serve the authenticated capital body Edge reader
+        env:
+          OFFROAD_E2E_API_URL: http://127.0.0.1:54321
+        run: |
+          set -euo pipefail
+          umask 077
+          runtime_dir="$RUNNER_TEMP/capital-body-edge"
+          mkdir -p "$runtime_dir"
+          chmod 700 "$runtime_dir"
+          # CLI injects built-in credentials into the server runtime only.
+          # JWT verification stays enabled; no privileged key enters a client.
+          supabase functions serve > "$runtime_dir/server.log" 2>&1 &
+          echo "$!" > "$runtime_dir/server.pid"
+          python3 -B scripts/ci/verify-capital-body-edge-ready.py
+
+
+      # `--with-deps` runs apt-get, which stalled on the Azure mirror three times
+      # (PR #57 ~30 min, PR #58 twice ~15 min each), always right after
+      # "Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist". The same logs show the
+      # Chromium libraries (libnss3, libgbm1, libxkbcommon0, libpango, …) are already
+      # present on the runner image, so we install the browser only and let a missing
+      # library fail loudly instead of hanging. The cache skips the download entirely
+      # on repeat runs, and the timeout turns any future stall into a fast failure.
+      - name: Cache Playwright browser
+        id: playwright-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter web exec playwright install chromium
+        timeout-minutes: 6
+
+      # This focal SDK leases and completes its own native job. Run it before the
+      # global queue consumer; it must not race that consumer for the same job.
+      - name: Native material browser journey before the global queue consumer
+        run: |
+          set -euo pipefail
+          pnpm --filter web exec playwright test e2e/material-package-native.spec.ts --output=test-results-material
+        env:
+          CI: "true"
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-material
+          OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
       - name: Start the worker
         run: |
           set -euo pipefail
@@ -700,27 +770,9 @@ jobs:
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
         run: node scripts/ci/verify-pinned-consumer.mjs
 
-      # `--with-deps` runs apt-get, which stalled on the Azure mirror three times
-      # (PR #57 ~30 min, PR #58 twice ~15 min each), always right after
-      # "Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist". The same logs show the
-      # Chromium libraries (libnss3, libgbm1, libxkbcommon0, libpango, …) are already
-      # present on the runner image, so we install the browser only and let a missing
-      # library fail loudly instead of hanging. The cache skips the download entirely
-      # on repeat runs, and the timeout turns any future stall into a fast failure.
-      - name: Cache Playwright browser
-        id: playwright-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: ms-playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install Playwright browser
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter web exec playwright install chromium
-        timeout-minutes: 6
-
       - name: Run end-to-end tests
-        run: pnpm --filter web exec playwright test
+        # The native material case above already ran with its own queue consumer.
+        run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$'
         env:
           CI: "true"
           # Restricted to loopback by the synthetic sector-planning setup.
@@ -734,8 +786,22 @@ jobs:
           path: |
             apps/web/playwright-report
             apps/web/test-results
+            apps/web/playwright-report-material
+            apps/web/test-results-material
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Stop the capital body Edge reader
+        if: always()
+        run: |
+          set -euo pipefail
+          runtime_dir="$RUNNER_TEMP/capital-body-edge"
+          if [ -f "$runtime_dir/server.pid" ]; then
+            runtime_pid="$(cat "$runtime_dir/server.pid")"
+            if [[ "$runtime_pid" =~ ^[0-9]+$ ]]; then kill "$runtime_pid" 2>/dev/null || true; fi
+          fi
+          rm -rf -- "$runtime_dir"
+
 
       - name: Stop the worker and keep its log
         if: always()

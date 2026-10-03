@@ -1,3 +1,4 @@
+import {loadHistoricalTermSheet,historicalTermSheetSourceCommit} from "../scripts/historical-termsheet.mjs";
 import {createHash} from "node:crypto";
 
 import {instrumentVerdicts, type ArchetypeId} from "@offroad/credit-playbook";
@@ -149,7 +150,7 @@ function* packages() {
 }
 
 // ---- term sheet -----------------------------------------------------------------------------
-function* termSheets() {
+function* termSheets(builder:typeof buildTermSheet=buildTermSheet) {
   for (const archetypeId of archetypeIds) {
     const capacitiesOf = ["full", "no-net-debt", "no-collateral", "venture-round-binds", "lowest-tie"].map((label) => assessCapacity({archetypeId, ...capacityVariants.find(([name]) => name === label)![1]}));
     const unconstrained: CapacityAssessment = {...capacitiesOf[0]!, requested: "1000000"};
@@ -161,7 +162,7 @@ function* termSheets() {
         {requestedTermMonths: 200, requestedGraceMonths: 48, currency: "US$", blockers: ["missing_audit"]},
         {market: {...playbookBand(archetypeId), provenance: "observed" as const, sample: {count: 14, windowMonths: 12, asOf: "2026-08-01"}}},
       ];
-      for (const option of options) yield {archetypeId, sheet: buildTermSheet({archetypeId, capacity, ...option})};
+      for (const option of options) yield {archetypeId, sheet: builder({archetypeId, capacity, ...option})};
     }
   }
 }
@@ -464,13 +465,19 @@ describe("the deal structure across the move to financial-core", () => {
     }
   });
 
-  it("reproduces all 538 legacy outputs with only the known operation version normalized", () => {
+  it("pins the prospective term sheets without raising the company request to its capacity ceiling",()=>{
+    expect(digest(termSheets())).toEqual({count:210,sha256:"705dc7a8f1216d1e5401dd7d319706c8ce593cbd19b4492e848e3b83ffa05da4"});
+  });
+
+  it("reproduces all 538 legacy outputs using the frozen published v9 term-sheet closure", async () => {
+    const historical=await loadHistoricalTermSheet();
+    expect(historicalTermSheetSourceCommit).toBe("111591e6572667f04c56e74381178c716ac2b56d");
     expect({capacity: digest(maskedCapacities()), collateral: digest(maskedPackages())}).toEqual({
       capacity: {count: 140, sha256: "fa8f72347cb926d941d46c4bf46993a0ae0d74ea00d6d76cd958850a9d4cfc95"},
       collateral: {count: 144, sha256: "7164c1f9ed83ca547daacc0babe390e2620aa9ffe4f4ab1e9b9ad4cca5dded2b"},
     });
     expect({
-      capacity: digest(capacities()), collateral: digest(packages()), termSheet: digest(termSheets()),
+      capacity: digest(capacities()), collateral: digest(packages()), termSheet: digest(termSheets(historical.buildTermSheet)),
       structure: digest(structures()), operation: digest(legacyVersionOperations()), alternatives: digest(alternativeSets()),
     }).toEqual({
       capacity: {count: 140, sha256: "9a11ddf24470c25625b2cc31468929d8845282573234ed30aef85eeb97977ca6"},

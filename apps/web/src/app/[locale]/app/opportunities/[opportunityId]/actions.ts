@@ -5,6 +5,7 @@ import {redirect} from "next/navigation";
 import {z} from "zod";
 import {matchScreenSchema} from "@offroad/domain-contracts";
 
+import {approveNativeMaterialProductionPlan} from "@/lib/artifacts/material-production-plan-command";
 import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {latestActiveDealState, parseCompiledStructure} from "@/lib/deal-state/workbench";
@@ -42,7 +43,7 @@ async function opportunityRuntime(formData: FormData) {
   const workspace = await requireWorkspace(parsed.data.locale);
   const {data: session} = await workspace.supabase
     .from("document_intake_sessions")
-    .select("id, status, opportunity_id")
+    .select("id, status, opportunity_id, capital_project_id")
     .eq("organization_id", workspace.organization.id)
     .eq("opportunity_id", parsed.data.opportunityId)
     .eq("status", "confirmed")
@@ -61,6 +62,7 @@ async function opportunityRuntime(formData: FormData) {
     locale: parsed.data.locale,
     opportunityId: parsed.data.opportunityId,
     sessionId: session.id,
+    workId: session.capital_project_id,
     rows: rows ?? [],
     latest: latestActiveDealState(rows ?? []),
   };
@@ -197,13 +199,15 @@ export async function decideStructure(formData: FormData) {
 
 export async function approveProductionPlan(formData: FormData) {
   const runtime = await opportunityRuntime(formData);
-  const parsed = z.object({planFingerprint: fingerprintSchema}).safeParse({
+  const parsed = z.object({planFingerprint: fingerprintSchema, commandId: z.uuid()}).safeParse({
     planFingerprint: value(formData, "plan_fingerprint"),
+    commandId: value(formData, "command_id"),
   });
   const plan = runtime.latest.get("production_plan");
   const structureDecision = runtime.latest.get("structure_decision");
   if (
     !parsed.success
+    || !runtime.workId
     || !plan
     || plan.status !== "pending_confirmation"
     || plan.object_fingerprint !== parsed.data.planFingerprint
@@ -213,32 +217,12 @@ export async function approveProductionPlan(formData: FormData) {
     redirect(destination(runtime.locale, runtime.opportunityId, "production_plan_changed"));
   }
 
-  const payload = {
-    ...record(plan.payload),
-    approval: {
-      actorId: runtime.userId,
-      approvedAt: new Date().toISOString(),
-      scope: "internal_material_preparation",
-    },
-  };
-  const {error: decisionError} = await runtime.supabase.rpc("record_deal_state_object", {
-    p_organization_id: runtime.organization.id,
-    p_session_id: runtime.sessionId,
-    p_object_type: "production_plan",
-    p_status: "approved",
-    p_input_fingerprint: plan.input_fingerprint,
-    p_payload: payload,
-    p_dependencies: plan.dependencies,
-  });
-  if (decisionError) redirect(destination(runtime.locale, runtime.opportunityId, "decision_failed"));
-
-  const queue = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
-    p_organization_id: runtime.organization.id,
-    p_session_id: runtime.sessionId,
-    p_trigger_source: "production_plan_approved",
-  });
+  try {
+    await approveNativeMaterialProductionPlan(runtime.supabase, {workId: runtime.workId,
+      planId: plan.id, planFingerprint: parsed.data.planFingerprint, commandId: parsed.data.commandId});
+  } catch {redirect(destination(runtime.locale, runtime.opportunityId, "production_plan_changed"));}
   revalidatePath(`/${runtime.locale}/app/opportunities/${runtime.opportunityId}`);
-  redirect(destination(runtime.locale, runtime.opportunityId, queuedNotice(queue, "materials_started")));
+  redirect(destination(runtime.locale, runtime.opportunityId, "analysis_awaiting_approval"));
 }
 
 export async function approveMaterialPackage(formData: FormData) {

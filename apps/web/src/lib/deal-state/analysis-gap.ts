@@ -24,6 +24,12 @@ export const dealStateGapTrigger = {
   match_screen: "material_package_approved",
 } as const satisfies Record<DealStateGap, string>;
 
+/** A native internal package approval requests a brief; it cannot promote the legacy market path. */
+export function isNativeMaterialPackageReview(row: DealStateRow | null | undefined): boolean {
+  return row?.object_type === "package_review" && !!row.payload && typeof row.payload === "object"
+    && !Array.isArray(row.payload) && "nativeMaterialRevisionId" in row.payload;
+}
+
 type GapFacts = {
   understandingStatus: string | null;
   structureCreatedAt: string | null;
@@ -74,7 +80,7 @@ export function workbenchAnalysisGap(workbench: DealStateWorkbench, materialsPre
     decision: workbench.structureDecision ? {status: workbench.structureDecision.status, createdAt: workbench.structureDecision.created_at} : null,
     productionPlanStatus: workbench.productionPlan?.row.status ?? null,
     materialsPresent,
-    packageReviewStatus: workbench.packageReview?.status ?? null,
+    packageReviewStatus: isNativeMaterialPackageReview(workbench.packageReview) ? null : workbench.packageReview?.status ?? null,
     matchScreenPresent: workbench.matchScreen !== null,
   });
 }
@@ -89,7 +95,7 @@ export function rowsAnalysisGap(rows: readonly DealStateRow[]): DealStateGap | n
     decision: decision ? {status: decision.status, createdAt: decision.created_at} : null,
     productionPlanStatus: parseProductionPlan(latest.get("production_plan"))?.row.status ?? null,
     materialsPresent: governedMaterialPackageFromRows(rows) !== null,
-    packageReviewStatus: latest.get("package_review")?.status ?? null,
+    packageReviewStatus: isNativeMaterialPackageReview(latest.get("package_review")) ? null : latest.get("package_review")?.status ?? null,
     matchScreenPresent: parseGovernedMatchScreen(
       latest.get("match_screen"),
       latest.get("package_review"),

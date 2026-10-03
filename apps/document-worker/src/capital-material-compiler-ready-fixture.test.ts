@@ -1,0 +1,6 @@
+import {materialInternalReadiness} from './capital-material-readiness';
+import {describe,it,expect} from 'vitest';
+import {buildMaterialCompilerReadyFixture} from './testing/material-compiler-ready-fixture';
+describe('real versioned material compiler (synthetic domain only)',()=>{
+ it('generates the four planned types with consistent calculations and no fixture model calls',async()=>{const {result,bundle}=await buildMaterialCompilerReadyFixture({sessionId:'a9300000-0000-4000-8000-000000000001',runId:'a9300000-0000-4000-8000-000000000002'});expect(result.report.status).toBe('succeeded');expect(result.state.termSheet?.terms.find(t=>t.id==='amount')?.value.pt).toBe('R$ 10.000.000');expect(result.state.materials.map(m=>m.kind)).toEqual(expect.arrayContaining(['teaser','financial_model','term_sheet','data_room_index']));expect(result.state.materialsBlockedBy).toEqual([]);expect(result.state.materialTruth.consistency.status).toBe('pass');expect(result.state.materialTruth.releaseDecision).toBe('internal_only');expect(materialInternalReadiness(bundle.caseState,bundle.materialPackage)).toBe(true);expect(result.report.usage.modelCalls).toBe(0);expect(bundle.calculationReport).toEqual(result.report);});
+});

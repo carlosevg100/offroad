@@ -5,14 +5,15 @@ import Link from "next/link";
 import {getFormatter, getTranslations} from "next-intl/server";
 import {notFound} from "next/navigation";
 
-import {approveMatchShortlist, approveMaterialPackage, approveProductionPlan, authorizeIntroductionPlan, confirmUnderstanding, decideStructure, resumeAnalysis} from "./actions";
+import {approveMatchShortlist, approveProductionPlan, authorizeIntroductionPlan, confirmUnderstanding, decideStructure, resumeAnalysis} from "./actions";
+import {MaterialPackageReview} from "@/components/advisor/material-package-review";
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {DealStateSubmit} from "@/components/deal-state/deal-state-submit";
 import {IntakeCase} from "@/components/intake/intake-case";
 import {workShouldRefresh} from "@/lib/advisor/work-activity";
 import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
 import {requireWorkspace} from "@/lib/auth/workspace";
-import {dealStateGapApproval, workbenchAnalysisGap, type DealStateGap, type DealStateGapApproval} from "@/lib/deal-state/analysis-gap";
+import {dealStateGapApproval, isNativeMaterialPackageReview, workbenchAnalysisGap, type DealStateGap, type DealStateGapApproval} from "@/lib/deal-state/analysis-gap";
 import {loadDealStateWorkbench, localizedText, type CompiledStructure, type DealStateRow, type DealStateWorkbench, type StructureAlternative} from "@/lib/deal-state/workbench";
 import "@/app/work-activity.css";
 import {loadGovernedMaterialPackage, type GovernedMaterialPackage} from "@/lib/deal-state/materials";
@@ -34,7 +35,7 @@ export default async function OpportunityPage({params, searchParams}: Props) {
   const [{locale, opportunityId}, query] = await Promise.all([params, searchParams]);
   const t = await getTranslations({locale, namespace: "App.dealState"});
   const format = await getFormatter({locale});
-  const {supabase, organization} = await requireWorkspace(locale);
+  const {supabase, organization, userId} = await requireWorkspace(locale);
   const [{data: opportunity}, {data: session}] = await Promise.all([
     supabase
       .from("opportunities")
@@ -113,7 +114,7 @@ export default async function OpportunityPage({params, searchParams}: Props) {
 
       <div className="deal-workspace__layout">
         <section className="deal-decision-canvas">
-          {renderDecisionStage({locale, opportunityId, sessionId: session.id, diagnosticCase, workbench, governedMaterials, gap, gapApproval, gapCopy, introductionPlan, introductionTargets, introductionRecipients, t, format})}
+          {renderDecisionStage({locale, userId, opportunityId, sessionId: session.id, diagnosticCase, workbench, governedMaterials, gap, gapApproval, gapCopy, introductionPlan, introductionTargets, introductionRecipients, t, format})}
         </section>
         <aside className="deal-control-panel">
           <span className="section-kicker">{t("controlKicker")}</span>
@@ -131,6 +132,7 @@ export default async function OpportunityPage({params, searchParams}: Props) {
 }
 
 function currentStage(workbench: DealStateWorkbench, governedMaterials: GovernedMaterialPackage | null, introductionPlan: IntroductionPlan | null) {
+  if (governedMaterials?.nativeReview || isNativeMaterialPackageReview(workbench.packageReview)) return "prepare";
   if (introductionPlan?.status === "introduced") return "captureFeedback";
   if (introductionPlan?.status === "authorized") return "introduce";
   if (workbench.packageReview?.status === "approved") return "match";
@@ -146,9 +148,10 @@ function currentStage(workbench: DealStateWorkbench, governedMaterials: Governed
 }
 
 function renderDecisionStage({
-  locale, opportunityId, sessionId, diagnosticCase, workbench, governedMaterials, gap, gapApproval, gapCopy, introductionPlan, introductionTargets, introductionRecipients, t, format,
+  locale, userId, opportunityId, sessionId, diagnosticCase, workbench, governedMaterials, gap, gapApproval, gapCopy, introductionPlan, introductionTargets, introductionRecipients, t, format,
 }: {
   locale: string;
+  userId: string;
   opportunityId: string;
   sessionId: string;
   diagnosticCase: CaseState;
@@ -200,6 +203,8 @@ function renderDecisionStage({
   // Processing only while a case analysis job runs; a result missing after a decision, with nothing
   // running, is a gap whose next step is to resume that decision's analysis, or to approve the plan
   // of that analysis while it is held.
+  // Native package review has effect none: it must not enter the legacy matching path.
+  if (governedMaterials?.nativeReview) return <MaterialReview governed={governedMaterials} userId={userId} locale={locale} opportunityId={opportunityId} sessionId={sessionId} t={t} />;
   if (workbench.isProcessing) return <ProcessingState t={t} />;
   if (gap) return <AnalysisGapState approval={gapApproval} gap={gap} gapCopy={gapCopy} locale={locale} opportunityId={opportunityId} />;
 
@@ -213,7 +218,7 @@ function renderDecisionStage({
   }
 
   if (workbench.productionPlan?.row.status === "pending_confirmation") {
-    return <article className="deal-review"><header><span>{t("production.kicker")}</span><h2>{t("production.title")}</h2><p>{t("production.body")}</p></header><div className="production-artifacts">{workbench.productionPlan.value.artifacts.map((artifact, index) => <section key={artifact}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{t(`production.artifacts.${artifact}`)}</strong><p>{t(`production.artifactDescriptions.${artifact}`)}</p></div></section>)}</div><form action={approveProductionPlan} className="deal-primary-action"><input name="locale" type="hidden" value={locale} /><input name="opportunity_id" type="hidden" value={opportunityId} /><input name="plan_fingerprint" type="hidden" value={workbench.productionPlan.row.object_fingerprint} /><div><strong>{t("production.approvalTitle")}</strong><p>{t("production.pendingApproval")}</p></div><DealStateSubmit idle={t("production.approve")} pending={t("production.approving")} value="approve" /></form><p className="deal-inline-boundary">{t("production.boundary")}</p></article>;
+    return <article className="deal-review"><header><span>{t("production.kicker")}</span><h2>{t("production.title")}</h2><p>{t("production.body")}</p></header><div className="production-artifacts">{workbench.productionPlan.value.artifacts.map((artifact, index) => <section key={artifact}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{t(`production.artifacts.${artifact}`)}</strong><p>{t(`production.artifactDescriptions.${artifact}`)}</p></div></section>)}</div><form action={approveProductionPlan} className="deal-primary-action"><input name="locale" type="hidden" value={locale} /><input name="opportunity_id" type="hidden" value={opportunityId} /><input name="plan_fingerprint" type="hidden" value={workbench.productionPlan.row.object_fingerprint} /><input name="command_id" type="hidden" value={crypto.randomUUID()} /><div><strong>{t("production.approvalTitle")}</strong><p>{t("production.pendingApproval")}</p></div><DealStateSubmit idle={t("production.approve")} pending={t("production.approving")} value="approve" /></form><p className="deal-inline-boundary">{t("production.boundary")}</p></article>;
   }
 
   if (
@@ -404,9 +409,10 @@ function MatchCandidateCard({
 }
 
 function MaterialReview({
-  governed, locale, opportunityId, sessionId, t,
+  governed, locale, sessionId, t, userId,
 }: {
   governed: GovernedMaterialPackage;
+  userId?: string;
   locale: string;
   opportunityId: string;
   sessionId: string;
@@ -419,7 +425,7 @@ function MaterialReview({
     {id: "data_room_index", available: governed.materials.some((material) => material.kind === "data_room_index"), href: `/${locale}/app/materials/${sessionId}/data_room_index`},
   ] as const;
   const complete = artifacts.every((artifact) => artifact.available);
-  return <article className="deal-review material-review"><header><span>{t("materials.kicker")}</span><h2>{t("materials.title")}</h2><p>{t("materials.body")}</p></header><div className="material-review__list">{artifacts.map((artifact, index) => <section className={artifact.available ? "is-ready" : "is-blocked"} key={artifact.id}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{t(`production.artifacts.${artifact.id}`)}</strong><p>{artifact.available ? t("materials.ready") : t("materials.unavailable")}</p></div>{artifact.available ? <a href={artifact.href} rel="noreferrer" target="_blank"><Download aria-hidden="true" size={14} />{t("materials.open")}</a> : <small>{t("materials.blocked")}</small>}</section>)}</div>{complete ? <form action={approveMaterialPackage} className="deal-primary-action"><input name="locale" type="hidden" value={locale} /><input name="opportunity_id" type="hidden" value={opportunityId} /><input name="artifact_fingerprint" type="hidden" value={governed.artifactFingerprint} /><div><strong>{t("materials.approvalTitle")}</strong><p>{t("materials.approvalBody")}</p></div><DealStateSubmit idle={t("materials.approve")} pending={t("materials.approving")} value="approve" /></form> : <section className="deal-open-points"><h3>{t("materials.incompleteTitle")}</h3><p>{t("materials.incompleteBody")}</p></section>}<p className="deal-inline-boundary">{t("materials.boundary")}</p></article>;
+  return <article className="deal-review material-review"><header><span>{t("materials.kicker")}</span><h2>{t("materials.title")}</h2><p>{t("materials.body")}</p></header><div className="material-review__list">{artifacts.map((artifact, index) => <section className={artifact.available ? "is-ready" : "is-blocked"} key={artifact.id}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{t(`production.artifacts.${artifact.id}`)}</strong><p>{artifact.available ? t("materials.ready") : t("materials.unavailable")}</p></div>{artifact.available ? <a href={artifact.href} rel="noreferrer" target="_blank"><Download aria-hidden="true" size={14} />{t("materials.open")}</a> : <small>{t("materials.blocked")}</small>}</section>)}</div>{governed.nativeReview ? (userId ? <MaterialPackageReview basis={governed.nativeReview} userId={userId} /> : null) : !complete ? <section className="deal-open-points"><h3>{t("materials.incompleteTitle")}</h3><p>{t("materials.incompleteBody")}</p></section> : null}<p className="deal-inline-boundary">{t("materials.boundary")}</p></article>;
 }
 
 function AnalysisGapState({approval, gap, gapCopy, locale, opportunityId}: {approval: DealStateGapApproval | null; gap: DealStateGap; gapCopy: Awaited<ReturnType<typeof getTranslations>>; locale: string; opportunityId: string}) {

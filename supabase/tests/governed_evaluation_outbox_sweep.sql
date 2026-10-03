@@ -202,7 +202,8 @@ do $$declare b record;begin
  perform pg_temp.sweep_pass('a tenant job in another organization stays queued while current and is cancelled as authorization_revoked once its owner is suspended, as before');
 end $$;
 
--- 5. Both restated functions keep security definer, an empty search_path, their volatility and language,
+-- 5. Both predicates retain definer isolation and owner-only execute. Current authority
+-- uses VOLATILE PL/pgSQL to revalidate the material dependency closure under locks.
 -- and an execute grant held by their owner alone.
 do $$declare f record;begin
  for f in select p.oid::regprocedure::text signature,p.prosecdef,p.provolatile,p.proconfig,l.lanname,p.proacl,p.proowner
@@ -211,11 +212,12 @@ do $$declare f record;begin
  loop
   if not f.prosecdef or f.proconfig is distinct from array['search_path=""'] or f.proacl is null
   or exists(select 1 from aclexplode(f.proacl) x where x.grantee<>f.proowner)
-  or (f.signature='private.job_authority_is_current_v1(uuid)' and (f.provolatile<>'s' or f.lanname<>'sql'))
+  or (f.signature='private.job_authority_is_current_v1(uuid)' and (f.provolatile<>'v' or f.lanname<>'plpgsql'))
   or (f.signature='private.job_for_failure_capability(uuid,text)' and (f.provolatile<>'v' or f.lanname<>'plpgsql'))
   then raise exception 'restated function attributes or grants changed: %',f.signature;end if;
  end loop;
- perform pg_temp.sweep_pass('both restated functions keep security definer, an empty search_path, volatility, language and an owner-only execute grant');
+ if not exists(select 1 from pg_proc where oid='private.job_authority_is_current_pre_material_package_v1(uuid)'::regprocedure and prosecdef and provolatile='s' and prolang=(select oid from pg_language where lanname='sql') and proconfig=array['search_path=""']) then raise exception 'baseline authority predicate was changed';end if;
+ perform pg_temp.sweep_pass('current authority uses volatile closure revalidation; baseline predicate and owner-only grants remain unchanged');
 end $$;
 select 'governed_evaluation_outbox_sweep: PASS' result;
 rollback;

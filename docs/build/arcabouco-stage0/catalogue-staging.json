@@ -719,6 +719,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.approve_material_production_plan_v1(p_work_id uuid, p_plan_id uuid, p_plan_fingerprint text, p_command_id uuid)",
+      "kind": "function",
+      "name": "approve_material_production_plan_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_plan_id uuid, p_plan_fingerprint text, p_command_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.artifact_content_carries_number_v1(p_content jsonb)",
       "kind": "function",
       "name": "artifact_content_carries_number_v1",
@@ -886,6 +909,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.artifact_review_preparer_pre_material_package_v1(p_revision artifact_revisions)",
+      "kind": "function",
+      "name": "artifact_review_preparer_pre_material_package_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision artifact_revisions",
+      "security_definer": true
+    },
+    {
       "id": "function:private.artifact_review_preparer_v1(p_revision artifact_revisions)",
       "kind": "function",
       "name": "artifact_review_preparer_v1",
@@ -925,6 +966,24 @@
       "id": "function:private.artifact_review_sources_allowed_pre_m07_v1(p_org uuid, p_revision uuid, p_actor uuid)",
       "kind": "function",
       "name": "artifact_review_sources_allowed_pre_m07_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_review_sources_allowed_pre_material_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "artifact_review_sources_allowed_pre_material_v1",
       "grants": [
         [
           "postgres",
@@ -1020,6 +1079,24 @@
       "id": "function:private.artifact_revision_release_pre_m07_v1(r artifact_revisions)",
       "kind": "function",
       "name": "artifact_revision_release_pre_m07_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "r artifact_revisions",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.artifact_revision_release_pre_material_package_v1(r artifact_revisions)",
+      "kind": "function",
+      "name": "artifact_revision_release_pre_material_package_v1",
       "grants": [
         [
           "postgres",
@@ -3122,6 +3199,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capital_capture_allocation_deadline_pre_material_v2(p_org uuid, p_allocation uuid)",
+      "kind": "function",
+      "name": "capital_capture_allocation_deadline_pre_material_v2",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_allocation uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.capital_capture_allocation_deadline_v2(p_org uuid, p_allocation uuid)",
       "kind": "function",
       "name": "capital_capture_allocation_deadline_v2",
@@ -3554,6 +3649,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capital_public_capture_clock_pre_material_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "capital_public_capture_clock_pre_material_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.capital_public_capture_context_before_native_m07_v1(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "capital_public_capture_context_before_native_m07_v1",
@@ -3572,9 +3685,45 @@
       "security_definer": true
     },
     {
+      "id": "function:private.capital_public_capture_context_pre_material_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "capital_public_capture_context_pre_material_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.capital_public_capture_context_v1(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "capital_public_capture_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.capital_public_capture_job_pre_material_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "capital_public_capture_job_pre_material_v1",
       "grants": [
         [
           "postgres",
@@ -4729,6 +4878,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.decide_material_package_v1(p_work_id uuid, p_revision_id uuid, p_manifest_fingerprint text, p_act text, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+      "kind": "function",
+      "name": "decide_material_package_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_revision_id uuid, p_manifest_fingerprint text, p_act text, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.decide_offroad_mandate(p_organization_id uuid, p_intake_session_id uuid, p_assessment_fingerprint text, p_decision text, p_reason_codes jsonb, p_conditions jsonb, p_path_back text)",
       "kind": "function",
       "name": "decide_offroad_mandate",
@@ -5304,6 +5476,42 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.enqueue_incremental_deal_state_analysis_pre_material_native_v1(p_organization_id uuid, p_session_id uuid, p_trigger_source text)",
+      "kind": "function",
+      "name": "enqueue_incremental_deal_state_analysis_pre_material_native_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_session_id uuid, p_trigger_source text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.enqueue_incremental_deal_state_analysis_pre_material_package_v1(p_organization_id uuid, p_session_id uuid, p_trigger_source text)",
+      "kind": "function",
+      "name": "enqueue_incremental_deal_state_analysis_pre_material_package_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_session_id uuid, p_trigger_source text",
       "security_definer": true
     },
     {
@@ -8526,6 +8734,24 @@
       "security_definer": false
     },
     {
+      "id": "function:private.job_authority_is_current_pre_material_package_v1(p_job_id uuid)",
+      "kind": "function",
+      "name": "job_authority_is_current_pre_material_package_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.job_authority_is_current_v1(p_job_id uuid)",
       "kind": "function",
       "name": "job_authority_is_current_v1",
@@ -9395,6 +9621,420 @@
         "search_path=\"\""
       ],
       "signature": "p_target_id uuid, p_resolution_note text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_allowed_external_critical_ids_v1(p_state jsonb)",
+      "kind": "function",
+      "name": "material_allowed_external_critical_ids_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_state jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_package_approval_is_current_v1(p_org uuid, p_review uuid)",
+      "kind": "function",
+      "name": "material_package_approval_is_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_review uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_package_review_current_v1(p_org uuid, p_revision uuid, p_actor uuid)",
+      "kind": "function",
+      "name": "material_package_review_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_actor uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_plan_dto_v1(p_org uuid, p_plan uuid, p_replayed boolean)",
+      "kind": "function",
+      "name": "material_plan_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_plan uuid, p_replayed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_plan_precursor_current_v1(p_org uuid, p_precursor uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "material_plan_precursor_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_precursor uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_plan_sources_fingerprint_v1(p_org uuid, p_session uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "material_plan_sources_fingerprint_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_session uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_allocate_v1(p_job uuid, p_capability text, p_recipe uuid, p_request uuid, p_kind text, p_body jsonb)",
+      "kind": "function",
+      "name": "material_production_allocate_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_recipe uuid, p_request uuid, p_kind text, p_body jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_allocation_deadline_v1(p_org uuid, p_allocation uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "material_production_allocation_deadline_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_allocation uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_capture_dto_v1(p_org uuid, p_recipe uuid)",
+      "kind": "function",
+      "name": "material_production_capture_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_clock_current_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "name": "material_production_clock_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_commit_core_v1(p_org uuid, p_recipe uuid, p_report uuid, p_state uuid, p_package uuid)",
+      "kind": "function",
+      "name": "material_production_commit_core_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid, p_report uuid, p_state uuid, p_package uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_commit_dto_v1(p_org uuid, p_recipe uuid, p_replayed boolean)",
+      "kind": "function",
+      "name": "material_production_commit_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid, p_replayed boolean",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_deadline_v1(p_org uuid, p_recipe uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "material_production_deadline_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_input_fingerprint_v1(p_org uuid, p_session uuid, p_plan uuid)",
+      "kind": "function",
+      "name": "material_production_input_fingerprint_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_session uuid, p_plan uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_job_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "name": "material_production_job_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_live_inputs_v1(p_job uuid, p_capability text)",
+      "kind": "function",
+      "name": "material_production_live_inputs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_public_deadline_v1(p_org uuid, p_recipe uuid)",
+      "kind": "function",
+      "name": "material_production_public_deadline_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_revision_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "material_production_revision_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_revision uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_scope_v1(p_org uuid, p_allocation uuid)",
+      "kind": "function",
+      "name": "material_production_scope_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_allocation uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_source_closure_fingerprint_v1(p_org uuid, p_recipe uuid)",
+      "kind": "function",
+      "name": "material_production_source_closure_fingerprint_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_sources_current_v1(p_org uuid, p_recipe uuid, p_subject uuid)",
+      "kind": "function",
+      "name": "material_production_sources_current_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid, p_subject uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_storage_allowed_v1(p_allocation uuid, p_mode text)",
+      "kind": "function",
+      "name": "material_production_storage_allowed_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_allocation uuid, p_mode text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.material_production_terminal_dto_v1(p_org uuid, p_recipe uuid, p_replayed boolean)",
+      "kind": "function",
+      "name": "material_production_terminal_dto_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_org uuid, p_recipe uuid, p_replayed boolean",
       "security_definer": true
     },
     {
@@ -10435,6 +11075,24 @@
         "search_path=\"\""
       ],
       "signature": "p_table text, p_org uuid, p_row uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.project_material_package_review_v1()",
+      "kind": "function",
+      "name": "project_material_package_review_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "",
       "security_definer": true
     },
     {
@@ -11573,6 +12231,75 @@
       "security_definer": true
     },
     {
+      "id": "function:private.read_material_package_review_basis_v1(p_work_id uuid, p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_material_package_review_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_revision_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_material_production_plan_v1(p_work_id uuid, p_plan_id uuid)",
+      "kind": "function",
+      "name": "read_material_production_plan_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_plan_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.read_material_production_result_v1(p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_material_production_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.read_presentation_template_v1(p_project_id uuid)",
       "kind": "function",
       "name": "read_presentation_template_v1",
@@ -12210,6 +12937,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.record_deal_state_object_pre_material_native_v1(p_organization_id uuid, p_session_id uuid, p_object_type text, p_status text, p_input_fingerprint text, p_payload jsonb, p_dependencies jsonb)",
+      "kind": "function",
+      "name": "record_deal_state_object_pre_material_native_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_organization_id uuid, p_session_id uuid, p_object_type text, p_status text, p_input_fingerprint text, p_payload jsonb, p_dependencies jsonb",
+      "security_definer": true
+    },
+    {
       "id": "function:private.record_deal_state_object(p_organization_id uuid, p_session_id uuid, p_object_type text, p_status text, p_input_fingerprint text, p_payload jsonb, p_dependencies jsonb)",
       "kind": "function",
       "name": "record_deal_state_object",
@@ -12221,11 +12966,6 @@
         ],
         [
           "authenticated",
-          "EXECUTE",
-          false
-        ],
-        [
-          "service_role",
           "EXECUTE",
           false
         ]
@@ -17950,6 +18690,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_authorize_provider_processing_pre_material_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
+      "kind": "function",
+      "name": "worker_authorize_provider_processing_pre_material_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_authorize_provider_processing_v1(p_job_id uuid, p_capability_token text, p_route jsonb, p_resources text[], p_purpose text)",
       "kind": "function",
       "name": "worker_authorize_provider_processing_v1",
@@ -18019,10 +18777,33 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_can_access_capital_public_payload_pre_material_v1(p_bucket text, p_path text, p_mode text)",
+      "kind": "function",
+      "name": "worker_can_access_capital_public_payload_pre_material_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_bucket text, p_path text, p_mode text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_can_access_capital_public_payload_v1(p_bucket text, p_path text, p_mode text)",
       "kind": "function",
       "name": "worker_can_access_capital_public_payload_v1",
       "grants": [
+        [
+          "PUBLIC",
+          "EXECUTE",
+          false
+        ],
         [
           "postgres",
           "EXECUTE",
@@ -18137,6 +18918,29 @@
       "id": "function:private.worker_capture_execution_brief_inputs_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)",
       "kind": "function",
       "name": "worker_capture_execution_brief_inputs_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_request_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_capture_material_production_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)",
+      "kind": "function",
+      "name": "worker_capture_material_production_v1",
       "grants": [
         [
           "postgres",
@@ -18504,6 +19308,52 @@
         "search_path=\"\""
       ],
       "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_commit_material_production_body_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)",
+      "kind": "function",
+      "name": "worker_commit_material_production_body_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_commit_material_production_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_report_retained_payload_id uuid, p_state_retained_payload_id uuid, p_package_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_commit_material_production_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_report_retained_payload_id uuid, p_state_retained_payload_id uuid, p_package_retained_payload_id uuid",
       "security_definer": true
     },
     {
@@ -18903,6 +19753,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_freeze_case_input_pre_material_v1(p_job_id uuid, p_capability_token text, p_live_input jsonb)",
+      "kind": "function",
+      "name": "worker_freeze_case_input_pre_material_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_live_input jsonb",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_freeze_case_input(p_job_id uuid, p_capability_token text, p_live_input jsonb)",
       "kind": "function",
       "name": "worker_freeze_case_input",
@@ -19218,10 +20086,33 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_load_capital_project_capture_context_pre_material_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_load_capital_project_capture_context_pre_material_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_load_capital_project_capture_context_v1(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "worker_load_capital_project_capture_context_v1",
       "grants": [
+        [
+          "PUBLIC",
+          "EXECUTE",
+          false
+        ],
         [
           "postgres",
           "EXECUTE",
@@ -20581,6 +21472,52 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_prepare_material_production_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_body jsonb)",
+      "kind": "function",
+      "name": "worker_prepare_material_production_output_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_body jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_prepare_material_production_plan_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)",
+      "kind": "function",
+      "name": "worker_prepare_material_production_plan_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_request_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_public_company_memory_job(p_job_id uuid, p_capability_token text)",
       "kind": "function",
       "name": "worker_public_company_memory_job",
@@ -20757,6 +21694,52 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_retained_payload_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_read_material_production_allocation_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid)",
+      "kind": "function",
+      "name": "worker_read_material_production_allocation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_read_material_production_dispatch_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_read_material_production_dispatch_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
       "security_definer": true
     },
     {
@@ -21417,6 +22400,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_record_case_snapshot_pre_material_v1(p_job_id uuid, p_capability_token text, p_manifest jsonb, p_case_state jsonb)",
+      "kind": "function",
+      "name": "worker_record_case_snapshot_pre_material_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_manifest jsonb, p_case_state jsonb",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_record_case_snapshot(p_job_id uuid, p_capability_token text, p_manifest jsonb, p_case_state jsonb)",
       "kind": "function",
       "name": "worker_record_case_snapshot",
@@ -21440,6 +22441,24 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_record_controlled_execution_pre_material_v1(p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_comparison jsonb)",
+      "kind": "function",
+      "name": "worker_record_controlled_execution_pre_material_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_comparison jsonb",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_record_controlled_execution(p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_comparison jsonb)",
       "kind": "function",
       "name": "worker_record_controlled_execution",
@@ -21460,6 +22479,24 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_report jsonb, p_manifest jsonb, p_comparison jsonb",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_deal_state_object_pre_material_native_v1(p_job_id uuid, p_capability_token text, p_object_type text, p_status text, p_input_fingerprint text, p_payload jsonb, p_dependencies jsonb)",
+      "kind": "function",
+      "name": "worker_record_deal_state_object_pre_material_native_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_object_type text, p_status text, p_input_fingerprint text, p_payload jsonb, p_dependencies jsonb",
       "security_definer": true
     },
     {
@@ -21718,6 +22755,29 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_envelope jsonb, p_classifier jsonb, p_model text, p_cost_usd numeric",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_record_material_production_terminal_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_report_retained_payload_id uuid, p_case_state_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_record_material_production_terminal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_report_retained_payload_id uuid, p_case_state_retained_payload_id uuid",
       "security_definer": true
     },
     {
@@ -22085,6 +23145,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_recover_material_production_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_recover_material_production_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
       "kind": "function",
       "name": "worker_renew_evaluation_v1",
@@ -22241,6 +23324,29 @@
       "security_definer": true
     },
     {
+      "id": "function:private.worker_revalidate_material_production_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)",
+      "kind": "function",
+      "name": "worker_revalidate_material_production_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": true
+    },
+    {
       "id": "function:private.worker_runtime_schema_contract_before_resource_access_v1()",
       "kind": "function",
       "name": "worker_runtime_schema_contract_before_resource_access_v1",
@@ -22285,6 +23391,52 @@
       ],
       "signature": "",
       "security_definer": false
+    },
+    {
+      "id": "function:private.worker_seal_material_production_context_v1(p_job uuid, p_capability text, p_recipe uuid, p_context_retained_payload uuid)",
+      "kind": "function",
+      "name": "worker_seal_material_production_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job uuid, p_capability text, p_recipe uuid, p_context_retained_payload uuid",
+      "security_definer": true
+    },
+    {
+      "id": "function:private.worker_seal_material_production_sources_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_delivery_ids uuid[], p_research_status text)",
+      "kind": "function",
+      "name": "worker_seal_material_production_sources_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_delivery_ids uuid[], p_research_status text",
+      "security_definer": true
     },
     {
       "id": "function:private.worker_settle_evaluation_operation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid, p_operation_id uuid, p_outcome text, p_spent_microusd bigint, p_spent_calls integer)",
@@ -23028,6 +24180,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.approve_material_production_plan_v1(p_work_id uuid, p_plan_id uuid, p_plan_fingerprint text, p_command_id uuid)",
+      "kind": "function",
+      "name": "approve_material_production_plan_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_plan_id uuid, p_plan_fingerprint text, p_command_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.attach_intake_session_to_opportunity(p_organization_id uuid, p_session_id uuid, p_opportunity_id uuid)",
       "kind": "function",
       "name": "attach_intake_session_to_opportunity",
@@ -23764,6 +24939,29 @@
         "search_path=\"\""
       ],
       "signature": "p_artifact_id uuid, p_artifact_fingerprint text, p_decision text, p_note text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.decide_material_package_v1(p_work_id uuid, p_revision_id uuid, p_manifest_fingerprint text, p_act text, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid)",
+      "kind": "function",
+      "name": "decide_material_package_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_revision_id uuid, p_manifest_fingerprint text, p_act text, p_note text, p_self_approval_declared boolean, p_command_id uuid, p_basis_review_id uuid",
       "security_definer": false
     },
     {
@@ -25453,6 +26651,75 @@
         "search_path=\"\""
       ],
       "signature": "p_work uuid, p_fingerprint text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.read_material_package_review_basis_v1(p_work_id uuid, p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_material_package_review_basis_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_revision_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.read_material_production_plan_v1(p_work_id uuid, p_plan_id uuid)",
+      "kind": "function",
+      "name": "read_material_production_plan_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_work_id uuid, p_plan_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.read_material_production_result_v1(p_revision_id uuid)",
+      "kind": "function",
+      "name": "read_material_production_result_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_revision_id uuid",
       "security_definer": false
     },
     {
@@ -29425,6 +30692,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_capture_material_production_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)",
+      "kind": "function",
+      "name": "worker_capture_material_production_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_request_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_claim_capital_capture_purge_v1(p_worker_token text, p_limit integer)",
       "kind": "function",
       "name": "worker_claim_capital_capture_purge_v1",
@@ -29805,6 +31095,52 @@
         "search_path=\"\""
       ],
       "signature": "p_job uuid, p_capability text, p_lease uuid, p_contract_hash text, p_input_hash text, p_result_text text, p_outcome text, p_reason text",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_commit_material_production_body_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint)",
+      "kind": "function",
+      "name": "worker_commit_material_production_body_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid, p_storage_object_id uuid, p_storage_version text, p_verified_sha256 text, p_verified_size bigint",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_commit_material_production_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_report_retained_payload_id uuid, p_state_retained_payload_id uuid, p_package_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_commit_material_production_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_report_retained_payload_id uuid, p_state_retained_payload_id uuid, p_package_retained_payload_id uuid",
       "security_definer": false
     },
     {
@@ -31589,6 +32925,52 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_prepare_material_production_output_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_body jsonb)",
+      "kind": "function",
+      "name": "worker_prepare_material_production_output_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_request_id uuid, p_kind text, p_body jsonb",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_prepare_material_production_plan_v1(p_job_id uuid, p_capability_token text, p_request_id uuid)",
+      "kind": "function",
+      "name": "worker_prepare_material_production_plan_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_request_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_read_capital_body_allocation_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid)",
       "kind": "function",
       "name": "worker_read_capital_body_allocation_v1",
@@ -31747,6 +33129,52 @@
         "search_path=\"\""
       ],
       "signature": "p_job_id uuid, p_capability_token text, p_retained_payload_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_read_material_production_allocation_v1(p_job_id uuid, p_capability_token text, p_allocation_id uuid)",
+      "kind": "function",
+      "name": "worker_read_material_production_allocation_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_allocation_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_read_material_production_dispatch_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_read_material_production_dispatch_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
       "security_definer": false
     },
     {
@@ -32798,6 +34226,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_record_material_production_terminal_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_report_retained_payload_id uuid, p_case_state_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_record_material_production_terminal_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_report_retained_payload_id uuid, p_case_state_retained_payload_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_record_objective_plan_preflight_v1(p_job_id uuid, p_capability_token text, p_objective_plan jsonb, p_preflight_decision jsonb)",
       "kind": "function",
       "name": "worker_record_objective_plan_preflight_v1",
@@ -33208,6 +34659,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_recover_material_production_v1(p_job_id uuid, p_capability_token text)",
+      "kind": "function",
+      "name": "worker_recover_material_production_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_renew_evaluation_v1(p_job_id uuid, p_capability_token text, p_lease_id uuid)",
       "kind": "function",
       "name": "worker_renew_evaluation_v1",
@@ -33346,6 +34820,29 @@
       "security_definer": false
     },
     {
+      "id": "function:public.worker_revalidate_material_production_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid)",
+      "kind": "function",
+      "name": "worker_revalidate_material_production_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid",
+      "security_definer": false
+    },
+    {
       "id": "function:public.worker_runtime_schema_contract_v1()",
       "kind": "function",
       "name": "worker_runtime_schema_contract_v1",
@@ -33371,6 +34868,52 @@
         "search_path=\"\""
       ],
       "signature": "",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_seal_material_production_context_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid)",
+      "kind": "function",
+      "name": "worker_seal_material_production_context_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_context_retained_payload_id uuid",
+      "security_definer": false
+    },
+    {
+      "id": "function:public.worker_seal_material_production_sources_v1(p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_delivery_ids uuid[], p_research_status text)",
+      "kind": "function",
+      "name": "worker_seal_material_production_sources_v1",
+      "grants": [
+        [
+          "postgres",
+          "EXECUTE",
+          false
+        ],
+        [
+          "authenticated",
+          "EXECUTE",
+          false
+        ]
+      ],
+      "schema": "public",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "p_job_id uuid, p_capability_token text, p_recipe_id uuid, p_delivery_ids uuid[], p_research_status text",
       "security_definer": false
     },
     {
@@ -38263,6 +39806,846 @@
         "authenticated"
       ],
       "table": "institutional_setup_source_links",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_package_review_intents.material_package_review_intents_no_delete",
+      "kind": "policy",
+      "name": "material_package_review_intents_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_package_review_intents",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_package_review_intents.material_package_review_intents_no_insert",
+      "kind": "policy",
+      "name": "material_package_review_intents_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_package_review_intents",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_package_review_intents.material_package_review_intents_no_select",
+      "kind": "policy",
+      "name": "material_package_review_intents_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_package_review_intents",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_package_review_intents.material_package_review_intents_no_update",
+      "kind": "policy",
+      "name": "material_package_review_intents_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_package_review_intents",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_package_review_projections.material_package_review_projections_no_delete",
+      "kind": "policy",
+      "name": "material_package_review_projections_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_package_review_projections",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_package_review_projections.material_package_review_projections_no_insert",
+      "kind": "policy",
+      "name": "material_package_review_projections_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_package_review_projections",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_package_review_projections.material_package_review_projections_no_select",
+      "kind": "policy",
+      "name": "material_package_review_projections_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_package_review_projections",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_package_review_projections.material_package_review_projections_no_update",
+      "kind": "policy",
+      "name": "material_package_review_projections_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_package_review_projections",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_approval_intents.material_production_approval_intents_no_delete",
+      "kind": "policy",
+      "name": "material_production_approval_intents_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_approval_intents",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_approval_intents.material_production_approval_intents_no_insert",
+      "kind": "policy",
+      "name": "material_production_approval_intents_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_approval_intents",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_approval_intents.material_production_approval_intents_no_select",
+      "kind": "policy",
+      "name": "material_production_approval_intents_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_approval_intents",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_approval_intents.material_production_approval_intents_no_update",
+      "kind": "policy",
+      "name": "material_production_approval_intents_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_approval_intents",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_bindings.material_production_bindings_no_delete",
+      "kind": "policy",
+      "name": "material_production_bindings_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_bindings",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_bindings.material_production_bindings_no_insert",
+      "kind": "policy",
+      "name": "material_production_bindings_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_bindings",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_bindings.material_production_bindings_no_select",
+      "kind": "policy",
+      "name": "material_production_bindings_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_bindings",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_bindings.material_production_bindings_no_update",
+      "kind": "policy",
+      "name": "material_production_bindings_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_bindings",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_body_bases.material_production_body_bases_no_delete",
+      "kind": "policy",
+      "name": "material_production_body_bases_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_body_bases",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_body_bases.material_production_body_bases_no_insert",
+      "kind": "policy",
+      "name": "material_production_body_bases_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_body_bases",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_body_bases.material_production_body_bases_no_select",
+      "kind": "policy",
+      "name": "material_production_body_bases_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_body_bases",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_body_bases.material_production_body_bases_no_update",
+      "kind": "policy",
+      "name": "material_production_body_bases_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_body_bases",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_cutover.material_production_cutover_no_delete",
+      "kind": "policy",
+      "name": "material_production_cutover_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_cutover",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_cutover.material_production_cutover_no_insert",
+      "kind": "policy",
+      "name": "material_production_cutover_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_cutover",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_cutover.material_production_cutover_no_select",
+      "kind": "policy",
+      "name": "material_production_cutover_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_cutover",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_cutover.material_production_cutover_no_update",
+      "kind": "policy",
+      "name": "material_production_cutover_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_cutover",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_plan_approvals.material_production_plan_approvals_no_delete",
+      "kind": "policy",
+      "name": "material_production_plan_approvals_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_plan_approvals",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_plan_approvals.material_production_plan_approvals_no_insert",
+      "kind": "policy",
+      "name": "material_production_plan_approvals_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_plan_approvals",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_plan_approvals.material_production_plan_approvals_no_select",
+      "kind": "policy",
+      "name": "material_production_plan_approvals_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_plan_approvals",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_plan_approvals.material_production_plan_approvals_no_update",
+      "kind": "policy",
+      "name": "material_production_plan_approvals_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_plan_approvals",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_plan_precursors.material_production_plan_precursors_no_delete",
+      "kind": "policy",
+      "name": "material_production_plan_precursors_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_plan_precursors",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_plan_precursors.material_production_plan_precursors_no_insert",
+      "kind": "policy",
+      "name": "material_production_plan_precursors_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_plan_precursors",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_plan_precursors.material_production_plan_precursors_no_select",
+      "kind": "policy",
+      "name": "material_production_plan_precursors_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_plan_precursors",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_plan_precursors.material_production_plan_precursors_no_update",
+      "kind": "policy",
+      "name": "material_production_plan_precursors_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_plan_precursors",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_public_source_pins.material_production_public_source_pins_no_delete",
+      "kind": "policy",
+      "name": "material_production_public_source_pins_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_public_source_pins",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_public_source_pins.material_production_public_source_pins_no_insert",
+      "kind": "policy",
+      "name": "material_production_public_source_pins_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_public_source_pins",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_public_source_pins.material_production_public_source_pins_no_select",
+      "kind": "policy",
+      "name": "material_production_public_source_pins_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_public_source_pins",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_public_source_pins.material_production_public_source_pins_no_update",
+      "kind": "policy",
+      "name": "material_production_public_source_pins_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_public_source_pins",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_recipes.material_production_recipes_no_delete",
+      "kind": "policy",
+      "name": "material_production_recipes_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_recipes",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_recipes.material_production_recipes_no_insert",
+      "kind": "policy",
+      "name": "material_production_recipes_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_recipes",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_recipes.material_production_recipes_no_select",
+      "kind": "policy",
+      "name": "material_production_recipes_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_recipes",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_recipes.material_production_recipes_no_update",
+      "kind": "policy",
+      "name": "material_production_recipes_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_recipes",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_research_seals.material_production_research_seals_no_delete",
+      "kind": "policy",
+      "name": "material_production_research_seals_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_research_seals",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_research_seals.material_production_research_seals_no_insert",
+      "kind": "policy",
+      "name": "material_production_research_seals_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_research_seals",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_research_seals.material_production_research_seals_no_select",
+      "kind": "policy",
+      "name": "material_production_research_seals_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_research_seals",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_research_seals.material_production_research_seals_no_update",
+      "kind": "policy",
+      "name": "material_production_research_seals_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_research_seals",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_seals.material_production_seals_no_delete",
+      "kind": "policy",
+      "name": "material_production_seals_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_seals",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_seals.material_production_seals_no_insert",
+      "kind": "policy",
+      "name": "material_production_seals_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_seals",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_seals.material_production_seals_no_select",
+      "kind": "policy",
+      "name": "material_production_seals_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_seals",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_seals.material_production_seals_no_update",
+      "kind": "policy",
+      "name": "material_production_seals_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_seals",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_source_pins.material_production_source_pins_no_delete",
+      "kind": "policy",
+      "name": "material_production_source_pins_no_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_source_pins",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_source_pins.material_production_source_pins_no_insert",
+      "kind": "policy",
+      "name": "material_production_source_pins_no_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_source_pins",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_source_pins.material_production_source_pins_no_select",
+      "kind": "policy",
+      "name": "material_production_source_pins_no_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_source_pins",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_source_pins.material_production_source_pins_no_update",
+      "kind": "policy",
+      "name": "material_production_source_pins_no_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_source_pins",
+      "schema": "private",
+      "command": "UPDATE",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_terminals.material_terminal_deny_delete",
+      "kind": "policy",
+      "name": "material_terminal_deny_delete",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_terminals",
+      "schema": "private",
+      "command": "DELETE",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_terminals.material_terminal_deny_insert",
+      "kind": "policy",
+      "name": "material_terminal_deny_insert",
+      "qual": null,
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_terminals",
+      "schema": "private",
+      "command": "INSERT",
+      "permissive": "RESTRICTIVE",
+      "with_check": "false"
+    },
+    {
+      "id": "policy:private.material_production_terminals.material_terminal_deny_select",
+      "kind": "policy",
+      "name": "material_terminal_deny_select",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_terminals",
+      "schema": "private",
+      "command": "SELECT",
+      "permissive": "RESTRICTIVE",
+      "with_check": null
+    },
+    {
+      "id": "policy:private.material_production_terminals.material_terminal_deny_update",
+      "kind": "policy",
+      "name": "material_terminal_deny_update",
+      "qual": "false",
+      "roles": [
+        "anon",
+        "authenticated"
+      ],
+      "table": "material_production_terminals",
       "schema": "private",
       "command": "UPDATE",
       "permissive": "RESTRICTIVE",
@@ -50221,6 +52604,706 @@
       ],
       "schema": "private",
       "force_rls": false
+    },
+    {
+      "id": "r:private.material_package_review_intents",
+      "rls": true,
+      "kind": "table",
+      "name": "material_package_review_intents",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_package_review_projections",
+      "rls": true,
+      "kind": "table",
+      "name": "material_package_review_projections",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_approval_intents",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_approval_intents",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_bindings",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_bindings",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_body_bases",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_body_bases",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_cutover",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_cutover",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_plan_approvals",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_plan_approvals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_plan_precursors",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_plan_precursors",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_public_source_pins",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_public_source_pins",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_recipes",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_recipes",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_research_seals",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_research_seals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_seals",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_seals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_source_pins",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_source_pins",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
+    },
+    {
+      "id": "r:private.material_production_terminals",
+      "rls": true,
+      "kind": "table",
+      "name": "material_production_terminals",
+      "grants": [
+        [
+          "postgres",
+          "DELETE",
+          false
+        ],
+        [
+          "postgres",
+          "INSERT",
+          false
+        ],
+        [
+          "postgres",
+          "MAINTAIN",
+          false
+        ],
+        [
+          "postgres",
+          "REFERENCES",
+          false
+        ],
+        [
+          "postgres",
+          "SELECT",
+          false
+        ],
+        [
+          "postgres",
+          "TRIGGER",
+          false
+        ],
+        [
+          "postgres",
+          "TRUNCATE",
+          false
+        ],
+        [
+          "postgres",
+          "UPDATE",
+          false
+        ]
+      ],
+      "schema": "private",
+      "force_rls": true
     },
     {
       "id": "r:private.method_publication_policies",
@@ -70443,6 +73526,566 @@
       "definition": "CREATE TRIGGER institutional_setup_source_links_updated BEFORE UPDATE ON private.institutional_setup_source_links FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
     },
     {
+      "id": "trigger:private.material_package_review_intents.material_package_review_intents_audit",
+      "kind": "trigger",
+      "name": "material_package_review_intents_audit",
+      "table": "material_package_review_intents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_package_review_intents_audit AFTER INSERT ON private.material_package_review_intents FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_package_review_intents.material_package_review_intents_immutable",
+      "kind": "trigger",
+      "name": "material_package_review_intents_immutable",
+      "table": "material_package_review_intents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_package_review_intents_immutable BEFORE DELETE OR UPDATE ON private.material_package_review_intents FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_package_review_intents.material_package_review_intents_no_truncate",
+      "kind": "trigger",
+      "name": "material_package_review_intents_no_truncate",
+      "table": "material_package_review_intents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_package_review_intents_no_truncate BEFORE TRUNCATE ON private.material_package_review_intents FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_package_review_intents.material_package_review_intents_updated_at",
+      "kind": "trigger",
+      "name": "material_package_review_intents_updated_at",
+      "table": "material_package_review_intents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_package_review_intents_updated_at BEFORE UPDATE ON private.material_package_review_intents FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_package_review_projections.material_package_review_projections_audit",
+      "kind": "trigger",
+      "name": "material_package_review_projections_audit",
+      "table": "material_package_review_projections",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_package_review_projections_audit AFTER INSERT ON private.material_package_review_projections FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_package_review_projections.material_package_review_projections_immutable",
+      "kind": "trigger",
+      "name": "material_package_review_projections_immutable",
+      "table": "material_package_review_projections",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_package_review_projections_immutable BEFORE DELETE OR UPDATE ON private.material_package_review_projections FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_package_review_projections.material_package_review_projections_no_truncate",
+      "kind": "trigger",
+      "name": "material_package_review_projections_no_truncate",
+      "table": "material_package_review_projections",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_package_review_projections_no_truncate BEFORE TRUNCATE ON private.material_package_review_projections FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_package_review_projections.material_package_review_projections_updated_at",
+      "kind": "trigger",
+      "name": "material_package_review_projections_updated_at",
+      "table": "material_package_review_projections",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_package_review_projections_updated_at BEFORE UPDATE ON private.material_package_review_projections FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_approval_intents.material_production_approval_intents_audit",
+      "kind": "trigger",
+      "name": "material_production_approval_intents_audit",
+      "table": "material_production_approval_intents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_approval_intents_audit AFTER INSERT ON private.material_production_approval_intents FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_approval_intents.material_production_approval_intents_immutable",
+      "kind": "trigger",
+      "name": "material_production_approval_intents_immutable",
+      "table": "material_production_approval_intents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_approval_intents_immutable BEFORE DELETE OR UPDATE ON private.material_production_approval_intents FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_approval_intents.material_production_approval_intents_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_approval_intents_no_truncate",
+      "table": "material_production_approval_intents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_approval_intents_no_truncate BEFORE TRUNCATE ON private.material_production_approval_intents FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_approval_intents.material_production_approval_intents_updated_at",
+      "kind": "trigger",
+      "name": "material_production_approval_intents_updated_at",
+      "table": "material_production_approval_intents",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_approval_intents_updated_at BEFORE UPDATE ON private.material_production_approval_intents FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_bindings.material_production_bindings_audit",
+      "kind": "trigger",
+      "name": "material_production_bindings_audit",
+      "table": "material_production_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_bindings_audit AFTER INSERT ON private.material_production_bindings FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_bindings.material_production_bindings_immutable",
+      "kind": "trigger",
+      "name": "material_production_bindings_immutable",
+      "table": "material_production_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_bindings_immutable BEFORE DELETE OR UPDATE ON private.material_production_bindings FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_bindings.material_production_bindings_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_bindings_no_truncate",
+      "table": "material_production_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_bindings_no_truncate BEFORE TRUNCATE ON private.material_production_bindings FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_bindings.material_production_bindings_updated_at",
+      "kind": "trigger",
+      "name": "material_production_bindings_updated_at",
+      "table": "material_production_bindings",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_bindings_updated_at BEFORE UPDATE ON private.material_production_bindings FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_body_bases.material_production_body_bases_audit",
+      "kind": "trigger",
+      "name": "material_production_body_bases_audit",
+      "table": "material_production_body_bases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_body_bases_audit AFTER INSERT ON private.material_production_body_bases FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_body_bases.material_production_body_bases_immutable",
+      "kind": "trigger",
+      "name": "material_production_body_bases_immutable",
+      "table": "material_production_body_bases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_body_bases_immutable BEFORE DELETE OR UPDATE ON private.material_production_body_bases FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_body_bases.material_production_body_bases_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_body_bases_no_truncate",
+      "table": "material_production_body_bases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_body_bases_no_truncate BEFORE TRUNCATE ON private.material_production_body_bases FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_body_bases.material_production_body_bases_updated_at",
+      "kind": "trigger",
+      "name": "material_production_body_bases_updated_at",
+      "table": "material_production_body_bases",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_body_bases_updated_at BEFORE UPDATE ON private.material_production_body_bases FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_cutover.material_production_cutover_audit",
+      "kind": "trigger",
+      "name": "material_production_cutover_audit",
+      "table": "material_production_cutover",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_cutover_audit AFTER INSERT ON private.material_production_cutover FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_cutover.material_production_cutover_immutable",
+      "kind": "trigger",
+      "name": "material_production_cutover_immutable",
+      "table": "material_production_cutover",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_cutover_immutable BEFORE DELETE OR UPDATE ON private.material_production_cutover FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_cutover.material_production_cutover_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_cutover_no_truncate",
+      "table": "material_production_cutover",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_cutover_no_truncate BEFORE TRUNCATE ON private.material_production_cutover FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_cutover.material_production_cutover_updated_at",
+      "kind": "trigger",
+      "name": "material_production_cutover_updated_at",
+      "table": "material_production_cutover",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_cutover_updated_at BEFORE UPDATE ON private.material_production_cutover FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_plan_approvals.material_production_plan_approvals_audit",
+      "kind": "trigger",
+      "name": "material_production_plan_approvals_audit",
+      "table": "material_production_plan_approvals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_plan_approvals_audit AFTER INSERT ON private.material_production_plan_approvals FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_plan_approvals.material_production_plan_approvals_immutable",
+      "kind": "trigger",
+      "name": "material_production_plan_approvals_immutable",
+      "table": "material_production_plan_approvals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_plan_approvals_immutable BEFORE DELETE OR UPDATE ON private.material_production_plan_approvals FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_plan_approvals.material_production_plan_approvals_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_plan_approvals_no_truncate",
+      "table": "material_production_plan_approvals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_plan_approvals_no_truncate BEFORE TRUNCATE ON private.material_production_plan_approvals FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_plan_approvals.material_production_plan_approvals_updated_at",
+      "kind": "trigger",
+      "name": "material_production_plan_approvals_updated_at",
+      "table": "material_production_plan_approvals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_plan_approvals_updated_at BEFORE UPDATE ON private.material_production_plan_approvals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_plan_precursors.material_production_plan_precursors_audit",
+      "kind": "trigger",
+      "name": "material_production_plan_precursors_audit",
+      "table": "material_production_plan_precursors",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_plan_precursors_audit AFTER INSERT ON private.material_production_plan_precursors FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_plan_precursors.material_production_plan_precursors_immutable",
+      "kind": "trigger",
+      "name": "material_production_plan_precursors_immutable",
+      "table": "material_production_plan_precursors",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_plan_precursors_immutable BEFORE DELETE OR UPDATE ON private.material_production_plan_precursors FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_plan_precursors.material_production_plan_precursors_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_plan_precursors_no_truncate",
+      "table": "material_production_plan_precursors",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_plan_precursors_no_truncate BEFORE TRUNCATE ON private.material_production_plan_precursors FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_plan_precursors.material_production_plan_precursors_updated_at",
+      "kind": "trigger",
+      "name": "material_production_plan_precursors_updated_at",
+      "table": "material_production_plan_precursors",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_plan_precursors_updated_at BEFORE UPDATE ON private.material_production_plan_precursors FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_public_source_pins.material_production_public_source_pins_audit",
+      "kind": "trigger",
+      "name": "material_production_public_source_pins_audit",
+      "table": "material_production_public_source_pins",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_public_source_pins_audit AFTER INSERT ON private.material_production_public_source_pins FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_public_source_pins.material_production_public_source_pins_immutable",
+      "kind": "trigger",
+      "name": "material_production_public_source_pins_immutable",
+      "table": "material_production_public_source_pins",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_public_source_pins_immutable BEFORE DELETE OR UPDATE ON private.material_production_public_source_pins FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_public_source_pins.material_production_public_source_pins_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_public_source_pins_no_truncate",
+      "table": "material_production_public_source_pins",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_public_source_pins_no_truncate BEFORE TRUNCATE ON private.material_production_public_source_pins FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_public_source_pins.material_production_public_source_pins_updated_at",
+      "kind": "trigger",
+      "name": "material_production_public_source_pins_updated_at",
+      "table": "material_production_public_source_pins",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_public_source_pins_updated_at BEFORE UPDATE ON private.material_production_public_source_pins FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_recipes.material_production_recipes_audit",
+      "kind": "trigger",
+      "name": "material_production_recipes_audit",
+      "table": "material_production_recipes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_recipes_audit AFTER INSERT ON private.material_production_recipes FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_recipes.material_production_recipes_immutable",
+      "kind": "trigger",
+      "name": "material_production_recipes_immutable",
+      "table": "material_production_recipes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_recipes_immutable BEFORE DELETE OR UPDATE ON private.material_production_recipes FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_recipes.material_production_recipes_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_recipes_no_truncate",
+      "table": "material_production_recipes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_recipes_no_truncate BEFORE TRUNCATE ON private.material_production_recipes FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_recipes.material_production_recipes_updated_at",
+      "kind": "trigger",
+      "name": "material_production_recipes_updated_at",
+      "table": "material_production_recipes",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_recipes_updated_at BEFORE UPDATE ON private.material_production_recipes FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_research_seals.material_production_research_seals_audit",
+      "kind": "trigger",
+      "name": "material_production_research_seals_audit",
+      "table": "material_production_research_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_research_seals_audit AFTER INSERT ON private.material_production_research_seals FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_research_seals.material_production_research_seals_immutable",
+      "kind": "trigger",
+      "name": "material_production_research_seals_immutable",
+      "table": "material_production_research_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_research_seals_immutable BEFORE DELETE OR UPDATE ON private.material_production_research_seals FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_research_seals.material_production_research_seals_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_research_seals_no_truncate",
+      "table": "material_production_research_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_research_seals_no_truncate BEFORE TRUNCATE ON private.material_production_research_seals FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_research_seals.material_production_research_seals_updated_at",
+      "kind": "trigger",
+      "name": "material_production_research_seals_updated_at",
+      "table": "material_production_research_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_research_seals_updated_at BEFORE UPDATE ON private.material_production_research_seals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_seals.material_production_seals_audit",
+      "kind": "trigger",
+      "name": "material_production_seals_audit",
+      "table": "material_production_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_seals_audit AFTER INSERT ON private.material_production_seals FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_seals.material_production_seals_immutable",
+      "kind": "trigger",
+      "name": "material_production_seals_immutable",
+      "table": "material_production_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_seals_immutable BEFORE DELETE OR UPDATE ON private.material_production_seals FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_seals.material_production_seals_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_seals_no_truncate",
+      "table": "material_production_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_seals_no_truncate BEFORE TRUNCATE ON private.material_production_seals FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_seals.material_production_seals_updated_at",
+      "kind": "trigger",
+      "name": "material_production_seals_updated_at",
+      "table": "material_production_seals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_seals_updated_at BEFORE UPDATE ON private.material_production_seals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_source_pins.material_production_source_pins_audit",
+      "kind": "trigger",
+      "name": "material_production_source_pins_audit",
+      "table": "material_production_source_pins",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_source_pins_audit AFTER INSERT ON private.material_production_source_pins FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_source_pins.material_production_source_pins_immutable",
+      "kind": "trigger",
+      "name": "material_production_source_pins_immutable",
+      "table": "material_production_source_pins",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_source_pins_immutable BEFORE DELETE OR UPDATE ON private.material_production_source_pins FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_source_pins.material_production_source_pins_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_source_pins_no_truncate",
+      "table": "material_production_source_pins",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_source_pins_no_truncate BEFORE TRUNCATE ON private.material_production_source_pins FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_source_pins.material_production_source_pins_updated_at",
+      "kind": "trigger",
+      "name": "material_production_source_pins_updated_at",
+      "table": "material_production_source_pins",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_source_pins_updated_at BEFORE UPDATE ON private.material_production_source_pins FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:private.material_production_terminals.material_production_terminals_audit",
+      "kind": "trigger",
+      "name": "material_production_terminals_audit",
+      "table": "material_production_terminals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.capture_identity_audit_v1()",
+      "definition": "CREATE TRIGGER material_production_terminals_audit AFTER INSERT ON private.material_production_terminals FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_terminals.material_production_terminals_immutable",
+      "kind": "trigger",
+      "name": "material_production_terminals_immutable",
+      "table": "material_production_terminals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_terminals_immutable BEFORE DELETE OR UPDATE ON private.material_production_terminals FOR EACH ROW EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_terminals.material_production_terminals_no_truncate",
+      "kind": "trigger",
+      "name": "material_production_terminals_no_truncate",
+      "table": "material_production_terminals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.reject_review_history_mutation_v1()",
+      "definition": "CREATE TRIGGER material_production_terminals_no_truncate BEFORE TRUNCATE ON private.material_production_terminals FOR EACH STATEMENT EXECUTE FUNCTION private.reject_review_history_mutation_v1()"
+    },
+    {
+      "id": "trigger:private.material_production_terminals.material_production_terminals_updated_at",
+      "kind": "trigger",
+      "name": "material_production_terminals_updated_at",
+      "table": "material_production_terminals",
+      "schema": "private",
+      "enabled": "O",
+      "function": "private.set_updated_at()",
+      "definition": "CREATE TRIGGER material_production_terminals_updated_at BEFORE UPDATE ON private.material_production_terminals FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
       "id": "trigger:private.method_publication_policies.method_policy_audit",
       "kind": "trigger",
       "name": "method_policy_audit",
@@ -71651,6 +75294,16 @@
       "enabled": "O",
       "function": "private.set_updated_at()",
       "definition": "CREATE TRIGGER artifact_reviews_set_updated_at BEFORE UPDATE ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+    },
+    {
+      "id": "trigger:public.artifact_reviews.material_package_review_projection",
+      "kind": "trigger",
+      "name": "material_package_review_projection",
+      "table": "artifact_reviews",
+      "schema": "public",
+      "enabled": "O",
+      "function": "private.project_material_package_review_v1()",
+      "definition": "CREATE TRIGGER material_package_review_projection AFTER INSERT ON public.artifact_reviews FOR EACH ROW EXECUTE FUNCTION private.project_material_package_review_v1()"
     },
     {
       "id": "trigger:public.artifact_revisions.artifact_revisions_audit",
@@ -76038,5 +79691,5 @@
       "force_rls": false
     }
   ],
-  "captured_at": "2026-10-02T18:49:56.623802+00:00"
+  "captured_at": "2026-10-02T22:20:35.393621+00:00"
 }

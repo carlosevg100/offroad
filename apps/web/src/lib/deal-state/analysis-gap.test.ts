@@ -10,6 +10,13 @@ const none = {understandingStatus: null, structureCreatedAt: null, decision: nul
   packageReviewStatus: null, matchScreenPresent: false};
 
 describe("a missing case result is a gap, never work in progress", () => {
+  it("does not request market screening from a native internal package approval", () => {
+    const workbench = {understanding: null, structure: null, structureDecision: null,
+      productionPlan: {row: {status: "approved"}}, isProcessing: false, matchScreen: null,
+      packageReview: {object_type: "package_review", status: "approved", payload: {nativeMaterialRevisionId: crypto.randomUUID()}}} as unknown as DealStateWorkbench;
+    expect(workbenchAnalysisGap(workbench, true)).toBeNull();
+    expect(workbenchAnalysisGap({...workbench, packageReview: {...workbench.packageReview!, payload: {}}}, true)).toBe("match_screen");
+  });
   it("names the most advanced decision whose result is missing", () => {
     expect(dealStateAnalysisGap(none)).toBeNull();
     expect(dealStateAnalysisGap({...none, understandingStatus: "pending_confirmation"})).toBeNull();

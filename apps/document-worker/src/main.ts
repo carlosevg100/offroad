@@ -44,6 +44,7 @@ import {processCaseAnalysisJob} from "./case-analysis";
 import {processWorkConversationJob} from "./work-conversation";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
+import {createCapitalMaterialRuntime} from "./capital-material-production-runtime";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
@@ -422,6 +423,7 @@ async function main(): Promise<void> {
     current = prepareAgentPlan.then(() => (job.kind === "case_analysis" || job.kind === "preliminary_analysis"
       ? processCaseAnalysisJob(job, {
           queue,
+          materialRuntime: createCapitalMaterialRuntime(supabase),
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
           researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],

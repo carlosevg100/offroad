@@ -6,6 +6,7 @@ import {revalidatePath} from "next/cache";
 import {matchScreenSchema} from "@offroad/domain-contracts";
 import {z} from "zod";
 
+import {approveNativeMaterialProductionPlan} from "@/lib/artifacts/material-production-plan-command";
 import {routing, type AppLocale} from "@/i18n/routing";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
@@ -531,10 +532,12 @@ export async function approvePrivateProjectProductionPlan(
     projectId: z.uuid(),
     sessionId: z.uuid(),
     planFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    commandId: z.uuid(),
   }).safeParse({
     projectId: value(formData, "project_id"),
     sessionId: value(formData, "session_id"),
     planFingerprint: value(formData, "plan_fingerprint"),
+    commandId: value(formData, "command_id"),
   });
   if (!parsed.success) return {ok: false, code: "invalid"};
   const runtime = await privateProjectRuntime(locale, parsed.data.projectId, parsed.data.sessionId);
@@ -549,31 +552,13 @@ export async function approvePrivateProjectProductionPlan(
     || !["confirmed", "approved"].includes(structureDecision.status)
   ) return {ok: false, code: "stale"};
 
-  const {error} = await runtime.supabase.rpc("record_deal_state_object", {
-    p_organization_id: runtime.organization.id,
-    p_session_id: runtime.session.id,
-    p_object_type: "production_plan",
-    p_status: "approved",
-    p_input_fingerprint: plan.input_fingerprint,
-    p_payload: {
-      ...record(plan.payload),
-      approval: {
-        actorId: runtime.userId,
-        approvedAt: new Date().toISOString(),
-        scope: "internal_material_preparation",
-      },
-    },
-    p_dependencies: plan.dependencies,
-  });
-  if (error) return {ok: false, code: "save"};
-  const {error: queueError} = await runtime.supabase.rpc("enqueue_deal_state_analysis", {
-    p_organization_id: runtime.organization.id,
-    p_session_id: runtime.session.id,
-    p_trigger_source: "production_plan_approved",
-  });
+  try {
+    await approveNativeMaterialProductionPlan(runtime.supabase, {workId: parsed.data.projectId,
+      planId: plan.id, planFingerprint: parsed.data.planFingerprint, commandId: parsed.data.commandId});
+  } catch {return {ok: false, code: "stale"};}
   revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
   revalidatePath(`/${locale}/app`, "layout");
-  return queueError ? {ok: false, code: queueRefusalCode(queueError)} : {ok: true};
+  return {ok: true};
 }
 
 /** Pins the exact internal package after every artifact in the approved plan exists. */

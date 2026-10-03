@@ -6,6 +6,7 @@ import {z} from "zod";
 
 import {latestActiveDealState} from "./workbench";
 import type {DealStateRow} from "./workbench";
+import type {MaterialPackageReviewContext} from "@/lib/artifacts/material-package-review-context";
 import type {Database} from "@/types/database";
 
 const hashSchema = z.string().regex(/^[a-f0-9]{64}$/);
@@ -114,6 +115,7 @@ export type GovernedMaterialPackage = {
   issuedOn: string;
   materials: Material[];
   financialModel: FinancialModelArtifact | null;
+  nativeReview?: MaterialPackageReviewContext;
   plannedArtifacts: Array<"teaser" | "financial_model" | "indicative_term_sheet" | "data_room_index">;
 };
 
@@ -160,7 +162,44 @@ export async function loadGovernedMaterialPackage(
     .eq("intake_session_id", sessionId)
     .in("object_type", ["structure_option", "structure_decision", "production_plan", "material_artifact"])
     .order("object_version", {ascending: false});
-  return governedMaterialPackageFromRows(rows ?? []);
+  const currentRows = rows ?? [];
+  const artifact = latestActiveDealState(currentRows).get("material_artifact");
+  const payload = artifact?.payload;
+  const native = !!payload && typeof payload === "object" && !Array.isArray(payload)
+    && (payload as Record<string, unknown>).schemaVersion === "capital-material-projection.v1";
+  if (!native) return governedMaterialPackageFromRows(currentRows);
+  const {readCapitalMaterialResult} = await import("@/lib/artifacts/capital-material-result");
+  // Recognized native metadata has no legacy fallback, including malformed pins.
+  if (!artifact) return null;
+  const {data: session, error: sessionError} = await supabase.from("document_intake_sessions")
+    .select("capital_project_id").eq("id", sessionId).eq("organization_id", organizationId).maybeSingle();
+  if (sessionError || !session?.capital_project_id) return null;
+  const physical = await readCapitalMaterialResult(supabase, {organizationId, workId: session.capital_project_id, projection: artifact.payload});
+  if (!physical.ok) return null;
+  const content = artifactPayloadSchema.extend({schemaVersion: z.literal("2026.08.29-v1")}).strict().safeParse(physical.content);
+  if (!content.success) return null;
+  const interpreted = currentRows.map(row => row.id === artifact.id ? {...row, payload: content.data as unknown as DealStateRow["payload"]} : row);
+  const governed = governedMaterialPackageFromRows(interpreted);
+  if (!governed) return null;
+  const {createMaterialPackageReviewPort} = await import("@/lib/artifacts/material-package-review");
+  const {parseMaterialPackageReviewContext} = await import("@/lib/artifacts/material-package-review-context");
+  try {
+    const basis = await createMaterialPackageReviewPort(supabase).read(session.capital_project_id, physical.revisionId);
+    const nativeReview = parseMaterialPackageReviewContext(basis, {workId: session.capital_project_id, revisionId: physical.revisionId,
+      recipeId: physical.recipeId, bundleFingerprint: physical.bundleFingerprint, materialObjectId: artifact.id});
+    return nativeReview ? {...governed, nativeReview} : null;
+  } catch {return null;}
+}
+
+/** A native product follows its current work binding, independently of entry-job
+ * labels. Reuse the physical reader and current human basis; never expose a
+ * historical inline package through this route. */
+export async function loadNativeMaterialReviewForWork(
+  supabase: SupabaseClient<Database>, organizationId: string, sessionId: string, workId: string,
+): Promise<MaterialPackageReviewContext | null> {
+  const product = await loadGovernedMaterialPackage(supabase, organizationId, sessionId);
+  const basis = product?.nativeReview;
+  return basis?.workId === workId ? basis : null;
 }
 
 const planKindForMaterial: Partial<Record<MaterialKind, GovernedMaterialPackage["plannedArtifacts"][number]>> = {

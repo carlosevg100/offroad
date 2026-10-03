@@ -36,7 +36,7 @@ begin
    or (a.kind='answer' and exists(select 1 from public.artifact_blocks b where b.organization_id=org and b.revision_id=r.id)
     and not exists(select 1 from public.artifact_blocks b where b.organization_id=org and b.revision_id=r.id
      and (b.kind not in ('section','paragraph') or jsonb_array_length(b.claims)>0 or private.artifact_content_carries_number_v1(b.content))));
-  if not has_substance then raise exception 'review_substance_required' using errcode='23514'; end if;
+  if not has_substance and exists(select 1 from private.material_production_bindings where(organization_id,revision_id)=(org,r.id)) then has_substance:=private.material_package_review_current_v1(org,r.id,actor);end if; if not has_substance then raise exception 'review_substance_required' using errcode='23514'; end if;
   if preparer=actor and (not (policy->>'selfApprovalAllowed')::boolean or not p_self_approval_declared)
   then raise exception 'capital_project_self_approval_forbidden' using errcode='42501'; end if;
  end if;
