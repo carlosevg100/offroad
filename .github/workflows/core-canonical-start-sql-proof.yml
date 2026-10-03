@@ -26,7 +26,7 @@ jobs:
       - name: Checkout frozen consumers installer and contracts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: fcb09c9243e8ad6be93c0e90886cc22322ad1802
+          ref: d1d89e1ff55236d0a167b9011f9878bc6e98e998
           path: consumers
       - name: Install canonical pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
@@ -74,7 +74,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           OFFROAD_CORE_CANONICAL_START_EVAL: isolated-loopback-ci
-        run: python3 -B audit/scripts/ci/test-core-canonical-start.py --core-root consumers --diagnostic-only
+        run: python3 -B audit/scripts/ci/test-core-canonical-start.py --core-root consumers
       - name: Destroy dedicated stack without backup
         if: ${{ always() }}
         working-directory: baseline

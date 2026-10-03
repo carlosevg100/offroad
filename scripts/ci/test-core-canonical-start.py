@@ -35,7 +35,7 @@ if a.self_test:
  assert d=={'sqlStates':['22023','P0001'],'checkedInExceptionLiterals':['checked_assertion']}
  d=diagnostic('ERROR: P0001: incomplete ancestry must fail closed\nDETAIL: secret raw body\nERROR: P0001: staging rehearsal run 1 did not pass: capital_s11_native_commit_required', ["raise exception 'incomplete ancestry must fail closed';raise exception 'capital_s11_native_commit_required';raise exception 'staging rehearsal run % did not pass: %';"])
  assert d=={'sqlStates':['P0001'],'checkedInExceptionLiterals':['capital_s11_native_commit_required','incomplete ancestry must fail closed']}
- print('core canonical-start guards/hashes11/closed diagnostics PASS; no SQL');sys.exit(0)
+ print('core canonical-start guards/hashes12/closed diagnostics PASS; no SQL');sys.exit(0)
 url=validate(os.environ);env=dict(os.environ);psql=['psql',url,'-X','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-q']
 preflight="""do $$begin
 if to_regclass('private.capital_m07_recipes')is null or to_regclass('private.material_production_recipes')is null then raise exception 'core_canonical_baseline_missing';end if;
@@ -46,7 +46,7 @@ if q.returncode:raise RuntimeError('canonical_start_fresh_preflight_failed')
 env['OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL']='isolated-loopback-ci'
 q=subprocess.run([sys.executable,str(core/'scripts/ci/install-capital-consumers-ci-drafts.py')],env=env,text=True,capture_output=True,cwd=core,timeout=300)
 if q.returncode:raise RuntimeError('canonical_start_early_install11_failed')
-print(json.dumps({'phase':'install11-before-autoSQL','result':'PASS'}),flush=True)
+print(json.dumps({'phase':'install11-plus-corrective-before-autoSQL','result':'PASS'}),flush=True)
 # Same root-only glob and lexical order as quality.yml. Each file retains its own
 # transaction/rollback and psql session. A failed session closes/rolls back before
 # the next file; never wrap/rewrite fixture SQL or disable a production guard.
