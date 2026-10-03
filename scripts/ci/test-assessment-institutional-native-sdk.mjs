@@ -13,7 +13,18 @@ try{
  if(Number(process.versions.node.split('.')[0])!==24)throw new Error('Node24 required');
  let source=await readFile(join(worker,'scripts/material-production-native-sdk-eval.ts'),'utf8');
  // A separate namespace; all historical fixture IDs and tokens remain disjoint.
- source=source.replace("const prefix=mode==='success'?'d5':", "const prefix=mode==='success'?'e8':").replace("token=mode==='success'?'r':", "token=mode==='success'?'u':").replaceAll('material-local-sdk-only','assessment-institutional-local-sdk-only').replaceAll('`material-${mode}', '`assessment-institutional-${mode}');
+ source=source.replace("const prefix=mode==='success'?'d5':", "const prefix=mode==='success'?'e8':").replace("token=mode==='success'?'r':", "token=mode==='success'?'u':").replace("const fixturePassword=uiFixture?randomUUID()+randomUUID():'material-local-sdk-only';","const fixturePassword=uiFixture?randomUUID()+randomUUID():'assessment-institutional-local-sdk-only';").replaceAll('`material-${mode}', '`assessment-institutional-${mode}');
+ // The runtime value changes, but the search key must match the checked-in
+ // SQL template. A global rename silently creates an unusable Auth password.
+ const passwordBinding="bootstrap=bootstrap.replaceAll('material-local-sdk-only',fixturePassword);";
+ if(!source.includes(passwordBinding)||!source.includes("const fixturePassword=uiFixture?randomUUID()+randomUUID():'assessment-institutional-local-sdk-only';"))throw new Error('auth_password_binding_contract_changed');
+ const fixtureTemplate=await readFile(join(worker,'../../supabase/tests/support/material_production_native_sdk_fixture.sql'),'utf8');
+ if(!fixtureTemplate.includes("extensions.crypt('material-local-sdk-only',"))throw new Error('auth_password_template_contract_changed');
+ const runtimePassword=/const fixturePassword=uiFixture\?randomUUID\(\)\+randomUUID\(\):'([^']+)';/.exec(source)?.[1];
+ if(!runtimePassword)throw new Error('auth_login_password_contract_changed');
+ const expandedAuth=fixtureTemplate.replaceAll('material-local-sdk-only',runtimePassword);
+ const encryptedPasswordInput=/extensions\.crypt\('([^']+)',/.exec(expandedAuth)?.[1];
+ if(encryptedPasswordInput!==runtimePassword)throw new Error('auth_expanded_password_binding_mismatch');
  const bootstrapEnd='sql(db,bootstrap);';if(source.split(bootstrapEnd).length!==2)throw new Error('bootstrap_contract_changed');
  source=source.replace(bootstrapEnd,"const predecessorAt=bootstrap.indexOf('-- The intake analysis has finished:');const authAt=bootstrap.indexOf('update auth.users set instance_id=');assert.ok(predecessorAt>0&&authAt>predecessorAt);sql(db,bootstrap.slice(0,predecessorAt)+bootstrap.slice(authAt));");
  const confirm='mark(`${mode}_confirm_intake`);';if(source.split(confirm).length!==2)throw new Error('confirm_contract_changed');
