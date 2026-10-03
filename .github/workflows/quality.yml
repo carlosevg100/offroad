@@ -777,6 +777,22 @@ jobs:
           out=$(cd "$RUNNER_TEMP/worker" && env -i PATH="$PATH" HOME=/tmp node dist/main.js 2>&1 || true)
           printf '%s' "$out" | grep -q 'worker configuration is invalid or incomplete' || { printf '%s\n' "$out" | head -5; echo 'the deployed worker bundle does not boot'; exit 1; }
 
+      - name: Serve the authenticated capital body Edge reader
+        env:
+          OFFROAD_E2E_API_URL: http://127.0.0.1:54321
+        run: |
+          set -euo pipefail
+          umask 077
+          runtime_dir="$RUNNER_TEMP/capital-body-edge"
+          mkdir -p "$runtime_dir"
+          chmod 700 "$runtime_dir"
+          # CLI injects built-in credentials into the server runtime only.
+          # JWT verification stays enabled; no privileged key enters a client.
+          supabase functions serve > "$runtime_dir/server.log" 2>&1 &
+          echo "$!" > "$runtime_dir/server.pid"
+          python3 -B scripts/ci/verify-capital-body-edge-ready.py
+
+
       - name: Start the worker
         run: |
           set -euo pipefail
@@ -836,6 +852,18 @@ jobs:
             apps/web/test-results
           if-no-files-found: ignore
           retention-days: 7
+
+      - name: Stop the capital body Edge reader
+        if: always()
+        run: |
+          set -euo pipefail
+          runtime_dir="$RUNNER_TEMP/capital-body-edge"
+          if [ -f "$runtime_dir/server.pid" ]; then
+            runtime_pid="$(cat "$runtime_dir/server.pid")"
+            if [[ "$runtime_pid" =~ ^[0-9]+$ ]]; then kill "$runtime_pid" 2>/dev/null || true; fi
+          fi
+          rm -rf -- "$runtime_dir"
+
 
       - name: Stop the worker and keep its log
         if: always()
