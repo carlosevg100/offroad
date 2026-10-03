@@ -8,7 +8,7 @@ import {assembleCapitalS11Components} from "./capital-s11-native-consumer";
 import {prepareCapitalS11Recipe,capitalS11ExecutionPins} from "./capital-s11-recipe";
 import {capitalS11RecipeReceiptSchema,capitalS11FinalOutputFingerprint} from "./capital-s11-processing";
 import {transformCapitalS11FinalProduct} from "./capital-s11-final";
-import {recoverCapitalS11,capitalS11RecoveryGrantSchema,type CapitalS11RecoveryPorts} from "./capital-s11-recovery";
+import {recoverCapitalS11,CapitalS11RecoveryGap,capitalS11RecoveryGrantSchema,type CapitalS11RecoveryPorts} from "./capital-s11-recovery";
 import type {CapitalS11RetentionScope} from "./capital-s11-protocol";
 function harness(){
  const originalJob=randomUUID(),currentJob=randomUUID(),org=randomUUID(),work=randomUUID(),recipeId=randomUUID(),producer=randomUUID();
@@ -34,6 +34,7 @@ function harness(){
  return{job:{jobId:currentJob,organizationId:org,workId:work},ports,grant,receipt,physical};
 }
 describe("S11 physical recovery, pure unit ports",()=>{
+ it("keeps the contract denial code while exposing only a closed diagnostic",()=>{const e=new CapitalS11RecoveryGap("capital_s11_recovery_body_identity_changed");expect(e.code).toBe("capital_s11_retained_recovery_required");expect(e.message).toBe("capital_s11_recovery_body_identity_changed");});
  it("replays a committed original product under a successor grant without any model/research/derive port",async()=>{
   const h=harness();expect(await recoverCapitalS11(h.job,h.ports,()=>Date.parse("2026-10-02T01:00:00Z"))).toMatchObject(h.receipt);
   expect(h.ports.deriveTasks).not.toHaveBeenCalled();expect(h.ports.retainFinal).not.toHaveBeenCalled();expect(h.ports.commit).toHaveBeenCalledOnce();
@@ -44,6 +45,7 @@ describe("S11 physical recovery, pure unit ports",()=>{
   if(kind==="source_tamper"){const original=h.ports.readSource;h.ports.readSource=vi.fn(async ref=>({...await original(ref),bytes:Buffer.from("tampered")}));}
   await expect(recoverCapitalS11(h.job,h.ports,()=>Date.parse("2026-10-02T01:00:00Z"))).rejects.toThrow();expect(h.ports.commit).not.toHaveBeenCalled();expect(h.ports.deriveTasks).not.toHaveBeenCalled();
  });
+ it("denies a narrower reader deadline rather than comparing only physical hashes",async()=>{const h=harness(),read=h.ports.readBody;h.ports.readBody=vi.fn(async expected=>{const actual=await read(expected);return expected.retainedPayloadId===h.grant.final?.retainedPayloadId?{...actual,scope:{...(actual.scope as CapitalS11RetentionScope),expiresAt:"2029-12-31T00:00:00Z",purgeAt:"2029-12-30T00:00:00Z"}}:actual;});await expect(recoverCapitalS11(h.job,h.ports,()=>Date.parse("2026-10-02T01:00:00Z"))).rejects.toThrow("capital_s11_recovery_body_identity_changed");expect(h.ports.commit).not.toHaveBeenCalled();});
  it("returns no recipe only for actual server none, while unresolved never starts a model path",async()=>{
   const h=harness();h.ports.discover=vi.fn(async()=>({schemaVersion:"capital-s11-recovery-discovery.v1",state:"none",recipeId:null}));expect(await recoverCapitalS11(h.job,h.ports)).toBeNull();expect(h.ports.grant).not.toHaveBeenCalled();
   h.ports.discover=vi.fn(async()=>({schemaVersion:"capital-s11-recovery-discovery.v1",state:"unresolved",recipeId:h.grant.recipeId}));await expect(recoverCapitalS11(h.job,h.ports)).rejects.toThrow("capital_s11_retained_recovery_required");expect(h.ports.commit).not.toHaveBeenCalled();
