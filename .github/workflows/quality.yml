@@ -649,6 +649,39 @@ jobs:
           DEBT_HTTP_NAMESPACE: a8820001
         run: python3 -B scripts/ci/test-capital-company-debt-sdk.py
 
+      # The canonical baseline catalogue is verified before unpublished provider DDL.
+      # Do not move this installer before auto-enumerated SQL or stage-zero checks.
+      - name: Install unpublished deterministic provider draft in isolated CI only
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_NATIVE_PROVIDER_DRAFT_INSTALL: isolated-loopback-ci
+        run: python3 -B scripts/ci/install-capital-provider-ci-draft.py
+
+      - name: Native provider guards and retired writer negatives
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: |
+          set -euo pipefail
+          for test_file in provider_research_persistence provider_research_public_catalog_v2 provider_case_fit_persistence capital_native_provider_recipe capital_native_provider_results; do
+            psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f "supabase/tests/support/${test_file}.sql"
+          done
+
+      - name: Native provider catalogue SQL closure
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: node scripts/ci/test-capital-native-provider-sdk.mjs --sql-contracts
+
+      - name: Native deterministic providers through real Storage and Edge
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+        run: node scripts/ci/test-capital-native-provider-sdk.mjs
+
       - name: Stop the capital body Edge reader
         if: always()
         run: |

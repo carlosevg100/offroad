@@ -1,3 +1,4 @@
+import {resolveNativeProviderResultRows} from "@/lib/artifacts/capital-native-provider-result";
 import {loadExecutionBriefReviewBasis} from "@/lib/advisor/execution-brief-review-command";
 import {MaterialPackageReview} from "@/components/advisor/material-package-review";
 import {effectiveTaskRunStatus} from "@/lib/advisor/task-run-status";
@@ -311,9 +312,10 @@ async function ConversationalCapitalProject({
   const latestRunByTask = new Map<string, {status: string}>();
   for (const run of effectiveRuns) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
-  const providerCaseFit = currentProviderCaseFit(artifacts ?? [], effectiveRuns, plan
+  const providerResultRows = await resolveNativeProviderResultRows(supabase, artifacts ?? [], {organizationId: organization.id, workId: project.id});
+  const providerCaseFit = currentProviderCaseFit(providerResultRows, effectiveRuns, plan
     ? {organizationId: organization.id, projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
-  const providerResearch = currentProviderResearch(artifacts ?? [], effectiveRuns, plan
+  const providerResearch = currentProviderResearch(providerResultRows, effectiveRuns, plan
     ? {projectId: project.id, planId: plan.id, planFingerprint: plan.plan_fingerprint} : null);
 
   const {data: agentPlan} = await supabase.from("capital_project_agent_plans")
