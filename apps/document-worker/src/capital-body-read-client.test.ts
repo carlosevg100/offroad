@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {expect, it, test, vi} from "vitest";
-import {readCapitalDebtRevisionBodyBytes,readCapitalDebtRevisionSourceBytes,readCapitalDebtRevisionTaskBytes,readCapitalDebtBodyBytes,readCapitalDebtResultBytes,readCapitalDebtRecoveryBytes,readCapitalDebtRecoverySourceBytes,readCapitalDebtRecoveredTaskBytes,readCapitalM07RecoveryBytes, readCapitalM07RecoverySourceBytes, readCapitalM07RevisionBodyBytes, readCapitalM07RevisionSourceBytes, readCapitalS11RecoveryBytes, readCapitalS11RecoverySourceBytes, readCapitalS11TaskBytes, readCapitalS11RecoveredTaskBytes, readCapitalS11RevisionBodyBytes, readCapitalS11RevisionTaskBytes, readCapitalS11RevisionSourceBytes} from "./capital-body-read-client";
+import {readCapitalPreviewResultBytes,readCapitalDebtRevisionBodyBytes,readCapitalDebtRevisionSourceBytes,readCapitalDebtRevisionTaskBytes,readCapitalDebtBodyBytes,readCapitalDebtResultBytes,readCapitalDebtRecoveryBytes,readCapitalDebtRecoverySourceBytes,readCapitalDebtRecoveredTaskBytes,readCapitalM07RecoveryBytes, readCapitalM07RecoverySourceBytes, readCapitalM07RevisionBodyBytes, readCapitalM07RevisionSourceBytes, readCapitalS11RecoveryBytes, readCapitalS11RecoverySourceBytes, readCapitalS11TaskBytes, readCapitalS11RecoveredTaskBytes, readCapitalS11RevisionBodyBytes, readCapitalS11RevisionTaskBytes, readCapitalS11RevisionSourceBytes} from "./capital-body-read-client";
 
 const org = "10000000-0000-4000-8000-000000000001", allocation = "20000000-0000-4000-8000-000000000001";
 const recipe = "30000000-0000-4000-8000-000000000001", retained = "40000000-0000-4000-8000-000000000001";
@@ -138,3 +138,14 @@ test("C11 recovered task client binds original task run without impersonation",a
 test("C11 human result uses JWT WORK with no job/cap headers and rehashes bytes",async()=>{const f=fixture({"x-offroad-revision-id":retained,"x-offroad-final-fingerprint":digest});await readCapitalDebtResultBytes(f.sdk,{revisionId:retained,recipeId:recipe,finalFingerprint:digest},scope);expect(f.invoke).toHaveBeenCalledExactlyOnceWith("capital-body-read",{method:"POST",body:{kind:"debt_result",revisionId:retained},headers:{"x-offroad-workspace":org},timeout:10000});});
 test.each(["x-offroad-revision-id","x-offroad-recipe-id","x-offroad-final-fingerprint","x-offroad-object-id","x-offroad-storage-version"])("C11 human refuses changed %s",async key=>{const f=fixture({"x-offroad-revision-id":retained,"x-offroad-final-fingerprint":digest,[key]:org});await expect(readCapitalDebtResultBytes(f.sdk,{revisionId:retained,recipeId:recipe,finalFingerprint:digest},scope)).rejects.toThrow("scope mismatch");});
 test("C11 human rejects a malformed revision before invoking SDK",async()=>{const f=fixture();await expect(readCapitalDebtResultBytes(f.sdk,{revisionId:"arbitrary",recipeId:recipe,finalFingerprint:digest},scope)).rejects.toThrow("read denied");expect(f.invoke).not.toHaveBeenCalled();});
+
+
+const previewIdentity={revisionId:retained,recipeId:recipe,workId:org,artifactId:allocation,finalFingerprint:"a".repeat(64)};
+const previewHeaders={"x-offroad-revision-id":retained,"x-offroad-work-id":org,"x-offroad-artifact-id":allocation,"x-offroad-final-fingerprint":"a".repeat(64)};
+it("human preview client binds exact current revision/run/work/artifact without worker headers",async()=>{
+ const f=fixture(previewHeaders);expect(Buffer.from((await readCapitalPreviewResultBytes(f.sdk,previewIdentity,scope)).bytes).toString()).toBe(text);
+ expect(f.invoke).toHaveBeenCalledWith("capital-body-read",{method:"POST",body:{kind:"preview_result",revisionId:retained},headers:{"x-offroad-workspace":org},timeout:10000});
+});
+for(const k of Object.keys(previewHeaders))it(`human preview client denies identity drift ${k}`,async()=>{
+ const f=fixture({...previewHeaders,[k]:"wrong"});await expect(readCapitalPreviewResultBytes(f.sdk,previewIdentity,scope)).rejects.toThrow("scope mismatch");
+});

@@ -1,3 +1,4 @@
+import {resolveCapitalPreviewRows} from "@/lib/artifacts/capital-preview-result";
 import {resolveNativeProviderResultRows} from "@/lib/artifacts/capital-native-provider-result";
 import {loadExecutionBriefReviewBasis} from "@/lib/advisor/execution-brief-review-command";
 import {MaterialPackageReview} from "@/components/advisor/material-package-review";
@@ -368,10 +369,11 @@ async function ConversationalCapitalProject({
 
   const copy = await advisorProjectCopy(locale);
   const artifactIds = new Set((artifacts ?? []).map((artifact) => artifact.id));
-  const previewArtifacts = (artifacts ?? []).filter((artifact) => artifact.artifact_type.startsWith("preview_") && artifact.status !== "superseded").map((artifact) => ({
-    id: artifact.id, type: artifact.artifact_type, version: artifact.artifact_version, status: artifact.status, createdAt: artifact.created_at, content: artifact.content,
+  const previewRows = await resolveCapitalPreviewRows(supabase, artifacts ?? [], {organizationId: organization.id, workId: project.id});
+  const previewArtifacts = previewRows.filter((artifact) => artifact.artifact_type.startsWith("preview_") && artifact.status !== "superseded").map((artifact) => ({
+    id: artifact.id, type: artifact.artifact_type, version: artifact.artifact_version, status: artifact.status, createdAt: artifact.created_at, content: artifact.content, nativeReadWithheld: artifact.nativeReadWithheld, nativePhysical: artifact.nativePhysical,
   }));
-  const decisionArtifactRow = (artifacts ?? []).find((artifact) => artifact.artifact_type === "preview_decision_contract" && artifact.status !== "superseded");
+  const decisionArtifactRow = previewRows.find((artifact) => artifact.artifact_type === "preview_decision_contract" && artifact.status !== "superseded");
   const decisionArtifactContent = decisionArtifactRow?.content && typeof decisionArtifactRow.content === "object" && !Array.isArray(decisionArtifactRow.content)
     ? decisionArtifactRow.content as Record<string, unknown>
     : null;

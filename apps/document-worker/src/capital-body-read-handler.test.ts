@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {createHash, randomUUID} from "node:crypto";
 import {createCapitalBodyReadHandler, capitalBodyReadServerConfigFromEnvironment} from "./capital-body-read-handler";
 const token = (role: string, sub: string) => `synthetic.${Buffer.from(JSON.stringify({role, sub})).toString("base64url")}.signature`;
-function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: boolean; wrongInfo?: boolean; oversized?: boolean; changedScope?: boolean; expiresDuring?: boolean; wrongActor?: boolean; publicSource?: boolean; modernKeys?: boolean; pending?: number; pendingForever?: boolean; pendingMessage?: string; throwTransport?: boolean; human?: boolean; wrongRevision?: boolean; extraScopeField?: boolean; humanAllocated?: boolean; recovery?: boolean; recoverySource?: boolean; wrongRetained?: boolean; changedNativeProof?: boolean; invalidNativeProof?: boolean; revision?: boolean; revisionSource?: boolean; s11?: boolean; task?: boolean; recoveredTask?: boolean; revisionTask?: boolean; material?: boolean; wrongMaterialKind?: boolean; wrongMaterialWork?: boolean; materialExtra?: boolean; debt?: boolean} = {}) {
+function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: boolean; wrongInfo?: boolean; oversized?: boolean; changedScope?: boolean; expiresDuring?: boolean; wrongActor?: boolean; publicSource?: boolean; modernKeys?: boolean; pending?: number; pendingForever?: boolean; pendingMessage?: string; throwTransport?: boolean; human?: boolean; wrongRevision?: boolean; extraScopeField?: boolean; humanAllocated?: boolean; recovery?: boolean; recoverySource?: boolean; wrongRetained?: boolean; changedNativeProof?: boolean; invalidNativeProof?: boolean; revision?: boolean; revisionSource?: boolean; s11?: boolean; task?: boolean; recoveredTask?: boolean; revisionTask?: boolean; material?: boolean; wrongMaterialKind?: boolean; wrongMaterialWork?: boolean; materialExtra?: boolean; debt?: boolean; previewHuman?:boolean; changedPreviewIdentity?:boolean} = {}) {
   let clock = Date.parse("2026-10-01T00:00:00Z"), scopes = 0;
   const actor = randomUUID(), org = randomUUID(), job = randomUUID(), allocation = randomUUID(), objectId = randomUUID(), revision = randomUUID();
   const bytes = new TextEncoder().encode('{"text":"ação € 漢字 🧮"}');
@@ -33,7 +33,7 @@ function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: 
         if (opts.recovery) assert.ok(path.endsWith(`/worker_read_capital_${opts.debt ? "debt" : opts.s11 ? "s11" : "m07"}_recovery_${opts.recoverySource ? "source" : "body"}_v1`));
         if (opts.task) assert.ok(path.endsWith(opts.revisionTask ? opts.debt ? "/worker_read_capital_debt_revision_task_v1" : "/worker_read_capital_s11_revision_task_v1" : opts.debt ? "/worker_read_capital_debt_recovered_task_body_v1" : opts.recoveredTask ? "/worker_read_capital_s11_recovered_task_body_v1" : "/worker_read_capital_s11_task_body_v1"));
         if (opts.human) {
-          assert.ok(path.endsWith(opts.material ? "/read_material_production_result_v1" : opts.debt ? "/read_capital_debt_result_v1" : opts.s11 ? "/read_capital_s11_result_v1" : "/read_capital_m07_result_v1"));
+          assert.ok(path.endsWith(opts.previewHuman ? "/read_capital_preview_result_body_v1" : opts.material ? "/read_material_production_result_v1" : opts.debt ? "/read_capital_debt_result_v1" : opts.s11 ? "/read_capital_s11_result_v1" : "/read_capital_m07_result_v1"));
           assert.ok(!new Headers(init.headers).has("x-offroad-job-id"));
           assert.ok(!new Headers(init.headers).has("x-offroad-capability"));
         }
@@ -55,7 +55,8 @@ function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: 
           return bodyJSON({schemaVersion: "capital-debt-worker-read-scope.v1", recipeId: opts.changedNativeProof && scopes > 1 ? randomUUID() : allocation,
             retention: resolved, ...(opts.extraScopeField ? {body: "PRIVATE_CANARY"} : {})});
         }
-        return bodyJSON(opts.human ? {schemaVersion: opts.debt ? "capital-debt-read-scope.v1" : opts.s11 ? "capital-s11-read-scope.v1" : "capital-m07-read-scope.v1", recipeId: opts.invalidNativeProof ? "invalid" : allocation, finalFingerprint: opts.changedNativeProof && scopes > 1 ? "b".repeat(64) : "a".repeat(64), revisionId: opts.wrongRevision ? randomUUID() : revision,
+        return bodyJSON(opts.human ? {schemaVersion: opts.previewHuman ? "capital-preview-read-scope.v1" : opts.debt ? "capital-debt-read-scope.v1" : opts.s11 ? "capital-s11-read-scope.v1" : "capital-m07-read-scope.v1", recipeId: opts.invalidNativeProof ? "invalid" : allocation, finalFingerprint: opts.changedNativeProof && scopes > 1 ? "b".repeat(64) : "a".repeat(64), revisionId: opts.wrongRevision ? randomUUID() : revision,
+          ...(opts.previewHuman ? {workId: opts.changedPreviewIdentity && scopes > 1 ? randomUUID() : job, artifactId: objectId} : {}),
           retention: {...resolved, ...(!opts.humanAllocated ? {retentionState: "retained", retainedPayloadId} : {})},
           ...(opts.extraScopeField ? {body: "PRIVATE_CANARY"} : {})} : resolved);
       }
@@ -69,7 +70,7 @@ function fixture(opts: {denyBefore?: boolean; denyAfter?: boolean; wrongBytes?: 
       if (opts.expiresDuring) clock = Date.parse(scope.purgeAt);
       return new Response(opts.oversized ? new Uint8Array(1048577) : opts.wrongBytes ? new TextEncoder().encode("wrong") : bytes);
     }});
-  const request = (body: unknown = opts.human ? {revisionId: revision, kind: opts.material ? "material_result" : opts.debt ? "debt_result" : opts.s11 ? "s11_result" : "m07_result"} : opts.task ? {kind: opts.debt ? "debt_recovered_task" : opts.recoveredTask ? "s11_recovered_task" : "s11_task", recipeId: revision, taskRunId: retainedPayloadId} : opts.revision ? {kind: opts.revisionSource ? "m07_revision_source" : "m07_revision_body", retainedPayloadId} : opts.recovery ? {kind: opts.recoverySource ? (opts.debt ? "debt_recovery_source" : opts.s11 ? "s11_recovery_source" : "m07_recovery_source") : (opts.debt ? "debt_recovery" : opts.s11 ? "s11_recovery" : "m07_recovery"), recipeId: revision, retainedPayloadId} : {allocationId: allocation, kind: opts.material ? "material_body" : opts.debt ? "debt_body" : opts.publicSource ? "public_source" : "typed_body"}, extra: Record<string, string> = {}, method = "POST") => new Request("https://synthetic.supabase.co/functions/v1/capital-body-read", {
+  const request = (body: unknown = opts.human ? {revisionId: revision, kind: opts.previewHuman ? "preview_result" : opts.material ? "material_result" : opts.debt ? "debt_result" : opts.s11 ? "s11_result" : "m07_result"} : opts.task ? {kind: opts.debt ? "debt_recovered_task" : opts.recoveredTask ? "s11_recovered_task" : "s11_task", recipeId: revision, taskRunId: retainedPayloadId} : opts.revision ? {kind: opts.revisionSource ? "m07_revision_source" : "m07_revision_body", retainedPayloadId} : opts.recovery ? {kind: opts.recoverySource ? (opts.debt ? "debt_recovery_source" : opts.s11 ? "s11_recovery_source" : "m07_recovery_source") : (opts.debt ? "debt_recovery" : opts.s11 ? "s11_recovery" : "m07_recovery"), recipeId: revision, retainedPayloadId} : {allocationId: allocation, kind: opts.material ? "material_body" : opts.debt ? "debt_body" : opts.publicSource ? "public_source" : "typed_body"}, extra: Record<string, string> = {}, method = "POST") => new Request("https://synthetic.supabase.co/functions/v1/capital-body-read", {
     method, headers: {authorization: `Bearer ${token("authenticated", actor)}`, "content-type": "application/json", "x-offroad-workspace": org,
       ...(!opts.human ? {"x-offroad-job-id": job, "x-offroad-capability": "synthetic-job-capability"} : {}), ...extra}, ...(method === "POST" ? {body: JSON.stringify(body)} : {})});
   return {handler, request, calls, bytes, hash, allocation, objectId, version, revision, retainedPayloadId, revoke: () => {opts.denyBefore = true;}};
@@ -460,3 +461,29 @@ test("C11 capture_retry retries only exact same command and authority within bou
 });
 test("C11 capture_retry exhaustion denies without Storage",async()=>{const f=fixture({debt:true,pendingForever:true,pendingMessage:"capital_capture_retry"});assert.equal((await f.handler(f.request())).status,403);assert.equal(f.calls.filter(c=>c.path.includes("/rest/")).length,3);assert.equal(f.calls.some(c=>c.path.includes("/storage/")),false);});
 test("C11 human rejects malformed native recipe identity",async()=>{const f=fixture({debt:true,human:true,invalidNativeProof:true});assert.equal((await f.handler(f.request())).status,403);});
+
+for(const option of[undefined,"denyBefore","denyAfter","wrongBytes","changedScope"]as const){
+ test(`preview_body closed allocation ${option??"positive"}`,async()=>{
+  const f=fixture(option?{[option]:true}:{});const response=await f.handler(f.request({kind:"preview_body",allocationId:f.allocation}));
+  assert.equal(response.status,option?403:200);
+  if(!option){assert.deepEqual(new Uint8Array(await response.arrayBuffer()),f.bytes);assert.ok(response.headers.get("cache-control")?.includes("no-store"));}
+  const reads=f.calls.filter(c=>c.path.includes("/rest/"));assert.ok(reads.every(c=>c.path.endsWith("/worker_read_capital_preview_allocation_v1")));
+ });
+}
+test("preview_body rejects caller paths, retained ids and RPC before Auth",async()=>{
+ const f=fixture();for(const extra of[{path:"PRIVATE_PATH"},{retainedPayloadId:f.retainedPayloadId},{rpc:"worker_read_capital_public_payload_allocation_v1"}]){
+  assert.equal((await f.handler(f.request({kind:"preview_body",allocationId:f.allocation,...extra}))).status,403);
+ }assert.equal(f.calls.length,0);
+});
+
+test("human preview uses exact revision, Auth/WORK and two closed native scopes", async () => {
+  const f=fixture({human:true,previewHuman:true});const r=await f.handler(f.request());assert.equal(r.status,200);
+  assert.deepEqual(new Uint8Array(await r.arrayBuffer()),f.bytes);assert.equal(r.headers.get("x-offroad-artifact-id"),f.objectId);
+  assert.equal(f.calls.filter(c=>c.path.endsWith("/read_capital_preview_result_body_v1")).length,2);
+});
+for(const [label,opts]of Object.entries({before:{denyBefore:true},after:{denyAfter:true},changedIdentity:{changedPreviewIdentity:true},proof:{changedNativeProof:true},bytes:{wrongBytes:true},version:{changedScope:true},ttl:{expiresDuring:true},extra:{extraScopeField:true},revision:{wrongRevision:true},allocated:{humanAllocated:true}}))test(`human preview fails closed ${label}`,async()=>{
+ const f=fixture({human:true,previewHuman:true,...opts});const r=await f.handler(f.request());assert.equal(r.status,403);assert.equal(await r.text(),'{"error":"capital_body_read_denied"}');
+});
+test("human preview rejects arbitrary payload, path or capability as request fields",async()=>{
+ const f=fixture({human:true,previewHuman:true});for(const extra of[{path:"PRIVATE"},{workId:f.revision},{accepted:true},{allocationId:f.allocation}])assert.equal((await f.handler(f.request({kind:"preview_result",revisionId:f.revision,...extra}))).status,403);
+});

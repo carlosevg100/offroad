@@ -17,6 +17,12 @@ export function readCapitalCaptureBytes(sdk: SupabaseClient, job: JobAuthority, 
   kind: "typed_body" | "public_source" | "m07_body" | "s11_body") {
   return readBytes(sdk, job, scope, {allocationId: scope.allocationId, kind});
 }
+/** Exact preview allocation only. It never falls through to public_source. */
+export function readCapitalPreviewBodyBytes(sdk: SupabaseClient, job: JobAuthority, input: {allocationId: string}, scope: ReadScope) {
+  const allocationId=z.uuid().parse(input.allocationId);
+  if(allocationId!==scope.allocationId)throw new Error("capital_preview_body_scope_mismatch");
+  return readBytes(sdk,job,scope,{kind:"preview_body",allocationId});
+}
 /** Successor recovery has its own SQL grant. It never dispatches a model and never
  * impersonates the original job to use the ordinary M07 allocation reader. */
 export function readCapitalM07RecoveryBytes(sdk: SupabaseClient, job: JobAuthority, input: {
@@ -136,4 +142,16 @@ async function readBytes(sdk: SupabaseClient, job: JobAuthority | null, scope: R
     const controlled = ["capital capture server read denied", "capital capture server scope mismatch", "capital capture server immutable bytes conflict"];
     throw new Error(error instanceof Error && controlled.includes(error.message) ? error.message : "capital capture server read denied");
   }
+}
+
+
+/** Human preview reads the exact current revision, never a paid-boundary recipe. */
+export function readCapitalPreviewResultBytes(sdk: SupabaseClient, input: {
+  revisionId: string; recipeId: string; workId: string; artifactId: string; finalFingerprint: string;
+}, scope: ReadScope) {
+  return readBytes(sdk, null, scope, {kind: "preview_result", revisionId: input.revisionId}, {
+    "x-offroad-revision-id": input.revisionId, "x-offroad-recipe-id": input.recipeId,
+    "x-offroad-work-id": input.workId, "x-offroad-artifact-id": input.artifactId,
+    "x-offroad-final-fingerprint": input.finalFingerprint,
+  });
 }
