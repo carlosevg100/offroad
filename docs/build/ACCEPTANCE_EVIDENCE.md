@@ -1,5 +1,12 @@
 ## 2026-10-02: M07 e núcleo financeiro publicados; brief nativo em validação de CI
 
+## 2026-10-03: materiais em produção; conflito transitório de classificação em correção
+
+PR869 mesclada em main22f4aff859176e671bb7d9646a3b18ccb121b7e5. Dez migrações conferidas ao vivo em produção/staging com SQL idêntico; nenhum carimbo reaplicado. Web READY/PROMOTED no SHA, worker ECS518 com boot/pins/imagem verificados pelo verificador canônico e Edge capital-body-read no mesmo código. Negação403 em produção/no-store e PT/EN200, sem dados descartáveis. Advisors segurança0/0. Quality da PR37086636373 passou os três gates; main37088128338 passou database/check, mas E2E recusou um teste flaky R01 por55P03 no novo classificador. Este incremento ainda não está fechado.
+
+Correção focada repete somente contenção NOWAIT55P03 na RPC de classificação, com argumentos/capability idênticos, oito tentativas e backoff existente;42501 e demais conflitos seguem terminais. Nenhum DDL/grant/RLS muda. Node24:15 focais, typecheck e suíte worker1685 PASS. CI do novo commit e implantação ainda obrigatórias; nenhuma prova local substitui o release. Etapa20 continua aberta;21–24 não iniciadas. Evidências externas: outputs/etapa-20-2026-10-02-continuacao/MATERIAL-*.json na raiz do workspace.
+
+
 M07 PR865/main4f73142ef17b92a0587d256d5309a2bb0b682220 completo: Quality/Security main SUCCESS, web READY/PROMOTED no mesmo SHA, ECS515 COMPLETED1/1/pending0, boot e dois pins conferidos no CloudShell. Edge v2 e 17 checks SDK físicos PASS, incluindo DELETE/INFO+catálogo/ACK. Núcleo financeiro PR867/main111591e6572667f04c56e74381178c716ac2b56d completo: Quality37047659548/Security37047659488 SUCCESS, web dpl_5bXYL8o8zj6t56w3uzEN3KkEfKzB READY/PROMOTED, ECS516 COMPLETED1/1/pending0, boot18:33:47.591Z/pins18:33:48.321Z e imagem111591e65726 conferidos. PR834 fechada como absorvida. Completions externos na raiz do workspace: outputs/etapa-20-2026-10-02-m07/COMPLETION-M07.md e outputs/etapa-20-2026-10-02-financial/COMPLETION-FINANCIAL.md.
 
 Brief3U na candidata: migração produção20261002185228/staging20261002183342, SQL MD5 idêntico3e8c58088c723f983ba69ba9c78a15fa; catálogos/inventário/advisors0/0 conferidos. Captura anterior à compilação, writers v2/v7 e approval v2 publicados juntos na candidata; testes reais locais, staging rollback e corridas PASS. UI Playwright e gates completos da candidata ainda dependem da CI; merge e deploy pendentes. Este registro não fecha o incremento brief nem a etapa20. Demais consumidores/revisões e3R–3X continuam;21–24 não iniciadas.
