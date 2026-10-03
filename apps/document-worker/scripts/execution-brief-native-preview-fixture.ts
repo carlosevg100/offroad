@@ -1,11 +1,10 @@
 /** Isolated CI compiler, using the same preview activation and brief preparer. */
 import {readFileSync} from "node:fs";
-import {preview} from "@offroad/credit-playbook";
-import {offroadTaskRegistryVersion} from "@offroad/work-plan";
+import {capitalProjectPlanSnapshot} from "@offroad/work-plan";
 import {buildPreviewActivation} from "../src/integration-preview";
 import {prepareExecutionBrief} from "../src/execution-brief";
 if(process.argv.includes("--plan")){
- process.stdout.write(JSON.stringify(preview.compileIntegrationPreviewPlan({composition:"prepare_material",entryJob:"origination_thesis",locale:"pt-BR",registryVersion:offroadTaskRegistryVersion})));process.exit(0);
+ process.stdout.write(JSON.stringify(capitalProjectPlanSnapshot("origination_thesis")));process.exit(0);
 }
 const c=JSON.parse(readFileSync(0,"utf8"));
 const request={turn:1,composition:"prepare_material" as const,audience:null,form:"internal_briefing" as const,pages:null,sponsorInstruction:null,undefinedAspects:[]};

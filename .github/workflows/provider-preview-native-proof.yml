@@ -165,6 +165,8 @@ jobs:
       run: node scripts/ci/test-capital-native-provider-sdk.mjs
     - name: Overlay preview-only owner bootstrap through public capability command
       run: cp ../audit/scripts/ci/test-execution-brief-native-agent.py scripts/ci/test-execution-brief-native-agent.py
+    - name: Overlay initial published plan for preview fixture bootstrap
+      run: cp ../audit/apps/document-worker/scripts/execution-brief-native-preview-fixture.ts apps/document-worker/scripts/execution-brief-native-preview-fixture.ts
     - name: Finite native preview through real Storage, two paid boundaries and replay
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
