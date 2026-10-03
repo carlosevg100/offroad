@@ -58,7 +58,7 @@ jobs:
         # Retry the boot a few times, alternating registries with a pause, instead of failing the
         # whole gate on a registry limit.
         for attempt in 1 2 3 4 5; do
-          if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,mailpit,logflare,vector; then break; fi
+          if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector; then break; fi
           if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
           if [ "$SUPABASE_INTERNAL_IMAGE_REGISTRY" = public.ecr.aws ]; then
             SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io
@@ -177,6 +177,26 @@ jobs:
       run: node scripts/ci/test-capital-native-provider-sdk.mjs --sql-contracts
     - name: Overlay SDK-only closed transport diagnostic
       run: cp ../audit/apps/document-worker/scripts/capital-native-provider-sdk-eval.ts apps/document-worker/scripts/capital-native-provider-sdk-eval.ts
+    - name: Public signup preflight with local confirmation mail service
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
+        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+      run: |
+        set -euo pipefail
+        cp ../audit/apps/document-worker/scripts/capital-preview-native-sdk-eval.ts apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
+        pnpm exec tsc -p apps/document-worker/scripts/tsconfig-capital-preview-sdk-eval.json
+        loader="$(find node_modules/.pnpm -path '*/tsx/dist/loader.mjs' -print -quit)"
+        test -n "$loader"
+        node --import "$(pwd)/$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts --auth-signup-preflight
+    - name: Classify local Auth failures without log contents
+      if: failure()
+      run: |
+        set -euo pipefail
+        container="$(docker ps -aq --filter 'name=^supabase_auth_offroad$')"
+        if [ -n "$container" ]; then
+          docker logs --tail 1000 "$container" 2>&1 | python3 -B ../audit/scripts/evals/auth-log-sanitized.py
+        fi
     - name: Native deterministic providers through real Storage and Edge
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
