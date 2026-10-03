@@ -754,6 +754,36 @@ jobs:
           python3 -B scripts/ci/verify-capital-body-edge-ready.py
 
 
+      # `--with-deps` runs apt-get, which stalled on the Azure mirror three times
+      # (PR #57 ~30 min, PR #58 twice ~15 min each), always right after
+      # "Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist". The same logs show the
+      # Chromium libraries (libnss3, libgbm1, libxkbcommon0, libpango, …) are already
+      # present on the runner image, so we install the browser only and let a missing
+      # library fail loudly instead of hanging. The cache skips the download entirely
+      # on repeat runs, and the timeout turns any future stall into a fast failure.
+      - name: Cache Playwright browser
+        id: playwright-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browser
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: pnpm --filter web exec playwright install chromium
+        timeout-minutes: 6
+
+      # This focal SDK leases and completes its own native job. Run it before the
+      # global queue consumer; it must not race that consumer for the same job.
+      - name: Native material browser journey before the global queue consumer
+        run: |
+          set -euo pipefail
+          pnpm --filter web exec playwright test e2e/material-package-native.spec.ts --output=test-results-material
+        env:
+          CI: "true"
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-material
+          OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
       - name: Start the worker
         run: |
           set -euo pipefail
@@ -777,27 +807,9 @@ jobs:
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
         run: node scripts/ci/verify-pinned-consumer.mjs
 
-      # `--with-deps` runs apt-get, which stalled on the Azure mirror three times
-      # (PR #57 ~30 min, PR #58 twice ~15 min each), always right after
-      # "Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist". The same logs show the
-      # Chromium libraries (libnss3, libgbm1, libxkbcommon0, libpango, …) are already
-      # present on the runner image, so we install the browser only and let a missing
-      # library fail loudly instead of hanging. The cache skips the download entirely
-      # on repeat runs, and the timeout turns any future stall into a fast failure.
-      - name: Cache Playwright browser
-        id: playwright-cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: ms-playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-
-      - name: Install Playwright browser
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm --filter web exec playwright install chromium
-        timeout-minutes: 6
-
       - name: Run end-to-end tests
-        run: pnpm --filter web exec playwright test
+        # The native material case above already ran with its own queue consumer.
+        run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$'
         env:
           CI: "true"
           # Restricted to loopback by the synthetic sector-planning setup.
@@ -811,6 +823,8 @@ jobs:
           path: |
             apps/web/playwright-report
             apps/web/test-results
+            apps/web/playwright-report-material
+            apps/web/test-results-material
           if-no-files-found: ignore
           retention-days: 7
 
