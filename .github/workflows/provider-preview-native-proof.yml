@@ -198,6 +198,7 @@ jobs:
         PREVIEW_HTTP_NAMESPACE: a8830001
         PREVIEW_INTEGRATED_REVIEW_EVAL: '1'
       run: |
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_publication_guard_diagnostic.sql
         python3 -B scripts/ci/test-capital-preview-sdk.py
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_native_consumption.sql
