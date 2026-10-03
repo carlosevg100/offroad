@@ -136,6 +136,7 @@ export function createCapitalBodyReadHandler(config: CapitalBodyReadServerConfig
       const claims = object(JSON.parse(atob((authorization.slice(7).split(".")[1] ?? "").replace(/-/g, "+").replace(/_/g, "/"))));
       if (claims.role !== "authenticated" || typeof claims.sub !== "string" || !UUID.test(claims.sub)) denied();
       const input = object(await json(request, 4096, signal));
+      const assessment = input.kind === "assessment_source";
       const s11 = ["s11_result", "s11_body", "s11_recovery", "s11_recovery_source", "s11_task", "s11_recovered_task", "s11_revision_body", "s11_revision_task", "s11_revision_source"].includes(String(input.kind));
       const debt = ["debt_body", "debt_result", "debt_recovery", "debt_recovery_source", "debt_recovered_task", "debt_revision_body", "debt_revision_task", "debt_revision_source"].includes(String(input.kind));
       const material = input.kind === "material_body" || input.kind === "material_result";
@@ -148,7 +149,10 @@ export function createCapitalBodyReadHandler(config: CapitalBodyReadServerConfig
       const recovery = input.kind === "debt_recovery" || input.kind === "m07_recovery" || input.kind === "s11_recovery" || recoverySource;
       const revisionSource = input.kind === "debt_revision_source" || input.kind === "m07_revision_source" || input.kind === "s11_revision_source";
       const revision = input.kind === "debt_revision_body" || input.kind === "m07_revision_body" || input.kind === "s11_revision_body" || revisionSource;
-      if (debt) {
+      if (assessment) {
+        const keys=["kind","snapshotId","retainedPayloadId"];
+        if(Object.keys(input).length!==keys.length||!keys.every(key=>Object.hasOwn(input,key))||!UUID.test(String(input.snapshotId))||!UUID.test(String(input.retainedPayloadId))||!UUID.test(job)||!capability||capability.length>4096)denied();
+      } else if (debt) {
         const keys = human ? ["kind", "revisionId"] : revisionTask ? ["kind", "taskRunId"] : task ? ["kind", "recipeId", "taskRunId"]
           : revision ? ["kind", "retainedPayloadId"] : recovery ? ["kind", "recipeId", "retainedPayloadId"] : ["kind", "allocationId"];
         if (Object.keys(input).length !== keys.length || !keys.every(key => Object.hasOwn(input, key))) denied();
@@ -181,7 +185,7 @@ export function createCapitalBodyReadHandler(config: CapitalBodyReadServerConfig
       } else if (!["typed_body", "public_source", "m07_body", "s11_body", "material_body", "preview_body"].includes(String(input.kind)) || typeof input.allocationId !== "string" || !UUID.test(input.allocationId)
         || !UUID.test(job) || !capability || capability.length > 4096) denied();
             }
-      const kind = provider ? "typed_body" : recoverySource || revisionSource ? "public_source" : human || recovery || revision || task || input.kind === "m07_body" || input.kind === "s11_body" || input.kind === "debt_body" || input.kind === "preview_body" ? "typed_body" : input.kind as "typed_body" | "public_source";
+      const kind = assessment ? "public_source" : provider ? "typed_body" : recoverySource || revisionSource ? "public_source" : human || recovery || revision || task || input.kind === "m07_body" || input.kind === "s11_body" || input.kind === "debt_body" || input.kind === "preview_body" ? "typed_body" : input.kind as "typed_body" | "public_source";
       const userHeaders = {apikey: anonKey, Authorization: authorization, "Content-Type": "application/json", "x-offroad-workspace": workspace,
         ...(!human ? {"x-offroad-job-id": job, "x-offroad-capability": capability} : {}), "Cache-Control": "no-store"};
       const options = {redirect: "error" as const, cache: "no-store" as const, signal};
@@ -191,7 +195,7 @@ export function createCapitalBodyReadHandler(config: CapitalBodyReadServerConfig
       let nativeProof: {recipeId: string; finalFingerprint: string; workId?: string; artifactId?: string} | undefined;
       const authorize = async () => {
         const providerBody = {p_job_id: job, p_capability_token: capability, p_recipe_id: input.recipeId};
-        const body = JSON.stringify(provider ? human ? {p_revision_id: input.revisionId} : input.kind === "native_provider_recipe"
+        const body = JSON.stringify(assessment ? {p_job_id:job,p_capability_token:capability,p_snapshot_id:input.snapshotId,p_retained_payload_id:input.retainedPayloadId} : provider ? human ? {p_revision_id: input.revisionId} : input.kind === "native_provider_recipe"
           ? {...providerBody, p_retained_payload_id: input.retainedPayloadId, p_scope: input.scope} : input.kind === "native_provider_result"
           ? {...providerBody, p_retained_payload_id: input.retainedPayloadId, p_task_id: input.taskId, p_artifact_type: input.artifactType}
           : {...providerBody, p_allocation_id: input.allocationId, p_task_id: input.taskId ?? null, p_artifact_type: input.artifactType ?? null} : human ? {p_revision_id: input.revisionId} : task
@@ -199,7 +203,7 @@ export function createCapitalBodyReadHandler(config: CapitalBodyReadServerConfig
           ? {p_job_id: job, p_capability_token: capability, p_retained_payload_id: input.retainedPayloadId} : recovery
           ? {p_job_id: job, p_capability_token: capability, p_recipe_id: input.recipeId, p_retained_payload_id: input.retainedPayloadId}
           : {p_job_id: job, p_capability_token: capability, p_allocation_id: input.allocationId});
-        const command = debt ? human ? "read_capital_debt_result_v1" : task ? revisionTask ? "worker_read_capital_debt_revision_task_v1" : "worker_read_capital_debt_recovered_task_body_v1"
+        const command = assessment ? "worker_read_assessment_research_source_v1" : debt ? human ? "read_capital_debt_result_v1" : task ? revisionTask ? "worker_read_capital_debt_revision_task_v1" : "worker_read_capital_debt_recovered_task_body_v1"
           : revisionSource ? "worker_read_capital_debt_revision_source_v1" : revision ? "worker_read_capital_debt_revision_body_v1" : recoverySource ? "worker_read_capital_debt_recovery_source_v1" : recovery ? "worker_read_capital_debt_recovery_body_v1" : "worker_read_capital_debt_allocation_v1" : provider ? human ? "read_capital_native_provider_result_body_v1" : input.kind === "native_provider_recipe" ? "worker_read_capital_native_recipe_v1"
           : input.kind === "native_provider_result" ? "worker_read_capital_native_result_v1" : "worker_read_capital_native_allocation_v1" : human ? (previewHuman ? "read_capital_preview_result_body_v1" : material ? "read_material_production_result_v1" : s11 ? "read_capital_s11_result_v1" : "read_capital_m07_result_v1")
           : task ? (revisionTask ? "worker_read_capital_s11_revision_task_v1" : input.kind === "s11_recovered_task" ? "worker_read_capital_s11_recovered_task_body_v1" : "worker_read_capital_s11_task_body_v1") : revisionSource ? (s11 ? "worker_read_capital_s11_revision_source_v1" : "worker_read_capital_m07_revision_source_v1") : revision ? (s11 ? "worker_read_capital_s11_revision_body_v1" : "worker_read_capital_m07_revision_body_v1") : recoverySource ? (s11 ? "worker_read_capital_s11_recovery_source_v1" : "worker_read_capital_m07_recovery_source_v1") : recovery ? (s11 ? "worker_read_capital_s11_recovery_body_v1" : "worker_read_capital_m07_recovery_body_v1")
@@ -219,9 +223,9 @@ export function createCapitalBodyReadHandler(config: CapitalBodyReadServerConfig
               nativeProof ??= {recipeId: envelope.recipeId, finalFingerprint: ""};
               return scope(envelope.retention, String(input.allocationId), now(), kind);
             }
-            if (recovery || revision) {
+            if (assessment || recovery || revision) {
               const retained = object(result);
-              if (retained.retainedPayloadId !== input.retainedPayloadId || (recoverySource || revisionSource ? retained.state !== "complete" : retained.retentionState !== "retained")
+              if (retained.retainedPayloadId !== input.retainedPayloadId || (assessment || recoverySource || revisionSource ? retained.state !== "complete" : retained.retentionState !== "retained")
                 || typeof retained.allocationId !== "string" || !UUID.test(retained.allocationId)) denied();
               return scope(retained, retained.allocationId, now(), kind);
             }
@@ -268,7 +272,7 @@ export function createCapitalBodyReadHandler(config: CapitalBodyReadServerConfig
             return scope(retained, retained.allocationId, now(), kind);
           }
           const error = object(await json(r, 16384, signal));
-          if (error.code !== "40001" || ((provider || debt || previewHuman) && error.message !== "capital_capture_retry") || attempt === 2 || signal.aborted) denied();
+          if (error.code !== "40001" || ((provider || debt || previewHuman || assessment) && error.message !== "capital_capture_retry") || attempt === 2 || signal.aborted) denied();
           // Retry only this same authority command. No provider dispatch, read
           // body, caller IDs, or request lineage is regenerated by this retry.
           await new Promise<void>(resolve => setTimeout(resolve, 20 * (attempt + 1)));
@@ -303,6 +307,7 @@ export function createCapitalBodyReadHandler(config: CapitalBodyReadServerConfig
         ...(human && !provider ? {"x-offroad-revision-id": String(input.revisionId), "x-offroad-recipe-id": nativeProof!.recipeId,
           ...(material ? {"x-offroad-bundle-fingerprint": nativeProof!.finalFingerprint} : {"x-offroad-final-fingerprint": nativeProof!.finalFingerprint})} : {}),
         ...(previewHuman ? {"x-offroad-work-id": nativeProof!.workId!, "x-offroad-artifact-id": nativeProof!.artifactId!, "x-offroad-organization-id": workspace} : {}),
+        ...(assessment ? {"x-offroad-snapshot-id":String(input.snapshotId),"x-offroad-retained-payload-id":String(input.retainedPayloadId)} : {}),
         ...(recovery ? {"x-offroad-recipe-id": String(input.recipeId), "x-offroad-retained-payload-id": String(input.retainedPayloadId)} : {}),
         ...(revision ? {"x-offroad-retained-payload-id": String(input.retainedPayloadId)} : {}),
         ...(task ? {...(!revisionTask ? {"x-offroad-recipe-id": String(input.recipeId)} : {}), "x-offroad-task-run-id": String(input.taskRunId)} : {})}});

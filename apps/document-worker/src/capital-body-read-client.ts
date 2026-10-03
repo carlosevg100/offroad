@@ -155,3 +155,8 @@ export function readCapitalPreviewResultBytes(sdk: SupabaseClient, input: {
     "x-offroad-final-fingerprint": input.finalFingerprint,
   });
 }
+
+/** 3V delivered public source: exact server snapshot and retained identity. */
+export function readAssessmentResearchSourceBytes(sdk:SupabaseClient,job:JobAuthority,input:{snapshotId:string;retainedPayloadId:string},scope:ReadScope){
+ return readBytes(sdk,job,scope,{kind:"assessment_source",...input},{"x-offroad-snapshot-id":input.snapshotId,"x-offroad-retained-payload-id":input.retainedPayloadId});
+}

@@ -46,6 +46,7 @@ import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import {processOriginationThesisJob} from "./origination-thesis";
 import {createCapitalMaterialRuntime} from "./capital-material-production-runtime";
 import {createCapitalCompanyDebtNativeRuntime} from "./capital-company-debt-native-runtime";
+import {createAssessmentNativeRuntime} from "./assessment-native-runtime";
 import {processCompanyDebtViewJob} from "./company-debt-view";
 import {processCapitalPlanningJob} from "./capital-planning";
 import {ensureInitialAgentPlan} from "./agent-plan";
@@ -427,6 +428,7 @@ async function main(): Promise<void> {
       ? processCaseAnalysisJob(job, {
           queue,
           materialRuntime: createCapitalMaterialRuntime(supabase),
+          assessmentRuntime: createAssessmentNativeRuntime(supabase),
           gateway: gatewayRun.gateway,
           lineage: () => gatewayRun.calls.map((call) => ({...call})),
           researchProviders: gatewayRun.researchReserveUsd > 0 ? research.providers : [],

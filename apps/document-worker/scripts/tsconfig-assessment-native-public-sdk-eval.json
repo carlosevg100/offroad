@@ -1,0 +1,1 @@
+{"extends":"../tsconfig.json","compilerOptions":{"rootDir":"..","noEmit":true},"include":["assessment-native-public-sdk-eval.ts"]}

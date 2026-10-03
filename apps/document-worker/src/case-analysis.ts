@@ -1,3 +1,4 @@
+import type {AssessmentNativeRuntime} from "./assessment-native-runtime";
 import {buildCapitalMaterialCompilerBundle,validateCapitalMaterialCompilerBundle} from "./capital-material-production-adapter";
 import type {CapitalMaterialRuntime,MaterialDispatch} from "./capital-material-production-runtime";
 import {capitalMaterialCommitSchema,capitalMaterialTerminalSchema,type MaterialBundle,type MaterialCapture,type MaterialResearchInput} from "./capital-material-production-native";
@@ -446,6 +447,7 @@ const preliminaryCaseInputSchema = z.object({
 
 export type CaseAnalysisDependencies = {
   materialRuntime?: CapitalMaterialRuntime;
+  assessmentRuntime?: AssessmentNativeRuntime;
   queue: QueueClient;
   gateway: ModelGateway;
   lineage: () => GatewayCallLog[];
@@ -691,7 +693,7 @@ async function processPreliminaryUnderstanding(
 ): Promise<CaseAnalysisOutcome> {
   const locale = raw.session.locale === "en-US" ? "en" : "pt";
   const candidates = raw.candidates.map(toCandidate);
-  const publicResearch = await collectPublicResearch({
+  const publicResearch = dependencies.assessmentRuntime ? await collectCapturedAssessmentResearch(job,dependencies) : await collectPublicResearch({
     queue: dependencies.queue,
     job,
     candidates,
@@ -792,9 +794,9 @@ async function processPreliminaryUnderstanding(
     payload,
   });
   const projectId = z.uuid().safeParse(raw.session.capital_project_id);
-  if (dependencies.queue.recordAgentAssessment && projectId.success) {
+  if ((dependencies.assessmentRuntime || dependencies.queue.recordAgentAssessment) && projectId.success) {
     const assessedAt = (dependencies.now?.() ?? new Date()).toISOString();
-    await dependencies.queue.recordAgentAssessment(job, buildPreliminaryAssessment({
+    await (dependencies.assessmentRuntime ? dependencies.assessmentRuntime.forJob(job).recordAssessment : (assessment:Parameters<NonNullable<QueueClient["recordAgentAssessment"]>>[1])=>dependencies.queue.recordAgentAssessment!(job,assessment))(buildPreliminaryAssessment({
       projectId: projectId.data,
       assessmentRef: `processing_run:${job.processing_run_id}`,
       locale: locale === "pt" ? "pt-BR" : "en-US",
@@ -838,7 +840,7 @@ export async function processCaseAnalysisJob(
   try {
     if (job.kind === "preliminary_analysis") {
       failurePhase = "load_preliminary_input";
-      const raw = preliminaryCaseInputSchema.parse(await dependencies.queue.loadPreliminaryInput(job));
+      const raw = preliminaryCaseInputSchema.parse(await (dependencies.assessmentRuntime ? dependencies.assessmentRuntime.forJob(job).loadPreliminaryInput() : dependencies.queue.loadPreliminaryInput(job)));
       failurePhase = "preliminary_understanding";
       return await processPreliminaryUnderstanding(job, raw, dependencies);
     }
@@ -898,7 +900,7 @@ export async function processCaseAnalysisJob(
           ...raw.registered_mandates.map(registeredMandate),
         ].map((mandate) => resolveMandate(mandate, {asOf: analysisDate}))
       : [];
-    const publicResearch: PublicResearchSummary = native ? {status:"abstained",sourceCount:0,topicCounts:{},researchRunId:null,costExposureUsd:0,sources:[]} : await collectPublicResearch({
+    const publicResearch: PublicResearchSummary = native ? {status:"abstained",sourceCount:0,topicCounts:{},researchRunId:null,costExposureUsd:0,sources:[]} : dependencies.assessmentRuntime ? await collectCapturedAssessmentResearch(job,dependencies) : await collectPublicResearch({
       queue: dependencies.queue,
       job,
       candidates,
@@ -938,7 +940,7 @@ export async function processCaseAnalysisJob(
     const institutionalContext = native ? institutionalModelRuntimeContextSchema.parse(native.context.institutional_model_context) : !useShadow && executionPlan.produceMaterials
       && plannedMaterialKindsFrom(raw.deal_state_context, raw.deal_workflow)?.includes("financial_model")
       && dependencies.queue.loadInstitutionalModelContext
-      ? institutionalModelRuntimeContextSchema.parse(await dependencies.queue.loadInstitutionalModelContext(job)) : null;
+      ? institutionalModelRuntimeContextSchema.parse(await (dependencies.assessmentRuntime ? dependencies.assessmentRuntime.forJob(job).loadInstitutionalContext() : dependencies.queue.loadInstitutionalModelContext(job))) : null;
     if (native) {
       // No unlicensed collector result reaches inference; actual closure is
       // already retained and SQL seals the honest abstention before callbacks.
@@ -1287,7 +1289,7 @@ export async function processCaseAnalysisJob(
       ...(raw.document_work_request ? {documentWorkRequest: raw.document_work_request} : {}),
     });
     failurePhase = "record_agent_assessment";
-    if (dependencies.queue.recordAgentAssessment) {
+    if (dependencies.assessmentRuntime || dependencies.queue.recordAgentAssessment) {
       const projectId = raw.session.capital_project_id;
       const assessedAt = (dependencies.now?.() ?? new Date()).toISOString();
       const recommendation = result.state.structureAlternatives.recommendation;
@@ -1328,7 +1330,7 @@ export async function processCaseAnalysisJob(
       confidence: recommendation?.status === "ready_for_confirmation" ? "medium" as const : "insufficient" as const,
       proposedBy: "transaction_structuring" as const,
       };
-      await dependencies.queue.recordAgentAssessment(job, buildPrivateCaseAssessment({
+      await (dependencies.assessmentRuntime ? dependencies.assessmentRuntime.forJob(job).recordAssessment : (assessment:Parameters<NonNullable<QueueClient["recordAgentAssessment"]>>[1])=>dependencies.queue.recordAgentAssessment!(job,assessment))(buildPrivateCaseAssessment({
         projectId,
         assessmentRef: `processing_run:${job.processing_run_id}`,
         locale: locale === "pt" ? "pt-BR" : "en-US",
@@ -1531,7 +1533,7 @@ export async function processCaseAnalysisJob(
       await dependencies.queue.complete(job,{status:"native_material_processed",receipt:committed});
       return {status:"succeeded"};
     }
-    const result=await runCaptured(rawCaseInputSchema.parse(await dependencies.queue.loadCaseInput(job)));
+    const result=await runCaptured(rawCaseInputSchema.parse(await (dependencies.assessmentRuntime ? dependencies.assessmentRuntime.forJob(job).loadCaseInput() : dependencies.queue.loadCaseInput(job))));
     if ("calculationReport" in result) throw new Error("material_dispatch_denied");
     return result;
 
@@ -2387,6 +2389,17 @@ type PublicResearchSummary = {
     publishedAt: string | null;
   }>;
 };
+
+/** Stage events reflect a real retained-source read, including honest abstention. */
+async function collectCapturedAssessmentResearch(job: CaseAnalysisJob, dependencies: CaseAnalysisDependencies): Promise<PublicResearchSummary> {
+  if (!dependencies.assessmentRuntime) throw new Error("assessment_runtime_required");
+  await dependencies.queue.writeStage(job,"public_research","started",{origin:"licensed_physical_capture"});
+  const result=await dependencies.assessmentRuntime.forJob(job).publicResearch();
+  await dependencies.queue.writeStage(job,"public_research",result.status==="succeeded"?"succeeded":"skipped",{
+    origin:"licensed_physical_capture",sourceCount:result.sourceCount,code:result.status==="abstained"?"assessment_licensed_research_unavailable":"assessment_licensed_research_captured",
+  });
+  return result;
+}
 
 async function collectPublicResearch(input: {
   queue: QueueClient;

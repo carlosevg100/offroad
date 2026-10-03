@@ -149,3 +149,12 @@ it("human preview client binds exact current revision/run/work/artifact without 
 for(const k of Object.keys(previewHeaders))it(`human preview client denies identity drift ${k}`,async()=>{
  const f=fixture({...previewHeaders,[k]:"wrong"});await expect(readCapitalPreviewResultBytes(f.sdk,previewIdentity,scope)).rejects.toThrow("scope mismatch");
 });
+
+test("assessment public source client binds the captured snapshot and retained identity",async()=>{
+ const {readAssessmentResearchSourceBytes}=await import("./capital-body-read-client");
+ const f=fixture({"x-offroad-snapshot-id":recipe});
+ await readAssessmentResearchSourceBytes(f.sdk,{jobId:successorJob,capabilityToken:"synthetic-capability"},{snapshotId:recipe,retainedPayloadId:retained},scope);
+ expect(f.invoke.mock.calls[0]?.[1].body).toEqual({kind:"assessment_source",snapshotId:recipe,retainedPayloadId:retained});
+ const changed=fixture({"x-offroad-snapshot-id":originalJob});
+ await expect(readAssessmentResearchSourceBytes(changed.sdk,{jobId:successorJob,capabilityToken:"synthetic-capability"},{snapshotId:recipe,retainedPayloadId:retained},scope)).rejects.toThrow("scope mismatch");
+});

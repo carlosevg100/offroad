@@ -716,13 +716,21 @@ begin
     '{}'::jsonb, null
   );
 
-  decision_id := public.decide_capital_project_artifact(
-    (m04_artifact ->> 'id')::uuid, m04_artifact ->> 'artifact_fingerprint', 'confirm', null
-  );
-  if decision_id is null
-    or (select status from public.capital_project_artifacts
-        where id = (m04_artifact ->> 'id')::uuid) <> 'confirmed' then
-    raise exception 'capital artifact confirmation was not bound to its exact fingerprint';
+  -- This preliminary-analysis TaskRun family remains valid. Its legacy human
+  -- decision port cannot establish an exact current review or mutate the row.
+  rejected := false;
+  begin
+    perform public.decide_capital_project_artifact(
+      (m04_artifact ->> 'id')::uuid, m04_artifact ->> 'artifact_fingerprint', 'confirm', null
+    );
+  exception when insufficient_privilege then
+    if sqlerrm <> 'capital_artifact_review_upgrade_required' then raise; end if;
+    rejected := true;
+  end;
+  if not rejected then raise exception 'company_scope_legacy_decision_shortcut'; end if;
+  if (select status from public.capital_project_artifacts where id=(m04_artifact->>'id')::uuid)<>'pending_confirmation'
+    or exists(select 1 from public.capital_project_artifact_decisions where artifact_id=(m04_artifact->>'id')::uuid) then
+    raise exception 'company_scope_denied_legacy_decision_left_effects';
   end if;
 
   if (select count(*) from public.capital_project_task_runs where status = 'succeeded') <> 3 then

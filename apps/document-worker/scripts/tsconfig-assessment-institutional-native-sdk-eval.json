@@ -1,0 +1,1 @@
+{"extends":"../tsconfig.json","compilerOptions":{"rootDir":"..","noEmit":true},"include":["assessment-institutional-native-sdk-eval.ts"]}

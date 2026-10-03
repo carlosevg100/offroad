@@ -13,6 +13,12 @@ on:
         type: boolean
         required: false
         default: false
+      native_diagnostic_target:
+        description: Isolate one independent family only when native_diagnostic is true
+        type: choice
+        required: false
+        default: both
+        options: [both, debt, material]
 
 permissions:
   contents: read
@@ -73,6 +79,7 @@ jobs:
         run: pnpm check
 
   database:
+    if: ${{ !inputs.native_diagnostic || inputs.native_diagnostic_target != 'material' }}
     name: ${{ inputs.native_diagnostic && 'Native consumers diagnostic (not a release gate)' || 'Database (migrations, RLS, lint)' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -198,6 +205,13 @@ jobs:
       - name: Install dependencies
         id: database_deps
         run: pnpm install --frozen-lockfile
+
+      - name: Install unpublished native consumer drafts in isolated CI only
+        id: native_consumers_install
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
+        run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
 
       - name: Native materials SQL production, dispatch and human review
         if: ${{ !inputs.native_diagnostic }}
@@ -616,8 +630,11 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-material-production-native-sdk.mjs
 
-      - name: Install unpublished native consumer drafts in isolated CI only
-        id: native_consumers_install
+      # The wait proof resets the local database. Restore the same frozen candidate
+      # in this second database lifetime before the native family catalogue and SDKs.
+      - name: Reinstall native consumers after the local wait-proof reset
+        id: native_consumers_reinstall
+        if: ${{ !inputs.native_diagnostic }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
@@ -632,6 +649,7 @@ jobs:
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_s11_task_projections.sql
 
       - name: Native S11 initial and human return through real Storage and Edge
+        if: ${{ !inputs.native_diagnostic || inputs.native_diagnostic_target != 'debt' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -641,7 +659,7 @@ jobs:
 
       - name: Native C11 initial and human return through real Storage and Edge
         # Independent families keep their failures visible in the same run.
-        if: ${{ always() && steps.native_consumers_install.outcome == 'success' && steps.native_consumers_catalogue.outcome == 'success' }}
+        if: ${{ always() && steps.native_consumers_install.outcome == 'success' && (inputs.native_diagnostic || steps.native_consumers_reinstall.outcome == 'success') && steps.native_consumers_catalogue.outcome == 'success' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -649,8 +667,52 @@ jobs:
           DEBT_HTTP_NAMESPACE: a8820001
         run: python3 -B scripts/ci/test-capital-company-debt-sdk.py
 
-      # The canonical baseline catalogue is verified before unpublished provider DDL.
-      # Do not move this installer before auto-enumerated SQL or stage-zero checks.
+      - name: Install assessment candidate only on disposable local database
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/install-assessment-native-local.py
+
+      - name: Assessment writer denies missing captures and invalid authority
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          ASSESSMENT_DRAFT_IN_TRANSACTION: "0"
+          MATERIAL_DRAFT_IN_TRANSACTION: "0"
+        run: python3 -B scripts/ci/test-assessment-case-writer-guards.py
+      - name: Native assessment and work adoption SQL boundaries
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          ASSESSMENT_DRAFT_IN_TRANSACTION: "0"
+        run: python3 -B scripts/ci/test-assessment-native.py
+      - name: Native assessment review and revocation two-session races
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-assessment-review-concurrency.py
+      - name: Start the existing governed documentary scanner for own-source assessment
+        env:
+          CLAMD_HOST: 127.0.0.1
+          CLAMD_PORT: "3310"
+        run: bash scripts/ci/start-documentary-scanner.sh start
+      - name: Nonempty institutional configuration through verified own-source physical SDK
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+          CLAMD_HOST: 127.0.0.1
+          CLAMD_PORT: "3310"
+        run: node scripts/ci/test-assessment-institutional-native-sdk.mjs
+      - name: Native assessment consumes licensed physical public bytes through the SDK
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+          OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+        # The existing JWT-enabled Edge server above serves the candidate's
+        # capital-body-read handler, including closed assessment_source.
+        run: node scripts/ci/test-assessment-native-public-sdk.mjs
+
+      - name: Stop the owned documentary scanner
+        if: always()
+        run: bash scripts/ci/start-documentary-scanner.sh stop
+
       - name: Install unpublished deterministic provider draft in isolated CI only
         if: ${{ !inputs.native_diagnostic }}
         env:
@@ -707,6 +769,7 @@ jobs:
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_native_consumption.sql
 
+
       - name: Stop the capital body Edge reader
         if: always()
         run: |
@@ -723,8 +786,8 @@ jobs:
         run: supabase stop --no-backup
 
   e2e:
-    name: ${{ inputs.native_diagnostic && 'Skipped browser (native diagnostic only)' || 'E2E (local Supabase + Playwright)' }}
-    if: ${{ !inputs.native_diagnostic }}
+    name: ${{ inputs.native_diagnostic && 'Native material browser diagnostic (not a release gate)' || 'E2E (local Supabase + Playwright)' }}
+    if: ${{ !inputs.native_diagnostic || inputs.native_diagnostic_target == 'material' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -823,11 +886,17 @@ jobs:
           OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
         run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
 
+      - name: Install assessment candidate for the disposable browser stack
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: python3 -B scripts/ci/install-assessment-native-local.py
+
       - name: Install review dashboard on the disposable browser stack
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           OFFROAD_WORK_REVIEW_DRAFT_INSTALL: isolated-loopback-ci
         run: python3 -B scripts/ci/install-work-review-dashboard-ci-draft.py
+
 
       - name: Build the web app against the local stack
         run: pnpm --filter web build
@@ -904,6 +973,7 @@ jobs:
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
       - name: Start the worker
+        if: ${{ !inputs.native_diagnostic }}
         run: |
           set -euo pipefail
           eval "$(supabase status -o env)"
@@ -922,11 +992,13 @@ jobs:
           grep -q '"event":"worker.signed_in"' worker.log || (sleep 10; grep -q '"event":"worker.signed_in"' worker.log || (cat worker.log; exit 1))
 
       - name: Verify pinned execution through the deployed worker
+        if: ${{ !inputs.native_diagnostic }}
         env:
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
         run: node scripts/ci/verify-pinned-consumer.mjs
 
       - name: Run end-to-end tests
+        if: ${{ !inputs.native_diagnostic }}
         # The native material case above already ran with its own queue consumer.
         run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$'
         env:

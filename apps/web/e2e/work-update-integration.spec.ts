@@ -252,13 +252,19 @@ test("a mixed update of an execution and the financial model is adopted in one a
   // 6. One act adopts both: the milestone references the new execution and model results, then the
   // ones they replace; only now the recalculated model is the current result, with its downloads.
   await ready.getByRole("button", {name: updates.adopt.action, exact: true}).click();
-  await ready.getByRole("button", {name: updates.adopt.confirm, exact: true}).click();
+  const adoptBase = ready.getByRole("button", {name: "Adotar esta base", exact: true});
+  await expect(adoptBase).toBeDisabled();
+  await ready.getByRole("checkbox", {name: "Declaro que estou adotando resultados preparados sob meu acesso.", exact: true}).check();
+  await expect(adoptBase).toBeEnabled();
+  await adoptBase.click();
   await expect.poll(() => sql(`select status from public.work_continuation_requests where id='${updateId}';`), {timeout: 30_000}).toBe("adopted");
   const milestone = (kind: string, subject: string) => sql(`select id from public.work_milestones where kind='execution_result' and subject_kind='${kind}' and subject_id='${subject}';`);
   const recomputed = sql(`select c.execution_id from public.work_recompute_candidates c where c.request_id='${updateId}' and c.state='settled';`);
   expect(sql(`select array_to_string(m.reference_milestone_ids,',') from public.work_milestones m where m.kind='update_adopted' and m.subject_id='${updateId}';`))
     .toBe([milestone("work_execution", recomputed), milestone("institutional_model_result", r1), milestone("work_execution", rootId), milestone("institutional_model_result", r0)].join(","));
   expect(sql(`select superseded_by from private.institutional_model_results where id='${r0}';`)).toBe(r1);
+  await page.reload();
+  expect(sql(`select status from public.work_continuation_requests where id='${updateId}';`)).toBe("adopted");
   await openSection(page, projectId, "work-institutional-model-result");
   await expect(panel.getByRole("status")).toHaveText(results.status.completed);
   await expect(updateLink).toHaveCount(0);
