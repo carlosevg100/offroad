@@ -6,6 +6,10 @@ values('a8800000-0000-4000-8000-000000000993','authenticated','authenticated','p
 insert into public.organizations(id,organization_type,name,created_by)values('a8800000-0000-4000-8000-000000000994','offroad','Synthetic preview publisher','a8800000-0000-4000-8000-000000000993');
 insert into public.organization_memberships(organization_id,user_id,role,status)values('a8800000-0000-4000-8000-000000000994','a8800000-0000-4000-8000-000000000993','owner','active');
 insert into public.capital_projects(id,organization_id,project_name,created_by)values('a8800000-0000-4000-8000-000000000995','a8800000-0000-4000-8000-000000000994','Synthetic exact preview source publication','a8800000-0000-4000-8000-000000000993');
+-- The session helper checks WORK under the current Auth subject. Use the actual
+-- publisher identity and workspace before invoking it, preserving its authority gate.
+select set_config('request.jwt.claims','{"sub":"a8800000-0000-4000-8000-000000000993","role":"authenticated"}',true);
+select set_config('request.headers','{"x-offroad-workspace":"a8800000-0000-4000-8000-000000000994"}',true);
 create temp table preview_publisher_session as select pg_temp.legacy_intake_for_work('a8800000-0000-4000-8000-000000000995')id;
 create temp table preview_verified_documents(id uuid,job_id uuid,file_name text,sha text,size bigint,binding_id uuid);
 insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,budget,versions,created_by)
