@@ -205,6 +205,14 @@ jobs:
           MATERIAL_RACE_SYNTHETIC_LOCAL: "1"
         run: python3 -B scripts/ci/test-material-package-review-race.py
 
+      # This complete isolated rollback proof is independent of SDK state. Fail here
+      # before the unrelated contract/concurrency suite if its authority is denied.
+      - name: Nonempty institutional configuration captured by the real case consumer
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+          ASSESSMENT_DRAFT_IN_TRANSACTION: "1"
+          MATERIAL_DRAFT_IN_TRANSACTION: "0"
+        run: python3 -B scripts/ci/test-assessment-institutional-capture.py
       - name: Run all database contract tests
         run: |
           set -euo pipefail
@@ -571,12 +579,6 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           ASSESSMENT_DRAFT_IN_TRANSACTION: "1"
         run: python3 -B scripts/ci/test-assessment-native.py
-      - name: Nonempty institutional configuration captured by the real case consumer
-        env:
-          DATABASE_URL: ${{ steps.db.outputs.url }}
-          ASSESSMENT_DRAFT_IN_TRANSACTION: "1"
-          MATERIAL_DRAFT_IN_TRANSACTION: "0"
-        run: python3 -B scripts/ci/test-assessment-institutional-capture.py
       - name: Install assessment candidate only on disposable local database
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}

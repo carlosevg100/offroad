@@ -46,4 +46,4 @@ for person in ('owner','worker','outsider'):s=s.replace('route-'+person+'@',tag+
 s=re.sub(r"repeat\('r',\s*64\)","'"+(prefix+'3v-native-institutional').ljust(64,'0')+"'",s)
 assert not re.search(r'd5[a-f0-9]{6}-',s),'unmapped shared fixture identity'
 result=subprocess.run(['psql',os.environ['DATABASE_URL'],'-X','-v','ON_ERROR_STOP=1'],input=s,text=True,capture_output=True,timeout=90)
-print(result.stdout[-1500:]);print(result.stderr[-3500:]);raise SystemExit(result.returncode)
+print(result.stdout[-1500:]);print(result.stderr[-12000:]);raise SystemExit(result.returncode)

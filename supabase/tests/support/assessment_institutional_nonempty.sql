@@ -38,9 +38,44 @@ reset role;
 reset role;
 select set_config('test.setup_job',(select id::text from public.processing_jobs where kind='agent_operation_brief' and payload->>'message_id'='d5900000-0000-4000-8000-000000000081'),true);
 select pg_temp.prioritize_material_fixture_job(current_setting('test.setup_job')::uuid);
-do $$declare j public.processing_jobs;begin
+do $$declare j public.processing_jobs;resource uuid;revision bigint;parts jsonb;source_parts jsonb;projection_parts jsonb;begin
  select * into strict j from public.processing_jobs where id=current_setting('test.setup_job')::uuid;
- raise notice 'assessment_setup_claim_before: job=% kind=% status=% available=% authority=% requiresBrief=% dispatch=%',j.id,j.kind,j.status,j.available_at<=now(),private.job_authority_is_current_v1(j.id),private.requires_execution_brief_approval(j.id),case when private.requires_execution_brief_approval(j.id)then private.execution_dispatch_is_current(j.id,true)else null end;
+ resource:=case when j.kind in('work_conversation','work_execution')then j.work_id else j.intake_session_id end;
+ select r.revision into revision from private.authorization_revisions r where(r.organization_id,r.resource_id,r.subject_user_id)=(j.organization_id,j.authorization_resource_id,j.authorization_subject_id);
+ parts:=jsonb_build_object(
+ 'jobExists',j.id is not null,'kind',j.kind,'status',j.status,'available',j.available_at<=now(),
+ 'authority',private.job_authority_is_current_v1(j.id),'baselineAuthority',private.job_authority_is_current_pre_material_package_v1(j.id),
+ 'revisionRowExists',revision is not null,'jobRevision',j.authorization_revision,'currentRevision',revision,'revisionMatches',j.authorization_revision=revision,
+ 'rootMatches',j.authorization_resource_id=private.resource_root_v1(j.organization_id,resource),
+ 'readAllowed',private.resource_access_as_subject_v1(j.organization_id,resource,j.authorization_subject_id,'read'),
+ 'purposeAllowed',not exists(select 1 from private.access_resources ar where ar.organization_id=j.organization_id and ar.id in(j.authorization_resource_id,resource)and not('analysis'=any(ar.allowed_purposes))),
+ 'delegationNotRevoked',not exists(select 1 from private.principals dp where dp.organization_id=j.organization_id and dp.processing_job_id=j.id and dp.revoked_at is not null),
+ 'leaseAllowed',j.status<>'leased' or j.lease_expires_at<=now() or exists(select 1 from private.principals dp where dp.organization_id=j.organization_id and dp.processing_job_id=j.id and dp.kind='worker' and dp.account_user_id=j.leased_account_user_id and dp.worker_token_id=j.leased_by and dp.resource_id=j.authorization_resource_id and dp.expires_at>now()),
+ 'sourceRightsCurrent',private.job_sources_rights_current_v1(j.id),
+ 'workAllowed',private.resource_access_as_subject_v1(j.organization_id,resource,j.authorization_subject_id,'work'),
+ 'reviewIdMatches',j.review_execution_authorization_id::text=j.payload->>'message_id',
+ 'reviewAuthorityCurrent',case when j.review_execution_authorization_id is not null then private.review_execution_authority_current_v1(j.review_execution_authorization_id,j.authorization_resource_id,j.authorization_subject_id)else false end,
+ 'requiresBrief',private.requires_execution_brief_approval(j.id),
+ 'dispatch',case when private.requires_execution_brief_approval(j.id)then private.execution_dispatch_is_current(j.id,true)else null end);
+ -- Source identities/booleans only: never financial values, body, capability, or human claims.
+ select coalesce(jsonb_agg(jsonb_build_object('sourceId',d.id,'versionExists',v.id is not null,
+ 'processAllowed',private.source_use_allowed_v1(d.organization_id,d.id,j.authorization_subject_id,'process','analysis'),
+ 'storeAllowed',private.source_use_allowed_v1(d.organization_id,d.id,j.authorization_subject_id,'store','analysis'),
+ 'originReadAllowed',private.evaluate_resource_policy_v1(d.organization_id,s.origin_resource_id,j.authorization_subject_id,'read','analysis'),
+ 'liveBindingReadAllowed',exists(select 1 from public.source_bindings b where b.organization_id=d.organization_id and b.source_version_id=d.id and b.revoked_at is null and private.evaluate_resource_policy_v1(d.organization_id,b.resource_id,j.authorization_subject_id,'read','analysis')),
+ 'rightsPresent',r.id is not null,'rightsProcess','process'=any(r.operations),'rightsStore','store'=any(r.operations),'rightsAnalysis','analysis'=any(r.purposes),
+ 'rightsStarted',r.valid_from<=clock_timestamp(),'rightsNotExpired',r.expires_at is null or r.expires_at>clock_timestamp(),'rightsStoreCurrent',r.store_until is null or r.store_until>clock_timestamp())order by d.id),'[]') into source_parts
+ from public.source_documents d left join public.source_versions v on(v.organization_id,v.id)=(d.organization_id,d.id)
+ left join public.sources s on(s.organization_id,s.id)=(v.organization_id,v.source_id)
+ left join lateral(select * from private.source_rights_versions r where r.organization_id=d.organization_id and r.source_version_id=d.id order by r.revision desc limit 1)r on true
+ where d.organization_id=j.organization_id and((j.source_document_id is not null and d.id=j.source_document_id)or(j.source_document_id is null and d.intake_session_id=j.intake_session_id));
+ select coalesce(jsonb_agg(jsonb_build_object('projectionExists',true,'reviewExists',v.id is not null,
+ 'approvalCurrent',private.material_package_approval_is_current_v1(v.organization_id,v.id),
+ 'revisionAllowed',private.material_production_revision_allowed_v1(b.organization_id,b.revision_id,j.authorization_subject_id))),'[]')into projection_parts
+ from private.material_package_review_projections p left join public.artifact_reviews v on(v.organization_id,v.id)=(p.organization_id,p.review_id)
+ left join private.material_production_bindings b on(b.organization_id,b.id)=(p.organization_id,p.binding_id)
+ where(p.organization_id,p.effect_job_id)=(j.organization_id,case when j.kind='execution_brief_proposal'then(j.payload->>'approval_target_job_id')::uuid else j.id end);
+ raise notice 'assessment_setup_authority_all_terms: job=% parts=% sources=% materialProjections=%',j.id,parts,source_parts,projection_parts;
 end$$;
 set local role authenticated;select pg_temp.as_worker();
 do $$declare claim jsonb;begin
