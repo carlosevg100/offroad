@@ -11,7 +11,7 @@ insert into public.capital_projects(id,organization_id,project_name,created_by)v
 select set_config('request.jwt.claims','{"sub":"a8800000-0000-4000-8000-000000000993","role":"authenticated"}',true);
 select set_config('request.headers','{"x-offroad-workspace":"a8800000-0000-4000-8000-000000000994"}',true);
 create temp table preview_publisher_session as select pg_temp.legacy_intake_for_work('a8800000-0000-4000-8000-000000000995')id;
-create temp table preview_verified_documents(id uuid,job_id uuid,file_name text,sha text,size bigint,binding_id uuid);
+create temp table preview_verified_documents(id uuid,job_id uuid,file_name text,sha text,size bigint,binding_id uuid,source_url text,public_payload_sha256 text);
 insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,budget,versions,created_by)
 select 'a8800000-0000-4000-8000-000000000997','a8800000-0000-4000-8000-000000000994',id,1,'manual','running','preview-ci-verification','{}','{}','a8800000-0000-4000-8000-000000000993'from preview_publisher_session;
 do $$declare e jsonb;doc uuid;scanner_job uuid;binding uuid;begin
@@ -23,7 +23,11 @@ do $$declare e jsonb;doc uuid;scanner_job uuid;binding uuid;begin
  select scanner_job,'a8800000-0000-4000-8000-000000000994','a8800000-0000-4000-8000-000000000997',id,doc,'document_pipeline','leased',jsonb_build_object('document_version',1,'sha256',e->>'sha256'),'a8800000-0000-4000-8000-000000000993',clock_timestamp()+interval '10 minutes',extensions.digest(repeat('d',64),'sha256')from preview_publisher_session;
  select id into binding from public.source_bindings where organization_id='a8800000-0000-4000-8000-000000000994'and source_version_id=doc and resource_id='a8800000-0000-4000-8000-000000000995';
  if binding is null then insert into public.source_bindings(organization_id,source_version_id,resource_id,resource_reference,request_id,created_by)values('a8800000-0000-4000-8000-000000000994',doc,'a8800000-0000-4000-8000-000000000995','a8800000-0000-4000-8000-000000000995',gen_random_uuid(),'a8800000-0000-4000-8000-000000000993')returning id into binding;end if;
- insert into preview_verified_documents values(doc,scanner_job,e->>'file',e->>'sha256',(e->>'bytes')::bigint,binding);
+ -- Calculate the public payload hash as the fixture operator, without granting
+ -- the owner-only hash helper to an authenticated publisher.
+ insert into preview_verified_documents values(doc,scanner_job,e->>'file',e->>'sha256',(e->>'bytes')::bigint,binding,
+ 'https://example.invalid/preview-ci/'||doc,
+ private.public_source_payload_sha256_v1(jsonb_build_object('url','https://example.invalid/preview-ci/'||doc,'title','Synthetic isolated publication','snippet','Exact installed extraction for internal test','contentHash',e->>'sha256')));
  end loop;
 end$$;
 create function pg_temp.verify_preview_documents()returns void language plpgsql security definer set search_path=''as $$declare d record;begin
@@ -35,11 +39,9 @@ set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"a8800000-0000-4000-8000-000000000993","role":"authenticated"}',true);
 select set_config('request.headers','{"x-offroad-workspace":"a8800000-0000-4000-8000-000000000994"}',true);
 select pg_temp.verify_preview_documents();
-do $$declare d record;url text;payload jsonb;begin
+do $$declare d record;begin
  for d in select*from pg_temp.preview_verified_documents loop
- url:='https://example.invalid/preview-ci/'||d.id;
- payload:=jsonb_build_object('url',url,'title','Synthetic isolated publication','snippet','Exact installed extraction for internal test','contentHash',d.sha);
- perform public.declare_public_source_reuse_v1(d.id,0,url,private.public_source_payload_sha256_v1(payload),clock_timestamp()+interval '2 days',clock_timestamp()+interval '2 days',d.id,d.sha);
+ perform public.declare_public_source_reuse_v1(d.id,0,d.source_url,d.public_payload_sha256,clock_timestamp()+interval '2 days',clock_timestamp()+interval '2 days',d.id,d.sha);
  end loop;
  insert into pg_temp.agent_fixture values('preview_basis',public.publish_capital_preview_consumed_basis_v1(gen_random_uuid(),(select jsonb_agg(jsonb_build_object('file',file_name,'sourceVersionId',id,'sourceBindingId',binding_id)order by file_name)from pg_temp.preview_verified_documents),clock_timestamp()+interval '1 day'));
 end$$;

@@ -9,7 +9,8 @@ begin
  select * into strict p from public.capital_projects where id=p_work_id;
  select id into session_id from public.document_intake_sessions where capital_project_id=p.id;
  if session_id is not null then return session_id; end if;
- select organization_type into strict journey from public.organizations where id=p.organization_id;
+ -- Internal publisher work uses the institutional journey; offroad is an organization type, not an intake journey.
+ select case organization_type when 'offroad' then 'institutional' else organization_type end into strict journey from public.organizations where id=p.organization_id;
  select d.profile into profile from public.dossiers d where d.resource_id=p.id limit 1;
  insert into public.document_intake_sessions(organization_id,capital_project_id,started_by,journey,locale,project_name,identity_policy,privacy_status,representation_status,company_profile)
  values(p.organization_id,p.id,auth.uid(),journey,'pt-BR',p.project_name,'identified_restricted',case p.access_basis when 'authorized_private' then 'private' else 'public_information' end,'not_claimed',coalesce(profile,'{}')) returning id into session_id;
