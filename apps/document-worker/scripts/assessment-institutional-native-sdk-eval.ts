@@ -14,6 +14,7 @@ import {productionRunBudget} from '@offroad/model-gateway';
 import {createClamdScanner,runGovernedGate} from '../src/scan';
 import {processInstitutionalModelSetup,processInstitutionalModelResult} from '../src/institutional-model-runtime';
 import {createAssessmentNativeRuntime} from '../src/assessment-native-runtime';
+import {ensureInitialAgentPlan} from '../src/agent-plan';
 import type {QueueClient,CaseAnalysisJob} from '../src/queue';
 let institutionalPhase='startup',lastRpc:string|undefined,lastSqlstate:string|undefined,lastConstraint:string|undefined;
 function checkConstraint(code:string,message:string){return code==='23514'?/check constraint "([a-z][a-z0-9_]{0,62})"/.exec(message)?.[1]:undefined;}
@@ -66,6 +67,7 @@ export async function approveInstitutionalInputs(input:Input,uploaded:Awaited<Re
  return{projectId:project,configurationId:prepared.candidateId,sourceIds:uploaded.sourceIds,sourceHashes:uploaded.sources.map(source=>source.hash)};
 }
 export async function captureInstitutionalAssessment(input:Input,job:CaseAnalysisJob,approved:Awaited<ReturnType<typeof approveInstitutionalInputs>>){
+ phase('case_actual_agent_plan_producer');lastRpc='worker_load_agent_plan_context_v1';const agentPlanId=z.uuid().parse(await ensureInitialAgentPlan(job,input.queue));assert.equal(sql(input.db,`select count(*) from public.capital_project_agent_plans where id='${agentPlanId}' and organization_id='${input.org}' and capital_project_id='${approved.projectId}' and status='active';`),'1');
  phase('case_native_input_capture');assert.equal(sql(input.db,`select count(*) from private.material_production_plan_approvals where effect_job_id='${z.uuid().parse(job.job_id)}';`),'0');
  const monitoredWorker=new Proxy(input.worker,{get(client,key,receiver){if(key==='rpc')return async(name:string,args:Record<string,unknown>)=>{assert.match(name,/^[a-z][a-z0-9_]{1,79}$/);lastRpc=name;const result=await client.rpc(name,args);if(result.error){if(/^[A-Z0-9]{5}$/.test(result.error.code??''))lastSqlstate=result.error.code;lastConstraint=checkConstraint(result.error.code??'',result.error.message??'');}return result;};return Reflect.get(client,key,receiver);}});
  const native=createAssessmentNativeRuntime(monitoredWorker).forJob(job);lastRpc='worker_load_case_assessment_input_v5';await native.loadCaseInput();phase('institutional_actual_capture');lastRpc='worker_load_assessment_institutional_context_v1';const context=z.object({approvedConfigurations:z.array(z.object({id:z.uuid()})),assessmentInputSnapshotId:z.uuid()}).parse(await native.loadInstitutionalContext());assert.equal(context.approvedConfigurations.length,1);assert.equal(context.approvedConfigurations[0]?.id,approved.configurationId);
