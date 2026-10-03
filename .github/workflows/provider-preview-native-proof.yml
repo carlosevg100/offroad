@@ -132,6 +132,18 @@ jobs:
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_storage_job_authority.sql
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_native_artifact_publication.sql
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_native_artifact_publication.sql
+    - name: Apply physical input grammar and bounded boundary validation forwards
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
+      run: |
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_physical_input_grammar.sql
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_boundary_validation.sql
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_boundary_validation.sql
+        cp ../audit/supabase/tests/support/capital_preview_dispatch_policy.sql supabase/tests/support/capital_preview_dispatch_policy.sql
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
+        cp ../audit/apps/document-worker/src/integration-preview-processing.ts apps/document-worker/src/integration-preview-processing.ts
+        cp ../audit/apps/document-worker/src/integration-preview-processing.test.ts apps/document-worker/src/integration-preview-processing.test.ts
+        cp ../audit/apps/document-worker/src/integration-preview-native-pipeline.test.ts apps/document-worker/src/integration-preview-native-pipeline.test.ts
     - name: Overlay three exact current capture-denial assertions
       run: |-
         for name in provider_research_persistence provider_research_public_catalog_v2 provider_case_fit_persistence capital_native_provider_results; do
@@ -171,6 +183,8 @@ jobs:
         OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
         OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
       run: node scripts/ci/test-capital-native-provider-sdk.mjs
+    - name: Verify physical input and unchanged budget guards
+      run: pnpm --filter @offroad/document-worker exec vitest run src/integration-preview-processing.test.ts src/integration-preview-native-pipeline.test.ts
     - name: Overlay preview-only owner bootstrap through public capability command
       run: cp ../audit/scripts/ci/test-execution-brief-native-agent.py scripts/ci/test-execution-brief-native-agent.py
     - name: Overlay initial published plan for preview fixture bootstrap
