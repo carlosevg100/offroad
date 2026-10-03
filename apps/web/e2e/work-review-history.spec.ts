@@ -1,6 +1,7 @@
 import {randomBytes,randomUUID}from"node:crypto";
 import {expect,test,type Page}from"@playwright/test";
 import copy from"../messages/pt-BR.json";
+import {workReviewDashboardSchema} from "../src/lib/advisor/work-review-dashboard";
 import{asRegimeOwner,createRegimeWork,localReviewRegimeSql,signUpRegimeAccount,type ReviewRegimeFixture,type RegimeSql}from"./support/project-review-regime";
 const literal=(value:string)=>`convert_from(decode('${Buffer.from(value).toString("hex")}','hex'),'UTF8')`;
 function last(sql:RegimeSql,f:ReviewRegimeFixture,body:string){return sql(asRegimeOwner(f,body)).split("\n").at(-1)!;}
@@ -9,6 +10,11 @@ function author(sql:RegimeSql,f:ReviewRegimeFixture,template:string,text:string)
  // Explicitly source-free human explanation. No native receipt or model lineage.
  const blocks=[{blockKey:"explanation",kind:"paragraph",content:{text},claims:[]}];
  return JSON.parse(last(sql,f,`select public.create_artifact_revision_v1('${f.workId}','answer','work-review-ui','internal',${literal(JSON.stringify(manifest))}::jsonb,${literal(JSON.stringify(blocks))}::jsonb,'[]',null,null);`))as{artifact_id:string;revision_id:string;manifest_fingerprint:string;revision_no:number};
+}
+function schemaDiagnostic(parsed:ReturnType<typeof workReviewDashboardSchema.safeParse>){
+ if(parsed.success)return 'PASS';
+ const fields=new Set(['schemaVersion','workId','organizationId','viewerId','canReport','canManage','revisions','decisions','decisionsTruncated','nextDecisionCursor','assignments','nextCursor','revisionId','artifactId','kind','revisionNo','manifestFingerprint','withheld','pending','preparedBy','reviews','basisReviewId','change','canReaffirm','outcome','reasons','id','act','reviewerId','createdAt','note','canContest','decision','decisionKey','revision','fingerprint','origin','decidedBy','effects','precedence','state','fromUserId','eligible','userId','label']);
+ return JSON.stringify(parsed.error.issues.slice(0,12).map(issue=>issue.path.map(part=>typeof part==='number'?'[]':typeof part==='string'&&fields.has(part)?part:'unknown-field').join('.')));
 }
 async function panel(page:Page,f:ReviewRegimeFixture){await page.goto(`/pt-BR/app/projects/${f.workId}?workspace=${f.organizationId}`);await page.locator('.advisor-work-surface__navigation a[href="#work-project-review"]').click();const history=page.getByTestId("work-review-history");await expect(history).toBeVisible();return history;}
 
@@ -28,7 +34,24 @@ test("two real humans use exact review history, reaffirm, reassignment and close
    select public.set_capital_project_review_assignment_v1('${f.workId}','${reviewer}','approver',true);`);
   const r1=author(sql,f,'layout-1','Synthetic unchanged explanation');
   const approval=JSON.parse(last(sql,second,`select public.review_artifact_revision_v1('${r1.revision_id}','${r1.manifest_fingerprint}','approve',null,'Second human exact approval',false,'${randomUUID()}');`))as{reviewId:string};
-  const r2=author(sql,f,'layout-2','Synthetic unchanged explanation');let history=await panel(secondPage,second);
+  const r2=author(sql,f,'layout-2','Synthetic unchanged explanation');
+  // Compare the same authenticated public SQL and HTTP contract before any UI selector.
+  // Diagnostics contain codes and schema issue categories only, never bodies or credentials.
+  const direct=workReviewDashboardSchema.safeParse(JSON.parse(last(sql,second,`select public.read_work_review_dashboard_v1('${f.workId}',null,null);`)));
+  expect(direct.success, `authenticated SQL strict dashboard DTO paths=${schemaDiagnostic(direct)}`).toBe(true);
+  const api=process.env.NEXT_PUBLIC_SUPABASE_URL!,publishableKey=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+  if(!['127.0.0.1','localhost','[::1]'].includes(new URL(api).hostname))throw new Error('Review diagnostic requires disposable loopback API');
+  const signed=await secondPage.request.post(`${api}/auth/v1/token?grant_type=password`,{headers:{apikey:publishableKey},data:{email:reviewerEmail,password:`Offroad-review-second-${suffix}!`}});
+  expect(signed.status(),'real reviewer password Auth').toBe(200);
+  const auth=await signed.json() as {access_token:string};
+  const response=await secondPage.request.post(`${api}/rest/v1/rpc/read_work_review_dashboard_v1`,{headers:{apikey:publishableKey,authorization:`Bearer ${auth.access_token}`,'x-offroad-workspace':f.organizationId},data:{p_work_id:f.workId,p_before_id:null,p_before_decision_id:null}});
+  const body:unknown=await response.json();
+  const errorCode=body&&typeof body==='object'&&'code' in body&&['42501','42P01','42883','PGRST202','PGRST301'].includes(String(body.code))?String(body.code):'other';
+  expect(response.status(),`public dashboard HTTP status; closed code=${errorCode}`).toBe(200);
+  const received=workReviewDashboardSchema.safeParse(body);
+  expect(received.success,`real public HTTP strict dashboard DTO paths=${schemaDiagnostic(received)}`).toBe(true);
+  if(received.success){expect(received.data.workId).toBe(f.workId);expect(received.data.organizationId).toBe(f.organizationId);expect(received.data.viewerId).toBe(reviewer);}
+  let history=await panel(secondPage,second);
   await expect(history).toContainText(copy.WorkReviewHistory.change.cosmetic);await expect(history).toContainText('Second human exact approval');
   await history.locator('textarea[name="review_history_reason"]').fill('Same evidence; layout only');
   await history.getByRole('button',{name:copy.WorkReviewHistory.reaffirm,exact:true}).click();
