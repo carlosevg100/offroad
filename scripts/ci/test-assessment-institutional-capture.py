@@ -28,10 +28,11 @@ assert len(fixture)==1
 s=fixture[0]
 drafts='' if mode=='0' else ''.join((ROOT/'supabase/pending'/(n+'.sql')).read_text()+'\n'for n in ['assessment_input_capture','assessment_review_projection','assessment_effective_case_input','work_update_native_adoption','assessment_institutional_capture','assessment_research_capture'])
 if mode=='1':s=s.replace('begin;','begin;\n'+drafts,1)
-# Real initial configuration producer and human approval before the final case
-# lease. The support file inserts input documents/facts only, never outputs.
+# Publish both source rights and the real initial configuration/human approval
+# before structure/plan approval fix their input and source closures. The support
+# file supplies synthetic inputs; native rows arise only from current commands.
 setup=(ROOT/'supabase/tests/support/assessment_institutional_nonempty.sql').read_text()
-marker='reset role;\ndo $$declare job uuid;begin\n select(value::jsonb'
+marker='-- 2. Structure confirmed, with the decision the structure form records.'
 assert s.count(marker)==1
 s=s.replace(marker,setup+'\n'+marker,1)
 needle="insert into route_proof values('native_claim',claim::text);"

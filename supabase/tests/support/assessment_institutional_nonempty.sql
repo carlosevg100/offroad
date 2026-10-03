@@ -18,11 +18,43 @@ values('d5800000-0000-4000-8000-000000000081','d5200000-0000-4000-8000-000000000
 insert into public.intake_field_candidates(organization_id,intake_session_id,source_document_id,processing_run_id,extractor_key,field_path,field_group,label,normalized_value,value_type,information_class,evidence_rank,source_anchor,confidence,anchor_verified,period_start,period_end,entity_name,entity_scope,review_state,reviewed_by,reviewed_at,currency,unit,value_scale,extraction_method,created_by)
 select 'd5200000-0000-4000-8000-000000000001','d5300000-0000-4000-8000-000000000001','d5500000-0000-4000-8000-000000000081','d5400000-0000-4000-8000-000000000001',f#>>'{key,fieldPath}',f#>>'{key,fieldPath}','historical_financials',f#>>'{key,fieldPath}',(f->>'value')::jsonb,'number','audited',1,f#>'{accepted,anchor}',1,true,(f#>>'{accepted,periodStart}')::date,(f#>>'{accepted,periodEnd}')::date,f#>>'{accepted,entityName}',f#>>'{accepted,entityScope}','accepted','d5100000-0000-4000-8000-000000000001',now(),'BRL','currency',1,'user_entry','d5100000-0000-4000-8000-000000000001'
 from jsonb_array_elements(current_setting('test.setup_facts')::jsonb) f;
+-- The installed projector binds document ID to exact byte-version ID. Check
+-- those real rows before switching to the restricted human SELECT policy.
+do $$begin
+ if(select count(*)from public.source_documents d join public.source_versions v on(v.organization_id,v.id)=(d.organization_id,d.id)
+ join public.sources src on(src.organization_id,src.id)=(v.organization_id,v.source_id)
+ join public.source_bindings b on(b.organization_id,b.source_version_id,b.resource_id)=(v.organization_id,v.id,d.intake_session_id)
+ where d.organization_id='d5200000-0000-4000-8000-000000000001'and d.id in('d5500000-0000-4000-8000-000000000081','d5500000-0000-4000-8000-000000000082')
+ and v.version_no=1 and src.origin_resource_id=d.intake_session_id and b.revoked_at is null)<>2 then raise exception 'setup_two_exact_source_version_bindings_required';end if;
+ raise notice 'PASS assessment_setup_installed_document_version_binding_exact';
+end$$;
 select set_config('request.jwt.claims','{"sub":"d5100000-0000-4000-8000-000000000001","role":"authenticated"}',true);
 set local role authenticated;
--- Declared synthetic customer-owned rights via the same human command used by product.
-select public.set_source_rights_v1(v.id,0,array['read','process','store','derive','export'],array['analysis','retrieval','export'],null,null,v.id,repeat('a',64))
-from public.source_versions v where v.organization_id='d5200000-0000-4000-8000-000000000001' and v.id in('d5500000-0000-4000-8000-000000000081','d5500000-0000-4000-8000-000000000082');
+-- Rights-free versions are intentionally hidden by current RLS. Enumerating
+-- source_versions here would silently execute zero setter calls. The exact IDs
+-- are those just supplied by this synthetic upload, not caller-chosen identities.
+do $$begin
+ if(select count(*)from public.source_versions where organization_id='d5200000-0000-4000-8000-000000000001'and id in('d5500000-0000-4000-8000-000000000081','d5500000-0000-4000-8000-000000000082'))<>0 then raise exception 'setup_unlicensed_versions_visible';end if;
+ raise notice 'PASS assessment_setup_unlicensed_versions_read_denied';
+end$$;
+select set_config('test.setup_rights_accounts',public.set_source_rights_v1('d5500000-0000-4000-8000-000000000081',0,array['read','process','store','derive','export'],array['analysis','retrieval','export'],null,null,'d5500000-0000-4000-8000-000000000081',repeat('a',64))::text,true);
+select set_config('test.setup_rights_uncited',public.set_source_rights_v1('d5500000-0000-4000-8000-000000000082',0,array['read','process','store','derive','export'],array['analysis','retrieval','export'],null,null,'d5500000-0000-4000-8000-000000000082',repeat('d',64))::text,true);
+do $$begin
+ if nullif(current_setting('test.setup_rights_accounts'),'')is null or nullif(current_setting('test.setup_rights_uncited'),'')is null then raise exception 'setup_human_rights_receipts_required';end if;
+ if(select count(*)from public.source_versions where organization_id='d5200000-0000-4000-8000-000000000001'and id in('d5500000-0000-4000-8000-000000000081','d5500000-0000-4000-8000-000000000082'))<>2 then raise exception 'setup_licensed_versions_not_visible';end if;
+ raise notice 'PASS assessment_setup_two_actual_human_rights_receipts_versions_read_allowed';
+end$$;
+reset role;
+do $$begin
+ if(select count(*)from private.source_rights_versions r where r.organization_id='d5200000-0000-4000-8000-000000000001'
+ and(r.source_version_id,r.id)in(('d5500000-0000-4000-8000-000000000081'::uuid,current_setting('test.setup_rights_accounts')::uuid),('d5500000-0000-4000-8000-000000000082'::uuid,current_setting('test.setup_rights_uncited')::uuid))
+ and r.revision=1 and r.evidence_kind='human_declaration' and r.created_by='d5100000-0000-4000-8000-000000000001'
+ and array['read','process','store','derive','export']<@r.operations and array['analysis','retrieval','export']<@r.purposes
+ and private.source_use_allowed_v1(r.organization_id,r.source_version_id,r.created_by,'process','analysis')
+ and private.source_use_allowed_v1(r.organization_id,r.source_version_id,r.created_by,'store','analysis'))<>2 then raise exception 'setup_exact_current_human_rights_missing';end if;
+ raise notice 'PASS assessment_setup_both_sources_current_process_store_rights';
+end$$;
+set local role authenticated;
 select set_config('test.setup_context',public.read_institutional_model_setup_v1((select capital_project_id from public.document_intake_sessions where id='d5300000-0000-4000-8000-000000000001'))::text,true);
 do $$declare result jsonb;accepted boolean:=false;begin
  if jsonb_array_length(current_setting('test.setup_context')::jsonb->'candidates')<15 then raise exception 'Current anchored facts unavailable';end if;
