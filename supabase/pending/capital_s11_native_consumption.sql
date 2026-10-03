@@ -391,39 +391,33 @@ begin
  and private.capital_body_storage_job_authority_v1(allocation.id);
 end; $$;
 
-create or replace function private.worker_can_access_capital_public_payload_v1(p_bucket text,p_path text,p_mode text)
+-- Preserve current material/M07/public-source authority; dispatch only S11.
+alter function private.worker_can_access_capital_public_payload_v1(text,text,text) rename to worker_can_access_capital_public_payload_pre_s11_v1;
+create function private.worker_can_access_capital_public_payload_v1(p_bucket text,p_path text,p_mode text)
 returns boolean language plpgsql volatile security definer set search_path='' as $$
-declare a private.capital_public_payload_allocations; deadline timestamptz; margin integer;
+declare a private.capital_public_payload_allocations;
 begin
- if p_mode='read' then return false;end if;
- if auth.uid() is null or p_bucket<>'capital-input-capture' or not private.capital_public_capture_bucket_safe_v1() then return false; end if;
+ -- Purge resolves the genuine leased janitor scope before kind dispatch.
+ if p_mode in('purge','purge_select') then return private.worker_can_access_capital_public_payload_pre_s11_v1(p_bucket,p_path,p_mode);end if;
  select * into a from private.capital_public_payload_allocations where bucket_id=p_bucket and object_path=p_path;
- if not found then return false; end if;
- if exists(select 1 from storage.objects o where o.bucket_id=p_bucket and o.name=p_path
-  and ((to_jsonb(o)->>'is_versioned')::boolean is true or (to_jsonb(o)->>'is_delete_marker')::boolean is true or to_jsonb(o)->>'archived_at' is not null)) then return false; end if;
- if p_mode in ('purge','purge_select') then
-  if p_mode='purge_select' and not storage.allow_any_operation(array['object.delete','object.delete_many','object.get_authenticated_info','object.head_authenticated_info']) then return false; end if;
-  return exists(select 1 from private.capital_public_payload_purge_queue q join private.worker_tokens w on w.id=q.worker_token_id
-   join auth.users u on u.id=q.leased_account_id where q.organization_id=a.organization_id and q.allocation_id=a.id and q.status='leased'
-   and q.leased_account_id=auth.uid() and q.lease_expires_at>clock_timestamp() and w.status='active' and w.revoked_at is null
-   and w.execution_account_user_id=auth.uid() and u.deleted_at is null and (u.banned_until is null or u.banned_until<=clock_timestamp()));
- end if;
- if a.content_kind='m07_body' then return private.capital_m07_storage_allowed_v1(a.id,p_mode);end if;
- if a.content_kind='s11_body' then return private.capital_s11_storage_allowed_v1(a.id,p_mode);end if;
- if a.content_kind='typed_body' and p_mode in ('read','upload') then
-  return private.capital_body_storage_allowed_v1(a.id,p_mode);
- end if;
- if p_mode='upload' and not private.capital_body_storage_job_authority_v1(a.id) then return false;end if;
- if p_mode not in ('read','upload') or not private.capital_public_allocation_job_current_v1(a.id)
-  or not private.capital_public_retention_healthy_v1(a.worker_token_id,a.policy_id) then return false; end if;
- if p_mode='upload' and (a.upload_expires_at<=clock_timestamp() or exists(select 1 from private.capital_public_retained_payloads where organization_id=a.organization_id and allocation_id=a.id)) then return false; end if;
- if p_mode='read' and not storage.allow_any_operation(array['object.get_authenticated','object.get_authenticated_info','object.head_authenticated_info']) then return false; end if;
- if not exists(select 1 from private.capital_public_payload_purge_queue where organization_id=a.organization_id and allocation_id=a.id and status='pending') then return false; end if;
- deadline:=private.capital_public_retention_deadline_v1(a.license_id,a.organization_id,a.retained_at,a.policy_id);
- select purge_margin_seconds into margin from private.capital_public_retention_policies where id=a.policy_id;
- if deadline is null or least(a.purge_at,deadline-make_interval(secs=>margin))<=clock_timestamp() then return false; end if;
- return true;
-end; $$;
+ if a.content_kind is distinct from 's11_body' then return private.worker_can_access_capital_public_payload_pre_s11_v1(p_bucket,p_path,p_mode);end if;
+ if exists(select 1 from storage.objects o where o.bucket_id=p_bucket and o.name=p_path and((to_jsonb(o)->>'is_versioned')::boolean is true or(to_jsonb(o)->>'is_delete_marker')::boolean is true or to_jsonb(o)->>'archived_at' is not null)) then return false;end if;
+ return private.capital_s11_storage_allowed_v1(a.id,p_mode);
+end$$;
+revoke all on function private.capital_s11_storage_allowed_v1(uuid,text),private.worker_can_access_capital_public_payload_pre_s11_v1(text,text,text) from public,anon,authenticated,service_role;
+revoke all on function private.worker_can_access_capital_public_payload_v1(text,text,text) from public,anon,authenticated,service_role;
+grant execute on function private.worker_can_access_capital_public_payload_v1(text,text,text) to authenticated;
+-- Policy expressions retain function OIDs across RENAME. Rebind them to the
+-- current dispatch rather than granting clients the historical implementation.
+do $$declare p record;ddl text;begin
+ for p in select * from pg_policies where schemaname='storage' and tablename='objects' and(coalesce(qual,'') like '%worker_can_access_capital_public_payload_pre_s11_v1%' or coalesce(with_check,'') like '%worker_can_access_capital_public_payload_pre_s11_v1%') loop
+ ddl:=format('alter policy %I on storage.objects',p.policyname);
+ if p.qual is not null then ddl:=ddl||' using ('||replace(p.qual,'worker_can_access_capital_public_payload_pre_s11_v1','worker_can_access_capital_public_payload_v1')||')';end if;
+ if p.with_check is not null then ddl:=ddl||' with check ('||replace(p.with_check,'worker_can_access_capital_public_payload_pre_s11_v1','worker_can_access_capital_public_payload_v1')||')';end if;
+ execute ddl;
+ end loop;
+end$$;
+
 
 -- The base is captured before research. Only SQL supplies its actual body; a
 -- caller cannot smuggle a fresh context underneath a prior captured identity.
