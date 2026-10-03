@@ -34,6 +34,15 @@ function harness(){
  return{job:{jobId:currentJob,organizationId:org,workId:work},ports,grant,receipt,physical};
 }
 describe("S11 physical recovery, pure unit ports",()=>{
+ it("accepts exactly the four fixed human-revision predecessors, without relaxing initial binding",()=>{
+  const h=harness();for(let i=0;i<2;i++){const dependency={id:randomUUID(),artifactFingerprint:String(i).repeat(64)};h.grant.reconstructionMetadata.dependencies.push(dependency);h.grant.recipe.components.push({slot:"dependency",id:dependency.id,version:1,bodyFingerprint:legacyGatewayFingerprint({artifactFingerprint:dependency.artifactFingerprint})});}
+  expect(capitalS11RecoveryGrantSchema.safeParse(h.grant).success).toBe(true);
+  h.grant.reconstructionMetadata.dependencies[3]!.id=randomUUID();expect(capitalS11RecoveryGrantSchema.safeParse(h.grant).success).toBe(false);
+ });
+ it.each([1,3,5])("rejects unsupported predecessor cardinality %i",count=>{
+  const h=harness();h.grant.reconstructionMetadata.dependencies=Array.from({length:count},()=>({id:randomUUID(),artifactFingerprint:"a".repeat(64)}));expect(capitalS11RecoveryGrantSchema.safeParse(h.grant).success).toBe(false);
+ });
+
  it("keeps the contract denial code while exposing only a closed diagnostic",()=>{const e=new CapitalS11RecoveryGap("capital_s11_recovery_body_identity_changed");expect(e.code).toBe("capital_s11_retained_recovery_required");expect(e.message).toBe("capital_s11_recovery_body_identity_changed");});
  it("replays a committed original product under a successor grant without any model/research/derive port",async()=>{
   const h=harness();expect(await recoverCapitalS11(h.job,h.ports,()=>Date.parse("2026-10-02T01:00:00Z"))).toMatchObject(h.receipt);
