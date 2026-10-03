@@ -980,7 +980,7 @@ function objectiveRoutingObservation(
  * promoted. The resulting blocked/partial decision is the migration evidence used to build that
  * inventory without ever treating catalogue entries as executable methods.
  */
-function compileObjectivePreflight(
+export function compileObjectivePreflight(
   context: AgentContext,
   workflowTerminal?: ObjectiveOutputTerminal,
   objectiveText = context.message,

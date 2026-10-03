@@ -167,6 +167,8 @@ jobs:
       run: cp ../audit/scripts/ci/test-execution-brief-native-agent.py scripts/ci/test-execution-brief-native-agent.py
     - name: Overlay initial published plan for preview fixture bootstrap
       run: cp ../audit/apps/document-worker/scripts/execution-brief-native-preview-fixture.ts apps/document-worker/scripts/execution-brief-native-preview-fixture.ts
+    - name: Reuse actual objective preflight compiler in preview fixture
+      run: cp ../audit/apps/document-worker/src/agent-operation-brief.ts apps/document-worker/src/agent-operation-brief.ts
     - name: Finite native preview through real Storage, two paid boundaries and replay
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}

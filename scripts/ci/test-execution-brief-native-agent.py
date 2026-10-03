@@ -25,7 +25,7 @@ def literal(x): return "'"+str(x).replace("'","''")+"'"
 p=subprocess.Popen(['psql',url,'-XAtq','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
 def phase(sql):
  if preview_fixture:
-  sql=sql.replace('preview-http','preview-http-'+http_namespace).replace('preview-publisher@example.invalid','preview-publisher-'+http_namespace+'@example.invalid').replace('Synthetic capital planning','Synthetic finite preview').replace('Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','Preparar material para reunião interna da Camil, somente validação sintética.').replace("'capital_planning','public_information'","'origination_thesis','public_information'")
+  sql=sql.replace('preview-http','preview-http-'+http_namespace).replace('preview-publisher@example.invalid','preview-publisher-'+http_namespace+'@example.invalid').replace('Synthetic capital planning','Synthetic finite preview').replace('Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','Preparar material para uma reunião interna da Camil sobre alternativas de refinanciamento e alongamento dos vencimentos, somente validação sintética.').replace("'capital_planning','public_information'","'origination_thesis','public_information'")
  if ui_namespace:
   sql=sql.replace('a8800000',ui_namespace).replace('native-agent@example.invalid','native-agent-'+ui_namespace+'@example.invalid').replace('Synthetic native agent','Synthetic native agent '+ui_namespace).replace("repeat('d',64)","repeat('"+ui_namespace+"',8)")
  if http_namespace:
@@ -79,6 +79,18 @@ try:
  assert compiled.returncode==0,compiled.stdout+compiled.stderr
  product=json.loads(compiled.stdout)
  sql="insert into agent_fixture values('product',"+literal(json.dumps(product))+"::jsonb);"
+ if preview_fixture:
+  # Persist the exact production compiler result through the same public
+  # capability-bound preflight command used by the conversational worker.
+  sql+="""
+   insert into agent_fixture select 'workflow_preflight',public.worker_record_objective_plan_preflight_v5(
+    (j.v->>'job_id')::uuid,j.v->>'capability_token',p.v#>'{preflight,objectivePlan}',p.v#>'{preflight,preflightDecision}',
+    p.v#>'{preflight,specialization}',p.v#>'{preflight,methodBinding}',p.v#>'{preflight,workflowSelection}',p.v#>'{preflight,dispatchCandidate}')
+   from agent_fixture j,agent_fixture p where j.k='claim'and p.k='product';
+   do $$begin if not exists(select 1 from agent_fixture recorded,agent_fixture product where recorded.k='workflow_preflight'and product.k='product'
+    and recorded.v->>'workflow_selection_status'='selected'and recorded.v->>'workflow_selection_id'~'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'and recorded.v->>'workflow_selection_fingerprint'=product.v#>>'{preflight,workflowSelection,fingerprint}')then
+    raise exception 'preview_fixture_workflow_preflight_not_selected';end if;end$$;
+  """
  sql+="""
  insert into agent_fixture select 'recorded',public.worker_record_agent_response_and_activate_v7((j.v->>'job_id')::uuid,j.v->>'capability_token',(c.v->>'captureId')::uuid,'a8800000-0000-4000-8000-000000000011','{"state":"idle","reply":"Vamos comparar as alternativas de financiamento."}',null,p.v->'activation',p.v->'internal',p.v->'visible',p.v->'changeSummary',p.v->>'expectedInputFingerprint') from agent_fixture j,agent_fixture c,agent_fixture p where j.k='claim' and c.k='capture' and p.k='product';
  reset role;
