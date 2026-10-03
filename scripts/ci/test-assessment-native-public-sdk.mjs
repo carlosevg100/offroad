@@ -14,9 +14,33 @@ try {
   await mkdir(join(worker, "dist"), {recursive: true});
   temporary = await mkdtemp(join(worker, "dist", "assessment-public-sdk-eval-"));
   const entry = join(temporary, "eval.mjs");
-  const isolated=value=>value.replaceAll('-000000000201','-000000000711').replaceAll('-000000000202','-000000000712').replaceAll('-000000000993','-000000000713').replaceAll('origination-owner@','assessment-public-owner@').replaceAll('other-tenant@','assessment-public-outsider@').replaceAll('m07-publisher@','assessment-public-publisher@');
+  const isolated=value=>value.replaceAll('-000000000201','-000000000711').replaceAll('-000000000202','-000000000712').replaceAll('-000000000993','-000000000713').replaceAll('origination-owner@','assessment-public-owner@').replaceAll('other-tenant@','assessment-public-outsider@').replaceAll('m07-publisher@','assessment-public-publisher@').replaceAll('m07-sql-account','assessment-public-sql-account').replaceAll('m07-sql-project','assessment-public-sql-project').replaceAll('m07-sql-key','assessment-public-sql-key').replaceAll('origination-thesis-worker-test','assessment-public-worker-test').replaceAll("'w'.repeat(64)","'p'.repeat(64)").replaceAll("repeat('w', 64)","repeat('p', 64)").replaceAll('https://example.invalid/capture-licensed','https://example.invalid/capture-assessment-public');
   let source=await readFile(join(worker,"scripts","capital-m07-native-sdk-eval.ts"),"utf8");
   source=isolated(source);
+  const fixture=isolated(await readFile(fileURLToPath(new URL("../../supabase/tests/support/capital_m07_native_sdk_fixture.sql",import.meta.url)),"utf8"));
+  for(const original of ['m07-sql-account','m07-sql-project','m07-sql-key','https://example.invalid/capture-licensed',"'w'.repeat(64)","repeat('w', 64)",'-000000000201','-000000000202','-000000000993']){
+    if(source.includes(original)||fixture.includes(original))throw new Error('assessment_public_namespace_not_isolated');
+  }
+  for(const identity of ['assessment-public-sql-account','assessment-public-sql-project','assessment-public-sql-key','https://example.invalid/capture-assessment-public']){
+    if(!source.includes(identity)||!fixture.includes(identity))throw new Error('assessment_public_namespace_binding_mismatch');
+  }
+  if(!source.includes("workerToken:'p'.repeat(64)")||!fixture.includes("extensions.digest(repeat('p', 64), 'sha256')"))throw new Error('assessment_public_worker_binding_mismatch');
+  // psql's verbose error yields a SQLSTATE and a closed identifier/category.
+  // Never forward stderr: it can contain SQL values, source bodies or secrets.
+  const sqlDiagnostic=stderr=>{
+    if(typeof stderr!=='string')return {};
+    const match=/ERROR:\s+([A-Z0-9]{5}):\s+([^\r\n]+)/.exec(stderr);
+    const code=match?.[1]??null, message=match?.[2]??'';
+    const category=/^[a-z][a-z0-9_]{2,119}$/.test(message)?message:null;
+    const constraint=/CONSTRAINT NAME:\s+([a-z_][a-z0-9_]{0,62})/.exec(stderr)?.[1]??null;
+    const table=/TABLE NAME:\s+([a-z_][a-z0-9_]{0,62})/.exec(stderr)?.[1]??null;
+    return {code,category,constraint,table};
+  };
+  if(sqlDiagnostic('ERROR:  23505: provider_assurance_overlap').category!=='provider_assurance_overlap'||sqlDiagnostic('ERROR:  23505: duplicate key value violates unique constraint "synthetic_pkey"\nCONSTRAINT NAME: synthetic_pkey').constraint!=='synthetic_pkey'||sqlDiagnostic('ERROR:  23505: private body with spaces').category!==null)throw new Error('assessment_public_sql_diagnostic_invalid');
+  const sqlOld="if(result.error||result.status!==0)throw new Error('local SQL failed');";
+  if(source.split(sqlOld).length!==2)throw new Error('assessment_public_sql_contract_changed');
+  source=source.replace("'ON_ERROR_STOP=1','-Atq'","'ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-Atq'").replace(sqlOld,"if(result.error||result.status!==0){process.stderr.write(JSON.stringify({eval:'assessment_native_public_sdk',event:'fixture-sql-failure',phase,...assessmentSqlDiagnostic(result.stderr)})+'\\n');throw new Error('local SQL failed');}");
+  source='const assessmentSqlDiagnostic='+sqlDiagnostic.toString()+';\n'+source;
   // Keep the inherited runtime body untouched. Diagnose only PostgreSQL's
   // missing SQL identifier, never the raw error or source/model content.
   const identifier=(code,message)=>{if(code!=='42P01'||typeof message!=='string')return {};const relation=/relation "([a-z_][a-z0-9_.]{0,126})" does not exist/.exec(message)?.[1];const alias=/missing FROM-clause entry for table "([a-z_][a-z0-9_]{0,62})"/.exec(message)?.[1];return relation?{missingRelation:relation}:alias?{missingFromAlias:alias}:{};};

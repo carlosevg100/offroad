@@ -13,6 +13,11 @@ on:
         type: boolean
         required: false
         default: false
+      assessment_diagnostic_baseline:
+        description: Reproduce the preceding M07 SDK only in the isolated diagnosis
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -608,7 +613,7 @@ jobs:
       # Keep append-only M07 evidence isolated from the earlier claim/race fixtures.
       # The always-run Supabase stop below destroys this local database and Storage.
       - name: Native M07 producer and physical recovery through the SDK
-        if: ${{ !inputs.assessment_diagnostic }}
+        if: ${{ !inputs.assessment_diagnostic || inputs.assessment_diagnostic_baseline }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
