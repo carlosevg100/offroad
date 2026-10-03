@@ -18,6 +18,31 @@ import {createNativeProviderPorts} from "../src/capital-native-provider-adapter"
 import {consumeNativeProviderWork} from "../src/capital-native-provider-consumer";
 import type {CapitalPublicDeliveryRequest} from "../src/capital-public-capture-adapter";
 let phase="startup";
+const rpcNames=new Set(["worker_recover_capital_native_provider_v1","worker_prepare_capital_native_recipe_v1","worker_read_capital_native_allocation_v1","worker_commit_capital_body_v1","worker_finalize_capital_native_recipe_v1","worker_read_capital_native_recipe_v1","worker_prepare_capital_native_result_v1","worker_commit_capital_native_result_v1","worker_read_capital_native_result_v1"]);
+type TransportDiagnostic={operation:string;status:number;errorCode:string|null;octetStream:boolean;noStore:boolean;physicalHeadersComplete:boolean};
+const transportDiagnostics:TransportDiagnostic[]=[];
+function diagnosticOperation(value:string):string|null{
+ const path=new URL(value).pathname,command=path.split("/").at(-1)!;
+ if(path.startsWith("/rest/v1/rpc/")&&rpcNames.has(command))return command;
+ if(path==="/functions/v1/capital-body-read")return "capital_body_read";
+ if(path.startsWith("/storage/v1/object/capital-input-capture/"))return "storage_upload";
+ return null;
+}
+async function diagnosticFetch(input:Parameters<typeof fetch>[0],init?:Parameters<typeof fetch>[1]){
+ const response=await fetch(input,{...init,redirect:"error"});
+ const operation=diagnosticOperation(typeof input==="string"?input:input instanceof URL?input.href:input.url);
+ if(operation){
+  let errorCode:string|null=null;
+  if(!response.ok){try{const value:unknown=await response.clone().json();if(value&&typeof value==="object"&&!Array.isArray(value)){
+   const code=(value as Record<string,unknown>).code;if(typeof code==="string"&&["42501","22023","23505","40001","55P03","PGRST202","PGRST204"].includes(code))errorCode=code;
+  }}catch{/* Never emit untrusted transport bodies. */}}
+  transportDiagnostics.push({operation,status:response.status,errorCode,octetStream:response.headers.get("content-type")==="application/octet-stream",noStore:response.headers.get("cache-control")?.split(",").some(v=>v.trim()==="no-store")??false,
+   physicalHeadersComplete:["x-offroad-recipe-id","x-offroad-allocation-id","x-offroad-object-id","x-offroad-storage-version","x-offroad-payload-sha256","x-offroad-byte-length"].every(key=>response.headers.has(key))});
+  if(transportDiagnostics.length>24)transportDiagnostics.shift();
+ }
+ return response;
+}
+
 function localTarget(value:string,protocol:string){const p=new URL(value);assert.equal(p.protocol,protocol);assert.ok(["localhost","127.0.0.1","[::1]"].includes(p.hostname));assert.equal(p.search,"");assert.equal(p.hash,"");if(protocol==="http:"){assert.equal(p.username,"");assert.equal(p.password,"");assert.ok(["","/"].includes(p.pathname));}return p;}
 function allowedKey(value:string){if(value.startsWith("sb_publishable_"))return;assert.equal(JSON.parse(Buffer.from(value.split(".")[1]??"","base64url").toString()).role,"anon");}
 function missing(status:number,value:unknown){if(!value||typeof value!=="object"||Array.isArray(value))return false;const v=value as Record<string,unknown>;return[400,404].includes(status)&&String(v.statusCode)==="404"&&["not_found","Not Found"].includes(String(v.error))&&["object not found","the resource was not found"].includes(String(v.message).toLowerCase());}
@@ -27,6 +52,19 @@ const literal=(value:string)=>"'"+value.replaceAll("'","''")+"'";
 async function main(){
  if(process.argv[2]==="--self-test"){
   assert.throws(()=>localTarget("https://production.supabase.co","http:"));assert.throws(()=>localTarget("postgresql://remote.invalid/db","postgresql:"));assert.throws(()=>allowedKey("sb_secret_never"));
+  assert.equal(diagnosticOperation("http://localhost:54321/rest/v1/rpc/worker_prepare_capital_native_recipe_v1"),"worker_prepare_capital_native_recipe_v1");
+  assert.equal(diagnosticOperation("http://localhost:54321/rest/v1/rpc/arbitrary_secret_name"),null);
+  assert.equal(diagnosticOperation("http://localhost:54321/storage/v1/object/capital-input-capture/private/path"),"storage_upload");
+  assert.equal(diagnosticOperation("http://localhost:54321/auth/v1/token?password=private"),null);
+  const actualFetch=globalThis.fetch;
+  try{
+   globalThis.fetch=async()=>new Response(JSON.stringify({code:"42501",message:"private raw body",details:"private token"}),{status:403,headers:{"content-type":"application/json"}});
+   await diagnosticFetch("http://localhost:54321/rest/v1/rpc/worker_prepare_capital_native_recipe_v1",{body:"private capability"});
+   assert.deepEqual(transportDiagnostics.at(-1),{operation:"worker_prepare_capital_native_recipe_v1",status:403,errorCode:"42501",octetStream:false,noStore:false,physicalHeadersComplete:false});
+   assert.ok(!JSON.stringify(transportDiagnostics).includes("private"));
+   globalThis.fetch=async()=>new Response(JSON.stringify({code:"arbitrary_private_code",message:"private raw body"}),{status:400});
+   await diagnosticFetch("http://localhost:54321/functions/v1/capital-body-read");assert.equal(transportDiagnostics.at(-1)?.errorCode,null);
+  }finally{globalThis.fetch=actualFetch;transportDiagnostics.length=0;}
   assert.equal(fingerprintJson(publicCapitalCatalogSourceSnapshot),publicCapitalCatalogReference.sourceFingerprint);
   assert.ok(missing(400,{statusCode:"404",error:"not_found",message:"Object not found"}));assert.equal(missing(403,{statusCode:"404",error:"not_found",message:"Object not found"}),false);
   process.stdout.write("capital_native_provider_sdk_static: PASS (local target/anon guard, catalogue fingerprint, strict absence; no SQL or HTTP)\n");return;
@@ -49,13 +87,21 @@ async function main(){
  for(const family of ["provider_case_fit","provider_research"]as const){
   const suffix=family==="provider_research"?"981":"971",organization=`20000000-0000-4000-8000-000000000${suffix}`,actor=`10000000-0000-4000-8000-000000000${suffix}`;
   phase=`${family}_local_fixture_approval`;sql(db,expand(join(root,`supabase/tests/support/capital_native_provider_${family==="provider_research"?"research":"case_fit"}_sdk_fixture.sql`)));
-  const client=createClient(api,key,{global:{headers:{"x-offroad-workspace":organization},fetch:(input,init)=>fetch(input,{...init,redirect:"error"})},auth:{persistSession:false}});
+  const client=createClient(api,key,{global:{headers:{"x-offroad-workspace":organization},fetch:diagnosticFetch},auth:{persistSession:false}});
   phase=`${family}_real_auth`;const login=await client.auth.signInWithPassword({email:family==="provider_research"?"provider-research-a@example.invalid":"case-fit-a@example.invalid",password:"native-provider-isolated-local-password"});assert.equal(login.error,null);assert.equal(login.data.user?.id,actor);
   const token=family==="provider_research"?"v".repeat(64):"u".repeat(64),queue=createQueueClient(client,{workerToken:token,leaseSeconds:600});
   phase=`${family}_real_claim`;const claimed=await queue.claim();assert.ok(claimed&&claimed.kind==="capital_project_analysis");const job=claimed as CapitalProjectAnalysisJob;assert.equal(job.payload.analysis_scope,family);assert.equal(job.organization_id,organization);await ensureInitialAgentPlan(job,queue);
   assert.equal((await client.rpc("worker_claim_capital_capture_purge_v1",{p_worker_token:token,p_limit:100})).error,null);
   const ports=createNativeProviderPorts({client,job,cataloguePublication:async()=>publication});
-  phase=`${family}_actual_native_producer`;const first=await consumeNativeProviderWork(job,ports);assert.equal(first.status,"succeeded");assert.equal(first.modelCalls,0);assert.equal(first.artifact.grantsApproval,false);
+  phase=`${family}_actual_native_producer`;
+  const observedPorts={...ports,
+   recover:async()=>{phase=`${family}_native_recover`;return ports.recover();},
+   capture:async()=>{phase=`${family}_native_capture`;return ports.capture();},
+   readContext:async(recipe:Parameters<typeof ports.readContext>[0])=>{phase=`${family}_native_read_context`;return ports.readContext(recipe);},
+   readCatalog:async(recipe:Parameters<typeof ports.readCatalog>[0])=>{phase=`${family}_native_read_catalog`;return ports.readCatalog(recipe);},
+   commit:async(value:Parameters<typeof ports.commit>[0])=>{phase=`${family}_native_commit_${value.taskId.toLowerCase()}`;return ports.commit(value);},
+  };
+  const first=await consumeNativeProviderWork(job,observedPorts);assert.equal(first.status,"succeeded");assert.equal(first.modelCalls,0);assert.equal(first.artifact.grantsApproval,false);
   const recipeId=z.uuid().parse(first.artifact.recipeId),revision=z.uuid().parse(first.artifact.revisionId);
   phase=`${family}_catalog_oracle`;const oracle=JSON.parse(sql(db,`select jsonb_build_object('recipes',(select count(*)from private.capital_native_recipes where job_id=j.id),'bindings',(select count(*)from private.capital_native_result_bindings where recipe_id='${recipeId}'),'calls',j.model_calls,'accepted',(select count(*)from private.capital_body_accepted_invocations accepted join private.capital_body_invocation_inputs input on input.organization_id=accepted.organization_id and input.id=accepted.input_receipt_id where input.job_id=j.id),'tasks',(select count(*)from public.capital_project_task_runs where processing_job_id=j.id and status='succeeded'))from public.processing_jobs j where j.id='${job.job_id}';`));
   assert.deepEqual(oracle,{recipes:1,bindings:3,calls:0,accepted:0,tasks:3});
@@ -86,4 +132,4 @@ async function main(){
   process.stdout.write(JSON.stringify({eval:family,result:"PASS",modelCalls:0,checks:["grandfathered-fixture-approval-explicit","native-recipe-source-bytes","three-real-task-results","zero-accepted","replay-before-build","human-physical-current-read","direct-Storage-denied","actual-queue-completed","real-janitor-SDK-delete-info404-catalog-absence","erase-ack-idempotent","post-purge-human-denied"]})+"\n");
  }
 }
-main().catch(error=>{const code=error instanceof Error&&/^[a-z0-9_]{3,120}$/.test(error.message)?error.message:null;process.stderr.write(JSON.stringify({eval:"capital_native_provider_sdk",result:"FAIL",phase,code})+"\n");process.exitCode=1;});
+main().catch(error=>{const code=error instanceof Error&&/^[a-z0-9_]{3,120}$/.test(error.message)?error.message:null;process.stderr.write(JSON.stringify({eval:"capital_native_provider_sdk",result:"FAIL",phase,code,transport:transportDiagnostics})+"\n");process.exitCode=1;});

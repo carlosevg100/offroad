@@ -149,6 +149,8 @@ jobs:
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
       run: node scripts/ci/test-capital-native-provider-sdk.mjs --sql-contracts
+    - name: Overlay SDK-only closed transport diagnostic
+      run: cp ../audit/apps/document-worker/scripts/capital-native-provider-sdk-eval.ts apps/document-worker/scripts/capital-native-provider-sdk-eval.ts
     - name: Native deterministic providers through real Storage and Edge
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
