@@ -1,0 +1,26 @@
+{
+  "consumersHead": "e48084c4c2b0b82b9955e50f7f3eb2885cc096c6",
+  "assessmentHead": "5fe11f9a5be67e229f1515ba1708e751e891c4fa",
+  "consumers": {
+    "capital_public_artifact_review_cutover": "9a315c26be6b5fddcdf5adf36cc6e85183196df95c47925172f803b037eb180e",
+    "capital_s11_native_consumption": "da9d4fe63362ede4ae1aa1ab8359c707601c4498d800f37710747c01548ffc5a",
+    "capital_s11_execution_ledger": "2b00bb2e6809ffaa7113baf64bcb98d2f3b55504f9c140059cbd4bc6f73939bc",
+    "capital_s11_task_projections": "a17edee0b05458c0bd4cb66b80a82b573a29137d5cb94bce67bb6c1cf40bce7f",
+    "capital_s11_native_commit": "ce6d900e3039821d6a4642babd7ecc6edd833afd40a892f0000c877be001a407",
+    "capital_s11_native_revision": "07c82b15449383d4fa046bda162bf605bb92b4eb4468099b05efb0bc50c98812",
+    "capital_debt_native_consumption": "a932a1965d975e2e8d70cef9f97376cc4d3b70fa5706d5eaf23c121e3eeafaa7",
+    "capital_debt_execution_ledger": "e27536745119e4ffda55df5dd2ec25bc21a93a5ecef6eeb2681eb944df3c521a",
+    "capital_debt_task_projections": "fc4c8e012b8413578a197c0d576ad19880c2a457987642c08dc6cc24b21670c7",
+    "capital_debt_native_commit": "3cbcc795ae0f323a1e914edcb7483bbd42cbcb002e432ebd8624de1bbb9f5e5b",
+    "capital_debt_native_revision": "024c64f3aac426563b34ad5407fab9915d8e83b0f8d2d732a857004f456d193e"
+  },
+  "assessment": {
+    "assessment_input_capture": "34bbb5cc8d9c5244a12ee1dfa37354befb96256eb0d766cb996389dc6889a3ff",
+    "assessment_review_projection": "127f710edcc592e9fbc233521dd268d5011c4a1b959a271393fb4c227e783ed7",
+    "assessment_effective_case_input": "68c05f0b54a2be46189d559bf9b4b02f3496c71819c4eaf4cc59199cc0fb3075",
+    "work_update_native_adoption": "b5a1ec96ce6201b94f58582d3c42adfe8734ff548b55fdbb2acf4668edacf716",
+    "assessment_institutional_capture": "9e1e66dc54e87963ce4cc0d1c50c406580db6a911cac5884cd95126cfe36416f",
+    "assessment_research_capture": "ffedfbe410c1cc4a92abdb243298dab35c42e2cf6fa2435a1448a3254515214c"
+  },
+  "baselineHead": "16fb3a0bf303f85ba637aba458c68925e1908a5b"
+}

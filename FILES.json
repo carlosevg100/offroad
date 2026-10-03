@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "combined-native-sql-eval-cut.v2",
+  "files": [
+    {
+      "path": ".github/workflows/combined-native-sql-proof.yml",
+      "sha256": "b31e4b6a7d2823523c7f87b51751b5e6baedfcd1d298600e28171b4d2ac8c3e7"
+    },
+    {
+      "path": "scripts/ci/test-combined-native-consumers-assessment.py",
+      "sha256": "b94dd26aae613f34faaec78c21c2e3ff98bc3ce30cbe9f39db982a8a3496d0a3"
+    },
+    {
+      "path": "supabase/tests/support/combined_native_wrapper_chain.sql",
+      "sha256": "a67b24bea92c1c694cb4cd2ce6d10fd5742b4dcba2c9a71d14b5a049b5ea2255"
+    },
+    {
+      "path": "COMBINED-SOURCES.json",
+      "sha256": "cbedf2b39fbf98b27176f79475497cb0bcc843dd1a0606715e6c33be8ad55c4c"
+    },
+    {
+      "path": "README.md",
+      "sha256": "1bf2034f130bd912df5f33cc31fbc8532d62dd5d1bf221954b16f47b05d0dd33"
+    }
+  ],
+  "passed": [
+    "python-syntax",
+    "harness-loopback-explicit-opt-in-guard",
+    "frozen-draft-hashes-17-current-heads",
+    "workflow-YAML-dispatch-only-11-steps-3-pinned-checkouts-always-cleanup"
+  ],
+  "unexecuted": [
+    "workflow-dispatch",
+    "combined-install-11-then-6",
+    "wrapper-chain-ACL-SQL",
+    "S11-debt-negatives",
+    "assessment-four-real-rollback-suites"
+  ],
+  "retirement": "Temporary audit branch/workflow: never merge; retire after combined PASS and canonical promotions installed.",
+  "activation": "push to dedicated temporary audit branch; workflow_dispatch on non-default new workflow is not assumed"
+}

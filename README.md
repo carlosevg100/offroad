@@ -1,62 +1,24 @@
-# Offroad Capital
+# Combined native SQL proof
 
-Monorepo oficial da Offroad Capital, o advisor AI-native especialista em dívida que ajuda
-companhias e profissionais do mercado a pensar, investigar, analisar, decidir, estruturar e
-executar trabalhos relacionados a dívida. Este repositório contém o site institucional bilíngue,
-a aplicação autenticada e os núcleos determinísticos de domínio.
+Frozen inputs: consumers `e48084c4`, assessment `5fe11f9`. `COMBINED-SOURCES.json` pins all seventeen draft byte hashes. No shared files, Git refs, migration journals or remote databases are changed by this cut.
 
-## Estado atual
+Run on a **dedicated freshly started disposable Supabase CI stack** after the canonical migrations, including M07, brief and material. Do not run on the parent/sibling stack or after either candidate installer has already run. The harness deliberately refuses an already-installed candidate.
 
-- Produção: <https://offroad.capital> (Vercel, deploy a partir de `main`; `www` redireciona para o apex; site permanece `noindex` até a liberação de marca).
-- Backend: projeto Supabase `offroad-development` (São Paulo, `sa-east-1`), Auth (código de 6 dígitos por e-mail via Resend), Postgres 17 com RLS em todas as tabelas, Storage privado. É o único projeto: **não há staging separado**.
-- Operacional hoje: site bilíngue, cadastro/verificação/recuperação, onboarding por perfil, workspace autenticado, novo case (documentos primeiro ou manual), upload privado com SHA-256 e revisão de evidências, pacote de aceitação Rede Horizonte verificado por hash, núcleos `financial-core`/`matching-core`/`domain-contracts` iniciais.
-- Ainda não operacional: extração geral de documentos (OCR/parsers/LLM), sala de crédito completa, matching persistido e discovery de provedores, outputs gerados, agentes, admin interno, Sentry/PostHog externos, MFA.
-
-A orientação completa (produto, arquitetura, rotas, dados, segurança, dívidas e próximos passos) está em [`handoff.md`](handoff.md). As regras de trabalho para agentes e humanos estão em [`AGENTS.md`](AGENTS.md).
-
-## Produto e fontes de verdade
-
-- Constituição vigente: `docs/build/OFFROAD_DCM_OPERATING_CONSTITUTION.md`
-- Motor de profundidade combinável: `docs/build/COMPOSABLE_DCM_DEPTH_ENGINE.md`
-- Blueprint v3.0: snapshot histórico; seu posicionamento origination-first foi superado pela Constituição 2.2 e pela ADR 0019
-- Plano por gates: `docs/build/MASTER_PLAN.md`
-- Estado e evidências: `docs/build/BUILD_STATE.md`, `docs/build/ACCEPTANCE_EVIDENCE.md`
-- Decisões arquiteturais: `docs/adr/`
-
-## Desenvolvimento local
-
-Requisitos: Node.js 24 (`.nvmrc`; use `fnm`/`nvm`) e pnpm 10.32.1.
-
-```bash
-pnpm install --frozen-lockfile
-pnpm dev
+```sh
+OFFROAD_COMBINED_NATIVE_EVAL=isolated-loopback-ci \
+python3 /private/tmp/offroad-combined-native-ci-cut/scripts/ci/test-combined-native-consumers-assessment.py \
+  --consumers-root /private/tmp/offroad-consumers-cut-snapshot \
+  --assessment-root /private/tmp/offroad-assessment-cut-snapshot
 ```
 
-A aplicação sobe em `http://localhost:3000`. Sem `NEXT_PUBLIC_SUPABASE_URL` e
-`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` as páginas públicas funcionam e as rotas
-autenticadas informam que a identidade não está configurada. Copie apenas valores públicos
-aprovados para um `.env.local` ignorado pelo Git (ou use `vercel env pull`).
+`DATABASE_URL` must already point to that disposable loopback database. Do not print its credentials. Paths may be changed to equivalent checked-out CI roots; the seventeen hashes must remain exact. The two existing installers run in their own atomic transactions, in order **eleven consumers, then six assessment**. Failure stops the run immediately. The harness never resets a database, installs mocks, executes model calls or supplies fake authority receipts.
 
-Quality gate completo (obrigatório antes de abrir PR; é o mesmo que roda no CI):
+After installation it checks the current work-update → debt → S11 receipt-authority wrapper chain, denies direct API execution of the three receipt helpers, and checks that the M07 result writer retains its native commit/clock guards plus atomic assessment index. It then executes the existing S11 task-projection and debt-ledger hostile command suites, followed by all four existing assessment rollback suites (review, rejection/revision, public-research denial, work-update adoption).
 
-```bash
-pnpm check
-```
+This proof is limited to combined SQL installation, catalogue/ACL composition and the selected real rollback suites. SDK HTTP, positive S11/debt producer lifecycle, CI full gates and staging/production catalogue/deployment checks remain their existing gates. Those are not inferred from this harness.
 
-Nenhum segredo pertence ao repositório. `.env.example` é apenas o catálogo de variáveis;
-valores reais vivem nos secret stores de cada ambiente.
+Evidence at preparation: Python syntax PASS; loopback/explicit-opt-in guard self-test PASS; hashes17 PASS. SQL/installation/runtime suites **UNEXECUTED**: neither port55437 nor54322 responded and Docker/socket were absent. No substitute Postgres/Auth/Storage stubs were created.
 
-## Banco de dados e migrations
+Temporary workflow: `.github/workflows/combined-native-sql-proof.yml`. Root publishes only this harness cut on a temporary audit branch and dispatches that workflow; it is explicitly **not merged** and cannot satisfy release branch-protection checks. It checks out the exact baseline/core/assessment SHAs recorded in `COMBINED-SOURCES.json` into separate folders and applies no candidate SQL from the audit Git tree. Node uses the canonical baseline `.nvmrc`; Supabase CLI/actions/stack exclusions mirror the existing database CI. No dependency installation or model/HTTP fixture is needed for this SQL-only proof.
 
-O schema muda somente por migrations em `supabase/migrations/`. O fluxo (aplicar via
-Supabase MCP ou `supabase db push`, alinhar o nome do arquivo à versão registrada,
-regenerar `apps/web/src/types/database.ts`, rodar advisors e o teste de RLS) está em
-`AGENTS.md` §6. O CI sobe um stack Supabase local, aplica todas as migrations do zero e
-executa `supabase/tests/rls_non_interference.sql` a cada PR.
-
-## Arquitetura operacional
-
-- Frontend e rotas server-side: Next.js 16 (App Router, Server Actions) na Vercel
-- Auth, Postgres (RLS como fronteira de autorização) e Storage privado: Supabase
-- Observabilidade: adapters privacy-first para Sentry e PostHog (no-op até os projetos externos serem criados)
-- Workers assíncronos: não há hoje; serão introduzidos com o pipeline de extração de documentos, com job, modelo de ameaça e gate explícitos
+Publish these six manifest paths only (never `source-self-test/` or `__pycache__/`). Invocation after publication: dispatch `combined-native-sql-proof.yml` on the temporary audit branch. Retire the temporary workflow/branch after this proof passes and the canonical migration promotions are installed. This audit proof does not replace those promotions or their existing release gates.
