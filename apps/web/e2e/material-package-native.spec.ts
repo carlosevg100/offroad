@@ -39,7 +39,7 @@ test("native internal material approval and revocation use the same exact basis 
           const safe = (field: unknown) => typeof field === "string" && /^[a-zA-Z0-9_]{1,80}$/.test(field) ? field : "unknown";
           const status = Number.isInteger(value.httpStatus) && Number(value.httpStatus) >= 100 && Number(value.httpStatus) <= 599 ? value.httpStatus : "unknown";
           const count = value.claimedCount === 0 || value.claimedCount === 1 ? value.claimedCount : "unknown";
-          failure = `material_fixture_failed phase=${safe(value.phase)} code=${safe(value.code)} rpc=${safe(value.rpc)} rpcCode=${safe(value.rpcCode)} sqlstate=${safe(value.sqlstate)} httpStatus=${status} claimedCount=${count}`;
+          failure = `material_fixture_failed phase=${safe(value.phase)} code=${safe(value.code)} rpc=${safe(value.rpc)} rpcCode=${safe(value.rpcCode)} sqlstate=${safe(value.sqlstate)} httpStatus=${status} claimedCount=${count} metadataRows=${Number.isInteger(value.metadataRows)&&Number(value.metadataRows)>=0&&Number(value.metadataRows)<=100?value.metadataRows:"unknown"} projectionVisible=${value.projectionVisible===true?"true":value.projectionVisible===false?"false":"unknown"} inputCurrent=${value.inputCurrent===true?"true":value.inputCurrent===false?"false":"unknown"} sourcesCurrent=${value.sourcesCurrent===true?"true":value.sourcesCurrent===false?"false":"unknown"} precursorCurrent=${value.precursorCurrent===true?"true":value.precursorCurrent===false?"false":"unknown"} physicalCount=${Number.isInteger(value.physicalCount)&&Number(value.physicalCount)>=0&&Number(value.physicalCount)<=3?value.physicalCount:"unknown"}`;
         } catch { /* Non-protocol output is deliberately discarded. */ }
       }
     };

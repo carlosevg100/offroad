@@ -1,3 +1,4 @@
+import {buildMaterialCompilerReadyFixture} from "../../../../document-worker/src/testing/material-compiler-ready-fixture";
 import {beforeEach, describe, expect, it, vi} from "vitest";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import type {Database} from "@/types/database";
@@ -79,6 +80,13 @@ describe("native material package loading", () => {
     const s = setup(); s.rows[3]!.payload = s.content as DealStateRow["payload"];
     expect(await loadNativeMaterialReviewForWork(s.client, s.organizationId, s.sessionId, s.f.expected.workId)).toBeNull();
     expect(mocks.physical).not.toHaveBeenCalled(); expect(mocks.basis).not.toHaveBeenCalled();
+  });
+
+  it("diagnoses actual native compiler package interoperability", async () => {
+    const s = setup();
+    const {bundle} = await buildMaterialCompilerReadyFixture({sessionId:s.sessionId,runId:s.f.u(97)});
+    mocks.physical.mockResolvedValue({ok:true,content:bundle.materialPackage,...s.f.expected});
+    expect(await loadNativeMaterialReviewForWork(s.client,s.organizationId,s.sessionId,s.f.expected.workId)).not.toBeNull();
   });
 
 });
