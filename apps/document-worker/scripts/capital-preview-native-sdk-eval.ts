@@ -97,8 +97,8 @@ async function main(){
   phase='integrated-review-bootstrap';const fixtureNamespace=randomUUID(),reviewEmail=`stage20-review-${fixtureNamespace}-reviewer@example.invalid`,reviewPassword=`Synthetic-${randomUUID()}!`;
   const secondary=createClient(api,key,{auth:{persistSession:false},global:{fetch:(input,init)=>fetch(input,{...init,redirect:'error'})}});
   phase='integrated-review-signup';const signup=await secondary.auth.signUp({email:reviewEmail,password:reviewPassword});reviewFailureMetadata.assertion='auth_signup_error_null';if(signup.error){
-   reviewFailureMetadata.authStatus=[400,422,429].includes(signup.error.status??0)?signup.error.status:null;
-   reviewFailureMetadata.authCode=['unexpected_failure','signup_disabled','user_already_exists','weak_password','over_request_rate_limit','over_email_send_rate_limit','over_sms_send_rate_limit','email_address_not_authorized','email_address_invalid'].includes(signup.error.code??'')?signup.error.code:null;
+   reviewFailureMetadata.authStatus=[400,422,429].includes(signup.error.status??0)?(signup.error.status??null):null;
+   reviewFailureMetadata.authCode=['unexpected_failure','signup_disabled','user_already_exists','weak_password','over_request_rate_limit','over_email_send_rate_limit','over_sms_send_rate_limit','email_address_not_authorized','email_address_invalid'].includes(signup.error.code??'')?(signup.error.code??null):null;
    throw Error('capital_preview_review_signup_denied');
   }delete reviewFailureMetadata.assertion;reviewUserId=z.uuid().parse(signup.data.user?.id);
   // Auth created this identity. Confirm only its exact synthetic address in the disposable DB;
