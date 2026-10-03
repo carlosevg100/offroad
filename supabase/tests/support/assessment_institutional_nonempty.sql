@@ -38,9 +38,14 @@ reset role;
 reset role;
 select set_config('test.setup_job',(select id::text from public.processing_jobs where kind='agent_operation_brief' and payload->>'message_id'='d5900000-0000-4000-8000-000000000081'),true);
 select pg_temp.prioritize_material_fixture_job(current_setting('test.setup_job')::uuid);
+do $$declare j public.processing_jobs;begin
+ select * into strict j from public.processing_jobs where id=current_setting('test.setup_job')::uuid;
+ raise notice 'assessment_setup_claim_before: job=% kind=% status=% available=% authority=% requiresBrief=% dispatch=%',j.id,j.kind,j.status,j.available_at<=now(),private.job_authority_is_current_v1(j.id),private.requires_execution_brief_approval(j.id),case when private.requires_execution_brief_approval(j.id)then private.execution_dispatch_is_current(j.id,true)else null end;
+end$$;
 set local role authenticated;select pg_temp.as_worker();
 do $$declare claim jsonb;begin
  claim:=public.worker_claim_job_v4(repeat('r',64),600);
+ raise notice 'assessment_setup_claim_after: claimed=% job=% kind=% expected=%',claim->>'claimed',claim->>'job_id',claim->>'kind',current_setting('test.setup_job');
  if claim->>'job_id' is distinct from current_setting('test.setup_job')then raise exception 'assessment_setup_actual_claim_required';end if;
  perform set_config('test.setup_cap',claim->>'capability_token',true);
 end$$;
