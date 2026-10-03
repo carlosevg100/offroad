@@ -74,7 +74,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           OFFROAD_CORE_CANONICAL_START_EVAL: isolated-loopback-ci
-        run: python3 -B audit/scripts/ci/test-core-canonical-start.py --core-root consumers
+        run: python3 -B audit/scripts/ci/test-core-canonical-start.py --core-root consumers --diagnostic-only
       - name: Destroy dedicated stack without backup
         if: ${{ always() }}
         working-directory: baseline

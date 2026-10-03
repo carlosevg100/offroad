@@ -14,10 +14,11 @@ def diagnostic(stderr,sources):
  states=sorted(set(re.findall(r'(?:ERROR|FATAL):\s+([0-9A-Z]{5}):',stderr)))
  allowed=set()
  for text in sources:
-  allowed.update(re.findall(r"raise exception '([a-zA-Z0-9_]+)'",text,re.I))
- literals=sorted(x for x in allowed if re.search(r'(?:ERROR|FATAL):\s+(?:[0-9A-Z]{5}:\s+)?'+re.escape(x)+r'(?=\s|$)',stderr))
+  allowed.update(re.findall(r"raise exception '([^'\n%\\]{1,180})'",text,re.I))
+ error_lines=re.findall(r'(?:ERROR|FATAL):[^\n]*',stderr)
+ literals=sorted(x for x in allowed if any(re.search(r'(?<![A-Za-z0-9_])'+re.escape(x)+r'(?![A-Za-z0-9_])',line)for line in error_lines))
  return {'sqlStates':states[:8],'checkedInExceptionLiterals':literals[:16]}
-p=argparse.ArgumentParser(description=__doc__);p.add_argument('--core-root',required=True);p.add_argument('--self-test',action='store_true');a=p.parse_args();core=pathlib.Path(a.core_root).resolve()
+p=argparse.ArgumentParser(description=__doc__);p.add_argument('--core-root',required=True);p.add_argument('--self-test',action='store_true');p.add_argument('--diagnostic-only',action='store_true',help='Only the two previously observed P0001 failures, not a full release proof');a=p.parse_args();core=pathlib.Path(a.core_root).resolve()
 m=json.loads((ROOT/'CORE-CANONICAL-SOURCES.json').read_text())
 for name,pin in m['drafts'].items():
  if hashlib.sha256((core/'supabase/pending'/(name+'.sql')).read_bytes()).hexdigest()!=pin:raise RuntimeError('Frozen core draft drift:'+name)
@@ -32,6 +33,8 @@ if a.self_test:
  else:raise AssertionError('Implicit target admitted')
  d=diagnostic('ERROR: 22023: checked_assertion\nDETAIL: secret-body\nERROR: P0001: untrusted_body', ["raise exception 'checked_assertion';"])
  assert d=={'sqlStates':['22023','P0001'],'checkedInExceptionLiterals':['checked_assertion']}
+ d=diagnostic('ERROR: P0001: incomplete ancestry must fail closed\nDETAIL: secret raw body\nERROR: P0001: staging rehearsal run 1 did not pass: capital_s11_native_commit_required', ["raise exception 'incomplete ancestry must fail closed';raise exception 'capital_s11_native_commit_required';raise exception 'staging rehearsal run % did not pass: %';"])
+ assert d=={'sqlStates':['P0001'],'checkedInExceptionLiterals':['capital_s11_native_commit_required','incomplete ancestry must fail closed']}
  print('core canonical-start guards/hashes11/closed diagnostics PASS; no SQL');sys.exit(0)
 url=validate(os.environ);env=dict(os.environ);psql=['psql',url,'-X','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose','-q']
 preflight="""do $$begin
@@ -48,6 +51,7 @@ print(json.dumps({'phase':'install11-before-autoSQL','result':'PASS'}),flush=Tru
 # transaction/rollback and psql session. A failed session closes/rolls back before
 # the next file; never wrap/rewrite fixture SQL or disable a production guard.
 files=sorted((core/'supabase/tests').glob('*.sql'));assert files,'No existing SQL contracts'
+if a.diagnostic_only:files=[core/'supabase/tests'/n for n in ('artifact_backfill_rehearsal.sql','artifact_content_authority.sql')]
 sources=[f.read_text()for f in list((core/'supabase/migrations').glob('*.sql'))+list((core/'supabase/tests').rglob('*.sql'))]+[(core/'supabase/pending'/(n+'.sql')).read_text()for n in m['drafts']]
 results=[]
 for f in files:
@@ -58,6 +62,6 @@ for f in files:
  except subprocess.TimeoutExpired:
   entry={'file':'supabase/tests/'+f.name,'result':'TIMEOUT','sqlStates':[],'checkedInExceptionLiterals':[]}
  results.append(entry);print(json.dumps(entry),flush=True)
-failed=[e for e in results if e['result']!='PASS'];report={'schemaVersion':'core-canonical-start-SQL-report.v1','coreHead':m['coreHead'],'baselineHead':m['baselineHead'],'installedBeforeTests':True,'tests':len(results),'passed':len(results)-len(failed),'failures':failed,'result':'FAIL'if failed else 'PASS','evidence':'real disposable Supabase SQL; no journal stamps, not deployment'}
+failed=[e for e in results if e['result']!='PASS'];report={'schemaVersion':'core-canonical-start-SQL-report.v1','coreHead':m['coreHead'],'baselineHead':m['baselineHead'],'installedBeforeTests':True,'fullAutoSQL':not a.diagnostic_only,'tests':len(results),'passed':len(results)-len(failed),'failures':failed,'result':'FAIL'if failed else 'PASS','evidence':'real disposable Supabase SQL; no journal stamps, not deployment'}
 print(json.dumps(report),flush=True)
 if failed:raise SystemExit(1)

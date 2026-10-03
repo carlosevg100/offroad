@@ -3,11 +3,11 @@
   "files": [
     {
       "path": ".github/workflows/core-canonical-start-sql-proof.yml",
-      "sha256": "6a47ae70d8de9b4953994e621a82c060362311f702267ee8165f7307819ebc14"
+      "sha256": "b6a927d5e94cbf4f9f7e4a182c5c126a4865cc0d900a44a4a423c38b373c2ca3"
     },
     {
       "path": "scripts/ci/test-core-canonical-start.py",
-      "sha256": "6ea451d751f9e21fc3f2f780cfb27b9bf055a0be84649ad1c7ed437bd0118a8b"
+      "sha256": "fc3cd812a0441ff51221c97d0480018ba99da612797f1167cae7cb8b07125d8b"
     },
     {
       "path": "CORE-CANONICAL-SOURCES.json",
@@ -30,11 +30,17 @@
     "loopback-explicit-opt-in-guards",
     "frozen11hashes",
     "closed-diagnostic-unit",
-    "workflow-noassessment-alwayscleanup"
+    "workflow-noassessment-alwayscleanup",
+    "static-phrase-and-embedded-contract-literal-selftest"
   ],
   "unexecuted": [
     "early-install11-realSupabase",
     "all174-existingSQL-after-install"
   ],
-  "noSourceChanges": true
+  "noSourceChanges": true,
+  "diagnosticScope": [
+    "artifact_backfill_rehearsal.sql",
+    "artifact_content_authority.sql"
+  ],
+  "fullAutoSQLDefaultPreserved": true
 }
