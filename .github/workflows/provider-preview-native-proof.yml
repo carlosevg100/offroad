@@ -120,7 +120,7 @@ jobs:
       run: python3 -B scripts/ci/install-work-review-dashboard-ci-draft.py
     - name: Overlay three exact current capture-denial assertions
       run: |-
-        for name in provider_research_persistence provider_research_public_catalog_v2 provider_case_fit_persistence; do
+        for name in provider_research_persistence provider_research_public_catalog_v2 provider_case_fit_persistence capital_native_provider_results; do
           cp "../audit/supabase/tests/support/${name}.sql" "supabase/tests/support/${name}.sql"
         done
     - name: Serve the authenticated capital body Edge reader

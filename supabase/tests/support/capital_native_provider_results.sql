@@ -124,8 +124,11 @@ begin
  begin perform private.worker_recover_capital_native_provider_v1(f.job_id,cap);raise exception 'closed job retained worker capability';exception when insufficient_privilege then null;end;
  perform public.read_capital_native_provider_result_body_v1((result->>'revisionId')::uuid);
  raise exception 'completion_fixture_rollback'using errcode='P3091';exception when sqlstate'P3091'then null;end;
- delete from storage.objects where id=object_id;
- begin perform private.worker_recover_capital_native_provider_v1(f.job_id,cap);raise exception 'physically missing result accepted on recovery';exception when insufficient_privilege then null;end;
+ -- This SQL fixture contains metadata only. Invalidate the pinned version
+ -- without bypassing Storage's API-only DELETE guard. Real byte deletion and
+ -- purge are proved by the separate SDK through the Storage API.
+ update storage.objects set version='native-fit-result-invalidated-version' where id=object_id;
+ begin perform private.worker_recover_capital_native_provider_v1(f.job_id,cap);raise exception 'stale storage version accepted on recovery';exception when insufficient_privilege then null;end;
  if(select count(*)from private.capital_native_result_bindings where recipe_id=r)<>3 then raise exception 'physical deny erased original receipt';end if;
 end$$;
 rollback;
