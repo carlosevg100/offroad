@@ -6,7 +6,7 @@ import {companyDebtDiagnosticSchema} from "@offroad/domain-contracts";
 import {legacyGatewayFingerprint,prepareGatewayInput,retentionMatrixVersion} from "@offroad/model-gateway";
 import {companyDebtContextSchema} from "./company-debt-view";
 import {assembleCapitalCompanyDebtComponents} from "./capital-company-debt-native-consumer";
-import {prepareCapitalCompanyDebtRecipe,reconstructCapitalCompanyDebtRequest} from "./capital-company-debt-recipe";
+import {prepareCapitalCompanyDebtRecipe,capitalCompanyDebtExecutionPins} from "./capital-company-debt-recipe";
 import {capitalCompanyDebtRecipeReceiptSchema,capitalCompanyDebtFinalOutputFingerprint} from "./capital-company-debt-processing";
 import {transformCapitalCompanyDebtFinalProduct} from "./capital-company-debt-final";
 import {recoverCapitalCompanyDebt,capitalCompanyDebtRecoveryGrantSchema,type CapitalCompanyDebtRecoveryPorts} from "./capital-company-debt-recovery";
@@ -20,7 +20,7 @@ function harness(){
  const components=assembleCapitalCompanyDebtComponents({jobId:originalJob,recipeId,context,company:{name:'Synthetic company',website:null},research,delivered:[{deliveryId,source}],executionPlan});
  const basis={jobId:originalJob,organizationId:org,workId:work,planId:context.plan.id,planFingerprint:context.plan.fingerprint,locale:"pt-BR" as const,asOfDate:"2026-10-02"},pure=prepareCapitalCompanyDebtRecipe({basis,components});
  const prepared=prepareGatewayInput({...pure.prepared.request,requireInputAttestation:true,outputMode:"structured",timeoutMs:240000,dataHandling:{classification:"confidential",purpose:"case_analysis",requiredPolicyVersion:retentionMatrixVersion}});
- const pins=reconstructCapitalCompanyDebtRequest({...pure,prepared},{provider:"anthropic",model:"claude-sonnet-5",effort:"medium"}).ordinalFingerprints(),fallback=reconstructCapitalCompanyDebtRequest({...pure,prepared},{provider:"openai",model:"gpt-5.6-terra",effort:"medium"}).ordinalFingerprints();
+ const pins=capitalCompanyDebtExecutionPins({...pure,prepared},{provider:"anthropic",model:"claude-sonnet-5",effort:"medium"}),fallback=capitalCompanyDebtExecutionPins({...pure,prepared},{provider:"openai",model:"gpt-5.6-terra",effort:"medium"});
  const synthetic=(s:any):any=>s.const!==undefined?s.const:s.enum?s.enum[0]:s.anyOf?synthetic(s.anyOf.find((v:any)=>v.type!=='null')??s.anyOf[0]):s.type==='object'?Object.fromEntries((s.required??[]).map((k:string)=>[k,synthetic(s.properties[k])])):s.type==='array'?Array.from({length:s.minItems??0},()=>synthetic(s.items)):s.type==='string'?s.format==='uri'?source.url:s.pattern?'fixture':'x'.repeat(Math.max(1,s.minLength??1)):s.type==='number'||s.type==='integer'?s.minimum??0:s.type==='boolean'?true:null;
  const raw=synthetic(z.toJSONSchema(companyDebtDiagnosticSchema));raw.capacityAssessment.status='not_computable';raw.businessRiskProfile.sourceUrls=[source.url];
  for(const key of ['financialSignals','debtAndLiquiditySignals','workingCapitalSignals','risks','diagnosticHypotheses'])for(const item of raw[key])item.sourceUrls=[source.url];

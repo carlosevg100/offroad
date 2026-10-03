@@ -81,6 +81,12 @@ export function reconstructCapitalCompanyDebtRequest(p:ReturnType<typeof prepare
  return buildEffectiveAdapterRequest(p.prepared,route,{maxOutputTokens:8000,timeoutMs:240000});
 }
 
+/** Identity of the current gateway-adapter-input.v1 send fixed by the SQL seal. */
+export function capitalCompanyDebtExecutionPins(preparation:ReturnType<typeof prepareCapitalCompanyDebtRecipe>,route:ModelRef) {
+ const actual=reconstructCapitalCompanyDebtRequest(preparation,route);
+ return Object.freeze({requestFingerprint:actual.requestFingerprintV1,promptFingerprint:actual.promptFingerprint,inputFingerprint:actual.inputFingerprint});
+}
+
 /** Closed observed dispatch pins; this value never grants authority. */
 export function capitalCompanyDebtDispatchPins(preparation:ReturnType<typeof prepareCapitalCompanyDebtRecipe>,route:ModelRef){
  const actual=reconstructCapitalCompanyDebtRequest(preparation,route),anthropic=route.provider==='anthropic',price=listPrices[route.model];
