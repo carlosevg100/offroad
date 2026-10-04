@@ -384,12 +384,14 @@ do $$ declare before private.institutional_model_results;after private.instituti
  if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleDependents'<>'1' then raise exception 'the result not yet replaced does not count as stale'; end if;
  raise notice 'PASS: a completed recomputation is stored but not current before adoption; the previous result stays current and untouched';
 end $$;
--- Prospective updates require the native human command. This historical recomputation fixture
--- has no native reviewed physical package: the retired command must deny without adopting it.
--- Native approval/adoption positives are exercised by the physical SDK; no receipt is fabricated here.
+-- Test the actual installed adoption contract. Before the native cutover, the authorized
+-- legacy command is exercised and replayed inside a rolled-back subtransaction. After cutover,
+-- this historical result has no native reviewed package and the retired command must deny.
+-- Neither branch promotes fixture data into the subsequent recomputation timeline.
 create function pg_temp.expect_native_adoption_denied(p_command uuid,p_request uuid) returns void
 language plpgsql as $$
-declare expected_revision integer;before jsonb;after jsonb;begin
+declare expected_revision integer;before jsonb;after jsonb;adoption jsonb;replay jsonb;
+ native_installed boolean:=to_regprocedure('private.adopt_work_update_before_native_v1(uuid,uuid,integer)') is not null;begin
  select revision into strict expected_revision from public.work_continuation_requests where id=p_request;
  select jsonb_build_object(
   'request',(select to_jsonb(q) from public.work_continuation_requests q where q.id=p_request),
@@ -401,11 +403,30 @@ declare expected_revision integer;before jsonb;after jsonb;begin
     where m.organization_id='c5a10000-0000-4000-9000-000000000001')) into before;
  perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
  set local role authenticated;
- begin
-  perform public.adopt_work_update_v1(p_command,p_request,expected_revision);
-  raise exception 'retired adoption command accepted an unreviewed recomputation';
- exception when insufficient_privilege then
-  if sqlerrm<>'work_update_native_command_required' then raise;end if;
+ if native_installed then
+  begin
+   perform public.adopt_work_update_v1(p_command,p_request,expected_revision);
+   raise exception 'retired adoption command accepted an unreviewed recomputation';
+  exception when insufficient_privilege then
+   if sqlerrm<>'work_update_native_command_required' then raise;end if;
+  end;
+ else
+  begin
+   adoption:=public.adopt_work_update_v1(p_command,p_request,expected_revision);
+   replay:=public.adopt_work_update_v1(p_command,p_request,expected_revision);
+   if adoption->>'status' is distinct from 'adopted'
+   or (adoption->>'revision')::integer is distinct from expected_revision+1
+   or (adoption->>'replayed')::boolean is distinct from false
+   or (replay->>'replayed')::boolean is distinct from true
+   or replay->>'milestoneId' is distinct from adoption->>'milestoneId'
+   or coalesce(jsonb_array_length(adoption->'adoptedResults'),0)=0
+   or coalesce((adoption->>'supersededResults')::integer,0)<1
+   or (select status from public.work_continuation_requests where id=p_request) is distinct from 'adopted' then
+    raise exception 'baseline authorized adoption or replay contract mismatch';
+   end if;
+   raise exception using errcode='ZTA01',message='rollback_verified_baseline_adoption';
+  exception when sqlstate 'ZTA01' then null;
+  end;
  end;
  reset role;
  perform pg_temp.act_as(null);
@@ -436,7 +457,7 @@ do $$ declare before private.institutional_model_results;after private.instituti
  if view#>>'{latest,id}'<>pg_temp.id('R0')::text or view#>>'{latest,status}'<>'stale'
  or view#>'{latest,artifact}'<>'null'::jsonb then raise exception 'denied adoption exposed an unadopted recomputation';end if;
  if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleDependents'<>'1' then raise exception 'denied adoption cleared established result staleness';end if;
- raise notice 'PASS: retired adoption denies under Auth with no effects; an unadopted recomputation never becomes current';
+ raise notice 'PASS: installed adoption contract exercised under Auth; unadopted fixture timeline and previous result remain intact';
 end $$;
 
 -- 5. Two more approvals before the second recomputation completes: the scheduled candidate whose heads

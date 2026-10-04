@@ -387,6 +387,10 @@ select pg_temp.remember('x2',pg_temp.produce(array['D2']));
 insert into dep select 'X2b',(value->>'executionId')::uuid from recompute_step where name='x2';
 -- Not ready yet: adoption is refused while the update is scheduled.
 
+-- Select the real installed contract, not a fixture flag. The global baseline suite
+-- runs before the assessment installer; after cutover, all native negatives remain mandatory.
+select to_regprocedure('private.adopt_work_update_before_native_v1(uuid,uuid,integer)') is not null as native_adoption_installed \gset
+\if :native_adoption_installed
 -- Native-regime rows cannot be adopted by the retired v1 command, regardless of readiness.
 select set_config('test.native.update',pg_temp.id('R1')::text,true);
 select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('R1')),true);
@@ -416,6 +420,40 @@ do $$begin
  if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'a refused native adoption changed work state';end if;
  raise notice 'PASS: denied native adoption and basis calls have no effects';
 end $$;
+\else
+-- Baseline V1 remains legitimate before the six assessment drafts are installed.
+select set_config('test.native.update',pg_temp.id('R1')::text,true);
+select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('R1')),true);
+truncate update_effect_before;
+insert into update_effect_before select pg_temp.update_effects();
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '55000','work_update_not_ready','baseline owner cannot adopt a scheduled update');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_continuation_access_denied','baseline adoption denies a member without WORK');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+select set_config('request.headers','{"x-offroad-workspace":"a11b0000-0000-4000-9000-000000000001"}',true);
+do $$begin
+ if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'baseline adoption probe changed the fixture timeline';end if;
+ raise notice 'PASS: baseline authorized adoption contract and WORK denial preserve the subsequent fixture timeline';
+end $$;
+select pg_temp.act_as('a4183000-0000-4000-8000-000000000008');
+select set_config('request.headers','{"x-offroad-workspace":"a4183000-0000-4000-9000-000000000008"}',true);
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_continuation_access_denied','baseline adoption denies a foreign tenant');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+select set_config('request.headers','{"x-offroad-workspace":"a11b0000-0000-4000-9000-000000000001"}',true);
+do $$begin
+ if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'baseline foreign adoption probe changed the fixture timeline';end if;
+end $$;
+\endif
 select pg_temp.commit_result(pg_temp.id('X1b'));
 select pg_temp.commit_result(pg_temp.id('X2b'));
 select pg_temp.remember_history();
@@ -448,6 +486,10 @@ do $$ declare r public.work_continuation_requests;v jsonb;u jsonb;x1 jsonb;x2 js
  raise notice 'PASS: the read of an update shows each affected execution with the facts that invalidated it, its candidate and holds, the recomputed results with their lineage, and what stayed valid';
 end $$;
 
+-- Select the real installed contract, not a fixture flag. The global baseline suite
+-- runs before the assessment installer; after cutover, all native negatives remain mandatory.
+select to_regprocedure('private.adopt_work_update_before_native_v1(uuid,uuid,integer)') is not null as native_adoption_installed \gset
+\if :native_adoption_installed
 -- Native-regime rows cannot be adopted by the retired v1 command, regardless of readiness.
 select set_config('test.native.update',pg_temp.id('R1')::text,true);
 select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('R1')),true);
@@ -481,6 +523,50 @@ do $$begin
  if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'a refused native adoption changed work state';end if;
  raise notice 'PASS: denied native adoption and basis calls have no effects';
 end $$;
+\else
+-- Baseline V1 remains legitimate before the six assessment drafts are installed.
+select set_config('test.native.update',pg_temp.id('R1')::text,true);
+select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('R1')),true);
+truncate update_effect_before;
+insert into update_effect_before select pg_temp.update_effects();
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+set local role authenticated;
+do $$ declare adopted jsonb;replayed jsonb;begin
+ begin
+  adopted:=public.adopt_work_update_v1('a4190000-0000-4000-8000-000000000201',current_setting('test.native.update')::uuid,current_setting('test.native.revision')::integer);
+  replayed:=public.adopt_work_update_v1('a4190000-0000-4000-8000-000000000201',current_setting('test.native.update')::uuid,current_setting('test.native.revision')::integer);
+  if adopted->>'status' is distinct from 'adopted' or (adopted->>'replayed')::boolean is distinct from false
+  or (replayed->>'replayed')::boolean is distinct from true or replayed->>'milestoneId' is distinct from adopted->>'milestoneId'
+  or jsonb_array_length(adopted->'adoptedResults')<>2 or jsonb_array_length(adopted->'replacedResults')<>2 then
+   raise exception 'baseline authorized adoption or replay contract mismatch';
+  end if;
+  raise exception using errcode='ZTA01',message='rollback_verified_baseline_adoption';
+ exception when sqlstate 'ZTA01' then null;end;
+end $$;
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_continuation_access_denied','baseline adoption denies a member without WORK');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+select set_config('request.headers','{"x-offroad-workspace":"a11b0000-0000-4000-9000-000000000001"}',true);
+do $$begin
+ if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'baseline adoption probe changed the fixture timeline';end if;
+ raise notice 'PASS: baseline authorized adoption contract and WORK denial preserve the subsequent fixture timeline';
+end $$;
+select pg_temp.act_as('a4183000-0000-4000-8000-000000000008');
+select set_config('request.headers','{"x-offroad-workspace":"a4183000-0000-4000-9000-000000000008"}',true);
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_continuation_access_denied','baseline adoption denies a foreign tenant');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+select set_config('request.headers','{"x-offroad-workspace":"a11b0000-0000-4000-9000-000000000001"}',true);
+do $$begin
+ if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'baseline foreign adoption probe changed the fixture timeline';end if;
+end $$;
+\endif
 -- Positive v2 adoption is proved by support/assessment_native_work_update_native_adoption.sql
 -- and the real native assessment SDK. No old v1 adoption, replay or fabricated adopted base is retained here.
 

@@ -377,6 +377,10 @@ do $$ begin
  end if;
 end $$;
 
+-- The global baseline suite precedes the assessment installer; its V1 contract is
+-- still valid there. Test native retirement only when its real alias is installed.
+select to_regprocedure('private.adopt_work_update_before_native_v1(uuid,uuid,integer)') is not null as native_adoption_installed \gset
+\if :native_adoption_installed
 -- Native-regime rows cannot be adopted by the retired v1 command, regardless of readiness.
 select set_config('test.native.update',pg_temp.id('Q')::text,true);
 select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('Q')),true);
@@ -424,6 +428,43 @@ do $$begin
  if (select value from update_effect_before)is distinct from pg_temp.update_effects()then raise exception 'a foreign denied adoption changed mixed update state';end if;
  raise notice 'PASS: foreign tenant commands have no effects on the mixed update';
 end $$;
+\else
+-- Baseline V1 remains legitimate before the six assessment drafts are installed.
+select set_config('test.native.update',pg_temp.id('Q')::text,true);
+select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('Q')),true);
+truncate update_effect_before;
+insert into update_effect_before select pg_temp.update_effects();
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '55000','work_update_not_ready','baseline owner cannot adopt a mixed update behind its institutional hold');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_continuation_access_denied','baseline adoption denies a member without WORK');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+select set_config('request.headers','{"x-offroad-workspace":"a11b0000-0000-4000-9000-000000000001"}',true);
+do $$begin
+ if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'baseline adoption probe changed the fixture timeline';end if;
+ raise notice 'PASS: baseline authorized adoption contract and WORK denial preserve the subsequent fixture timeline';
+end $$;
+insert into auth.users(id,email)values('a5c00000-0000-4000-8000-000000000008','foreign-integration-negative@example.invalid');
+insert into public.organizations(id,organization_type,name,created_by)values('a4183000-0000-4000-9000-000000000008','originator','Synthetic foreign integration boundary','a5c00000-0000-4000-8000-000000000008');
+insert into public.organization_memberships(organization_id,user_id,role,status)values('a4183000-0000-4000-9000-000000000008','a5c00000-0000-4000-8000-000000000008','owner','active');
+select pg_temp.act_as('a5c00000-0000-4000-8000-000000000008');
+select set_config('request.headers','{"x-offroad-workspace":"a4183000-0000-4000-9000-000000000008"}',true);
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_continuation_access_denied','baseline adoption denies a foreign tenant');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+select set_config('request.headers','{"x-offroad-workspace":"a11b0000-0000-4000-9000-000000000001"}',true);
+do $$begin
+ if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'baseline foreign adoption probe changed the fixture timeline';end if;
+end $$;
+\endif
 -- No synthetic institutional recomputation is promoted to native approval. Current v2 positives
 -- use real native bindings in the assessment SQL/SDK suites, rather than this historical fixture.
 
