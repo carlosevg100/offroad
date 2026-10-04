@@ -50,6 +50,11 @@ def main():
   draft=ROOT/'supabase/pending/work_review_dashboard.sql'
   assert draft.is_file(),'Frozen 3W review wrappers required'
   subprocess.run(['psql',env['DATABASE_URL'],'-Xq','-v','ON_ERROR_STOP=1'],input='begin;\n'+draft.read_text()+'\ncommit;',text=True,env=env,cwd=ROOT,check=True)
+ # Source16 requires the current complete preview closure, installed above.
+ # Canonical stacks skip DDL through the same two-group journal guard; eval never skips.
+ metadata_env={**env,'OFFROAD_WORK_REVIEW_DRAFT_INSTALL':'isolated-loopback-ci'}
+ subprocess.run([sys.executable,str(ROOT/'scripts/ci/install-work-review-dashboard-metadata-ci-draft.py')],env=metadata_env,cwd=ROOT,check=True)
+ subprocess.run(['psql',env['DATABASE_URL'],'-Xq','-v','ON_ERROR_STOP=1','-f',str(ROOT/'supabase/tests/support/work_review_dashboard_metadata.sql')],env=env,cwd=ROOT,check=True)
  for name in ('capital_preview_storage_job_authority','capital_preview_native_artifact_publication','capital_preview_dispatch_policy','capital_preview_boundary_validation','capital_preview_review_projection','capital_preview_finalize_bounded_closure'):
   subprocess.run(['psql',env['DATABASE_URL'],'-Xq','-v','ON_ERROR_STOP=1','-f',str(ROOT/'supabase/tests/support'/f'{name}.sql')],env=env,cwd=ROOT,check=True)
  env['PREVIEW_HTTP_FIXTURE']='1';env.setdefault('PREVIEW_HTTP_NAMESPACE','a8830001')
