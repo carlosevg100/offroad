@@ -427,7 +427,7 @@ declare expected_revision integer;before jsonb;after jsonb;adoption jsonb;replay
    raise exception using errcode='ZTA01',message='rollback_verified_baseline_adoption';
   exception when sqlstate 'ZTA01' then null;
   end;
- end;
+ end if;
  reset role;
  perform pg_temp.act_as(null);
  select jsonb_build_object(
