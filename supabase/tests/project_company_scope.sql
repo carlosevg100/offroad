@@ -648,9 +648,10 @@ begin
   end;
   if not rejected then raise exception 'capital TaskRun ignored incomplete dependencies'; end if;
 
-  -- This prospective metadata-only lease has no physical capture/accepted
-  -- basis. Capture authority denies it before legacy grading/writer logic.
-  -- Positive physical producers are exercised by the real native SDK gates.
+  -- M01 keeps the generic task lifecycle: success requires a real output and
+  -- a nonempty passing grader. This metadata-only claim supplies no grader,
+  -- so the installed lifecycle denies it without succeeding or creating output.
+  -- Native M07/S11/C11 physical producers have separate real SDK gates.
   rejected := false;
   begin
     perform public.worker_finish_capital_project_task(
@@ -658,30 +659,19 @@ begin
       '{"type":"company_resolution","id":"company-resolution-1"}'::jsonb,
       repeat('1', 64), '[]'::jsonb, '{}'::jsonb, null
     );
-  exception when insufficient_privilege then
-    if sqlerrm<>'capital_capture_denied' then raise;end if;
+  exception when invalid_parameter_value then
+    if sqlerrm<>'capital_task_success_not_proven' then raise;end if;
     rejected := true;
   end;
-  if not rejected then raise exception 'company_scope_metadata_success_capture_shortcut';end if;
-  rejected := false;
-  begin
-    perform public.worker_record_capital_project_artifact(
-      job_id, capability, m01_run, 'company_resolution', 'company-resolution.v1',
-      'draft', repeat('a', 64),
-      '{"companyName":"Cliente Planejado S.A.","website":"https://cliente-planejado.example"}'::jsonb,
-      '[{"sourceType":"public_url","sourceId":"https://cliente-planejado.example"}]'::jsonb,
-      '[]'::jsonb
-    );
-  exception when insufficient_privilege then
-    if sqlerrm<>'capital_capture_denied' then raise;end if;
-    rejected := true;
-  end;
-  if not rejected then raise exception 'company_scope_metadata_writer_capture_shortcut';end if;
+  if not rejected then raise exception 'company_scope_ungraded_task_success_shortcut';end if;
+  -- Do not manufacture a company_resolution body from an invented public URL.
+  -- This scope test retains only lifecycle/authorization negatives; native
+  -- body production and source licensing are verified by the SDK gates.
   if exists(select 1 from public.capital_project_artifacts where task_run_id=m01_run)
     or (select status from public.capital_project_task_runs where id=m01_run)<>'running' then
-    raise exception 'company_scope_denied_metadata_ports_left_effects';
+    raise exception 'company_scope_ungraded_task_left_effects';
   end if;
-  -- Without a captured first result the dependency remains unavailable.
+  -- Without a proven first result the dependency remains unavailable.
   rejected := false;
   begin
     perform public.worker_start_capital_project_task(
@@ -689,7 +679,7 @@ begin
     );
   exception when object_not_in_prerequisite_state then rejected:=true;
   end;
-  if not rejected then raise exception 'company_scope_denied_capture_unlocked_dependency';end if;
+  if not rejected then raise exception 'company_scope_ungraded_task_unlocked_dependency';end if;
   begin
     update public.capital_project_task_runs set status = 'cancelled' where id = m01_run;
     raise exception 'tenant mutated a TaskRun directly';
@@ -701,7 +691,7 @@ begin
     raise exception 'tenant mutated a capital project artifact directly';
   exception when insufficient_privilege then null;
   end;
-  raise notice 'PASS company_scope tenant company objective calculation scope and dependency barriers; metadata capture denied without effects';
+  raise notice 'PASS company_scope tenant company objective calculation scope and dependency barriers; ungraded task success denied without effects';
 end;
 $$;
 

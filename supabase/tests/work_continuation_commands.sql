@@ -180,6 +180,11 @@ begin
  raise exception '% was accepted',p_label;
 end $$;
 -- A read-only snapshot of the target work's state; never creates authority or a receipt.
+-- Native capture/projection relations are introduced by the later assessment installer.
+-- Preserve the full snapshot when that actual contract is installed; before it, those
+-- relations do not exist and the baseline snapshot still covers all established state.
+select to_regprocedure('private.adopt_work_update_before_native_v1(uuid,uuid,integer)') is not null as native_adoption_installed \gset
+\if :native_adoption_installed
 create function pg_temp.update_effects() returns jsonb language sql as $$
  select jsonb_build_object(
   'updates',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_continuation_requests x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
@@ -193,6 +198,21 @@ create function pg_temp.update_effects() returns jsonb language sql as $$
   'projections',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from private.work_update_review_projections x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
   'institutionalResults',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from private.institutional_model_results x where x.organization_id='a11b0000-0000-4000-9000-000000000001'));
 $$;
+\else
+create function pg_temp.update_effects() returns jsonb language sql as $$
+ select jsonb_build_object(
+  'updates',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_continuation_requests x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'milestones',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_milestones x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'jobs',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.processing_jobs x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'decisions',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_decisions x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'captures','[]'::jsonb,
+  'executionCandidates',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_recompute_candidates x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'institutionalCandidates',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.institutional_recompute_candidates x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'basisReceipts',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from private.review_basis_receipts x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'projections','[]'::jsonb,
+  'institutionalResults',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from private.institutional_model_results x where x.organization_id='a11b0000-0000-4000-9000-000000000001'));
+$$;
+\endif
 create temporary table update_effect_before(value jsonb);
 
 -- 0. Setup: the executions of increment 3B's test, an accepted execution brief (a decision milestone of
