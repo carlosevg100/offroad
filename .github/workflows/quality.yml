@@ -764,7 +764,7 @@ jobs:
           node --test scripts/evals/stage20-integrated-review.test.mjs scripts/evals/stage20-material-review-adapter.test.mjs
 
       - name: Finite native preview through real Storage, two paid boundaries and replay
-        if: ${{ !inputs.native_diagnostic }}
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}

@@ -28,7 +28,20 @@ begin
  dash:=public.read_work_review_dashboard_v1(work);
  if exists(select 1 from jsonb_array_elements(dash->'revisions')x where x->>'revisionId'=r1->>'revision_id'and x->>'basisReviewId'is not null)then raise exception 'dashboard_historical_uses_future_basis';end if;
  reset role;
- b:=jsonb_set(b,'{0,content,text}','"Synthetic materially changed recommendation"');r2:=pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
+ -- The same manifest and bytes replay the exact immutable cosmetic revision.
+ replay:=pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
+ if replay->>'revision_id' is distinct from r2->>'revision_id' or replay->>'replayed' is distinct from 'true'
+ then raise exception 'dashboard_identical_revision_replay_invalid';end if;
+ b:=jsonb_set(b,'{0,content,text}','"Synthetic materially changed recommendation"');
+ -- A changed body cannot reuse the prior manifest's idempotency key.
+ begin
+  perform pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
+  raise exception 'dashboard_changed_body_same_manifest_accepted';
+ exception when unique_violation then
+  if sqlerrm is distinct from 'artifact_revision_replay_mismatch' then raise;end if;
+ end;
+ m:=jsonb_set(m,'{template,templateVersionId}','"review-material-next"');
+ r2:=pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
  perform pg_temp.refused(format('select public.reaffirm_work_revision_v1(%L,%L,%L,%L,%L,true,%L)',work,r2->>'revision_id',r2->>'manifest_fingerprint',a1->>'reviewId','New substantive recommendation',gen_random_uuid()),'artifact_review_material_change','material cannot reaffirm');
  -- Foreign cursors are real human-authored records, never an arbitrary UUID.
  perform pg_temp.act_as('a4192000-0000-4000-8000-000000000001');set local role authenticated;
