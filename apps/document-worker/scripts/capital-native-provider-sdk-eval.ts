@@ -106,4 +106,4 @@ async function main(){
   process.stdout.write(JSON.stringify({eval:family,result:"PASS",modelCalls:0,checks:["grandfathered-fixture-approval-explicit","native-recipe-source-bytes","three-real-task-results","zero-accepted","replay-before-build","human-physical-current-read","direct-Storage-denied","actual-queue-completed","real-janitor-SDK-delete-info404-catalog-absence","erase-ack-idempotent","post-purge-human-denied"]})+"\n");
  }
 }
-main().catch(error=>{const code=error instanceof Error&&/^[a-z0-9_]{3,120}$/.test(error.message)?error.message:null;process.stderr.write(JSON.stringify({eval:"capital_native_provider_sdk",result:"FAIL",phase,code})+"\n");process.exitCode=1;});
+main().catch(error=>{const code=error instanceof Error&&/^(?:[a-z0-9_]|PGRST[0-9]{3})+$/.test(error.message)&&error.message.length>=3&&error.message.length<=256?error.message:null;process.stderr.write(JSON.stringify({eval:"capital_native_provider_sdk",result:"FAIL",phase,code})+"\n");process.exitCode=1;});

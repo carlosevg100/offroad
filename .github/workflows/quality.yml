@@ -758,7 +758,8 @@ jobs:
         run: node scripts/ci/test-capital-native-provider-sdk.mjs
 
       - name: Work review dashboard SQL and integrated runner target guards
-        if: ${{ !inputs.native_diagnostic }}
+        # Collect this independent review failure even when a preceding provider proof fails.
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_WORK_REVIEW_DRAFT_INSTALL: isolated-loopback-ci

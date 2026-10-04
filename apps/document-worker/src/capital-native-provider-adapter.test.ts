@@ -57,3 +57,31 @@ describe("native provider SDK protocol",()=>{
   const h=harness("upload409");expect((await consumeNativeProviderWork(job,createNativeProviderPorts({client:h.client,job,now}),now)).status).toBe("succeeded");expect(h.calls.filter(c=>c==="edge-read").length).toBeGreaterThan(8);
  });
 });
+
+describe("native provider denial diagnostics (no source or credentials)",()=>{
+ for(const [tamper,reason] of [["recipeHeader","physical_header_identity"],["bytes","physical_bytes"],["objectVersion","physical_header_identity"],["scopeAfter","physical_scope_changed"]] as const)
+  it(`reports fixed ${reason} for ${tamper} without relaxing the denial`,async()=>{
+   const h=harness(tamper);await expect(consumeNativeProviderWork(job,createNativeProviderPorts({client:h.client,job,now}),now)).rejects.toThrow(`capital_native_provider_adapter_denied_${reason}`);expect(h.results).toHaveLength(0);
+  });
+ it("reports known SQLSTATE but never propagates private SQL message/details/hint",async()=>{
+  const secret="private_example_never_emit";
+  const client={rpc:async()=>({data:null,error:{code:"42501",message:secret,details:secret,hint:secret}})} as unknown as SupabaseClient;
+  const ports=createNativeProviderPorts({client,job,now});
+  await expect(ports.recover()).rejects.toThrow(/^capital_native_provider_adapter_denied_rpc_worker_recover_capital_native_provider_v1_42501$/);
+ });
+ it("unknown SQLSTATE is classified rather than interpolated",async()=>{
+  const client={rpc:async()=>({data:null,error:{code:"private_example_never_emit",message:"private_example_never_emit"}})} as unknown as SupabaseClient;
+  await expect(createNativeProviderPorts({client,job,now}).recover()).rejects.toThrow(/^capital_native_provider_adapter_denied_rpc_worker_recover_capital_native_provider_v1_unclassified$/);
+ });
+});
+
+describe("native provider PostgREST diagnostic codes",()=>{
+ for(const code of ["PGRST202","PGRST203"])it(`preserves opaque ${code}, withholding message/details/hint`,async()=>{
+  const client={rpc:async()=>({data:null,error:{code,message:"private_example_never_emit",details:"private_example_never_emit",hint:"private_example_never_emit"}})} as unknown as SupabaseClient;
+  await expect(createNativeProviderPorts({client,job,now}).recover()).rejects.toThrow(`capital_native_provider_adapter_denied_rpc_worker_recover_capital_native_provider_v1_${code}`);
+ });
+ for(const code of ["PGRST202private","PGRSTprivate","private_example_never_emit"])it(`withholds malformed technical code`,async()=>{
+  const client={rpc:async()=>({data:null,error:{code,message:"private_example_never_emit"}})} as unknown as SupabaseClient;
+  await expect(createNativeProviderPorts({client,job,now}).recover()).rejects.toThrow(/^capital_native_provider_adapter_denied_rpc_worker_recover_capital_native_provider_v1_unclassified$/);
+ });
+});

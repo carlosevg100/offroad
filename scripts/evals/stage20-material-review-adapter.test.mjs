@@ -6,7 +6,7 @@ test('material physical ABI never accepts preview or missing version/header',()=
  assert.throws(()=>validateMaterialBody({...b,accepted:true},h,bytes,basis));assert.throws(()=>validateMaterialBody({...b,schemaVersion:'capital-preview-json-body.v1'},h,bytes,basis));
 });
 test('MCP checkpoint cannot confer authority and requires actual exact aggregate response',async()=>{
- const dir=mkdtempSync('/private/tmp/offroad-review-operator-');chmodSync(dir,0o700);
+ const dir=mkdtempSync('/tmp/offroad-review-operator-');chmodSync(dir,0o700);
  try{const reader=createMcpReadOnlyBridge(dir);await assert.rejects(()=>reader('delete from public.capital_projects;'));const pending=reader("select jsonb_build_object('jobs',0,'vault',0,'introductions',0);");assert(existsSync(join(dir,'request-1.json')));const request=JSON.parse(readFileSync(join(dir,'request-1.json')));writeFileSync(join(dir,'response-1.json'),JSON.stringify({schemaVersion:'stage20-operator-read-response.v1',id:request.id,result:{jobs:0,vault:0,introductions:0}}),{mode:0o600});assert.deepEqual(JSON.parse(await pending),{jobs:0,vault:0,introductions:0});}finally{rmSync(dir,{recursive:true});}
 });
 
