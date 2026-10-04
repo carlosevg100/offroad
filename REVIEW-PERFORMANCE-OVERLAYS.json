@@ -1,0 +1,30 @@
+{
+  "base": "23106724c9a510f1cf89c6ac662a94fe0b4a91c3",
+  "purpose": "TEMP DIAGNOSTIC ONLY; not release gate; no runtime/DDL/timeout/authority changes",
+  "files": [
+    {
+      "path": "apps/document-worker/scripts/capital-preview-native-sdk-eval.ts",
+      "sha256": "f50b1f404d0d24209b8d574b04813074171b653e77f2a019d8bb5daea78954ac",
+      "baseBlob": "86ab048ca503be7ab23aea9eb35c6fec38df71b9",
+      "baseSha256": "f7554fbaaa033bfaaf33be8d2b47a4f5f08079b62fe0da2b944ae439dc1bf65b"
+    },
+    {
+      "path": "scripts/evals/preview-dashboard-safe-profiler.py",
+      "sha256": "0dbe4afebb9653cdc58d3fa4ac036ef7b5ef8d52a0553eb294ce6158d9e4e816",
+      "baseBlob": null
+    }
+  ],
+  "checks": {
+    "sdkFullTscNode24": "PASS",
+    "sdkSelfTestNode24": "PASS",
+    "profilerPythonAST": "PASS",
+    "profilerSanitizationSelfTest": "PASS numeric JIT timing/functions whitelist and strict sampler frame rejection",
+    "actualSamplerProfiles": "NOT EXECUTED; requires real disposable CI stack"
+  },
+  "bounds": {
+    "sampler": "0.5s samples, each psql <=2s, hard185s, independent while child runs",
+    "profiler": "After child exit before cleanup: BEGIN\u2192ROLLBACK permits existing reader rowlocks; source-audited existing readers only; no persistent writes/DDL/timeout changes. Max27s window/30s outer/eachprocess8s.",
+    "target": "loopback only; actual org/work/native revision binding required; actor is actual reviewer; helper owner plan is diagnostic, not authority proof"
+  },
+  "output": "Fixed enums, counts, duration, numeric plan metrics only; no SQL/PID/UUID/args/query bodies/Auth/tokens/raw stderr"
+}

@@ -1,4 +1,4 @@
-name: Cold work review fixture diagnosis (not a release gate)
+name: Native review performance diagnosis (not a release gate)
 'on':
   push:
     branches:
@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   native-focal:
-    name: Cold work review fixture only
+    name: Cold native preview with safe review performance telemetry
     runs-on: ubuntu-latest
     timeout-minutes: 30
     defaults:
@@ -23,10 +23,10 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
         path: audit
-    - name: Checkout exact runtime afe390
+    - name: Checkout exact runtime 231067
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
-        ref: afe390635f7cf94147b237dd3afaf5cb11a73fd2
+        ref: 23106724c9a510f1cf89c6ac662a94fe0b4a91c3
         path: runtime
     - name: Install pnpm
       uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
@@ -42,8 +42,8 @@ jobs:
     - name: Install dependencies
       id: database_deps
       run: pnpm install --frozen-lockfile
-    - name: Overlay declared diagnostic files only
-      run: python3 ../audit/scripts/ci/overlay-provider-preview-diagnostics.py
+    - name: Overlay declared performance diagnostics only
+      run: python3 ../audit/scripts/ci/overlay-review-performance-diagnostics.py
     - name: Set up Supabase CLI
       uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1
       with:
@@ -51,33 +51,42 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: Log in to ghcr.io so image pulls are not anonymous and rate limited
-      run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor
+        }}" --password-stdin
     - name: Start local Supabase and apply migrations
       env:
         SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
-      run: "# A previous CLI attempt can leave a stopped-but-not-removed project container on a\n# recycled hosted\
-        \ runner. Remove only this repository's exact local stack before boot.\nsupabase stop --no-backup || true\n\
-        docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f\n# Retry the boot a few times,\
-        \ alternating registries with a pause, instead of failing the\n# whole gate on a registry limit.\nfor attempt\
-        \ in 1 2 3 4 5; do\n  if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector;\
-        \ then break; fi\n  if [ \"$attempt\" = 5 ]; then echo \"supabase start failed after 5 attempts\"; exit\
-        \ 1; fi\n  if [ \"$SUPABASE_INTERNAL_IMAGE_REGISTRY\" = public.ecr.aws ]; then\n    SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io\n\
-        \  else\n    SUPABASE_INTERNAL_IMAGE_REGISTRY=public.ecr.aws\n  fi\n  export SUPABASE_INTERNAL_IMAGE_REGISTRY\n\
-        \  echo \"supabase start failed on attempt $attempt; waiting 90s before retrying from $SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
-        \n  supabase stop --no-backup || true\n  sleep 90\ndone\n# A later step that recreates a container (the\
-        \ database rebuild) must name the registry\n# the images came from, or it pulls them again.\necho \"SUPABASE_INTERNAL_IMAGE_REGISTRY=$SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
+      run: "# A previous CLI attempt can leave a stopped-but-not-removed project container\
+        \ on a\n# recycled hosted runner. Remove only this repository's exact local\
+        \ stack before boot.\nsupabase stop --no-backup || true\ndocker ps -aq --filter\
+        \ 'name=^supabase_.*_offroad$' | xargs -r docker rm -f\n# Retry the boot a\
+        \ few times, alternating registries with a pause, instead of failing the\n\
+        # whole gate on a registry limit.\nfor attempt in 1 2 3 4 5; do\n  if supabase\
+        \ start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector;\
+        \ then break; fi\n  if [ \"$attempt\" = 5 ]; then echo \"supabase start failed\
+        \ after 5 attempts\"; exit 1; fi\n  if [ \"$SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
+        \ = public.ecr.aws ]; then\n    SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io\n\
+        \  else\n    SUPABASE_INTERNAL_IMAGE_REGISTRY=public.ecr.aws\n  fi\n  export\
+        \ SUPABASE_INTERNAL_IMAGE_REGISTRY\n  echo \"supabase start failed on attempt\
+        \ $attempt; waiting 90s before retrying from $SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
+        \n  supabase stop --no-backup || true\n  sleep 90\ndone\n# A later step that\
+        \ recreates a container (the database rebuild) must name the registry\n# the\
+        \ images came from, or it pulls them again.\necho \"SUPABASE_INTERNAL_IMAGE_REGISTRY=$SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
         \ >> \"$GITHUB_ENV\"\n"
     - name: Resolve local database URL
       id: db
-      run: "set -euo pipefail\nSTATUS_ENV=\"$(supabase status -o env)\"\nDB_URL=\"$(printf '%s\\n' \"$STATUS_ENV\"\
-        \ | sed -n 's/^DB_URL=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\1/p')\"\nif [ -z \"$DB_URL\" ]; then\n  DB_URL=\"\
-        postgresql://postgres:postgres@127.0.0.1:54322/postgres\"\nfi\necho \"url=$DB_URL\" >> \"$GITHUB_OUTPUT\"\
-        \nAPI_URL=\"$(printf '%s\\n' \"$STATUS_ENV\" | sed -n 's/^API_URL=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\\
-        1/p')\"\nPUBLISHABLE_KEY=\"$(printf '%s\\n' \"$STATUS_ENV\" | sed -n 's/^PUBLISHABLE_KEY=\"\\{0,1\\}\\([^\"\
-        ]*\\)\"\\{0,1\\}$/\\1/p')\"\nif [ -z \"$PUBLISHABLE_KEY\" ]; then\n  PUBLISHABLE_KEY=\"$(printf '%s\\n'\
-        \ \"$STATUS_ENV\" | sed -n 's/^ANON_KEY=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\1/p')\"\nfi\nif [ -z \"$API_URL\"\
-        \ ] || [ -z \"$PUBLISHABLE_KEY\" ]; then\n  echo 'Local Supabase API URL or publishable key unavailable'\
-        \ >&2\n  exit 1\nfi\necho \"api_url=$API_URL\" >> \"$GITHUB_OUTPUT\"\necho \"publishable_key=$PUBLISHABLE_KEY\"\
+      run: "set -euo pipefail\nSTATUS_ENV=\"$(supabase status -o env)\"\nDB_URL=\"\
+        $(printf '%s\\n' \"$STATUS_ENV\" | sed -n 's/^DB_URL=\"\\{0,1\\}\\([^\"]*\\\
+        )\"\\{0,1\\}$/\\1/p')\"\nif [ -z \"$DB_URL\" ]; then\n  DB_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"\
+        \nfi\necho \"url=$DB_URL\" >> \"$GITHUB_OUTPUT\"\nAPI_URL=\"$(printf '%s\\\
+        n' \"$STATUS_ENV\" | sed -n 's/^API_URL=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\\
+        }$/\\1/p')\"\nPUBLISHABLE_KEY=\"$(printf '%s\\n' \"$STATUS_ENV\" | sed -n\
+        \ 's/^PUBLISHABLE_KEY=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\1/p')\"\nif [\
+        \ -z \"$PUBLISHABLE_KEY\" ]; then\n  PUBLISHABLE_KEY=\"$(printf '%s\\n' \"\
+        $STATUS_ENV\" | sed -n 's/^ANON_KEY=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\\
+        1/p')\"\nfi\nif [ -z \"$API_URL\" ] || [ -z \"$PUBLISHABLE_KEY\" ]; then\n\
+        \  echo 'Local Supabase API URL or publishable key unavailable' >&2\n  exit\
+        \ 1\nfi\necho \"api_url=$API_URL\" >> \"$GITHUB_OUTPUT\"\necho \"publishable_key=$PUBLISHABLE_KEY\"\
         \ >> \"$GITHUB_OUTPUT\"\n"
     - name: Install unpublished native consumer drafts in isolated CI only
       id: native_consumers_install
@@ -133,10 +142,21 @@ jobs:
         '
       id: review
       if: ${{ !cancelled() && steps.db.outcome == 'success' }}
+    - name: Current native preview and sanitized dashboard performance
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
+        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+        PREVIEW_DRAFTS_IN_LOCAL_STACK: '1'
+        PREVIEW_HTTP_NAMESPACE: a8830001
+        PREVIEW_INTEGRATED_REVIEW_EVAL: '1'
+      run: python3 -B scripts/ci/test-capital-preview-sdk.py
+      id: preview_before
     - name: Stop the capital body Edge reader
-      run: "set -euo pipefail\nruntime_dir=\"$RUNNER_TEMP/capital-body-edge\"\nif [ -f \"$runtime_dir/server.pid\"\
-        \ ]; then\n  runtime_pid=\"$(cat \"$runtime_dir/server.pid\")\"\n  if [[ \"$runtime_pid\" =~ ^[0-9]+$ ]];\
-        \ then kill \"$runtime_pid\" 2>/dev/null || true; fi\nfi\nrm -rf -- \"$runtime_dir\"\n"
+      run: "set -euo pipefail\nruntime_dir=\"$RUNNER_TEMP/capital-body-edge\"\nif\
+        \ [ -f \"$runtime_dir/server.pid\" ]; then\n  runtime_pid=\"$(cat \"$runtime_dir/server.pid\"\
+        )\"\n  if [[ \"$runtime_pid\" =~ ^[0-9]+$ ]]; then kill \"$runtime_pid\" 2>/dev/null\
+        \ || true; fi\nfi\nrm -rf -- \"$runtime_dir\"\n"
       if: always()
     - name: Stop local Supabase
       run: supabase stop --no-backup
