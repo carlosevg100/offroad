@@ -51,7 +51,7 @@ async function main(){
   phase=`${family}_local_fixture_approval`;sql(db,expand(join(root,`supabase/tests/support/capital_native_provider_${family==="provider_research"?"research":"case_fit"}_sdk_fixture.sql`)));
   const client=createClient(api,key,{global:{headers:{"x-offroad-workspace":organization},fetch:(input,init)=>fetch(input,{...init,redirect:"error"})},auth:{persistSession:false}});
   phase=`${family}_real_auth`;const login=await client.auth.signInWithPassword({email:family==="provider_research"?"provider-research-a@example.invalid":"case-fit-a@example.invalid",password:"native-provider-isolated-local-password"});assert.equal(login.error,null);assert.equal(login.data.user?.id,actor);
-  const token=family==="provider_research"?"v".repeat(64):"u".repeat(64),queue=createQueueClient(client,{workerToken:token,leaseSeconds:600});
+  const token=family==="provider_research"?"cfa6ec9950f2152fc7cd5aac980f1d6fafdaca4aaa054e4483e9df0c5d20e26d":"9748fe624d1a3d4253f3a38324320426fe64dc0b092839b048d0bd8e1cc03dd4",queue=createQueueClient(client,{workerToken:token,leaseSeconds:600});
   phase=`${family}_real_claim`;const claimed=await queue.claim();assert.ok(claimed&&claimed.kind==="capital_project_analysis");const job=claimed as CapitalProjectAnalysisJob;assert.equal(job.payload.analysis_scope,family);assert.equal(job.organization_id,organization);await ensureInitialAgentPlan(job,queue);
   assert.equal((await client.rpc("worker_claim_capital_capture_purge_v1",{p_worker_token:token,p_limit:100})).error,null);
   const ports=createNativeProviderPorts({client,job,cataloguePublication:async()=>publication});

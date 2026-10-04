@@ -1,3 +1,4 @@
+-- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
 begin;
 \ir legacy_workspace_capabilities.sql
@@ -68,7 +69,7 @@ do $$ declare f record; request uuid:=gen_random_uuid(); begin
  exception when insufficient_privilege then null; end;
 end $$;
 reset role;
-insert into private.worker_tokens(label,token_sha256)values('synthetic-case-fit-worker',extensions.digest(repeat('u',64),'sha256'));
+insert into private.worker_tokens(label,token_sha256)values('synthetic-provider_case_fit_persistence-worker',extensions.digest('5154f41f4400bbde52d9ed7d26d5a3d698538c89f34f9cff7256b003fd2d6144','sha256'));
 do $$
 declare f record; context jsonb; claim jsonb; cap text; task text; run uuid; artifact jsonb; deps jsonb:='[]'; content jsonb;
 begin
@@ -76,7 +77,7 @@ begin
  if jsonb_array_length(f.frozen->'providers')<>1 or f.frozen::text like '%MUST NOT LEAK%' or f.frozen::text like '%private@example.invalid%' or f.frozen::text like '%other tenant%' then raise exception 'owned source projection failed'; end if;
  perform pg_temp.fixture_approve_execution(f.job_id);
  update public.processing_jobs set available_at=now()-interval '1 day' where id=f.job_id;
- claim:=public.worker_claim_job_v3(repeat('u',64),600);if claim->>'job_id' is distinct from f.job_id::text then raise exception 'fit claim mismatch'; end if;cap:=claim->>'capability_token';
+ claim:=public.worker_claim_job_v3('5154f41f4400bbde52d9ed7d26d5a3d698538c89f34f9cff7256b003fd2d6144',600);if claim->>'job_id' is distinct from f.job_id::text then raise exception 'fit claim mismatch'; end if;cap:=claim->>'capability_token';
  context:=public.worker_load_provider_case_fit_context(f.job_id,cap);
  update public.mandate_versions set constraints='{"currencies":["USD"]}' where fund_id='40000000-0000-4000-8000-000000000971';
  if public.worker_load_provider_case_fit_context(f.job_id,cap) is distinct from context then raise exception 'frozen mandate changed'; end if;

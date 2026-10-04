@@ -1,3 +1,4 @@
+-- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- LOCAL disposable HTTP fixture only. Grandfathered execution approval is explicitly
 -- fixture history; the native provider input/body/Storage/receipts are actual SDK products.
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
@@ -58,7 +59,7 @@ begin
   exception when insufficient_privilege then null; end;
 end $$;
 reset role;
-insert into private.worker_tokens(label,token_sha256,execution_account_user_id) values('synthetic-provider-research-worker',extensions.digest(repeat('v',64),'sha256'),'10000000-0000-4000-8000-000000000981') on conflict(token_sha256) do update set status='active',revoked_at=null;
+insert into private.worker_tokens(label,token_sha256,execution_account_user_id) values('synthetic-capital_native_provider_research_sdk_fixture-worker',extensions.digest('cfa6ec9950f2152fc7cd5aac980f1d6fafdaca4aaa054e4483e9df0c5d20e26d','sha256'),'10000000-0000-4000-8000-000000000981');
 
 
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000981","role":"authenticated"}',true);

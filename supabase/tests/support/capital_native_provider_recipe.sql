@@ -1,3 +1,4 @@
+-- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- Native recipe SQL contracts. Storage catalogue rows are metadata fixtures only;
 -- physical byte and purge proofs require the separate actual Storage gate.
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
@@ -58,7 +59,7 @@ begin
   exception when insufficient_privilege then null; end;
 end $$;
 reset role;
-insert into private.worker_tokens(label,token_sha256,execution_account_user_id) values('synthetic-provider-research-worker',extensions.digest(repeat('v',64),'sha256'),'10000000-0000-4000-8000-000000000981') on conflict(token_sha256) do update set status='active',revoked_at=null;
+insert into private.worker_tokens(label,token_sha256,execution_account_user_id) values('synthetic-capital_native_provider_recipe-worker',extensions.digest('f59510d5ae3051f77576a9a2ed09e37c85a29d7a626d8396739785d87772f1e0','sha256'),'10000000-0000-4000-8000-000000000981');
 
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000981","role":"authenticated"}',true);
 select set_config('request.jwt.claim.sub','',true);
@@ -68,12 +69,12 @@ begin
  select * into strict f from pg_temp.provider_research_fixture;
  perform pg_temp.fixture_approve_execution(f.job_id);
  update public.processing_jobs set available_at=now()-interval '1 day' where id=f.job_id;
- claim:=public.worker_claim_job_v3(repeat('v',64),600);cap:=claim->>'capability_token';
+ claim:=public.worker_claim_job_v3('f59510d5ae3051f77576a9a2ed09e37c85a29d7a626d8396739785d87772f1e0',600);cap:=claim->>'capability_token';
  if claim->>'job_id'<>f.job_id::text then raise exception 'native_provider_claim_mismatch';end if;
  begin perform private.worker_prepare_capital_native_recipe_v1(f.job_id,cap);raise exception 'native recipe admitted without purge heartbeat';exception when insufficient_privilege then null;end;
  if exists(select 1 from private.capital_native_recipes where job_id=f.job_id)then raise exception 'failed admission left recipe';end if;
  update private.capital_public_retention_controls set enabled=true;
- perform public.worker_claim_capital_capture_purge_v1(repeat('v',64));
+ perform public.worker_claim_capital_capture_purge_v1('f59510d5ae3051f77576a9a2ed09e37c85a29d7a626d8396739785d87772f1e0');
  prepared:=private.worker_prepare_capital_native_recipe_v1(f.job_id,cap);r:=(prepared->>'recipeId')::uuid;a:=(prepared#>>'{body,allocationId}')::uuid;
  if prepared->>'schemaVersion'<>'capital-native-recipe-preparation.v1' or prepared#>>'{body,retentionState}'<>'allocated'
  or (prepared#>>'{body,retainedPayloadId}')is not null or (select count(*)from private.capital_native_provider_resource_pins where recipe_id=r)<>2 then raise exception 'native preparation manufactured receipt or lost resource pins';end if;
@@ -87,7 +88,7 @@ begin
  old_cap:=cap;
  perform public.worker_fail_job(f.job_id,cap,'{"code":"synthetic_retry","stage":"native_capture","retryable":true,"cause":{"name":"SyntheticError","class":"transient","message":"Synthetic transient failure"}}'::jsonb,true,5);
  update public.processing_jobs set available_at=now()-interval '1 second'where id=f.job_id;
- claim:=public.worker_claim_job_v3(repeat('v',64),600);cap:=claim->>'capability_token';
+ claim:=public.worker_claim_job_v3('f59510d5ae3051f77576a9a2ed09e37c85a29d7a626d8396739785d87772f1e0',600);cap:=claim->>'capability_token';
  if claim->>'job_id'<>f.job_id::text or cap=old_cap then raise exception 'native real retry did not re-lease original job';end if;
  begin perform private.worker_prepare_capital_native_recipe_v1(f.job_id,old_cap);raise exception 'obsolete lease still admitted';exception when insufficient_privilege then null;end;
  if jsonb_set(private.worker_prepare_capital_native_recipe_v1(f.job_id,cap),'{body,replayed}','false')is distinct from prepared then raise exception 'new lease changed original capture';end if;

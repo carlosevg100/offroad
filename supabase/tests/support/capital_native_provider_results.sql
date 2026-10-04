@@ -1,3 +1,4 @@
+-- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- Native result SQL contracts. Storage rows are rollback metadata fixtures,
 -- not actual physical-byte/erase evidence. The TS consumer separately uses the actual professional engines.
 begin;
@@ -69,7 +70,7 @@ do $$ declare f record; request uuid:=gen_random_uuid(); begin
  exception when insufficient_privilege then null; end;
 end $$;
 reset role;
-insert into private.worker_tokens(label,token_sha256,execution_account_user_id)values('synthetic-case-fit-worker',extensions.digest(repeat('u',64),'sha256'),'10000000-0000-4000-8000-000000000971');
+insert into private.worker_tokens(label,token_sha256,execution_account_user_id)values('synthetic-capital_native_provider_results-worker',extensions.digest('264eed67b4388ac6521e0529c229c34a342d3702e41c226062a1da4a155336d2','sha256'),'10000000-0000-4000-8000-000000000971');
 
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000971","role":"authenticated"}',true);
 select set_config('request.jwt.claim.sub','',true);
@@ -77,8 +78,8 @@ do $$declare f record;claim jsonb;cap text;prepared jsonb;r uuid;allocation uuid
 begin
  select * into strict f from pg_temp.fit_fixture;
  perform pg_temp.fixture_approve_execution(f.job_id);update public.processing_jobs set available_at=now()-interval'1 day'where id=f.job_id;
- claim:=public.worker_claim_job_v3(repeat('u',64),600);cap:=claim->>'capability_token';if claim->>'job_id'<>f.job_id::text then raise exception 'native fit claim mismatch';end if;
- update private.capital_public_retention_controls set enabled=true;perform public.worker_claim_capital_capture_purge_v1(repeat('u',64));
+ claim:=public.worker_claim_job_v3('264eed67b4388ac6521e0529c229c34a342d3702e41c226062a1da4a155336d2',600);cap:=claim->>'capability_token';if claim->>'job_id'<>f.job_id::text then raise exception 'native fit claim mismatch';end if;
+ update private.capital_public_retention_controls set enabled=true;perform public.worker_claim_capital_capture_purge_v1('264eed67b4388ac6521e0529c229c34a342d3702e41c226062a1da4a155336d2');
  recovery:=private.worker_recover_capital_native_provider_v1(f.job_id,cap);if recovery->'recipe'<>'null'::jsonb or recovery->'results'<>'[]'::jsonb then raise exception 'native invented recovery';end if;
  prepared:=private.worker_prepare_capital_native_recipe_v1(f.job_id,cap);r:=(prepared->>'recipeId')::uuid;allocation:=(prepared#>>'{body,allocationId}')::uuid;
  insert into storage.objects(bucket_id,name,metadata,version)values('capital-input-capture',prepared#>>'{body,path}',jsonb_build_object('size',(prepared#>>'{body,byteLength}')::bigint,'mimetype','application/json'),'native-fit-context-v1')returning id into object_id;

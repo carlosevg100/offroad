@@ -1,3 +1,4 @@
+import {jobFailureRecordSchema} from "./job-failure";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import type {QueueClient} from "./queue";
 import type {ModelGateway} from "@offroad/model-gateway";
@@ -71,10 +72,10 @@ describe("institutional snapshot transport",()=>{
 describe("institutional contention requeue",()=>{
  it.each([false,true])("requeues capture contention without reporting a terminal conversation error (recompute=%s)",async(recompute)=>{
   const activeJob=recompute?agentOperationBriefJobSchema.parse({...job,payload:{...job.payload,institutional_recompute_candidate_id:"95000000-0000-4000-8000-000000000883"}}):job;
-  const queue={loadAgentContext:vi.fn(async()=>({session_id:job.intake_session_id,message_id:id,locale:"en-US",message:"Calculate the approved model.",message_metadata:{kind:"institutional_model_refresh"},brief:{},snapshot_fingerprint:"a".repeat(64),projection_updated_at:"2026-09-10T04:00:00Z",manifest_id:null,company_profile:{},documents:[],tasks:[],artifacts:[],recent_messages:[]})),loadInstitutionalModelContext:vi.fn(async()=>{throw new InstitutionalCaptureRetryError();}),recordInstitutionalModelResult:vi.fn(),writeStage:vi.fn(),recordAgentResponse:vi.fn(),recordAgentFailure:vi.fn(),fail:vi.fn(),complete:vi.fn()} as unknown as QueueClient;
+  const queue={loadAgentContext:vi.fn(async()=>({session_id:job.intake_session_id,message_id:id,locale:"en-US",message:"Calculate the approved model.",message_metadata:{kind:"institutional_model_refresh"},brief:{},snapshot_fingerprint:"a".repeat(64),projection_updated_at:"2026-09-10T04:00:00Z",manifest_id:null,company_profile:{},documents:[],tasks:[],artifacts:[],recent_messages:[]})),loadInstitutionalModelContext:vi.fn(async()=>{throw new InstitutionalCaptureRetryError();}),recordInstitutionalModelResult:vi.fn(),writeStage:vi.fn(),recordAgentResponse:vi.fn(),recordAgentFailure:vi.fn(),fail:vi.fn(async(_job,error)=>{jobFailureRecordSchema.parse(error);}),complete:vi.fn()} as unknown as QueueClient;
   const gateway={complete:vi.fn(),spent:()=>({costUsd:0,calls:0})} as unknown as ModelGateway;
   expect(await processAgentOperationBriefJob(activeJob,{queue,gateway,log:()=>{},shadowRouting:false})).toEqual({status:"failed"});
-  expect(queue.fail).toHaveBeenCalledWith(activeJob,expect.objectContaining({code:"institutional_capture_retry"}),{retryable:true,retryInSeconds:2});
+  expect(queue.fail).toHaveBeenCalledWith(activeJob,expect.objectContaining({code:"institutional_capture_retry",stage:recompute?"institutional_model_recompute":"institutional_model_refresh",retryable:true,cause:expect.objectContaining({name:"InstitutionalCaptureRetryError",message:"institutional_capture_retry"})}),{retryable:true,retryInSeconds:2});
   expect(queue.recordAgentFailure).not.toHaveBeenCalled();expect(queue.recordAgentResponse).not.toHaveBeenCalled();expect(queue.complete).not.toHaveBeenCalled();expect(gateway.complete).not.toHaveBeenCalled();
  });
 });

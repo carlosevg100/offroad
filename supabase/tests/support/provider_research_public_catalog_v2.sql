@@ -1,3 +1,4 @@
+-- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- V2 uses public snapshot evidence without assigning it a tenant owner. Rollback fixture only.
 -- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
 begin;
@@ -57,7 +58,7 @@ begin
   exception when insufficient_privilege then null; end;
 end $$;
 reset role;
-insert into private.worker_tokens(label,token_sha256) values('synthetic-provider-research-worker',extensions.digest(repeat('v',64),'sha256')) on conflict(token_sha256) do update set status='active',revoked_at=null;
+insert into private.worker_tokens(label,token_sha256) values('synthetic-provider_research_public_catalog_v2-worker',extensions.digest('b9ae41ce5cbf78bc933886a8f18f7a9e6d70f69aec2096f2778423c5543d56d2','sha256'));
 do $$
 declare f record; context jsonb; task_run uuid; artifact jsonb; claim jsonb; cap text; task text; dependencies jsonb;
 begin
@@ -71,7 +72,7 @@ begin
   if not exists(select 1 from jsonb_array_elements(f.frozen->'providers') p where p->>'sourceClass'='directory') then raise exception 'owned directory absent'; end if;
   perform pg_temp.fixture_approve_execution(f.job_id);
   update public.processing_jobs set available_at=now()-interval '1 day' where id=f.job_id;
-  claim:=public.worker_claim_job_v3(repeat('v',64),600);
+  claim:=public.worker_claim_job_v3('b9ae41ce5cbf78bc933886a8f18f7a9e6d70f69aec2096f2778423c5543d56d2',600);
   if claim->>'job_id' is distinct from f.job_id::text then raise exception 'research claim mismatch'; end if;
   cap:=claim->>'capability_token';
   context:=public.worker_load_provider_research_context(f.job_id,cap);

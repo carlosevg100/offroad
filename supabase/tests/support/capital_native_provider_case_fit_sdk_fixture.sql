@@ -1,3 +1,4 @@
+-- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- LOCAL disposable HTTP fixture only. No Storage object, native recipe, seal,
 -- result binding, provider acceptance or quality outcome is inserted here.
 begin;
@@ -69,7 +70,7 @@ do $$ declare f record; request uuid:=gen_random_uuid(); begin
  exception when insufficient_privilege then null; end;
 end $$;
 reset role;
-insert into private.worker_tokens(label,token_sha256,execution_account_user_id)values('synthetic-case-fit-worker',extensions.digest(repeat('u',64),'sha256'),'10000000-0000-4000-8000-000000000971');
+insert into private.worker_tokens(label,token_sha256,execution_account_user_id)values('synthetic-capital_native_provider_case_fit_sdk_fixture-worker',extensions.digest('9748fe624d1a3d4253f3a38324320426fe64dc0b092839b048d0bd8e1cc03dd4','sha256'),'10000000-0000-4000-8000-000000000971');
 
 
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000971","role":"authenticated"}',true);
