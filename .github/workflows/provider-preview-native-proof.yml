@@ -1,8 +1,9 @@
-name: Temporary provider and preview native proof (not a release gate)
+name: Optional work purpose contract proof
 'on':
   push:
     branches:
     - codex/etapa20-provider-preview-proof
+  workflow_dispatch: {}
 permissions:
   contents: read
 concurrency:
@@ -46,54 +47,43 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: Log in to ghcr.io so image pulls are not anonymous and rate limited
-      run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor
+        }}" --password-stdin
     - name: Start local Supabase and apply migrations
       env:
         SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
-      run: |
-        # A previous CLI attempt can leave a stopped-but-not-removed project container on a
-        # recycled hosted runner. Remove only this repository's exact local stack before boot.
-        supabase stop --no-backup || true
-        docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
-        # Retry the boot a few times, alternating registries with a pause, instead of failing the
-        # whole gate on a registry limit.
-        for attempt in 1 2 3 4 5; do
-          if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector; then break; fi
-          if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
-          if [ "$SUPABASE_INTERNAL_IMAGE_REGISTRY" = public.ecr.aws ]; then
-            SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io
-          else
-            SUPABASE_INTERNAL_IMAGE_REGISTRY=public.ecr.aws
-          fi
-          export SUPABASE_INTERNAL_IMAGE_REGISTRY
-          echo "supabase start failed on attempt $attempt; waiting 90s before retrying from $SUPABASE_INTERNAL_IMAGE_REGISTRY"
-          supabase stop --no-backup || true
-          sleep 90
-        done
-        # A later step that recreates a container (the database rebuild) must name the registry
-        # the images came from, or it pulls them again.
-        echo "SUPABASE_INTERNAL_IMAGE_REGISTRY=$SUPABASE_INTERNAL_IMAGE_REGISTRY" >> "$GITHUB_ENV"
+      run: "# A previous CLI attempt can leave a stopped-but-not-removed project container\
+        \ on a\n# recycled hosted runner. Remove only this repository's exact local\
+        \ stack before boot.\nsupabase stop --no-backup || true\ndocker ps -aq --filter\
+        \ 'name=^supabase_.*_offroad$' | xargs -r docker rm -f\n# Retry the boot a\
+        \ few times, alternating registries with a pause, instead of failing the\n\
+        # whole gate on a registry limit.\nfor attempt in 1 2 3 4 5; do\n  if supabase\
+        \ start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector;\
+        \ then break; fi\n  if [ \"$attempt\" = 5 ]; then echo \"supabase start failed\
+        \ after 5 attempts\"; exit 1; fi\n  if [ \"$SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
+        \ = public.ecr.aws ]; then\n    SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io\n\
+        \  else\n    SUPABASE_INTERNAL_IMAGE_REGISTRY=public.ecr.aws\n  fi\n  export\
+        \ SUPABASE_INTERNAL_IMAGE_REGISTRY\n  echo \"supabase start failed on attempt\
+        \ $attempt; waiting 90s before retrying from $SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
+        \n  supabase stop --no-backup || true\n  sleep 90\ndone\n# A later step that\
+        \ recreates a container (the database rebuild) must name the registry\n# the\
+        \ images came from, or it pulls them again.\necho \"SUPABASE_INTERNAL_IMAGE_REGISTRY=$SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
+        \ >> \"$GITHUB_ENV\"\n"
     - name: Resolve local database URL
       id: db
-      run: |
-        set -euo pipefail
-        STATUS_ENV="$(supabase status -o env)"
-        DB_URL="$(printf '%s\n' "$STATUS_ENV" | sed -n 's/^DB_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p')"
-        if [ -z "$DB_URL" ]; then
-          DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-        fi
-        echo "url=$DB_URL" >> "$GITHUB_OUTPUT"
-        API_URL="$(printf '%s\n' "$STATUS_ENV" | sed -n 's/^API_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p')"
-        PUBLISHABLE_KEY="$(printf '%s\n' "$STATUS_ENV" | sed -n 's/^PUBLISHABLE_KEY="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p')"
-        if [ -z "$PUBLISHABLE_KEY" ]; then
-          PUBLISHABLE_KEY="$(printf '%s\n' "$STATUS_ENV" | sed -n 's/^ANON_KEY="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p')"
-        fi
-        if [ -z "$API_URL" ] || [ -z "$PUBLISHABLE_KEY" ]; then
-          echo 'Local Supabase API URL or publishable key unavailable' >&2
-          exit 1
-        fi
-        echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
-        echo "publishable_key=$PUBLISHABLE_KEY" >> "$GITHUB_OUTPUT"
+      run: "set -euo pipefail\nSTATUS_ENV=\"$(supabase status -o env)\"\nDB_URL=\"\
+        $(printf '%s\\n' \"$STATUS_ENV\" | sed -n 's/^DB_URL=\"\\{0,1\\}\\([^\"]*\\\
+        )\"\\{0,1\\}$/\\1/p')\"\nif [ -z \"$DB_URL\" ]; then\n  DB_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"\
+        \nfi\necho \"url=$DB_URL\" >> \"$GITHUB_OUTPUT\"\nAPI_URL=\"$(printf '%s\\\
+        n' \"$STATUS_ENV\" | sed -n 's/^API_URL=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\\
+        }$/\\1/p')\"\nPUBLISHABLE_KEY=\"$(printf '%s\\n' \"$STATUS_ENV\" | sed -n\
+        \ 's/^PUBLISHABLE_KEY=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\1/p')\"\nif [\
+        \ -z \"$PUBLISHABLE_KEY\" ]; then\n  PUBLISHABLE_KEY=\"$(printf '%s\\n' \"\
+        $STATUS_ENV\" | sed -n 's/^ANON_KEY=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\\
+        1/p')\"\nfi\nif [ -z \"$API_URL\" ] || [ -z \"$PUBLISHABLE_KEY\" ]; then\n\
+        \  echo 'Local Supabase API URL or publishable key unavailable' >&2\n  exit\
+        \ 1\nfi\necho \"api_url=$API_URL\" >> \"$GITHUB_OUTPUT\"\necho \"publishable_key=$PUBLISHABLE_KEY\"\
+        \ >> \"$GITHUB_OUTPUT\"\n"
     - name: Install native consumers for the disposable browser stack
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
@@ -121,144 +111,71 @@ jobs:
     - name: Apply new case-fit result contract correction after immutable all25
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: |
-        cp ../audit/supabase/tests/support/capital_native_provider_results.sql supabase/tests/support/capital_native_provider_results.sql
+      run: 'cp ../audit/supabase/tests/support/capital_native_provider_results.sql
+        supabase/tests/support/capital_native_provider_results.sql
+
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_native_case_fit_result_contract.sql
+
+        '
     - name: Apply guarded preview-only Storage job authority forward on cold stack
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: |
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_storage_job_authority.sql
+      run: 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_storage_job_authority.sql
+
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_storage_job_authority.sql
+
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_native_artifact_publication.sql
+
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_native_artifact_publication.sql
+
+        '
     - name: Apply physical input grammar and bounded boundary validation forwards
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: |
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_physical_input_grammar.sql
+      run: 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_physical_input_grammar.sql
+
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_boundary_validation.sql
+
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_boundary_validation.sql
+
         cp ../audit/supabase/tests/support/capital_preview_dispatch_policy.sql supabase/tests/support/capital_preview_dispatch_policy.sql
+
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
+
         cp ../audit/apps/document-worker/src/integration-preview-processing.ts apps/document-worker/src/integration-preview-processing.ts
-        cp ../audit/apps/document-worker/src/integration-preview-processing.test.ts apps/document-worker/src/integration-preview-processing.test.ts
-        cp ../audit/apps/document-worker/src/integration-preview-native-pipeline.test.ts apps/document-worker/src/integration-preview-native-pipeline.test.ts
+
+        cp ../audit/apps/document-worker/src/integration-preview-processing.test.ts
+        apps/document-worker/src/integration-preview-processing.test.ts
+
+        cp ../audit/apps/document-worker/src/integration-preview-native-pipeline.test.ts
+        apps/document-worker/src/integration-preview-native-pipeline.test.ts
+
+        '
     - name: Overlay three exact current capture-denial assertions
-      run: |-
-        for name in provider_research_persistence provider_research_public_catalog_v2 provider_case_fit_persistence capital_native_provider_results; do
-          cp "../audit/supabase/tests/support/${name}.sql" "supabase/tests/support/${name}.sql"
-        done
-    - name: Serve the authenticated capital body Edge reader
-      env:
-        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
-      run: |
-        set -euo pipefail
-        umask 077
-        runtime_dir="$RUNNER_TEMP/capital-body-edge"
-        mkdir -p "$runtime_dir"
-        chmod 700 "$runtime_dir"
-        # CLI injects built-in credentials into the server runtime only.
-        # JWT verification stays enabled; no privileged key enters a client.
-        supabase functions serve > "$runtime_dir/server.log" 2>&1 &
-        echo "$!" > "$runtime_dir/server.pid"
-        python3 -B scripts/ci/verify-capital-body-edge-ready.py
-    - name: Native provider guards and retired writer negatives
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: |
-        set -euo pipefail
-        for test_file in provider_research_persistence provider_research_public_catalog_v2 provider_case_fit_persistence capital_native_provider_recipe capital_native_provider_results; do
-          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f "supabase/tests/support/${test_file}.sql"
-        done
-    - name: Native provider catalogue SQL closure
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: node scripts/ci/test-capital-native-provider-sdk.mjs --sql-contracts
-    - name: Overlay SDK-only closed transport diagnostic
-      run: cp ../audit/apps/document-worker/scripts/capital-native-provider-sdk-eval.ts apps/document-worker/scripts/capital-native-provider-sdk-eval.ts
-    - name: Public signup preflight with local confirmation mail service
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
-        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
-      run: |
-        set -euo pipefail
-        cp ../audit/apps/document-worker/scripts/capital-preview-native-sdk-eval.ts apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
-        pnpm exec tsc -p apps/document-worker/scripts/tsconfig-capital-preview-sdk-eval.json
-        loader="$(find node_modules/.pnpm -path '*/tsx/dist/loader.mjs' -print -quit)"
-        test -n "$loader"
-        node --import "$(pwd)/$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts --auth-signup-preflight
-    - name: Classify local Auth failures without log contents
-      if: failure()
-      run: |
-        set -euo pipefail
-        container="$(docker ps -aq --filter 'name=^supabase_auth_offroad$')"
-        if [ -n "$container" ]; then
-          docker logs --tail 1000 "$container" 2>&1 | python3 -B ../audit/scripts/evals/auth-log-sanitized.py
-        fi
-    - name: Native deterministic providers through real Storage and Edge
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
-        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
-      run: node scripts/ci/test-capital-native-provider-sdk.mjs
-    - name: Verify physical input and unchanged budget guards
-      run: pnpm --filter @offroad/document-worker exec vitest run src/integration-preview-processing.test.ts src/integration-preview-native-pipeline.test.ts
-    - name: Overlay preview-only owner bootstrap through public capability command
-      run: cp ../audit/scripts/ci/test-execution-brief-native-agent.py scripts/ci/test-execution-brief-native-agent.py
-    - name: Overlay initial published plan for preview fixture bootstrap
-      run: cp ../audit/apps/document-worker/scripts/execution-brief-native-preview-fixture.ts apps/document-worker/scripts/execution-brief-native-preview-fixture.ts
-    - name: Reuse actual objective preflight compiler in preview fixture
-      run: cp ../audit/apps/document-worker/src/agent-operation-brief.ts apps/document-worker/src/agent-operation-brief.ts
-    - name: Select legitimate publisher identity before source session bootstrap
-      run: cp ../audit/supabase/tests/support/capital_preview_native_http_setup.sql supabase/tests/support/capital_preview_native_http_setup.sql
-    - name: Map internal publisher fixture to valid historical journey
-      run: cp ../audit/supabase/tests/support/legacy_persistent_work_fixture.sql supabase/tests/support/legacy_persistent_work_fixture.sql
-    - name: Overlay actual allocation authority regression proof
-      run: |
-        cp ../audit/supabase/tests/support/capital_preview_storage_job_authority_actual.sql supabase/tests/support/capital_preview_storage_job_authority_actual.sql
-        cp ../audit/supabase/tests/support/capital_preview_native_artifact_publication_actual.sql supabase/tests/support/capital_preview_native_artifact_publication_actual.sql
-    - name: Overlay fixed physical boundary diagnostic only
-      run: cp ../audit/apps/document-worker/src/integration-preview-body-storage.ts apps/document-worker/src/integration-preview-body-storage.ts
-    - name: Verify synthetic authored manifest identities without changing replay guards
-      run: node --test ../audit/scripts/evals/stage20-integrated-review.test.mjs
+      run: "for name in provider_research_persistence provider_research_public_catalog_v2\
+        \ provider_case_fit_persistence capital_native_provider_results; do\n  cp\
+        \ \"../audit/supabase/tests/support/${name}.sql\" \"supabase/tests/support/${name}.sql\"\
+        \ndone"
     - name: Complete preview-specific human review projection
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: |
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_review_projection.sql
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_review_projection.sql
-        cp ../audit/scripts/evals/stage20-integrated-review.mjs scripts/evals/stage20-integrated-review.mjs
+      run: 'psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_review_projection.sql
+
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_review_projection.sql'
     - name: Bound native preview finalization under the unchanged database timeout
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: |
-        node --test ../audit/scripts/evals/preview-finalize-bounded-closure.test.mjs
+      run: 'node --test ../audit/scripts/evals/preview-finalize-bounded-closure.test.mjs
+
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_finalize_bounded_closure.sql
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_finalize_bounded_closure.sql
-    - name: Overlay closed preview failure diagnostics without request bodies
-      run: cp ../audit/apps/document-worker/scripts/capital-preview-native-sdk-eval.ts apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
-    - name: Finite native preview through real Storage, two paid boundaries and replay
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
-        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
-        PREVIEW_DRAFTS_IN_LOCAL_STACK: '0'
-        PREVIEW_HTTP_NAMESPACE: a8830001
-        PREVIEW_INTEGRATED_REVIEW_EVAL: '1'
-      run: |
-        python3 -B scripts/ci/test-capital-preview-sdk.py
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_native_consumption.sql
-    - name: Stop owned Edge runtime
-      if: always()
-      run: |-
-        runtime_dir="$RUNNER_TEMP/capital-body-edge"
-        if [ -f "$runtime_dir/server.pid" ]; then
-          runtime_pid="$(cat "$runtime_dir/server.pid")"
-          if [[ "$runtime_pid" =~ ^[0-9]+$ ]]; then kill "$runtime_pid" 2>/dev/null || true; fi
-        fi
+
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_finalize_bounded_closure.sql'
+    - name: Optional capital purpose public command and denial regression
+      run: 'cp ../audit/supabase/tests/work_optional_capital_purpose.sql supabase/tests/work_optional_capital_purpose.sql
+
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/work_optional_capital_purpose.sql
+
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/work_optional_capital_purpose.sql'
     - name: Stop local Supabase
-      run: supabase stop --no-backup
       if: always()
+      run: supabase stop --no-backup
