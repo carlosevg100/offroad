@@ -31,7 +31,7 @@ jobs:
           from pathlib import Path
           runtime=Path.cwd().resolve();audit=(runtime.parent/'audit').resolve()
           assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()=='769d7b8e66dff29817866347714d5f84ced186f1'
-          entries=[{'path': 'supabase/pending/institutional_setup_capture_nowait_order.sql', 'baseSha256': None, 'sha256': '6450f088930429c9b91a15428b833829c44f65bdd91951d566aadb5a208a760b'}, {'path': 'scripts/ci/test-institutional-setup-capture-concurrency.py', 'baseSha256': '1c6c51353bfe072419aa272132ce6365119d235f5ac62c9cba2d47d6862fd132', 'sha256': '441aeb14ea102f95217606fbca63c84241ead5c74d5a4260a58ee1abf48ab4da'}, {'path': 'supabase/tests/institutional_setup_input_snapshots.sql', 'baseSha256': 'c52331e5716f39f936d368cf17ea84b40e12424cf1bf79b7156fd391c0fedfcc', 'sha256': '76e761c8b1adcc7cea3a77d1728c4a10e4b2ac32e2e72bc7b00ee9133ce82493'}]
+          entries=[{'path': 'supabase/pending/institutional_setup_capture_nowait_order.sql', 'baseSha256': None, 'sha256': '949ffabf2a1dc86ef3d0601b021a3e5511e64a45806e32c1d7ac717722f9005b'}, {'path': 'scripts/ci/test-institutional-setup-capture-concurrency.py', 'baseSha256': '1c6c51353bfe072419aa272132ce6365119d235f5ac62c9cba2d47d6862fd132', 'sha256': '441aeb14ea102f95217606fbca63c84241ead5c74d5a4260a58ee1abf48ab4da'}, {'path': 'supabase/tests/institutional_setup_input_snapshots.sql', 'baseSha256': 'c52331e5716f39f936d368cf17ea84b40e12424cf1bf79b7156fd391c0fedfcc', 'sha256': '76e761c8b1adcc7cea3a77d1728c4a10e4b2ac32e2e72bc7b00ee9133ce82493'}]
           assert len(entries)==3 and len({x['path']for x in entries})==3
           for entry in entries:
            rel=entry['path'];src=audit/rel;dest=runtime/rel

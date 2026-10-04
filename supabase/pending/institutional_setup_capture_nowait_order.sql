@@ -20,7 +20,7 @@ declare
   j:=private.job_for_capability(p_job_id,p_capability_token);
  end if;$replacement$;
 begin
- select pg_get_functiondef(p.oid),to_jsonb(p)-'prosrc' into definition,original_metadata
+ select pg_get_functiondef('private.worker_load_institutional_model_context_v3(uuid,text)'::regprocedure),to_jsonb(p)-'prosrc' into definition,original_metadata
  from pg_proc p where oid='private.worker_load_institutional_model_context_v3(uuid,text)'::regprocedure;
  if (select md5(prosrc) from pg_proc where oid='private.worker_load_institutional_model_context_v3(uuid,text)'::regprocedure)
   is distinct from 'f08727c8008c02788124e520603dda89'
