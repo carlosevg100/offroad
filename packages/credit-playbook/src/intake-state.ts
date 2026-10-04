@@ -47,8 +47,8 @@ export const intakeActorRoleSchema = z.enum(["company", "advisor"]);
 export type IntakeActorRole = z.infer<typeof intakeActorRoleSchema>;
 
 export type CapitalNeedFrame = {
-  /** The operation selected in the guided intake. This is the only day-zero fact required. */
-  useOfProceeds: string;
+  /** Explicitly declared purpose; absent while a canonical work has not classified its capital need. */
+  useOfProceeds?: string;
   objective?: string;
   requestedAmount?: string;
   currency?: "BRL" | "USD" | "EUR";
@@ -210,7 +210,7 @@ const eventBaseShape = {
 };
 
 const capitalNeedFrameSchema = z.object({
-  useOfProceeds: z.string().trim().min(1),
+  useOfProceeds: z.string().trim().min(1).optional(),
   objective: z.string().trim().min(1).max(4000).optional(),
   requestedAmount: z.string().regex(/^\d+(?:\.\d{1,2})?$/).optional(),
   currency: z.enum(["BRL", "USD", "EUR"]).optional(),

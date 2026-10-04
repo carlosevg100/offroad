@@ -106,13 +106,10 @@ jobs:
       # scratch. This proves the migration history is replayable and that no policy,
       # grant, or function depends on state that only exists in the hosted project.
       #
-      # The exclusion list is a correctness fix, not a speed one. This job failed on run
-      # 32383127190 with `failed to bind host port 0.0.0.0:54324 ... address already in use`
-      # for `supabase_inbucket` — after all 27 migrations present at that historical baseline had applied. A mail catcher has
-      # nothing to do with migrations, RLS, or lint, and neither does the analytics pair, so
-      # every host port they bind is a way for this job to fail for reasons unrelated to the
-      # change under test. (`mailpit` is the CLI's name for the container still called
-      # `supabase_inbucket_*`.)
+      # Keep the local confirmation mail service: the native preview SDK now uses
+      # public Auth signup under the configured email-confirmation policy. Mailpit
+      # captures disposable CI messages locally; confirmation stays enabled.
+      # Studio, image proxy and analytics remain excluded from this database gate.
       #
       # gotrue, postgrest, storage-api and kong deliberately stay: the RLS test writes to
       # `auth.users` and reads `auth.uid()`, and the DB URL is resolved from `supabase status`.
@@ -136,7 +133,7 @@ jobs:
           # Retry the boot a few times, alternating registries with a pause, instead of failing the
           # whole gate on a registry limit.
           for attempt in 1 2 3 4 5; do
-            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,mailpit,logflare,vector; then break; fi
+            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector; then break; fi
             if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
             if [ "$SUPABASE_INTERNAL_IMAGE_REGISTRY" = public.ecr.aws ]; then
               SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io

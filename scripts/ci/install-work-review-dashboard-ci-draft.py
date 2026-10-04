@@ -2,6 +2,7 @@
 """Install only on a disposable loopback database; never repair a journal."""
 import os,subprocess
 from pathlib import Path
+from native_canonical_install_state import canonical_group_installed
 from urllib.parse import urlparse
 ROOT=Path(__file__).resolve().parents[2]
 def validate(env):
@@ -10,6 +11,7 @@ def validate(env):
  assert u.scheme in ('postgresql','postgres') and u.hostname in ('localhost','127.0.0.1','::1') and not u.query and not u.fragment,'Disposable loopback database required'
 def main():
  validate(os.environ)
+ if canonical_group_installed(ROOT,os.environ['DATABASE_URL'],'review1'):return
  sql='begin;\n'+(ROOT/'supabase/pending/work_review_dashboard.sql').read_text()+'\ncommit;'
  subprocess.run(['psql',os.environ['DATABASE_URL'],'-Xq','-v','ON_ERROR_STOP=1'],input=sql,text=True,cwd=ROOT,check=True)
 if __name__=='__main__':main()

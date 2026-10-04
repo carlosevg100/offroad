@@ -21,9 +21,15 @@ O integrador conserva a evidência sintética imutável rotulada, arquiva soment
 
 ## Estado da prova
 
-Guard de alvo/fixture e sintaxe são verificáveis localmente. O fluxo SDK/SQL/HTTP precisa da execução do bootstrap acima e da compilação dos wrappers 3W na CI real. O SDK e o launcher foram checados quanto a tipos/sintaxe/guards; isso não é prova HTTP. Ao final o SDK conserva a negativa real por revogação da fonte, revoga WORK da segunda conta, suspende a própria identidade sintética e chama o janitor vigente; o banco e demais dados locais são destruídos pela CI. A ausência física autenticada e o arquivamento de um trabalho remoto continuam exigindo evidence do integrador. Este documento não afirma execução integrada, migração, staging ou produção concluídos. O gate permanece aberto até a prova e a limpeza registradas.
+A CI real `37170174691`, no commit `80cb48ddfd3cd8728fa02d0209fb4bfb2ae32b38`, passou o fluxo físico nativo do preview: fontes admitidas, Storage e leitor Edge, duas fronteiras de modelo com transporte de ensaio explícito, recuperação parcial e concluída sem nova chamada e negação após revogação. Passou também a revisão integrada com duas contas Auth reais no Supabase descartável da CI. Essa evidência comprova os contratos nativos e humanos nesse ambiente; não comprova chamada paga a um provedor remoto nem execução humana no staging.
 
-### Staging: material nativo, sem corpus público inventado
+O fechamento 3X reúne duas provas identificadas separadamente: (1) produção e leitura física nativa na CI acima; (2) atos humanos públicos no staging allowlisted, sobre o mesmo trabalho e revisão exatos do próprio ensaio, com proveniência real, duas identidades Auth, reafirmação cosmética, alteração material exigindo novo ato, reassociação, revogação e relato sem efeito externo. A segunda prova pode usar uma autoria humana legítima vinculada às próprias fontes físicas, sem atribuir a ela receita, captura ou publicação de um produtor nativo. Não se registra esse caminho como prova de produção nativa remota.
+
+A checklist 3X não exige concluir o underwriting legado de oito documentos. O bootstrap material abaixo permanece uma opção quando seus insumos estiverem completos; não se fabricam documentos, recibos ou dados quantitativos para atravessar essa jornada. Uma lacuna verdadeira nessa jornada continua lacuna. Os gates de produção nativa, seus modelos e negativos permanecem cobertos separadamente pela CI.
+
+A execução pública humana remota está em preparação. Somente um receipt real com IDs, atos, resultados, contagens antes/depois e limpeza autoriza registrar `PASS` de staging. O integrador conserva histórico sintético imutável, arquiva o próprio trabalho, revoga seus acessos e verifica purga e leitura negada pelos contratos vigentes. A CI nativa bem-sucedida não substitui esse receipt, o catálogo aplicado em produção ou a implantação do commit final.
+
+### Caminho opcional de staging: material nativo, sem corpus público inventado
 
 O preview v1 permanece o padrão. A fixture v2 acrescenta somente `nativeKind: material`, com os mesmos IDs exatos; `artifactId` é o artefato canônico da revisão material, não um CPA. O runner lê `read_material_package_review_basis_v1` e `read_material_production_result_v1`, confere receita/trabalho/revisão/retained payload, SHA físico, versão Storage, byte length e bundle fingerprint, e repete ambas as leituras depois do I/O. A aprovação usa `decide_material_package_v1`; a consequência legítima é um novo brief aguardando aprovação, nunca sua execução automática.
 

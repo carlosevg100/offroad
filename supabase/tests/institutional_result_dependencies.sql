@@ -384,30 +384,59 @@ do $$ declare before private.institutional_model_results;after private.instituti
  if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleDependents'<>'1' then raise exception 'the result not yet replaced does not count as stale'; end if;
  raise notice 'PASS: a completed recomputation is stored but not current before adoption; the previous result stays current and untouched';
 end $$;
--- The owner adopts the update: the recomputation becomes current and the previous result previous.
-select pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
-select public.adopt_work_update_v1('c5a10000-0000-4000-9000-0000000000e1',(select id from public.work_continuation_requests where work_id='c5a10000-0000-4000-9000-000000000010'),
- (select revision from public.work_continuation_requests where work_id='c5a10000-0000-4000-9000-000000000010'));
-select pg_temp.act_as(null);
-do $$ declare before private.institutional_model_results;after private.institutional_model_results;history jsonb;begin
+-- Prospective updates require the native human command. This historical recomputation fixture
+-- has no native reviewed physical package: the retired command must deny without adopting it.
+-- Native approval/adoption positives are exercised by the physical SDK; no receipt is fabricated here.
+create function pg_temp.expect_native_adoption_denied(p_command uuid,p_request uuid) returns void
+language plpgsql as $$
+declare expected_revision integer;before jsonb;after jsonb;begin
+ select revision into strict expected_revision from public.work_continuation_requests where id=p_request;
+ select jsonb_build_object(
+  'request',(select to_jsonb(q) from public.work_continuation_requests q where q.id=p_request),
+  'results',(select jsonb_agg(to_jsonb(r) order by r.id) from private.institutional_model_results r
+    where r.organization_id='c5a10000-0000-4000-9000-000000000001'),
+  'jobs',(select jsonb_agg(to_jsonb(j) order by j.id) from public.processing_jobs j
+    where j.organization_id='c5a10000-0000-4000-9000-000000000001'),
+  'milestones',(select jsonb_agg(to_jsonb(m) order by m.id) from public.work_milestones m
+    where m.organization_id='c5a10000-0000-4000-9000-000000000001')) into before;
+ perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
+ set local role authenticated;
+ begin
+  perform public.adopt_work_update_v1(p_command,p_request,expected_revision);
+  raise exception 'retired adoption command accepted an unreviewed recomputation';
+ exception when insufficient_privilege then
+  if sqlerrm<>'work_update_native_command_required' then raise;end if;
+ end;
+ reset role;
+ perform pg_temp.act_as(null);
+ select jsonb_build_object(
+  'request',(select to_jsonb(q) from public.work_continuation_requests q where q.id=p_request),
+  'results',(select jsonb_agg(to_jsonb(r) order by r.id) from private.institutional_model_results r
+    where r.organization_id='c5a10000-0000-4000-9000-000000000001'),
+  'jobs',(select jsonb_agg(to_jsonb(j) order by j.id) from public.processing_jobs j
+    where j.organization_id='c5a10000-0000-4000-9000-000000000001'),
+  'milestones',(select jsonb_agg(to_jsonb(m) order by m.id) from public.work_milestones m
+    where m.organization_id='c5a10000-0000-4000-9000-000000000001')) into after;
+ if after is distinct from before then raise exception 'denied retired adoption changed request, result, job or milestone';end if;
+end $$;
+select pg_temp.expect_native_adoption_denied('c5a10000-0000-4000-9000-0000000000e1',
+ (select id from public.work_continuation_requests where work_id='c5a10000-0000-4000-9000-000000000010'));
+do $$ declare before private.institutional_model_results;after private.institutional_model_results;view jsonb;begin
  select * into strict before from r0_before;
  select * into strict after from private.institutional_model_results where id=pg_temp.id('R0');
- if after.superseded_by<>pg_temp.id('R1') or after.artifact<>before.artifact or after.produced_at<>before.produced_at or after.configuration_id<>before.configuration_id
+ if after.superseded_by is not null or after.artifact<>before.artifact or after.produced_at<>before.produced_at or after.configuration_id<>before.configuration_id
  or after.canonical_revision_id<>before.canonical_revision_id then
-  raise exception 'the previous result was not kept as previous: %',to_jsonb(after);
+  raise exception 'denied adoption changed the previous established result';
  end if;
  perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
  set local role authenticated;
- history:=public.read_project_revision_history_v1('c5a10000-0000-4000-9000-000000000010');
- if public.read_institutional_model_results_v1('c5a10000-0000-4000-9000-000000000010')#>>'{latest,id}'<>pg_temp.id('R1')::text
- or not exists(select 1 from jsonb_array_elements(history->'revisions') v cross join jsonb_array_elements(v->'results') x
-  where x->>'id'=pg_temp.id('R0')::text and x->>'supersededBy'=pg_temp.id('R1')::text and not (x->>'isCurrent')::boolean) then
-  raise exception 'the previous result is not readable as previous: %',history;
- end if;
+ view:=public.read_institutional_model_results_v1('c5a10000-0000-4000-9000-000000000010');
  reset role;
  perform pg_temp.act_as(null);
- if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleDependents'<>'0' then raise exception 'a superseded result still counts as stale'; end if;
- raise notice 'PASS: once adopted, the recomputed result supersedes the previous one, which stays stored, readable and unchanged; lineage names the root';
+ if view#>>'{latest,id}'<>pg_temp.id('R0')::text or view#>>'{latest,status}'<>'stale'
+ or view#>'{latest,artifact}'<>'null'::jsonb then raise exception 'denied adoption exposed an unadopted recomputation';end if;
+ if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleDependents'<>'1' then raise exception 'denied adoption cleared established result staleness';end if;
+ raise notice 'PASS: retired adoption denies under Auth with no effects; an unadopted recomputation never becomes current';
 end $$;
 
 -- 5. Two more approvals before the second recomputation completes: the scheduled candidate whose heads
@@ -445,19 +474,18 @@ do $$ declare k2 public.institutional_recompute_candidates;k3 public.institution
  or (select superseded_by from private.institutional_model_results where id=pg_temp.id('R1')) is not null then
   raise exception 'the newest recomputation did not settle, or replaced the current result before adoption';
  end if;
- -- The adoption of the update makes it current: the result it replaces (R1) becomes previous; the
- -- blocked result of the superseded candidate is not a result and stays as it is.
- perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000001');
- perform public.adopt_work_update_v1('c5a10000-0000-4000-9000-0000000000e2',k3.request_id,(select revision from public.work_continuation_requests where id=k3.request_id));
- perform pg_temp.act_as(null);
- if (select superseded_by from private.institutional_model_results where id=pg_temp.id('R1'))<>pg_temp.id('R3')
- or (select superseded_by from private.institutional_model_results where id=pg_temp.id('R2')) is not null then
-  raise exception 'the adopted recomputation did not supersede the result it replaces';
+ -- A completed recomputation still has no native reviewed package. The second retired
+ -- adoption is denied too; scheduled supersession and completed result provenance remain intact.
+ perform pg_temp.expect_native_adoption_denied('c5a10000-0000-4000-9000-0000000000e2',k3.request_id);
+ if exists(select 1 from private.institutional_model_results where id in
+  (pg_temp.id('R0'),pg_temp.id('R1'),pg_temp.id('R2'),pg_temp.id('R3')) and superseded_by is not null)
+ or (select status from public.work_continuation_requests where id=k3.request_id)<>'ready' then
+  raise exception 'denied retired adoption superseded a result or consumed the ready update';
  end if;
  raise notice 'PASS: newer heads supersede a scheduled candidate; a lineage is recomputed once per heads, always keyed on its root';
 end $$;
 
--- 6. A newer version of a document the result read: facts for the dependent result, and a hold while
+-- 6. A newer version of a document the established R0 result read: facts for the dependent result, and a hold while
 -- the configuration was not approved over the current documents. A configuration approved over them
 -- releases the hold and the lineage gets its candidate, pinning the new version.
 select pg_temp.document('D2','c5a10000-0000-4000-9000-000000000011',pg_temp.id('D'));
@@ -465,8 +493,13 @@ delete from public.source_documents where id=pg_temp.id('D1');
 insert into inst select 'E_D2',id from private.domain_events where aggregate_kind='source_version' and aggregate_id=pg_temp.id('D');
 select pg_temp.drain_outbox();
 do $$ declare f private.institutional_result_invalidations;h private.institutional_recompute_holds;q public.work_continuation_requests;begin
- select * into strict f from private.institutional_result_invalidations where event_id=pg_temp.id('E_D2');
- if f.result_id<>pg_temp.id('R3') or f.dependency_kind<>'source_version' or f.reason_class<>'data_change' or f.pinned->>'versionId'<>pg_temp.id('D1')::text
+ -- The graph records each completed unsuperseded result, not only the reader's established R0.
+ select * into strict f from private.institutional_result_invalidations where event_id=pg_temp.id('E_D2') and result_id=pg_temp.id('R0');
+ if (select array_agg(result_id order by result_id) from private.institutional_result_invalidations where event_id=pg_temp.id('E_D2'))
+  is distinct from (select array_agg(id order by id) from inst where name in ('R0','R1','R3')) then
+  raise exception 'source invalidation omitted or invented a completed unsuperseded lineage result';
+ end if;
+ if f.result_id<>pg_temp.id('R0') or f.dependency_kind<>'source_version' or f.reason_class<>'data_change' or f.pinned->>'versionId'<>pg_temp.id('D1')::text
  or f.head->>'versionId'<>pg_temp.id('D2')::text or f.via_source_version_ids<>'{}' then
   raise exception 'source impact mismatch: %',to_jsonb(f);
  end if;
@@ -476,7 +509,7 @@ do $$ declare f private.institutional_result_invalidations;h private.institution
  or h.released_at is not null or exists(select 1 from public.institutional_recompute_candidates where request_id=q.id) then
   raise exception 'hold mismatch: %',to_jsonb(h);
  end if;
- if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleInstitutionalResults'<>'1' then raise exception 'the held result is not counted as stale'; end if;
+ if pg_temp.stale('c5a10000-0000-4000-9000-000000000010')->>'staleInstitutionalResults'<>'3' then raise exception 'the three completed unsuperseded results are not counted as stale'; end if;
  raise notice 'PASS: a newer version of a document it read makes the result stale, held until a configuration is approved over the current documents';
 end $$;
 select pg_temp.configuration('C5','c5a10000-0000-4000-9000-000000000010','c5a10000-0000-4000-9000-000000000011',5,'C4',array['D2','E1']);
@@ -697,8 +730,8 @@ do $$ declare attempt text;rejected boolean;visible bigint;
 end $$;
 
 -- 11. The worker reads freshness for the case analysis it holds, through that job's capability, and
--- only for that kind: the stale dependents of the job's work (R3, whose document moved, until its
--- recomputation R4 completes).
+-- only for that kind: the graph keeps R0/R1/R3 live until superseded even though only R0 is
+-- established for the human reader. All three consumed the document that moved.
 insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
 values('c5a10000-0000-4000-9000-000000000032','c5a10000-0000-4000-9000-000000000001','c5a10000-0000-4000-9000-000000000011',
  (select coalesce(max(run_no),0)+1 from public.processing_runs where intake_session_id='c5a10000-0000-4000-9000-000000000011'),
@@ -714,7 +747,7 @@ do $$ declare body jsonb;rejected boolean:=false;other uuid:=pg_temp.job_of('c5a
  perform pg_temp.act_as('c5a10000-0000-4000-8000-000000000009');
  set local role authenticated;
  body:=public.worker_load_work_freshness_v1('c5a10000-0000-4000-9000-000000000033',repeat('w',64));
- if body<>'{"workId": "c5a10000-0000-4000-9000-000000000010", "schemaVersion": "work-freshness.v1", "staleExecutions": 0, "staleDependents": 1, "staleInstitutionalResults": 1}'::jsonb then
+ if body<>'{"workId": "c5a10000-0000-4000-9000-000000000010", "schemaVersion": "work-freshness.v1", "staleExecutions": 0, "staleDependents": 3, "staleInstitutionalResults": 3}'::jsonb then
   raise exception 'freshness of the case work mismatch: %',body;
  end if;
  begin

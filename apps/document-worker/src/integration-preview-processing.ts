@@ -84,7 +84,7 @@ export function createCapitalPreviewProcessing(config: {jobId: string; ports: Ca
        ||receipt.reconstructionFingerprint!==prepared.inputFingerprint||receipt.promptFingerprint!==reconstruction.promptFingerprint
        ||receipt.primaryRequestFingerprint!==reconstruction.pins[0]!.requestFingerprint||receipt.fallbackRequestFingerprint!==reconstruction.pins[1]!.requestFingerprint
        ||Date.parse(receipt.expiresAt)<=now()||(boundary==="synthesis"&&receipt.operationalBudget.maxDispatches!==1))deny();
-      if(prepared.input.reduce((size,part)=>size+(part.type==="text"?Buffer.byteLength(part.text):100001),0)>100000)deny();
+      if(prepared.input.reduce((size,part)=>size+(part.type==="text"?Buffer.byteLength(part.text):1048577),0)>1048576)deny();
       const effective=routes.map(route=>reconstruction.reconstruct(route)),policyPins=reconstruction.pins.map(pin=>pin.policyFingerprint);
       const revalidate = async () => {
         assertGatewaySchemaUnchanged(prepared);

@@ -1,4 +1,4 @@
--- Stage 18, increment 4: continuation from an explicit base, adoption, authorization and decline of
+-- Continuation from an explicit base, retired adoption denial and decline of
 -- dependency updates, and the read of a work's updates. Synthetic rows only; everything rolls back.
 begin;
 \ir support/contextual_adoption_setup.sql
@@ -168,6 +168,33 @@ create function pg_temp.history_intact() returns boolean language sql as $$
   and not exists(select 1 from untouched u left join private.execution_result_receipts r on r.id=u.id where u.kind='receipt' and (r.id is null or r.xmin::text<>u.row_version or to_jsonb(r)<>u.row_image));
 $$;
 
+
+-- Exact prospective errors: these probes invoke the public commands as the API role.
+create function pg_temp.expect_state(p_sql text,p_state text,p_message text,p_label text) returns void language plpgsql as $$
+begin
+ begin execute p_sql;
+ exception when others then
+  if sqlstate=p_state and sqlerrm=p_message then raise notice 'PASS: %',p_label;return;end if;
+  raise exception '% unexpected contract error %',p_label,sqlstate;
+ end;
+ raise exception '% was accepted',p_label;
+end $$;
+-- A read-only snapshot of the target work's state; never creates authority or a receipt.
+create function pg_temp.update_effects() returns jsonb language sql as $$
+ select jsonb_build_object(
+  'updates',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_continuation_requests x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'milestones',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_milestones x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'jobs',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.processing_jobs x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'decisions',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_decisions x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'captures',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from private.work_update_review_captures x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'executionCandidates',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.work_recompute_candidates x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'institutionalCandidates',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from public.institutional_recompute_candidates x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'basisReceipts',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from private.review_basis_receipts x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'projections',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from private.work_update_review_projections x where x.organization_id='a11b0000-0000-4000-9000-000000000001'),
+  'institutionalResults',(select coalesce(jsonb_agg(to_jsonb(x)order by x.id),'[]')from private.institutional_model_results x where x.organization_id='a11b0000-0000-4000-9000-000000000001'));
+$$;
+create temporary table update_effect_before(value jsonb);
+
 -- 0. Setup: the executions of increment 3B's test, an accepted execution brief (a decision milestone of
 -- W1), the worker producing recomputations, and a standalone work W2 without an intake session.
 select public.adopt_observation_for_work_v1(current_setting('test.adoption.payload')::jsonb);
@@ -216,6 +243,9 @@ values('a4190000-0000-4000-9000-0000000000d3','a11b0000-0000-4000-9000-000000000
   'Emissão de debêntures',1,'rejected','a11b0000-0000-4000-8000-000000000001',clock_timestamp()-interval '1 hour');
 insert into dep values('W2_D1','a4190000-0000-4000-9000-0000000000d1'),('W2_D2','a4190000-0000-4000-9000-0000000000d2'),('W2_R','a4190000-0000-4000-9000-0000000000d3');
 select pg_temp.remember_history();
+insert into auth.users(id,email)values('a4183000-0000-4000-8000-000000000008','foreign-update-negative@example.invalid');
+insert into public.organizations(id,organization_type,name,created_by)values('a4183000-0000-4000-9000-000000000008','originator','Synthetic foreign update boundary','a4183000-0000-4000-8000-000000000008');
+insert into public.organization_memberships(organization_id,user_id,role,status)values('a4183000-0000-4000-9000-000000000008','a4183000-0000-4000-8000-000000000008','owner','active');
 savepoint stage18_4_ready;
 
 -- 1. The log and the bases the conversation reads: every reference points to an earlier milestone of
@@ -341,8 +371,8 @@ select public.append_work_turn_v1(pg_temp.id('W2'),'a4190000-0000-4000-8000-0000
 select pg_temp.expect_error(format('select pg_temp.continue_from(%L,%L,%L,%L)',gen_random_uuid(),pg_temp.id('W2'),'Aprofundar o alongamento aprovado',pg_temp.id('W2_D2')),
  'advisor_message_in_progress','a continuation waits for the turn in progress');
 
--- 4. A ready update, then its adoption. S2 moves X1 (bound to S1) and, through D, X2; D is re-derived;
--- the worker produces both candidates; their results settle them and the update becomes ready.
+-- 4. Readiness is produced by actual execution commands; native-regime updates never reopen v1.
+-- S2 moves X1 and, through D, X2. Recomputations settle without creating an adoption act.
 rollback to savepoint stage18_4_ready;
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
 select pg_temp.source_version('S2',pg_temp.id('S'));
@@ -356,8 +386,36 @@ select pg_temp.drain_outbox();
 select pg_temp.remember('x2',pg_temp.produce(array['D2']));
 insert into dep select 'X2b',(value->>'executionId')::uuid from recompute_step where name='x2';
 -- Not ready yet: adoption is refused while the update is scheduled.
-select pg_temp.expect_error(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),pg_temp.id('R1'),(pg_temp.update_request()).revision),
- 'work_update_not_ready','adoption is refused before the update is ready');
+
+-- Native-regime rows cannot be adopted by the retired v1 command, regardless of readiness.
+select set_config('test.native.update',pg_temp.id('R1')::text,true);
+select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('R1')),true);
+truncate update_effect_before;
+insert into update_effect_before select pg_temp.update_effects();
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_update_native_command_required','owner cannot adopt a not-ready native-regime update through v1');
+select pg_temp.expect_state(format('select public.read_work_update_adoption_basis_v2(%L)',current_setting('test.native.update')),
+ '55000','work_update_not_ready','v2 does not capture a basis before the update is ready');
+select pg_temp.expect_state(format('select public.adopt_work_update_v2(%L,%L,%L,%L,false)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision'),repeat('0',64)),
+ '55000','work_update_not_ready','v2 cannot adopt or approve a not-ready update');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_update_native_command_required','retired v1 is closed even for a member without work access');
+select pg_temp.expect_state(format('select public.read_work_update_adoption_basis_v2(%L)',current_setting('test.native.update')),
+ '42501','work_update_review_denied','v2 basis is denied to a member without work access');
+select pg_temp.expect_state(format('select public.adopt_work_update_v2(%L,%L,%L,%L,false)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision'),repeat('0',64)),
+ '42501','work_update_review_denied','v2 adoption is denied to a member without work access');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+select set_config('request.headers','{"x-offroad-workspace":"a11b0000-0000-4000-9000-000000000001"}',true);
+do $$begin
+ if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'a refused native adoption changed work state';end if;
+ raise notice 'PASS: denied native adoption and basis calls have no effects';
+end $$;
 select pg_temp.commit_result(pg_temp.id('X1b'));
 select pg_temp.commit_result(pg_temp.id('X2b'));
 select pg_temp.remember_history();
@@ -389,55 +447,42 @@ do $$ declare r public.work_continuation_requests;v jsonb;u jsonb;x1 jsonb;x2 js
  end if;
  raise notice 'PASS: the read of an update shows each affected execution with the facts that invalidated it, its candidate and holds, the recomputed results with their lineage, and what stayed valid';
 end $$;
-select pg_temp.expect_error(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),pg_temp.id('R1'),(pg_temp.update_request()).revision-1),
- 'work_update_changed','adoption at another revision is refused');
-select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
-select pg_temp.expect_error(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),pg_temp.id('R1'),(pg_temp.update_request()).revision),
- 'work_continuation_access_denied','adoption by a member without access to the work is refused');
+
+-- Native-regime rows cannot be adopted by the retired v1 command, regardless of readiness.
+select set_config('test.native.update',pg_temp.id('R1')::text,true);
+select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('R1')),true);
+truncate update_effect_before;
+insert into update_effect_before select pg_temp.update_effects();
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
-select pg_temp.remember('adopt',public.adopt_work_update_v1('a4190000-0000-4000-8000-000000000201',pg_temp.id('R1'),(pg_temp.update_request()).revision));
-do $$ declare s jsonb:=(select value from recompute_step where name='adopt');r public.work_continuation_requests;m public.work_milestones;begin
- select * into strict r from public.work_continuation_requests where id=pg_temp.id('R1');
- select * into strict m from public.work_milestones where kind='update_adopted' and subject_id=r.id;
- if r.status<>'adopted' or m.id<>private.work_command_milestone_id_v1(r.organization_id,'a4190000-0000-4000-8000-000000000201') or m.outcome<>'approved'
- or substring(m.id::text,15,1)<>'5' or substring(m.id::text,20,1) not in ('8','9','a','b')
- or m.revision<>r.revision-1 or m.created_by<>'a11b0000-0000-4000-8000-000000000001' or m.subject_kind<>'work_continuation_request' or m.label<>'dependency_update_adopted'
- -- The new results first (in the order of their candidates), then the results they replace.
- or (select array_agg(x order by x) from unnest(m.reference_milestone_ids[1:2]) x)<>(select array_agg(x order by x) from unnest(array[pg_temp.result_of('X1b'),pg_temp.result_of('X2b')]) x)
- or m.reference_milestone_ids[3:]<>array[pg_temp.result_of('X1')] or s->'references'<>to_jsonb(m.reference_milestone_ids)
- or (s->>'replayed')::boolean or s->>'milestoneId'<>m.id::text or s->>'status'<>'adopted' then
-  raise exception 'adoption mismatch: % %',to_jsonb(m),s;
- end if;
- if exists(select 1 from public.work_recompute_candidates where request_id=r.id and state<>'settled') or not pg_temp.history_intact() then
-  raise exception 'adoption rewrote a candidate, a result or a decision';
- end if;
- insert into dep values('U1',m.id);
- raise notice 'PASS: adoption of a ready update at its revision records update_adopted (approved, on that revision) referencing the new results and the results they replace; nothing earlier changes';
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_update_native_command_required','owner cannot adopt a ready native-regime update through v1');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_update_native_command_required','retired v1 is closed even for a member without work access');
+select pg_temp.expect_state(format('select public.read_work_update_adoption_basis_v2(%L)',current_setting('test.native.update')),
+ '42501','work_update_review_denied','v2 basis is denied to a member without work access');
+select pg_temp.expect_state(format('select public.adopt_work_update_v2(%L,%L,%L,%L,false)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision'),repeat('0',64)),
+ '42501','work_update_review_denied','v2 adoption is denied to a member without work access');
+reset role;
+select pg_temp.act_as('a4183000-0000-4000-8000-000000000008');
+select set_config('request.headers','{"x-offroad-workspace":"a4183000-0000-4000-9000-000000000008"}',true);
+set local role authenticated;
+select pg_temp.expect_state(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.native.update'),current_setting('test.native.revision')),
+ '42501','work_update_native_command_required','retired v1 cannot adopt another tenant update');
+select pg_temp.expect_state(format('select public.read_work_update_adoption_basis_v2(%L)',current_setting('test.native.update')),
+ '42501','work_update_review_denied','v2 denies a foreign tenant basis');
+reset role;
+select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+select set_config('request.headers','{"x-offroad-workspace":"a11b0000-0000-4000-9000-000000000001"}',true);
+do $$begin
+ if (select value from update_effect_before) is distinct from pg_temp.update_effects() then raise exception 'a refused native adoption changed work state';end if;
+ raise notice 'PASS: denied native adoption and basis calls have no effects';
 end $$;
-do $$ declare again jsonb;begin
- again:=public.adopt_work_update_v1('a4190000-0000-4000-8000-000000000201',pg_temp.id('R1'),(select revision-1 from public.work_continuation_requests where id=pg_temp.id('R1')));
- if not (again->>'replayed')::boolean or again->>'milestoneId'<>pg_temp.id('U1')::text or (select count(*) from public.work_milestones where kind='update_adopted')<>1 then
-  raise exception 'adoption replay recorded again: %',again;
- end if;
- raise notice 'PASS: the same adoption again returns what was recorded';
-end $$;
-select pg_temp.expect_error(format('select public.adopt_work_update_v1(%L,%L,%L)','a4190000-0000-4000-8000-000000000201',pg_temp.id('R1'),
- (select revision from public.work_continuation_requests where id=pg_temp.id('R1'))),'work_update_command_conflict','the same adoption id at another revision is refused');
-select pg_temp.expect_error(format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),pg_temp.id('R1'),(select revision from public.work_continuation_requests where id=pg_temp.id('R1'))),
- 'work_update_not_ready','an adopted update is not adopted again');
-select pg_temp.expect_error(format('select public.decline_work_update_v1(%L,%L,%L,%L)',gen_random_uuid(),pg_temp.id('R1'),(select revision from public.work_continuation_requests where id=pg_temp.id('R1')),'not_needed'),
- 'work_update_not_open','an adopted update cannot be declined');
--- The adoption is now a base, next to the brief approval, and a continuation from it is recorded.
-do $$ declare b jsonb;s jsonb;begin
- b:=public.work_update_view_v1(pg_temp.id('W1'))->'bases';
- if (select jsonb_agg(x->>'milestoneId' order by x->>'milestoneId') from jsonb_array_elements(b) x)
-  <>(select jsonb_agg(x order by x) from unnest(array[pg_temp.id('BRIEF')::text,pg_temp.id('U1')::text]) x) then
-  raise exception 'bases after adoption mismatch: %',b;
- end if;
- s:=pg_temp.continue_from('a4190000-0000-4000-8000-000000000104',pg_temp.id('W1'),'Aprofundar a atualização adotada',pg_temp.id('U1'));
- if s#>>'{base,kind}'<>'update_adopted' or s#>>'{base,decisionId}'<>pg_temp.id('R1')::text then raise exception 'continuation from the adoption mismatch: %',s; end if;
- raise notice 'PASS: an adoption becomes an approved base and a continuation from it is recorded';
-end $$;
+-- Positive v2 adoption is proved by support/assessment_native_work_update_native_adoption.sql
+-- and the real native assessment SDK. No old v1 adoption, replay or fabricated adopted base is retained here.
 
 -- 5. Decline while open: after S2 the update is open, holding X2 on D, with X1's candidate scheduled.
 rollback to savepoint stage18_4_ready;
@@ -524,296 +569,10 @@ do $$ declare r public.work_continuation_requests:=pg_temp.update_request();s js
  raise notice 'PASS: decline of a ready update: the update ends declined, the settled candidates and their results stay untouched';
 end $$;
 
--- 8. A costed recomputation. A newer platform release whose only profile carries a cost (the synthetic
--- profile technique of increment 3B) puts every lineage in wait for a person.
-rollback to savepoint stage18_4_ready;
-select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
-insert into private.platform_capability_releases(capability_key,released,exposure,method_id,method_version,method_maturity,approved_by,approved_at,approval_source)
-values('synthetic-execution-paid',true,'universal','synthetic-execution','test-v3','tested','Synthetic approver',current_date,'Synthetic rollback-only fixture');
-update private.platform_capability_releases set released=false where capability_key='synthetic-execution';
-insert into private.platform_method_releases(id,method_id,version,manifest_hash,manifest,components,evidence,approval,capability_key)
-select 'synthetic-execution-test-v3','synthetic-execution','test-v3',repeat('8',64),manifest,components,evidence,approval,'synthetic-execution-paid'
-from private.platform_method_releases where id='synthetic-execution-test-v1';
--- Every stored profile is held at zero by its storage check; a paid ceiling exists only for this proof.
-alter table private.execution_method_profiles disable trigger execution_method_profiles_validate;
-insert into private.execution_method_profiles(id,platform_release_id,serialization_version,canonical_payload,payload_fingerprint,adapter_source_commit,review_evidence)
-select 'a4183100-0000-4000-9000-0000000000b3','synthetic-execution-test-v3','offroad-execution-json-utf16-v1',payload::text,
- encode(extensions.digest(payload::text,'sha256'),'hex'),repeat('c',40),jsonb_build_object('result','approved','subjectCommit',repeat('c',40),'reviewer','Synthetic independent reviewer','sourceHash',repeat('d',64))
-from (select jsonb_set(jsonb_set(jsonb_set(jsonb_set(jsonb_set(p.payload,'{method,platformReleaseId}','"synthetic-execution-test-v3"'),'{method,methodVersion}','"test-v3"'),
- '{method,manifestHash}',to_jsonb(repeat('8',64))),'{method,baseManifestHash}',to_jsonb(repeat('8',64))),'{limits}','{"maxCostMicrousd":250000,"maxModelCalls":3,"maxDurationMs":31000}') payload
- from private.execution_method_profiles p where p.id='a4171000-0000-4000-9000-000000000001') f;
-alter table private.execution_method_profiles enable trigger execution_method_profiles_validate;
-select pg_temp.drain_outbox();
-select pg_temp.remember_history();
-savepoint stage18_4_paid;
-do $$ declare r public.work_continuation_requests:=pg_temp.update_request();c public.work_recompute_candidates;wait public.work_milestones;s jsonb;decision public.work_milestones;resolution public.work_milestones;begin
- if r.status<>'awaiting_authorization' or (select count(*) from public.work_recompute_candidates where request_id=r.id and state='awaiting_authorization')<>3 then
-  raise exception 'setup: the paid update does not wait: %',to_jsonb(r);
- end if;
- c:=pg_temp.candidate('X1','awaiting_authorization');
- select * into strict wait from public.work_milestones where kind='awaiting_human' and subject_id=c.id;
- perform pg_temp.expect_error(format('select public.authorize_work_update_v1(%L,%L,%L)',gen_random_uuid(),c.id,c.revision+1),'work_update_changed','authorization at another revision is refused');
- perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
- perform pg_temp.expect_error(format('select public.authorize_work_update_v1(%L,%L,%L)',gen_random_uuid(),c.id,c.revision),'work_continuation_access_denied','authorization by a member without access is refused');
- perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
- s:=public.authorize_work_update_v1('a4190000-0000-4000-8000-000000000401',c.id,c.revision);
- select * into strict c from public.work_recompute_candidates where id=c.id;
- select * into strict decision from public.work_milestones where id=(s->>'milestoneId')::uuid;
- select * into strict resolution from public.work_milestones where id=(s->>'resolutionMilestoneId')::uuid;
- if c.state<>'scheduled' or c.execution_id is not null or s->>'updateStatus'<>'awaiting_authorization'
- or (select status from public.work_continuation_requests where id=r.id)<>'awaiting_authorization'
- or decision.kind<>'decision' or decision.outcome<>'approved' or decision.subject_kind<>'work_recompute_candidate' or decision.subject_id<>c.id
- or substring(decision.id::text,15,1)<>'5' or substring(decision.id::text,20,1) not in ('8','9','a','b')
- or decision.revision<>c.revision-1 or decision.reference_milestone_ids<>array[wait.id] or decision.created_by<>'a11b0000-0000-4000-8000-000000000001'
- or resolution.kind<>'human_resolved' or resolution.resolves_milestone_id<>wait.id or resolution.reference_milestone_ids<>array[wait.id]
- or not pg_temp.history_intact() then
-  raise exception 'authorization mismatch: % % %',to_jsonb(c),to_jsonb(decision),to_jsonb(resolution);
- end if;
- -- The authorization is about spending: it is never offered as a base of a continuation.
- if exists(select 1 from jsonb_array_elements(public.work_update_view_v1(pg_temp.id('W1'))->'bases') b where b->>'milestoneId'=decision.id::text) then
-  raise exception 'an authorization became a continuation base';
- end if;
- perform pg_temp.expect_error(format('select pg_temp.continue_from(%L,%L,%L,%L)',gen_random_uuid(),pg_temp.id('W1'),'Aprofundar o recálculo autorizado',decision.id),
-  'work_continuation_base_not_approved','an authorization is refused as a base');
- if not (public.authorize_work_update_v1('a4190000-0000-4000-8000-000000000401',c.id,c.revision-1)->>'replayed')::boolean then raise exception 'authorization replay not recognised'; end if;
- perform pg_temp.expect_error(format('select public.authorize_work_update_v1(%L,%L,%L)','a4190000-0000-4000-8000-000000000401',(pg_temp.candidate('X2','awaiting_authorization')).id,1),
-  'work_update_command_conflict','the same authorization id for another candidate is refused');
- perform pg_temp.expect_error(format('select public.authorize_work_update_v1(%L,%L,%L)',gen_random_uuid(),c.id,c.revision),'work_update_candidate_not_waiting','a scheduled candidate is not authorized again');
- -- The worker can now claim the authorized candidate and only that one.
- if (pg_temp.as_worker('select public.worker_claim_dependency_recompute_v1(''synthetic-dependency-outbox-token'',120)')->>'candidateId')<>c.id::text then
-  raise exception 'the authorized candidate is not the one the worker claims';
- end if;
- raise notice 'PASS: authorization of a costed candidate at its revision schedules it for the worker; human_resolved resolves its wait and an approved decision records it; the update keeps waiting for the others';
-end $$;
--- One waiting candidate declined, then the whole waiting update.
-do $$ declare r public.work_continuation_requests:=pg_temp.update_request();c public.work_recompute_candidates;wait public.work_milestones;s jsonb;decision public.work_milestones;begin
- c:=pg_temp.candidate('X2','awaiting_authorization');
- select * into strict wait from public.work_milestones where kind='awaiting_human' and subject_id=c.id;
- perform pg_temp.expect_error(format('select public.decline_work_update_v1(%L,%L,%L,%L,%L)',gen_random_uuid(),r.id,c.revision,'cost_not_justified',(pg_temp.candidate('X1','scheduled')).id),
-  'work_update_changed','a scheduled candidate is declined alone only at the revision the person saw (5C: work_update_integration.sql declines one)');
- s:=public.decline_work_update_v1('a4190000-0000-4000-8000-000000000402',r.id,c.revision,'cost_not_justified',c.id);
- select * into strict c from public.work_recompute_candidates where id=c.id;
- select * into strict decision from public.work_milestones where id=(s->>'milestoneId')::uuid;
- if c.state<>'declined' or c.reason<>'person_declined:cost_not_justified' or s->>'candidateState'<>'declined' or s->>'updateStatus'<>'awaiting_authorization'
- or decision.kind<>'decision' or decision.outcome<>'rejected' or decision.subject_id<>c.id or decision.reference_milestone_ids<>array[wait.id]
- or substring(decision.id::text,15,1)<>'5' or substring(decision.id::text,20,1) not in ('8','9','a','b')
- or not exists(select 1 from public.work_milestones where kind='human_resolved' and resolves_milestone_id=wait.id and label='dependency_recompute_declined')
- or not pg_temp.history_intact() then
-  raise exception 'decline of one waiting candidate mismatch: % %',to_jsonb(c),s;
- end if;
- s:=public.decline_work_update_v1('a4190000-0000-4000-8000-000000000403',r.id,(pg_temp.update_request()).revision,'cost_not_justified');
- select * into strict r from public.work_continuation_requests where id=r.id;
- if r.status<>'declined' or r.decline_reason<>'person_declined:cost_not_justified'
- or exists(select 1 from public.work_recompute_candidates where request_id=r.id and state<>'declined')
- or exists(select 1 from public.work_milestones w where w.kind='awaiting_human' and w.subject_kind='work_recompute_candidate'
-  and w.subject_id in (select id from public.work_recompute_candidates where request_id=r.id)
-  and not exists(select 1 from public.work_milestones h where h.kind='human_resolved' and h.resolves_milestone_id=w.id))
- or (select count(*) from public.work_milestones where kind='human_resolved')<>3 or not pg_temp.history_intact() then
-  raise exception 'decline of a waiting update mismatch: % %',to_jsonb(r),s;
- end if;
- raise notice 'PASS: decline of one waiting candidate and of a waiting update: each ends declined with the reason, every wait it closes gets its human_resolved, a rejected decision records it';
-end $$;
+-- The old paid-profile/recovery fixture disabled the stored-profile validation trigger.
+-- It is not a current-contract positive and is removed, rather than bypassing the guard.
+-- Native adoption positive/replay/self-declaration are proved by the real assessment SQL/SDK.
 
--- 8b. Resuming never repeats a confirmed cost (stage 18, increment 6B). The person authorizes X1's
--- costed candidate; the worker claims it and stops before submitting (a deploy), so its lease
--- expires; the restarted worker claims it again and produces it. One execution, the stale lease
--- refused, no new wait, the authorization and the candidate's ceiling used once. The produced
--- execution has one budget account and a zero budget: the closed increment refuses a reservation of
--- the authorized ceiling, and the one zero-cost reservation of its operation is recorded once, also
--- after the execution's own lease expires and its job is claimed again.
-rollback to savepoint stage18_4_paid;
--- The worker's submission of pg_temp.produce, for a claim and a basis already in hand.
-create function pg_temp.submit_candidate(p_claim jsonb,p_basis jsonb,p_sources text[]) returns jsonb language plpgsql as $$
-declare k jsonb;begin
- select jsonb_build_object('schemaVersion','execution-contract.v1','executionId',gen_random_uuid(),'organizationId',x->>'organizationId','workId',x->>'workId',
-  'principalId',x->>'principalId','requestId',p_claim->>'candidateId','processingRunId',gen_random_uuid(),'purpose',x->>'purpose','method',x#>'{profile,method}',
-  'tools',x#>'{profile,tools}','allowedEffects',x#>'{profile,allowedEffects}',
-  'audience',jsonb_build_object('kind','work_participants','workId',x->>'workId','policyFingerprint',x->>'policyFingerprint'),
-  'policy',jsonb_build_object('version','execution-authority.v1','authorityRevision',x->>'authorityRevision','fingerprint',x->>'policyFingerprint'),
-  'inputs',jsonb_build_object('snapshotId',gen_random_uuid(),'fingerprint',encode(extensions.digest('{}','sha256'),'hex'),
-   'sources',coalesce((select jsonb_agg(jsonb_build_object('resourceId','a11b0000-0000-4000-9000-000000000003','sourceVersionId',v.id,'contentHash',v.declared_sha256,
-     'rightsRevision','1') order by v.id) from public.source_versions v join dep d on d.id=v.id where d.name=any(p_sources)),'[]'::jsonb),
-   'adoptions',x->'adoptions','hypotheses',x->'hypotheses'),
-  'budget',jsonb_build_object('maxCostMicrousd',0,'maxModelCalls',0,'maxDurationMs',31000,'expiresAt',clock_timestamp()+interval '1 hour'),'requestedAt',clock_timestamp())
- into k from (select p_basis->'basis' as x) f;
- return pg_temp.as_worker(format('select public.worker_submit_dependency_recompute_v1(''synthetic-dependency-outbox-token'',%s,%L,''{}'',%L)',pg_temp.lease_args(p_claim),k::text,
-  private.execution_gates_canonical_text_v1(jsonb_build_object('schemaVersion','execution-gates.v1','gatesVersion','2026.09.24-v1','blocked',false,
-   'companyRegistration',p_basis#>>'{basis,company,registration}','research',p_basis#>>'{basis,company,research}',
-   'methodSelection',jsonb_build_object('selectionVersion','2026.09.24-v1','situationIds',jsonb_build_array('refinancing'),
-    'methodId',p_basis#>>'{basis,profile,method,methodId}','methodVersion',p_basis#>>'{basis,profile,method,methodVersion}'),
-   'conventions','[]'::jsonb,'voice',jsonb_build_object('version','2026.09.24-v1','blockCount',0,'warnCount',0)))));
-end $$;
-do $$ declare c public.work_recompute_candidates;wait public.work_milestones;authorized integer;waits bigint;first_claim jsonb;second_claim jsonb;b jsonb;result jsonb;begin
- c:=pg_temp.candidate('X1','awaiting_authorization');
- authorized:=c.revision;
- select * into strict wait from public.work_milestones where kind='awaiting_human' and subject_id=c.id;
- perform public.authorize_work_update_v1('a4190000-0000-4000-8000-000000000404',c.id,authorized);
- select count(*) into waits from public.work_milestones where kind='awaiting_human';
- first_claim:=pg_temp.as_worker('select public.worker_claim_dependency_recompute_v1(''synthetic-dependency-outbox-token'',120)');
- if first_claim->>'candidateId' is distinct from c.id::text or (first_claim->>'attempt')::integer<>1 then raise exception 'setup: first claim %',first_claim; end if;
- -- The worker stops before it submits: its lease expires and the restarted worker claims again.
- update private.work_recompute_leases set lease_expires_at=clock_timestamp()-interval '1 minute' where candidate_id=c.id;
- second_claim:=pg_temp.as_worker('select public.worker_claim_dependency_recompute_v1(''synthetic-dependency-outbox-token'',120)');
- if second_claim->>'candidateId' is distinct from c.id::text or (second_claim->>'attempt')::integer<>2 or second_claim->>'leaseId'=first_claim->>'leaseId' then
-  raise exception 'the interrupted claim of the authorized candidate was not taken again: %',second_claim;
- end if;
- b:=pg_temp.as_worker(format('select public.worker_dependency_recompute_basis_v1(''synthetic-dependency-outbox-token'',%s)',pg_temp.lease_args(second_claim)));
- if not coalesce((b->>'available')::boolean,false) or b#>>'{basis,profile,method,platformReleaseId}' is distinct from 'synthetic-execution-test-v3' then
-  raise exception 'basis unavailable after the restart: %',b;
- end if;
- begin perform pg_temp.as_worker(format('select public.worker_dependency_recompute_basis_v1(''synthetic-dependency-outbox-token'',%s)',pg_temp.lease_args(first_claim)));
-  raise exception 'the stale lease assembled a basis';
- exception when insufficient_privilege then if sqlerrm<>'recompute_lease_denied' then raise; end if;
- end;
- begin perform pg_temp.submit_candidate(first_claim,b,array['S1']); raise exception 'the stale lease submitted';
- exception when insufficient_privilege then if sqlerrm<>'recompute_lease_denied' then raise; end if;
- end;
- result:=pg_temp.submit_candidate(second_claim,b,array['S1']);
- select * into strict c from public.work_recompute_candidates where id=c.id;
- if not coalesce((result->>'produced')::boolean,false) or coalesce((result->>'replayed')::boolean,false) or c.execution_id is distinct from (result->>'executionId')::uuid
- or c.state<>'scheduled' or (select count(*) from public.work_executions where request_id=c.id)<>1
- or not exists(select 1 from private.execution_lineage l where l.execution_id=c.execution_id and l.root_execution_id=pg_temp.id('X1') and l.candidate_id=c.id)
- or (select platform_release_id from private.execution_manifests where execution_id=c.execution_id)<>'synthetic-execution-test-v3' then
-  raise exception 'the authorized candidate was not produced once after the restart: % %',result,to_jsonb(c);
- end if;
- -- No new wait and no second question: the wait is resolved once, the authorization is one decision
- -- and the ceiling belongs to one candidate.
- if (select count(*) from public.work_milestones where kind='awaiting_human')<>waits
- or (select count(*) from public.work_milestones where kind='human_resolved' and resolves_milestone_id=wait.id)<>1
- or (select count(*) from public.work_milestones where kind='decision' and subject_kind='work_recompute_candidate' and subject_id=c.id)<>1
- or (select count(*) from public.work_recompute_candidates where idempotency_key=c.idempotency_key)<>1 or c.max_cost_microusd<>250000 or c.max_model_calls<>3 then
-  raise exception 'the restart asked the person again or planned the ceiling twice';
- end if;
- result:=pg_temp.submit_candidate(second_claim,b,array['S1']);
- if not coalesce((result->>'replayed')::boolean,false) or result->>'executionId' is distinct from c.execution_id::text then raise exception 'the submission was not replayed: %',result; end if;
- if not (public.authorize_work_update_v1('a4190000-0000-4000-8000-000000000404',c.id,authorized)->>'replayed')::boolean then raise exception 'authorization replay not recognised'; end if;
- perform pg_temp.expect_error(format('select public.authorize_work_update_v1(%L,%L,%L)',gen_random_uuid(),c.id,c.revision),'work_update_candidate_not_waiting',
-  'a produced candidate is not put to the person again');
- if coalesce((pg_temp.as_worker('select public.worker_claim_dependency_recompute_v1(''synthetic-dependency-outbox-token'',120)')->>'claimed')::boolean,false)
- or (select count(*) from public.work_executions where request_id=c.id)<>1 then
-  raise exception 'the produced candidate can be claimed or produced again';
- end if;
- insert into dep values('X1p',c.execution_id);
- raise notice 'PASS: an authorized costed candidate interrupted after its claim is claimed again by the restarted worker and produced once, with lineage; the stale lease is refused; no new wait, the authorization and the ceiling are used once';
-end $$;
-do $$ declare c public.work_recompute_candidates;job uuid;first_claim jsonb;second_claim jsonb;first jsonb;again jsonb;replay jsonb;begin
- select * into strict c from public.work_recompute_candidates where execution_id=pg_temp.id('X1p');
- select id into strict job from public.processing_jobs where execution_id=pg_temp.id('X1p') and kind='work_execution';
- if (select count(*) from private.execution_budget_accounts where execution_id=pg_temp.id('X1p'))<>1
- or (select x.payload#>'{budget,maxCostMicrousd}' from private.execution_manifests x where x.execution_id=pg_temp.id('X1p'))<>'0'::jsonb then
-  raise exception 'the produced execution does not have one zero budget';
- end if;
- first_claim:=private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1',job,60);
- -- The ceiling the person authorized cannot be reserved: this closed increment spends nothing.
- begin
-  perform private.reserve_execution_operation_v1(job,first_claim->>'capability',(first_claim->>'leaseId')::uuid,pg_temp.id('X1p'),first_claim->>'contractFingerprint',
-   'synthetic#calculate','test-v1','read_only',c.max_cost_microusd,c.max_model_calls);
-  raise exception 'a reservation of the authorized ceiling was accepted';
- exception when insufficient_privilege then if sqlerrm<>'execution_operation_denied' then raise; end if;
- end;
- first:=private.reserve_execution_operation_v1(job,first_claim->>'capability',(first_claim->>'leaseId')::uuid,pg_temp.id('X1p'),first_claim->>'contractFingerprint',
-  'synthetic#calculate','test-v1','read_only',0,0);
- again:=private.reserve_execution_operation_v1(job,first_claim->>'capability',(first_claim->>'leaseId')::uuid,pg_temp.id('X1p'),first_claim->>'contractFingerprint',
-  'synthetic#calculate','test-v1','read_only',0,0);
- -- The execution's own worker stops too: its lease expires and the job is claimed again. The
- -- reservation is kept (uncertain, never released) and its replay under the new lease adds nothing.
- update public.processing_jobs set lease_expires_at=clock_timestamp()-interval '1 second' where id=job;
- second_claim:=private.claim_work_execution_v1('synthetic-policy-worker-fixture-token-v1',job,60);
- begin
-  perform private.reserve_execution_operation_v1(job,first_claim->>'capability',(first_claim->>'leaseId')::uuid,pg_temp.id('X1p'),first_claim->>'contractFingerprint',
-   'synthetic#calculate','test-v1','read_only',0,0);
-  raise exception 'the stale execution lease reserved';
- exception when insufficient_privilege then if sqlerrm<>'execution_lease_denied' then raise; end if;
- end;
- replay:=private.reserve_execution_operation_v1(job,second_claim->>'capability',(second_claim->>'leaseId')::uuid,pg_temp.id('X1p'),second_claim->>'contractFingerprint',
-  'synthetic#calculate','test-v1','read_only',0,0);
- if first->>'state'<>'reserved' or (first->>'replayed')::boolean or not (first->>'mayExecute')::boolean
- or not (again->>'replayed')::boolean or (again->>'mayExecute')::boolean
- or not coalesce((second_claim->>'claimed')::boolean,false) or (second_claim->>'attempt')::integer<>2
- or not (replay->>'replayed')::boolean or (replay->>'mayExecute')::boolean or replay->>'state'<>'uncertain'
- or (select count(*) from private.execution_operation_receipts where execution_id=pg_temp.id('X1p'))<>1
- or (select count(*) from private.execution_budget_accounts where execution_id=pg_temp.id('X1p'))<>1
- or (select reserved_microusd+reserved_calls+spent_microusd+spent_calls from private.execution_budget_accounts where execution_id=pg_temp.id('X1p'))<>0 then
-  raise exception 'budget account mismatch: % % % % %',first,again,second_claim,replay,(select to_jsonb(a) from private.execution_budget_accounts a where a.execution_id=pg_temp.id('X1p'));
- end if;
- raise notice 'PASS: the produced execution has one budget account at zero: a reservation of the authorized ceiling is refused (execution_operation_denied), and its one zero-cost reservation replays without adding, also under the lease of a reclaimed job; the stale job lease is refused';
-end $$;
-
--- 9. No authority, no command. The plain member and the owner once suspended are refused for every
--- command, and the read of the work is refused to them.
-rollback to savepoint stage18_4_paid;
-select set_config('test.paid.request',(pg_temp.update_request()).id::text,true);
-select set_config('test.paid.revision',(pg_temp.update_request()).revision::text,true);
-select set_config('test.paid.candidate',(pg_temp.candidate('X1','awaiting_authorization')).id::text,true);
-select set_config('test.paid.candidate_revision',(pg_temp.candidate('X1','awaiting_authorization')).revision::text,true);
-select set_config('test.base',pg_temp.id('BRIEF')::text,true);
-select set_config('test.base.work',m.work_id::text,true),set_config('test.base.decision',m.subject_id::text,true),set_config('test.base.revision',m.revision::text,true)
-from public.work_milestones m where m.id=pg_temp.id('BRIEF');
--- Every command and the read, as the API role through the public wrappers, refused with the same
--- error whatever the target.
-select set_config('test.refusals',jsonb_build_array(
- format('select public.request_work_continuation_v1(%L,%L,%L,%L,%L,%L,%L)',gen_random_uuid(),current_setting('test.base.work'),'pt-BR','Aprofundar o plano aprovado',
-  current_setting('test.base'),current_setting('test.base.decision'),current_setting('test.base.revision')),
- format('select public.adopt_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.paid.request'),current_setting('test.paid.revision')),
- format('select public.authorize_work_update_v1(%L,%L,%L)',gen_random_uuid(),current_setting('test.paid.candidate'),current_setting('test.paid.candidate_revision')),
- format('select public.decline_work_update_v1(%L,%L,%L,%L)',gen_random_uuid(),current_setting('test.paid.request'),current_setting('test.paid.revision'),'not_needed'),
- format('select public.decline_work_update_v1(%L,%L,%L,%L,%L)',gen_random_uuid(),current_setting('test.paid.request'),current_setting('test.paid.candidate_revision'),'not_needed',
-  current_setting('test.paid.candidate')),
- format('select public.work_update_view_v1(%L)',current_setting('test.base.work')))::text,true);
--- The owner, as the API role, reads and acts through the wrappers and reaches nothing else.
-select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
-set local role authenticated;
-do $$ declare v jsonb;begin
- v:=public.work_update_view_v1('a11b0000-0000-4000-9000-000000000002');
- -- The open update first, then the recent closed ones (the requests the same change superseded).
- if (select count(*) from jsonb_array_elements(v->'updates') u where u->>'status' in ('open','awaiting_authorization','scheduled','ready'))<>1
- or v#>>'{updates,0,status}'<>'awaiting_authorization' or exists(select 1 from jsonb_array_elements(v->'updates') u where u->>'status' not in ('awaiting_authorization','superseded')) then
-  raise exception 'owner read mismatch: %',v;
- end if;
- perform public.authorize_work_update_v1(gen_random_uuid(),current_setting('test.paid.candidate')::uuid,current_setting('test.paid.candidate_revision')::integer);
- begin perform 1 from private.work_milestone_log_v1('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002'); raise exception 'the log helper is callable';
- exception when insufficient_privilege then null;
- end;
- begin insert into public.work_milestones(organization_id,work_id,kind,subject_kind,subject_id,label,created_by,occurred_at)
-  values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','update_adopted','work_continuation_request',gen_random_uuid(),'forged',auth.uid(),now());
-  raise exception 'a person wrote a milestone directly';
- exception when insufficient_privilege then null;
- end;
- raise notice 'PASS: the owner reads and authorizes through the public wrappers as the API role, and reaches no helper or table directly';
-end $$;
-reset role;
-
-select pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');
-set local role authenticated;
-do $$ declare attempt text;refused integer:=0;begin
- for attempt in select jsonb_array_elements_text(current_setting('test.refusals')::jsonb) loop
-  begin execute attempt; raise exception 'accepted for a member without access: %',attempt;
-  exception when insufficient_privilege then if sqlerrm<>'work_continuation_access_denied' then raise; end if; refused:=refused+1;
-  end;
- end loop;
- if refused<>6 then raise exception 'not every command was refused'; end if;
- raise notice 'PASS: a member without access to the work is refused for every command and for the read';
-end $$;
-reset role;
-update public.organization_memberships set status='suspended' where organization_id='a11b0000-0000-4000-9000-000000000001' and user_id='a11b0000-0000-4000-8000-000000000001';
-select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
-set local role authenticated;
-do $$ declare attempt text;refused integer:=0;begin
- for attempt in select jsonb_array_elements_text(current_setting('test.refusals')::jsonb) loop
-  begin execute attempt; raise exception 'accepted for a suspended owner: %',attempt;
-  exception when insufficient_privilege then if sqlerrm<>'work_continuation_access_denied' then raise; end if; refused:=refused+1;
-  end;
- end loop;
- if refused<>6 then raise exception 'not every command was refused'; end if;
- raise notice 'PASS: the owner whose membership was suspended is refused for every command and for the read';
-end $$;
-reset role;
-do $$begin
- if (select status from public.work_continuation_requests where id=current_setting('test.paid.request')::uuid)<>'awaiting_authorization'
- or exists(select 1 from public.work_continuation_requests where kind='user_followup') or not pg_temp.history_intact() then
-  raise exception 'a refused command changed something';
- end if;
-end $$;
 -- 10. The milestone contract: references name earlier milestones of the same work, outcomes follow the
 -- kind, decisions and adoptions name their revision, and nothing is rewritten.
 do $$begin
@@ -835,12 +594,7 @@ do $$begin
   raise exception 'an adoption without its revision was accepted';
  exception when check_violation then null;
  end;
- begin
-  update public.work_continuation_requests set decline_reason='person_declined:other',revision=revision+1 where id=current_setting('test.paid.request')::uuid;
-  raise exception 'a decline reason was written without the decline';
- exception when check_violation then null;
- end;
- raise notice 'PASS: milestone references, outcomes and revisions follow the contract; a decline reason is written only by the decline';
+ raise notice 'PASS: milestone references, outcomes and revisions follow the contract';
 end $$;
 
 -- 10b. The milestone of a command is an RFC 9562 version 5 UUID of the organization and the command

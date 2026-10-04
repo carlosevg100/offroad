@@ -6,11 +6,13 @@ is only a transport negative baseline, never a nonempty/physical-source proof.
 import os,re,runpy,subprocess
 from urllib.parse import urlparse
 from pathlib import Path
+from native_canonical_install_state import canonical_group_installed
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[2]
 url=os.environ['DATABASE_URL']
 if urlparse(url).hostname not in ('localhost','127.0.0.1','::1'):raise SystemExit('Assessment evaluation requires disposable local Supabase')
 mode=os.environ.get('ASSESSMENT_DRAFT_IN_TRANSACTION','1')
+if mode=='1' and canonical_group_installed(ROOT,url,'assessment6'):mode='0'
 if mode not in ('0','1'):raise SystemExit('ASSESSMENT_DRAFT_IN_TRANSACTION must be 0 or 1')
 # Obtain the maintained real case fixture without executing its test subprocess.
 class Captured:

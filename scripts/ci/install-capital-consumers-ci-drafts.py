@@ -5,6 +5,7 @@ Canonical migrations (including 3U/material) must already be installed.
 """
 import os, subprocess, sys
 from pathlib import Path
+from native_canonical_install_state import canonical_groups_installed
 from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parents[2]
 DRAFTS = (
@@ -33,11 +34,12 @@ def main():
   try: validate({'DATABASE_URL':good['DATABASE_URL']})
   except ValueError: pass
   else: raise AssertionError('Implicit draft install admitted')
-  assert all((ROOT/'supabase/pending'/p).is_file() for p in DRAFTS)
+  assert (ROOT/'docs/build/schema-history/stage20-native-canonical.json').is_file() or all((ROOT/'supabase/pending'/p).is_file() for p in DRAFTS)
   print('native_consumers_ci_draft_install_guards: PASS (no SQL executed)')
   return
  if len(sys.argv) != 1: raise ValueError('No positional target override')
  url=validate(os.environ)
+ if canonical_groups_installed(ROOT,url,('core11','inherited_restriction')): return
  sql='BEGIN;\n'+'\n'.join((ROOT/'supabase/pending'/p).read_text() for p in DRAFTS)+'\nCOMMIT;\n'
  subprocess.run(['psql',url,'-X','-v','ON_ERROR_STOP=1'],input=sql,text=True,check=True)
  print('native_consumers_ci_drafts: installed atomically; no journal writes')

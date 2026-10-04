@@ -2,11 +2,13 @@
 """3V rollback suites against disposable real Supabase. Never remote targets."""
 import os,re,subprocess
 from pathlib import Path
+from native_canonical_install_state import canonical_group_installed
 from urllib.parse import urlparse
 ROOT=Path(__file__).resolve().parents[2]
 url=os.environ['DATABASE_URL']
 if urlparse(url).hostname not in('localhost','127.0.0.1','::1'):raise SystemExit('Assessment evaluation requires disposable local Supabase')
 mode=os.environ.get('ASSESSMENT_DRAFT_IN_TRANSACTION','1')
+if mode=='1' and canonical_group_installed(ROOT,url,'assessment6'):mode='0'
 if mode not in('0','1'):raise SystemExit('ASSESSMENT_DRAFT_IN_TRANSACTION must be 0 or 1')
 def expand(path):return re.sub(r'^\\ir (.+)$',lambda m:expand(path.parent/m[1].strip()),path.read_text(),flags=re.M)
 drafts=''

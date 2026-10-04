@@ -2,6 +2,7 @@
 """Actual agent-v7/compiler/human-review path in one local rollback transaction."""
 import json,os,re,subprocess,sys
 from pathlib import Path
+from native_canonical_install_state import canonical_groups_installed
 from urllib.parse import urlparse
 def debt_http_namespace_sql(sql,namespace):
  assert re.fullmatch(r'a882[0-9a-f]{4}',namespace), 'Closed C11 HTTP namespace required'
@@ -72,7 +73,7 @@ try:
  insert into agent_fixture select 'capture',public.worker_capture_execution_brief_inputs_v1((v->>'job_id')::uuid,v->>'capability_token',(v#>>'{payload,message_id}')::uuid) from agent_fixture where k='claim';
  select v->'context' from agent_fixture where k='capture';
  """
- if os.environ.get('BRIEF_DRAFT_IN_TRANSACTION')=='1': prefix=prefix.replace('begin;','begin;'+(ROOT/'supabase/pending/execution_brief_native_capture.sql').read_text()+''.join((ROOT/'supabase/pending'/f).read_text() for f in ['capital_debt_native_consumption.sql','capital_debt_execution_ledger.sql','capital_debt_task_projections.sql','capital_debt_native_commit.sql']),1)
+ if os.environ.get('BRIEF_DRAFT_IN_TRANSACTION')=='1' and not canonical_groups_installed(ROOT,url,('core11','inherited_restriction')): prefix=prefix.replace('begin;','begin;'+(ROOT/'supabase/pending/execution_brief_native_capture.sql').read_text()+''.join((ROOT/'supabase/pending'/f).read_text() for f in ['capital_debt_native_consumption.sql','capital_debt_execution_ledger.sql','capital_debt_task_projections.sql','capital_debt_native_commit.sql']),1)
  lines=phase(prefix)
  contexts=[json.loads(x) for x in lines if x.startswith('{') and 'active_plan' in x]
  assert len(contexts)==1,lines

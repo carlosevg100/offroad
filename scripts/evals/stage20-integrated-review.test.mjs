@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {validateTarget, validateFixture} from './stage20-integrated-review.mjs';
+import {validateTarget, validateFixture, humanReviewManifest, checkedRelease, authorizedPendingReview} from './stage20-integrated-review.mjs';
 
 test('only a complete loopback pair or the explicitly selected staging project is admitted', () => {
   assert.equal(validateTarget('http://127.0.0.1:54321', 'postgresql://postgres:local@127.0.0.1:54322/postgres'), 'loopback');
@@ -32,4 +32,34 @@ test('material fixture is explicit; preview v1 remains closed and unchanged',()=
  assert.equal(validateTarget('https://gjkkjtbfnssdsbmlhmwk.supabase.co',undefined,'gjkkjtbfnssdsbmlhmwk',true),'staging');
  for(const api of['https://production.supabase.co','http://127.0.0.1:54321','https://gjkkjtbfnssdsbmlhmwk.supabase.co/other'])assert.throws(()=>validateTarget(api,undefined,'gjkkjtbfnssdsbmlhmwk',true));
  assert.throws(()=>validateTarget('https://gjkkjtbfnssdsbmlhmwk.supabase.co','postgresql://postgres:secret@db.gjkkjtbfnssdsbmlhmwk.supabase.co/postgres','gjkkjtbfnssdsbmlhmwk',true));
+});
+
+test('authored revision manifest pins each actual template instead of reusing a replay fingerprint',()=>{
+ const first=humanReviewManifest('synthetic-review-start');
+ const layout=humanReviewManifest('synthetic-review-layout');
+ const material=humanReviewManifest('synthetic-review-material');
+ const pending=humanReviewManifest('synthetic-review-pending');
+ assert.deepEqual(first, humanReviewManifest('synthetic-review-start'));
+ assert.equal(new Set([first,layout,material,pending].map(v=>JSON.stringify(v))).size,4);
+ assert.deepEqual(first.template,{templateVersionId:'synthetic-review-start',fingerprint:'1'.repeat(64)});
+ for(const key of Object.keys(first).filter(v=>v!=='template'))assert.deepEqual(first[key],layout[key]);
+ assert.deepEqual(first.sources,[]);assert.deepEqual(first.claims,[]);assert.equal(first.execution,null);assert.equal(first.bytes,null);
+ assert.throws(()=>humanReviewManifest(''));assert.throws(()=>humanReviewManifest('x'.repeat(201)));
+});
+
+test('release assertions preserve their exact requirement and reject unexpected values',()=>{
+ assert.doesNotThrow(()=>checkedRelease('internal','internal','r2_before_reaffirm'));
+ assert.doesNotThrow(()=>checkedRelease('released','released','r2_after_reaffirm'));
+ assert.throws(()=>checkedRelease('internal','released','r2_after_reaffirm'));
+ assert.throws(()=>checkedRelease({private:'secret'},'released','r2_after_reaffirm'));
+});
+
+test('review state comes from the authorized computed dashboard and remains pinned to the exact target',()=>{
+ const target={revision_id:randomUUID(),artifact_id:randomUUID(),manifest_fingerprint:'1'.repeat(64)},work=randomUUID();
+ const row={revisionId:target.revision_id,artifactId:target.artifact_id,manifestFingerprint:target.manifest_fingerprint,withheld:false,pending:true};
+ const dashboard={schemaVersion:'work-review-dashboard.v1',workId:work,revisions:[row]};
+ assert.equal(authorizedPendingReview(dashboard,target,work),true);
+ assert.equal(authorizedPendingReview({...dashboard,revisions:[{...row,pending:false}]},target,work),false);
+ assert.throws(()=>authorizedPendingReview({...dashboard,workId:randomUUID()},target,work));
+ for(const change of [{withheld:true},{revisionId:randomUUID()},{artifactId:randomUUID()},{manifestFingerprint:'2'.repeat(64)},{pending:null}])assert.throws(()=>authorizedPendingReview({...dashboard,revisions:[{...row,...change}]},target,work));
 });

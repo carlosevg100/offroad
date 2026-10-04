@@ -5718,7 +5718,11 @@ begin
       execute attempt;
       raise exception 'other tenant reached a continuation command: %',attempt;
     exception when insufficient_privilege then
-      if sqlerrm<>'work_continuation_access_denied' then raise; end if;
+      -- Future updates use the native adoption command. The retired v1 route
+      -- refuses before target resolution; all other foreign commands keep their
+      -- existing indistinguishable access denial.
+      if sqlerrm is distinct from (case when attempt like 'select public.adopt_work_update_v1(%'
+        then 'work_update_native_command_required' else 'work_continuation_access_denied' end) then raise; end if;
       refused:=refused+1;
     end;
   end loop;
