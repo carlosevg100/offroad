@@ -176,6 +176,8 @@ jobs:
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/work_optional_capital_purpose.sql
 
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/work_optional_capital_purpose.sql'
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
     - name: Stop local Supabase
       if: always()
       run: supabase stop --no-backup
