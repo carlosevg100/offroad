@@ -80,7 +80,7 @@ describe("intake event replay boundary", () => {
   });
 
   it("loads truthful absent-purpose history and later explicit purpose from immutable rows", async () => {
-    const {useOfProceeds: _purpose, ...frame} = frameRow.payload.frame;
+    const frame = {declaredBy: frameRow.payload.frame.declaredBy, version: frameRow.payload.frame.version};
     const first = {...frameRow, payload: {frame}};
     const second = {...frameRow, event_id: "73000000-0000-4000-8000-000000000099", sequence: 2,
       occurred_at: "2026-08-25T12:00:01.000Z", payload: {frame: {...frame, version: 2, useOfProceeds: "refinance"}}};
@@ -94,7 +94,7 @@ describe("intake event replay boundary", () => {
   });
 
   it("returns no fabricated request-ladder write for a currently unclassified work", async () => {
-    const {useOfProceeds: _purpose, ...frame} = frameRow.payload.frame;
+    const frame = {declaredBy: frameRow.payload.frame.declaredBy, version: frameRow.payload.frame.version};
     const supabase = supabaseWith([{...frameRow, payload: {frame}}]);
     const rpc = vi.fn();
     Object.assign(supabase, {rpc});

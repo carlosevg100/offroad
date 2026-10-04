@@ -16,6 +16,9 @@ DRAFTS = (
  'capital_debt_task_projections.sql', 'capital_debt_native_commit.sql', 'capital_debt_native_revision.sql',
  'artifact_native_inherited_restriction.sql',
 )
+# Prospective repair is mandatory even when all native consumer groups are already canonical.
+# Removed from this list only with its real canonical journal/file publication.
+REPAIRS = ('work_archive_metadata.sql',)
 def validate(env):
  p = urlparse(env.get('DATABASE_URL', ''))
  if p.scheme != 'postgresql' or p.hostname not in ('127.0.0.1', 'localhost', '::1') or p.path in ('', '/') or p.query or p.fragment:
@@ -35,12 +38,13 @@ def main():
   except ValueError: pass
   else: raise AssertionError('Implicit draft install admitted')
   assert (ROOT/'docs/build/schema-history/stage20-native-canonical.json').is_file() or all((ROOT/'supabase/pending'/p).is_file() for p in DRAFTS)
+  assert all((ROOT/'supabase/pending'/p).is_file() for p in REPAIRS)
   print('native_consumers_ci_draft_install_guards: PASS (no SQL executed)')
   return
  if len(sys.argv) != 1: raise ValueError('No positional target override')
  url=validate(os.environ)
- if canonical_groups_installed(ROOT,url,('core11','inherited_restriction')): return
- sql='BEGIN;\n'+'\n'.join((ROOT/'supabase/pending'/p).read_text() for p in DRAFTS)+'\nCOMMIT;\n'
+ drafts = REPAIRS if canonical_groups_installed(ROOT,url,('core11','inherited_restriction')) else DRAFTS + REPAIRS
+ sql='BEGIN;\n'+'\n'.join((ROOT/'supabase/pending'/p).read_text() for p in drafts)+'\nCOMMIT;\n'
  subprocess.run(['psql',url,'-X','-v','ON_ERROR_STOP=1'],input=sql,text=True,check=True)
  print('native_consumers_ci_drafts: installed atomically; no journal writes')
 if __name__ == '__main__': main()
