@@ -142,6 +142,12 @@ jobs:
         '
       id: review
       if: ${{ !cancelled() && steps.db.outcome == 'success' }}
+    - name: Real provider-family allocations required by cross-family Storage denial
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
+        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+      run: node scripts/ci/test-capital-native-provider-sdk.mjs
     - name: Current native preview and sanitized dashboard performance
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
