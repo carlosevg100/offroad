@@ -13,11 +13,18 @@ import {createClient} from "@supabase/supabase-js";
 import {fingerprintJson,stableJson} from "@offroad/case-understanding";
 import {publicCapitalCatalogSourceSnapshot,publicCapitalCatalogReference} from "@offroad/public-research/capital-catalog";
 import {ensureInitialAgentPlan} from "../src/agent-plan";
-import {createQueueClient,type CapitalProjectAnalysisJob} from "../src/queue";
+import {capitalProjectAnalysisJobSchema,createQueueClient,type CapitalProjectAnalysisJob} from "../src/queue";
 import {createNativeProviderPorts} from "../src/capital-native-provider-adapter";
 import {consumeNativeProviderWork} from "../src/capital-native-provider-consumer";
 import type {CapitalPublicDeliveryRequest} from "../src/capital-public-capture-adapter";
 let phase="startup";
+function exactProviderClaim(claimed:Awaited<ReturnType<ReturnType<typeof createQueueClient>["claim"]>>,expectedJobId:string,organization:string,family:"provider_case_fit"|"provider_research"):CapitalProjectAnalysisJob {
+ assert.ok(claimed&&claimed.kind==="capital_project_analysis");
+ assert.equal(claimed.job_id,expectedJobId);
+ assert.equal(claimed.payload.analysis_scope,family);
+ assert.equal(claimed.organization_id,organization);
+ return claimed;
+}
 function localTarget(value:string,protocol:string){const p=new URL(value);assert.equal(p.protocol,protocol);assert.ok(["localhost","127.0.0.1","[::1]"].includes(p.hostname));assert.equal(p.search,"");assert.equal(p.hash,"");if(protocol==="http:"){assert.equal(p.username,"");assert.equal(p.password,"");assert.ok(["","/"].includes(p.pathname));}return p;}
 function allowedKey(value:string){if(value.startsWith("sb_publishable_"))return;assert.equal(JSON.parse(Buffer.from(value.split(".")[1]??"","base64url").toString()).role,"anon");}
 function missing(status:number,value:unknown){if(!value||typeof value!=="object"||Array.isArray(value))return false;const v=value as Record<string,unknown>;return[400,404].includes(status)&&String(v.statusCode)==="404"&&["not_found","Not Found"].includes(String(v.error))&&["object not found","the resource was not found"].includes(String(v.message).toLowerCase());}
@@ -29,6 +36,18 @@ async function main(){
   assert.throws(()=>localTarget("https://production.supabase.co","http:"));assert.throws(()=>localTarget("postgresql://remote.invalid/db","postgresql:"));assert.throws(()=>allowedKey("sb_secret_never"));
   assert.equal(fingerprintJson(publicCapitalCatalogSourceSnapshot),publicCapitalCatalogReference.sourceFingerprint);
   assert.ok(missing(400,{statusCode:"404",error:"not_found",message:"Object not found"}));assert.equal(missing(403,{statusCode:"404",error:"not_found",message:"Object not found"}),false);
+  for(const family of ["provider_case_fit","provider_research"] as const){
+   const u=(last:number)=>`90000000-0000-4000-8000-${String(last).padStart(12,"0")}`;
+   const claimed=capitalProjectAnalysisJobSchema.parse({claimed:true,job_id:u(1),capability_token:"x".repeat(64),lease_expires_at:"2026-10-04T12:00:00Z",attempt:1,kind:"capital_project_analysis",organization_id:u(2),intake_session_id:u(3),processing_run_id:u(4),payload:{analysis_scope:family,locale:"pt-BR",capital_project_id:u(5),capital_project_plan_id:u(6),capital_project_brief_id:u(7),capital_task_ids:["M01","K01","K02"],capital_artifact_required:true,model_budget:{max_cost_usd:0,max_calls:0}}});
+   assert.equal(exactProviderClaim(claimed,u(1),u(2),family),claimed);
+   // Reproduce the old wrong-field assertion; the canonical DTO has job_id only.
+   assert.throws(()=>assert.equal((claimed as unknown as {id?:string}).id,u(1)));
+   assert.throws(()=>exactProviderClaim(claimed,u(9),u(2),family));
+   assert.throws(()=>exactProviderClaim(claimed,u(1),u(9),family));
+   assert.throws(()=>exactProviderClaim(claimed,u(1),u(2),family==="provider_case_fit"?"provider_research":"provider_case_fit"));
+   assert.throws(()=>exactProviderClaim(null,u(1),u(2),family));
+  }
+  process.stdout.write("capital_native_provider_exact_claim: PASS (canonical job_id both families; old id assertion reproduces; wrong job/org/family/null deny; no SQL/HTTP)\n");
   process.stdout.write("capital_native_provider_sdk_static: PASS (local target/anon guard, catalogue fingerprint, strict absence; no SQL or HTTP)\n");return;
  }
  if(process.argv[2]==="--sql-contracts"){
@@ -53,7 +72,7 @@ async function main(){
   const client=createClient(api,key,{global:{headers:{"x-offroad-workspace":organization},fetch:(input,init)=>fetch(input,{...init,redirect:"error"})},auth:{persistSession:false}});
   phase=`${family}_real_auth`;const login=await client.auth.signInWithPassword({email:family==="provider_research"?"provider-research-a@example.invalid":"case-fit-a@example.invalid",password:"native-provider-isolated-local-password"});assert.equal(login.error,null);assert.equal(login.data.user?.id,actor);
   const token=family==="provider_research"?"cfa6ec9950f2152fc7cd5aac980f1d6fafdaca4aaa054e4483e9df0c5d20e26d":"9748fe624d1a3d4253f3a38324320426fe64dc0b092839b048d0bd8e1cc03dd4",queue=createQueueClient(client,{workerToken:token,leaseSeconds:600});
-  phase=`${family}_real_claim`;const claimed=await queue.claim();assert.ok(claimed&&claimed.kind==="capital_project_analysis");const job=claimed as CapitalProjectAnalysisJob;assert.equal(job.id,expectedJobId);assert.equal(job.payload.analysis_scope,family);assert.equal(job.organization_id,organization);await ensureInitialAgentPlan(job,queue);
+  phase=`${family}_real_claim`;const job=exactProviderClaim(await queue.claim(),expectedJobId,organization,family);await ensureInitialAgentPlan(job,queue);
   assert.equal((await client.rpc("worker_claim_capital_capture_purge_v1",{p_worker_token:token,p_limit:100})).error,null);
   const ports=createNativeProviderPorts({client,job,cataloguePublication:async()=>publication});
   phase=`${family}_actual_native_producer`;const first=await consumeNativeProviderWork(job,ports);assert.equal(first.status,"succeeded");assert.equal(first.modelCalls,0);assert.equal(first.artifact.grantsApproval,false);

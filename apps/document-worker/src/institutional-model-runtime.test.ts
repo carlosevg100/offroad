@@ -1,3 +1,4 @@
+import type {SupabaseClient} from "@supabase/supabase-js";
 import {jobFailureRecordSchema} from "./job-failure";
 import {processAgentOperationBriefJob} from "./agent-operation-brief";
 import type {QueueClient} from "./queue";
@@ -6,7 +7,7 @@ import {readFileSync} from "node:fs";
 import {describe,it,expect,vi} from "vitest";
 import {institutionalModelRuntimeContextSchema,renderApprovedInstitutionalFinancialWorkbook} from "@offroad/financial-model";
 import {processInstitutionalModelResult,processInstitutionalModelSetup} from "./institutional-model-runtime";
-import {InstitutionalCaptureRetryError,agentOperationBriefJobSchema} from "./queue";
+import {createQueueClient,InstitutionalCaptureRetryError,agentOperationBriefJobSchema} from "./queue";
 const id="90000000-0000-4000-8000-000000000881";
 const job=agentOperationBriefJobSchema.parse({claimed:true,job_id:"80000000-0000-4000-8000-000000000881",capability_token:"x".repeat(64),lease_expires_at:"2026-09-10T04:10:00Z",attempt:1,kind:"agent_operation_brief",organization_id:"20000000-0000-4000-8000-000000000881",intake_session_id:"40000000-0000-4000-8000-000000000881",processing_run_id:"70000000-0000-4000-8000-000000000881",payload:{message_id:id,locale:"en-US"}});
 function fixture(){
@@ -109,5 +110,20 @@ describe("prospective setup capture",()=>{
   const save=vi.fn();
   await expect(processInstitutionalModelSetup({job,locale:"en-US",queue:{loadInstitutionalModelContext:async()=>({setupReplay:{submissionId:"90000000-0000-4000-8000-000000000999",status:"calculation_blocked",candidateId:null,revision:null,informationRequestBasis:null}}),recordInitialInstitutionalConfigurationCandidate:save}})).rejects.toThrow("institutional_setup_replay_unbound");
   expect(save).not.toHaveBeenCalled();
+ });
+});
+
+
+describe("current writer contention reaches institutional handlers",()=>{
+ it.each([false,true])("requeues a bounded v3 result-write abort without terminal reply or redispatch (recompute=%s)",async(recompute)=>{
+  const activeJob=recompute?agentOperationBriefJobSchema.parse({...job,payload:{...job.payload,institutional_recompute_candidate_id:"95000000-0000-4000-8000-000000000883"}}):job;
+  const f=fixture();const rpc=vi.fn(async()=>({data:null,error:{code:"40001",message:"institutional_capture_retry"}}));
+  const realQueue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  const queue={loadAgentContext:vi.fn(async()=>({session_id:job.intake_session_id,message_id:id,locale:"en-US",message:"Calculate the approved model.",message_metadata:{kind:"institutional_model_refresh"},brief:{},snapshot_fingerprint:"a".repeat(64),projection_updated_at:"2026-09-10T04:00:00Z",manifest_id:null,company_profile:{},documents:[],tasks:[],artifacts:[],recent_messages:[]})),loadInstitutionalModelContext:vi.fn(async()=>f.context),recordInstitutionalModelResult:realQueue.recordInstitutionalModelResult,writeStage:vi.fn(),recordAgentResponse:vi.fn(),recordAgentFailure:vi.fn(),fail:vi.fn(async(_job,error)=>{jobFailureRecordSchema.parse(error);}),complete:vi.fn()} as unknown as QueueClient;
+  const gateway={complete:vi.fn(),spent:()=>({costUsd:0,calls:0})} as unknown as ModelGateway;const log=vi.fn();
+  expect(await processAgentOperationBriefJob(activeJob,{queue,gateway,log,shadowRouting:false})).toEqual({status:"failed"});
+  expect(rpc).toHaveBeenCalledTimes(3);expect(rpc).toHaveBeenCalledWith("worker_record_institutional_model_result_v3",expect.objectContaining({p_job_id:activeJob.job_id,p_capability_token:activeJob.capability_token,p_result:expect.objectContaining({inputSnapshot:f.context.inputSnapshot})}));
+  expect(queue.fail).toHaveBeenCalledWith(activeJob,expect.objectContaining({code:"institutional_capture_retry",stage:recompute?"institutional_model_recompute":"institutional_model_refresh",retryable:true,cause:expect.objectContaining({name:"InstitutionalCaptureRetryError",message:"institutional_capture_retry"})}),{retryable:true,retryInSeconds:2});
+  expect(queue.recordAgentFailure).not.toHaveBeenCalled();expect(queue.recordAgentResponse).not.toHaveBeenCalled();expect(queue.complete).not.toHaveBeenCalled();expect(gateway.complete).not.toHaveBeenCalled();expect(log).not.toHaveBeenCalledWith("institutional_model_recompute.failed",expect.anything());
  });
 });

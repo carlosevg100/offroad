@@ -75,6 +75,9 @@ jobs:
           python3 -B scripts/ci/test-published-method-lock.py
           python3 -B scripts/ci/verify-published-method-lock.py
 
+      - name: Verify native provider SDK contracts before the database journey
+        run: node scripts/ci/test-capital-native-provider-sdk.mjs --self-test
+
       - name: Run quality gate
         run: pnpm check
 

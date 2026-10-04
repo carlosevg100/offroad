@@ -11,6 +11,12 @@ const {build} = requireWorker("esbuild");
 let temporary;
 try {
   if (Number(process.versions.node.split(".")[0]) !== 24) throw new Error("Node24 required");
+  // This SDK entry is outside the worker src tsconfig; check its own contract before any fixture or network call.
+  const typecheck = await new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [requireWorker.resolve("typescript/bin/tsc"), "-p", join(worker,"scripts","tsconfig-capital-native-provider-sdk-eval.json")], {cwd: fileURLToPath(new URL("../../", import.meta.url)), stdio: "inherit"});
+    child.once("error", reject); child.once("exit", code => resolve(code ?? 1));
+  });
+  if (typecheck !== 0) throw new Error("native provider SDK typecheck failed");
   await mkdir(join(worker, "dist"), {recursive: true});
   temporary = await mkdtemp(join(worker, "dist", "native-provider-sdk-eval-"));
   const entry = join(temporary, "eval.mjs");

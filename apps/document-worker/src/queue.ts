@@ -504,7 +504,7 @@ export function createQueueClient(
     for (let attempt = 0; ; attempt += 1) {
       const {data, error} = await supabase.rpc(name, args);
       if (!error) return data;
-      if ((name==="worker_load_institutional_model_context_v3"||name==="worker_record_institutional_model_result_v2"||name==="worker_record_initial_institutional_candidate_v2"||name==="worker_apply_institutional_assumption_answer_v1")
+      if ((name==="worker_load_institutional_model_context_v3"||name==="worker_record_institutional_model_result_v2"||name==="worker_record_institutional_model_result_v3"||name==="worker_record_initial_institutional_candidate_v2"||name==="worker_apply_institutional_assumption_answer_v1")
         && error.code==="40001" && error.message==="institutional_capture_retry") {
         if (attempt>=2) throw new InstitutionalCaptureRetryError();
         await delay(50 * (2 ** attempt) + Math.floor(Math.random() * 50));
