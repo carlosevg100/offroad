@@ -1,30 +1,25 @@
 {
   "base": "23106724c9a510f1cf89c6ac662a94fe0b4a91c3",
-  "purpose": "TEMP DIAGNOSTIC ONLY; not release gate; no runtime/DDL/timeout/authority changes",
   "files": [
     {
       "path": "apps/document-worker/scripts/capital-preview-native-sdk-eval.ts",
-      "sha256": "3997e9a86c98086d0a36759f4957162a09970111e3ec133f75ace87cfa73f24a",
-      "baseBlob": "86ab048ca503be7ab23aea9eb35c6fec38df71b9",
+      "sha256": "8d910f70ff5bbbc608e6795bc082e7664cec3f6955438f21ffab50eab2cb5f4e",
       "baseSha256": "f7554fbaaa033bfaaf33be8d2b47a4f5f08079b62fe0da2b944ae439dc1bf65b"
     },
     {
       "path": "scripts/evals/preview-dashboard-safe-profiler.py",
       "sha256": "0dbe4afebb9653cdc58d3fa4ac036ef7b5ef8d52a0553eb294ce6158d9e4e816",
       "baseBlob": null
+    },
+    {
+      "path": "scripts/evals/diagnostics/dashboard-metadata-forward16.sql",
+      "sha256": "8a9bdc87cfd59c90f2e6dfdcd2b50a2e5117fac03213fc82433d2f55acae4197",
+      "baseBlob": null
+    },
+    {
+      "path": "supabase/tests/work_review_dashboard_metadata.sql",
+      "sha256": "99f3482eb66490c2fc1a269a7d28ef60833ae98ff0b7ffc3e2b2efc5b1946d6c",
+      "baseBlob": null
     }
-  ],
-  "checks": {
-    "sdkFullTscNode24": "PASS",
-    "sdkSelfTestNode24": "PASS",
-    "profilerPythonAST": "PASS",
-    "profilerSanitizationSelfTest": "PASS numeric JIT timing/functions whitelist and strict sampler frame rejection",
-    "actualSamplerProfiles": "NOT EXECUTED; requires real disposable CI stack"
-  },
-  "bounds": {
-    "sampler": "0.5s samples, each psql <=2s, hard185s, independent while child runs",
-    "profiler": "After child exit before cleanup: BEGIN\u2192ROLLBACK permits existing reader rowlocks; source-audited existing readers only; no persistent writes/DDL/timeout changes. Max27s window/30s outer/eachprocess8s.",
-    "target": "loopback only; actual org/work/native revision binding required; actor is actual reviewer; helper owner plan is diagnostic, not authority proof"
-  },
-  "output": "Fixed enums, counts, duration, numeric plan metrics only; no SQL/PID/UUID/args/query bodies/Auth/tokens/raw stderr"
+  ]
 }

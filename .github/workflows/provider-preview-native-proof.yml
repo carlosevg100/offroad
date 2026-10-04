@@ -1,4 +1,4 @@
-name: Native review performance diagnosis (not a release gate)
+name: Native dashboard before/after metadata diagnosis (not a release gate)
 'on':
   push:
     branches:
@@ -148,7 +148,7 @@ jobs:
         OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
         OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
       run: node scripts/ci/test-capital-native-provider-sdk.mjs
-    - name: Current native preview and sanitized dashboard performance
+    - name: 'BEFORE metadata16: full native preview and sanitized dashboard telemetry'
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
         OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -158,6 +158,44 @@ jobs:
         PREVIEW_INTEGRATED_REVIEW_EVAL: '1'
       run: python3 -B scripts/ci/test-capital-preview-sdk.py
       id: preview_before
+    - name: Apply guarded metadata16 ONLY to disposable local stack
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
+      run: 'set -euo pipefail
+
+        python3 -c "import os;from urllib.parse import urlparse;assert urlparse(os.environ[''DATABASE_URL'']).hostname
+        in (''localhost'',''127.0.0.1'',''::1'')"
+
+        psql "$DATABASE_URL" -X --single-transaction -v ON_ERROR_STOP=1 -f scripts/evals/diagnostics/dashboard-metadata-forward16.sql
+
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/work_review_dashboard_metadata.sql
+
+        '
+    - name: 'AFTER metadata16: fresh namespace full preview and sanitized dashboard
+        telemetry'
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
+        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
+        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
+        PREVIEW_HTTP_FIXTURE: '1'
+        PREVIEW_HTTP_NAMESPACE: a8830002
+        PREVIEW_INTEGRATED_REVIEW_EVAL: '1'
+      run: 'set -euo pipefail
+
+        # Existing installers already applied the exact full stack above. Do not replay
+        guarded DDL.
+
+        python3 -B scripts/ci/test-execution-brief-native-agent.py
+
+        loader="$(printf ''%s\n'' node_modules/.pnpm/tsx@*/node_modules/tsx/dist/loader.mjs
+        | head -n 1)"
+
+        node --import "$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
+        --self-test
+
+        node --import "$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
+
+        '
     - name: Stop the capital body Edge reader
       run: "set -euo pipefail\nruntime_dir=\"$RUNNER_TEMP/capital-body-edge\"\nif\
         \ [ -f \"$runtime_dir/server.pid\" ]; then\n  runtime_pid=\"$(cat \"$runtime_dir/server.pid\"\
