@@ -1,3 +1,4 @@
+-- Prioritize only this fixture job ahead of the surviving local queue; every claim still uses the real queue and authority guards.
 -- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- Native recipe SQL contracts. Storage catalogue rows are metadata fixtures only;
 -- physical byte and purge proofs require the separate actual Storage gate.
@@ -64,13 +65,13 @@ insert into private.worker_tokens(label,token_sha256,execution_account_user_id) 
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000981","role":"authenticated"}',true);
 select set_config('request.jwt.claim.sub','',true);
 do $$
-declare f record;claim jsonb;prepared jsonb;cap text;r uuid;a uuid;before_count integer; deadline timestamptz;object_id uuid;retained jsonb;old_cap text;allocation_before jsonb;
+declare f record;claim jsonb;prepared jsonb;cap text;r uuid;a uuid;before_count integer; deadline timestamptz;object_id uuid;retained jsonb;old_cap text;allocation_before jsonb;failure_result jsonb;
 begin
  select * into strict f from pg_temp.provider_research_fixture;
  perform pg_temp.fixture_approve_execution(f.job_id);
- update public.processing_jobs set available_at=now()-interval '1 day' where id=f.job_id;
+ update public.processing_jobs set available_at=(select least(now(),coalesce(min(available_at),now()))-interval '1 second' from public.processing_jobs where status='queued' or (status='leased' and lease_expires_at<now())) where id=f.job_id;
  claim:=public.worker_claim_job_v3('f59510d5ae3051f77576a9a2ed09e37c85a29d7a626d8396739785d87772f1e0',600);cap:=claim->>'capability_token';
- if claim->>'job_id'<>f.job_id::text then raise exception 'native_provider_claim_mismatch';end if;
+ if claim->>'claimed' is distinct from 'true' or claim->>'job_id' is distinct from f.job_id::text or cap is null then raise exception 'native_provider_claim_mismatch';end if;
  begin perform private.worker_prepare_capital_native_recipe_v1(f.job_id,cap);raise exception 'native recipe admitted without purge heartbeat';exception when insufficient_privilege then null;end;
  if exists(select 1 from private.capital_native_recipes where job_id=f.job_id)then raise exception 'failed admission left recipe';end if;
  update private.capital_public_retention_controls set enabled=true;
@@ -86,10 +87,11 @@ begin
  -- rebound to a new capability or given a renewed deadline.
  select to_jsonb(x)into allocation_before from private.capital_public_payload_allocations x where id=a;
  old_cap:=cap;
- perform public.worker_fail_job(f.job_id,cap,'{"code":"synthetic_retry","stage":"native_capture","retryable":true,"cause":{"name":"SyntheticError","class":"transient","message":"Synthetic transient failure"}}'::jsonb,true,5);
- update public.processing_jobs set available_at=now()-interval '1 second'where id=f.job_id;
+ failure_result:=public.worker_fail_job(f.job_id,cap,'{"code":"synthetic_retry","stage":"native_capture","retryable":true,"cause":{"name":"SyntheticError","class":"transient","message":"Synthetic transient failure"}}'::jsonb,true,5);
+ if failure_result->>'retrying' is distinct from 'true' or not exists(select 1 from public.processing_jobs where id=f.job_id and status='queued' and capability_sha256 is null and attempts<max_attempts) then raise exception 'native_real_retry_not_queued';end if;
+ update public.processing_jobs set available_at=(select least(now(),coalesce(min(available_at),now()))-interval '1 second' from public.processing_jobs where status='queued' or (status='leased' and lease_expires_at<now()))where id=f.job_id;
  claim:=public.worker_claim_job_v3('f59510d5ae3051f77576a9a2ed09e37c85a29d7a626d8396739785d87772f1e0',600);cap:=claim->>'capability_token';
- if claim->>'job_id'<>f.job_id::text or cap=old_cap then raise exception 'native real retry did not re-lease original job';end if;
+ if claim->>'claimed' is distinct from 'true' or claim->>'job_id' is distinct from f.job_id::text or cap is null or cap=old_cap then raise exception 'native real retry did not re-lease original job';end if;
  begin perform private.worker_prepare_capital_native_recipe_v1(f.job_id,old_cap);raise exception 'obsolete lease still admitted';exception when insufficient_privilege then null;end;
  if jsonb_set(private.worker_prepare_capital_native_recipe_v1(f.job_id,cap),'{body,replayed}','false')is distinct from prepared then raise exception 'new lease changed original capture';end if;
  if(select to_jsonb(x)from private.capital_public_payload_allocations x where id=a)is distinct from allocation_before then raise exception 'new lease rewrote original allocation receipt';end if;

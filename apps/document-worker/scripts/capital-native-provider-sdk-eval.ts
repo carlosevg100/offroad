@@ -48,11 +48,12 @@ async function main(){
  const publication=JSON.parse(lines.find(line=>line.startsWith('{"origin"'))??lines.find(line=>line.startsWith("{")&&line.includes('"deliveryKey"'))!)as CapitalPublicDeliveryRequest;
  for(const family of ["provider_case_fit","provider_research"]as const){
   const suffix=family==="provider_research"?"981":"971",organization=`20000000-0000-4000-8000-000000000${suffix}`,actor=`10000000-0000-4000-8000-000000000${suffix}`;
-  phase=`${family}_local_fixture_approval`;sql(db,expand(join(root,`supabase/tests/support/capital_native_provider_${family==="provider_research"?"research":"case_fit"}_sdk_fixture.sql`)));
+  phase=`${family}_local_fixture_approval`;const fixtureLines=sql(db,expand(join(root,`supabase/tests/support/capital_native_provider_${family==="provider_research"?"research":"case_fit"}_sdk_fixture.sql`))).split("\n");
+  const fixtureJobIds=fixtureLines.filter(line=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(line));assert.equal(fixtureJobIds.length,1);const expectedJobId=fixtureJobIds[0]!;
   const client=createClient(api,key,{global:{headers:{"x-offroad-workspace":organization},fetch:(input,init)=>fetch(input,{...init,redirect:"error"})},auth:{persistSession:false}});
   phase=`${family}_real_auth`;const login=await client.auth.signInWithPassword({email:family==="provider_research"?"provider-research-a@example.invalid":"case-fit-a@example.invalid",password:"native-provider-isolated-local-password"});assert.equal(login.error,null);assert.equal(login.data.user?.id,actor);
   const token=family==="provider_research"?"cfa6ec9950f2152fc7cd5aac980f1d6fafdaca4aaa054e4483e9df0c5d20e26d":"9748fe624d1a3d4253f3a38324320426fe64dc0b092839b048d0bd8e1cc03dd4",queue=createQueueClient(client,{workerToken:token,leaseSeconds:600});
-  phase=`${family}_real_claim`;const claimed=await queue.claim();assert.ok(claimed&&claimed.kind==="capital_project_analysis");const job=claimed as CapitalProjectAnalysisJob;assert.equal(job.payload.analysis_scope,family);assert.equal(job.organization_id,organization);await ensureInitialAgentPlan(job,queue);
+  phase=`${family}_real_claim`;const claimed=await queue.claim();assert.ok(claimed&&claimed.kind==="capital_project_analysis");const job=claimed as CapitalProjectAnalysisJob;assert.equal(job.id,expectedJobId);assert.equal(job.payload.analysis_scope,family);assert.equal(job.organization_id,organization);await ensureInitialAgentPlan(job,queue);
   assert.equal((await client.rpc("worker_claim_capital_capture_purge_v1",{p_worker_token:token,p_limit:100})).error,null);
   const ports=createNativeProviderPorts({client,job,cataloguePublication:async()=>publication});
   phase=`${family}_actual_native_producer`;const first=await consumeNativeProviderWork(job,ports);assert.equal(first.status,"succeeded");assert.equal(first.modelCalls,0);assert.equal(first.artifact.grantsApproval,false);

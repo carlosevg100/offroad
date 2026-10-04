@@ -1,3 +1,4 @@
+-- Prioritize only this fixture job ahead of the surviving local queue; every claim still uses the real queue and authority guards.
 -- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- Native result SQL contracts. Storage rows are rollback metadata fixtures,
 -- not actual physical-byte/erase evidence. The TS consumer separately uses the actual professional engines.
@@ -77,8 +78,8 @@ select set_config('request.jwt.claim.sub','',true);
 do $$declare f record;claim jsonb;cap text;prepared jsonb;r uuid;allocation uuid;object_id uuid;retained jsonb;closed jsonb;content jsonb;task text;seal jsonb;result jsonb;previous uuid;recovery jsonb;scope jsonb;fp text;
 begin
  select * into strict f from pg_temp.fit_fixture;
- perform pg_temp.fixture_approve_execution(f.job_id);update public.processing_jobs set available_at=now()-interval'1 day'where id=f.job_id;
- claim:=public.worker_claim_job_v3('264eed67b4388ac6521e0529c229c34a342d3702e41c226062a1da4a155336d2',600);cap:=claim->>'capability_token';if claim->>'job_id'<>f.job_id::text then raise exception 'native fit claim mismatch';end if;
+ perform pg_temp.fixture_approve_execution(f.job_id);update public.processing_jobs set available_at=(select least(now(),coalesce(min(available_at),now()))-interval '1 second' from public.processing_jobs where status='queued' or (status='leased' and lease_expires_at<now()))where id=f.job_id;
+ claim:=public.worker_claim_job_v3('264eed67b4388ac6521e0529c229c34a342d3702e41c226062a1da4a155336d2',600);cap:=claim->>'capability_token';if claim->>'claimed' is distinct from 'true' or claim->>'job_id' is distinct from f.job_id::text or cap is null then raise exception 'native fit claim mismatch';end if;
  update private.capital_public_retention_controls set enabled=true;perform public.worker_claim_capital_capture_purge_v1('264eed67b4388ac6521e0529c229c34a342d3702e41c226062a1da4a155336d2');
  recovery:=private.worker_recover_capital_native_provider_v1(f.job_id,cap);if recovery->'recipe'<>'null'::jsonb or recovery->'results'<>'[]'::jsonb then raise exception 'native invented recovery';end if;
  prepared:=private.worker_prepare_capital_native_recipe_v1(f.job_id,cap);r:=(prepared->>'recipeId')::uuid;allocation:=(prepared#>>'{body,allocationId}')::uuid;

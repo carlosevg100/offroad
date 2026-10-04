@@ -1,3 +1,4 @@
+-- Prioritize only this fixture job ahead of the surviving local queue; every claim still uses the real queue and authority guards.
 -- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
 -- LOCAL disposable HTTP fixture only. No Storage object, native recipe, seal,
 -- result binding, provider acceptance or quality outcome is inserted here.
@@ -74,7 +75,7 @@ insert into private.worker_tokens(label,token_sha256,execution_account_user_id)v
 
 
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000971","role":"authenticated"}',true);
-do $$declare job uuid;begin select job_id into strict job from pg_temp.fit_fixture;perform pg_temp.fixture_approve_execution(job);update public.processing_jobs set available_at=clock_timestamp()-interval'1 day'where id=job;end$$;
+do $$declare job uuid;begin select job_id into strict job from pg_temp.fit_fixture;perform pg_temp.fixture_approve_execution(job);update public.processing_jobs set available_at=(select least(now(),coalesce(min(available_at),now()))-interval '1 second' from public.processing_jobs where status='queued' or (status='leased' and lease_expires_at<now()))where id=job;end$$;
 update auth.users set instance_id='00000000-0000-0000-0000-000000000000',encrypted_password=extensions.crypt('native-provider-isolated-local-password',extensions.gen_salt('bf')),
  email_confirmed_at=clock_timestamp(),confirmation_token='',recovery_token='',email_change_token_new='',email_change=''where id='10000000-0000-4000-8000-000000000971';
 insert into auth.identities(id,user_id,provider_id,provider,identity_data,created_at,updated_at)
