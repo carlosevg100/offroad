@@ -1,0 +1,26 @@
+{
+  "runtimeHead": "afe390635f7cf94147b237dd3afaf5cb11a73fd2",
+  "scope": "diagnosis-only; no release gate",
+  "files": [
+    {
+      "path": "apps/document-worker/src/capital-native-provider-adapter.ts",
+      "baseSha256": "73b28ebd10d6e7560056e0cb9e4470e8e4e8010a0d8207501fb1ef3c6f30a4e5",
+      "sha256": "57dc377b27a547cb8c3a75947f7d3daed033ad165035f1117f3e483f8260bb40"
+    },
+    {
+      "path": "apps/document-worker/src/capital-native-provider-adapter.test.ts",
+      "baseSha256": "f414673ecbf0014e0304b5f2ad7c03638f78db01b4d880c63bf506fd6e41ece1",
+      "sha256": "c9ed935caaa588ab83ff91d4f157fdf453f2c8a2aee1b8ea62fc0c0c419abce7"
+    },
+    {
+      "path": "apps/document-worker/scripts/capital-native-provider-sdk-eval.ts",
+      "baseSha256": "103b283c6134b2c7eff16738d0f427d697b0f567cb4558acce26a21ac5d32a27",
+      "sha256": "9e70368a027919eea5931164e9e2ab0b2a86c81f6933541ae26b24c1b7a95d83"
+    },
+    {
+      "path": "apps/document-worker/scripts/capital-preview-native-sdk-eval.ts",
+      "baseSha256": "cc810812568f2b5681de2c2d4463a19ef01babb8faab453e32262985ad1dba8d",
+      "sha256": "6cd53edc03f757f67f3cb07f953dcf5afbe6373457eb50e632c05c6504b29a35"
+    }
+  ]
+}
