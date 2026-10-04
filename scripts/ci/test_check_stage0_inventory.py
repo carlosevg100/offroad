@@ -14,7 +14,7 @@ class CoverageTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.manifest = json.loads((BASE / 'object-decisions.json').read_text())
-        cls.catalogue = json.loads((BASE / 'catalogue-production.json').read_text())
+        cls.catalogue = json.loads((checker.ROOT / 'docs/build/schema-history/stage20-production-catalogue.json').read_text())
 
     def errors(self, catalogue=None, manifest=None):
         return checker.check(manifest or self.manifest, catalogue or self.catalogue)
