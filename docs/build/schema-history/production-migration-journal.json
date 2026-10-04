@@ -1,4 +1,6 @@
 {
+  "project_id": "ifnogpksgdadruooqydi",
+  "captured_at": "2026-10-04 20:40:08.041872+00",
   "rows": [
     {
       "version": "20260815014649",
@@ -1871,9 +1873,11 @@
     {
       "version": "20261004184529",
       "name": "assessment_house_corpus_alias"
+    },
+    {
+      "version": "20261004203627",
+      "name": "institutional_setup_capture_nowait_order"
     }
   ],
-  "captured_at": "2026-10-04 18:48:32.178054+00",
-  "project_id": "ifnogpksgdadruooqydi",
-  "source": "LIVE journal after alias17"
+  "source": "LIVE journal after18"
 }

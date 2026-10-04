@@ -493,6 +493,11 @@
       "sha256": "76a97240ed327e5a2c18f422fa855f140c58bf8a99533b92e03a4bbca249fcc4"
     },
     {
+      "signature": "private.worker_load_institutional_model_context_v3(uuid,text)",
+      "file": "private.worker_load_institutional_model_context_v3(uuid,text).sql",
+      "sha256": "45ca463646f107c11d55f868401b57ed48c518d451b79d7f027dd5673600e2b1"
+    },
+    {
       "signature": "private.worker_load_public_company_memory(uuid,text,text)",
       "file": "private.worker_load_public_company_memory(uuid,text,text).sql",
       "sha256": "e0371ad59379b36ccc7ce6a0cf0b758a6812e735c3f1ceb7281634a32982b000"
@@ -588,5 +593,11 @@
       "sha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
     }
   ],
-  "missing": []
+  "missing": [],
+  "appendCaptureEvidence": {
+    "capturedAt": "2026-10-04 20:37:00.329719+00",
+    "signature": "private.worker_load_institutional_model_context_v3(uuid,text)",
+    "source": "LIVE production after actual forward18; prior117 entries/bytes preserved",
+    "receipt": "outputs/etapa-20-2026-10-02-continuacao/PRODUCTION-18-INSTITUTIONAL-CAPTURE-NOWAIT-APPLIED.json"
+  }
 }

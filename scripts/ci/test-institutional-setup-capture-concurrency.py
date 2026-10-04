@@ -129,6 +129,18 @@ pin = run(f"select jsonb_build_object('id',id,'fingerprint',context_fingerprint)
 assert json.loads(run('begin;' + auth(c, load(c).replace('select public.', 'select (public.').replace("repeat('w',64));", "repeat('w',64)))->'setupInputSnapshot';")) + 'rollback;').splitlines()[-1]) == json.loads(pin)
 assert run(f"select count(*) from private.institutional_setup_input_snapshots where job_id='{c['job']}';") == '1'
 print('setup_capture_concurrent_retry: PASS (NOWAIT abort, original pin after retry, one snapshot)')
+# The NOWAIT route must validate authority before acquiring contested locks:
+# neither a forged capability nor another account can turn denial into a wait.
+compete(c, load(c), load(c).replace("repeat('w',64)", "repeat('x',64)"),
+        'institutional_capture_denied', immediate=True)
+foreign = dict(c, actor=c['actor'][:-3] + '882')
+compete(c, load(c), "select set_config('request.jwt.claims', " +
+        literal(json.dumps({'sub':foreign['actor'],'role':'authenticated'})) +
+        ",true);" + load(c), 'institutional_capture_denied', immediate=True)
+assert run(f"select count(*) from private.institutional_setup_input_snapshots where job_id='{c['job']}';") == '1'
+assert run(f"select count(*) from private.institutional_setup_input_bindings where submission_id='{c['result']}';") == '0'
+print('setup_capture_contended_authority: PASS (forged capability and foreign account denied without waiting or output)')
+
 
 c = case(2)
 compete(c, revoke(c), write(c), 'institutional_setup_capture_rights_revoked')

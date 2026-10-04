@@ -119,6 +119,13 @@
       "name": "assessment_house_corpus_alias",
       "path": "supabase/migrations/20261004184529_assessment_house_corpus_alias.sql",
       "sha256": "63bbcc2b7c4d3f2bcfb10c31822bd16d50da37488a9f78698c52bf376753c819"
+    },
+    {
+      "group": "institutional_setup_capture_nowait_order",
+      "version": "20261004203627",
+      "name": "institutional_setup_capture_nowait_order",
+      "path": "supabase/migrations/20261004203627_institutional_setup_capture_nowait_order.sql",
+      "sha256": "949ffabf2a1dc86ef3d0601b021a3e5511e64a45806e32c1d7ac717722f9005b"
     }
   ]
 }

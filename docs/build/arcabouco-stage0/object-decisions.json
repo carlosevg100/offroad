@@ -78768,9 +78768,9 @@
         }
       },
       "owner": "Engenharia de execução, etapa 20",
-      "decision": "preservar",
-      "stage": "20 / 3D",
-      "reason": "Captura prospectiva do setup institucional e vínculo atômico da avaliação/candidata, sem encerrar ancestrais ou importações.",
+      "decision": "refatorar",
+      "stage": "20",
+      "reason": "Preservar autoridade, metadados e demais famílias; captura institucional usa o lock NOWAIT próprio antes do wrapper de assessment.",
       "sources": [
         {
           "path": "supabase/migrations/20260928180833_institutional_setup_input_snapshots.sql",
@@ -78789,6 +78789,12 @@
           "line": 304,
           "anchor": "create function private.worker_load_institutional_model_context_v3(p_job_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261004203627_institutional_setup_capture_nowait_order.sql",
+          "line": 23,
+          "anchor": "select pg_get_functiondef('private.worker_load_institutional_model_context_v3(uuid,text)'::regprocedure),to_jsonb(p)-'prosrc' into definition,original_metadata",
+          "mechanism": "pg_get_functiondef_patch"
         }
       ]
     },
@@ -312714,6 +312720,13 @@
       "decision": "preservar",
       "stage": "20",
       "reason": "Correção prospectiva exata de alias institucional;16migrações anteriores imutáveis."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261004203627_institutional_setup_capture_nowait_order.sql",
+      "decision": "preservar",
+      "stage": "20",
+      "reason": "Correção prospectiva exata da ordem NOWAIT da captura institucional;17 migrações anteriores imutáveis."
     }
   ],
   "staging_archive": [
