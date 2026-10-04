@@ -59,16 +59,56 @@ try:
  prefix+="insert into agent_fixture values('start',public.start_work_v1('a8800000-0000-4000-8000-000000000010','pt-BR','Synthetic capital planning','Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','capital_planning','public_information',"+literal(json.dumps(plan))+"::jsonb,null,false));"
  prefix+="""
  insert into agent_fixture values('session',to_jsonb(pg_temp.legacy_intake_for_work((select(v->>'workId')::uuid from agent_fixture where k='start'))));
- select public.queue_advisor_initial_turn_v1((select(v->>'workId')::uuid from agent_fixture where k='start'));
+ insert into agent_fixture values('initial_turn',public.queue_advisor_initial_turn_v1((select(v->>'workId')::uuid from agent_fixture where k='start')));
  reset role;
  do $$begin if (select company_profile from public.document_intake_sessions where id=(select(v#>>'{}')::uuid from agent_fixture where k='session'))<>'{}'::jsonb then raise exception 'fixture_profile_not_empty';end if;end$$;
  insert into private.worker_tokens(label,token_sha256,execution_account_user_id) values('Synthetic native agent',extensions.digest(repeat('d',64),'sha256'),'a8800000-0000-4000-8000-000000000001');
- update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '1 second' from public.processing_jobs where status='queued') where organization_id='a8800000-0000-4000-8000-000000000002' and kind='agent_operation_brief' and status='queued';
+ update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '1 second' from public.processing_jobs where (status='queued' and available_at<=now()) or(status='leased' and lease_expires_at<now())) where organization_id='a8800000-0000-4000-8000-000000000002' and kind='agent_operation_brief' and status='queued';
  set local role authenticated;
  insert into agent_fixture values('claim',public.worker_claim_job_v3(repeat('d',64),600));
+ reset role;
+ do $$begin if not exists(select 1 from agent_fixture claimed,agent_fixture expected,agent_fixture session,public.processing_jobs job
+ where claimed.k='claim'and expected.k='initial_turn'and session.k='session'
+ and job.id=(claimed.v->>'job_id')::uuid and job.id=(expected.v->>'job_id')::uuid
+ and job.organization_id='a8800000-0000-4000-8000-000000000002'and job.kind='agent_operation_brief'
+ and job.intake_session_id=(session.v#>>'{}')::uuid
+ and claimed.v->>'organization_id'=job.organization_id::text and claimed.v->>'kind'=job.kind
+ and claimed.v#>>'{payload,message_id}'=expected.v->>'message_id'
+ and claimed.v#>>'{payload,message_id}'=job.payload->>'message_id')then raise exception 'fixture_initial_claim_identity_mismatch';end if;end$$;
+ set local role authenticated;
  insert into agent_fixture select 'capture',public.worker_capture_execution_brief_inputs_v1((v->>'job_id')::uuid,v->>'capability_token',(v#>>'{payload,message_id}')::uuid) from agent_fixture where k='claim';
  select v->'context' from agent_fixture where k='capture';
  """
+ if preview_fixture:
+  claim_regression="""savepoint initial_claim_competition;
+ set local role authenticated;
+ """+"insert into agent_fixture values('claim_competitor_start',public.start_work_v1('a8800000-0000-4000-8000-000000000013','pt-BR','Synthetic capital planning','Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','capital_planning','public_information',"+literal(json.dumps(plan))+"::jsonb,null,false));"+"""
+ insert into agent_fixture values('claim_competitor_session',to_jsonb(pg_temp.legacy_intake_for_work((select(v->>'workId')::uuid from agent_fixture where k='claim_competitor_start'))));
+ insert into agent_fixture values('claim_competitor_turn',public.queue_advisor_initial_turn_v1((select(v->>'workId')::uuid from agent_fixture where k='claim_competitor_start')));
+ reset role;
+ update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '2 seconds'from public.processing_jobs where(status='queued'and available_at<=now())or(status='leased'and lease_expires_at<now()))where id=(select(v->>'job_id')::uuid from agent_fixture where k='claim_competitor_turn')and organization_id='a8800000-0000-4000-8000-000000000002';
+ set local role authenticated;
+ insert into agent_fixture values('claim_competitor_lease',public.worker_claim_job_v3(repeat('d',64),600));
+ do $$begin if (select v->>'job_id'from agent_fixture where k='claim_competitor_lease')is distinct from(select v->>'job_id'from agent_fixture where k='claim_competitor_turn')then raise exception 'fixture_competitor_claim_mismatch';end if;end$$;
+ reset role;
+ update public.processing_jobs set lease_expires_at=now()-interval '1 second'where id=(select(v->>'job_id')::uuid from agent_fixture where k='claim_competitor_turn')and organization_id='a8800000-0000-4000-8000-000000000002'and status='leased';
+ do $$begin if not exists(select 1 from public.processing_jobs older,public.processing_jobs target where older.id=(select(v->>'job_id')::uuid from agent_fixture where k='claim_competitor_turn')and target.id=(select(v->>'job_id')::uuid from agent_fixture where k='initial_turn')and older.status='leased'and older.lease_expires_at<now()and target.status='queued'and older.available_at<target.available_at)then raise exception 'fixture_expired_lease_competition_missing';end if;end$$;
+ update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '1 second'from public.processing_jobs where(status='queued'and available_at<=now())or(status='leased'and lease_expires_at<now()))where id=(select(v->>'job_id')::uuid from agent_fixture where k='initial_turn')and organization_id='a8800000-0000-4000-8000-000000000002'and status='queued';
+ set local role authenticated;
+ insert into agent_fixture values('claim',public.worker_claim_job_v3(repeat('d',64),600));
+ reset role;
+ """+""" do $$begin if not exists(select 1 from agent_fixture claimed,agent_fixture expected,agent_fixture session,public.processing_jobs job
+ where claimed.k='claim'and expected.k='initial_turn'and session.k='session'
+ and job.id=(claimed.v->>'job_id')::uuid and job.id=(expected.v->>'job_id')::uuid
+ and job.organization_id='a8800000-0000-4000-8000-000000000002'and job.kind='agent_operation_brief'
+ and job.intake_session_id=(session.v#>>'{}')::uuid
+ and claimed.v->>'organization_id'=job.organization_id::text and claimed.v->>'kind'=job.kind
+ and claimed.v#>>'{payload,message_id}'=expected.v->>'message_id'
+ and claimed.v#>>'{payload,message_id}'=job.payload->>'message_id')then raise exception 'fixture_initial_claim_identity_mismatch';end if;end$$;
+ set local role authenticated;
+"""+"""rollback to savepoint initial_claim_competition;release savepoint initial_claim_competition;reset role;
+ """
+  prefix=prefix.replace(" update public.processing_jobs set available_at=",claim_regression+" update public.processing_jobs set available_at=",1)
  if os.environ.get('BRIEF_DRAFT_IN_TRANSACTION')=='1': prefix=prefix.replace('begin;','begin;'+(ROOT/'supabase/pending/execution_brief_native_capture.sql').read_text(),1)
  if preview_fixture:
   prefix=prefix.replace(" create temp table agent_fixture", " insert into private.integration_preview_grants(organization_id,enabled,granted_by,note,mode)values('a8800000-0000-4000-8000-000000000002',true,'Local CI operator','Synthetic closed native preview eval','live');\n create temp table agent_fixture",1)
