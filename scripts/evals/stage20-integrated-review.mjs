@@ -43,6 +43,11 @@ export function validateFixture(f) {
   return f;
 }
 
+export function humanReviewManifest(template) {
+  assert(typeof template==='string' && template.length>=1 && template.length<=200, 'closed template identity required');
+  return {schemaVersion: 'artifact-manifest.2026.09.26-v1', kind: 'answer', audience: 'internal', format: 'json', bytes: null, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [], claims: [], traces: [], template: {templateVersionId:template,fingerprint:'1'.repeat(64)}, provenance: {producer: 'synthetic-stage20-human-review', jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null};
+}
+
 export async function run(env = process.env) {
   const api = env.REVIEW_EVAL_API_URL, db = env.REVIEW_EVAL_DATABASE_URL;
   const operatorMode = env.REVIEW_EVAL_OPERATOR_MODE === 'mcp_readonly';
@@ -108,7 +113,7 @@ export async function run(env = process.env) {
   reviewOperation='owner_implicit_self_approval';await deny(() => decide(owner, a, false), 'capital_project_self_approval_forbidden');checked('preparer_cannot_implicitly_self_approve');
   reviewOperation='reviewer_native_confirm';await decide(reviewer, b, false);assert(material ? (await basis(reviewer)).activeApprovalReviewIds.length===1 : (await basis(reviewer)).approvalActive);checked('second_human_approves_exact_native_revision');
   reviewOperation='authored_revision_sequence';const subject = `synthetic-integrated-review-${f.namespace}`;
-  const manifest = template => ({schemaVersion: 'artifact-manifest.2026.09.26-v1', kind: 'answer', audience: 'internal', format: 'json', bytes: null, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [], claims: [], traces: [], template: null, provenance: {producer: 'synthetic-stage20-human-review', jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null});
+  const manifest = humanReviewManifest;
   const write = (token, text, template, sub = subject) => rpc(token, 'create_artifact_revision_v1', {p_work: f.workId, p_kind: 'answer', p_subject: sub, p_audience: 'internal', p_manifest: manifest(template), p_blocks: (template==='synthetic-review-layout'?[{blockKey:'closing',kind:'paragraph',content:{text:'Synthetic presentation only.'},claims:[]},{blockKey:'explanation',kind:'paragraph',content:{text},claims:[]}]:[{blockKey:'explanation',kind:'paragraph',content:{text},claims:[]},{blockKey:'closing',kind:'paragraph',content:{text:'Synthetic presentation only.'},claims:[]}]), p_links: [], p_content_sha256: null, p_byte_length: null});
   const review = (token, r, act, basisReview = null) => rpc(token, 'review_artifact_revision_v1', {p_revision_id: r.revision_id, p_expected_fingerprint: r.manifest_fingerprint, p_act: act, p_block_id: null, p_note: 'Synthetic integrated review proof', p_self_approval_declared: false, p_command_id: randomUUID(), p_basis_review_id: basisReview});
   const release = async r => (await rpc(reviewer, 'read_artifact_revision_v1', {p_revision_id: r.revision_id})).release;

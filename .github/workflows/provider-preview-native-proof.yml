@@ -221,6 +221,8 @@ jobs:
         cp ../audit/supabase/tests/support/capital_preview_native_artifact_publication_actual.sql supabase/tests/support/capital_preview_native_artifact_publication_actual.sql
     - name: Overlay fixed physical boundary diagnostic only
       run: cp ../audit/apps/document-worker/src/integration-preview-body-storage.ts apps/document-worker/src/integration-preview-body-storage.ts
+    - name: Verify synthetic authored manifest identities without changing replay guards
+      run: node --test ../audit/scripts/evals/stage20-integrated-review.test.mjs
     - name: Complete preview-specific human review projection
       env:
         DATABASE_URL: ${{ steps.db.outputs.url }}
