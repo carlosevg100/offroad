@@ -233,10 +233,18 @@ jobs:
         if: ${{ !inputs.native_diagnostic }}
         run: |
           set -euo pipefail
+          failed_files=()
           for test_file in supabase/tests/*.sql; do
             echo "Running ${test_file}"
-            psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f "${test_file}"
+            if ! psql "${{ steps.db.outputs.url }}" -v ON_ERROR_STOP=1 -q -f "${test_file}"; then
+              failed_files+=("${test_file}")
+              echo "::error file=${test_file}::Database contract test failed"
+            fi
           done
+          if ((${#failed_files[@]})); then
+            printf 'Failed database contracts: %s\n' "${failed_files[*]}"
+            exit 1
+          fi
 
       - name: Verify review change classification against shared domain fixtures
         if: ${{ !inputs.native_diagnostic }}
