@@ -25,7 +25,7 @@
     {
       "path": "supabase/tests/support/work_review_dashboard.sql",
       "baseSha256": "44be76e9dd1bb2f8c6201c4efd0b179f4afd67a1025f970d704dabd32f8e4e59",
-      "sha256": "70c7f05a04c3e4dee9865f722128de10d9b1fe6b4d5187a3cf62391cc88ae4ab"
+      "sha256": "cb84f0bdd7b18c399d659a0b651ca9f0af3dc3b7039efc8f585ea3a35b783eb4"
     }
   ]
 }
