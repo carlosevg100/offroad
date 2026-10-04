@@ -192,7 +192,8 @@ begin
   end if;
 
   -- Public start/plan/tenant/budget/context above remain genuine. A prospective
-  -- debt task cannot publish or succeed through the generic JSON writer. The
+  -- metadata-only debt claim fails current shared capture authority: the
+  -- authority boundary denies before the family projection writer or finish. The
   -- native24-task positive and C11-only human return are covered by the real SDK,
   -- rather than synthetic accepted/source/projection rows in this old fixture.
   v_task_id := 'M01';
@@ -210,7 +211,7 @@ begin
     );
     raise exception 'debt_legacy_writer_native_shortcut';
   exception when insufficient_privilege then
-    if sqlerrm<>'capital_debt_native_task_projection_required' then raise;end if;
+    if sqlerrm<>'capital_capture_denied' then raise;end if;
   end;
   begin
     perform public.worker_finish_capital_project_task(
@@ -221,7 +222,7 @@ begin
     );
     raise exception 'debt_legacy_finish_native_shortcut';
   exception when insufficient_privilege then
-    if sqlerrm<>'capital_debt_native_task_projection_required' then raise;end if;
+    if sqlerrm<>'capital_capture_denied' then raise;end if;
   end;
   if exists(select 1 from public.capital_project_artifacts where task_run_id=v_task_run_id)
     or (select status from public.capital_project_task_runs where id=v_task_run_id)<>'running' then

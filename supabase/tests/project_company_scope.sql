@@ -648,10 +648,10 @@ begin
   end;
   if not rejected then raise exception 'capital TaskRun ignored incomplete dependencies'; end if;
 
-  -- M01 keeps the generic task lifecycle: success requires a real output and
-  -- a nonempty passing grader. This metadata-only claim supplies no grader,
-  -- so the installed lifecycle denies it without succeeding or creating output.
-  -- Native M07/S11/C11 physical producers have separate real SDK gates.
+  -- This metadata-only M01 claim fails current shared capture authority.
+  -- shared capture authority denies finish before output/grader evaluation;
+  -- it must not create an artifact, succeed, or unlock a dependent task.
+  -- Grading and native M07/S11/C11 physical production keep their SDK gates.
   rejected := false;
   begin
     perform public.worker_finish_capital_project_task(
@@ -659,8 +659,8 @@ begin
       '{"type":"company_resolution","id":"company-resolution-1"}'::jsonb,
       repeat('1', 64), '[]'::jsonb, '{}'::jsonb, null
     );
-  exception when invalid_parameter_value then
-    if sqlerrm<>'capital_task_success_not_proven' then raise;end if;
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_capture_denied' then raise;end if;
     rejected := true;
   end;
   if not rejected then raise exception 'company_scope_ungraded_task_success_shortcut';end if;
