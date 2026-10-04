@@ -8,6 +8,8 @@ import {createMcpReadOnlyBridge, validateMaterialBody, validateMaterialScope} fr
 const staging = 'gjkkjtbfnssdsbmlhmwk';
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 let phase = 'target_validation';
+let reviewOperation='initial';
+const reviewReasons=new Set(['capital_project_self_approval_forbidden','capital_artifact_review_projection_missing','review_source_access_required','capital_artifact_review_target_inactive','review_substance_required','review_assignment_required','capital_artifact_review_stale']);
 export function validateTarget(api, database, allowStaging, operatorMode = false) {
   const a = new URL(api);
   if (operatorMode) {
@@ -103,9 +105,9 @@ export async function run(env = process.env) {
   if(material)assert.deepEqual(await rpc(reviewer,'read_material_production_result_v1',{p_revision_id:f.revisionId}),nativeScope);
   assert.deepEqual(await basis(reviewer), b, 'review closure changed during physical read');checked('native_physical_read_exact_revision');
   const decide = (token, target, declared) => material ? rpc(token,'decide_material_package_v1',{p_work_id:f.workId,p_revision_id:f.revisionId,p_manifest_fingerprint:target.manifestFingerprint,p_act:'approve',p_note:'Synthetic integrated native material review',p_self_approval_declared:declared,p_command_id:randomUUID(),p_basis_review_id:null}) : rpc(token, 'decide_capital_project_artifact_v2', {p_project_id: f.workId, p_artifact_id: f.artifactId, p_revision_id: f.revisionId, p_manifest_fingerprint: target.manifestFingerprint, p_artifact_fingerprint: target.artifactFingerprint, p_decision: 'confirm', p_note: null, p_self_approval_declared: declared, p_command_id: randomUUID()});
-  await deny(() => decide(owner, a, false), 'capital_project_self_approval_forbidden');checked('preparer_cannot_implicitly_self_approve');
-  await decide(reviewer, b, false);assert(material ? (await basis(reviewer)).activeApprovalReviewIds.length===1 : (await basis(reviewer)).approvalActive);checked('second_human_approves_exact_native_revision');
-  const subject = `synthetic-integrated-review-${f.namespace}`;
+  reviewOperation='owner_implicit_self_approval';await deny(() => decide(owner, a, false), 'capital_project_self_approval_forbidden');checked('preparer_cannot_implicitly_self_approve');
+  reviewOperation='reviewer_native_confirm';await decide(reviewer, b, false);assert(material ? (await basis(reviewer)).activeApprovalReviewIds.length===1 : (await basis(reviewer)).approvalActive);checked('second_human_approves_exact_native_revision');
+  reviewOperation='authored_revision_sequence';const subject = `synthetic-integrated-review-${f.namespace}`;
   const manifest = template => ({schemaVersion: 'artifact-manifest.2026.09.26-v1', kind: 'answer', audience: 'internal', format: 'json', bytes: null, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [], claims: [], traces: [], template: null, provenance: {producer: 'synthetic-stage20-human-review', jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null});
   const write = (token, text, template, sub = subject) => rpc(token, 'create_artifact_revision_v1', {p_work: f.workId, p_kind: 'answer', p_subject: sub, p_audience: 'internal', p_manifest: manifest(template), p_blocks: (template==='synthetic-review-layout'?[{blockKey:'closing',kind:'paragraph',content:{text:'Synthetic presentation only.'},claims:[]},{blockKey:'explanation',kind:'paragraph',content:{text},claims:[]}]:[{blockKey:'explanation',kind:'paragraph',content:{text},claims:[]},{blockKey:'closing',kind:'paragraph',content:{text:'Synthetic presentation only.'},claims:[]}]), p_links: [], p_content_sha256: null, p_byte_length: null});
   const review = (token, r, act, basisReview = null) => rpc(token, 'review_artifact_revision_v1', {p_revision_id: r.revision_id, p_expected_fingerprint: r.manifest_fingerprint, p_act: act, p_block_id: null, p_note: 'Synthetic integrated review proof', p_self_approval_declared: false, p_command_id: randomUUID(), p_basis_review_id: basisReview});
@@ -141,5 +143,5 @@ export async function run(env = process.env) {
   return evidence;
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  run().catch(e => {console.error(`stage20_integrated_review: FAIL phase=${phase} code=${/^[A-Z0-9]{5}$/.test(e.code??'')?e.code:'unavailable'} (raw error withheld)`);process.exitCode = 1;});
+  run().catch(e => {console.error(`stage20_integrated_review: FAIL phase=${phase} code=${/^[A-Z0-9]{5}$/.test(e.code??'')?e.code:'unavailable'} operation=${reviewOperation} reason=${reviewReasons.has(e.reason)?e.reason:'unavailable'} (raw error withheld)`);process.exitCode = 1;});
 }
