@@ -17,3 +17,51 @@ test('material scope binds current retained object, recipe and TTL without any g
  for(const key of['workId','organizationId','recipeId','retainedPayloadId'])assert.throws(()=>validateMaterialScope({...v,scope:{...scope,[key]:randomUUID()}},f));
  assert.throws(()=>validateMaterialScope({...v,scope:{...scope,expiresAt:'2000-01-01T00:00:00Z'}},f));assert.throws(()=>validateMaterialScope({...v,accepted:true},f));assert.throws(()=>validateMaterialScope({...v,scope:{...scope,kind:'context'}},f));
 });
+
+test('private JSON reads validate the opened descriptor and reject symlinks, hardlinks and broad modes',async()=>{
+ const fs=(await import('node:fs')).default;
+ const {readPrivateJsonFile}=await import('./stage20-material-review-adapter.mjs');
+ const dir=fs.mkdtempSync('/tmp/offroad-review-fd-');fs.chmodSync(dir,0o700);
+ try{
+  const path=join(dir,'fixture.json');fs.writeFileSync(path,JSON.stringify({synthetic:true}),{mode:0o600});
+  assert.deepEqual(readPrivateJsonFile(path),{synthetic:true});
+  const link=join(dir,'link.json');fs.symlinkSync(path,link);assert.throws(()=>readPrivateJsonFile(link),error=>error.code==='ELOOP');
+  const hard=join(dir,'hard.json');fs.linkSync(path,hard);assert.throws(()=>readPrivateJsonFile(path),/private regular file required/);fs.unlinkSync(hard);
+  fs.chmodSync(path,0o644);assert.throws(()=>readPrivateJsonFile(path),/file must be private/);fs.chmodSync(path,0o600);
+  assert.throws(()=>readPrivateJsonFile(dir),/private regular file required/);
+  fs.writeFileSync(path,'');assert.throws(()=>readPrivateJsonFile(path),/bounded private file required/);
+  fs.writeFileSync(path,' '.repeat(1048577));assert.throws(()=>readPrivateJsonFile(path),/bounded private file required/);
+ }finally{fs.rmSync(dir,{recursive:true});}
+});
+
+test('pathname replacement after validation never redirects a descriptor read to substituted file data',async t=>{
+ const fs=(await import('node:fs')).default;
+ const {readPrivateJsonFile}=await import('./stage20-material-review-adapter.mjs');
+ const dir=fs.mkdtempSync('/tmp/offroad-review-fd-race-');fs.chmodSync(dir,0o700);
+ const path=join(dir,'fixture.json'),original=fs.readFileSync;
+ fs.writeFileSync(path,JSON.stringify({value:'original-authorized-inode'}),{mode:0o600});
+ let actuallyRead;
+ t.mock.method(fs,'readFileSync',(descriptor,encoding)=>{
+  assert.equal(typeof descriptor,'number','reader must not reopen the checked pathname');
+  fs.renameSync(path,path+'.original');fs.writeFileSync(path,JSON.stringify({value:'substituted-private-data'}),{mode:0o600});
+  actuallyRead=original(descriptor,encoding);return actuallyRead;
+ });
+ try{
+  let answer;
+  try{answer=readPrivateJsonFile(path);}catch(error){assert.match(error.message,/private file changed while reading/);}
+  assert.equal(JSON.parse(actuallyRead).value,'original-authorized-inode');
+  if(answer)assert.equal(answer.value,'original-authorized-inode');
+ }finally{t.mock.restoreAll();fs.rmSync(dir,{recursive:true});}
+});
+
+test('MCP response symlink is denied rather than read after a private pathname stat',async()=>{
+ const fs=(await import('node:fs')).default;
+ const dir=fs.mkdtempSync('/tmp/offroad-review-bridge-race-');fs.chmodSync(dir,0o700);
+ try{
+  const reader=createMcpReadOnlyBridge(dir),pending=reader("select jsonb_build_object('jobs',0,'vault',0,'introductions',0);");
+  const request=JSON.parse(fs.readFileSync(join(dir,'request-1.json'))),target=join(dir,'substituted.json');
+  fs.writeFileSync(target,JSON.stringify({schemaVersion:'stage20-operator-read-response.v1',id:request.id,result:{jobs:0,vault:0,introductions:0}}),{mode:0o600});
+  fs.symlinkSync(target,join(dir,'response-1.json'));
+  await assert.rejects(pending,error=>error.code==='ELOOP');
+ }finally{fs.rmSync(dir,{recursive:true});}
+});

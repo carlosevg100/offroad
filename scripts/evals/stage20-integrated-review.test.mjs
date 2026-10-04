@@ -63,3 +63,20 @@ test('review state comes from the authorized computed dashboard and remains pinn
  assert.throws(()=>authorizedPendingReview({...dashboard,workId:randomUUID()},target,work));
  for(const change of [{withheld:true},{revisionId:randomUUID()},{artifactId:randomUUID()},{manifestFingerprint:'2'.repeat(64)},{pending:null}])assert.throws(()=>authorizedPendingReview({...dashboard,revisions:[{...row,...change}]},target,work));
 });
+
+test('network origins are selected from trusted literal enums, with no file-supplied destination',async()=>{
+ const{reviewNetworkOrigin,selectReviewNetworkOrigin}=await import('./stage20-integrated-review.mjs');
+ for(const[selection,url,target]of[
+  ['staging','https://gjkkjtbfnssdsbmlhmwk.supabase.co','staging'],
+  ['loopback_ipv4','http://127.0.0.1:54321','loopback'],
+  ['loopback_localhost','http://localhost:54321','loopback'],
+  ['loopback_ipv6','http://[::1]:54321','loopback'],
+ ]){assert.equal(reviewNetworkOrigin(selection),url);assert.equal(selectReviewNetworkOrigin(url,target),url);assert.equal(selectReviewNetworkOrigin(url+'/',target),url);}
+ for(const selection of['https://attacker.example','production','loopback',null,{url:'https://attacker.example'}])assert.throws(()=>reviewNetworkOrigin(selection));
+ for(const url of['https://attacker.example','https://production.supabase.co','http://127.0.0.1:54322','http://127.0.0.1:54321/other','http://127.0.0.1:54321?redirect=attacker','http://user:secret@127.0.0.1:54321'])assert.throws(()=>selectReviewNetworkOrigin(url,'loopback'));
+ // Compatibility is deliberately narrower than general target pairing: this eval owns port54321 only.
+ assert.equal(validateTarget('http://127.0.0.1:54322','postgresql://postgres:local@127.0.0.1:54323/postgres'),'loopback');
+ assert.throws(()=>selectReviewNetworkOrigin('http://127.0.0.1:54322','loopback'),/review_network_origin_denied/);
+ assert.throws(()=>selectReviewNetworkOrigin('https://attacker.example','staging'));
+ assert.throws(()=>selectReviewNetworkOrigin('http://127.0.0.1:54321','staging'));
+});

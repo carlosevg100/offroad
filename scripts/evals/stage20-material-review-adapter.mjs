@@ -1,9 +1,26 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {readFileSync,statSync,writeFileSync,existsSync} from 'node:fs';
+import fs from 'node:fs';
+const {statSync,writeFileSync}=fs;
 import {resolve} from 'node:path';
 import {setTimeout as wait} from 'node:timers/promises';
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+/** Validate and read the same open inode. A pathname check cannot authorize a
+ * later path-based read: the path may have been replaced by then. */
+export function readPrivateJsonFile(path){
+ const fd=fs.openSync(path,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW|fs.constants.O_NONBLOCK);
+ try{
+  const before=fs.fstatSync(fd,{bigint:true});
+  assert(before.isFile()&&before.nlink===1n,'private regular file required');
+  assert.equal(before.mode&0o077n,0n,'file must be private');
+  if(process.getuid)assert.equal(before.uid,BigInt(process.getuid()),'file must belong to this process owner');
+  assert(before.size>0n&&before.size<=1048576n,'bounded private file required');
+  const text=fs.readFileSync(fd,'utf8'),after=fs.fstatSync(fd,{bigint:true});
+  for(const key of['dev','ino','mode','uid','nlink','size','mtimeNs','ctimeNs'])assert.equal(after[key],before[key],'private file changed while reading');
+  assert.equal(BigInt(Buffer.byteLength(text)),before.size,'private file byte length changed');
+  return JSON.parse(text);
+ }finally{fs.closeSync(fd);}
+}
 /** An operator executes these three bounded SELECTs through MCP. No supplied SQL,
  * credential, actor, receipt or capability can be returned by this bridge. */
 export function createMcpReadOnlyBridge(directory){
@@ -15,8 +32,11 @@ export function createMcpReadOnlyBridge(directory){
   const id=randomUUID(),n=++sequence;
   writeFileSync(resolve(dir,`request-${n}.json`),JSON.stringify({schemaVersion:'stage20-operator-read-request.v1',id,kind,query})+'\n',{mode:0o600,flag:'wx'});
   const response=resolve(dir,`response-${n}.json`),deadline=Date.now()+60000;
-  while(!existsSync(response)){assert(Date.now()<deadline,'actual MCP response deadline exceeded');await wait(250);}
-  assert.equal(statSync(response).mode&0o077,0);const r=JSON.parse(readFileSync(response,'utf8'));
+  let r;
+  for(;;){
+   try{r=readPrivateJsonFile(response);break;}
+   catch(error){if(error.code!=='ENOENT')throw error;assert(Date.now()<deadline,'actual MCP response deadline exceeded');await wait(250);}
+  }
   assert.deepEqual(Object.keys(r).sort(),['id','result','schemaVersion']);assert.equal(r.schemaVersion,'stage20-operator-read-response.v1');assert.equal(r.id,id);
   const keys=kind==='identity'?['organizationId','workId','label']:['jobs','vault','introductions'];assert.deepEqual(Object.keys(r.result).sort(),keys.sort());
   if(kind==='effects')for(const value of Object.values(r.result))assert(Number.isSafeInteger(value)&&value>=0);

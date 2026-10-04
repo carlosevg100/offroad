@@ -557,23 +557,32 @@ describe("native M07 consumer boundaries with synthetic unit dependencies",()=>{
     expect(await processOriginationThesisJob(job,{queue,gateway,lineage:()=>[],researchProviders:[],m07Runtime:runtime})).toEqual({status:"failed"});
     expect(load).not.toHaveBeenCalled();expect(complete).not.toHaveBeenCalled();expect(fail.mock.calls[0]![1]).toMatchObject({code:"capital_m07_runtime_required"});
   });
-  it.each([false,true])("captures before tasks and records source denial while independent plan work yields: %s",async(delayPlan)=>{
+  it.each([false,true])("keeps native task writes outside overlapping transactions and source capture: %s",async(delayPlan)=>{
     const context={project:{id:ids.project,organization_id:ids.organization,project_name:"Synthetic",entry_job:"origination_thesis",access_basis:"public_information",current_phase:"understand"},
       session:{id:ids.session,locale:"pt-BR",company_profile:{name:"Synthetic company"},privacy_status:"public_information",representation_status:"not_claimed"},
       brief:{id:ids.brief,kind:"origination_thesis",version:1,content:{meetingContext:"Discuss capital alternatives"},content_fingerprint:"b".repeat(64)},
       plan:{id:ids.plan,version:1,fingerprint:"a".repeat(64),compiler_version:"synthetic.v1",registry_version:"synthetic.v1"},
       tasks:taskDefinitions.map((task,ordinal)=>({...task,batch:ordinal,ordinal,execution_class:"deterministic",effect:"propose_state",domain:"capital_structure",subject:"company",agent_role:"analyst",action:"analyze",output_type:"artifact",output_cardinality:"one",primary_executor:"deterministic",required_inputs:[],review_required:false}))};
-    const order:string[]=[],complete=vi.fn(),fail=vi.fn(async(_job:unknown,_cause:unknown,_options:unknown)=>{}),recordResearch=vi.fn();let id=0;
-    const adapter={recoverExisting:async()=>null,begin:async()=>{order.push("context");return{context,asOfDate:"2026-10-02",recipeId:ids.research};},captureSources:async()=>{order.push("source");throw Object.assign(new Error("capital_m07_published_source_required"),{code:"capital_m07_published_source_required"});}};
+    const order:string[]=[],complete=vi.fn(),fail=vi.fn(async(_job:unknown,_cause:unknown,_options:unknown)=>{}),recordResearch=vi.fn();let id=0;let activeWrites=0,maxWrites=0,capturing=false;const taskIds:string[]=[];
+    const adapter={recoverExisting:async()=>null,begin:async()=>{order.push("context");return{context,asOfDate:"2026-10-02",recipeId:ids.research};},captureSources:async()=>{order.push("source");capturing=true;await new Promise(resolve=>setTimeout(resolve,10));capturing=false;throw Object.assign(new Error("capital_m07_published_source_required"),{code:"capital_m07_published_source_required"});}};
     const queue={createCapitalM07Adapter:()=>adapter,writeStage:async()=>{},startCapitalTask:async(_job:unknown,input:{taskId:string})=>{
       if(delayPlan&&input.taskId==="M05")await new Promise(resolve=>setTimeout(resolve,25));
+      expect(capturing).toBe(false);taskIds.push(input.taskId);
       order.push("task");return`task-${++id}`;},
-      recordCapitalProjectArtifact:async()=>({id:`artifact-${id}`,artifactFingerprint:"c".repeat(64),artifactVersion:1,replayed:false}),finishCapitalTask:async()=>{},fail,
+      recordCapitalProjectArtifact:async()=>{
+        activeWrites++;maxWrites=Math.max(maxWrites,activeWrites);
+        try {
+          if(activeWrites>1||capturing)throw new Error("capital_capture_retry");
+          await new Promise(resolve=>setTimeout(resolve,10));
+          return{id:`artifact-${id}`,artifactFingerprint:"c".repeat(64),artifactVersion:1,replayed:false};
+        } finally {activeWrites--;}
+      },finishCapitalTask:async()=>{expect(activeWrites).toBe(0);expect(capturing).toBe(false);},fail,
       recordPublicResearch:recordResearch,loadPublicResearchCache:vi.fn(),loadPublicCompanyMemory:vi.fn()} as unknown as QueueClient;
     const gateway={complete,spent:()=>({costUsd:0,calls:0,unknownCostCalls:0,budgetExposureUsd:0})} as unknown as ModelGateway;
     const result=await processOriginationThesisJob(job,{queue,gateway,lineage:()=>[],researchProviders:[],m07Runtime:runtime});
     expect(result.status).toBe("failed");expect(order[0]).toBe("context");expect(order).toContain("source");expect(complete).not.toHaveBeenCalled();expect(recordResearch).not.toHaveBeenCalled();
     expect(fail.mock.calls[0]![1]).toMatchObject({code:"capital_m07_published_source_required"});expect(fail.mock.calls[0]![2]).toMatchObject({retryable:false});
+    expect(maxWrites).toBe(1);expect(taskIds).toEqual(["M01","M02","M03","M04"]);
   });
 });
 

@@ -248,6 +248,16 @@ export async function processOriginationThesisJob(
     const website = optionalString(context.session.company_profile.website);
     if (!companyName) throw codedError("public_company_identity_missing");
 
+    // Native writes share job/work authority locks. Keep pure task builds
+    // parallel while each atomic persistence finishes before the next write.
+    let nativeWriteTail: Promise<void> = Promise.resolve();
+    const persistNativeWrite = <T>(write: () => Promise<T>): Promise<T> => {
+      if (!native) return write();
+      const pending = nativeWriteTail.then(write);
+      nativeWriteTail = pending.then(() => undefined, () => undefined);
+      return pending;
+    };
+
     const persistTask = async (input: {
       taskId: string;
       artifactType: string;
@@ -277,7 +287,7 @@ export async function processOriginationThesisJob(
           correctionNoteFingerprint: fingerprintJson(context.revision.correction_note),
         } : {}),
       });
-      const taskRunId = await dependencies.queue.startCapitalTask(job, {
+      const taskRunId = await persistNativeWrite(() => dependencies.queue.startCapitalTask(job, {
         taskId: input.taskId,
         executorKey: EXECUTOR_KEY,
         executorVersion: EXECUTOR_VERSION,
@@ -294,13 +304,14 @@ export async function processOriginationThesisJob(
             revisionOfArtifactId: context.revision.of_artifact_id,
           } : {}),
         },
-      });
+      }));
       let evaluatedQuality: QualityResult[] = [];
       try {
         const built = await input.build();
         evaluatedQuality = built.quality ?? [{id: "structured_output", passed: true, detail: "Artifact contract produced deterministically."}];
         if (evaluatedQuality.some((result) => !result.passed)) throw codedError(`quality_gate_${input.taskId.toLowerCase()}_failed`);
-        const artifact = await dependencies.queue.recordCapitalProjectArtifact(job, {
+        const artifact = await persistNativeWrite(async () => {
+        const written = await dependencies.queue.recordCapitalProjectArtifact(job, {
           taskRunId,
           artifactType: input.artifactType,
           schemaVersion: ARTIFACT_SCHEMA_VERSION,
@@ -316,23 +327,25 @@ export async function processOriginationThesisJob(
         await dependencies.queue.finishCapitalTask(job, {
           taskRunId,
           status: "succeeded",
-          outputReference: {type: "capital_project_artifact", id: artifact.id},
-          outputFingerprint: artifact.artifactFingerprint,
+          outputReference: {type: "capital_project_artifact", id: written.id},
+          outputFingerprint: written.artifactFingerprint,
           qualityResults: evaluatedQuality,
           usage: built.usage ?? {},
+        });
+        return written;
         });
         const ref = {taskId: input.taskId, id: artifact.id, artifactFingerprint: artifact.artifactFingerprint,artifactVersion:artifact.artifactVersion};
         artifacts.set(input.taskId, ref);
         return ref;
       } catch (error) {
-        await dependencies.queue.finishCapitalTask(job, {
+        await persistNativeWrite(() => dependencies.queue.finishCapitalTask(job, {
           taskRunId,
           status: "failed",
           // A failed gate is useful institutional evidence. Persist the individual grader
           // results so a retry can fix the precise defect instead of hiding it behind M07.
           qualityResults: evaluatedQuality,
           error: {code: errorCode(error)},
-        }).catch(() => undefined);
+        })).catch(() => undefined);
         throw error;
       }
     };
@@ -574,6 +587,9 @@ export async function processOriginationThesisJob(
     // Observe early failures while independent plan tasks yield. The original
     // promise still throws below, where the job catch persists the failure.
     void researchPromise.catch(() => {});
+    // Physical source capture uses the same authority locks; generic task
+    // persistence must stay outside its prepare/upload/commit window.
+    if (native) await researchPromise;
     const researchArtifactsPromise = Promise.all([
       persistTask({
         taskId: "C02",
@@ -602,6 +618,7 @@ export async function processOriginationThesisJob(
     ]);
 
     void researchArtifactsPromise.catch(() => {});
+    if (native) await researchArtifactsPromise;
     await persistTask({
       taskId: "M05",
       artifactType: "meeting_brief_definition",

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import {createHash, randomUUID} from 'node:crypto';
-import {readFileSync, statSync, writeFileSync} from 'node:fs';
+import {writeFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
-import {createMcpReadOnlyBridge, validateMaterialBody, validateMaterialScope} from './stage20-material-review-adapter.mjs';
+import {createMcpReadOnlyBridge, readPrivateJsonFile, validateMaterialBody, validateMaterialScope} from './stage20-material-review-adapter.mjs';
 
 const staging = 'gjkkjtbfnssdsbmlhmwk';
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
@@ -41,6 +41,24 @@ export function validateTarget(api, database, allowStaging, operatorMode = false
   assert.equal(d.pathname, '/postgres');
   return 'staging';
 }
+/** Network destinations are trusted literals, never fixture/file contents. */
+export function reviewNetworkOrigin(selection){
+ switch(selection){
+  case 'staging':return 'https://gjkkjtbfnssdsbmlhmwk.supabase.co';
+  case 'loopback_ipv4':return 'http://127.0.0.1:54321';
+  case 'loopback_localhost':return 'http://localhost:54321';
+  case 'loopback_ipv6':return 'http://[::1]:54321';
+  default:throw new Error('review_network_origin_denied');
+ }
+}
+export function selectReviewNetworkOrigin(api,target){
+ if(target==='staging'){assert.equal(api.replace(/\/$/,''),reviewNetworkOrigin('staging'));return reviewNetworkOrigin('staging');}
+ assert.equal(target,'loopback');
+ for(const selection of['loopback_ipv4','loopback_localhost','loopback_ipv6']){
+  if(api.replace(/\/$/,'')===reviewNetworkOrigin(selection))return reviewNetworkOrigin(selection);
+ }
+ throw new Error('review_network_origin_denied');
+}
 export function validateFixture(f) {
   const material = f.schemaVersion === 'stage20-integrated-review-fixture.v2';
   assert.deepEqual(Object.keys(f).sort(), [...(material ? ['nativeKind'] : []), 'artifactId', 'cleanupOwner', 'namespace', 'organizationId', 'ownerId', 'recipeId', 'retainedPayloadId', 'reviewerId', 'revisionId', 'schemaVersion', 'workId'].sort());
@@ -66,11 +84,11 @@ export function authorizedPendingReview(dashboard,target,workId){
 }
 
 export async function run(env = process.env) {
-  const api = env.REVIEW_EVAL_API_URL, db = env.REVIEW_EVAL_DATABASE_URL;
+  const selectedApi = env.REVIEW_EVAL_API_URL, db = env.REVIEW_EVAL_DATABASE_URL;
   const operatorMode = env.REVIEW_EVAL_OPERATOR_MODE === 'mcp_readonly';
-  const target = validateTarget(api, db, env.REVIEW_EVAL_STAGING_PROJECT, operatorMode);
-  assert.equal(statSync(env.REVIEW_EVAL_FIXTURE).mode & 0o077, 0, 'fixture file must be private');
-  const f = validateFixture(JSON.parse(readFileSync(env.REVIEW_EVAL_FIXTURE, 'utf8')));
+  const target = validateTarget(selectedApi, db, env.REVIEW_EVAL_STAGING_PROJECT, operatorMode);
+  const api = selectReviewNetworkOrigin(selectedApi,target);
+  const f = validateFixture(readPrivateJsonFile(env.REVIEW_EVAL_FIXTURE));
   const key = env.REVIEW_EVAL_PUBLISHABLE_KEY;
   assert(key && !key.startsWith('sb_secret_'), 'publishable key only');
   if (!key.startsWith('sb_publishable_')) assert.equal(JSON.parse(Buffer.from(key.split('.')[1], 'base64url')).role, 'anon');
