@@ -230,6 +230,13 @@ jobs:
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_review_projection.sql
         psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_review_projection.sql
         cp ../audit/scripts/evals/stage20-integrated-review.mjs scripts/evals/stage20-integrated-review.mjs
+    - name: Bound native preview finalization under the unchanged database timeout
+      env:
+        DATABASE_URL: ${{ steps.db.outputs.url }}
+      run: |
+        node --test ../audit/scripts/evals/preview-finalize-bounded-closure.test.mjs
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/pending/capital_preview_finalize_bounded_closure.sql
+        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f ../audit/supabase/tests/support/capital_preview_finalize_bounded_closure.sql
     - name: Overlay closed preview failure diagnostics without request bodies
       run: cp ../audit/apps/document-worker/scripts/capital-preview-native-sdk-eval.ts apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
     - name: Finite native preview through real Storage, two paid boundaries and replay
