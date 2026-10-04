@@ -1,4 +1,6 @@
 {
+  "project_id": "ifnogpksgdadruooqydi",
+  "captured_at": "2026-10-04 20:40:08.041872+00",
   "rows": [
     {
       "version": "20260815014649",
@@ -1803,9 +1805,79 @@
     {
       "version": "20261002221910",
       "name": "material_internal_helper_execute_grants"
+    },
+    {
+      "version": "20261004175012",
+      "name": "capital_native_consumers"
+    },
+    {
+      "version": "20261004175334",
+      "name": "artifact_native_inherited_restriction"
+    },
+    {
+      "version": "20261004175415",
+      "name": "assessment_native_sources"
+    },
+    {
+      "version": "20261004175459",
+      "name": "capital_native_provider_consumption"
+    },
+    {
+      "version": "20261004175545",
+      "name": "capital_preview_native_execution"
+    },
+    {
+      "version": "20261004175639",
+      "name": "work_review_dashboard"
+    },
+    {
+      "version": "20261004175707",
+      "name": "capital_native_case_fit_result_contract"
+    },
+    {
+      "version": "20261004175756",
+      "name": "capital_preview_storage_job_authority"
+    },
+    {
+      "version": "20261004175832",
+      "name": "capital_preview_native_artifact_publication"
+    },
+    {
+      "version": "20261004175934",
+      "name": "capital_preview_physical_input_grammar"
+    },
+    {
+      "version": "20261004180037",
+      "name": "capital_preview_boundary_validation"
+    },
+    {
+      "version": "20261004180111",
+      "name": "capital_preview_review_projection"
+    },
+    {
+      "version": "20261004180158",
+      "name": "capital_preview_finalize_bounded_closure"
+    },
+    {
+      "version": "20261004180250",
+      "name": "work_optional_capital_purpose"
+    },
+    {
+      "version": "20261004180343",
+      "name": "work_archive_metadata"
+    },
+    {
+      "version": "20261004180439",
+      "name": "work_review_dashboard_metadata"
+    },
+    {
+      "version": "20261004184529",
+      "name": "assessment_house_corpus_alias"
+    },
+    {
+      "version": "20261004203627",
+      "name": "institutional_setup_capture_nowait_order"
     }
   ],
-  "project_id": "ifnogpksgdadruooqydi",
-  "captured_at": "2026-10-02T22:20:03.392871+00:00",
-  "source": "Live Supabase migration journal after material_internal_helper_execute_grants."
+  "source": "LIVE journal after18"
 }

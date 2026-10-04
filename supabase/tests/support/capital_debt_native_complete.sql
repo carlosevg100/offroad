@@ -1,0 +1,82 @@
+-- Same transaction after genuine C11 ledger/parsed proof. SQL observations only.
+reset role;
+alter table debt_lifecycle add column final jsonb,add column final_fp text,add column commit_receipt jsonb;
+set local role authenticated;
+do $$declare f record;t record;n jsonb;allocation jsonb;finalfp text;begin
+ select * into strict f from debt_recipe_fixture;select * into strict t from debt_lifecycle;select v into strict n from agent_fixture where k='debt_render_product_2';
+ finalfp:=encode(extensions.digest('["capital-debt-final-output.v1",'||to_jsonb(n->>'outputFingerprint')::text||','||to_jsonb(t.recipe->>'recipeFingerprint')::text||','||to_jsonb(n->>'finalBodyFingerprint')::text||']','sha256'),'hex');
+ allocation:=public.worker_prepare_capital_debt_output_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid,gen_random_uuid(),'final',(t.accepted->>'acceptedInvocationId')::uuid,n->'final',finalfp,(t.parsed->>'retainedPayloadId')::uuid);
+ update debt_lifecycle set final=pg_temp.debt_materialize(f.job_id,f.capability,allocation),final_fp=finalfp;
+ select * into strict t from debt_lifecycle;
+ begin perform public.worker_commit_capital_debt_result_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid,(t.accepted->>'acceptedInvocationId')::uuid,(t.parsed->>'retainedPayloadId')::uuid,(t.final->>'retainedPayloadId')::uuid,t.final_fp,n->'qualityResults');raise exception 'debt_incomplete_chain_committed';exception when insufficient_privilege then null;end;
+end$$;
+do $$declare f record;t record;n jsonb;item jsonb;run uuid;allocation jsonb;retained jsonb;projection jsonb;begin
+ select * into strict f from debt_recipe_fixture;select * into strict t from debt_lifecycle;select v into strict n from agent_fixture where k='debt_render_product_2';
+ for item in select value from jsonb_array_elements(n->'tasks') loop
+  run:=public.worker_start_capital_project_task(f.job_id,f.capability,item->>'taskId','offroad.company_debt_view','2026.09.01-v1',item->>'semanticFingerprint',jsonb_build_object('schemaVersion','capital-context-manifest.v1'));
+  allocation:=public.worker_prepare_capital_debt_task_projection_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid,gen_random_uuid(),run,(t.accepted->>'acceptedInvocationId')::uuid,item->'body',item->>'semanticFingerprint',(t.parsed->>'retainedPayloadId')::uuid);
+  retained:=pg_temp.debt_materialize(f.job_id,f.capability,allocation);
+  projection:=public.worker_commit_capital_debt_task_projection_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid,run,(retained->>'retainedPayloadId')::uuid);
+  if projection->>'taskId' is distinct from item->>'taskId' then raise exception 'debt_real_task_projection_wrong';end if;
+ end loop;
+ update debt_lifecycle set commit_receipt=public.worker_commit_capital_debt_result_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid,(t.accepted->>'acceptedInvocationId')::uuid,(t.parsed->>'retainedPayloadId')::uuid,(t.final->>'retainedPayloadId')::uuid,t.final_fp,n->'qualityResults');
+ select * into strict t from debt_lifecycle;
+ if t.commit_receipt->>'executionPlanTaskRunId'=t.commit_receipt->>'taskRunId' then raise exception 'debt_execution_plan_aliases_final';end if;
+ if public.worker_commit_capital_debt_result_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid,(t.accepted->>'acceptedInvocationId')::uuid,(t.parsed->>'retainedPayloadId')::uuid,(t.final->>'retainedPayloadId')::uuid,t.final_fp,n->'qualityResults')->>'replayed' is distinct from 'true' then raise exception 'debt_final_replay_failed';end if;
+end$$;
+reset role;
+do $$declare f record;t record;begin
+ select * into strict f from debt_recipe_fixture;select * into strict t from debt_lifecycle;
+ if(select count(*) from public.capital_project_task_runs where processing_job_id=f.job_id and status='succeeded')<>24 then raise exception 'debt_full_real_plan_incomplete';end if;
+ if(select count(*) from private.capital_debt_input_dispatches where job_id=f.job_id)<>1 then raise exception 'debt_more_than_one_paid_claim';end if;
+ if(select count(*) from private.capital_debt_task_projections where recipe_id=(t.recipe->>'recipeId')::uuid)<>23 then raise exception 'debt_physical_intermediate_chain_incomplete';end if;
+ if exists(select 1 from public.capital_project_artifacts where capital_project_id=(f.base->>'workId')::uuid and schema_version not in('capital-debt-task-projection.v1','capital-debt-projection.v1')) then raise exception 'debt_raw_legacy_cpa_body';end if;
+ raise notice 'PASS debt_actual_24_TaskSpecs_physical_23_intermediate_distinct_C11_exact_commit_replay_one_dispatch';
+end$$;
+set local role authenticated;
+do $$declare f record;t record;g jsonb;x jsonb;begin
+ select * into strict f from debt_recipe_fixture;select * into strict t from debt_lifecycle;
+ g:=public.worker_recover_capital_debt_result_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid);
+ if g->>'state'<>'committed' or g->>'executionPlanTaskRunId'<>t.recipe->>'executionPlanTaskRunId' or(g->>'dispatchAllowed')::boolean or g#>>'{parsed,retainedPayloadId}'<>t.parsed->>'retainedPayloadId' then raise exception 'debt_committed_recovery_identity_wrong';end if;
+ x:=public.worker_commit_capital_debt_recovered_result_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid,(t.accepted->>'acceptedInvocationId')::uuid,(t.parsed->>'retainedPayloadId')::uuid,(t.final->>'retainedPayloadId')::uuid,t.final_fp,(select v->'qualityResults' from agent_fixture where k='debt_render_product_2'));
+ if not(x->>'replayed')::boolean then raise exception 'debt_recovery_added_commit';end if;
+ raise notice 'PASS debt_committed_recovery_zero_new_dispatch_original_M06_immutable';
+end$$;
+reset role;
+-- Missing any physical predecessor closes final and recovery, never reconstructs.
+savepoint debt_physical_loss;
+update storage.objects set metadata=jsonb_build_object('size',1,'mimetype','application/json') where id=(select r.storage_object_id from private.capital_debt_task_projections p join private.capital_public_retained_payloads r on(r.organization_id,r.id)=(p.organization_id,p.derived_retained_payload_id) join private.capital_public_payload_allocations a on(a.organization_id,a.id)=(r.organization_id,r.allocation_id) join public.capital_project_task_runs tr on(tr.organization_id,tr.id)=(p.organization_id,p.task_run_id) join public.capital_project_plan_tasks pt on(pt.organization_id,pt.id)=(tr.organization_id,tr.plan_task_id) where pt.task_id='C10');
+set local role authenticated;
+do $$declare f record;t record;begin select * into strict f from debt_recipe_fixture;select * into strict t from debt_lifecycle;
+ begin perform public.worker_recover_capital_debt_result_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid);raise exception 'debt_parent_loss_recovery_allowed';exception when insufficient_privilege then null;end;
+ raise notice 'PASS debt_C10_physical_loss_denies_final_recovery_with_final_blob_alive';end$$;
+rollback to debt_physical_loss;
+set local role authenticated;
+do $$declare t record;s jsonb;begin select * into strict t from debt_lifecycle;
+ s:=public.read_capital_debt_result_v1((t.commit_receipt->>'revisionId')::uuid);
+ if s->>'schemaVersion'<>'capital-debt-read-scope.v1' or s->>'recipeId'<>t.recipe->>'recipeId' or s->>'finalFingerprint'<>t.final_fp or s#>>'{retention,retainedPayloadId}'<>t.final->>'retainedPayloadId' then raise exception 'debt_human_scope_not_exact';end if;
+ begin perform public.read_capital_debt_result_v1(gen_random_uuid());raise exception 'debt_arbitrary_revision_read';exception when insufficient_privilege then null;end;
+ raise notice 'PASS debt_real_human_reader_recipe_final_and_physical_identity_exact_other_revision_denied';
+end$$;
+reset role;
+savepoint debt_base_human_change;
+update public.document_intake_sessions set company_profile=company_profile||'{"name":"Human change after capture"}'::jsonb where organization_id='a8800000-0000-4000-8000-000000000002';
+set local role authenticated;
+do $$declare f record;t record;begin select * into strict f from debt_recipe_fixture;select * into strict t from debt_lifecycle;
+ begin perform public.worker_recover_capital_debt_result_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid);raise exception 'debt_changed_base_recovered';exception when insufficient_privilege then null;end;
+ begin perform public.read_capital_debt_result_v1((t.commit_receipt->>'revisionId')::uuid);raise exception 'debt_changed_base_human_read';exception when insufficient_privilege then null;end;
+ raise notice 'PASS debt_consumed_human_base_change_denies_recovery_and_human_read_no_mutable_loader_fallback';end$$;
+rollback to debt_base_human_change;
+reset role;
+savepoint debt_source_right_withdrawal;
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000993","role":"authenticated"}',true);
+select set_config('request.headers','{"x-offroad-workspace":"20000000-0000-4000-8000-000000000993"}',true);
+set local role authenticated;
+select public.set_source_rights_v1(source_version_id,1,'{}'::text[],array['analysis'],null,null,source_version_id,repeat('b',64))from capture_public_license_fixture;
+select set_config('request.jwt.claims','{"sub":"a8800000-0000-4000-8000-000000000001","role":"authenticated"}',true);
+select set_config('request.headers','{"x-offroad-workspace":"a8800000-0000-4000-8000-000000000002"}',true);
+do $$declare f record;t record;begin select * into strict f from debt_recipe_fixture;select * into strict t from debt_lifecycle;
+ begin perform public.worker_recover_capital_debt_result_v1(f.job_id,f.capability,(t.recipe->>'recipeId')::uuid);raise exception 'debt_source_withdrawal_recovered';exception when insufficient_privilege then null;end;
+ begin perform public.read_capital_debt_result_v1((t.commit_receipt->>'revisionId')::uuid);raise exception 'debt_source_withdrawal_human_read';exception when insufficient_privilege then null;end;
+ raise notice 'PASS debt_actual_human_source_right_withdrawal_denies_recovery_and_final_read';end$$;
+rollback to debt_source_right_withdrawal;

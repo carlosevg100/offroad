@@ -6,8 +6,14 @@ from urllib.parse import urlparse
 ROOT=Path(__file__).resolve().parents[2]
 url=os.environ['DATABASE_URL']
 assert urlparse(url).hostname in ('localhost','127.0.0.1','::1'), 'Local disposable database only'
-http_fixture=os.environ.get('S11_HTTP_FIXTURE')=='1'
+preview_fixture=os.environ.get('PREVIEW_HTTP_FIXTURE')=='1'
+assert not(preview_fixture and os.environ.get('S11_HTTP_FIXTURE')=='1'), 'Preview and S11 modes are distinct'
+http_fixture=preview_fixture or os.environ.get('S11_HTTP_FIXTURE')=='1'
 ui_namespace=os.environ.get('BRIEF_UI_NAMESPACE')
+http_namespace=(os.environ.get('PREVIEW_HTTP_NAMESPACE','a8830001') if preview_fixture else os.environ.get('S11_HTTP_NAMESPACE','a8810001')) if http_fixture else None
+if http_namespace:
+ assert re.fullmatch(r'[0-9a-f]{8}',http_namespace), 'Closed S11 HTTP namespace required'
+ assert not ui_namespace, 'HTTP and UI fixture modes are distinct'
 if ui_namespace:
  assert os.environ.get('BRIEF_UI_FIXTURE')=='1' and re.fullmatch(r'[0-9a-f]{8}',ui_namespace), 'UI namespace must be local and explicit'
 if http_fixture:
@@ -18,8 +24,13 @@ def expand(p): return re.sub(r'^\\ir (.+)$',lambda m:expand(p.parent/m[1].strip(
 def literal(x): return "'"+str(x).replace("'","''")+"'"
 p=subprocess.Popen(['psql',url,'-XAtq','-v','ON_ERROR_STOP=1'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,bufsize=1)
 def phase(sql):
+ if preview_fixture:
+  sql=sql.replace('preview-http','preview-http-'+http_namespace).replace('preview-publisher@example.invalid','preview-publisher-'+http_namespace+'@example.invalid').replace('Synthetic capital planning','Synthetic finite preview').replace('Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','Preparar material para uma reunião interna da Camil sobre alternativas de refinanciamento e alongamento dos vencimentos, somente validação sintética.').replace("'capital_planning','public_information'","'origination_thesis','public_information'")
  if ui_namespace:
   sql=sql.replace('a8800000',ui_namespace).replace('native-agent@example.invalid','native-agent-'+ui_namespace+'@example.invalid').replace('Synthetic native agent','Synthetic native agent '+ui_namespace).replace("repeat('d',64)","repeat('"+ui_namespace+"',8)")
+ if http_namespace:
+  sql=sql.replace('a8800000',http_namespace).replace('native-agent@example.invalid','native-agent-'+http_namespace+'@example.invalid').replace('s11-publisher@example.invalid','s11-publisher-'+http_namespace+'@example.invalid').replace("repeat('d',64)","repeat('"+http_namespace+"',8)").replace('https://example.invalid/capture-licensed','https://example.invalid/s11/'+http_namespace+'/capture-licensed').replace('s11-sql-account','s11-http-'+http_namespace+'-account').replace('s11-sql-project','s11-http-'+http_namespace+'-project').replace('s11-sql-key','s11-http-'+http_namespace+'-key')
+  for old,new in [('10000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000994'),('20000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000995'),('30000000-0000-4000-8000-000000000994',http_namespace+'-0000-4000-8000-000000000996')]:sql=sql.replace(old,new)
  p.stdin.write(sql+'\n\\echo PHASE_DONE\n');p.stdin.flush();out=[]
  while True:
   line=p.stdout.readline()
@@ -27,7 +38,7 @@ def phase(sql):
   if line.strip()=='PHASE_DONE': return out
   out.append(line.rstrip())
 try:
- compiler=['node',str(next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/cli.mjs'))),str(ROOT/'apps/document-worker/scripts/execution-brief-native-agent-fixture.ts')]
+ compiler=['node',str(next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/cli.mjs'))),str(ROOT/('apps/document-worker/scripts/execution-brief-native-preview-fixture.ts' if preview_fixture else 'apps/document-worker/scripts/execution-brief-native-agent-fixture.ts'))]
  plan_command=subprocess.run(compiler+['--plan'],text=True,capture_output=True,cwd=ROOT,timeout=30)
  assert plan_command.returncode==0,plan_command.stderr
  plan=json.loads(plan_command.stdout)
@@ -41,27 +52,85 @@ try:
  set local role authenticated;
  select set_config('request.jwt.claims','{"sub":"a8800000-0000-4000-8000-000000000001","role":"authenticated"}',true);
  """
+ # The preview's published entry is origination_thesis. Its fresh company
+ # workspace needs the explicit owner act, not a worker/private capability grant.
+ if preview_fixture:
+  prefix+="select public.set_workspace_capability_v1('origination_representation',true,0);\n"
  prefix+="insert into agent_fixture values('start',public.start_work_v1('a8800000-0000-4000-8000-000000000010','pt-BR','Synthetic capital planning','Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','capital_planning','public_information',"+literal(json.dumps(plan))+"::jsonb,null,false));"
  prefix+="""
  insert into agent_fixture values('session',to_jsonb(pg_temp.legacy_intake_for_work((select(v->>'workId')::uuid from agent_fixture where k='start'))));
- select public.queue_advisor_initial_turn_v1((select(v->>'workId')::uuid from agent_fixture where k='start'));
+ insert into agent_fixture values('initial_turn',public.queue_advisor_initial_turn_v1((select(v->>'workId')::uuid from agent_fixture where k='start')));
  reset role;
  do $$begin if (select company_profile from public.document_intake_sessions where id=(select(v#>>'{}')::uuid from agent_fixture where k='session'))<>'{}'::jsonb then raise exception 'fixture_profile_not_empty';end if;end$$;
  insert into private.worker_tokens(label,token_sha256,execution_account_user_id) values('Synthetic native agent',extensions.digest(repeat('d',64),'sha256'),'a8800000-0000-4000-8000-000000000001');
- update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '1 second' from public.processing_jobs where status='queued') where organization_id='a8800000-0000-4000-8000-000000000002' and kind='agent_operation_brief' and status='queued';
+ update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '1 second' from public.processing_jobs where (status='queued' and available_at<=now()) or(status='leased' and lease_expires_at<now())) where organization_id='a8800000-0000-4000-8000-000000000002' and kind='agent_operation_brief' and status='queued';
  set local role authenticated;
  insert into agent_fixture values('claim',public.worker_claim_job_v3(repeat('d',64),600));
+ reset role;
+ do $$begin if not exists(select 1 from agent_fixture claimed,agent_fixture expected,agent_fixture session,public.processing_jobs job
+ where claimed.k='claim'and expected.k='initial_turn'and session.k='session'
+ and job.id=(claimed.v->>'job_id')::uuid and job.id=(expected.v->>'job_id')::uuid
+ and job.organization_id='a8800000-0000-4000-8000-000000000002'and job.kind='agent_operation_brief'
+ and job.intake_session_id=(session.v#>>'{}')::uuid
+ and claimed.v->>'organization_id'=job.organization_id::text and claimed.v->>'kind'=job.kind
+ and claimed.v#>>'{payload,message_id}'=expected.v->>'message_id'
+ and claimed.v#>>'{payload,message_id}'=job.payload->>'message_id')then raise exception 'fixture_initial_claim_identity_mismatch';end if;end$$;
+ set local role authenticated;
  insert into agent_fixture select 'capture',public.worker_capture_execution_brief_inputs_v1((v->>'job_id')::uuid,v->>'capability_token',(v#>>'{payload,message_id}')::uuid) from agent_fixture where k='claim';
  select v->'context' from agent_fixture where k='capture';
  """
+ if preview_fixture:
+  claim_regression="""savepoint initial_claim_competition;
+ set local role authenticated;
+ """+"insert into agent_fixture values('claim_competitor_start',public.start_work_v1('a8800000-0000-4000-8000-000000000013','pt-BR','Synthetic capital planning','Companhia Sintética Farol. Quero comparar opções de financiamento para crescimento, sem executar contato com credores.','capital_planning','public_information',"+literal(json.dumps(plan))+"::jsonb,null,false));"+"""
+ insert into agent_fixture values('claim_competitor_session',to_jsonb(pg_temp.legacy_intake_for_work((select(v->>'workId')::uuid from agent_fixture where k='claim_competitor_start'))));
+ insert into agent_fixture values('claim_competitor_turn',public.queue_advisor_initial_turn_v1((select(v->>'workId')::uuid from agent_fixture where k='claim_competitor_start')));
+ reset role;
+ update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '2 seconds'from public.processing_jobs where(status='queued'and available_at<=now())or(status='leased'and lease_expires_at<now()))where id=(select(v->>'job_id')::uuid from agent_fixture where k='claim_competitor_turn')and organization_id='a8800000-0000-4000-8000-000000000002';
+ set local role authenticated;
+ insert into agent_fixture values('claim_competitor_lease',public.worker_claim_job_v3(repeat('d',64),600));
+ do $$begin if (select v->>'job_id'from agent_fixture where k='claim_competitor_lease')is distinct from(select v->>'job_id'from agent_fixture where k='claim_competitor_turn')then raise exception 'fixture_competitor_claim_mismatch';end if;end$$;
+ reset role;
+ update public.processing_jobs set lease_expires_at=now()-interval '1 second'where id=(select(v->>'job_id')::uuid from agent_fixture where k='claim_competitor_turn')and organization_id='a8800000-0000-4000-8000-000000000002'and status='leased';
+ do $$begin if not exists(select 1 from public.processing_jobs older,public.processing_jobs target where older.id=(select(v->>'job_id')::uuid from agent_fixture where k='claim_competitor_turn')and target.id=(select(v->>'job_id')::uuid from agent_fixture where k='initial_turn')and older.status='leased'and older.lease_expires_at<now()and target.status='queued'and older.available_at<target.available_at)then raise exception 'fixture_expired_lease_competition_missing';end if;end$$;
+ update public.processing_jobs set available_at=(select coalesce(min(available_at),now())-interval '1 second'from public.processing_jobs where(status='queued'and available_at<=now())or(status='leased'and lease_expires_at<now()))where id=(select(v->>'job_id')::uuid from agent_fixture where k='initial_turn')and organization_id='a8800000-0000-4000-8000-000000000002'and status='queued';
+ set local role authenticated;
+ insert into agent_fixture values('claim',public.worker_claim_job_v3(repeat('d',64),600));
+ reset role;
+ """+""" do $$begin if not exists(select 1 from agent_fixture claimed,agent_fixture expected,agent_fixture session,public.processing_jobs job
+ where claimed.k='claim'and expected.k='initial_turn'and session.k='session'
+ and job.id=(claimed.v->>'job_id')::uuid and job.id=(expected.v->>'job_id')::uuid
+ and job.organization_id='a8800000-0000-4000-8000-000000000002'and job.kind='agent_operation_brief'
+ and job.intake_session_id=(session.v#>>'{}')::uuid
+ and claimed.v->>'organization_id'=job.organization_id::text and claimed.v->>'kind'=job.kind
+ and claimed.v#>>'{payload,message_id}'=expected.v->>'message_id'
+ and claimed.v#>>'{payload,message_id}'=job.payload->>'message_id')then raise exception 'fixture_initial_claim_identity_mismatch';end if;end$$;
+ set local role authenticated;
+"""+"""rollback to savepoint initial_claim_competition;release savepoint initial_claim_competition;reset role;
+ """
+  prefix=prefix.replace(" update public.processing_jobs set available_at=",claim_regression+" update public.processing_jobs set available_at=",1)
  if os.environ.get('BRIEF_DRAFT_IN_TRANSACTION')=='1': prefix=prefix.replace('begin;','begin;'+(ROOT/'supabase/pending/execution_brief_native_capture.sql').read_text(),1)
+ if preview_fixture:
+  prefix=prefix.replace(" create temp table agent_fixture", " insert into private.integration_preview_grants(organization_id,enabled,granted_by,note,mode)values('a8800000-0000-4000-8000-000000000002',true,'Local CI operator','Synthetic closed native preview eval','live');\n create temp table agent_fixture",1)
  lines=phase(prefix)
  contexts=[json.loads(x) for x in lines if x.startswith('{') and 'active_plan' in x]
  assert len(contexts)==1,lines
- compiled=subprocess.run(['node',str(next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/cli.mjs'))),str(ROOT/'apps/document-worker/scripts/execution-brief-native-agent-fixture.ts')],input=json.dumps(contexts[0]),text=True,capture_output=True,cwd=ROOT,timeout=30)
+ compiled=subprocess.run(['node',str(next((ROOT/'node_modules/.pnpm').glob('tsx@*/node_modules/tsx/dist/cli.mjs'))),str(ROOT/('apps/document-worker/scripts/execution-brief-native-preview-fixture.ts' if preview_fixture else 'apps/document-worker/scripts/execution-brief-native-agent-fixture.ts'))],input=json.dumps(contexts[0]),text=True,capture_output=True,cwd=ROOT,timeout=30)
  assert compiled.returncode==0,compiled.stdout+compiled.stderr
  product=json.loads(compiled.stdout)
  sql="insert into agent_fixture values('product',"+literal(json.dumps(product))+"::jsonb);"
+ if preview_fixture:
+  # Persist the exact production compiler result through the same public
+  # capability-bound preflight command used by the conversational worker.
+  sql+="""
+   insert into agent_fixture select 'workflow_preflight',public.worker_record_objective_plan_preflight_v5(
+    (j.v->>'job_id')::uuid,j.v->>'capability_token',p.v#>'{preflight,objectivePlan}',p.v#>'{preflight,preflightDecision}',
+    p.v#>'{preflight,specialization}',p.v#>'{preflight,methodBinding}',p.v#>'{preflight,workflowSelection}',p.v#>'{preflight,dispatchCandidate}')
+   from agent_fixture j,agent_fixture p where j.k='claim'and p.k='product';
+   do $$begin if not exists(select 1 from agent_fixture recorded,agent_fixture product where recorded.k='workflow_preflight'and product.k='product'
+    and recorded.v->>'workflow_selection_status'='selected'and recorded.v->>'workflow_selection_id'~'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'and recorded.v->>'workflow_selection_fingerprint'=product.v#>>'{preflight,workflowSelection,fingerprint}')then
+    raise exception 'preview_fixture_workflow_preflight_not_selected';end if;end$$;
+  """
  sql+="""
  insert into agent_fixture select 'recorded',public.worker_record_agent_response_and_activate_v7((j.v->>'job_id')::uuid,j.v->>'capability_token',(c.v->>'captureId')::uuid,'a8800000-0000-4000-8000-000000000011','{"state":"idle","reply":"Vamos comparar as alternativas de financiamento."}',null,p.v->'activation',p.v->'internal',p.v->'visible',p.v->'changeSummary',p.v->>'expectedInputFingerprint') from agent_fixture j,agent_fixture c,agent_fixture p where j.k='claim' and c.k='capture' and p.k='product';
  reset role;
@@ -83,11 +152,12 @@ try:
   print('PASS execution_brief_native_ui_unapproved_bootstrap')
   sys.exit(0)
  # Server lookup is fixture-only; human calls still use genuine JWT/resource authority.
+ precursor_change_guard='' if preview_fixture else 'c.input_fingerprint=n.post_write_input_fingerprint or '
  sql="""reset role;
  do $$declare c private.execution_brief_input_captures;n private.execution_brief_native_bindings;begin
  select * into strict c from private.execution_brief_input_captures where organization_id='a8800000-0000-4000-8000-000000000002';
  select * into strict n from private.execution_brief_native_bindings where organization_id=c.organization_id;
- if c.input_fingerprint=n.post_write_input_fingerprint or c.input_fingerprint is distinct from (select v#>>'{context,approval_input_fingerprint}' from agent_fixture where k='capture') or n.post_write_input_fingerprint<>private.execution_approval_input_fingerprint(c.organization_id,c.session_id) then raise exception 'immutable_precursor_or_post_write_proof_invalid';end if;end$$;
+ if """+precursor_change_guard+"""c.input_fingerprint is distinct from (select v#>>'{context,approval_input_fingerprint}' from agent_fixture where k='capture') or n.post_write_input_fingerprint<>private.execution_approval_input_fingerprint(c.organization_id,c.session_id) then raise exception 'immutable_precursor_or_post_write_proof_invalid';end if;end$$;
  insert into agent_fixture select 'brief',jsonb_build_object('id',id,'fingerprint',brief_fingerprint) from public.capital_project_execution_briefs where organization_id='a8800000-0000-4000-8000-000000000002';set local role authenticated;
  savepoint human_mutation;
  reset role;update public.document_intake_sessions set company_profile=company_profile||'{"name":"Alteração humana posterior"}'::jsonb where organization_id='a8800000-0000-4000-8000-000000000002';set local role authenticated;
@@ -143,9 +213,9 @@ try:
   assert continuation.is_relative_to(ROOT) and continuation.is_file(), 'Continuation must be a checked-in local project file'
   print('\n'.join(phase(expand(continuation))))
  if http_fixture:
-  phase(expand(ROOT/'supabase/tests/support/capital_s11_native_http_setup.sql'))
+  phase(expand(ROOT/('supabase/tests/support/capital_preview_native_http_setup.sql' if preview_fixture else 'supabase/tests/support/capital_s11_native_http_setup.sql')))
   phase('commit;')
-  print(json.dumps({'eval':'capital_s11_http_human_bootstrap','result':'PASS','organizationId':'a8800000-0000-4000-8000-000000000002'}))
+  print(json.dumps({'eval':'capital_preview_http_human_bootstrap' if preview_fixture else 'capital_s11_http_human_bootstrap','result':'PASS','organizationId':http_namespace+'-0000-4000-8000-000000000002'}))
  else:
   phase('rollback;')
   print('PASS native_agent_activation_normalization_and_human_review')

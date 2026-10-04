@@ -6,11 +6,13 @@ import {notFound} from "next/navigation";
 
 import {DealStateRefresh} from "@/components/deal-state/deal-state-refresh";
 import {requireWorkspace} from "@/lib/auth/workspace";
+import {isCapitalDebtProjection,loadCapitalDebtNativeResult} from "@/lib/artifacts/debt-result-native";
 import {jobKindRunning, workShouldRefresh} from "@/lib/advisor/work-activity";
 import {loadWorkActivity} from "@/lib/advisor/work-activity-reader";
 import "@/app/work-activity.css";
 
 import {OriginationDecision} from "./origination-decision";
+import {CapitalDebtNativeReview} from "./debt-native-review";
 
 type Props = {locale: string; projectId: string};
 
@@ -69,7 +71,13 @@ export async function CompanyDebtProject({locale, projectId}: Props) {
   for (const run of runs ?? []) if (!latestRunByTask.has(run.plan_task_id)) latestRunByTask.set(run.plan_task_id, run);
 
   const diagnosticArtifact = artifacts?.find((artifact) => artifact.artifact_type === "company_debt_diagnostic" && artifact.status !== "superseded");
-  const parsed = diagnosticArtifact ? companyDebtDiagnosticArtifactSchema.safeParse(diagnosticArtifact.content) : null;
+  const nativeDiagnostic = isCapitalDebtProjection(diagnosticArtifact?.content);
+  const nativeResult = nativeDiagnostic && diagnosticArtifact
+    ? await loadCapitalDebtNativeResult(supabase, {organizationId: organization.id, workId: project.id, artifact: diagnosticArtifact}) : null;
+  // Native metadata stays on the refusal path if body or current human authority is unavailable.
+  const parsed = diagnosticArtifact ? companyDebtDiagnosticArtifactSchema.safeParse(nativeDiagnostic
+    ? nativeResult?.ok ? nativeResult.content : null : diagnosticArtifact.content) : null;
+  const artifactStatus = nativeResult?.ok ? nativeResult.review.status : diagnosticArtifact?.status;
   const decision = diagnosticArtifact ? decisions?.find((item) => item.artifact_id === diagnosticArtifact.id) : null;
   // The analysis runs only while its job is queued or leased; a missing result is a gap, not work.
   const analysisRunning = jobKindRunning(activity, ["capital_project_analysis"]);
@@ -106,7 +114,7 @@ export async function CompanyDebtProject({locale, projectId}: Props) {
           )
           ) : parsed?.success ? (
             <article className="origination-brief company-debt-diagnostic">
-              <header><div><p className="section-kicker">{t("diagnostic.kicker")}</p><h2>{t("diagnostic.title")}</h2><p>{t("diagnostic.asOf", {date: parsed.data.asOfDate})}</p></div><span className={`origination-status origination-status--${diagnosticArtifact.status}`}><Check aria-hidden="true" size={12} />{t(`artifactStatus.${diagnosticArtifact.status}`)}</span></header>
+              <header><div><p className="section-kicker">{t("diagnostic.kicker")}</p><h2>{t("diagnostic.title")}</h2><p>{t("diagnostic.asOf", {date: parsed.data.asOfDate})}</p></div><span className={`origination-status origination-status--${artifactStatus}`}><Check aria-hidden="true" size={12} />{t(`artifactStatus.${artifactStatus}`)}</span></header>
 
               <section className="origination-brief__executive"><span>{t("diagnostic.executiveRead")}</span><p>{parsed.data.executiveRead}</p></section>
               <section className="origination-brief__snapshot"><span>{t("diagnostic.companySnapshot")}</span><p>{parsed.data.companySnapshot}</p></section>
@@ -155,7 +163,7 @@ export async function CompanyDebtProject({locale, projectId}: Props) {
               <section className="origination-sources"><span>{t("diagnostic.sourceList")}</span><ul>{parsed.data.sources.map((source) => <li key={`${source.topic}-${source.url}`}><small>{t(`sourceTopics.${source.topic}`)}</small><a href={source.url} rel="noreferrer" target="_blank">{source.title}<ExternalLink aria-hidden="true" size={11} /></a></li>)}</ul></section>
               <p className="origination-brief__boundary"><AlertCircle aria-hidden="true" size={14} />{parsed.data.scopeBoundary}</p>
 
-              {diagnosticArtifact.status === "pending_confirmation" ? <OriginationDecision artifactId={diagnosticArtifact.id} copy={{confirm: t("decision.confirm"), confirmed: t("decision.confirmed"), errorInvalid: t("decision.errors.invalid"), errorSave: t("decision.errors.save"), errorStale: t("decision.errors.stale"), note: t("decision.note"), notePlaceholder: t("decision.notePlaceholder"), requestChanges: t("decision.requestChanges"), requested: t("decision.requested"), title: t("decision.title")}} fingerprint={diagnosticArtifact.artifact_fingerprint} locale={locale} projectId={project.id} /> : decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{decision.decision === "confirm" ? t("decision.confirmed") : t("decision.requested")}</p> : null}
+              {nativeDiagnostic ? (nativeResult?.ok ? <CapitalDebtNativeReview locale={locale} basis={nativeResult.review} /> : null) : diagnosticArtifact.status === "pending_confirmation" ? <OriginationDecision artifactId={diagnosticArtifact.id} copy={{confirm: t("decision.confirm"), confirmed: t("decision.confirmed"), errorInvalid: t("decision.errors.invalid"), errorSave: t("decision.errors.save"), errorStale: t("decision.errors.stale"), note: t("decision.note"), notePlaceholder: t("decision.notePlaceholder"), requestChanges: t("decision.requestChanges"), requested: t("decision.requested"), title: t("decision.title")}} fingerprint={diagnosticArtifact.artifact_fingerprint} locale={locale} projectId={project.id} /> : decision ? <p className="origination-decision__record"><Check aria-hidden="true" size={14} />{decision.decision === "confirm" ? t("decision.confirmed") : t("decision.requested")}</p> : null}
             </article>
           ) : <div className="origination-working"><AlertCircle aria-hidden="true" size={23} /><h2>{t("project.invalidArtifactTitle")}</h2><p>{t("project.invalidArtifactBody")}</p></div>}
         </section>

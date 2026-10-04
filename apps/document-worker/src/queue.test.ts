@@ -965,3 +965,27 @@ it("preserves plain advisor turns through v7 without manufacturing a brief captu
  await queue.recordAgentResponse(agent,"60000000-0000-4000-8000-000000000001",{reply:"Resposta"});
  expect(rpc).toHaveBeenCalledWith("worker_record_agent_response_and_activate_v7",expect.objectContaining({p_capture_id:null,p_activation:null,p_execution_brief_internal:null,p_execution_brief_visible:null}));
 });
+
+
+describe("institutional v3 result atomic capture retry",()=>{
+ const activeJob={...job,kind:"agent_operation_brief" as const,payload:{message_id:"90000000-0000-4000-8000-000000000881",locale:"pt-BR" as const}};
+ const result={status:"blocked" as const,blockers:["missing_inputs"],inputSnapshot:{id:"95000000-0000-4000-8000-000000000881",fingerprint:"c".repeat(64)}};
+ it("repeats the current v3 writer after one atomic abort with identical arguments",async()=>{
+  const receipt={id:activeJob.payload.message_id,status:"blocked",replayed:false};
+  const rpc=vi.fn().mockResolvedValueOnce({data:null,error:{code:"40001",message:"institutional_capture_retry"}}).mockResolvedValue({data:receipt,error:null});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  expect(await queue.recordInstitutionalModelResult!(activeJob,result)).toEqual(receipt);
+  expect(rpc).toHaveBeenCalledTimes(2);expect(rpc.mock.calls[0]).toEqual(rpc.mock.calls[1]);
+  expect(rpc).toHaveBeenCalledWith("worker_record_institutional_model_result_v3",{p_job_id:activeJob.job_id,p_capability_token:activeJob.capability_token,p_result:result});
+ });
+ it("exhausts exactly three current-writer attempts as a typed capture retry",async()=>{
+  const rpc=vi.fn().mockResolvedValue({data:null,error:{code:"40001",message:"institutional_capture_retry"}});
+  const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  await expect(queue.recordInstitutionalModelResult!(activeJob,result)).rejects.toBeInstanceOf(InstitutionalCaptureRetryError);
+  expect(rpc).toHaveBeenCalledTimes(3);expect(new Set(rpc.mock.calls.map(([name])=>name))).toEqual(new Set(["worker_record_institutional_model_result_v3"]));
+ });
+ it.each([{code:"42501",message:"institutional_capture_rights_revoked"},{code:"40001",message:"other_serialization_error"},{code:"NETWORK",message:"ambiguous delivery"}])("never retries current-writer authority/ambiguous errors: $code/$message",async(error)=>{
+  const rpc=vi.fn().mockResolvedValue({data:null,error});const queue=createQueueClient({rpc} as unknown as SupabaseClient,{workerToken:"worker",leaseSeconds:60});
+  await expect(queue.recordInstitutionalModelResult!(activeJob,result)).rejects.toThrow(error.message);expect(rpc).toHaveBeenCalledOnce();
+ });
+});

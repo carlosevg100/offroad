@@ -294,7 +294,7 @@ export async function processInstitutionalRecomputeJob(
     return {status: "succeeded"};
   } catch (error) {
     if (error instanceof InstitutionalCaptureRetryError) {
-      await queue.fail(job,{code:"institutional_capture_retry",stage:"institutional_model_recompute"},{retryable:true,retryInSeconds:2});
+      await queue.fail(job,describeJobFailure(error,{code:"institutional_capture_retry",stage:"institutional_model_recompute",retryable:true}),{retryable:true,retryInSeconds:2});
       return {status:"failed"};
     }
     const message = error instanceof Error ? error.message : "unknown recompute failure";
@@ -863,7 +863,7 @@ export async function processAgentOperationBriefJob(
     return proposal ? {status: "succeeded", proposalId: proposal.id} : {status: "succeeded"};
   } catch (error) {
     if (error instanceof InstitutionalCaptureRetryError) {
-      await queue.fail(job,{code:"institutional_capture_retry",stage:"institutional_model_refresh"},{retryable:true,retryInSeconds:2});
+      await queue.fail(job,describeJobFailure(error,{code:"institutional_capture_retry",stage:"institutional_model_refresh",retryable:true}),{retryable:true,retryInSeconds:2});
       return {status:"failed"};
     }
     const message = error instanceof Error ? error.message : "unknown agent failure";
@@ -980,7 +980,7 @@ function objectiveRoutingObservation(
  * promoted. The resulting blocked/partial decision is the migration evidence used to build that
  * inventory without ever treating catalogue entries as executable methods.
  */
-function compileObjectivePreflight(
+export function compileObjectivePreflight(
   context: AgentContext,
   workflowTerminal?: ObjectiveOutputTerminal,
   objectiveText = context.message,

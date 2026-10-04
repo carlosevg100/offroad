@@ -331,7 +331,7 @@ export function answerFromObjects(input: PreviewTurnInput): string {
 // 2. The run processor
 // ---------------------------------------------------------------------------------------------
 
-const contextSchema = z.object({
+export const integrationPreviewContextSchema = z.object({
   mode: z.literal("integration_preview"),
   preview: z.object({
     mode: z.literal("integration_preview"),
@@ -348,7 +348,7 @@ const contextSchema = z.object({
   prior_artifacts: z.array(z.object({task_id: z.string(), id: z.uuid(), artifact_type: z.string(), artifact_version: z.number(), artifact_fingerprint: z.string(), input_fingerprint: z.string().nullable(), status: z.string(), content: z.record(z.string(), z.unknown())})).default([]),
   recent_messages: z.array(z.object({id: z.uuid(), role: z.string(), content: z.string(), created_at: z.string()})).default([]),
 });
-export type PreviewRunContextRow = z.infer<typeof contextSchema>;
+export type PreviewRunContextRow = z.infer<typeof integrationPreviewContextSchema>;
 
 export type IntegrationPreviewDependencies = {
   queue: QueueClient;
@@ -423,7 +423,7 @@ export function buildPreviewInformationRequestProjection(input: {
   };
 }
 
-const requestSchema = z.object({
+export const integrationPreviewRequestSchema = z.object({
   turn: z.number().int().positive(),
   composition: z.enum(["prepare_meeting", "prepare_material", "change_premise", "deepen", "prepare_decision"]),
   audience: z.object({primary: z.string(), others: z.array(z.string()).default([])}).nullable(),
@@ -445,9 +445,9 @@ export async function processIntegrationPreviewRunJob(job: CapitalProjectAnalysi
   const stage = "integration_preview";
   await queue.writeStage(job, stage, "started", {summary_pt: "Validação interna: executando os métodos selecionados sobre as fontes do projeto", summary_en: "Internal validation: running the selected methods over the project sources"});
   try {
-    const context = contextSchema.parse(await queue.loadCapitalProjectContext(job));
+    const context = integrationPreviewContextSchema.parse(await queue.loadCapitalProjectContext(job));
     const premises = previewPremisesSchema.parse(context.preview.premises);
-    const request = requestSchema.parse({...(context.brief.content.request as Record<string, unknown> | undefined ?? {}), composition: context.preview.composition});
+    const request = integrationPreviewRequestSchema.parse({...(context.brief.content.request as Record<string, unknown> | undefined ?? {}), composition: context.preview.composition});
     const locale = context.session.locale;
     // The cross-surface contract may be written by the terminal task, but it is not that task's
     // method output. It must never shadow the brief/material object selected for replay.

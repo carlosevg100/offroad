@@ -15,6 +15,7 @@ import {originationSeniorReadoutSchema} from '@offroad/domain-contracts';
 import {createQueueClient,type CapitalProjectAnalysisJob} from '../src/queue';
 import {processOriginationThesisJob,transformCapitalM07FinalProduct} from '../src/origination-thesis';
 import {ensureInitialAgentPlan} from '../src/agent-plan';
+import {createCapitalPublicCaptureStorage} from '../src/capital-public-capture-storage';
 import type {ModelGateway} from '@offroad/model-gateway';
 const actor='10000000-0000-4000-8000-000000000201',organization='20000000-0000-4000-8000-000000000201';
 const url='https://example.invalid/capture-licensed';
@@ -91,7 +92,18 @@ async function main(){
  // The worker loop runs this same deterministic preparation before the executor.
  // The SDK eval must preserve that dependency, not fabricate an agent-plan row.
  phase='real-agent-plan';z.uuid().parse(await ensureInitialAgentPlan(job,realQueue));
- const purge=await client.rpc('worker_claim_capital_capture_purge_v1',{p_worker_token:'w'.repeat(64),p_limit:100});assert.equal(purge.error,null);
+ // Earlier SDKs revoke real source rights. Complete the actual purge transport
+ // before this producer instead of claiming their due items and abandoning them.
+ phase='real-prior-fixture-purge';
+ const janitor=createCapitalPublicCaptureStorage(client);let purgedBeforeProducer=0;
+ for(let batch=0;batch<10;batch++){
+  const results=await janitor.purgeOnce('w'.repeat(64),20);
+  assert.ok(results.every(result=>result.state==='purged'));purgedBeforeProducer+=results.length;
+  if(results.length===0)break;
+ }
+ const retentionHealthy=sql(`select private.capital_public_retention_healthy_v1(w.id,c.policy_id) from private.worker_tokens w cross join private.capital_public_retention_controls c where c.singleton and w.token_sha256=extensions.digest(repeat('w', 64),'sha256');`,db);
+ assert.equal(retentionHealthy,'t');
+ process.stdout.write(JSON.stringify({eval:'capital_m07_native_sdk',event:'prior-fixture-purge',purged:purgedBeforeProducer,healthy:true})+'\n');
  let sends=0,acknowledgements=0;
  const queue={...realQueue,complete:async(...args:Parameters<typeof realQueue.complete>)=>{acknowledgements++;if(acknowledgements===2)await realQueue.complete(...args);},
   fail:async(...args:Parameters<typeof realQueue.fail>)=>{

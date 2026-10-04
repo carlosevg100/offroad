@@ -8,6 +8,7 @@ import {z} from "zod";
 
 import {approveNativeMaterialProductionPlan} from "@/lib/artifacts/material-production-plan-command";
 import {routing, type AppLocale} from "@/i18n/routing";
+import {capitalProjectReviewCommand, decideCapitalProjectReview, loadCapitalProjectReviewBasis} from "@/lib/artifacts/capital-project-review";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {prepareIntakeRequestLadders} from "@/lib/intake/replay";
 import {processIntakeSession} from "@/lib/intake/server";
@@ -221,62 +222,26 @@ export async function decideOriginationArtifact(
     ? rawLocale as AppLocale
     : routing.defaultLocale;
   const parsed = z.object({
-    projectId: z.uuid(),
-    artifactId: z.uuid(),
-    fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
-    decision: z.enum(["confirm", "request_changes"]),
-    note: z.string().trim().max(5_000),
+    projectId: z.uuid(), artifactId: z.uuid(), revisionId: z.uuid(),
+    fingerprint: z.string().regex(/^[a-f0-9]{64}$/), manifestFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+    commandId: z.uuid(), selfApprovalDeclared: z.boolean(),
+    decision: z.enum(["confirm", "request_changes"]), note: z.string().trim().max(5_000),
   }).safeParse({
-    projectId: value(formData, "project_id"),
-    artifactId: value(formData, "artifact_id"),
-    fingerprint: value(formData, "artifact_fingerprint"),
-    decision: value(formData, "decision"),
-    note: value(formData, "note"),
+    projectId: value(formData, "project_id"), artifactId: value(formData, "artifact_id"), revisionId: value(formData, "revision_id"),
+    fingerprint: value(formData, "artifact_fingerprint"), manifestFingerprint: value(formData, "manifest_fingerprint"),
+    commandId: value(formData, "command_id"), selfApprovalDeclared: value(formData, "self_approval_declared") === "true",
+    decision: value(formData, "decision"), note: value(formData, "note"),
   });
-  if (!parsed.success || (parsed.data.decision === "request_changes" && parsed.data.note.length < 2)) {
-    return {ok: false, code: "invalid"};
-  }
-
-  const {supabase, organization} = await requireWorkspace(locale);
-  const [{data: artifact}, {data: project}] = await Promise.all([
-    supabase.from("capital_project_artifacts")
-      .select("id, artifact_fingerprint, status")
-      .eq("organization_id", organization.id)
-      .eq("capital_project_id", parsed.data.projectId)
-      .eq("id", parsed.data.artifactId)
-      .maybeSingle(),
-    supabase.from("capital_projects")
-      .select("entry_job")
-      .eq("organization_id", organization.id)
-      .eq("id", parsed.data.projectId)
-      .maybeSingle(),
-  ]);
-  if (!artifact || artifact.status !== "pending_confirmation" || artifact.artifact_fingerprint !== parsed.data.fingerprint) {
-    return {ok: false, code: "stale"};
-  }
-
-  const revision = project?.entry_job === "company_debt_view"
-    ? "request_company_debt_view_revision_v1" as const
-    : project?.entry_job === "origination_thesis"
-      ? "request_origination_thesis_revision_v1" as const
-      : project?.entry_job === "capital_planning"
-        ? "request_capital_planning_revision_v1" as const
-      : null;
-  if (!revision) return {ok: false, code: "stale"};
-
-  const {error} = parsed.data.decision === "request_changes"
-    ? await supabase.rpc(revision, {
-        p_artifact_id: parsed.data.artifactId,
-        p_artifact_fingerprint: parsed.data.fingerprint,
-        p_note: parsed.data.note,
-      })
-    : await supabase.rpc("decide_capital_project_artifact", {
-        p_artifact_id: parsed.data.artifactId,
-        p_artifact_fingerprint: parsed.data.fingerprint,
-        p_decision: "confirm",
-        p_note: undefined,
-      });
-  if (error) return {ok: false, code: error.code === "55000" || error.code === "P0002" ? "stale" : "save"};
+  if (!parsed.success || (parsed.data.decision === "request_changes" && parsed.data.note.length < 2)) return {ok: false, code: "invalid"};
+  const {supabase} = await requireWorkspace(locale);
+  const basis = await loadCapitalProjectReviewBasis(supabase, parsed.data.projectId, parsed.data.artifactId, parsed.data.revisionId);
+  if (!basis || basis.artifactFingerprint !== parsed.data.fingerprint || basis.manifestFingerprint !== parsed.data.manifestFingerprint) return {ok: false, code: "stale"};
+  try {
+    const command = capitalProjectReviewCommand(basis, {commandId: parsed.data.commandId, decision: parsed.data.decision,
+      note: parsed.data.note || null, selfApprovalDeclared: parsed.data.selfApprovalDeclared});
+    const {error} = await decideCapitalProjectReview(supabase, command.args);
+    if (error) return {ok: false, code: ["40001", "55000", "P0002"].includes(error.code ?? "") ? "stale" : "save"};
+  } catch {return {ok: false, code: "save"};}
 
   revalidatePath(`/${locale}/app/projects/${parsed.data.projectId}`);
   revalidatePath(`/${locale}/app`, "layout");

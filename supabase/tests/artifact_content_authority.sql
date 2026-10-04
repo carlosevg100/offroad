@@ -28,6 +28,13 @@ begin
   or result#>'{revision,manifest}' is distinct from 'null'::jsonb or result->'blocks'<>'[]'::jsonb
   or result->>'freshness' is distinct from 'unknown' then
   raise exception 'incomplete ancestry must fail closed'; end if;
+ if to_regprocedure('private.read_artifact_revision_pre_s11_v1(uuid)') is not null then
+  if result is distinct from private.read_artifact_revision_pre_s11_v1(current_id)
+   or result is distinct from private.read_artifact_revision_pre_debt_v1(current_id) then
+   raise exception 'native wrappers replaced inherited denied ancestry DTO';
+  end if;
+  raise notice 'PASS artifact_native_wrappers_preserve_complete_denied_frontier_DTO';
+ end if;
  raise notice 'PASS artifact_ancestry_frontier_denies_content';
  result:=pg_temp.person_write('answer','authority-second-root','internal',
   pg_temp.manifest('answer','internal',jsonb_build_array(pg_temp.source_ref(pg_temp.val('source_b','')::uuid)),pg_temp.summary(blocks)),blocks);
@@ -50,6 +57,13 @@ begin
  result:=pg_temp.read_as(owner_id,multi_parent);
  if result#>>'{restriction,kind}' is distinct from 'source_rights' or result->'blocks'<>'[]'::jsonb then
   raise exception 'removing visual citations lost an ancestor restriction'; end if;
+ if to_regprocedure('private.read_artifact_revision_pre_s11_v1(uuid)') is not null then
+  if result is distinct from private.read_artifact_revision_pre_s11_v1(multi_parent)
+   or result is distinct from private.read_artifact_revision_pre_debt_v1(multi_parent) then
+   raise exception 'native wrappers replaced inherited restricted source DTO';
+  end if;
+  raise notice 'PASS artifact_native_wrappers_preserve_inherited_rights_link_IDs';
+ end if;
  raise notice 'PASS artifact_multiple_parents_inherit_rights_without_visual_citation';
  result:=pg_temp.read_as(owner_id,root_id);
  if result#>'{revision,manifest}' is distinct from 'null'::jsonb then raise exception 'restricted root leaked'; end if;

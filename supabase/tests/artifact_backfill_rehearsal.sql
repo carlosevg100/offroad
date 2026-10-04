@@ -1,14 +1,12 @@
--- Stage 19, increment 7: the staging rehearsal of the artifact revision backfill
--- (scripts/staging/artifact-backfill-rehearsal.sql) on the replayed local stack, twice, as the lead
--- runs it on staging: the whole text as one statement, which must end in the exception
--- artifact_backfill_rehearsal_passed and leave no row behind. The text is read from the repository
--- (psql runs from its root, as in CI), so the file the lead pastes is the file this gate proves.
+-- The historical staging rehearsal is no longer an admissible prospective producer:
+-- it inserts unbound S11 CPA rows. Prove its exact native guard denial twice,
+-- complete rollback and restored triggers; do not manufacture historical native receipts.
 \set rehearsal `cat scripts/staging/artifact-backfill-rehearsal.sql`
 begin;
 create temporary table artifact_backfill_rehearsal_text(body text not null) on commit drop;
 insert into artifact_backfill_rehearsal_text values(:'rehearsal');
 do $$
-declare body text;outcome text;before jsonb:='{}';after jsonb:='{}';t regclass;n bigint;run integer;
+declare body text;outcome text;state text;before jsonb:='{}';after jsonb:='{}';t regclass;n bigint;run integer;
 begin
  select x.body into strict body from artifact_backfill_rehearsal_text x;
  if position('artifact_backfill_rehearsal_passed:' in body)=0 or body ~* '(^|\n)\s*(begin|commit|rollback|start transaction)\s*;' or body ~ '(^|\n)\s*\\[a-z]' then
@@ -19,12 +17,12 @@ begin
   execute format('select count(*) from %s',t) into n;before:=before||jsonb_build_object(t::text,n);
  end loop;
  for run in 1..2 loop
-  outcome:=null;
-  begin execute body; exception when others then outcome:=sqlerrm; end;
-  if outcome is null or outcome not like 'artifact_backfill_rehearsal_passed:%' then
-   raise exception 'staging rehearsal run % did not pass: %',run,coalesce(outcome,'it raised nothing');
+  outcome:=null;state:=null;
+  begin execute body; exception when others then outcome:=sqlerrm;state:=sqlstate; end;
+  if state is distinct from '42501' or outcome is distinct from 'capital_s11_native_commit_required' then
+   raise exception 'retired raw rehearsal run % did not fail with its native guard: %',run,coalesce(outcome,'it raised nothing');
   end if;
-  raise notice 'PASS: staging rehearsal run %: %',run,outcome;
+  raise notice 'PASS: retired raw rehearsal run % denied: %',run,outcome;
  end loop;
  for t in select c.oid::regclass from pg_class c join pg_namespace s on s.oid=c.relnamespace
   where c.relkind in ('r','p') and (s.nspname in ('public','private') or c.oid='auth.users'::regclass) order by 1 loop

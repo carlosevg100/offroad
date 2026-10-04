@@ -32,6 +32,26 @@ COPY apps/document-worker ./apps/document-worker
 # The renderer uses the same governed brand source as the product. Only the four current
 # circular-symbol assets are copied into the runtime image; no web application code ships.
 COPY apps/web/public/brand ./brand
+# The finite preview captures only seventeen exact consumed extraction bodies.
+# Their presence grants no reuse right; runtime requires a human published basis.
+COPY docs/product/gold-cases/runs/gc01/ai-review-corpus/manifest.json ./preview-corpus/manifest.json
+COPY docs/product/gold-cases/runs/gc01/ai-review-corpus/01_ITR_1T26_31mai2026.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/02_Proposta_Administracao_AGOE_2026.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/af_11a_emissao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/af_13a_emissao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/af_14a_emissao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/af_15a_emissao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/anbima_ettj_2026-09-04.csv \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/bcb_sgs_cdi_diario.json \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/ca_notas_comerciais_2026-05-27.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/ca_operacao_estruturada_2026-05-27.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/cra_257_relatorio_mensal_4t25.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/cra_292_termo_securitizacao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_11a_emissao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_13a_emissao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_14a_emissao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/escritura_15a_emissao.txt \
+     docs/product/gold-cases/runs/gc01/ai-review-corpus/ri_release_1t26.txt ./preview-corpus/
 
 RUN pnpm install --frozen-lockfile --filter @offroad/document-worker...
 
@@ -47,7 +67,9 @@ RUN pnpm install --frozen-lockfile --filter @offroad/document-worker...
 #                        store of whichever package declared them.
 RUN pnpm --filter @offroad/document-worker... build \
  && pnpm deploy --legacy --filter @offroad/document-worker --prod --config.node-linker=hoisted /out \
- && cp -R apps/document-worker/released-methods /out/released-methods
+ && cp -R apps/document-worker/released-methods /out/released-methods \
+ && pnpm --filter @offroad/document-worker exec esbuild scripts/package-preview-consumed-corpus.ts --bundle --platform=node --format=esm --outfile=/tmp/package-preview.mjs \
+ && node /tmp/package-preview.mjs /repo/preview-corpus /out/evidence17
 
 # A bundle that cannot start has to fail here, in the build, and not forty minutes later as a
 # task that boots and dies in CloudWatch. Started with an empty environment the worker must
@@ -130,6 +152,7 @@ COPY --from=build /out/dist ./dist
 COPY --from=build /repo/apps/document-worker/released-methods ./released-methods
 COPY --from=build /out/package.json ./package.json
 COPY --from=build /repo/brand ./brand
+COPY --from=build /out/evidence17 ./evidence17
 # Frozen source packs of the gold cases travel with the image: a job bound to a pack reads it
 # from here and never reaches the internet.
 COPY packages/testing-fixtures/assets/camil/source-pack ./source-packs/gc01-analista-ib-camil

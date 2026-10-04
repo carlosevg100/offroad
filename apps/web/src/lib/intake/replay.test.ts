@@ -79,6 +79,29 @@ describe("intake event replay boundary", () => {
     });
   });
 
+  it("loads truthful absent-purpose history and later explicit purpose from immutable rows", async () => {
+    const frame = {declaredBy: frameRow.payload.frame.declaredBy, version: frameRow.payload.frame.version};
+    const first = {...frameRow, payload: {frame}};
+    const second = {...frameRow, event_id: "73000000-0000-4000-8000-000000000099", sequence: 2,
+      occurred_at: "2026-08-25T12:00:01.000Z", payload: {frame: {...frame, version: 2, useOfProceeds: "refinance"}}};
+    expect(intakeEventFromRow(first)).toMatchObject({type: "capital_need_declared", frame: {version: 1}});
+    expect((intakeEventFromRow(first) as {frame: unknown}).frame).not.toHaveProperty("useOfProceeds");
+    const replay = await loadIntakeReplay({supabase: supabaseWith([first, second]), organizationId: "organization-1", sessionId});
+    expect(replay.kind).toBe("ready");
+    if (replay.kind !== "ready") throw new Error("replay absent");
+    expect(replay.state.capitalNeedFrame).toMatchObject({version: 2, useOfProceeds: "refinance"});
+    expect(first.payload.frame).not.toHaveProperty("useOfProceeds");
+  });
+
+  it("returns no fabricated request-ladder write for a currently unclassified work", async () => {
+    const frame = {declaredBy: frameRow.payload.frame.declaredBy, version: frameRow.payload.frame.version};
+    const supabase = supabaseWith([{...frameRow, payload: {frame}}]);
+    const rpc = vi.fn();
+    Object.assign(supabase, {rpc});
+    await expect(prepareIntakeRequestLadders({supabase, organizationId: "organization-1", sessionId})).resolves.toEqual({recorded: 0});
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("removes database idempotency metadata before parsing the strict domain event", () => {
     expect(intakeEventFromRow({
       ...scopeRow,

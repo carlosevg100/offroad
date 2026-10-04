@@ -1,0 +1,112 @@
+-- This disposable fixture owns a distinct worker credential; never reactivate another fixture token.
+-- Synthetic provider records only. Execute transactionally; never leaves business fixtures.
+begin;
+\ir legacy_workspace_capabilities.sql
+\ir legacy_persistent_work_fixture.sql
+\ir provider_research_plan_snapshot.sql
+\ir execution_approval.sql
+insert into auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at,is_sso_user,is_anonymous) values
+('10000000-0000-4000-8000-000000000981','authenticated','authenticated','provider-research-a@example.invalid','{"provider":"email","providers":["email"]}','{}',now(),now(),false,false),
+('10000000-0000-4000-8000-000000000982','authenticated','authenticated','provider-research-b@example.invalid','{"provider":"email","providers":["email"]}','{}',now(),now(),false,false);
+insert into public.organizations(id,organization_type,name,created_by) values
+('20000000-0000-4000-8000-000000000981','originator','Synthetic research A','10000000-0000-4000-8000-000000000981'),
+('20000000-0000-4000-8000-000000000982','originator','Synthetic research B','10000000-0000-4000-8000-000000000982');
+insert into public.organization_memberships(organization_id,user_id,role,status,joined_at) values
+('20000000-0000-4000-8000-000000000981','10000000-0000-4000-8000-000000000981','owner','active',now()),
+('20000000-0000-4000-8000-000000000982','10000000-0000-4000-8000-000000000982','owner','active',now());
+insert into public.onboarding_progress(organization_id,user_id,journey,current_step) values
+('20000000-0000-4000-8000-000000000981','10000000-0000-4000-8000-000000000981','originator','organization');
+insert into public.funds(id,organization_id,name,strategy,created_by) values
+('40000000-0000-4000-8000-000000000981','20000000-0000-4000-8000-000000000981','Synthetic owned fund','credit','10000000-0000-4000-8000-000000000981'),
+('40000000-0000-4000-8000-000000000982','20000000-0000-4000-8000-000000000982','Synthetic other tenant fund','credit','10000000-0000-4000-8000-000000000982');
+insert into public.mandate_versions(organization_id,fund_id,version_number,status,source_kind,constraints,valid_from,created_by) values
+('20000000-0000-4000-8000-000000000981','40000000-0000-4000-8000-000000000981',1,'active','synthetic','{"ticket_min":1000000,"sectors":["synthetic"],"notes":"MUST NOT LEAK","contact_email":"private@example.invalid"}',current_date,'10000000-0000-4000-8000-000000000981');
+insert into public.fund_directory(id,legal_name,kind,status,claimed_by_organization_id,claimed_at) values
+('50000000-0000-4000-8000-000000000981','Synthetic owned directory','credit_fund','registered','20000000-0000-4000-8000-000000000981',now()),
+('50000000-0000-4000-8000-000000000982','Synthetic other directory','credit_fund','registered','20000000-0000-4000-8000-000000000982',now());
+create temp table provider_research_fixture(job_id uuid, frozen jsonb);
+grant all on provider_research_fixture to authenticated;
+set local role authenticated;
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000981","role":"authenticated"}',true);
+do $$
+declare p jsonb:=pg_temp.provider_research_plan_fixture(); r jsonb; replay jsonb; request uuid:=gen_random_uuid(); mutation jsonb;
+begin
+  perform pg_temp.legacy_advisor_result(public.start_advisor_project_v1(request,'pt-BR','Synthetic provider research',p#>>'{job,id}','Pesquise os financiadores disponíveis para nossa organização.','public_information',p));
+  r:=public.start_provider_research_project_v1(request,'pt-BR','Synthetic provider research','Pesquise os financiadores disponíveis para nossa organização.',p,null);
+  replay:=public.start_provider_research_project_v1(request,'pt-BR','Synthetic provider research','Pesquise os financiadores disponíveis para nossa organização.',p,null);
+  if replay->>'research_job_id' is distinct from r->>'research_job_id' then raise exception 'research replay duplicated job'; end if;
+  if (select count(*) from public.processing_jobs where id=(r->>'research_job_id')::uuid and status='awaiting_approval')<>1 then raise exception 'research not held for approval'; end if;
+  if (select array_agg(task_id order by ordinal) from public.capital_project_plan_tasks where capital_project_id=(r->>'capital_project_id')::uuid) is distinct from array['M01','K01','K02'] then raise exception 'research plan task mismatch'; end if;
+  insert into pg_temp.provider_research_fixture select (r->>'research_job_id')::uuid,content from public.capital_project_briefs where capital_project_id=(r->>'capital_project_id')::uuid and brief_kind='provider_research';
+  begin
+    perform public.start_provider_research_project_v1(request,'pt-BR','Synthetic provider research','Changed objective',p,null);
+    raise exception 'changed objective replay accepted';
+  exception when invalid_parameter_value then null; end;
+  for mutation in select value from jsonb_array_elements(jsonb_build_array(
+    jsonb_set(p,'{job,targetTaskIds}','["K04"]'),jsonb_set(p,'{taskSpecs,2,dependencies}','[]'),
+    jsonb_set(p,'{job,firstWorkProduct}','"match_screen"'),jsonb_set(p,'{registryVersion}','"unknown"')
+  )) loop
+    begin
+      perform public.start_provider_research_project_v1(gen_random_uuid(),'pt-BR','Synthetic mutation','Pesquise financiadores.',mutation,null);
+      raise exception 'altered research plan accepted';
+    exception when invalid_parameter_value then null; end;
+  end loop;
+  begin
+    perform public.worker_load_provider_research_context((r->>'research_job_id')::uuid,repeat('x',64));
+    raise exception 'unapproved research capability accepted';
+  exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+insert into private.worker_tokens(label,token_sha256) values('synthetic-provider_research_persistence-worker',extensions.digest('080f3eb4d93acb386091e666174d04deeeec288b2b4a11c742d9162704c9e522','sha256'));
+do $$
+declare f record; context jsonb; task_run uuid; artifact jsonb; claim jsonb; cap text; task text; dependencies jsonb;
+begin
+  select * into strict f from pg_temp.provider_research_fixture;
+  if jsonb_array_length(f.frozen->'providers')<>2 or f.frozen::text like '%MUST NOT LEAK%' or f.frozen::text like '%private@example.invalid%'
+    or f.frozen::text like '%other tenant%' or f.frozen::text like '%other directory%' then raise exception 'source tenant or allowlist boundary failed'; end if;
+  if not exists(select 1 from jsonb_array_elements(f.frozen->'providers') p where p->>'sourceClass'='directory') then raise exception 'owned directory absent'; end if;
+  perform pg_temp.fixture_approve_execution(f.job_id);
+  update public.processing_jobs set available_at=now()-interval '1 day' where id=f.job_id;
+  claim:=public.worker_claim_job_v3('080f3eb4d93acb386091e666174d04deeeec288b2b4a11c742d9162704c9e522',600);
+  if claim->>'job_id' is distinct from f.job_id::text then raise exception 'research claim mismatch'; end if;
+  cap:=claim->>'capability_token';
+  context:=public.worker_load_provider_research_context(f.job_id,cap);
+  if context-'approvalStatus'-'priorArtifacts' is distinct from f.frozen then raise exception 'loader changed frozen snapshot'; end if;
+  update public.mandate_versions set constraints='{"ticket_min":9999999}' where fund_id='40000000-0000-4000-8000-000000000981';
+  if public.worker_load_provider_research_context(f.job_id,cap) is distinct from context then raise exception 'source update changed approved research'; end if;
+  begin
+    update public.processing_jobs set status='succeeded',result='{}' where id=f.job_id;
+    raise exception 'unfinished research completed';
+  exception when insufficient_privilege then null; end;
+  -- The existing starter/context contract remains read-only diagnostic evidence.
+  -- Every previous body/finish/complete path is now a negative cutover check.
+  task_run:=public.worker_start_capital_project_task(f.job_id,cap,'M01','provider_research','2026.09.10-v1',repeat('a',64),'{}');
+  begin
+    perform public.worker_record_capital_project_artifact(f.job_id,cap,task_run,'provider_research_scope','provider-research-scope.v1','draft',repeat('a',64),'{"synthetic":true}','[]','[]');
+    raise exception 'legacy provider writer accepted';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_capture_denied' then raise; end if;
+  end;
+  begin
+    perform public.worker_finish_capital_project_task(f.job_id,cap,task_run,'succeeded',null,repeat('a',64),'[]','{}',null);
+    raise exception 'legacy provider finish accepted';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_capture_denied' then raise; end if;
+  end;
+  begin
+    perform public.worker_complete_job(f.job_id,cap,jsonb_build_object('provider_research_artifact_id',gen_random_uuid(),'artifact_fingerprint',repeat('a',64)));
+    raise exception 'unbound provider job completed';
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_native_provider_completion_invalid' then raise; end if;
+  end;
+  if exists(select 1 from public.capital_project_artifacts where processing_job_id=f.job_id)
+    or exists(select 1 from public.capital_project_task_runs where processing_job_id=f.job_id and status='succeeded')
+    or (select status='succeeded' or model_calls<>0 or model_cost_usd<>0 from public.processing_jobs where id=f.job_id)
+  then raise exception 'denied provider path produced an artifact, success or spend'; end if;
+  update public.fund_directory set claimed_by_organization_id=null,claimed_at=null where id='50000000-0000-4000-8000-000000000981';
+  begin
+    perform public.worker_load_provider_research_context(f.job_id,cap);
+    raise exception 'revoked source ownership accepted';
+  exception when insufficient_privilege then null; end;
+end $$;
+rollback;

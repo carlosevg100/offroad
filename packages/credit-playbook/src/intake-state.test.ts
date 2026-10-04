@@ -133,6 +133,47 @@ describe("adaptive intake state", () => {
     expect(state.capitalNeedFrame).not.toHaveProperty("availableCollateral");
   });
 
+  it("replays an unclassified declaration without inventing purpose or a routed request", () => {
+    const first = baseEvents()[0]!;
+    if (first.type !== "capital_need_declared") throw new Error("fixture frame missing");
+    const {useOfProceeds: _purpose, ...frame} = first.frame;
+    const event: IntakeEvent = {...first, frame};
+    const state = replayIntake("case-1", policy, [event]);
+    expect(state.status).toBe("routing");
+    expect(state.capitalNeedFrame).not.toHaveProperty("useOfProceeds");
+    expect(state.archetypeRoute).toBeNull();
+    expect(state.activeRequestBatch).toBeNull();
+    expect(buildPendingRequestLadders(state)).toEqual([]);
+    expect(event.frame).not.toHaveProperty("useOfProceeds");
+  });
+
+  it("preserves unclassified history before a later explicit refinancing declaration", () => {
+    const first = baseEvents()[0]!;
+    if (first.type !== "capital_need_declared") throw new Error("fixture frame missing");
+    const {useOfProceeds: _purpose, ...frame} = first.frame;
+    const initial: IntakeEvent = {...first, frame};
+    const later: IntakeEvent = {...first, eventId: "explicit-purpose", sequence: 2, occurredAt: at(2),
+      frame: {...frame, useOfProceeds: "refinance", version: 2}};
+    const events = [initial, later];
+    const before = structuredClone(events);
+    const state = replayIntake("case-1", policy, events);
+    expect(state.capitalNeedFrame).toMatchObject({useOfProceeds: "refinance", version: 2, declaredAt: at(2)});
+    expect(state.decisionLog.filter((entry) => entry.type === "capital_need_recorded")).toHaveLength(2);
+    expect(state.revision).toBe(2);
+    expect(events).toEqual(before);
+    expect(initial.frame).not.toHaveProperty("useOfProceeds");
+    expect(() => replayIntake("case-1", policy, [later, initial])).toThrow();
+  });
+
+  it("still rejects malformed explicit purpose values in historical declarations", () => {
+    const first = baseEvents()[0]!;
+    if (first.type !== "capital_need_declared") throw new Error("fixture frame missing");
+    for (const invalid of [null, 42, false, {}, [], "", "   "]) {
+      const event = {...first, frame: {...first.frame, useOfProceeds: invalid}};
+      expect(() => replayIntake("case-1", policy, [event as unknown as IntakeEvent])).toThrow();
+    }
+  });
+
   it("does not ask before the classified-room, derivation and public-source ladder is complete", () => {
     const initial = replayIntake("case-1", policy, baseEvents());
     expect(initial.activeRequestBatch).toBeNull();

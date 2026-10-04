@@ -96,7 +96,16 @@ do $$declare result jsonb;begin
 end $$;
 select pg_temp.expect_setup_error(format('select public.worker_record_initial_institutional_candidate_v2(%L,repeat(''w'',64),%L,%L::jsonb,%L::jsonb)',current_setting('test.setup_job'),'90000000-0000-4000-8000-000000000881',jsonb_set(current_setting('test.setup_candidate')::jsonb,'{resultFingerprint}',to_jsonb(repeat('b',64))),current_setting('test.setup_pin')),'institutional_setup_snapshot_replay_mismatch');
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000882","role":"authenticated"}',true);
-select pg_temp.expect_setup_error(format('select public.worker_load_institutional_model_context_v3(%L,repeat(''w'',64))',current_setting('test.setup_job')),'institutional_capture_denied');
+-- The canonical wrapper preserves the setup capture NOWAIT authority path first.
+-- A different authenticated account is denied before any captured setup is read.
+do $$begin
+ begin
+  perform public.worker_load_institutional_model_context_v3(current_setting('test.setup_job')::uuid,repeat('w',64));
+  raise exception 'Foreign authenticated account read the captured institutional setup';
+ exception when insufficient_privilege then
+  if sqlerrm<>'institutional_capture_denied' then raise;end if;
+ end;
+end $$;
 reset role;
 do $$declare result jsonb;c private.institutional_model_configurations;begin
  select * into strict c from private.institutional_model_configurations where id=(current_setting('test.setup_stored')::jsonb->>'candidateId')::uuid;

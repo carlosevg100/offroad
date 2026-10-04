@@ -5688,7 +5688,7 @@ $$;
 -- and candidate, with the same error whatever the target, and nothing changes.
 set local role postgres;
 do $$
-declare d public.capital_project_execution_brief_dispatches; base public.work_milestones; request uuid; attempt text; refused integer:=0; v jsonb;
+declare d public.capital_project_execution_brief_dispatches; base public.work_milestones; request uuid; attempt text; refused integer:=0; v jsonb; native_adoption boolean:=false;
 begin
   select * into strict d from public.capital_project_execution_brief_dispatches
     where organization_id='20000000-0000-4000-8000-000000000001' and accepted_at is not null
@@ -5699,6 +5699,11 @@ begin
       and not exists(select 1 from public.work_milestones n where n.organization_id=m.organization_id and n.supersedes_milestone_id=m.id);
   select id into strict request from public.work_continuation_requests
     where organization_id=d.organization_id and work_id=d.capital_project_id and kind='dependency_update';
+  -- Resolve the actual target regime under the fixture owner before switching API roles.
+  -- A baseline V1 target retains WORK denial; installed native targets deny the retired route.
+  if to_regprocedure('private.adopt_work_update_before_native_v1(uuid,uuid,integer)') is not null then
+    select exists(select 1 from private.work_update_native_regimes where update_id=request) into native_adoption;
+  end if;
   set local role authenticated;
   perform set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1"}',true);
   v:=public.work_update_view_v1(d.capital_project_id);
@@ -5718,7 +5723,11 @@ begin
       execute attempt;
       raise exception 'other tenant reached a continuation command: %',attempt;
     exception when insufficient_privilege then
-      if sqlerrm<>'work_continuation_access_denied' then raise; end if;
+      -- Future updates use the native adoption command. The retired v1 route
+      -- refuses before target resolution; all other foreign commands keep their
+      -- existing indistinguishable access denial.
+      if sqlerrm is distinct from (case when native_adoption and attempt like 'select public.adopt_work_update_v1(%'
+        then 'work_update_native_command_required' else 'work_continuation_access_denied' end) then raise; end if;
       refused:=refused+1;
     end;
   end loop;

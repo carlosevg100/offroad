@@ -193,8 +193,8 @@ begin
 end $$;
 
 -- 9. Release: an external revision is blocked for the head reader and the exact reader alike until a
--- confirm decision names its exact fingerprint; then both say released. Internal stays internal.
-do $$ declare m jsonb;b jsonb;r jsonb;x jsonb;h jsonb;plan uuid;run uuid;art uuid;
+-- human approval records an exact review; external publication remains a separate authority. Internal stays internal.
+do $$ declare m jsonb;b jsonb;r jsonb;x jsonb;h jsonb;approval jsonb;
 begin
  b:=jsonb_build_array(pg_temp.block('teaser','section','{"title":"Teaser"}',jsonb_build_array(pg_temp.claim('revenue-2025','980'))));
  m:=pg_temp.manifest('material','external','[]',pg_temp.summary(b));
@@ -204,24 +204,34 @@ begin
  h:=pg_temp.head_as('a11b0000-0000-4000-8000-000000000001','material','teaser');
  if x->>'release'<>'blocked' or h->>'release'<>'blocked' or x#>>'{restriction,kind}'<>'release' or jsonb_array_length(x->'blocks')<>0 or jsonb_typeof(x#>'{revision,manifest}')<>'null'
   or h#>>'{revision,id}'<>r->>'revision_id' or h->>'freshness'<>x->>'freshness' then raise exception 'external revision without approval is not blocked alike: % %',x,h; end if;
- -- The approval fact that exists today: a confirm decision on the exact fingerprint (a synthetic
- -- decision row bound to a synthetic legacy artifact row; stage 20 binds approvals to revisions).
- plan:=pg_temp.fixture_execution_plan('a11b0000-0000-4000-9000-000000000003');
- insert into public.capital_project_task_runs(id,organization_id,capital_project_id,plan_id,plan_task_id,attempt_no,status,trigger_event)
- select 'a4192000-0000-4000-9000-000000000041',t.organization_id,t.capital_project_id,t.plan_id,t.id,1,'queued','{"synthetic":true}'
- from public.capital_project_plan_tasks t where t.plan_id=plan order by t.ordinal limit 1;
- insert into public.capital_project_artifacts(id,organization_id,capital_project_id,plan_id,task_run_id,artifact_type,schema_version,artifact_version,status,input_fingerprint,artifact_fingerprint,content,processing_job_id,created_by_kind)
- values('a4192000-0000-4000-9000-000000000051','a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002',plan,'a4192000-0000-4000-9000-000000000041','alternative_map','synthetic.v1',1,'pending_confirmation',repeat('1',64),repeat('2',64),'{"synthetic":true}','a4192000-0000-4000-9000-000000000015','worker');
- insert into public.capital_project_artifact_decisions(organization_id,capital_project_id,artifact_id,artifact_fingerprint,decision,decided_by)
- values('a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000002','a4192000-0000-4000-9000-000000000051',r->>'manifest_fingerprint','confirm','a11b0000-0000-4000-8000-000000000001');
+ -- A real human act approves this exact authored revision. No legacy CPA surrogate.
+ insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by)
+ values('a11b0000-0000-4000-9000-000000000001',true,false,'a11b0000-0000-4000-8000-000000000001');
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+ set local role authenticated;
+ approval:=public.review_artifact_revision_v1((r->>'revision_id')::uuid,r->>'manifest_fingerprint','approve',null,null,true,gen_random_uuid());
+ reset role;
+ if not private.artifact_review_is_active_v1('a11b0000-0000-4000-9000-000000000001',(approval->>'reviewId')::uuid)
+ or not exists(select 1 from public.artifact_reviews v where v.id=(approval->>'reviewId')::uuid
+  and v.organization_id='a11b0000-0000-4000-9000-000000000001' and v.work_id='a11b0000-0000-4000-9000-000000000002'
+  and v.revision_id=(r->>'revision_id')::uuid and v.manifest_fingerprint=r->>'manifest_fingerprint'
+  and v.audience='external' and v.act='approve' and v.self_approval_declared) then
+  raise exception 'exact human approval was not recorded';
+ end if;
+ -- A review of generic authored material is not external publication authority.
+ -- No CPA fingerprint surrogate, native binding or publication receipt is fabricated.
  x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',(r->>'revision_id')::uuid);
  h:=pg_temp.head_as('a11b0000-0000-4000-8000-000000000001','material','teaser');
- if x->>'release'<>'released' or h->>'release'<>'released' or jsonb_typeof(x->'restriction')<>'null' or jsonb_array_length(x->'blocks')<>1 or h#>'{blocks}'<>x#>'{blocks}' then
-  raise exception 'confirm on the exact fingerprint did not release for both readers: % %',x,h; end if;
+ if x->>'release'<>'blocked' or h->>'release'<>'blocked'
+  or x#>>'{restriction,kind}'<>'release' or h#>>'{restriction,kind}'<>'release'
+  or x->'blocks'<>'[]'::jsonb or h->'blocks'<>'[]'::jsonb
+  or x#>'{revision,manifest}' is distinct from 'null'::jsonb or h#>'{revision,manifest}' is distinct from 'null'::jsonb then
+  raise exception 'human review substituted for external publication authority';
+ end if;
  x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',pg_temp.val('r2','revision_id')::uuid);
  h:=pg_temp.head_as('a11b0000-0000-4000-8000-000000000001','answer','q1');
  if x->>'release'<>'internal' or h->>'release'<>'internal' or h#>>'{revision,id}'<>pg_temp.val('r2','revision_id') then raise exception 'internal revision not internal alike: % %',x,h; end if;
- raise notice 'PASS: external is blocked for preview and download alike, released after a confirm on its exact fingerprint; head and exact readers decide equal';
+ raise notice 'PASS: exact human approval is recorded; external material remains blocked without separate publication authority, for both readers';
 end $$;
 
 -- 10. The worker command: refused with a capability that is not artifact-revision.v1, refused with
@@ -300,34 +310,8 @@ end $$;
 -- evidence the row carries, no method, execution, input snapshot, source or bytes; an institutional
 -- result names itself and is released once established. Outside the backfill the origin is the
 -- writer's kind.
-do $$ declare x jsonb;rev uuid;l record;
-begin
- -- (a) capital_project_artifacts: the row of proof 9 was projected on insert.
- select r.id into rev from public.artifact_revisions r where r.legacy_ref->>'table'='capital_project_artifacts' and r.legacy_ref->>'id'='a4192000-0000-4000-9000-000000000051';
- x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',rev);
- if x#>>'{artifact,kind}'<>'work_product' or x#>>'{artifact,subject}'<>'alternative_map' or x#>>'{artifact,legacyOrigin,table}'<>'capital_project_artifacts'
-  or x#>>'{revision,origin}'<>'worker' or x#>>'{revision,legacyRef,fingerprint}'<>repeat('2',64) or x#>'{revision,legacyRef}'<>x#>'{revision,manifest,legacy}'
-  or x#>>'{revision,manifest,format}'<>'json' or jsonb_typeof(x#>'{revision,manifest,bytes}')<>'null' or jsonb_typeof(x#>'{revision,contentSha256}')<>'null'
-  or x#>>'{revision,manifest,provenance,producer}'<>'legacy:capital_project_artifacts' or x#>>'{revision,manifest,provenance,jobId}'<>'a4192000-0000-4000-9000-000000000015'
-  or x#>>'{revision,manifest,provenance,taskRunId}'<>'a4192000-0000-4000-9000-000000000041'
-  or not (x#>'{revision,legacyRef,evidence}') @> '[{"key":"artifact_type","value":"alternative_map"},{"key":"input_fingerprint","value":"1111111111111111111111111111111111111111111111111111111111111111"},{"key":"evidence_ref_count","value":"0"}]'::jsonb
-  or jsonb_array_length(x->'links')<>0 or jsonb_array_length(x->'blocks')<>0 or x->>'freshness'<>'current'
- then raise exception 'capital project artifact projection: %',x; end if;
- -- The decision of proof 9 sits on this row but names another fingerprint: this revision stays internal.
- if x->>'release'<>'internal' then raise exception 'legacy work product released without a decision on its fingerprint: %',x; end if;
- -- The real confirm command on a second pending row releases its revision, through the legacy fingerprint.
- insert into public.capital_project_artifacts(id,organization_id,capital_project_id,plan_id,task_run_id,artifact_type,schema_version,artifact_version,status,input_fingerprint,artifact_fingerprint,content,processing_job_id,created_by_kind)
- select 'a4192000-0000-4000-9000-000000000052',organization_id,capital_project_id,plan_id,task_run_id,'company_debt_diagnostic','synthetic.v1',1,'pending_confirmation',repeat('1',64),repeat('3',64),'{"synthetic":true}',processing_job_id,'worker'
- from public.capital_project_artifacts where id='a4192000-0000-4000-9000-000000000051';
- select r.id into rev from public.artifact_revisions r where r.legacy_ref->>'table'='capital_project_artifacts' and r.legacy_ref->>'id'='a4192000-0000-4000-9000-000000000052';
- perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
- set local role authenticated;
- perform public.decide_capital_project_artifact('a4192000-0000-4000-9000-000000000052',repeat('3',64),'confirm');
- reset role;
- x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',rev);
- if x->>'release'<>'released' or x#>>'{revision,legacyRef,fingerprint}'<>repeat('3',64) then raise exception 'confirmed legacy row not released: %',x; end if;
- raise notice 'PASS: capital_project_artifacts projected with the legacy fingerprint verbatim, evidence and no link; the real confirm releases it';
-end $$;
+-- S11/C11 prospective raw projection denial is covered by the native commit suites and
+-- work_dependencies_projection; no legacy CPA is fabricated as a substitute for native output.
 
 do $$ declare x jsonb;rev uuid;a uuid:=pg_temp.val('source_a','')::uuid;
 begin
@@ -403,27 +387,27 @@ begin
  raise notice 'PASS: deal_state_objects material projected as evidence only; an approved package review on its fingerprint releases it';
 end $$;
 
--- 13. The backfill: a row inserted with the projection trigger off is projected by the backfill as
--- origin legacy; running the backfill again adds nothing.
+-- 13. The backfill retains its historical contract on the case-manifest store.
+-- This does not disable native S11/C11 guards or manufacture a native receipt.
 do $$ declare counts jsonb;again jsonb;before bigint;x jsonb;rev uuid;
 begin
- alter table public.capital_project_artifacts disable trigger artifact_revision_projection;
- insert into public.capital_project_artifacts(id,organization_id,capital_project_id,plan_id,task_run_id,artifact_type,schema_version,artifact_version,status,input_fingerprint,artifact_fingerprint,content,processing_job_id,created_by_kind)
- select 'a4192000-0000-4000-9000-000000000053',organization_id,capital_project_id,plan_id,task_run_id,'meeting_brief','synthetic.v1',1,'draft',repeat('1',64),repeat('4',64),'{"synthetic":true}',processing_job_id,'worker'
- from public.capital_project_artifacts where id='a4192000-0000-4000-9000-000000000051';
- alter table public.capital_project_artifacts enable trigger artifact_revision_projection;
+ alter table public.case_artifact_manifests disable trigger artifact_revision_projection;
+ insert into public.case_artifact_manifests(id,organization_id,intake_session_id,processing_run_id,schema_version,locale,input_fingerprint,manifest_fingerprint,manifest,created_by)
+ select 'a4192000-0000-4000-9000-000000000062',organization_id,intake_session_id,processing_run_id,schema_version,locale,input_fingerprint,repeat('4',64),manifest,created_by
+ from public.case_artifact_manifests where id='a4192000-0000-4000-9000-000000000061';
+ alter table public.case_artifact_manifests enable trigger artifact_revision_projection;
  before:=(select count(*) from public.artifact_revisions);
  counts:=private.backfill_artifact_revisions_v1();
- if (counts->>'capitalProjectArtifacts')::integer<>1 or (counts->>'caseArtifactManifests')::integer<>0 or (counts->>'institutionalModelResults')::integer<>0 or (counts->>'dealStateMaterials')::integer<>0
+ if counts<>'{"capitalProjectArtifacts":0,"caseArtifactManifests":1,"institutionalModelResults":0,"dealStateMaterials":0}'::jsonb
   or (select count(*) from public.artifact_revisions)<>before+1 then raise exception 'backfill wrote other than the unprojected row: %',counts; end if;
- select r.id into rev from public.artifact_revisions r where r.legacy_ref->>'id'='a4192000-0000-4000-9000-000000000053';
+ select r.id into strict rev from public.artifact_revisions r where r.legacy_ref->>'id'='a4192000-0000-4000-9000-000000000062';
  x:=pg_temp.read_as('a11b0000-0000-4000-8000-000000000001',rev);
- if x#>>'{revision,origin}'<>'legacy' or x#>>'{revision,legacyRef,fingerprint}'<>repeat('4',64) or x#>>'{revision,manifest,provenance,producer}'<>'legacy:capital_project_artifacts' then raise exception 'backfilled revision: %',x; end if;
+ if x#>>'{revision,origin}'<>'legacy' or x#>>'{revision,legacyRef,fingerprint}'<>repeat('4',64) or x#>>'{revision,manifest,provenance,producer}'<>'legacy:case_artifact_manifests' then raise exception 'backfilled revision: %',x; end if;
  again:=private.backfill_artifact_revisions_v1();
  if again<>'{"capitalProjectArtifacts":0,"caseArtifactManifests":0,"institutionalModelResults":0,"dealStateMaterials":0}'::jsonb or (select count(*) from public.artifact_revisions)<>before+1 then
   raise exception 'second backfill added rows: %',again; end if;
  if current_setting('offroad.artifact_backfill',true)<>'off' then raise exception 'backfill flag left on'; end if;
- raise notice 'PASS: the backfill projects an unprojected row as legacy and adds nothing when run again';
+ raise notice 'PASS: case-manifest backfill retains historical origin and is idempotent';
 end $$;
 
 -- 14. Rights pins and the receipt's fingerprint. A source named without a rights version pins the

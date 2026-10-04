@@ -259,42 +259,29 @@ do $$ declare first_m public.work_milestones;second_m public.work_milestones;beg
  raise notice 'PASS: the approval of the next brief version supersedes the previous one';
 end $$;
 
--- A confirmed artifact, through the real decision command; a returned artifact is not a milestone.
+-- A raw S11 projection without native binding cannot create a decision milestone.
 insert into public.capital_project_task_runs(id,organization_id,capital_project_id,plan_id,plan_task_id,attempt_no,status,trigger_event)
 select 'a4181000-0000-4000-9000-000000000041',t.organization_id,t.capital_project_id,t.plan_id,t.id,1,'queued','{"synthetic":true}'
 from public.capital_project_plan_tasks t join public.capital_project_plans p on p.organization_id=t.organization_id and p.id=t.plan_id
 where p.capital_project_id='a11b0000-0000-4000-9000-000000000002' and p.status='active' order by t.ordinal limit 1;
-insert into public.capital_project_artifacts(id,organization_id,capital_project_id,plan_id,task_run_id,artifact_type,schema_version,artifact_version,status,
+do $$begin
+ begin
+  insert into public.capital_project_artifacts(id,organization_id,capital_project_id,plan_id,task_run_id,artifact_type,schema_version,artifact_version,status,
  input_fingerprint,artifact_fingerprint,content,processing_job_id,created_by_kind)
 select x.id,r.organization_id,r.capital_project_id,r.plan_id,r.id,x.artifact_type,'synthetic.v1',1,'pending_confirmation',repeat('1',64),x.fingerprint,'{"synthetic":true}',
  'a4181000-0000-4000-9000-000000000031','worker'
 from public.capital_project_task_runs r cross join (values('a4181000-0000-4000-9000-000000000051'::uuid,'alternative_map',repeat('2',64)),
  ('a4181000-0000-4000-9000-000000000052'::uuid,'company_debt_diagnostic',repeat('3',64))) x(id,artifact_type,fingerprint)
 where r.id='a4181000-0000-4000-9000-000000000041';
-select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
-set local role authenticated;
-select public.decide_capital_project_artifact('a4181000-0000-4000-9000-000000000051',repeat('2',64),'confirm',null);
-select public.decide_capital_project_artifact('a4181000-0000-4000-9000-000000000052',repeat('3',64),'request_changes','Synthetic request for changes');
--- Deciding again is refused; the confirmation and its milestone stay single.
-do $$begin
- begin
-  perform public.decide_capital_project_artifact('a4181000-0000-4000-9000-000000000051',repeat('2',64),'confirm',null);
-  raise exception 'artifact decided twice';
- exception when object_not_in_prerequisite_state then
-  if sqlerrm<>'capital_project_artifact_not_pending_confirmation' then raise; end if;
+  raise exception 'unbound S11 projection accepted';
+ exception when insufficient_privilege then
+  if sqlerrm<>'capital_s11_native_commit_required' then raise; end if;
  end;
-end $$;
-reset role;
-select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
-do $$ declare m public.work_milestones;x public.capital_project_artifact_decisions;begin
- select * into strict x from public.capital_project_artifact_decisions where artifact_id='a4181000-0000-4000-9000-000000000051';
- select * into strict m from public.work_milestones where kind='decision' and subject_kind='capital_project_artifact' and subject_id='a4181000-0000-4000-9000-000000000051';
- if m.label<>'alternative_map' or m.revision<>1 or m.version_fingerprint<>repeat('2',64) or m.created_by<>x.decided_by or m.occurred_at<>x.decided_at
- or m.work_id<>'a11b0000-0000-4000-9000-000000000002' then raise exception 'artifact confirmation milestone mismatch: %',to_jsonb(m); end if;
- if exists(select 1 from public.work_milestones where subject_id='a4181000-0000-4000-9000-000000000052') then
-  raise exception 'a request for changes became a decision milestone';
+ if exists(select 1 from public.capital_project_artifacts where id in ('a4181000-0000-4000-9000-000000000051','a4181000-0000-4000-9000-000000000052'))
+ or exists(select 1 from public.work_milestones where subject_id in ('a4181000-0000-4000-9000-000000000051','a4181000-0000-4000-9000-000000000052')) then
+  raise exception 'denied raw projection left an artifact or decision milestone';
  end if;
- raise notice 'PASS: a confirmed artifact writes its decision milestone once; a return writes none';
+ raise notice 'PASS: unbound S11 insert denied; no fabricated artifact or milestone';
 end $$;
 
 -- An approved institutional configuration, through the real review command. A rejection and a stale
@@ -364,15 +351,15 @@ end $$;
 -- access to it sees none and cannot probe for one; nobody writes, updates, deletes or truncates.
 do $$begin
  if not exists(select 1 from public.organization_memberships where organization_id='a11b0000-0000-4000-9000-000000000001' and user_id='a11b0000-0000-4000-8000-000000000002' and status='active')
- or (select count(*) from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002')<>7 then
-  raise exception 'setup: expected an active member and seven milestones';
+ or (select count(*) from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002')<>6 then
+  raise exception 'setup: expected an active member and six legitimate milestones';
  end if;
 end $$;
 select set_config('test.continuity.milestone',(select id::text from public.work_milestones where subject_id='a4181000-0000-4000-9000-000000000001'),true);
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
 set local role authenticated;
 do $$ declare attempt text;begin
- if (select count(*) from public.work_milestones)<>7 then raise exception 'work owner does not see the milestones of the work'; end if;
+ if (select count(*) from public.work_milestones)<>6 then raise exception 'work owner does not see the milestones of the work'; end if;
  foreach attempt in array array[
   'insert into public.work_milestones(organization_id,work_id,kind,subject_kind,subject_id,label,created_by,occurred_at) values(''a11b0000-0000-4000-9000-000000000001'',''a11b0000-0000-4000-9000-000000000002'',''decision'',''forged_subject'',gen_random_uuid(),''Forged'',auth.uid(),now())',
   'update public.work_milestones set label=''Forged''',
@@ -411,7 +398,9 @@ do $$ declare attempt text;role_name text;begin
  foreach attempt in array array[
   'update public.work_milestones set label=label',
   'delete from public.work_milestones',
-  'truncate public.work_milestones'] loop
+  case when to_regprocedure('private.adopt_work_update_before_native_v1(uuid,uuid,integer)') is not null
+   then 'truncate public.work_milestones,private.work_update_milestone_receipts,private.work_update_review_projections'
+   else 'truncate public.work_milestones' end] loop
   begin execute attempt; raise exception 'privileged mutation of milestones: %',attempt;
   exception when check_violation then
    if sqlerrm<>'work_continuity_history_immutable' then raise; end if;

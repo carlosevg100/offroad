@@ -648,6 +648,10 @@ begin
   end;
   if not rejected then raise exception 'capital TaskRun ignored incomplete dependencies'; end if;
 
+  -- This metadata-only M01 claim fails current shared capture authority.
+  -- shared capture authority denies finish before output/grader evaluation;
+  -- it must not create an artifact, succeed, or unlock a dependent task.
+  -- Grading and native M07/S11/C11 physical production keep their SDK gates.
   rejected := false;
   begin
     perform public.worker_finish_capital_project_task(
@@ -655,91 +659,39 @@ begin
       '{"type":"company_resolution","id":"company-resolution-1"}'::jsonb,
       repeat('1', 64), '[]'::jsonb, '{}'::jsonb, null
     );
-  exception when invalid_parameter_value then rejected := true;
+  exception when insufficient_privilege then
+    if sqlerrm<>'capital_capture_denied' then raise;end if;
+    rejected := true;
   end;
-  if not rejected then raise exception 'capital TaskRun accepted ungraded success'; end if;
-
-  m01_artifact := public.worker_record_capital_project_artifact(
-    job_id, capability, m01_run, 'company_resolution', 'company-resolution.v1',
-    'draft', repeat('a', 64),
-    '{"companyName":"Cliente Planejado S.A.","website":"https://cliente-planejado.example"}'::jsonb,
-    '[{"sourceType":"public_url","sourceId":"https://cliente-planejado.example"}]'::jsonb,
-    '[]'::jsonb
-  );
-  perform public.worker_finish_capital_project_task(
-    job_id, capability, m01_run, 'succeeded',
-    jsonb_build_object('type', 'capital_project_artifact', 'id', m01_artifact ->> 'id'),
-    m01_artifact ->> 'artifact_fingerprint', '[{"grader":"schema","passed":true}]'::jsonb,
-    '{"durationMs":12}'::jsonb, null
-  );
-  m02_run := public.worker_start_capital_project_task(
-    job_id, capability, 'M02', 'normalize-objective', '2026.09.01-v1', repeat('b', 64), '{}'::jsonb
-  );
-  m02_artifact := public.worker_record_capital_project_artifact(
-    job_id, capability, m02_run, 'normalized_mandate', 'normalized-mandate.v1',
-    'draft', repeat('b', 64), '{"objective":"Preparar tese de originação"}'::jsonb,
-    '[]'::jsonb, '[]'::jsonb
-  );
-  perform public.worker_finish_capital_project_task(
-    job_id, capability, m02_run, 'succeeded',
-    jsonb_build_object('type', 'capital_project_artifact', 'id', m02_artifact ->> 'id'),
-    m02_artifact ->> 'artifact_fingerprint', '[{"grader":"schema","passed":true}]'::jsonb,
-    '{}'::jsonb, null
-  );
-  m04_run := public.worker_start_capital_project_task(
-    job_id, capability, 'M04', 'infer-archetypes', '2026.09.01-v1', repeat('d', 64), '{}'::jsonb
-  );
+  if not rejected then raise exception 'company_scope_ungraded_task_success_shortcut';end if;
+  -- Do not manufacture a company_resolution body from an invented public URL.
+  -- This scope test retains only lifecycle/authorization negatives; native
+  -- body production and source licensing are verified by the SDK gates.
+  if exists(select 1 from public.capital_project_artifacts where task_run_id=m01_run)
+    or (select status from public.capital_project_task_runs where id=m01_run)<>'running' then
+    raise exception 'company_scope_ungraded_task_left_effects';
+  end if;
+  -- Without a proven first result the dependency remains unavailable.
   rejected := false;
   begin
-    perform public.worker_record_capital_project_artifact(
-      job_id, capability, m04_run, 'archetype_hypotheses', 'archetype-hypotheses.v1',
-      'pending_confirmation', repeat('d', 64), '{"candidates":["refinance"]}'::jsonb,
-      '[]'::jsonb, '[]'::jsonb
+    perform public.worker_start_capital_project_task(
+      job_id,capability,'M04','infer-archetypes','2026.09.01-v1',repeat('d',64),'{}'::jsonb
     );
-  exception when object_not_in_prerequisite_state then rejected := true;
+  exception when object_not_in_prerequisite_state then rejected:=true;
   end;
-  if not rejected then raise exception 'capital artifact omitted exact TaskSpec dependencies'; end if;
-
-  m04_artifact := public.worker_record_capital_project_artifact(
-    job_id, capability, m04_run, 'archetype_hypotheses', 'archetype-hypotheses.v1',
-    'pending_confirmation', repeat('d', 64), '{"candidates":["refinance"]}'::jsonb,
-    '[]'::jsonb,
-    jsonb_build_array(
-      jsonb_build_object('artifactId', m01_artifact ->> 'id', 'artifactFingerprint', m01_artifact ->> 'artifact_fingerprint'),
-      jsonb_build_object('artifactId', m02_artifact ->> 'id', 'artifactFingerprint', m02_artifact ->> 'artifact_fingerprint')
-    )
-  );
-  perform public.worker_finish_capital_project_task(
-    job_id, capability, m04_run, 'succeeded',
-    jsonb_build_object('type', 'capital_project_artifact', 'id', m04_artifact ->> 'id'),
-    m04_artifact ->> 'artifact_fingerprint', '[{"grader":"schema","passed":true}]'::jsonb,
-    '{}'::jsonb, null
-  );
-
-  decision_id := public.decide_capital_project_artifact(
-    (m04_artifact ->> 'id')::uuid, m04_artifact ->> 'artifact_fingerprint', 'confirm', null
-  );
-  if decision_id is null
-    or (select status from public.capital_project_artifacts
-        where id = (m04_artifact ->> 'id')::uuid) <> 'confirmed' then
-    raise exception 'capital artifact confirmation was not bound to its exact fingerprint';
-  end if;
-
-  if (select count(*) from public.capital_project_task_runs where status = 'succeeded') <> 3 then
-    raise exception 'capital TaskRun lifecycle did not persist the three proven executions';
-  end if;
+  if not rejected then raise exception 'company_scope_ungraded_task_unlocked_dependency';end if;
   begin
     update public.capital_project_task_runs set status = 'cancelled' where id = m01_run;
     raise exception 'tenant mutated a TaskRun directly';
   exception when insufficient_privilege then null;
   end;
   begin
-    update public.capital_project_artifacts
-    set content = '{"tampered":true}'::jsonb
-    where id = (m01_artifact ->> 'id')::uuid;
+    update public.capital_project_artifacts set content='{"tampered":true}'::jsonb
+    where task_run_id=m01_run;
     raise exception 'tenant mutated a capital project artifact directly';
   exception when insufficient_privilege then null;
   end;
+  raise notice 'PASS company_scope tenant company objective calculation scope and dependency barriers; ungraded task success denied without effects';
 end;
 $$;
 
