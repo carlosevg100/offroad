@@ -78,6 +78,11 @@ jobs:
       - name: Verify native provider SDK contracts before the database journey
         run: node scripts/ci/test-capital-native-provider-sdk.mjs --self-test
 
+      - name: Verify preview install ownership and canonical source lookup
+        run: |
+          python3 -B scripts/ci/test-preview-install-order.py
+          node --test scripts/evals/preview-finalize-bounded-closure.test.mjs
+
       - name: Run quality gate
         run: pnpm check
 

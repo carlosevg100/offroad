@@ -1,4 +1,28 @@
 begin;
+-- Check the actual installed RPC contracts before building this rollback fixture.
+-- A valid PL/pgSQL body alone does not prove that a called overload exists.
+do $rpc_contracts$
+declare expected record; actual_oid oid; actual_defaults integer;
+begin
+ for expected in select * from (values
+  ('public.review_artifact_revision_v1(uuid,text,text,uuid,text,boolean,uuid,uuid)',1),
+  ('public.read_work_review_dashboard_v1(uuid,uuid,uuid)',2),
+  ('public.reaffirm_work_revision_v1(uuid,uuid,text,uuid,text,boolean,uuid)',0),
+  ('private.work_review_ancestor_v1(uuid,uuid,uuid,uuid)',0),
+  ('public.create_artifact_revision_v1(uuid,text,text,text,jsonb,jsonb,jsonb,text,bigint)',0),
+  ('public.record_work_report_v1(uuid,text,jsonb,text,uuid)',0),
+  ('public.contest_work_decision_v1(uuid,uuid,text,text,uuid)',0),
+  ('public.read_work_decision_v1(uuid)',0),
+  ('private.artifact_revision_change_v1(uuid,uuid)',0),
+  ('public.read_artifact_revision_v1(uuid)',0),
+  ('public.read_artifact_head_v1(uuid,text,text)',0)
+ ) as contract(signature,defaults_count) loop
+  actual_oid:=to_regprocedure(expected.signature)::oid;
+  if actual_oid is null then raise exception 'dashboard_fixture_rpc_missing:%',expected.signature;end if;
+  select pronargdefaults into strict actual_defaults from pg_proc where oid=actual_oid;
+  if actual_defaults is distinct from expected.defaults_count then raise exception 'dashboard_fixture_rpc_defaults_changed:%',expected.signature;end if;
+ end loop;
+end $rpc_contracts$;
 \ir artifact_revision_setup.sql
 -- No private receipt or native producer is forged: this fixture authors ordinary
 -- governed answer revisions through the installed human writer.
@@ -45,7 +69,7 @@ begin
  perform pg_temp.refused(format('select public.reaffirm_work_revision_v1(%L,%L,%L,%L,%L,true,%L)',work,r2->>'revision_id',r2->>'manifest_fingerprint',a1->>'reviewId','New substantive recommendation',gen_random_uuid()),'artifact_review_material_change','material cannot reaffirm');
  -- Foreign cursors are real human-authored records, never an arbitrary UUID.
  perform pg_temp.act_as('a4192000-0000-4000-8000-000000000001');set local role authenticated;
- foreign_revision:=public.create_artifact_revision_v1('a4192000-0000-4000-9000-000000000002','answer','foreign-dashboard','internal',m,b);
+ foreign_revision:=public.create_artifact_revision_v1('a4192000-0000-4000-9000-000000000002','answer','foreign-dashboard','internal',m,b,'[]'::jsonb,null::text,null::bigint);
  foreign_report:=public.record_work_report_v1('a4192000-0000-4000-9000-000000000002','Foreign report','{"decidedBy":"Foreign Board","forum":"Foreign meeting","decidedOn":"2026-10-02","evidenceSourceVersionId":null}','Foreign human report',gen_random_uuid());
  reset role;perform pg_temp.act_as(actor);
  perform pg_temp.refused(format('select public.read_work_review_dashboard_v1(%L,%L,null)',work,foreign_revision->>'revision_id'),'review_cursor_access_required','foreign revision cursor denied');

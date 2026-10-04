@@ -1,8 +1,25 @@
 -- Genuine human return after the complete C11 native SQL lifecycle. These
 -- transaction-local Storage/provider observations remain SQL protocol fixtures.
+-- The CI installer owns core11 once; a fixture must not replay its DDL.
+reset role;
+do $installed_revision_contract$
+declare signature text; role_name text; table_oid oid:=to_regclass('private.capital_debt_revision_inputs');
+begin
+ if table_oid is null or not exists(select 1 from pg_class where oid=table_oid and relrowsecurity and relforcerowsecurity) then raise exception 'capital_debt_revision_installed_table_required';end if;
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+  if has_table_privilege(role_name,table_oid,'SELECT,INSERT,UPDATE,DELETE') then raise exception 'capital_debt_revision_private_table_exposed';end if;
+ end loop;
+ foreach signature in array array['public.read_capital_project_artifact_review_v2(uuid,uuid,uuid)','public.decide_capital_project_artifact_v2(uuid,uuid,uuid,text,text,text,text,boolean,uuid)','public.worker_load_capital_debt_revision_inputs_v1(uuid,text)'] loop
+  if to_regprocedure(signature) is null then raise exception 'capital_debt_revision_installed_rpc_required:%',signature;end if;
+  if not has_function_privilege('authenticated',signature,'EXECUTE') or has_function_privilege('anon',signature,'EXECUTE') or has_function_privilege('service_role',signature,'EXECUTE') then raise exception 'capital_debt_revision_installed_rpc_acl_invalid:%',signature;end if;
+ end loop;
+ signature:='private.capital_debt_revision_dispatch_allowed_v1(uuid)';
+ if to_regprocedure(signature) is null then raise exception 'capital_debt_revision_installed_guard_required';end if;
+ foreach role_name in array array['anon','authenticated','service_role'] loop
+  if has_function_privilege(role_name,signature,'EXECUTE') then raise exception 'capital_debt_revision_dispatch_guard_exposed';end if;
+ end loop;
+end $installed_revision_contract$;
 \ir capital_debt_native_lifecycle.sql
-\ir ../../pending/capital_public_artifact_review_cutover.sql
-\ir ../../pending/capital_debt_native_revision.sql
 reset role;
 create temp table debt_revision_human_fixture(k text primary key,v jsonb);
 grant all on debt_revision_human_fixture to authenticated;

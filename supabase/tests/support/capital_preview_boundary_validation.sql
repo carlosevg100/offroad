@@ -1,25 +1,29 @@
--- EXTERNAL SUPPORT EVAL: execute only in an authorized rollback database session.
--- No runtime result is claimed by distributing this file.
+-- Evaluate the already-installed prospective or canonical preview contract.
+-- The launcher owns installation; this rollback-only eval never reapplies guarded DDL.
 \set ON_ERROR_STOP on
 begin;
-create temp table preview_performance_before on commit drop as
-select oid,oid::regprocedure::text signature,proacl,prosecdef,provolatile,proconfig,prosrc,
- proname in ('capital_preview_projection_deadline_v1','capital_preview_allocation_deadline_v1',
- 'capital_preview_run_deadline_v1','worker_seal_capital_preview_boundary_v1') unchanged_body
-from pg_proc where pronamespace='private'::regnamespace and proname in
+do $$declare role_name text;helper text;current_function record;begin
+ if (select count(*) from pg_proc where pronamespace='private'::regnamespace and proname in
  ('require_capital_preview_run_v1','require_capital_preview_recipe_v1',
  'worker_prepare_capital_preview_boundary_v1','capital_preview_projection_deadline_v1',
  'capital_preview_allocation_deadline_v1','capital_preview_run_deadline_v1',
- 'worker_seal_capital_preview_boundary_v1');
-\ir ../../pending/capital_preview_boundary_validation.sql
-do $$declare role_name text;helper text;begin
- if (select count(*) from pg_temp.preview_performance_before)<>7 then
+ 'worker_seal_capital_preview_boundary_v1'))<>7 then
  raise exception 'preview_performance_snapshot_count';end if;
- if exists(select 1 from pg_temp.preview_performance_before b left join pg_proc p on p.oid=b.oid
- where p.oid is null or p.proacl is distinct from b.proacl or p.prosecdef is distinct from b.prosecdef
- or p.provolatile is distinct from b.provolatile or p.proconfig is distinct from b.proconfig
- or (b.unchanged_body and p.prosrc is distinct from b.prosrc))then
+ for current_function in select oid,prosecdef,provolatile,proconfig,proacl,proowner,
+ proname in ('worker_prepare_capital_preview_boundary_v1','worker_seal_capital_preview_boundary_v1') worker_command
+ from pg_proc where pronamespace='private'::regnamespace and proname in
+ ('require_capital_preview_run_v1','require_capital_preview_recipe_v1',
+ 'worker_prepare_capital_preview_boundary_v1','capital_preview_projection_deadline_v1',
+ 'capital_preview_allocation_deadline_v1','capital_preview_run_deadline_v1',
+ 'worker_seal_capital_preview_boundary_v1')loop
+ if not current_function.prosecdef or current_function.provolatile<>'v'
+ or current_function.proconfig is distinct from array['search_path=""']::text[]
+ or has_function_privilege('authenticated',current_function.oid,'EXECUTE')is distinct from current_function.worker_command
+ or has_function_privilege('anon',current_function.oid,'EXECUTE')
+ or has_function_privilege('service_role',current_function.oid,'EXECUTE')
+ or exists(select 1 from aclexplode(coalesce(current_function.proacl,acldefault('f',current_function.proowner)))acl where acl.grantee=0 and acl.privilege_type='EXECUTE')then
  raise exception 'preview_performance_wrapper_or_untouched_contract_changed';end if;
+ end loop;
  foreach helper in array array[
  'private.require_capital_preview_run_proof_v1(uuid,text,uuid,boolean)',
  'private.capital_preview_projection_leaf_deadline_v1(uuid,uuid,text,timestamptz)']loop
