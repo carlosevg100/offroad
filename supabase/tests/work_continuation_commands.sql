@@ -549,6 +549,10 @@ select set_config('test.native.update',pg_temp.id('R1')::text,true);
 select set_config('test.native.revision',(select revision::text from public.work_continuation_requests where id=pg_temp.id('R1')),true);
 truncate update_effect_before;
 insert into update_effect_before select pg_temp.update_effects();
+-- This fixture has two new results, but only X1 has an earlier result milestone.
+-- Pin those real identities before switching to the API role (no private-table reads there).
+select set_config('test.baseline.adopted_results',to_jsonb(array[pg_temp.result_of('X1b'),pg_temp.result_of('X2b')])::text,true);
+select set_config('test.baseline.replaced_results',to_jsonb(array[pg_temp.result_of('X1')])::text,true);
 select pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
 set local role authenticated;
 do $$ declare adopted jsonb;replayed jsonb;begin
@@ -557,7 +561,12 @@ do $$ declare adopted jsonb;replayed jsonb;begin
   replayed:=public.adopt_work_update_v1('a4190000-0000-4000-8000-000000000201',current_setting('test.native.update')::uuid,current_setting('test.native.revision')::integer);
   if adopted->>'status' is distinct from 'adopted' or (adopted->>'replayed')::boolean is distinct from false
   or (replayed->>'replayed')::boolean is distinct from true or replayed->>'milestoneId' is distinct from adopted->>'milestoneId'
-  or jsonb_array_length(adopted->'adoptedResults')<>2 or jsonb_array_length(adopted->'replacedResults')<>2 then
+  or adopted->>'updateId' is distinct from current_setting('test.native.update')
+  or (adopted->>'revision')::integer is distinct from current_setting('test.native.revision')::integer+1
+  or (select jsonb_agg(value order by value) from jsonb_array_elements(adopted->'adoptedResults'))
+   is distinct from (select jsonb_agg(value order by value) from jsonb_array_elements(current_setting('test.baseline.adopted_results')::jsonb))
+  or adopted->'replacedResults' is distinct from current_setting('test.baseline.replaced_results')::jsonb
+  or replayed->'references' is distinct from adopted->'references' then
    raise exception 'baseline authorized adoption or replay contract mismatch';
   end if;
   raise exception using errcode='ZTA01',message='rollback_verified_baseline_adoption';
