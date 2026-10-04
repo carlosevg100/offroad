@@ -1,207 +1,95 @@
-name: Native dashboard before/after metadata diagnosis (not a release gate)
-'on':
-  push:
-    branches:
-    - codex/etapa20-provider-preview-proof
+name: Institutional NOWAIT authority proof (focal, not a release gate)
+on:
   workflow_dispatch: {}
 permissions:
   contents: read
-  packages: read
 concurrency:
-  group: stage20-focal-${{ github.ref }}
+  group: institutional-nowait-focal-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   native-focal:
-    name: Cold native preview with safe review performance telemetry
+    name: Cold canonical17 plus prospective NOWAIT authority race
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: runtime
     steps:
-    - name: Checkout diagnostic overlays only
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      with:
-        path: audit
-    - name: Checkout exact runtime 231067
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      with:
-        ref: 23106724c9a510f1cf89c6ac662a94fe0b4a91c3
-        path: runtime
-    - name: Install pnpm
-      uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413
-      with:
-        version: 10.32.1
-        run_install: false
-    - name: Set up Node.js
-      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-      with:
-        node-version-file: runtime/.nvmrc
-        cache: pnpm
-        cache-dependency-path: runtime/pnpm-lock.yaml
-    - name: Install dependencies
-      id: database_deps
-      run: pnpm install --frozen-lockfile
-    - name: Overlay declared performance diagnostics only
-      run: python3 ../audit/scripts/ci/overlay-review-performance-diagnostics.py
-    - name: Set up Supabase CLI
-      uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1
-      with:
-        version: 2.114.0
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-    - name: Log in to ghcr.io so image pulls are not anonymous and rate limited
-      run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor
-        }}" --password-stdin
-    - name: Start local Supabase and apply migrations
-      env:
-        SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
-      run: "# A previous CLI attempt can leave a stopped-but-not-removed project container\
-        \ on a\n# recycled hosted runner. Remove only this repository's exact local\
-        \ stack before boot.\nsupabase stop --no-backup || true\ndocker ps -aq --filter\
-        \ 'name=^supabase_.*_offroad$' | xargs -r docker rm -f\n# Retry the boot a\
-        \ few times, alternating registries with a pause, instead of failing the\n\
-        # whole gate on a registry limit.\nfor attempt in 1 2 3 4 5; do\n  if supabase\
-        \ start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector;\
-        \ then break; fi\n  if [ \"$attempt\" = 5 ]; then echo \"supabase start failed\
-        \ after 5 attempts\"; exit 1; fi\n  if [ \"$SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
-        \ = public.ecr.aws ]; then\n    SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io\n\
-        \  else\n    SUPABASE_INTERNAL_IMAGE_REGISTRY=public.ecr.aws\n  fi\n  export\
-        \ SUPABASE_INTERNAL_IMAGE_REGISTRY\n  echo \"supabase start failed on attempt\
-        \ $attempt; waiting 90s before retrying from $SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
-        \n  supabase stop --no-backup || true\n  sleep 90\ndone\n# A later step that\
-        \ recreates a container (the database rebuild) must name the registry\n# the\
-        \ images came from, or it pulls them again.\necho \"SUPABASE_INTERNAL_IMAGE_REGISTRY=$SUPABASE_INTERNAL_IMAGE_REGISTRY\"\
-        \ >> \"$GITHUB_ENV\"\n"
-    - name: Resolve local database URL
-      id: db
-      run: "set -euo pipefail\nSTATUS_ENV=\"$(supabase status -o env)\"\nDB_URL=\"\
-        $(printf '%s\\n' \"$STATUS_ENV\" | sed -n 's/^DB_URL=\"\\{0,1\\}\\([^\"]*\\\
-        )\"\\{0,1\\}$/\\1/p')\"\nif [ -z \"$DB_URL\" ]; then\n  DB_URL=\"postgresql://postgres:postgres@127.0.0.1:54322/postgres\"\
-        \nfi\necho \"url=$DB_URL\" >> \"$GITHUB_OUTPUT\"\nAPI_URL=\"$(printf '%s\\\
-        n' \"$STATUS_ENV\" | sed -n 's/^API_URL=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\\
-        }$/\\1/p')\"\nPUBLISHABLE_KEY=\"$(printf '%s\\n' \"$STATUS_ENV\" | sed -n\
-        \ 's/^PUBLISHABLE_KEY=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\1/p')\"\nif [\
-        \ -z \"$PUBLISHABLE_KEY\" ]; then\n  PUBLISHABLE_KEY=\"$(printf '%s\\n' \"\
-        $STATUS_ENV\" | sed -n 's/^ANON_KEY=\"\\{0,1\\}\\([^\"]*\\)\"\\{0,1\\}$/\\\
-        1/p')\"\nfi\nif [ -z \"$API_URL\" ] || [ -z \"$PUBLISHABLE_KEY\" ]; then\n\
-        \  echo 'Local Supabase API URL or publishable key unavailable' >&2\n  exit\
-        \ 1\nfi\necho \"api_url=$API_URL\" >> \"$GITHUB_OUTPUT\"\necho \"publishable_key=$PUBLISHABLE_KEY\"\
-        \ >> \"$GITHUB_OUTPUT\"\n"
-    - name: Install unpublished native consumer drafts in isolated CI only
-      id: native_consumers_install
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_NATIVE_CONSUMERS_DRAFT_INSTALL: isolated-loopback-ci
-      run: python3 -B scripts/ci/install-capital-consumers-ci-drafts.py
-    - name: Install assessment candidate only on disposable local database
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: python3 -B scripts/ci/install-assessment-native-local.py
-    - name: Install unpublished deterministic provider draft in isolated CI only
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_NATIVE_PROVIDER_DRAFT_INSTALL: isolated-loopback-ci
-      run: python3 -B scripts/ci/install-capital-provider-ci-draft.py
-    - name: Serve the authenticated capital body Edge reader
-      env:
-        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
-      run: 'set -euo pipefail
-
-        umask 077
-
-        runtime_dir="$RUNNER_TEMP/capital-body-edge"
-
-        mkdir -p "$runtime_dir"
-
-        chmod 700 "$runtime_dir"
-
-        # CLI injects built-in credentials into the server runtime only.
-
-        # JWT verification stays enabled; no privileged key enters a client.
-
-        supabase functions serve > "$runtime_dir/server.log" 2>&1 &
-
-        echo "$!" > "$runtime_dir/server.pid"
-
-        python3 -B scripts/ci/verify-capital-body-edge-ready.py
-
-        '
-    - name: Work review dashboard SQL and integrated runner target guards
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_WORK_REVIEW_DRAFT_INSTALL: isolated-loopback-ci
-      run: 'set -euo pipefail
-
-        python3 -B scripts/ci/install-work-review-dashboard-ci-draft.py
-
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/work_review_dashboard.sql
-
-        node --test scripts/evals/stage20-integrated-review.test.mjs scripts/evals/stage20-material-review-adapter.test.mjs
-
-        '
-      id: review
-      if: ${{ !cancelled() && steps.db.outcome == 'success' }}
-    - name: Real provider-family allocations required by cross-family Storage denial
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
-        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
-      run: node scripts/ci/test-capital-native-provider-sdk.mjs
-    - name: 'BEFORE metadata16: full native preview and sanitized dashboard telemetry'
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
-        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
-        PREVIEW_DRAFTS_IN_LOCAL_STACK: '1'
-        PREVIEW_HTTP_NAMESPACE: a8830001
-        PREVIEW_INTEGRATED_REVIEW_EVAL: '1'
-      run: python3 -B scripts/ci/test-capital-preview-sdk.py
-      id: preview_before
-    - name: Apply guarded metadata16 ONLY to disposable local stack
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-      run: 'set -euo pipefail
-
-        python3 -c "import os;from urllib.parse import urlparse;assert urlparse(os.environ[''DATABASE_URL'']).hostname
-        in (''localhost'',''127.0.0.1'',''::1'')"
-
-        psql "$DATABASE_URL" -X --single-transaction -v ON_ERROR_STOP=1 -f scripts/evals/diagnostics/dashboard-metadata-forward16.sql
-
-        psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/work_review_dashboard_metadata.sql
-
-        '
-    - name: 'AFTER metadata16: fresh namespace full preview and sanitized dashboard
-        telemetry'
-      env:
-        DATABASE_URL: ${{ steps.db.outputs.url }}
-        OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
-        OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
-        PREVIEW_HTTP_FIXTURE: '1'
-        PREVIEW_HTTP_NAMESPACE: a8830002
-        PREVIEW_INTEGRATED_REVIEW_EVAL: '1'
-      run: 'set -euo pipefail
-
-        # Existing installers already applied the exact full stack above. Do not replay
-        guarded DDL.
-
-        python3 -B scripts/ci/test-execution-brief-native-agent.py
-
-        loader="$(printf ''%s\n'' node_modules/.pnpm/tsx@*/node_modules/tsx/dist/loader.mjs
-        | head -n 1)"
-
-        node --import "$PWD/$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
-        --self-test
-
-        node --import "$PWD/$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
-
-        '
-    - name: Stop the capital body Edge reader
-      run: "set -euo pipefail\nruntime_dir=\"$RUNNER_TEMP/capital-body-edge\"\nif\
-        \ [ -f \"$runtime_dir/server.pid\" ]; then\n  runtime_pid=\"$(cat \"$runtime_dir/server.pid\"\
-        )\"\n  if [[ \"$runtime_pid\" =~ ^[0-9]+$ ]]; then kill \"$runtime_pid\" 2>/dev/null\
-        \ || true; fi\nfi\nrm -rf -- \"$runtime_dir\"\n"
-      if: always()
-    - name: Stop local Supabase
-      run: supabase stop --no-backup
-      if: always()
+      - name: Checkout audit overlays only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: audit
+      - name: Checkout exact published runtime769
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: 769d7b8e66dff29817866347714d5f84ced186f1
+          path: runtime
+      - name: Guard exact runtime and three closed overlays
+        run: |
+          python3 - <<'PYGUARD'
+          import ast,hashlib,json,shutil,subprocess
+          from pathlib import Path
+          runtime=Path.cwd().resolve();audit=(runtime.parent/'audit').resolve()
+          assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()=='769d7b8e66dff29817866347714d5f84ced186f1'
+          entries=[{'path': 'supabase/pending/institutional_setup_capture_nowait_order.sql', 'baseSha256': None, 'sha256': '6450f088930429c9b91a15428b833829c44f65bdd91951d566aadb5a208a760b'}, {'path': 'scripts/ci/test-institutional-setup-capture-concurrency.py', 'baseSha256': '1c6c51353bfe072419aa272132ce6365119d235f5ac62c9cba2d47d6862fd132', 'sha256': '441aeb14ea102f95217606fbca63c84241ead5c74d5a4260a58ee1abf48ab4da'}, {'path': 'supabase/tests/institutional_setup_input_snapshots.sql', 'baseSha256': 'c52331e5716f39f936d368cf17ea84b40e12424cf1bf79b7156fd391c0fedfcc', 'sha256': '76e761c8b1adcc7cea3a77d1728c4a10e4b2ac32e2e72bc7b00ee9133ce82493'}]
+          assert len(entries)==3 and len({x['path']for x in entries})==3
+          for entry in entries:
+           rel=entry['path'];src=audit/rel;dest=runtime/rel
+           assert src.is_file() and not src.is_symlink() and audit in src.resolve().parents
+           assert hashlib.sha256(src.read_bytes()).hexdigest()==entry['sha256'],rel
+           before=hashlib.sha256(dest.read_bytes()).hexdigest()if dest.is_file()else None
+           assert before==entry['baseSha256'],rel
+           if rel.endswith('.py'):ast.parse(src.read_text())
+          for entry in entries:
+           dest=runtime/entry['path'];dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(audit/entry['path'],dest)
+          manifest=json.loads((runtime/'docs/build/schema-history/stage20-native-canonical.json').read_text())
+          assert len(manifest['groups'])==17
+          for group in manifest['groups']:
+           assert hashlib.sha256((runtime/group['path']).read_bytes()).hexdigest()==group['sha256']
+          print('exact_runtime769_three_overlay_hashes_and_canonical17: PASS; no DDL yet')
+          PYGUARD
+      - name: Set up pinned Supabase CLI
+        uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1
+        with:
+          version: 2.114.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Ensure local PostgreSQL client
+        run: |
+          command -v psql || { sudo apt-get update -qq && sudo apt-get install -y postgresql-client; }
+      - name: Boot disposable Auth Storage and database, cold canonical17
+        env:
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
+        run: |
+          set -euo pipefail
+          supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector,mailpit
+          supabase db reset --local --no-seed
+          supabase status -o env > "$RUNNER_TEMP/nowait-local-status.env"
+          python3 - <<'PYURL'
+          import os,re
+          from pathlib import Path
+          from urllib.parse import urlparse
+          lines=Path(os.environ['RUNNER_TEMP'],'nowait-local-status.env').read_text().splitlines()
+          values=[line.split('=',1)[1].strip().strip('"')for line in lines if line.startswith('DB_URL=')]
+          assert len(values)==1
+          u=urlparse(values[0]);assert u.scheme in ('postgresql','postgres') and u.hostname in ('localhost','127.0.0.1','::1') and not u.query and not u.fragment
+          with open(os.environ['GITHUB_ENV'],'a')as output:output.write('DATABASE_URL='+values[0]+'\n')
+          print('disposable_loopback_database: PASS')
+          PYURL
+      - name: Apply exact prospective forward only to loopback database
+        run: |
+          set -euo pipefail
+          python3 - <<'PYLOCAL'
+          import os
+          from urllib.parse import urlparse
+          u=urlparse(os.environ['DATABASE_URL'])
+          assert u.scheme in ('postgresql','postgres') and u.hostname in ('localhost','127.0.0.1','::1') and not u.query and not u.fragment
+          PYLOCAL
+          psql "$DATABASE_URL" -Xq -v ON_ERROR_STOP=1 -f supabase/pending/institutional_setup_capture_nowait_order.sql
+      - name: Verify current capability and foreign account negatives
+        run: psql "$DATABASE_URL" -Xq -v ON_ERROR_STOP=1 -f supabase/tests/institutional_setup_input_snapshots.sql
+      - name: Verify genuine two-session NOWAIT races and unchanged authority
+        run: python3 -B scripts/ci/test-institutional-setup-capture-concurrency.py
+      - name: Stop only disposable local stack
+        if: always()
+        run: supabase stop --no-backup
