@@ -190,10 +190,10 @@ jobs:
         loader="$(printf ''%s\n'' node_modules/.pnpm/tsx@*/node_modules/tsx/dist/loader.mjs
         | head -n 1)"
 
-        node --import "$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
+        node --import "$PWD/$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
         --self-test
 
-        node --import "$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
+        node --import "$PWD/$loader" apps/document-worker/scripts/capital-preview-native-sdk-eval.ts
 
         '
     - name: Stop the capital body Edge reader
