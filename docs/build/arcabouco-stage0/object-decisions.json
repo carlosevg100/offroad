@@ -5014,9 +5014,9 @@
         }
       },
       "owner": "Engenharia do arcabouço nativo, etapa20",
-      "decision": "preservar",
+      "decision": "refatorar",
       "stage": "20",
-      "reason": "Objeto do consumidor/autoridade nativos da etapa20, com fonte exata aplicada em staging; produção depende da promoção e conferência reais.",
+      "reason": "Corrigir colisão entre variável local de source version e alias da versão institucional, preservando autoridade, bloqueios e metadados completos da função.",
       "sources": [
         {
           "path": "supabase/migrations/20261004175415_assessment_native_sources.sql",
@@ -5029,6 +5029,13 @@
           "line": 1220,
           "anchor": "alter function private.assessment_input_snapshot_authority_v1(uuid,uuid,uuid) rename to assessment_input_snapshot_before_institutional_v1;",
           "mechanism": "alias_rename"
+        },
+        {
+          "path": "supabase/migrations/20261004184529_assessment_house_corpus_alias.sql",
+          "line": 5,
+          "anchor": "declare target regprocedure:='private.assessment_input_snapshot_before_institutional_v1(uuid,uuid,uuid)'::regprocedure;",
+          "mechanism": "pg_get_functiondef_patch",
+          "functionIdentity": "private.assessment_input_snapshot_before_institutional_v1(uuid,uuid,uuid)"
         }
       ]
     },
@@ -312700,6 +312707,13 @@
       "decision": "preservar",
       "stage": "20",
       "reason": "Projetar metadados da revisão com direitos atuais e DTO preservado; leitor integral inalterado; staging aplicado, produção exige recibo real."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261004184529_assessment_house_corpus_alias.sql",
+      "decision": "preservar",
+      "stage": "20",
+      "reason": "Correção prospectiva exata de alias institucional;16migrações anteriores imutáveis."
     }
   ],
   "staging_archive": [

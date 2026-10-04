@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-10-02T13:13:47.997488+00:00",
-  "source": "staging gjkkjtbfnssdsbmlhmwk; private.job_failure_class(jsonb) and private.worker_fail_job(uuid,text,jsonb,boolean,integer) re-captured from production ifnogpksgdadruooqydi on 2026-09-23 because staging carries staging-only patches for them; receivables_scope_sources_current(uuid,uuid,jsonb) and record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text), rewritten by the 3M migration merged after the capture, captured from production on 2026-09-23; worker_record_agent_assessment_v1(uuid,text,jsonb) and worker_sync_project_information_requests_v1(uuid,text,jsonb), restated in full by the 4B migration 20260923224304, re-captured from production on 2026-09-23 after that apply; bind_job_authority_v1(), job_for_capability(uuid,text), worker_claim_job(text,integer), worker_claim_job_v2(text,integer) and worker_runtime_schema_contract_v1(), text-patched by the increment 5 migration governed_evaluation_transport, captured from staging after its apply; production bodies after the production apply are identical (md5 compared); on 2026-09-25 the six functions rewritten by 20260925153755_production_budget_ceilings were added or refreshed from the migration replay: five equal production byte for byte; private.worker_activate_integration_preview_run_v1 keeps two comment lines that the committed 20260905175807 file carries and that production and staging lack (pre-existing, comments only), and private.worker_enqueue_receivables_method_refresh_v1 equals production while staging carries a staging-only variant; on 2026-09-25 private.append_domain_event_v1(uuid,uuid,text,uuid,text,jsonb,uuid,bigint,uuid) and private.complete_event_outbox_v1(text,uuid,text), text-patched by work_dependency_events (stage 18, increment 3A), were added from the migration replay; the staging bodies after its apply and the production bodies before it, patched by the same replacements, hash to the same sha256; on 2026-09-25 private.apply_dependency_event_v1(uuid,uuid) and private.merge_dependency_update_request_v1(uuid,uuid,uuid,uuid[]), text-patched by work_dependency_recompute (stage 18, increment 3B), public.worker_runtime_schema_contract_v1(), extended by it with the dependency-recompute.v1 capability, and private.execution_contract_basis_v1(uuid,uuid,text), private.request_work_execution_producer_v1(text,text) and private.request_work_execution_producer_v2(text,text,text), which it reads unchanged to derive their explicit-subject variants, were added from a local replay of every migration (PGlite, Postgres 17) whose 79 earlier bodies equal this snapshot byte for byte; the staging and production bodies must be recaptured after the apply; on 2026-09-26 private.apply_dependency_event_v1(uuid,uuid), private.merge_dependency_update_request_v1(uuid,uuid,uuid,uuid[]), private.bind_job_authority_v1() and private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text), text-patched by institutional_result_dependencies (stage 18, increment 5A), and private.plan_dependency_recompute_v1(uuid,uuid) and private.advance_dependency_update_request_v1(uuid,uuid,uuid), which it text-patches for the first time, were captured from a local replay of every migration (a disposable Postgres 18 cluster) whose 84 earlier bodies equal this snapshot byte for byte; the staging and production bodies must be recaptured after the apply; on 2026-09-26 public.worker_runtime_schema_contract_v1(), extended by dependency_recompute_health (stage 18, increment 6A) with the dependency-recompute-health.v1 capability, was captured from a local replay of every migration (a disposable Postgres 18 cluster) whose 85 other bodies equal this snapshot byte for byte; the staging and production bodies must be recaptured after the apply; on 2026-09-26 private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text), text-patched again by work_update_integration (stage 18, increment 5C), and private.review_institutional_configuration_v1(uuid,uuid,text,text,text), private.review_institutional_configuration_before_sources_v1(uuid,uuid,text,text,text), private.read_institutional_model_results_v1(uuid) and private.read_project_revision_history_v1(uuid), which it text-patches for the first time, were captured from a local replay of every migration (a disposable Postgres 18 cluster) whose 86 earlier bodies equal this snapshot byte for byte; the staging and production bodies must be recaptured after the apply; on 2026-09-26 private.enqueue_incremental_deal_state_analysis(uuid,uuid,text), text-patched by material_package_approved_trigger (applied as 20260926053634 in staging and 20260926053701 in production) to accept the material_package_approved trigger, was captured from a local replay of every migration (a disposable Postgres 18 cluster) whose other bodies equal this snapshot byte for byte; after the apply its body read from staging and production equals the snapshot (sha256 c51fab36); on 2026-09-26 private.enqueue_incremental_deal_state_analysis(uuid,uuid,text) and private.approve_advisor_execution_brief_v1(uuid,uuid,text,uuid), text-patched by deal_state_route (applied as 20260926062438 in staging and 20260926062533 in production), private.settle_stale_execution_jobs_v1(), restated by it from the body pinned by md5 of prosrc e8151062934a1b67539feb0ed8dcc032, and private.execution_hold_is_live_v1(uuid), which it creates, were captured from a local replay of every migration (a disposable Postgres 18 cluster) whose other 89 bodies equal this snapshot byte for byte; before the migration the replay bodies of the approval, the enqueue, the settlement and private.execution_dispatch_is_current(uuid,boolean) hash as measured in staging and production (sha256 of pg_get_functiondef b11a6bfc, c51fab36, 0f02eb2d and 74442692); the approval, the settlement and the liveness helper enter the snapshot for the first time, read back by the migration through literal pg_get_functiondef signatures; after the apply the four bodies read from staging and production equal this snapshot (sha256 6fe530d5, 692d68dd, 0aae7d22 and 1276ac00); on 2026-09-26 public.worker_runtime_schema_contract_v1(), extended by artifact_revision_protocol (stage 19, increment 2b) with the artifact-revision.v1 capability, was captured from a local replay of every migration (a disposable Postgres 18 cluster) whose other bodies equal this snapshot byte for byte; after the apply, 20260926183532 in staging and 20260926183957 in production, its body read from staging and production equals the snapshot (sha256 352cbda9); on 2026-09-26 private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text), text-patched by artifact_producers (stage 19, increment 4) to register the committed result as its execution_result artifact revision right after the result milestone, and private.create_artifact_revision_v1(uuid,uuid,text,text,text,text,jsonb,jsonb,jsonb,text,bigint,jsonb,uuid,uuid,uuid,boolean), which it text-patches for the first time to accept stored bytes only for an object the governed upload stored for the work, were captured from a local replay of every migration (a disposable Postgres 18 cluster) whose other 92 bodies equal this snapshot byte for byte; after the apply, 20260926203509 in staging and 20260926203623 in production, both bodies read from staging and production equal this snapshot (sha256 f2e39d37 and 6bf6bab4); on 2026-09-28 create_artifact_revision_v1 was captured from staging with the stage-20 additive migration in a rollback-only transaction; exact replay now also checks ordered blocks and normalized dependencies. Permanent apply 20260928114813 in staging and 20260928115102 in production was verified on 2026-09-28: both installed definitions match this snapshot (sha256 cc6786037ad1d04ab6fb470f782caa334629ed85cbea3f766ffbcfa9f907cf55). On 2026-09-28 institutional input capture v2: loader v1 denies captured jobs and runtime advertises institutional-input-snapshot.v1; captured from staging after migration 20260928162315. Production migration 20260928163641 read back byte-identical to staging for both effective definitions. On 2026-09-28 setup capture v3: loader v1 denies captured submissions and runtime advertises institutional-setup-input-snapshot.v1; captured from staging after migration 20260928174845. Production migration 20260928180833 read back byte-identical to staging for both effective definitions. On 2026-09-29 native projection 3H: create_artifact_revision_v1 and worker_runtime_schema_contract_v1 captured from the draft migration in a staging transaction fully rolled back; permanent apply not yet performed. Permanent 3H apply 20260929015835 in staging and 20260929021418 in production verified: all 15 affected public/private definitions are identical across environments; effective writer and runtime definitions match this snapshot. On 2026-09-29 native human review 3I: read_institutional_model_results_v1 captured from staging with the draft migration in a fully rolled-back transaction; permanent apply pending. Parent lineage and captured-output containment recaptured from staging under BEGIN/ROLLBACK on 2026-09-29; permanent apply pending. On 2026-09-29 execution source closure 3J: common writer captured after staging migration 20260929160225; production migrations 20260929163715 and 20260929163721 verified against staging on 2026-09-29, all 11 affected definitions identical. On 2026-09-30, stage 20 3Q retention: public.worker_runtime_schema_contract_v1() was recaptured from installed staging after capital_public_payload_retention; its 820-byte SHA-256 is b15c98f1 and production must match before merge. On 2026-10-02 the two configuration review v1 wrappers were recaptured from the live production catalogue after migration 20261002113623; installed staging definitions are identical. On 2026-10-02 private.review_artifact_revision_v1(uuid,text,text,uuid,text,boolean,uuid,uuid), rewritten by M07 20261002125617, was captured from the live production catalogue; local replay and staging definitions match byte for byte. On 2026-10-02 material native capture, production and human review: changed snapshot bodies read from live production after the eight applied migrations, compared byte for byte with live staging. On 2026-10-02 the material candidate preserves the canonical replay bodies of job_for_capability and worker_activate_integration_preview_run_v1: live production/staging match the former; the latter differs only by the two pre-existing canonical comments already documented above. No SQL behavior or installed definition was changed.",
+  "capturedAt": "2026-10-04T18:43:01Z",
+  "source": "LIVE production supplied by root; capturedAt records offline verifiedAt, not database capture time; historical preview activation canonical bytes preserved by exact dual-SHA and two-comment proof",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -48,6 +48,26 @@
       "sha256": "abbf6365d9a52feec8fc90eca2e602fb18c28c29bb3fa11d89a1677f6b27f89a"
     },
     {
+      "signature": "private.capital_debt_commit_result_core_v1(uuid,uuid,uuid,uuid,uuid,text,jsonb,uuid,text)",
+      "file": "private.capital_debt_commit_result_core_v1(uuid,uuid,uuid,uuid,uuid,text,jsonb,uuid,text).sql",
+      "sha256": "2216781aa2a547f56fc8bfc265a30e4ed39e49037c5aafcd51a8c564e4eb59c0"
+    },
+    {
+      "signature": "private.capital_debt_native_read_allowed_v1(uuid,uuid,uuid)",
+      "file": "private.capital_debt_native_read_allowed_v1(uuid,uuid,uuid).sql",
+      "sha256": "9afa78352f5f7cd3b3d5940d259e580799197ff3b312dca813c8073984631b01"
+    },
+    {
+      "signature": "private.capital_debt_recipe_deadline_v1(uuid,uuid,uuid)",
+      "file": "private.capital_debt_recipe_deadline_v1(uuid,uuid,uuid).sql",
+      "sha256": "646f6ef99cff25d50e6dc62ddf981b4e5647057861d41a368dc6c3025525014c"
+    },
+    {
+      "signature": "private.capital_m07_native_read_allowed_v1(uuid,uuid,uuid)",
+      "file": "private.capital_m07_native_read_allowed_v1(uuid,uuid,uuid).sql",
+      "sha256": "ed1411ae041270cafca0d41addcc47368f41b6323e879dc35f1d680ce882e810"
+    },
+    {
       "signature": "private.capital_project_review_action_allowed(uuid,uuid,text,uuid)",
       "file": "private.capital_project_review_action_allowed(uuid,uuid,text,uuid).sql",
       "sha256": "2d6f1bc6fc7811da59770e672d79bbf453719f01ccda8affd92bc2baff1c4f7d"
@@ -56,6 +76,16 @@
       "signature": "private.capital_project_review_roles(uuid,uuid,uuid)",
       "file": "private.capital_project_review_roles(uuid,uuid,uuid).sql",
       "sha256": "0889eaa39709a73188b6c3b50d5667e1ac058331b9bcda9a15222d593e5fb461"
+    },
+    {
+      "signature": "private.capital_s11_native_read_allowed_v1(uuid,uuid,uuid)",
+      "file": "private.capital_s11_native_read_allowed_v1(uuid,uuid,uuid).sql",
+      "sha256": "9291ff3fa2d798b049fa9bc9cfb2935999145fb82b2a64c24674705b2d1c58d1"
+    },
+    {
+      "signature": "private.capital_s11_recipe_deadline_v1(uuid,uuid,uuid)",
+      "file": "private.capital_s11_recipe_deadline_v1(uuid,uuid,uuid).sql",
+      "sha256": "55b21f9fc69a786164bee49e531ddcda54f6f473b64d936ec8808b4f17b56fd9"
     },
     {
       "signature": "private.capture_authority_domain_event_v1()",
@@ -168,6 +198,11 @@
       "sha256": "4e40ca5a31c68bccfac716002a77e2298c3898576df529a385cc9e1cc7680827"
     },
     {
+      "signature": "private.manage_work_v1(uuid,text,text)",
+      "file": "private.manage_work_v1(uuid,text,text).sql",
+      "sha256": "52cfd1e01f1da4f1817b83bf7a75051af2f104c170ba076f7b59478b33d45ef8"
+    },
+    {
       "signature": "private.merge_dependency_update_request_v1(uuid,uuid,uuid,uuid[])",
       "file": "private.merge_dependency_update_request_v1(uuid,uuid,uuid,uuid[]).sql",
       "sha256": "69ee600374de77bfb9cb27f03407bb79e3f8b740ebda0b9d065de2732feb1632"
@@ -200,7 +235,7 @@
     {
       "signature": "private.read_artifact_revision_v1(uuid)",
       "file": "private.read_artifact_revision_v1(uuid).sql",
-      "sha256": "7bf1b537f3a1c0bd680d1512306a413b302cfa1fee7e8fa22d768f48f5e63738"
+      "sha256": "5edc7e2c77f225a4ff7b6d00dabf360df3a65b138cdb4ceba2a56f2d6af8b2ea"
     },
     {
       "signature": "private.read_capital_project_execution_brief_progress_v1(uuid)",
@@ -221,6 +256,11 @@
       "signature": "private.read_receivables_evidence_scope_v1(uuid)",
       "file": "private.read_receivables_evidence_scope_v1(uuid).sql",
       "sha256": "c944abc5d68244f37c4bdd373073fec484834c5073213e671d4efd941c81b22e"
+    },
+    {
+      "signature": "private.read_work_review_dashboard_v1(uuid,uuid,uuid)",
+      "file": "private.read_work_review_dashboard_v1(uuid,uuid,uuid).sql",
+      "sha256": "bfa1e6414a743e76a8dadaff171c11d7fa776d15f653500bb0d54e7ae8983aa5"
     },
     {
       "signature": "private.receivables_scope_sources_current(uuid,uuid,jsonb)",
@@ -263,9 +303,14 @@
       "sha256": "36de286910f434c13397a2866362aa528d69e050db58ccd18fddc39e95a0bc83"
     },
     {
+      "signature": "private.review_artifact_revision_before_capital_cutover_v1(uuid,text,text,uuid,text,boolean,uuid,uuid)",
+      "file": "private.review_artifact_revision_before_capital_cutover_v1(uuid,text,text,uuid,text,boolean,uuid,uuid).sql",
+      "sha256": "18f1836ba2625919a9d5879ebea388b5eadf6a08009e53871df33dc7b11d5ec5"
+    },
+    {
       "signature": "private.review_artifact_revision_v1(uuid,text,text,uuid,text,boolean,uuid,uuid)",
       "file": "private.review_artifact_revision_v1(uuid,text,text,uuid,text,boolean,uuid,uuid).sql",
-      "sha256": "ef66e73662029d1ad06afc042991bd7d197833724be1c624f94f82aa1ffaf482"
+      "sha256": "96f05a6209593fc39cdf0e0053b2bdf9660027ca71898dd654f07d082e3ff7aa"
     },
     {
       "signature": "private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text)",
@@ -333,6 +378,21 @@
       "sha256": "eaf6ca549432e7da405fabb40ae44762d292166198ddad000e331d37318caf4b"
     },
     {
+      "signature": "private.wake_capital_debt_retention_v1()",
+      "file": "private.wake_capital_debt_retention_v1().sql",
+      "sha256": "684b59f9086ce2656b966ac6ea8529c0c0dae061c64f6d89adcc5aa2cf7d6f2d"
+    },
+    {
+      "signature": "private.wake_capital_m07_retention_v1()",
+      "file": "private.wake_capital_m07_retention_v1().sql",
+      "sha256": "7b22db1323beff5d86bcdca57bcd4ba5a6987d7e1d03ffb2a2b3f8eece447e5b"
+    },
+    {
+      "signature": "private.wake_capital_s11_retention_v1()",
+      "file": "private.wake_capital_s11_retention_v1().sql",
+      "sha256": "92442e6f004fbf34df582c2c4daabaca96a9f9ebb75a168e9ecc6ad10b42be5c"
+    },
+    {
       "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
       "file": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb).sql",
       "sha256": "b1fa646225d6d2aed3bdec639967bfab06c2a4b33e9bc15b9555bd13ee7cd0d6"
@@ -353,6 +413,11 @@
       "sha256": "22bbeb60b03a2f0152435b7876334fa42d1f2e7c57d3fd34bb36bf147811f39b"
     },
     {
+      "signature": "private.worker_commit_capital_s11_task_projection_core_v1(uuid,text,uuid,uuid,uuid,boolean)",
+      "file": "private.worker_commit_capital_s11_task_projection_core_v1(uuid,text,uuid,uuid,uuid,boolean).sql",
+      "sha256": "bae7cec86909bca8ba2fb08387aa799d0d7f4414608e45f298e4bc80b7589256"
+    },
+    {
       "signature": "private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text)",
       "file": "private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text).sql",
       "sha256": "c6b4a5b3040c6f6871bb976e9f6636b9c3ddfdf105b1de958dd714c86fa20cf7"
@@ -363,9 +428,14 @@
       "sha256": "c3789f41692c35ce6ea7e923dc1b3d358ed6e4849d41079f00ae29fb3a18faf4"
     },
     {
+      "signature": "private.worker_finalize_capital_s11_recipe_v1(uuid,text,uuid,uuid,jsonb,text,text,text,text,bigint,integer,text,text,boolean,text)",
+      "file": "private.worker_finalize_capital_s11_recipe_v1(uuid,text,uuid,uuid,jsonb,text,text,text,text,bigint,integer,text,text,boolean,text).sql",
+      "sha256": "a131db0941fb3bc5f835de9ca7a7f4ef33eb7357fbeb17fc4ea5ffbf34eda6dc"
+    },
+    {
       "signature": "private.worker_finish_capital_project_task(uuid,text,uuid,text,jsonb,text,jsonb,jsonb,jsonb)",
       "file": "private.worker_finish_capital_project_task(uuid,text,uuid,text,jsonb,text,jsonb,jsonb,jsonb).sql",
-      "sha256": "fc68c5b472410b2c8a8a76327d7b228d5156286a173037463413b372181fcc97"
+      "sha256": "9658b992c087bad03e69aa0cf119a8a08f415ea050ada0827431c087b43fe8ff"
     },
     {
       "signature": "private.worker_load_agent_context(uuid,text)",
@@ -438,9 +508,29 @@
       "sha256": "08f328f99eb3c6993b78f25af35e06526dd542657e452881a2e9d60532a8541c"
     },
     {
+      "signature": "private.worker_prepare_capital_debt_context_v1(uuid,text,uuid,uuid)",
+      "file": "private.worker_prepare_capital_debt_context_v1(uuid,text,uuid,uuid).sql",
+      "sha256": "adc7762fc22cc3d79dc99a90dc93776bdff8a07d5d55cf4581e88cfbc7ef3f1a"
+    },
+    {
+      "signature": "private.worker_prepare_capital_native_result_v1(uuid,text,uuid,text,text,jsonb,uuid)",
+      "file": "private.worker_prepare_capital_native_result_v1(uuid,text,uuid,text,text,jsonb,uuid).sql",
+      "sha256": "8b97eeb633a008dda0d66cd57bf985ebea2396279763af2a571807a7083728ec"
+    },
+    {
+      "signature": "private.worker_prepare_capital_s11_context_v1(uuid,text,uuid,uuid)",
+      "file": "private.worker_prepare_capital_s11_context_v1(uuid,text,uuid,uuid).sql",
+      "sha256": "5b4b234c0a5ef41c028765b8ff3701179b1348930ae67a39fc6bbbb514251f35"
+    },
+    {
+      "signature": "private.worker_record_agent_assessment_before_native_v1(uuid,text,jsonb)",
+      "file": "private.worker_record_agent_assessment_before_native_v1(uuid,text,jsonb).sql",
+      "sha256": "6571b1d46615241a4a306fed5c5db5011d7b62269935d1ca133af0327372940b"
+    },
+    {
       "signature": "private.worker_record_agent_assessment_v1(uuid,text,jsonb)",
       "file": "private.worker_record_agent_assessment_v1(uuid,text,jsonb).sql",
-      "sha256": "7e8b4db5060861a99c8cf855aa734ffd6e56396ecdf3b76c3f797ec4f0e3c59b"
+      "sha256": "7f6d4ff6ca03d703128065de9b72b32dc2a9124a3ce1e9270375f79fb871217a"
     },
     {
       "signature": "private.worker_record_agent_stage_event_v1(uuid,text,text,text,jsonb)",
@@ -450,7 +540,7 @@
     {
       "signature": "private.worker_record_capital_project_artifact(uuid,text,uuid,text,text,text,text,jsonb,jsonb,jsonb)",
       "file": "private.worker_record_capital_project_artifact(uuid,text,uuid,text,text,text,text,jsonb,jsonb,jsonb).sql",
-      "sha256": "132651edf21746645baf803f0a8b8bdf671e0ddba8421612bc613b0300e876dd"
+      "sha256": "ca8812c851215e14a08b2ec75892d73a7df354b2c08485b9bee3c313679f8756"
     },
     {
       "signature": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)",
@@ -498,6 +588,5 @@
       "sha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
     }
   ],
-  "missing": [],
-  "notes": " On 2026-10-02 forward compatibility migration 20261002135718 (production), 20261002135521 (staging): the three rewritten function bodies were captured after local replay and verified byte-identical in production and staging. Other historical differences are outside this migration; no assertion of global byte parity."
+  "missing": []
 }

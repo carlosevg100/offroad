@@ -112,6 +112,13 @@
       "name": "work_review_dashboard_metadata",
       "path": "supabase/migrations/20261004180439_work_review_dashboard_metadata.sql",
       "sha256": "8a9bdc87cfd59c90f2e6dfdcd2b50a2e5117fac03213fc82433d2f55acae4197"
+    },
+    {
+      "group": "assessment_house_corpus_alias",
+      "version": "20261004184529",
+      "name": "assessment_house_corpus_alias",
+      "path": "supabase/migrations/20261004184529_assessment_house_corpus_alias.sql",
+      "sha256": "63bbcc2b7c4d3f2bcfb10c31822bd16d50da37488a9f78698c52bf376753c819"
     }
   ]
 }
