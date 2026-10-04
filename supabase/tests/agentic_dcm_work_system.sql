@@ -422,10 +422,30 @@ begin
         if rejected_constraint not in ('capital_project_decisions_check','assessment_status_recommendation_required') then raise; end if;
       end;
     end loop;
-    perform pg_temp.fixture_review_placeholder('rejected',null,'user');
-    if not exists(select 1 from public.capital_project_decisions where id='82000000-0000-4000-8000-000000000393'
-      and status='rejected' and recommendation is null and reviewed_by='user') then
-      raise exception 'rejection invented a recommendation or lost its reviewer';
+    -- This suite also runs before the native assessment installer. The legacy CHECK
+    -- requires a recommendation for rejection; native assessments explicitly permit NULL.
+    -- Verify each installed contract without manufacturing a recommendation or bypassing it.
+    select to_jsonb(d) into prior_snapshot from public.capital_project_decisions d
+      where d.id='82000000-0000-4000-8000-000000000393';
+    if exists(select 1 from pg_constraint where conrelid='public.capital_project_decisions'::regclass
+      and conname='assessment_status_recommendation_required' and contype='c') then
+      perform pg_temp.fixture_review_placeholder('rejected',null,'user');
+      if not exists(select 1 from public.capital_project_decisions where id='82000000-0000-4000-8000-000000000393'
+        and status='rejected' and recommendation is null and reviewed_by='user') then
+        raise exception 'rejection invented a recommendation or lost its reviewer';
+      end if;
+    else
+      begin
+        perform pg_temp.fixture_review_placeholder('rejected',null,'user');
+        raise exception 'legacy rejection recommendation constraint was weakened';
+      exception when check_violation then
+        get stacked diagnostics rejected_constraint=constraint_name;
+        if rejected_constraint<>'capital_project_decisions_check' then raise; end if;
+      end;
+      if (select to_jsonb(d) from public.capital_project_decisions d
+        where d.id='82000000-0000-4000-8000-000000000393') is distinct from prior_snapshot then
+        raise exception 'legacy rejection denial changed the decision';
+      end if;
     end if;
     begin
       perform pg_temp.fixture_review_placeholder('confirmed','Uma recomendação real.',null);

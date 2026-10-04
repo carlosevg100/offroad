@@ -1,6 +1,7 @@
 /** Synthetic unit ports only; SQL, licenses and Storage are proved by the SDK gate. */
 import {randomUUID,createHash} from "node:crypto";
 import {describe,it,expect,vi} from "vitest";
+import {z} from "zod";
 import {conservativeMicroUsd,legacyGatewayFingerprint,retentionMatrixVersion,type AdapterRequest} from "@offroad/model-gateway";
 import {preparePreviewNativeModelRecipe,type PreviewModelRecipeInput} from "./integration-preview-model-recipe";
 import {createCapitalPreviewProcessing,type CapitalPreviewProcessingPorts,type CapitalPreviewRetainedOutput} from "./integration-preview-processing";
@@ -57,7 +58,7 @@ describe("preview retained request grammar and denied send",()=>{
  });
  it("fallback retains the same provider-retention denial before any dispatch",async()=>{
   const f=fixture(),authorize=f.ports.authorize;
-  f.ports.authorize=vi.fn(async value=>{const result=await authorize(value);return{...result,allowed:false,assuranceIds:[],reasons:['processing_resource_ineligible:inference']};});
+  f.ports.authorize=vi.fn(async value=>{const result=z.record(z.string(),z.unknown()).parse(await authorize(value));return{...result,allowed:false,assuranceIds:[],reasons:['processing_resource_ineligible:inference']};});
   await expect(f.run()).rejects.toThrow();expect(f.ports.authorize).toHaveBeenCalledTimes(2);expect(f.ports.dispatch).not.toHaveBeenCalled();expect(f.sends).toHaveLength(0);
  });
  it("fallback cannot override a server refusal after the primary already spent",async()=>{
