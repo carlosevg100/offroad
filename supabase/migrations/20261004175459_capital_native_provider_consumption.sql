@@ -1,3 +1,4 @@
+BEGIN;
 -- Prospective shared native recipe boundary. Initially admits only two closed
 -- deterministic provider families. No source/license, model outcome or approval
 -- is manufactured. Physical bytes reuse the typed-body retention/purge service.
@@ -723,3 +724,5 @@ grant execute on function private.read_capital_native_provider_result_body_v1(uu
 create function public.worker_read_capital_native_allocation_v1(p_job_id uuid,p_capability_token text,p_recipe_id uuid,p_allocation_id uuid,p_task_id text default null,p_artifact_type text default null)returns jsonb language sql security invoker set search_path=''as $$select private.worker_read_capital_native_allocation_v1(p_job_id,p_capability_token,p_recipe_id,p_allocation_id,p_task_id,p_artifact_type)$$;
 revoke all on function private.worker_read_capital_native_allocation_v1(uuid,text,uuid,uuid,text,text),public.worker_read_capital_native_allocation_v1(uuid,text,uuid,uuid,text,text)from public,anon,authenticated,service_role;
 grant execute on function private.worker_read_capital_native_allocation_v1(uuid,text,uuid,uuid,text,text),public.worker_read_capital_native_allocation_v1(uuid,text,uuid,uuid,text,text)to authenticated;
+
+COMMIT;

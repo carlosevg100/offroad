@@ -1,3 +1,36 @@
+## 2026-10-04: fonte aprovada, SQL aplicado em produção; promoção canônica ainda aberta
+
+A fonte aprovada da PR 874 é `c1fa0b731ae0db45d0f71c631f03050b4ae6464f`. Quality `37211586920` terminou **SUCCESS**, com os três jobs aprovados, e Security `37211586914` terminou **SUCCESS**. Isso comprova os gates dessa fonte; a CI terminal do futuro commit canônico permanece **PENDING**, ainda sem identificador. A etapa 20 continua aberta; 21–24 não foram iniciadas.
+
+Os **16 grupos foram realmente aplicados em produção**, com versões e SQL MD5 conferidos nos receipts. O conjunto durável é `outputs/etapa-20-2026-10-02-continuacao/PRODUCTION-16-ACTUAL-APPLIED-RECEIPTS.json`. Estes são os carimbos retornados, sem versões estimadas:
+
+| Grupo | Versão real em produção | Nome |
+| --- | --- | --- |
+| `core11` | `20261004175012` | `capital_native_consumers` |
+| `inherited_restriction` | `20261004175334` | `artifact_native_inherited_restriction` |
+| `assessment6` | `20261004175415` | `assessment_native_sources` |
+| `provider1` | `20261004175459` | `capital_native_provider_consumption` |
+| `preview5` | `20261004175545` | `capital_preview_native_execution` |
+| `review1` | `20261004175639` | `work_review_dashboard` |
+| `case_fit_result_contract` | `20261004175707` | `capital_native_case_fit_result_contract` |
+| `preview_storage_job_authority` | `20261004175756` | `capital_preview_storage_job_authority` |
+| `preview_native_artifact_publication` | `20261004175832` | `capital_preview_native_artifact_publication` |
+| `preview_physical_input_grammar` | `20261004175934` | `capital_preview_physical_input_grammar` |
+| `preview_boundary_validation` | `20261004180037` | `capital_preview_boundary_validation` |
+| `preview_review_projection` | `20261004180111` | `capital_preview_review_projection` |
+| `preview_finalize_bounded_closure` | `20261004180158` | `capital_preview_finalize_bounded_closure` |
+| `work_optional_capital_purpose` | `20261004180250` | `work_optional_capital_purpose` |
+| `work_archive_metadata` | `20261004180343` | `work_archive_metadata` |
+| `review_metadata` | `20261004180439` | `work_review_dashboard_metadata` |
+
+Os captures posteriores são `outputs/etapa-20-2026-10-02-continuacao/PRODUCTION-JOURNAL-20261004-AFTER-16.json` (467 linhas), `outputs/etapa-20-2026-10-02-continuacao/STAGING-JOURNAL-20261004-AFTER-16.json` (481 linhas) e `outputs/etapa-20-2026-10-02-continuacao/PRODUCTION-CATALOGUE-20261004-AFTER-16.json` (4.653 objetos). Staging possui 4.714 objetos, incluindo as 61 exclusões históricas específicas daquele ambiente. A comparação independente dos catálogos passou: zero definições divergentes, zero objetos obrigatórios ausentes e 61 exclusões históricas declaradas. A composição e a geração local de 18 arquivos passaram, usando os receipts reais dos 16 grupos. A montagem da candidata ainda está em andamento, inclusive o registro de duas rotas atuais no inventário; não há declaração de montagem concluída ou inventário publicado.
+
+A migração de metadados em staging foi registrada como `20261004150808`, SQL MD5 `b1db05283b96be85a4ce9eff39b02ec7`, no receipt `outputs/etapa-20-2026-10-02-continuacao/STAGING-16-WORK-REVIEW-METADATA-APPLIED.json`. O ensaio descartável `37210854142` passou: dashboard de 3,725934 para 1,600399 segundos, com paridade, direitos atuais e as mesmas verificações integradas. O leitor completo continua com MD5 `bcb2f0422db072920f3dc328ca07da52`; o helper é privado, owner-only e sem EXECUTE para os papéis de API ou PUBLIC. O benchmark não declara desempenho de produção.
+
+A pipeline de 16 grupos gerou os arquivos canônicos **localmente**, a partir dos receipts reais. A publicação e a CI canônica continuam pendentes; a retirada dos 35 arquivos pending e a montagem final ainda não estão declaradas concluídas. CI terminal canônica, merge e deploys web/worker permanecem **NULL**; exigem evidência efetiva no commit final. Os três captures de produção acima preenchem somente receipts, journal e catálogo após aplicação.
+
+Dois objetos físicos de Storage ainda aguardam confirmação humana específica para exclusão, seguida de receipt de purga e ausência física autenticada. Não se declara limpeza física completa nem exclusão de identidades Auth. A revisão humana pública de staging e a prova física nativa de CI continuam evidências distintas.
+
 ## 2026-10-02: M07 e núcleo financeiro publicados; brief nativo em validação de CI
 
 ## 2026-10-03: materiais em produção; conflito transitório de classificação em correção

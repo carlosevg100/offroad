@@ -1,3 +1,4 @@
+BEGIN;
 -- 3W: bounded metadata enumeration; current source/WORK authority remains in
 -- the installed native readers and commands. No body, effect selector or backfill.
 -- Owner-only, exact lineage; a malformed or overlong chain cannot authorize a basis.
@@ -110,3 +111,5 @@ grant execute on function public.reaffirm_work_revision_v1(uuid,uuid,text,uuid,t
 -- Invoker wrappers require execution of these scoped private entrypoints.
 -- Each establishes current human/WORK authority; no internal append core is granted.
 grant execute on function private.read_work_review_dashboard_v1(uuid,uuid,uuid),private.reaffirm_work_revision_v1(uuid,uuid,text,uuid,text,boolean,uuid),private.record_work_report_v1(uuid,text,jsonb,text,uuid),private.contest_work_decision_v1(uuid,uuid,text,text,uuid)to authenticated;
+
+COMMIT;
