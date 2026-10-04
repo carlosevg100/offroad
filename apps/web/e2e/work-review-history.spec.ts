@@ -44,8 +44,10 @@ test("two real humans use exact review history, reaffirm, reassignment and close
   const select=history.locator(`select[name="review_reassign_recipient"]:has(option[value="${reviewer}"])`).first();
   await expect(select).toBeEnabled();await select.selectOption(reviewer);
   await expect(history).toContainText('Reassign the pending revision to its eligible reviewer');
+  // The selected recipient starts an async command; textarea text already exists.
+  // Wait for the exact audit row, then verify the original approval stayed immutable.
+  await expect.poll(()=>sql(`select count(*)from public.artifact_reviews where revision_id='${r3.revision_id}'and act='reassign'and prepared_by='${f.actorId}';`)).toBe('1');
   expect(sql(`select row_to_json(r)::text from public.artifact_reviews r where id='${approval.reviewId}';`)).toBe(original);
-  expect(sql(`select count(*)from public.artifact_reviews where revision_id='${r3.revision_id}'and act='reassign'and prepared_by='${f.actorId}';`)).toBe('1');
   last(sql,second,`select public.review_artifact_revision_v1('${r3.revision_id}','${r3.manifest_fingerprint}','approve',null,'Fresh material approval by second human',false,'${randomUUID()}');`);
   await history.locator('textarea[name="review_history_reason"]').fill('Human report only; no external action');
   await history.locator('input[name="reported_decision_key"]').fill('Synthetic board choice');await history.locator('input[name="reported_decided_by"]').fill('Synthetic board');await history.locator('input[name="reported_forum"]').fill('Synthetic meeting');await history.locator('input[name="reported_date"]').fill('2026-10-02');
