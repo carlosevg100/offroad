@@ -9,6 +9,16 @@ const staging = 'gjkkjtbfnssdsbmlhmwk';
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
 let phase = 'target_validation';
 let reviewOperation='initial';
+let reviewAssertion='unavailable',reviewActualRelease='unavailable',reviewExpectedRelease='unavailable';
+const releaseSteps=new Set(['r2_before_reaffirm','r2_after_reaffirm','r2_after_base_revocation','r3_before_new_approval','r3_after_new_approval']);
+export function checkedRelease(actual,expected,step){
+ reviewAssertion=releaseSteps.has(step)?step:'unavailable';
+ reviewActualRelease=['internal','released','blocked'].includes(actual)?actual:'unavailable';
+ reviewExpectedRelease=['internal','released','blocked'].includes(expected)?expected:'unavailable';
+ assert.equal(actual,expected);
+ reviewAssertion='unavailable';reviewActualRelease='unavailable';reviewExpectedRelease='unavailable';
+}
+
 const reviewReasons=new Set(['capital_project_self_approval_forbidden','capital_artifact_review_projection_missing','review_source_access_required','capital_artifact_review_target_inactive','review_substance_required','review_assignment_required','capital_artifact_review_stale']);
 export function validateTarget(api, database, allowStaging, operatorMode = false) {
   const a = new URL(api);
@@ -120,14 +130,14 @@ export async function run(env = process.env) {
   const r1 = await write(owner, 'Synthetic unchanged recommendation.', 'synthetic-review-start');
   const approval = await review(reviewer, r1, 'approve');
   const r2 = await write(owner, 'Synthetic unchanged recommendation.', 'synthetic-review-layout');
-  assert.notEqual(r1.revision_id, r2.revision_id);assert.equal(await release(r2), 'internal');
+  assert.notEqual(r1.revision_id, r2.revision_id);checkedRelease(await release(r2),'internal','r2_before_reaffirm');
   const reaffirm = await rpc(reviewer, 'reaffirm_work_revision_v1', {p_work_id: f.workId, p_revision_id: r2.revision_id, p_expected_fingerprint: r2.manifest_fingerprint, p_basis_review_id: approval.reviewId, p_note: 'Synthetic cosmetic template change', p_declared: false, p_command_id: randomUUID()});
-  assert.equal(await release(r2), 'released');assert(reaffirm);checked('cosmetic_revision_requires_explicit_reaffirm');
-  await review(reviewer, r1, 'revoke_approval', approval.reviewId);assert.equal(await release(r2), 'internal');checked('base_revocation_invalidates_reaffirm_chain');
+  checkedRelease(await release(r2),'released','r2_after_reaffirm');assert(reaffirm);checked('cosmetic_revision_requires_explicit_reaffirm');
+  await review(reviewer, r1, 'revoke_approval', approval.reviewId);checkedRelease(await release(r2),'internal','r2_after_base_revocation');checked('base_revocation_invalidates_reaffirm_chain');
   const freshApproval = await review(reviewer, r2, 'approve');
   const r3 = await write(owner, 'Synthetic changed recommendation.', 'synthetic-review-material');
   await deny(() => review(reviewer, r3, 'reaffirm', freshApproval.reviewId), 'artifact_review_material_change');
-  assert.equal(await release(r3), 'internal');await review(reviewer, r3, 'approve');assert.equal(await release(r3), 'released');checked('material_change_requires_new_human_act');
+  checkedRelease(await release(r3),'internal','r3_before_new_approval');await review(reviewer, r3, 'approve');checkedRelease(await release(r3),'released','r3_after_new_approval');checked('material_change_requires_new_human_act');
   const pending = await write(reviewer, 'Synthetic successor review pending.', 'synthetic-review-pending', `${subject}-pending`);
   await rpc(owner, 'set_capital_project_review_assignment_v1', {p_project_id: f.workId, p_user_id: f.ownerId, p_review_role: 'approver', p_assigned: true});
   const moved = await rpc(owner, 'reassign_pending_review_v1', {p_project_id: f.workId, p_from_user: f.reviewerId, p_to_user: f.ownerId, p_reason: 'Synthetic authorized review succession', p_command_id: randomUUID()});
@@ -148,5 +158,5 @@ export async function run(env = process.env) {
   return evidence;
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  run().catch(e => {console.error(`stage20_integrated_review: FAIL phase=${phase} code=${/^[A-Z0-9]{5}$/.test(e.code??'')?e.code:'unavailable'} operation=${reviewOperation} reason=${reviewReasons.has(e.reason)?e.reason:'unavailable'} (raw error withheld)`);process.exitCode = 1;});
+  run().catch(e => {console.error(`stage20_integrated_review: FAIL phase=${phase} code=${/^[A-Z0-9]{5}$/.test(e.code??'')?e.code:'unavailable'} operation=${reviewOperation} reason=${reviewReasons.has(e.reason)?e.reason:'unavailable'} assertion=${reviewAssertion} actual=${reviewActualRelease} expected=${reviewExpectedRelease} (raw error withheld)`);process.exitCode = 1;});
 }

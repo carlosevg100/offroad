@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {validateTarget, validateFixture, humanReviewManifest} from './stage20-integrated-review.mjs';
+import {validateTarget, validateFixture, humanReviewManifest, checkedRelease} from './stage20-integrated-review.mjs';
 
 test('only a complete loopback pair or the explicitly selected staging project is admitted', () => {
   assert.equal(validateTarget('http://127.0.0.1:54321', 'postgresql://postgres:local@127.0.0.1:54322/postgres'), 'loopback');
@@ -45,4 +45,11 @@ test('authored revision manifest pins each actual template instead of reusing a 
  for(const key of Object.keys(first).filter(v=>v!=='template'))assert.deepEqual(first[key],layout[key]);
  assert.deepEqual(first.sources,[]);assert.deepEqual(first.claims,[]);assert.equal(first.execution,null);assert.equal(first.bytes,null);
  assert.throws(()=>humanReviewManifest(''));assert.throws(()=>humanReviewManifest('x'.repeat(201)));
+});
+
+test('release assertions preserve their exact requirement and reject unexpected values',()=>{
+ assert.doesNotThrow(()=>checkedRelease('internal','internal','r2_before_reaffirm'));
+ assert.doesNotThrow(()=>checkedRelease('released','released','r2_after_reaffirm'));
+ assert.throws(()=>checkedRelease('internal','released','r2_after_reaffirm'));
+ assert.throws(()=>checkedRelease({private:'secret'},'released','r2_after_reaffirm'));
 });
