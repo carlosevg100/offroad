@@ -1,8 +1,33 @@
 begin;
+-- Check the actual installed RPC contracts before building this rollback fixture.
+-- A valid PL/pgSQL body alone does not prove that a called overload exists.
+do $rpc_contracts$
+declare expected record; actual_oid oid; actual_defaults integer;
+begin
+ for expected in select * from (values
+  ('public.review_artifact_revision_v1(uuid,text,text,uuid,text,boolean,uuid,uuid)',1),
+  ('public.start_work_v1(uuid,text,text,text,text,text,jsonb,uuid,boolean)',5),
+  ('public.read_work_review_dashboard_v1(uuid,uuid,uuid)',2),
+  ('public.reaffirm_work_revision_v1(uuid,uuid,text,uuid,text,boolean,uuid)',0),
+  ('private.work_review_ancestor_v1(uuid,uuid,uuid,uuid)',0),
+  ('public.create_artifact_revision_v1(uuid,text,text,text,jsonb,jsonb,jsonb,text,bigint)',0),
+  ('public.record_work_report_v1(uuid,text,jsonb,text,uuid)',0),
+  ('public.contest_work_decision_v1(uuid,uuid,text,text,uuid)',0),
+  ('public.read_work_decision_v1(uuid)',0),
+  ('private.artifact_revision_change_v1(uuid,uuid)',0),
+  ('public.read_artifact_revision_v1(uuid)',0),
+  ('public.read_artifact_head_v1(uuid,text,text)',0)
+ ) as contract(signature,defaults_count) loop
+  actual_oid:=to_regprocedure(expected.signature)::oid;
+  if actual_oid is null then raise exception 'dashboard_fixture_rpc_missing:%',expected.signature;end if;
+  select pronargdefaults into strict actual_defaults from pg_proc where oid=actual_oid;
+  if actual_defaults is distinct from expected.defaults_count then raise exception 'dashboard_fixture_rpc_defaults_changed:%',expected.signature;end if;
+ end loop;
+end $rpc_contracts$;
 \ir artifact_revision_setup.sql
 -- No private receipt or native producer is forged: this fixture authors ordinary
 -- governed answer revisions through the installed human writer.
-do $$declare b jsonb;m jsonb;r1 jsonb;r2 jsonb;a1 jsonb;dash jsonb;report jsonb;contested jsonb;work uuid:='a11b0000-0000-4000-9000-000000000002';org uuid:='a11b0000-0000-4000-9000-000000000001';actor uuid:='a11b0000-0000-4000-8000-000000000001';before_jobs bigint;after_jobs bigint;contest_command uuid:=gen_random_uuid();replay jsonb;original jsonb;precedence jsonb;foreign_revision jsonb;foreign_report jsonb;expected jsonb;valid_cursor uuid;
+do $$declare b jsonb;m jsonb;r1 jsonb;r2 jsonb;a1 jsonb;dash jsonb;report jsonb;contested jsonb;work uuid:='a11b0000-0000-4000-9000-000000000002';org uuid:='a11b0000-0000-4000-9000-000000000001';actor uuid:='a11b0000-0000-4000-8000-000000000001';before_jobs bigint;after_jobs bigint;contest_command uuid:=gen_random_uuid();replay jsonb;original jsonb;precedence jsonb;foreign_revision jsonb;foreign_report jsonb;foreign_start jsonb;foreign_work uuid;foreign_jobs_before bigint;foreign_jobs_after bigint;prior_headers text;expected jsonb;valid_cursor uuid;
 begin
  insert into public.organization_review_policies(organization_id,self_approval_allowed,assignment_required,updated_by)values(org,true,false,actor)on conflict(organization_id)do update set self_approval_allowed=true,assignment_required=false;
  b:=jsonb_build_array(pg_temp.block('paragraph','paragraph','{"text":"Synthetic unchanged recommendation"}'));
@@ -28,13 +53,40 @@ begin
  dash:=public.read_work_review_dashboard_v1(work);
  if exists(select 1 from jsonb_array_elements(dash->'revisions')x where x->>'revisionId'=r1->>'revision_id'and x->>'basisReviewId'is not null)then raise exception 'dashboard_historical_uses_future_basis';end if;
  reset role;
- b:=jsonb_set(b,'{0,content,text}','"Synthetic materially changed recommendation"');r2:=pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
+ -- The same manifest and bytes replay the exact immutable cosmetic revision.
+ replay:=pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
+ if replay->>'revision_id' is distinct from r2->>'revision_id' or replay->>'replayed' is distinct from 'true'
+ then raise exception 'dashboard_identical_revision_replay_invalid';end if;
+ b:=jsonb_set(b,'{0,content,text}','"Synthetic materially changed recommendation"');
+ -- A changed body cannot reuse the prior manifest's idempotency key.
+ begin
+  perform pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
+  raise exception 'dashboard_changed_body_same_manifest_accepted';
+ exception when unique_violation then
+  if sqlerrm is distinct from 'artifact_revision_replay_mismatch' then raise;end if;
+ end;
+ m:=jsonb_set(m,'{template,templateVersionId}','"review-material-next"');
+ r2:=pg_temp.person_write('answer','dashboard-cosmetic','internal',m,b);
  perform pg_temp.refused(format('select public.reaffirm_work_revision_v1(%L,%L,%L,%L,%L,true,%L)',work,r2->>'revision_id',r2->>'manifest_fingerprint',a1->>'reviewId','New substantive recommendation',gen_random_uuid()),'artifact_review_material_change','material cannot reaffirm');
- -- Foreign cursors are real human-authored records, never an arbitrary UUID.
- perform pg_temp.act_as('a4192000-0000-4000-8000-000000000001');set local role authenticated;
- foreign_revision:=public.create_artifact_revision_v1('a4192000-0000-4000-9000-000000000002','answer','foreign-dashboard','internal',m,b);
- foreign_report:=public.record_work_report_v1('a4192000-0000-4000-9000-000000000002','Foreign report','{"decidedBy":"Foreign Board","forum":"Foreign meeting","decidedOn":"2026-10-02","evidenceSourceVersionId":null}','Foreign human report',gen_random_uuid());
- reset role;perform pg_temp.act_as(actor);
+ -- Foreign cursors use a new persistent work created by its signed-in owner.
+ -- The legacy setup's raw project + membership confers no artifact write authority.
+ prior_headers:=current_setting('request.headers',true);
+ select count(*)into foreign_jobs_before from public.processing_jobs where organization_id='a4192000-0000-4000-9000-000000000001';
+ perform pg_temp.act_as('a4192000-0000-4000-8000-000000000001');
+ perform set_config('request.headers','{"x-offroad-workspace":"a4192000-0000-4000-9000-000000000001"}',true);
+ set local role authenticated;
+ foreign_start:=public.start_work_v1('a4192000-0000-4000-9000-000000000022','pt-BR','Synthetic foreign dashboard work','Author an internal synthetic report for isolated cursor access evaluation.','company_debt_view','public_information',null::jsonb,null::uuid,false);
+ foreign_work:=(foreign_start->>'workId')::uuid;
+ if foreign_work is null or foreign_work='a4192000-0000-4000-9000-000000000002'::uuid or foreign_start->>'replayed' is distinct from 'false'
+ then raise exception 'dashboard_foreign_public_work_not_fresh';end if;
+ foreign_revision:=public.create_artifact_revision_v1(foreign_work,'answer','foreign-dashboard','internal',m,b,'[]'::jsonb,null::text,null::bigint);
+ foreign_report:=public.record_work_report_v1(foreign_work,'Foreign report','{"decidedBy":"Foreign Board","forum":"Foreign meeting","decidedOn":"2026-10-02","evidenceSourceVersionId":null}','Foreign human report',gen_random_uuid());
+ reset role;
+ select count(*)into foreign_jobs_after from public.processing_jobs where organization_id='a4192000-0000-4000-9000-000000000001';
+ if foreign_jobs_before<>foreign_jobs_after or not exists(select 1 from public.work_contexts where organization_id='a4192000-0000-4000-9000-000000000001'and work_id=foreign_work)
+ then raise exception 'dashboard_foreign_work_enqueued_or_context_missing';end if;
+ perform set_config('request.headers',coalesce(prior_headers,''),true);
+ perform pg_temp.act_as(actor);
  perform pg_temp.refused(format('select public.read_work_review_dashboard_v1(%L,%L,null)',work,foreign_revision->>'revision_id'),'review_cursor_access_required','foreign revision cursor denied');
  perform pg_temp.refused(format('select public.read_work_review_dashboard_v1(%L,null,%L)',work,foreign_report->>'decisionId'),'review_cursor_access_required','foreign decision cursor denied');
  select count(*)into before_jobs from public.processing_jobs where organization_id=org;

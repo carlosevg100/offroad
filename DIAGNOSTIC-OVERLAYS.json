@@ -21,6 +21,11 @@
       "path": "apps/document-worker/scripts/capital-preview-native-sdk-eval.ts",
       "baseSha256": "cc810812568f2b5681de2c2d4463a19ef01babb8faab453e32262985ad1dba8d",
       "sha256": "6cd53edc03f757f67f3cb07f953dcf5afbe6373457eb50e632c05c6504b29a35"
+    },
+    {
+      "path": "supabase/tests/support/work_review_dashboard.sql",
+      "baseSha256": "44be76e9dd1bb2f8c6201c4efd0b179f4afd67a1025f970d704dabd32f8e4e59",
+      "sha256": "70c7f05a04c3e4dee9865f722128de10d9b1fe6b4d5187a3cf62391cc88ae4ab"
     }
   ]
 }
