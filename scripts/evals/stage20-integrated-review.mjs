@@ -58,6 +58,13 @@ export function humanReviewManifest(template) {
   return {schemaVersion: 'artifact-manifest.2026.09.26-v1', kind: 'answer', audience: 'internal', format: 'json', bytes: null, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [], claims: [], traces: [], template: {templateVersionId:template,fingerprint:'1'.repeat(64)}, provenance: {producer: 'synthetic-stage20-human-review', jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null};
 }
 
+export function authorizedPendingReview(dashboard,target,workId){
+ assert.equal(dashboard.schemaVersion,'work-review-dashboard.v1');assert.equal(dashboard.workId,workId);
+ const item=dashboard.revisions.find(v=>v.revisionId===target.revision_id);
+ assert(item && item.withheld===false && item.artifactId===target.artifact_id && item.manifestFingerprint===target.manifest_fingerprint,'exact authorized review dashboard target required');
+ assert.equal(typeof item.pending,'boolean');return item.pending;
+}
+
 export async function run(env = process.env) {
   const api = env.REVIEW_EVAL_API_URL, db = env.REVIEW_EVAL_DATABASE_URL;
   const operatorMode = env.REVIEW_EVAL_OPERATOR_MODE === 'mcp_readonly';
@@ -127,17 +134,24 @@ export async function run(env = process.env) {
   const write = (token, text, template, sub = subject) => rpc(token, 'create_artifact_revision_v1', {p_work: f.workId, p_kind: 'answer', p_subject: sub, p_audience: 'internal', p_manifest: manifest(template), p_blocks: (template==='synthetic-review-layout'?[{blockKey:'closing',kind:'paragraph',content:{text:'Synthetic presentation only.'},claims:[]},{blockKey:'explanation',kind:'paragraph',content:{text},claims:[]}]:[{blockKey:'explanation',kind:'paragraph',content:{text},claims:[]},{blockKey:'closing',kind:'paragraph',content:{text:'Synthetic presentation only.'},claims:[]}]), p_links: [], p_content_sha256: null, p_byte_length: null});
   const review = (token, r, act, basisReview = null) => rpc(token, 'review_artifact_revision_v1', {p_revision_id: r.revision_id, p_expected_fingerprint: r.manifest_fingerprint, p_act: act, p_block_id: null, p_note: 'Synthetic integrated review proof', p_self_approval_declared: false, p_command_id: randomUUID(), p_basis_review_id: basisReview});
   const release = async r => (await rpc(reviewer, 'read_artifact_revision_v1', {p_revision_id: r.revision_id})).release;
+  const pendingReview = async r => {
+    const dashboard=await rpc(reviewer,'read_work_review_dashboard_v1',{p_work_id:f.workId,p_before_id:null,p_before_decision_id:null});
+    return authorizedPendingReview(dashboard,r,f.workId);
+  };
+
   const r1 = await write(owner, 'Synthetic unchanged recommendation.', 'synthetic-review-start');
   const approval = await review(reviewer, r1, 'approve');
   const r2 = await write(owner, 'Synthetic unchanged recommendation.', 'synthetic-review-layout');
-  assert.notEqual(r1.revision_id, r2.revision_id);checkedRelease(await release(r2),'internal','r2_before_reaffirm');
+  assert.notEqual(r1.revision_id, r2.revision_id);checkedRelease(await release(r2),'internal','r2_before_reaffirm');assert.equal(await pendingReview(r2),true);
   const reaffirm = await rpc(reviewer, 'reaffirm_work_revision_v1', {p_work_id: f.workId, p_revision_id: r2.revision_id, p_expected_fingerprint: r2.manifest_fingerprint, p_basis_review_id: approval.reviewId, p_note: 'Synthetic cosmetic template change', p_declared: false, p_command_id: randomUUID()});
-  checkedRelease(await release(r2),'released','r2_after_reaffirm');assert(reaffirm);checked('cosmetic_revision_requires_explicit_reaffirm');
-  await review(reviewer, r1, 'revoke_approval', approval.reviewId);checkedRelease(await release(r2),'internal','r2_after_base_revocation');checked('base_revocation_invalidates_reaffirm_chain');
+  checkedRelease(await release(r2),'internal','r2_after_reaffirm');assert.equal(await pendingReview(r2),false);assert(reaffirm);checked('cosmetic_revision_requires_explicit_reaffirm');
+  await review(reviewer, r1, 'revoke_approval', approval.reviewId);checkedRelease(await release(r2),'internal','r2_after_base_revocation');assert.equal(await pendingReview(r2),true);
+  await deny(()=>rpc(reviewer,'reaffirm_work_revision_v1',{p_work_id:f.workId,p_revision_id:r2.revision_id,p_expected_fingerprint:r2.manifest_fingerprint,p_basis_review_id:approval.reviewId,p_note:'Synthetic revoked base cannot authorize reaffirm',p_declared:false,p_command_id:randomUUID()}),'artifact_review_basis_invalid');
+  assert.equal(await pendingReview(r2),true);checked('base_revocation_invalidates_reaffirm_chain');
   const freshApproval = await review(reviewer, r2, 'approve');
   const r3 = await write(owner, 'Synthetic changed recommendation.', 'synthetic-review-material');
   await deny(() => review(reviewer, r3, 'reaffirm', freshApproval.reviewId), 'artifact_review_material_change');
-  checkedRelease(await release(r3),'internal','r3_before_new_approval');await review(reviewer, r3, 'approve');checkedRelease(await release(r3),'released','r3_after_new_approval');checked('material_change_requires_new_human_act');
+  checkedRelease(await release(r3),'internal','r3_before_new_approval');assert.equal(await pendingReview(r3),true);await review(reviewer, r3, 'approve');checkedRelease(await release(r3),'internal','r3_after_new_approval');assert.equal(await pendingReview(r3),false);checked('material_change_requires_new_human_act');
   const pending = await write(reviewer, 'Synthetic successor review pending.', 'synthetic-review-pending', `${subject}-pending`);
   await rpc(owner, 'set_capital_project_review_assignment_v1', {p_project_id: f.workId, p_user_id: f.ownerId, p_review_role: 'approver', p_assigned: true});
   const moved = await rpc(owner, 'reassign_pending_review_v1', {p_project_id: f.workId, p_from_user: f.reviewerId, p_to_user: f.ownerId, p_reason: 'Synthetic authorized review succession', p_command_id: randomUUID()});

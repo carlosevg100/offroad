@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {validateTarget, validateFixture, humanReviewManifest, checkedRelease} from './stage20-integrated-review.mjs';
+import {validateTarget, validateFixture, humanReviewManifest, checkedRelease, authorizedPendingReview} from './stage20-integrated-review.mjs';
 
 test('only a complete loopback pair or the explicitly selected staging project is admitted', () => {
   assert.equal(validateTarget('http://127.0.0.1:54321', 'postgresql://postgres:local@127.0.0.1:54322/postgres'), 'loopback');
@@ -52,4 +52,14 @@ test('release assertions preserve their exact requirement and reject unexpected 
  assert.doesNotThrow(()=>checkedRelease('released','released','r2_after_reaffirm'));
  assert.throws(()=>checkedRelease('internal','released','r2_after_reaffirm'));
  assert.throws(()=>checkedRelease({private:'secret'},'released','r2_after_reaffirm'));
+});
+
+test('review state comes from the authorized computed dashboard and remains pinned to the exact target',()=>{
+ const target={revision_id:randomUUID(),artifact_id:randomUUID(),manifest_fingerprint:'1'.repeat(64)},work=randomUUID();
+ const row={revisionId:target.revision_id,artifactId:target.artifact_id,manifestFingerprint:target.manifest_fingerprint,withheld:false,pending:true};
+ const dashboard={schemaVersion:'work-review-dashboard.v1',workId:work,revisions:[row]};
+ assert.equal(authorizedPendingReview(dashboard,target,work),true);
+ assert.equal(authorizedPendingReview({...dashboard,revisions:[{...row,pending:false}]},target,work),false);
+ assert.throws(()=>authorizedPendingReview({...dashboard,workId:randomUUID()},target,work));
+ for(const change of [{withheld:true},{revisionId:randomUUID()},{artifactId:randomUUID()},{manifestFingerprint:'2'.repeat(64)},{pending:null}])assert.throws(()=>authorizedPendingReview({...dashboard,revisions:[{...row,...change}]},target,work));
 });
