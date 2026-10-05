@@ -1,3 +1,4 @@
+import {serveRoundtripDownload} from "@/lib/artifacts/roundtrip-download";
 import {readInstitutionalWorkbookBinding} from "@/lib/artifacts/institutional-binding";
 import {deskEvidence} from "@offroad/case-understanding";
 import type {ArchetypeId} from "@offroad/credit-playbook";
@@ -5,7 +6,7 @@ import {buildFinancialModel, renderApprovedFinancialWorkbook} from "@offroad/fin
 
 import {artifactRenderers} from "@/lib/artifacts/artifact-renderers";
 import {artifactNotFound, artifactUnavailable, renderedRevisionStillAuthorized} from "@/lib/artifacts/artifact-route";
-import {artifactResponseHeaders, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
+import {verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
 import {resolveGovernedMaterialRevision} from "@/lib/artifacts/material-download";
 import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
 import {resourceStillReadable} from "@/lib/auth/resource-download";
@@ -39,7 +40,6 @@ export async function GET(request: Request, {params}: Params) {
   if (!nativeBinding.ok || (nativeBinding.native && revision.audience === "external" && nativeBinding.native.release !== "released")) return artifactUnavailable(copy.sourceRestricted);
   let reproduce: () => Promise<Uint8Array | null>;
   let unavailable: string;
-  let filename: string;
   if (artifact.modelKind === "institutional") {
     const bindings = artifact.institutional.scenarios.flatMap(scenario => scenario.sourceBindings);
     const documentIds = [...new Set(bindings.map(source => source.sourceDocument))];
@@ -49,7 +49,6 @@ export async function GET(request: Request, {params}: Params) {
     }
     reproduce = () => artifactRenderers[artifact.version].produce(artifact, lang);
     unavailable = copy.model.prepareAgain;
-    filename = `${lang === "pt" ? "Cenarios" : "Scenarios"}_${issuedOn}.xlsx`;
   } else {
     const state = await resolveCaseState({supabase, organizationId: organization.id, sessionId, locale: lang});
     const {data: session} = await supabase
@@ -77,7 +76,6 @@ export async function GET(request: Request, {params}: Params) {
     });
     reproduce = () => renderApprovedFinancialWorkbook(model, lang, artifact);
     unavailable = copy.model.changed;
-    filename = `${lang === "pt" ? "Modelo_de_credito" : "Credit_model"}_${issuedOn}.xlsx`;
   }
 
   // The workbook is the replay itself: the approved hash of this locale decides, never new bytes.
@@ -94,12 +92,5 @@ export async function GET(request: Request, {params}: Params) {
       || final.native?.summary.manifestFingerprint !== nativeBinding.native?.summary.manifestFingerprint) return artifactUnavailable(copy.sourceRestricted);
   }
   if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
-  return new Response(Buffer.from(rendered.bytes), {
-    headers: {
-      "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "content-disposition": `attachment; filename="${filename}"`,
-      "cache-control": "private, no-store",
-      ...artifactResponseHeaders(nativeBinding.native ?? read, verification),
-    },
-  });
+  return serveRoundtripDownload(request, {supabase, locale, artifactId: (nativeBinding.native ?? read).artifact.id, revisionId: nativeBinding.native?.summary.id ?? revision.id, format: "xlsx", variant: "financial_model"});
 }

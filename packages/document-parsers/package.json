@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./ooxml": {
+      "types": "./src/ooxml.ts",
+      "default": "./src/ooxml.ts"
     }
   },
   "scripts": {

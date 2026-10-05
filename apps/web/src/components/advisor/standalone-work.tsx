@@ -1,3 +1,4 @@
+import {ArtifactRoundtripWork} from "./artifact-roundtrip-work";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {loadWorkReviewDashboard} from "@/lib/advisor/work-review-dashboard";
 import {loadProjectReviewPolicyContext} from "@/lib/advisor/project-review-policy-context";
@@ -51,6 +52,8 @@ export async function StandaloneWork({locale, project}: {
     {id: "contributions", title: contributionCopy("title"), content: <WorkParticipationPanel locale={locale} workId={project.id} />},
     {id: "vault", title: vaultCopy("title"), content: <WorkVaultPanel locale={locale} workId={project.id} />},
   ];
+  const roundtripCopy = await getTranslations({locale, namespace: "ArtifactImportPanel"});
+  sections.push({id: "artifact-roundtrip", title: roundtripCopy("title"), content: <ArtifactRoundtripWork supabase={supabase} workId={project.id} locale={language}/>});
   // An update that awaits a decision comes first; otherwise the section waits at the end.
   const updatesSection: AdvisorWorkSection = {id: "updates", title: updatesCopy("title"), content: <WorkUpdates locale={language} model={updates} workId={project.id} />,
     status: updates?.awaitingDecision ? updatesCopy("awaiting", {count: updates.awaitingDecision}) : undefined};

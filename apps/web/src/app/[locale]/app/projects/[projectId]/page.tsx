@@ -1,3 +1,4 @@
+import {ArtifactRoundtripWork} from "@/components/advisor/artifact-roundtrip-work";
 import type {SupabaseClient} from "@supabase/supabase-js";
 import {loadWorkReviewDashboard} from "@/lib/advisor/work-review-dashboard";
 import {resolveCapitalPreviewRows} from "@/lib/artifacts/capital-preview-result";
@@ -628,6 +629,9 @@ async function ConversationalCapitalProject({
       status: templateContext.effective ? templateContext.effective.definition.templateKey : templateCopy("currentHouse"),
       content: <PresentationTemplateSettings context={templateContext} locale={locale === "en-US" ? "en-US" : "pt-BR"} projectId={project.id} />});
   }
+
+  const roundtripCopy = await getTranslations({locale, namespace: "ArtifactImportPanel"});
+  workSections.push({id: "artifact-roundtrip", title: roundtripCopy("title"), content: <ArtifactRoundtripWork supabase={supabase} workId={project.id} locale={locale === "en-US" ? "en-US" : "pt-BR"}/>});
 
   const vaultCopy = await getTranslations({locale, namespace: "Vault"});
   const contributionCopy = await getTranslations({locale, namespace: "WorkContributions"});

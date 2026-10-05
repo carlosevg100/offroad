@@ -5,6 +5,7 @@ import {
   type FinancialModel,
   type GovernedWorkbookAudit,
 } from "@offroad/financial-model";
+import {roundtripDefinedName} from "./artifact-roundtrip";
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
 
 const L = (pt: string, en: string) => ({pt, en});
@@ -42,7 +43,9 @@ export type DecisionWorkbookAudit = GovernedWorkbookAudit & {
   renderedSeriesIds: string[];
 };
 
-export type DecisionWorkbookResult = {bytes: Uint8Array; audit: DecisionWorkbookAudit};
+export type DecisionWorkbookRoundtripMap = {assumptions: readonly {assumptionId: string; period: string; blockKey: string}[]};
+export type DecisionWorkbookResult = {bytes: Uint8Array; audit: DecisionWorkbookAudit; roundtrip?: {model: FinancialModel;
+  inputs: {name: string; assumptionId: string; period: string; blockKey: string; cellRef: string; sheet: string}[]}};
 
 /**
  * Projects the canonical Decision Artifact into an editable, formula-linked workbook.
@@ -56,6 +59,7 @@ export async function renderDecisionWorkbook(inputData: {
   locale: "pt-BR" | "en-US";
   title: string;
   companyName?: string;
+  roundtrip?: DecisionWorkbookRoundtripMap;
 }): Promise<DecisionWorkbookResult> {
   const {contract} = inputData;
   const lang = inputData.locale === "en-US" ? "en" : "pt";
@@ -92,6 +96,17 @@ export async function renderDecisionWorkbook(inputData: {
       note(claim.id),
     ],
   }));
+  const roundtripInputs: NonNullable<DecisionWorkbookResult["roundtrip"]>["inputs"] = [];
+  if (inputData.roundtrip) {
+    const ids = new Set<string>();
+    for (const binding of inputData.roundtrip.assumptions) {
+      const assumption = contract.assumptions.find(item => item.id === binding.assumptionId);
+      if (!assumption?.editable || ids.has(binding.assumptionId) || !binding.period || !/^\S{1,160}$/.test(binding.blockKey)) throw new Error("roundtrip_decision_binding_invalid");
+      ids.add(binding.assumptionId);
+      const index = contract.assumptions.indexOf(assumption);
+      roundtripInputs.push({...binding, name: roundtripDefinedName("in", assumption.id, binding.period), cellRef: `B${index + 2}`, sheet: names.assumptions});
+    }
+  }
   const assumptionRows = contract.assumptions.map((assumption) => ({
     key: assumption.id,
     cells: [
@@ -151,6 +166,14 @@ export async function renderDecisionWorkbook(inputData: {
     ],
   };
 
+  if (inputData.roundtrip) {
+    const sheet = model.sheets.find(item => item.key === "assumptions")!;
+    for (const binding of roundtripInputs) {
+      const row = sheet.rows.find(item => item.key === binding.assumptionId)!;
+      const cell = row.cells[1]!;
+      cell.roundtrip = {name: binding.name, role: "input", assumptionId: binding.assumptionId, period: binding.period};
+    }
+  }
   const rendered = await toGovernedXlsxBuffer(model, lang, {
     title: inputData.title,
     ...(inputData.companyName ? {companyName: inputData.companyName} : {}),
@@ -163,6 +186,7 @@ export async function renderDecisionWorkbook(inputData: {
   });
   return {
     bytes: rendered.bytes,
+    ...(inputData.roundtrip ? {roundtrip: {model, inputs: roundtripInputs}} : {}),
     audit: {
       ...rendered.audit,
       decisionContractFingerprint: contract.contractFingerprint,

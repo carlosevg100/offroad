@@ -7100,5 +7100,83 @@
       "confirm_assessment": "Confirmar análise",
       "record_report": "Relatar decisão"
     }
+  },
+  "ArtifactImportReview": {
+    "title": "Revisar alterações do arquivo",
+    "revision": "Revisão {number}",
+    "noBase": "Sem base recuperável",
+    "scope": "As alterações são propostas. Os cálculos serão refeitos pela Offroad; aplicar não aprova o resultado.",
+    "base": "Arquivo de origem",
+    "head": "Revisão atual",
+    "baseValue": "Antes da edição",
+    "received": "Arquivo recebido",
+    "current": "No trabalho agora",
+    "absent": "Ausente",
+    "detached": "Referências que o texto editado deixou de sustentar:",
+    "formula": "A fórmula editada é registrada como observação. Para mudar o cálculo, revise o procedimento.",
+    "recorded": "Este valor pertence ao registro da revisão e não pode substituir um resultado do sistema.",
+    "unmatched": "Este trecho precisa de uma escolha explícita: guardar como nova fonte, descartar ou relacionar manualmente. Ele não será aplicado automaticamente.",
+    "resolve": "Qual contribuição conservar nesta região?",
+    "choose": {
+      "received": "Usar a contribuição recebida",
+      "current": "Conservar a revisão atual"
+    },
+    "apply": "Aplicar contribuições",
+    "discard": "Descartar candidata",
+    "errors": {
+      "denied": "Você não tem acesso para realizar esta ação.",
+      "changed": "A revisão mudou. Confira novamente as diferenças.",
+      "save": "Não foi possível registrar a escolha. Tente novamente."
+    },
+    "status": {
+      "queued": "Arquivo recebido; verificação e comparação em andamento.",
+      "candidate": "Alterações prontas para revisão.",
+      "unmatched": "Há trechos sem correspondência com a base.",
+      "stale": "A base mudou ou perdeu um direito de uso. É preciso refazê-la antes de aplicar.",
+      "applied": "Contribuições registradas em uma nova revisão.",
+      "discarded": "Candidata descartada; o histórico foi preservado."
+    },
+    "classes": {
+      "unchanged": "Sem alteração recebida",
+      "edited": "Contribuição nova",
+      "conflict": "Alterações concorrentes",
+      "missing": "Identificador removido",
+      "unmatched": "Sem correspondência",
+      "formula_changed": "Fórmula alterada",
+      "recorded_edited": "Registro alterado"
+    },
+    "declaration": "Declaro que preparei esta contribuição e assumo a responsabilidade por revisá-la neste regime individual.",
+    "differentReviewer": "A contribuição precisa ser adotada por outro revisor habilitado."
+  },
+  "ArtifactImportPanel": {
+    "title": "Receber arquivo editado",
+    "scope": "As alterações chegam como propostas. A comparação e os cálculos são feitos pela Offroad; a aplicação exige sua revisão.",
+    "unavailable": "Os termos de uso precisam estar disponíveis para receber o arquivo.",
+    "name": "Nome de quem declara",
+    "role": "Cargo ou função",
+    "receipt": "Exportação que originou o arquivo",
+    "noReceipt": "Não identificada — escolher o tratamento após a verificação",
+    "file": "Arquivo editado",
+    "upload": "Enviar para verificação",
+    "basis": "Base aprovada para continuar o trabalho",
+    "chooseBasis": "Escolha a base",
+    "discardReason": "Motivo para descartar",
+    "recompare": "Comparar com a revisão atual",
+    "error": "Não foi possível concluir. Confira o acesso e tente novamente.",
+    "unmatched": "Arquivo sem correspondência",
+    "keepSource": "Manter como nova fonte",
+    "mappingScope": "Selecione explicitamente o bloco de destino de cada trecho. Citações não serão reatadas.",
+    "chooseBlock": "Escolha o bloco",
+    "match": "Registrar correspondência e comparar",
+    "restricted": "Este material está restrito.",
+    "exportFormat": "Formato do arquivo",
+    "export": "Preparar exportação da revisão atual",
+    "exportQueued": "A exportação está sendo preparada.",
+    "download": "Baixar arquivo verificado",
+    "group": "Premissas por configuração",
+    "chooseGroup": "Escolha a configuração",
+    "rebase": "Confirmo usar esta configuração como nova base e preservar as linhagens anteriores.",
+    "pendingGroups": "Configurações pendentes: {count}. Revise a comparação após cada adoção.",
+    "unnamedGroup": "Configuração sem nome"
   }
 }

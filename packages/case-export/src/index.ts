@@ -8,3 +8,4 @@ export * from "./presentation-structure";
 export * from "./presentation-template";
 export * from "./pdf";
 export {crc32, zipStored} from "./zip";
+export * from "./artifact-roundtrip";

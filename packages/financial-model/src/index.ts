@@ -56,3 +56,5 @@ export * from "./capital-procedure-packet-v2";
 export * from "./capital-procedure-packet-composer";
 export * from "./capital-chart-series";
 export * from "./capital-md-test";
+
+export {renderInstitutionalRoundtripWorkbook} from "./institutional-workbook";

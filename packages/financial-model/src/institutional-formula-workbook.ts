@@ -3,7 +3,7 @@ import type {InstitutionalModelInput, InstitutionalModelPeriod} from "./institut
 
 /** Excel's what-if projection of the canonical annual model. The approved exact decimal
  * snapshot remains a separate sheet. References, not cached outputs, drive every calculation. */
-export function institutionalFormulaSheets(input: InstitutionalModelInput, index: number, lang: "pt" | "en"): ModelSheet[] {
+export function institutionalFormulaSheets(input: InstitutionalModelInput, index: number, lang: "pt" | "en", roundtripScope?: string): ModelSheet[] {
   const prefix = `${index + 1}`;
   const inputName = {pt: `Premissas ${prefix}`, en: `Inputs ${prefix}`};
   const calcName = {pt: `Cálculos ${prefix}`, en: `Calculations ${prefix}`};
@@ -107,5 +107,18 @@ export function institutionalFormulaSheets(input: InstitutionalModelInput, index
   add("liquidityHeadroom","Liquidity headroom",p=>`${R("unrestrictedCash",p)}-${A(input.minimumOperatingCashAssumptionId,p)}`);
   const outputKeys:readonly [keyof InstitutionalModelPeriod,string,string][]=[ ["revenue","Receita","Revenue"],["ebitda","EBITDA","EBITDA"],["cashTax","Tributos pagos","Cash tax"],["netIncome","Resultado líquido","Net income"],["cfads","Caixa disponível para serviço da dívida","Cash available for debt service"],["debtService","Serviço da dívida","Debt service"],["closingGrossDebt","Dívida bruta","Gross debt"],["unrestrictedCash","Caixa disponível","Unrestricted cash"],["netDebtToEbitda","Dívida líquida / EBITDA","Net debt / EBITDA"],["dscr","DSCR","DSCR"],["liquidityHeadroom","Folga de liquidez","Liquidity headroom"],["totalAssets","Ativo total","Total assets"],["totalLiabilitiesAndEquity","Passivo e patrimônio líquido","Liabilities and equity"],["balanceCheck","Conciliação do balanço","Balance check"]];
   const output:ModelSheet={key:`institutional_live_${index}`,name:outputName,widths:[48,...periods.map(()=>20)],rows:[{key:"head",cells:[{role:"header",value:input.assumptionBook.scenarioName},...periods.map(value=>({role:"header" as const,value}))]}, {key:"scope",cells:[{role:"note",value:lang==="pt"?"Simulação local. Edite as células azuis em Premissas. Alterações não modificam a aprovação na plataforma. Indicador vazio: denominador não positivo.":"Local what-if. Edit blue cells on Inputs. Changes do not modify platform approval. Blank ratio: nonpositive denominator."}]},...outputKeys.map(([key,pt,en])=>({key,cells:[label(lang==="pt"?pt:en),...periods.map((_,p)=>({role:"formula" as const,formula:["dscr","netDebtToEbitda"].includes(key)?`IF(${R(key,p)}="","",ROUND(${R(key,p)},8))`:`ROUND(${R(key,p)},8)`,format:["dscr","netDebtToEbitda"].includes(key)?"multiple" as const:"money" as const}))]}))]};
+  if (roundtripScope) {
+    const identity = (value: string) => Buffer.from(value, "utf8").toString("hex");
+    for (const sheet of [output, {rows}, {rows: calculations}]) for (const row of sheet.rows) {
+      row.cells.forEach((cell, column) => {
+        if (column === 0 || !periods[column - 1] || !["input", "historical", "formula"].includes(cell.role)) return;
+        const period = periods[column - 1]!;
+        const role = sheet === output ? "output" : cell.formula ? "formula" : cell.role === "input" && row.key.startsWith("assumption.") ? "input" : "recorded";
+        const prefix = {input: "in", formula: "f", output: "out", recorded: "rec"}[role];
+        cell.roundtrip = {name: `${prefix}.${identity(roundtripScope)}.${identity(row.key)}.${period}`, role,
+          ...(role === "input" ? {assumptionId: row.key.slice("assumption.".length), configurationId: roundtripScope, period} : {period})};
+      });
+    }
+  }
   return [output,{key:"assumptions",name:inputName,widths:[48,...periods.map(()=>20)],rows},{key:`institutional_build_${index}`,name:calcName,widths:[48,...periods.map(()=>20)],rows:calculations}];
 }

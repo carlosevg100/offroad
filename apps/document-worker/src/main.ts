@@ -21,6 +21,8 @@ import {createAnthropicAdapter, createModelGateway, createOpenAIAdapter, type Ga
 import {loadConfig, describeConfig, type WorkerConfig} from "./config";
 import {createQueueClient, startHeartbeat, PoisonedJobError, type ClaimedJob} from "./queue";
 import {createClamdScanner} from "./scan";
+import {processArtifactRoundtrip} from "./artifact-roundtrip-processing";
+import {createArtifactRoundtripRenderer} from "./artifact-roundtrip-renderer";
 import {createLibreOfficeConverter, createTesseractEngine, toolVersion} from "./tools";
 import {createExtractor} from "./extract";
 import {sleep} from "./sleep";
@@ -347,6 +349,24 @@ async function main(): Promise<void> {
     }
   })();
 
+  // A bounded, separately leased pass leaves analysis and revocation consumers free.
+  const roundtripRenderer = createArtifactRoundtripRenderer(supabase);
+  const artifactRoundtripLoop = (async () => {
+    while (!stopping) {
+      try {
+        const outcome = await processArtifactRoundtrip({
+          client: supabase, workerToken: config.OFFROAD_WORKER_TOKEN, scanner,
+          render: roundtripRenderer,
+          signal: AbortSignal.any([shuttingDown.signal, AbortSignal.timeout(120_000)]),
+        });
+        if (outcome === "completed") log("artifact_roundtrip.completed");
+      } catch {
+        log("artifact_roundtrip.failed", {reason: "processing_or_authority_failed"});
+      }
+      await sleep(2000, shuttingDown.signal);
+    }
+  })();
+
   try {
   while (!stopping) {
     let job: ClaimedJob | null = null;
@@ -519,7 +539,7 @@ async function main(): Promise<void> {
   } finally {
     stopping = true;
     shuttingDown.abort();
-    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop]);
+    await Promise.all([outboxLoop, recomputeLoop, capitalCapturePurgeLoop, artifactRoundtripLoop]);
   }
   log("worker.stopped");
 }

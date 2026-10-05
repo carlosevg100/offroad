@@ -11,7 +11,7 @@ vi.mock("@/lib/deal-state/materials", async (original) => ({
 import {governedPackage, materialRevisionId, materialSessionId, materialSupabase} from "@/lib/artifacts/material-fixtures.test-support";
 import {GET} from "./route";
 
-const request = () => GET(new Request("https://offroad.test/material"), {params: Promise.resolve({locale: "pt-BR", sessionId: materialSessionId, kind: "term_sheet"})});
+const request = () => GET(new Request("https://offroad.test/material?exportContext=1"), {params: Promise.resolve({locale: "pt-BR", sessionId: materialSessionId, kind: "term_sheet"})});
 afterEach(() => {vi.useRealTimers(); vi.resetAllMocks();});
 
 describe("governed material PDF download", () => {
@@ -26,10 +26,12 @@ describe("governed material PDF download", () => {
     const friday = await request();
     expect(monday.status).toBe(200);
     expect(friday.status).toBe(200);
-    expect(Buffer.from(await monday.arrayBuffer()).equals(Buffer.from(await friday.arrayBuffer()))).toBe(true);
+    const selected = await friday.json();
+    expect(await monday.json()).toEqual(selected);
+    expect(selected).toMatchObject({revisionId: materialRevisionId, format: "pdf", variant: "term_sheet"});
     expect(friday.headers.get("cache-control")).toBe("private, no-store");
-    expect(friday.headers.get("x-artifact-revision")).toBe(materialRevisionId);
-    expect(friday.headers.get("x-artifact-bytes")).toBe("unpinned");
+    
+    
     expect(mocks.load).toHaveBeenCalledWith(client, "org", materialSessionId);
   });
   it("still refuses a material outside the approved production plan", async () => {

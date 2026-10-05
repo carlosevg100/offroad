@@ -63,10 +63,10 @@ function snapshotModel(scenarios:InstitutionalWorkbookArtifact["institutional"][
  ]))});
  return {sheets,periods:[...new Set(scenarios.flatMap(s=>s.input.assumptionBook.periods))],deskAssumptions:[]};
 }
-export async function renderInstitutionalFinancialWorkbook(scenarios:InstitutionalWorkbookArtifact["institutional"]["scenarios"],lang:"pt"|"en",activeScenarioId:string,editable=false){
+export async function renderInstitutionalFinancialWorkbook(scenarios:InstitutionalWorkbookArtifact["institutional"]["scenarios"],lang:"pt"|"en",activeScenarioId:string,editable=false,roundtrip=false){
  const active=scenarios.find(s=>s.configurationId===activeScenarioId);if(!active)throw new Error("institutional_active_scenario_missing");
  const model=snapshotModel(scenarios,lang);
- if(editable)model.sheets.unshift(...scenarios.flatMap((s,index)=>institutionalFormulaSheets(s.input as InstitutionalModelInput,index,lang)));
+ if(editable)model.sheets.unshift(...scenarios.flatMap((s,index)=>institutionalFormulaSheets(s.input as InstitutionalModelInput,index,lang,roundtrip?s.configurationId:undefined)));
  const rendered=await toGovernedXlsxBuffer(model,lang,{title:lang==="pt"?"Demonstrações e cenários aprovados":"Approved financial statements and scenarios",asOfDate:active.input.assumptionBook.asOfDate,currency:active.input.currency,scale:"units",classification:"confidential",artifactClass:editable?"institutional_editable":"institutional_snapshot"});
  return {...rendered,model};
 }
@@ -86,4 +86,11 @@ export async function renderApprovedInstitutionalFinancialWorkbook(value:unknown
  const artifact=parseVerifiedInstitutionalWorkbookArtifact(value);if(!artifact)return null;
  const payload=artifact;
  try{const {bytes}=await renderInstitutionalFinancialWorkbook(payload.institutional.scenarios,lang,payload.institutional.activeScenarioId,payload.version==="institutional-workbook-editable.v2");const expected=payload.workbooks[lang];return bytes.byteLength===expected.byteSize&&createHash("sha256").update(bytes).digest("hex")===expected.sha256?bytes:null;}catch{return null;}
+}
+
+/** New export only: verify the historical approved artifact before adding stable input names. */
+export async function renderInstitutionalRoundtripWorkbook(value: unknown, lang: "pt" | "en") {
+ const artifact = parseVerifiedInstitutionalWorkbookArtifact(value);
+ if (!artifact || !await renderApprovedInstitutionalFinancialWorkbook(value, lang)) return null;
+ return renderInstitutionalFinancialWorkbook(artifact.institutional.scenarios, lang, artifact.institutional.activeScenarioId, true, true);
 }

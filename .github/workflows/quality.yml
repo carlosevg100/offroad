@@ -182,6 +182,32 @@ jobs:
 
       # Every SQL contract is a gate by default. A newly added workspace, cache or
       # RLS regression test must not depend on someone remembering to register it here.
+      - name: Verify artifact roundtrip contracts and capture the real replay catalogue
+        if: ${{ !inputs.native_diagnostic }}
+        run: |
+          set -euo pipefail
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_export_receipts.sql
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_import_candidates.sql
+          psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage21-replay-catalogue.json"
+          DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B - <<'PY'
+          import importlib.util, json, os
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location('snapshot', 'scripts/ci/verify-effective-function-bodies.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          found, absent, resolved = module.database_state(os.environ['DATABASE_URL'], module.migration_targets())
+          Path(os.environ['RUNNER_TEMP'], 'stage21-effective-bodies.json').write_text(json.dumps({'found': found, 'absent': sorted(absent), 'resolved': resolved}))
+          PY
+
+      - name: Upload artifact roundtrip replay evidence
+        if: ${{ always() && !inputs.native_diagnostic }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: stage21-replay-evidence
+          path: |
+            ${{ runner.temp }}/stage21-replay-catalogue.json
+            ${{ runner.temp }}/stage21-effective-bodies.json
+
       - name: Verify effective function bodies match the committed snapshot
         if: ${{ !inputs.native_diagnostic }}
         env:
@@ -987,6 +1013,13 @@ jobs:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-material
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
+      - name: Start the governed documentary scanner for artifact roundtrip
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          CLAMD_HOST: 127.0.0.1
+          CLAMD_PORT: "3310"
+        run: bash scripts/ci/start-documentary-scanner.sh start
+
       - name: Start the worker
         if: ${{ !inputs.native_diagnostic }}
         run: |
@@ -997,7 +1030,9 @@ jobs:
           export WORKER_ACCOUNT_EMAIL="local-worker@offroad.invalid"
           export WORKER_ACCOUNT_PASSWORD="local-worker-password-2026"
           export OFFROAD_WORKER_TOKEN="e2e-worker-token-e2e-worker-token-e2e-worker-token-e2e-worker-token-"
-          export REQUIRE_VIRUS_SCAN=false
+          export REQUIRE_VIRUS_SCAN=true
+          export CLAMD_HOST=127.0.0.1
+          export CLAMD_PORT=3310
           export IDLE_POLL_SECONDS=2
           export LOG_LEVEL=info
           nohup node "$RUNNER_TEMP/worker/dist/main.js" > worker.log 2>&1 &

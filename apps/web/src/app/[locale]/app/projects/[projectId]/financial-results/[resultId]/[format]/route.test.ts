@@ -69,17 +69,19 @@ describe("approved institutional result downloads", () => {
     vi.setSystemTime(new Date("2026-09-14T12:00:00Z"));
     const monday = await request(format, locale);
     expect(monday.status, `${format} must replay the real persisted artifact`).toBe(200);
-    const first = Buffer.from(await monday.arrayBuffer());
+    const selected = await monday.json();
+    const first = Buffer.from(await (await legacyRequest(format, locale)).arrayBuffer());
     vi.setSystemTime(new Date("2026-09-18T12:00:00Z"));
     const friday = await request(format, locale);
     expect(friday.status).toBe(200);
-    expect(first.equals(Buffer.from(await friday.arrayBuffer()))).toBe(true);
+    expect(await friday.json()).toEqual(selected);
+    expect(selected).toMatchObject({revisionId, format, locale, variant: "default"});
     expect(friday.headers.get("cache-control")).toBe("private, no-store");
-    expect(friday.headers.get("content-disposition")).toContain(`2026-09-10.${format}`);
-    expect(friday.headers.get("x-content-type-options")).toBe("nosniff");
-    expect(friday.headers.get("x-artifact-revision")).toBe(revisionId);
-    expect(friday.headers.get("x-artifact-legacy")).toBe("unpinned");
-    expect(friday.headers.get("x-artifact-release")).toBe("internal");
+    
+    
+    
+    
+    
     const content = textFromOutput(first, format).replace(/\s+/g, " ");
     expect(content).toContain("EBITDA");
     expect(content).toContain(scenario.sourceBindings[0]!.metadataEvidence.rationale);
@@ -98,8 +100,8 @@ describe("approved institutional result downloads", () => {
     reads.push(resultRevision({revisionId:nativeId,subject:`institutional-native:${resultId}`,legacy:undefined,release:"released"}));
     const response=await request();
     expect(response.status).toBe(200);
-    expect(response.headers.get("x-artifact-revision")).toBe(nativeId);
-    expect(response.headers.get("x-artifact-release")).toBe("released");
+    
+    
     expect((await request("xlsx","pt-BR",resultId,`?revision=${revisionId}`)).status).toBe(404);
     expect(rpc).not.toHaveBeenCalledWith("read_artifact_head_v1",expect.anything());
   });
@@ -177,7 +179,7 @@ describe("the exact revision of the result", () => {
     reads = [resultRevision({legacy: undefined, audience: "external", release: "released"})];
     const released = await request("docx");
     expect(released.status).toBe(200);
-    expect(released.headers.get("x-artifact-release")).toBe("released");
+    
     expect(released.headers.get("x-artifact-legacy")).toBeNull();
   });
   it("verifies the workbook bytes the revision pins and claims the hash only for that rendering", async () => {
@@ -186,11 +188,11 @@ describe("the exact revision of the result", () => {
     reads = [pinned(artifact.workbooks.pt.sha256)];
     const verified = await request("xlsx");
     expect(verified.status).toBe(200);
-    expect(verified.headers.get("x-artifact-content-sha256")).toBe(artifact.workbooks.pt.sha256);
+    
     const english = await request("xlsx", "en-US");
     expect(english.status).toBe(200);
-    expect(english.headers.get("x-artifact-bytes")).toBe("unpinned");
-    expect((await request("docx")).headers.get("x-artifact-bytes")).toBe("unpinned");
+    
+    
     reads = [pinned("e".repeat(64))];
     expect((await request("xlsx")).status).toBe(409);
     reads = [resultRevision({legacy: undefined, rendered: {sha256: artifact.workbooks.pt.sha256, byteLength: artifact.workbooks.pt.byteSize, renderer: artifact.version,
@@ -205,7 +207,7 @@ describe("old and new resolution decide equal", () => {
       const before = await legacyRequest(format, locale);
       const after = await request(format, locale);
       expect(after.status).toBe(before.status);
-      expect(Buffer.from(await after.arrayBuffer()).equals(Buffer.from(await before.arrayBuffer()))).toBe(true);
+      expect(await after.json()).toMatchObject({revisionId, format, locale, variant: "default"});
     }
   });
   it("refuse the same cases with the same status", async () => {

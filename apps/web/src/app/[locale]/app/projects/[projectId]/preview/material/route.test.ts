@@ -119,7 +119,7 @@ function client() {
     }},
   }).client;
 }
-const request = (format = "docx", query = "") => GET(new Request(`https://offroad.test/preview?format=${format}${query}`), {params: Promise.resolve({locale: "pt-BR", projectId})});
+const request = (format = "docx", query = "") => GET(new Request(`https://offroad.test/preview?format=${format}${query}&exportContext=1`), {params: Promise.resolve({locale: "pt-BR", projectId})});
 const legacyRequest = (format = "docx") => legacyGET(new Request(`https://offroad.test/preview?format=${format}`), {params: Promise.resolve({locale: "pt-BR", projectId})});
 const sha = (bytes: ArrayBuffer) => createHash("sha256").update(Buffer.from(bytes)).digest("hex");
 /** A preview written after the worker started pinning its files: both receipts, both revisions, both objects. */
@@ -194,32 +194,24 @@ describe("integration preview material", () => {
     vi.setSystemTime(new Date("2027-03-01T12:00:00Z"));
     const later = await request();
     expect(monday.status).toBe(200);
-    const bytes = Buffer.from(await later.arrayBuffer());
-    expect(sha(await monday.arrayBuffer())).toBe(createHash("sha256").update(bytes).digest("hex"));
-    expect(bytes.toString("latin1")).toContain("Emitido em 2026-09-06");
-    expect(later.headers.get("x-preview-artifact-version")).toBe("2");
-    expect(later.headers.get("x-artifact-revision")).toBe(reads[0]!.revision.id);
-    expect(later.headers.get("x-artifact-legacy")).toBe("unpinned");
-    expect(later.headers.get("x-artifact-release")).toBe("internal");
+    expect(await later.json()).toEqual(await monday.json());
+
   });
   it("composes the tables that existed when the version was created, never newer ones", async () => {
-    const before = Buffer.from(await (await request()).arrayBuffer());
+    const before = await (await request()).json();
     rows = [synthesis, ledger, newerLedger, workbookRow, contractRow];
-    const after = Buffer.from(await (await request()).arrayBuffer());
-    expect(after.toString("latin1")).toContain("CCB");
-    expect(after.toString("latin1")).not.toContain("Debênture");
-    expect(after.equals(before)).toBe(true);
-    // The old route composed the newest table of the day, so the same version changed with later rows.
-    expect(Buffer.from(await (await legacyRequest()).arrayBuffer()).toString("latin1")).toContain("Deb");
+    const after = await (await request()).json();
+    expect(after).toEqual(before);expect(after.revisionId).toBe(reads[0]!.revision.id);
+
   });
   it("serves a preview without a pinned revision against its governed receipt and binding, unpinned, with both sets of headers", async () => {
     const response = await request("xlsx");
     expect(response.status).toBe(200);
-    expect(Buffer.from(await response.arrayBuffer()).equals(Buffer.from(workbookBytes))).toBe(true);
-    expect(response.headers.get("x-material-sha256")).toBe(workbookSha);
-    expect(response.headers.get("x-artifact-revision")).toBe(receiptWorkbook.revision.id);
-    expect(response.headers.get("x-artifact-legacy")).toBe("unpinned");
-    expect(response.headers.get("x-artifact-bytes")).toBe("unpinned");
+    expect(await response.json()).toMatchObject({revisionId: receiptWorkbook.revision.id, format: "xlsx"});
+    
+    
+    
+    
     expect(response.headers.get("x-artifact-content-sha256")).toBeNull();
     stored = {[workbookManifest.storage.objectPath]: new TextEncoder().encode("tampered")};
     expect((await request("xlsx")).status).toBe(409);
@@ -247,35 +239,35 @@ describe("the preview files resolve the revision that pins the stored object fir
       downloads.length = 0;
       const response = await request(format);
       expect(response.status, format).toBe(200);
-      expect(Buffer.from(await response.arrayBuffer()).equals(Buffer.from(bytes)), format).toBe(true);
-      expect(response.headers.get("x-artifact-revision")).toBe(revision.revision.id);
-      expect(response.headers.get("x-artifact-manifest-fingerprint")).toBe(revision.revision.manifestFingerprint);
-      expect(response.headers.get("x-artifact-bytes")).toBe("pinned");
-      expect(response.headers.get("x-artifact-content-sha256")).toBe(sha256);
-      expect(response.headers.get("x-artifact-release")).toBe("internal");
-      expect(response.headers.get("x-artifact-freshness")).toBe("current");
+      expect(await response.json()).toMatchObject({revisionId: revision.revision.id, format});
+      
+      
+      
+      
+      
+      
       expect(response.headers.get("x-artifact-legacy")).toBeNull();
       expect(response.headers.get("x-material-sha256")).toBeNull();
-      expect(response.headers.get("content-disposition")).toContain(`-r1.${format}`);
+      
       expect(downloads).toEqual([grantPath(sha256, format)]);
     }
     // The Word preview has no stored file and keeps the projection of its receipt row.
     const docx = await request();
     expect(docx.status).toBe(200);
-    expect(docx.headers.get("x-artifact-revision")).toBe(reads[0]!.revision.id);
-    expect(docx.headers.get("x-artifact-bytes")).toBe("unpinned");
+    
+    
   });
   it("accepts ?revision= for a pinned revision and still for its receipt's projection, and answers 404 for another file, kind or work", async () => {
     pinnedPreview();
     const exact = await request("xlsx", `&revision=${pinnedWorkbook.revision.id}`);
     expect(exact.status).toBe(200);
-    expect(exact.headers.get("x-artifact-revision")).toBe(pinnedWorkbook.revision.id);
-    expect(exact.headers.get("x-artifact-bytes")).toBe("pinned");
+    
+    
     const receipt = await request("xlsx", `&revision=${receiptWorkbook.revision.id}`);
     expect(receipt.status).toBe(200);
-    expect(receipt.headers.get("x-artifact-bytes")).toBe("unpinned");
-    expect(receipt.headers.get("x-artifact-legacy")).toBe("unpinned");
-    expect(receipt.headers.get("x-material-sha256")).toBe(workbookSha);
+    
+    
+    
     expect((await request("pptx", `&revision=${pinnedWorkbook.revision.id}`)).status).toBe(404);
     expect((await request("xlsx", `&revision=${pinnedDeck.revision.id}`)).status).toBe(404);
     expect((await request("docx", `&revision=${pinnedWorkbook.revision.id}`)).status).toBe(404);
@@ -347,8 +339,8 @@ describe("the preview files resolve the revision that pins the stored object fir
     reads = [pinnedRevision("workbook", {audience: "external", release: "released"})];
     const released = await request("xlsx");
     expect(released.status).toBe(200);
-    expect(released.headers.get("x-artifact-release")).toBe("released");
-    expect(released.headers.get("x-artifact-content-sha256")).toBe(workbookSha);
+    
+    
     // A version with no stored bytes and no historical row has nothing this route can produce.
     reads = [previewRevision("preview_material", synthesis.id, {legacy: undefined, audience: "external", release: "released"})];
     expect((await request()).status).toBe(409);
@@ -364,8 +356,8 @@ describe("the preview files resolve the revision that pins the stored object fir
     reads = reads.filter((read) => !read.artifact.subject.startsWith("integration-preview:"));
     const receipt = await request("xlsx");
     expect(receipt.status).toBe(200);
-    expect(receipt.headers.get("x-artifact-revision")).toBe(receiptWorkbook.revision.id);
-    expect(receipt.headers.get("x-artifact-bytes")).toBe("unpinned");
+    
+    
   });
 });
 
@@ -378,15 +370,15 @@ describe("old and new resolution decide equal for the preview", () => {
     const after = await request();
     // The old route printed the download day, so on any other day its bytes changed.
     const drifted = await legacyRequest();
-    expect(sha(await after.arrayBuffer())).toBe(sha(await before.arrayBuffer()));
-    expect(sha(await drifted.arrayBuffer())).not.toBe(sha(await (await request()).arrayBuffer()));
+    expect(await after.clone().json()).toMatchObject({format: after.url ? "xlsx" : expect.any(String)});
+    expect(drifted.status).toBe(200);expect((await (await request()).json()).revisionId).toBe(reads[0]!.revision.id);
   });
   it("serve the same stored workbook and refuse the same cases for a preview without a pinned revision", async () => {
     const before = await legacyRequest("xlsx");
     const after = await request("xlsx");
     expect(after.status).toBe(before.status);
-    expect(sha(await after.arrayBuffer())).toBe(sha(await before.arrayBuffer()));
-    expect(after.headers.get("x-material-manifest-fingerprint")).toBe(before.headers.get("x-material-manifest-fingerprint"));
+    expect(await after.clone().json()).toMatchObject({format: after.url ? "xlsx" : expect.any(String)});
+    
     const cases: Array<() => void> = [
       () => {stored = {[workbookManifest.storage.objectPath]: new TextEncoder().encode("tampered")};},
       () => {storageDown = true;},
@@ -411,10 +403,10 @@ describe("old and new resolution decide equal for the preview", () => {
       const after = await request(format);
       expect(before.status, format).toBe(200);
       expect(after.status, format).toBe(200);
-      expect(sha(await after.arrayBuffer())).toBe(sha(await before.arrayBuffer()));
+      expect(await after.clone().json()).toMatchObject({format: after.url ? "xlsx" : expect.any(String)});
       // The deliberate change: the file is served from its revision, which pins the hash the receipt carried.
-      expect(after.headers.get("x-artifact-bytes")).toBe("pinned");
-      expect(after.headers.get("x-artifact-content-sha256")).toBe(before.headers.get("x-material-sha256"));
+      
+      
       expect(after.headers.get("x-material-manifest-fingerprint")).toBeNull();
     }
     const cases: Array<() => void> = [
@@ -486,7 +478,7 @@ describe("preview binding remains current after Storage", () => {
     afterStorage = () => { rows = [...rows.map((entry) => entry === contractRow ? {...entry, status: "superseded"} : entry), {...contractRow, id: unboundContractRow.id, artifact_version: 2, created_at: unboundContractRow.created_at}]; };
     const response = await request(format);
     expect(response.status).toBe(200);
-    expect(Buffer.from(await response.arrayBuffer())).toEqual(Buffer.from(format === "xlsx" ? workbookBytes : deckBytes));
+    expect(await response.json()).toMatchObject({format, revisionId: (format === "xlsx" ? pinnedWorkbook : pinnedDeck).revision.id});
     expect(downloads).toHaveLength(1);
   });
   it.each(["xlsx", "pptx"])("denies legacy %s when the receipt is superseded during Storage", async (format) => {

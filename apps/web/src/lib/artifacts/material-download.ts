@@ -1,3 +1,4 @@
+import {serveRoundtripDownload} from "@/lib/artifacts/roundtrip-download";
 import "server-only";
 
 import type {Material, MaterialBlock, MaterialKind} from "@offroad/case-materials";
@@ -24,7 +25,7 @@ import {
   type ArtifactDownloadCopy,
   type ServedRead,
 } from "./artifact-route";
-import {artifactResponseHeaders, resolveRenderer, revisionIssuedOn, verifyRenderedBytes} from "./authorized-artifact-reader";
+import {resolveRenderer, revisionIssuedOn, verifyRenderedBytes} from "./authorized-artifact-reader";
 import {renderArtifactRevision} from "./render-artifact-revision";
 
 /**
@@ -154,12 +155,6 @@ export async function materialSourcesFromRevision(
   return {ok: true, material: {...material, blocks: [...material.blocks, ...linked]}, sources};
 }
 
-const fileMedia: Record<MaterialFileFormat, string> = {
-  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  pdf: "application/pdf",
-  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-};
-
 /**
  * One governed material as a Word, PDF or PowerPoint file, built deterministically from the exact
  * revision's persisted blocks through the single serializer: the same revision yields the same
@@ -192,12 +187,5 @@ export async function serveGovernedMaterialFile(
   if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
   if (!await resourceStillReadable(supabase, organization.id, sessionId, "session")) return artifactNotFound();
   if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
-  return new Response(Buffer.from(rendered.bytes), {
-    headers: {
-      "content-type": fileMedia[format],
-      "content-disposition": `attachment; filename="${kind}-${sessionId.slice(0, 8)}.${format}"`,
-      "cache-control": "private, no-store",
-      ...artifactResponseHeaders(read, verification),
-    },
-  });
+  return serveRoundtripDownload(request, {supabase, locale: params.locale, artifactId: read.artifact.id, revisionId: revision.id, format, variant: kind});
 }

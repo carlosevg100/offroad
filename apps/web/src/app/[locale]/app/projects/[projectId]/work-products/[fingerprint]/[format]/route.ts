@@ -1,3 +1,4 @@
+import {serveRoundtripDownload} from "@/lib/artifacts/roundtrip-download";
 import {deliverableFormatBlockCopy} from "@offroad/case-export/deliverable-formats";
 import {z} from "zod";
 
@@ -17,7 +18,7 @@ import {
   revisionRendererAllowed,
   templateForRevision,
 } from "@/lib/artifacts/artifact-route";
-import {artifactResponseHeaders, revisionIssuedOn, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
+import {revisionIssuedOn, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
 import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
 import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -77,11 +78,5 @@ export async function GET(request:Request,{params}:{params:Promise<{locale:strin
   if(verification.status==="mismatch")return artifactUnavailable(copy.bytesMismatch);
   if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
   if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
-  return new Response(new Uint8Array(rendered.bytes),{headers:{
-    "content-type":media[format as keyof typeof media],
-    "content-disposition":`attachment; filename="offroad-${result.product.job}-${fingerprint.slice(0,12)}.${format}"`,
-    "cache-control":"private, no-store", "x-content-type-options":"nosniff",
-    "x-work-product-fingerprint":fingerprint,
-    ...artifactResponseHeaders(read,verification),
-  }});
+  return serveRoundtripDownload(request, {supabase, locale, artifactId: read.artifact.id, revisionId: revision.id, format, variant: "default"});
 }

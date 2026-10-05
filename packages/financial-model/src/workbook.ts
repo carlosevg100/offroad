@@ -121,6 +121,14 @@ export function toWorkbook(model: FinancialModel, lang: "pt" | "en", cover?: Wor
         if (!built) return;
         worksheet[`${columnLetter(columnIndex)}${rowIndex + 1}`] = built;
         maxColumn = Math.max(maxColumn, columnIndex);
+        if (cell.roundtrip) {
+          const {name} = cell.roundtrip;
+          if (!/^[A-Za-z_][A-Za-z0-9_.]*$/.test(name)) throw new Error("roundtrip_defined_name_invalid");
+          book.Workbook ??= {};
+          book.Workbook.Names ??= [];
+          if (book.Workbook.Names.some(entry => entry.Name === name)) throw new Error("roundtrip_defined_name_duplicate");
+          book.Workbook.Names.push({Name: name, Ref: `'${sheet.name[lang].replaceAll("'", "''")}'!$${columnLetter(columnIndex)}$${rowIndex + 1}`});
+        }
       });
     });
 

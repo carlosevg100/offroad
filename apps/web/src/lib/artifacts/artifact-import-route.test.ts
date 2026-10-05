@@ -1,0 +1,20 @@
+import {beforeEach, describe, expect, it, vi} from "vitest";
+const mocks = vi.hoisted(() => ({workspace: vi.fn(), readImport: vi.fn(), rpc: vi.fn(), revalidate: vi.fn()}));
+vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
+vi.mock("@/lib/artifacts/artifact-import", async importOriginal => ({...await importOriginal<typeof import("./artifact-import")>(), readArtifactImport: mocks.readImport, artifactImportRpc: () => mocks.rpc}));
+vi.mock("@/lib/artifacts/authorized-artifact-reader", () => ({readArtifactRevision: vi.fn()}));
+vi.mock("next/cache", () => ({revalidatePath: mocks.revalidate}));
+import {POST} from "@/app/[locale]/app/artifacts/[artifactId]/imports/[candidateId]/decide/route";
+const candidateId = "10000000-0000-4000-8000-000000000001", artifactId = "10000000-0000-4000-8000-000000000002", workId = "10000000-0000-4000-8000-000000000003";
+const context = {params: Promise.resolve({locale: "pt-BR", artifactId, candidateId})};
+const input = {act: "discard", commandId: workId, reason: "Synthetic review rejection"};
+const request = (body: unknown = input, origin = "https://offroad.test") => new Request("https://offroad.test/import", {method: "POST", headers: {origin, "content-type": "application/json"}, body: JSON.stringify(body)});
+beforeEach(() => {vi.clearAllMocks();mocks.workspace.mockResolvedValue({supabase: {}});mocks.readImport.mockResolvedValue({candidateId, artifactId, workId, withheld: false});mocks.rpc.mockResolvedValue({data: {status: "discarded"}, error: null});});
+describe("Office import human decision route", () => {
+ it("denies a cross-origin decision without touching authority or the database", async () => {expect((await POST(request(input, "https://foreign.test"), context)).status).toBe(403);expect(mocks.workspace).not.toHaveBeenCalled();expect(mocks.rpc).not.toHaveBeenCalled();});
+ it("denies a revoked source while the work may remain accessible", async () => {mocks.readImport.mockResolvedValue({candidateId, artifactId, workId, withheld: true, status: "stale"});expect((await POST(request(), context)).status).toBe(403);expect(mocks.rpc).not.toHaveBeenCalled();});
+ it("denies a missing or differently scoped candidate before a decision write", async () => {mocks.readImport.mockResolvedValue(null);expect((await POST(request(), context)).status).toBe(403);expect(mocks.readImport).toHaveBeenCalledWith({}, {candidateId, artifactId});expect(mocks.rpc).not.toHaveBeenCalled();});
+ it("passes the actual atomic discard command and invalidates the work surface", async () => {expect((await POST(request(), context)).status).toBe(200);expect(mocks.rpc).toHaveBeenCalledWith("discard_artifact_import_v1", {p_candidate_id: candidateId, p_command_id: workId, p_reason: input.reason});expect(mocks.revalidate).toHaveBeenCalledWith(`/pt-BR/app/projects/${workId}`);});
+ it("rejects caller supplied comparison content before database access", async () => {expect((await POST(request({...input, comparison: {status: "candidate"}}), context)).status).toBe(400);expect(mocks.workspace).not.toHaveBeenCalled();});
+ it("relays a database refusal without claiming completion", async () => {mocks.rpc.mockResolvedValue({data: null, error: {code: "42501"}});const response = await POST(request(), context);expect(response.status).toBe(403);expect(await response.json()).toEqual({ok: false, error: "denied"});expect(mocks.revalidate).not.toHaveBeenCalled();});
+});

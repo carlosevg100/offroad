@@ -1,4 +1,5 @@
 "use client";
+import {GovernedDownloadBoundary} from "./governed-download-boundary";
 
 import {ArrowUp, Bot, Check, Circle, Clock3, FileText, LoaderCircle, Paperclip, X} from "lucide-react";
 import Link from "next/link";
@@ -385,7 +386,7 @@ export function AdvisorProject(props: Props) {
   }
 
   return (
-    <main className={`advisor-project${sections.length ? " advisor-project--with-work" : ""}`} data-mobile-view={mobileView}>
+    <GovernedDownloadBoundary><main className={`advisor-project${sections.length ? " advisor-project--with-work" : ""}`} data-mobile-view={mobileView}>
       {sections.length ? <nav className="advisor-work-mobile-nav" aria-label={workCopy("navigation")}>
         <button type="button" aria-pressed={mobileView === "conversation"} onClick={() => setMobileView("conversation")}>{workCopy("conversation")}</button>
         <button type="button" aria-pressed={mobileView === "work"} onClick={() => setMobileView("work")}>{workCopy("work")} <span>{sections.length}</span></button>
@@ -540,6 +541,6 @@ export function AdvisorProject(props: Props) {
           }}><strong>{section.title}</strong></a></li>)}</ul> : props.artifacts.length ? <ul>{props.artifacts.map((artifact) => <li key={artifact.id}><FileText aria-hidden="true" size={13} /><span><strong>{artifact.label}</strong></span></li>)}</ul> : <p>{props.copy.noArtifacts}</p>}
         </section>
       </aside>
-    </main>
+    </main></GovernedDownloadBoundary>
   );
 }

@@ -1,0 +1,21 @@
+import {beforeEach, describe, expect, it, vi} from "vitest";
+import {createHash} from "node:crypto";
+const mocks = vi.hoisted(() => ({workspace: vi.fn(), read: vi.fn(), rpc: vi.fn(), download: vi.fn()}));
+vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
+vi.mock("@/lib/artifacts/authorized-artifact-reader", () => ({readArtifactRevision: mocks.read}));
+import {GET, POST} from "@/app/[locale]/app/artifacts/[artifactId]/exports/route";
+const artifactId = "10000000-0000-4000-8000-000000000001", revisionId = "10000000-0000-4000-8000-000000000002", receiptId = "10000000-0000-4000-8000-000000000003";
+const bytes = Buffer.from("synthetic exact stored bytes");
+const receipt = {id: receiptId, artifactId, revisionId, format: "xlsx", sha256: createHash("sha256").update(bytes).digest("hex"), byteLength: bytes.length, storage: {bucket: "opportunity-documents", path: "synthetic/export.xlsx", objectId: "10000000-0000-4000-8000-000000000004"}};
+const context = {params: Promise.resolve({locale: "pt-BR", artifactId})};
+const read = {ok: true, read: {withheld: false, artifact: {id: artifactId}, summary: {manifestFingerprint: "a".repeat(64)}}};
+beforeEach(() => {vi.clearAllMocks();mocks.workspace.mockResolvedValue({supabase: {rpc: mocks.rpc, storage: {from: () => ({download: mocks.download})}}});mocks.rpc.mockResolvedValue({data: receipt, error: null});mocks.read.mockResolvedValue(read);mocks.download.mockResolvedValue({data: new Blob([bytes]), error: null});});
+const request = () => new Request(`https://offroad.test/pt-BR/app/artifacts/${artifactId}/exports?receiptId=${receiptId}`);
+describe("governed stored export route", () => {
+  it("serves exactly receipted bytes with no-store only after revalidation", async () => {const response = await GET(request(), context);expect(response.status).toBe(200);expect(Buffer.from(await response.arrayBuffer())).toEqual(bytes);expect(response.headers.get("cache-control")).toBe("private, no-store");expect(mocks.rpc).toHaveBeenCalledTimes(2);expect(mocks.read).toHaveBeenCalledTimes(2);});
+  it("denies a receipt belonging to another artifact before touching Storage", async () => {mocks.rpc.mockResolvedValue({data: {...receipt, artifactId: revisionId}, error: null});expect((await GET(request(), context)).status).toBe(403);expect(mocks.download).not.toHaveBeenCalled();});
+  it("fails closed on absent or altered stored bytes", async () => {mocks.download.mockResolvedValueOnce({data: null, error: {message: "missing"}});expect((await GET(request(), context)).status).toBe(409);mocks.download.mockResolvedValueOnce({data: new Blob([Buffer.alloc(bytes.length, 1)]), error: null});expect((await GET(request(), context)).status).toBe(409);});
+  it("denies source revocation that happens during Storage I/O", async () => {mocks.read.mockResolvedValueOnce(read).mockResolvedValueOnce({ok: true, read: {...read.read, withheld: true}});const response = await GET(request(), context);expect(response.status).toBe(403);expect(response.headers.get("x-artifact-sha256")).toBeNull();});
+  it("denies receipt revocation during Storage I/O", async () => {mocks.rpc.mockResolvedValueOnce({data: receipt, error: null}).mockResolvedValueOnce({data: null, error: {code: "42501"}});expect((await GET(request(), context)).status).toBe(403);});
+  it("rejects foreign-origin export commands without reading authentication", async () => {expect((await POST(new Request("https://offroad.test/export", {method: "POST", headers: {origin: "https://foreign.test"}}), context)).status).toBe(403);expect(mocks.workspace).not.toHaveBeenCalled();});
+});

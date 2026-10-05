@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({policy: vi.fn(), workspace: vi.fn(), capture: v
 vi.mock("@/lib/advisor/project-review-policy-context", () => ({loadProjectReviewPolicyContext: mocks.policy}));
 vi.mock("@/lib/auth/workspace", () => ({requireWorkspace: mocks.workspace}));
 vi.mock("next-intl/server", () => ({getTranslations: async () => (key: string) => key}));
+vi.mock("./artifact-roundtrip-work", () => ({ArtifactRoundtripWork: () => <div data-testid="artifact-roundtrip"/>}));
 vi.mock("./project-review-roles", () => ({ProjectReviewRoles: ({context, dashboard}: {context: {canManage: boolean}; dashboard: WorkReviewDashboard | null}) => {mocks.review(dashboard); return <section data-testid="policy-v2" data-manage={String(context.canManage)} data-viewer={dashboard?.viewerId}>Content review</section>;}}));
 vi.mock("./advisor-project", () => ({AdvisorProject: (props: {workSections: {id: string; content: ReactNode}[]}) => {mocks.capture(props); return <main>{props.workSections.map(s => <div key={s.id}>{s.content}</div>)}</main>;}}));
 vi.mock("./work-updates", () => ({WorkUpdates: () => <div/>}));
