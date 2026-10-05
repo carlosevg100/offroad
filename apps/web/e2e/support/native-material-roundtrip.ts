@@ -19,7 +19,6 @@ export interface NativeMaterialRoundtripFixture {
   projectId: string;
   sessionId: string;
   userId: string;
-  sourceVersionId: string;
   artifactId: string;
   materialRevisionId: string;
   materialFingerprint: string;
@@ -135,12 +134,9 @@ export async function startNativeMaterialRoundtripFixture(): Promise<NativeMater
       select organization_id,user_id,'company','complete',clock_timestamp() from public.organization_memberships
       where organization_id='${f.organizationId}' and role='owner' and status='active'
       on conflict(organization_id,user_id,journey) do update set completed_at=excluded.completed_at,current_step='complete';`);
-    const basis = z.object({userId: uuid, sourceVersionId: uuid, artifactId: uuid,
+    const basis = z.object({userId: uuid, artifactId: uuid,
       materialFingerprint: fingerprint, manifestFingerprint: fingerprint}).parse(JSON.parse(sql(`
-      select jsonb_build_object('userId',r.human_subject_id,'sourceVersionId',
-        (select p.source_version_id from private.material_production_source_pins p
-         where(p.organization_id,p.recipe_id)=(r.organization_id,r.id) order by p.source_version_id limit 1),
-        'artifactId',v.artifact_id,'materialFingerprint',b.bundle_fingerprint,'manifestFingerprint',v.manifest_fingerprint)
+      select jsonb_build_object('userId',r.human_subject_id,'artifactId',v.artifact_id,'materialFingerprint',b.bundle_fingerprint,'manifestFingerprint',v.manifest_fingerprint)
       from private.material_production_recipes r join private.material_production_bindings b
         on(b.organization_id,b.recipe_id)=(r.organization_id,r.id)
       join public.artifact_revisions v on(v.organization_id,v.id)=(b.organization_id,b.revision_id)

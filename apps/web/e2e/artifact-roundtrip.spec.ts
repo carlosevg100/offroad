@@ -32,7 +32,8 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   await page.getByText("Synthetic Office contribution", {exact: true}).click();
   const panel = page.locator("details").filter({has: page.getByText("Synthetic Office contribution", {exact: true})}).getByTestId("artifact-import-panel");
   await expect(panel.getByRole("button", {name: messages.ArtifactImportPanel.export, exact: true})).toBeEnabled();
-  await panel.getByLabel(messages.ArtifactImportPanel.exportFormat, {exact: true}).selectOption("docx");
+  const format = panel.getByRole("combobox", {name: messages.ArtifactImportPanel.exportFormat, exact: true});
+  await expect(format).toBeEnabled();await format.selectOption("docx");
   await panel.getByRole("button", {name: messages.ArtifactImportPanel.export, exact: true}).click();
   const link = panel.getByRole("link", {name: messages.ArtifactImportPanel.download, exact: true});await expect(link).toBeVisible({timeout: 90000});
   const downloaded = await page.request.get((await link.getAttribute("href"))!);expect(downloaded.status()).toBe(200);
@@ -44,7 +45,8 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   await panel.getByLabel(messages.ArtifactImportPanel.role, {exact: true}).fill("Analyst");
   const checks = panel.locator('input[type="checkbox"]');await checks.nth(0).check();await checks.nth(1).check();
   const receipt = new URL((await link.getAttribute("href"))!, page.url()).searchParams.get("receiptId")!;
-  await panel.getByLabel(messages.ArtifactImportPanel.receipt, {exact: true}).selectOption(receipt);
+  const receipts = panel.getByRole("combobox", {name: messages.ArtifactImportPanel.receipt, exact: true});
+  await expect(receipts.locator(`option[value="${receipt}"]`)).toBeAttached();await receipts.selectOption(receipt);
   await panel.getByLabel(messages.ArtifactImportPanel.file, {exact: true}).setInputFiles({name: "synthetic-edit.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: edited});
   await panel.getByRole("button", {name: messages.ArtifactImportPanel.upload, exact: true}).click();
   const review = panel.getByTestId("artifact-import-review");await expect(review.getByText(changed, {exact: true})).toBeVisible({timeout: 90000});
@@ -64,7 +66,7 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   expect(sql(`select count(*) from public.work_milestones where work_id='${f.workId}' and kind='decision' and subject_kind='execution_brief';`)).toBe("1");
   // Refresh the actual server context to expose the producer-created basis to the person.
   await page.reload();await page.locator('.advisor-work-surface__navigation a[href="#work-artifact-roundtrip"]').click();await page.getByText("Synthetic Office contribution", {exact: true}).click();
-  const basis = panel.getByLabel(messages.ArtifactImportPanel.basis, {exact: true});const basisValue = await basis.locator("option").nth(1).getAttribute("value");expect(basisValue).not.toBeNull();await basis.selectOption(basisValue!);
+  const basis = panel.getByRole("combobox", {name: messages.ArtifactImportPanel.basis, exact: true});const basisValue = await basis.locator("option").nth(1).getAttribute("value");expect(basisValue).not.toBeNull();await basis.selectOption(basisValue!);
   const declaration = review.getByLabel(messages.ArtifactImportReview.declaration, {exact: true});if (await declaration.count()) await declaration.check();
   await review.getByRole("button", {name: messages.ArtifactImportReview.apply, exact: true}).click();
   await expect(review.getByText(messages.ArtifactImportReview.status.applied, {exact: true})).toBeVisible();
