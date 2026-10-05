@@ -141,8 +141,11 @@ jobs:
           docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
           # Retry the boot a few times, alternating registries with a pause, instead of failing the
           # whole gate on a registry limit.
+          set -o pipefail
           for attempt in 1 2 3 4 5; do
-            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector; then break; fi
+            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector 2>&1 | tee "$RUNNER_TEMP/supabase-start-database.log"; then break; fi
+            # SQL errors are deterministic and cannot recover by pulling another image.
+            if grep -q 'SQLSTATE' "$RUNNER_TEMP/supabase-start-database.log"; then exit 1; fi
             if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
             if [ "$SUPABASE_INTERNAL_IMAGE_REGISTRY" = public.ecr.aws ]; then
               SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io
@@ -182,6 +185,38 @@ jobs:
 
       # Every SQL contract is a gate by default. A newly added workspace, cache or
       # RLS regression test must not depend on someone remembering to register it here.
+      - name: Verify artifact roundtrip contracts and capture the real replay catalogue
+        if: ${{ !inputs.native_diagnostic }}
+        run: |
+          set -euo pipefail
+          psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage21-replay-catalogue.json"
+          psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage21-function-catalogue.sql > "$RUNNER_TEMP/stage21-function-catalogue.json"
+          DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B - <<'PY'
+          import importlib.util, json, os
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location('snapshot', 'scripts/ci/verify-effective-function-bodies.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          found, absent, resolved = module.database_state(os.environ['DATABASE_URL'], module.migration_targets())
+          found = {key: value.decode('utf-8') for key, value in found.items()}
+          Path(os.environ['RUNNER_TEMP'], 'stage21-effective-bodies.json').write_text(json.dumps({'found': found, 'absent': sorted(absent), 'resolved': resolved}))
+          PY
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_export_receipts.sql
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_import_candidates.sql
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/artifact_roundtrip_pending_groups_eval.sql
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/institutional_configuration_ancestry.sql
+
+
+      - name: Upload artifact roundtrip replay evidence
+        if: ${{ always() && !inputs.native_diagnostic }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: stage21-replay-evidence
+          path: |
+            ${{ runner.temp }}/stage21-replay-catalogue.json
+            ${{ runner.temp }}/stage21-function-catalogue.json
+            ${{ runner.temp }}/stage21-effective-bodies.json
+
       - name: Verify effective function bodies match the committed snapshot
         if: ${{ !inputs.native_diagnostic }}
         env:
@@ -193,6 +228,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -B scripts/ci/test_check_stage0_inventory.py
+          python3 -B scripts/ci/test_compare_stage21_installed.py
           psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage0-replay-catalogue.json"
           python3 -B scripts/ci/check-stage0-inventory.py --catalogue "$RUNNER_TEMP/stage0-replay-catalogue.json" --environment replay --production-journal docs/build/schema-history/production-migration-journal.json
 
@@ -771,7 +807,7 @@ jobs:
           node --test scripts/evals/stage20-integrated-review.test.mjs scripts/evals/stage20-material-review-adapter.test.mjs
 
       - name: Finite native preview through real Storage, two paid boundaries and replay
-        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' }}
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' && steps.native_consumers_install.outcome == 'success' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}
@@ -784,6 +820,14 @@ jobs:
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_native_consumption.sql
 
+
+      # These real races require committed fixtures. Keep them after every other
+      # database/SDK contract, immediately before destroying the disposable stack.
+      - name: Verify artifact roundtrip races before disposable stack teardown
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-artifact-roundtrip-concurrency.py
 
       - name: Stop the capital body Edge reader
         if: always()
@@ -845,12 +889,14 @@ jobs:
           # boot starts on the AWS mirror and switches registry on every retry.
           SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
         run: |
+          set -o pipefail
           supabase stop --no-backup || true
           docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
           # Retry the boot a few times, alternating registries with a pause, instead of failing the
           # whole gate on a registry limit.
           for attempt in 1 2 3 4 5; do
-            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta; then break; fi
+            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta 2>&1 | tee "$RUNNER_TEMP/supabase-start-e2e.log"; then break; fi
+            if grep -q 'SQLSTATE' "$RUNNER_TEMP/supabase-start-e2e.log"; then exit 1; fi
             if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
             if [ "$SUPABASE_INTERNAL_IMAGE_REGISTRY" = public.ecr.aws ]; then
               SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io
@@ -987,6 +1033,13 @@ jobs:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-material
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
+      - name: Start the governed documentary scanner for artifact roundtrip
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          CLAMD_HOST: 127.0.0.1
+          CLAMD_PORT: "3310"
+        run: bash scripts/ci/start-documentary-scanner.sh start
+
       - name: Start the worker
         if: ${{ !inputs.native_diagnostic }}
         run: |
@@ -997,7 +1050,9 @@ jobs:
           export WORKER_ACCOUNT_EMAIL="local-worker@offroad.invalid"
           export WORKER_ACCOUNT_PASSWORD="local-worker-password-2026"
           export OFFROAD_WORKER_TOKEN="e2e-worker-token-e2e-worker-token-e2e-worker-token-e2e-worker-token-"
-          export REQUIRE_VIRUS_SCAN=false
+          export REQUIRE_VIRUS_SCAN=true
+          export CLAMD_HOST=127.0.0.1
+          export CLAMD_PORT=3310
           export IDLE_POLL_SECONDS=2
           export LOG_LEVEL=info
           nohup node "$RUNNER_TEMP/worker/dist/main.js" > worker.log 2>&1 &
@@ -1012,10 +1067,22 @@ jobs:
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
         run: node scripts/ci/verify-pinned-consumer.mjs
 
+      - name: Verify governed artifact export and reimport paths
+        if: ${{ !inputs.native_diagnostic }}
+        # Fail early on changed paths; every selected case remains a required release gate.
+        run: |
+          set -euo pipefail
+          export OFFROAD_E2E_WORKER_PID="$(cat worker.pid)"
+          pnpm --filter web exec playwright test --retries=0 --output=test-results-roundtrip --grep 'Office roundtrip preserves the base|stored preview downloads exact bytes|governed materials and model come from one exact revision|guided institutional setup calculates only after review|a mixed update of an execution and the financial model is adopted in one act'
+        env:
+          CI: "true"
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-roundtrip
+          OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
       - name: Run end-to-end tests
         if: ${{ !inputs.native_diagnostic }}
-        # The native material case above already ran with its own queue consumer.
-        run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$'
+        # The native material case and changed roundtrip paths already ran in required steps.
+        run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$|Office roundtrip preserves the base|stored preview downloads exact bytes|governed materials and model come from one exact revision|guided institutional setup calculates only after review|a mixed update of an execution and the financial model is adopted in one act'
         env:
           CI: "true"
           # Restricted to loopback by the synthetic sector-planning setup.
@@ -1031,6 +1098,8 @@ jobs:
             apps/web/test-results
             apps/web/playwright-report-material
             apps/web/test-results-material
+            apps/web/playwright-report-roundtrip
+            apps/web/test-results-roundtrip
           if-no-files-found: ignore
           retention-days: 7
 

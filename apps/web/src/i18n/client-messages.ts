@@ -25,6 +25,8 @@ export function selectClientMessages(messages: Messages) {
     InstitutionalScenarioComparison: messages.InstitutionalScenarioComparison,
     NewWorkRequest: messages.NewWorkRequest,
     MaterialPackageReview: messages.MaterialPackageReview,
+    ArtifactImportPanel: messages.ArtifactImportPanel,
+    ArtifactImportReview: messages.ArtifactImportReview,
     ArtifactRevisionReview: messages.ArtifactRevisionReview,
     ProjectReviewRoles: messages.ProjectReviewRoles,
     WorkReviewHistory: messages.WorkReviewHistory,

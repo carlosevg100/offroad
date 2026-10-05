@@ -1,3 +1,4 @@
+import {serveRoundtripDownload} from "@/lib/artifacts/roundtrip-download";
 import {deliverableFormatBlockCopy} from "@offroad/case-export/deliverable-formats";
 
 import {loadInstitutionalModelResult} from "@/lib/advisor/institutional-model-results";
@@ -14,7 +15,7 @@ import {
   revisionRendererAllowed,
   templateForRevision,
 } from "@/lib/artifacts/artifact-route";
-import {artifactResponseHeaders, revisionIssuedOn, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
+import {revisionIssuedOn, verifyRenderedBytes} from "@/lib/artifacts/authorized-artifact-reader";
 import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
 import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {requireWorkspace} from "@/lib/auth/workspace";
@@ -82,12 +83,5 @@ export async function GET(request: Request, {params}: Params) {
   if (!final.ok || final.revision.manifestFingerprint !== revision.manifestFingerprint || final.read.release !== read.release
     || final.read.freshness !== read.freshness || !current || current.id !== result.id || current.status !== "completed"
     || current.nativeRevisionId !== result.nativeRevisionId || current.artifact?.fingerprint !== artifact?.fingerprint) return artifactUnavailable(copy.sourceRestricted);
-  const issuedOn = revisionIssuedOn(revision, result.createdAt);
-  return new Response(Buffer.from(rendered.bytes), {headers: {
-    "content-type": formats[format as keyof typeof formats],
-    "content-disposition": `attachment; filename="${lang === "pt" ? "Cenarios" : "Scenarios"}_${issuedOn}.${format}"`,
-    "cache-control": "private, no-store",
-    "x-content-type-options": "nosniff",
-    ...artifactResponseHeaders(read, verification),
-  }});
+  return serveRoundtripDownload(request, {supabase, locale, artifactId: read.artifact.id, revisionId: revision.id, format, variant: "default"});
 }

@@ -7100,5 +7100,95 @@
       "confirm_assessment": "Confirm assessment",
       "record_report": "Report decision"
     }
+  },
+  "ArtifactImportReview": {
+    "title": "Review file changes",
+    "revision": "Revision {number}",
+    "noBase": "No recoverable baseline",
+    "scope": "Changes are proposals. Offroad will recalculate the numbers; applying does not approve the result.",
+    "base": "Original file",
+    "head": "Current revision",
+    "baseValue": "Before editing",
+    "received": "Received file",
+    "current": "Current work",
+    "absent": "Absent",
+    "detached": "References no longer supported by the edited text:",
+    "formula": "The changed formula is recorded as an observation. Review the procedure to change the calculation.",
+    "recorded": "This value belongs to the revision record and cannot replace a system result.",
+    "unmatched": "This content needs an explicit choice: keep as a new source, discard, or match manually. It will not be applied automatically.",
+    "resolve": "Which contribution should remain in this region?",
+    "choose": {
+      "received": "Use the received contribution",
+      "current": "Keep the current revision"
+    },
+    "apply": "Apply contributions",
+    "discard": "Discard candidate",
+    "errors": {
+      "denied": "You do not have access to perform this action.",
+      "changed": "The revision changed. Review the differences again.",
+      "save": "Could not record your choice. Try again."
+    },
+    "status": {
+      "queued": "File received; verification and comparison are in progress.",
+      "candidate": "Changes ready for review.",
+      "unmatched": "Some content cannot be matched to the baseline.",
+      "stale": "The baseline changed or lost a usage right. It must be rebuilt before applying.",
+      "applied": "Contributions recorded in a new revision.",
+      "discarded": "Candidate discarded; history preserved."
+    },
+    "classes": {
+      "unchanged": "No received change",
+      "edited": "New contribution",
+      "conflict": "Concurrent changes",
+      "missing": "Identifier removed",
+      "unmatched": "Unmatched",
+      "formula_changed": "Changed formula",
+      "recorded_edited": "Changed record"
+    },
+    "declaration": "I declare that I prepared this contribution and take responsibility for reviewing it under this individual regime.",
+    "differentReviewer": "Another eligible reviewer must adopt this contribution."
+  },
+  "ArtifactImportPanel": {
+    "title": "Receive an edited file",
+    "scope": "Changes arrive as proposals. Offroad compares and calculates; applying changes requires your review.",
+    "unavailable": "The usage terms must be available before receiving a file.",
+    "name": "Declarant name",
+    "role": "Role or title",
+    "receipt": "Export that produced the file",
+    "noReceipt": "Unidentified. choose how to handle it after verification",
+    "file": "Edited file",
+    "upload": "Submit for verification",
+    "basis": "Approved basis for continuing the work",
+    "chooseBasis": "Choose a basis",
+    "discardReason": "Reason for discarding",
+    "recompare": "Compare with the current revision",
+    "error": "Could not complete. Check access and try again.",
+    "unmatched": "Unmatched file",
+    "keepSource": "Keep as a new source",
+    "mappingScope": "Explicitly select each text passage’s target block. Citations will not be reattached.",
+    "chooseBlock": "Choose a block",
+    "match": "Record mapping and compare",
+    "restricted": "This material is restricted.",
+    "exportFormat": "File format",
+    "export": "Prepare an export of the current revision",
+    "exportQueued": "The export is being prepared.",
+    "download": "Download verified file",
+    "group": "Assumptions by configuration",
+    "chooseGroup": "Choose a configuration",
+    "rebase": "I confirm using this configuration as the new basis while preserving prior lineages.",
+    "pendingGroups": "Pending configurations: {count}. Review the comparison after each adoption.",
+    "unnamedGroup": "Unnamed configuration",
+    "exportVariant": "Material to export",
+    "variants": {
+      "default": "This material",
+      "teaser": "Teaser",
+      "credit_profile": "Credit profile",
+      "package": "Material package",
+      "credit_memo": "Credit memorandum",
+      "term_sheet": "Term sheet",
+      "financial_model": "Financial model",
+      "diligence_qa": "Diligence questions",
+      "data_room_index": "Document index"
+    }
   }
 }

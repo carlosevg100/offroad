@@ -14,8 +14,8 @@ import {
   type SecurityAssuranceScope,
 } from "./security-assurance-statements.ts";
 
-const baselineCommit = "6d899ca5c2b4275f35ee721fc3967777f59134ef";
-const capturedAt = "2026-09-21T22:00:20.589Z";
+const baselineCommit = "3354eaa29fcfcb847d82c165d060006c64eb0d9c";
+const capturedAt = "2026-10-05T11:40:05.092Z";
 
 const currentAssuranceScopeSeed = {
   scopeId: "offroad-platform-current-inventory",
@@ -77,6 +77,12 @@ function requiredCanonicalEvidence(
 }
 
 const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
+  evidence("SEV-ROUNDTRIP-PLAN", "design_reference", "docs/build/arcabouco/etapa-21-execucao.md", "Approved stage-21 design: explicit governed export and candidate import. Presence of this design does not prove deployment."),
+  evidence("SEV-REVIEW-INTEGRATED-PLAN", "design_reference", "docs/build/arcabouco/etapa-20-3x-integrated-review-eval.md", "Stage-20 native CI proof and public human review are deliberately separate; runner presence is not a remote execution receipt."),
+  evidence("SEV-REVIEW-INTEGRATED-RUNNER", "repository_file", "scripts/evals/stage20-integrated-review.mjs", "Allowlisted staging human review runner with exact native body authority, revocation and cleanup boundaries."),
+  evidence("SEV-REVIEW-INTEGRATED-TEST", "automated_test", "scripts/evals/stage20-integrated-review.test.mjs", "Tests protect the integrated review contract and exact fingerprints; source evidence does not assert a run result."),
+  evidence("SEV-REVIEW-REVISION-PROTOCOL", "automated_test", "supabase/tests/artifact_revision_protocol.sql", "SQL regression contract for immutable artifact revisions, authority and human review."),
+
   evidence("SEV-RETENTION-MATRIX", "repository_file", "packages/model-gateway/src/retention-matrix.ts", "Versioned account/model/resource eligibility with bounded retention and fail-closed unknown combinations."),
   evidence("SEV-RETENTION-SERVER", "repository_file", "supabase/migrations/20260921155432_provider_retention_dependency_and_contract_guards.sql", "Current source and dependency retention rights are rechecked by capability-scoped SQL."),
   evidence("SEV-RETENTION-SQL-TEST", "automated_test", "supabase/tests/provider_retention_eligibility.sql", "Negative tests cover expired attestations, revoked sources and capability forgery."),
@@ -304,7 +310,7 @@ const evidenceIndex: SecurityCurrentStateInventory["evidenceIndex"] = [
   evidence("SEV-DEBT-VIEW-PROMPT", "repository_file", "apps/document-worker/src/company-debt-view.ts", "Role-free debt-view request builder after stage 1C."),
   evidence("SEV-ORIGINATION-PROMPT", "repository_file", "apps/document-worker/src/origination-thesis.ts", "Role-free origination request builder after stage 1C."),
   evidence("SEV-CAPITAL-PLANNING-PROMPT", "repository_file", "apps/document-worker/src/capital-planning.ts", "Role-free capital planning request builder after stage 1C."),
-  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-17.json", "Codex read-only delivery observation: deployed revision, consumer heartbeat and alarm states; the OIDC monitoring role denied DescribeAlarms. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
+  evidence("SEV-AWS-DEPLOY-ROLE-SNAPSHOT", "operator_observation", "docs/security/evidence/aws-worker-rollout-diagnostics-wave-21.json", "Dated read-only delivery observation for wave 21, with its actual collection scope. Historical denials do not establish current IAM policy. Broader effective IAM permissions remain unknown; no independent IAM assurance is inferred."),
 ];
 
 const environments = [
@@ -392,19 +398,19 @@ const systems = [
     systemId: "SYS-WEB", title: "Offroad web application", kind: "application", purpose: "Authenticated workspace, project interaction and document intake.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-PREVIEW", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "personal_data", "customer_confidential", "restricted_financial"],
     vendorRefs: ["VEN-VERCEL", "VEN-SUPABASE", "VEN-SENTRY", "VEN-POSTHOG", "VEN-GOOGLE-FONTS"], owner: owner("Web platform owner", "Application security owner"),
-    evidenceRefs: ["SEV-METHOD-UI", "SEV-METHOD-UI-E2E", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-WORKSPACE-IDENTITY", "SEV-WORKSPACE-CONTEXT-REGRESSION", "SEV-AGENTS-SCOPE", "SEV-WEB-DEPENDENCIES", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-TELEMETRY-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-APP-01", "TRUST-APP-02", "TRUST-DATA-01"],
+    evidenceRefs: ["SEV-ROUNDTRIP-PLAN", "SEV-REVIEW-INTEGRATED-PLAN", "SEV-REVIEW-INTEGRATED-TEST", "SEV-METHOD-UI", "SEV-METHOD-UI-E2E", "SEV-POLICY-TYPED-CONTRACT", "SEV-POLICY-EXPORT", "SEV-WORKSPACE-IDENTITY", "SEV-WORKSPACE-CONTEXT-REGRESSION", "SEV-AGENTS-SCOPE", "SEV-WEB-DEPENDENCIES", "SEV-WEB-UPLOAD"], gapRefs: ["SG-LIVE-CONFIG", "SG-TELEMETRY-ASSURANCE", "SG-OWNER-ASSIGNMENT", "SG-ASSET-DISCOVERY"], controlIds: ["TRUST-APP-01", "TRUST-APP-02", "TRUST-DATA-01"],
   },
   {
     systemId: "SYS-SUPABASE", title: "Supabase data platform", kind: "database_platform", purpose: "Authentication, Postgres, RLS, private storage and database commands.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-STAGING", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["internal_operational", "personal_data", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
-    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-PLATFORM-METHOD-REPLAY", "SEV-PLATFORM-METHOD-IDENTITY", "SEV-PLATFORM-METHOD-INGRESS", "SEV-PLATFORM-METHOD-SQL", "SEV-METHOD-SCHEMA", "SEV-METHOD-PUBLICATION-TEST", "SEV-METHOD-RIGHTS-TEST", "SEV-METHOD-LEGACY-TEST", "SEV-VAULT-LEGACY-GRANTS", "SEV-VAULT-SCHEMA", "SEV-VAULT-LEGACY", "SEV-VAULT-RECEIPTS", "SEV-CONTRIBUTION-AUDIT", "SEV-CONTRIBUTION-SCHEMA", "SEV-CONTRIBUTION-INTEGRITY", "SEV-WORK-STORAGE", "SEV-WORK-COMMANDS", "SEV-WORK-LEGACY", "SEV-WORK-SPECIALIZED", "SEV-WORK-REPLAY", "SEV-ADOPT-SCHEMA", "SEV-ADOPT-BINDING", "SEV-ADOPT-RIGHTS", "SEV-ADOPT-SQL", "SEV-ADOPT-EXECUTION", "SEV-ADOPT-INSTALLATION", "SEV-ADOPT-INSTALLED-EVAL", "SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
+    vendorRefs: ["VEN-SUPABASE"], owner: owner("Data platform owner", "Data security owner"), evidenceRefs: ["SEV-REVIEW-REVISION-PROTOCOL", "SEV-PLATFORM-METHOD-REPLAY", "SEV-PLATFORM-METHOD-IDENTITY", "SEV-PLATFORM-METHOD-INGRESS", "SEV-PLATFORM-METHOD-SQL", "SEV-METHOD-SCHEMA", "SEV-METHOD-PUBLICATION-TEST", "SEV-METHOD-RIGHTS-TEST", "SEV-METHOD-LEGACY-TEST", "SEV-VAULT-LEGACY-GRANTS", "SEV-VAULT-SCHEMA", "SEV-VAULT-LEGACY", "SEV-VAULT-RECEIPTS", "SEV-CONTRIBUTION-AUDIT", "SEV-CONTRIBUTION-SCHEMA", "SEV-CONTRIBUTION-INTEGRITY", "SEV-WORK-STORAGE", "SEV-WORK-COMMANDS", "SEV-WORK-LEGACY", "SEV-WORK-SPECIALIZED", "SEV-WORK-REPLAY", "SEV-ADOPT-SCHEMA", "SEV-ADOPT-BINDING", "SEV-ADOPT-RIGHTS", "SEV-ADOPT-SQL", "SEV-ADOPT-EXECUTION", "SEV-ADOPT-INSTALLATION", "SEV-ADOPT-INSTALLED-EVAL", "SEV-OBS-SCHEMA", "SEV-OBS-AUTHORITY", "SEV-OBS-VALUES", "SEV-OBS-DIMENSIONS", "SEV-OBS-DOSSIER", "SEV-OBS-CONTRACT", "SEV-OBS-HISTORY", "SEV-OBS-INSTALLATION", "SEV-OBS-INSTALLED-EVAL", "SEV-RIGHTS-SCHEMA", "SEV-RIGHTS-RETRIEVAL", "SEV-RIGHTS-DEADLINE", "SEV-RIGHTS-DELIVERY", "SEV-RIGHTS-SCOPE", "SEV-RIGHTS-PERFORMANCE", "SEV-RIGHTS-INSTALLATION", "SEV-RIGHTS-INSTALLED-EVAL", "SEV-SOURCE-SCHEMA", "SEV-SOURCE-LEGACY-INSERT", "SEV-SOURCE-ISOLATION", "SEV-SOURCE-INSTALLED-EVAL", "SEV-SOURCE-INSTALLATION", "SEV-SOURCE-BEFORE", "SEV-SOURCE-BEFORE-SQL", "SEV-DOSSIER-SCHEMA", "SEV-DOSSIER-ISOLATION", "SEV-DOSSIER-INSTALLED-EVAL", "SEV-DOSSIER-INSTALLATION", "SEV-POLICY-SCHEMA", "SEV-POLICY-RESOURCE-BOUND", "SEV-POLICY-BARRIERS", "SEV-POLICY-ISOLATION", "SEV-POLICY-INSTALLED-EVAL", "SEV-WORKSPACE-IDENTITY", "SEV-OUTBOX-SCHEMA", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-CREATOR-REMEDIATION", "SEV-ACCESS-REMEDIATION", "SEV-CREATOR-REGRESSION", "SEV-ACCESS-REGRESSION", "SEV-SUPABASE-CONFIG", "SEV-RLS-TEST", "SEV-AGENTS-SCOPE"],
     gapRefs: ["SG-LIVE-CONFIG", "SG-BACKUP-RESTORE", "SG-DATA-LIFECYCLE", "SG-SCHEMA-BEFORE-CODE", "SG-ENV-SEPARATION", "SG-PRIVACY-RECORDS", "SG-OWNER-ASSIGNMENT", ], controlIds: ["TRUST-DATA-01", "TRUST-APP-01", "TRUST-OPS-02"],
   },
   {
     systemId: "SYS-WORKER", title: "Document and case worker", kind: "worker", purpose: "Capability-scoped document processing, research, analysis, artifact generation and independent authority-event consumption.",
     environmentRefs: ["ENV-PRODUCTION", "ENV-DEVELOPMENT", "ENV-CI"], dataClassIds: ["public", "internal_operational", "customer_confidential", "restricted_financial", "credential_secret", "security_evidence"],
     vendorRefs: ["VEN-AWS", "VEN-SUPABASE", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], owner: owner("Document platform owner", "Platform engineering owner"),
-    evidenceRefs: ["SEV-RETENTION-MATRIX", "SEV-RETENTION-SERVER", "SEV-RETENTION-SQL-TEST", "SEV-RETENTION-RESEARCH", "SEV-RELEASE-MANIFEST", "SEV-RELEASE-LOADER", "SEV-RELEASE-LOADER-TEST", "SEV-RELEASE-GOLD", "SEV-METHOD-WORKER", "SEV-METHOD-WORKER-TEST", "SEV-METHOD-PIN-TEST", "SEV-METHOD-CALLBACK", "SEV-PROCEDURE-PROJECTION", "SEV-PROCEDURE-WORKER", "SEV-PROCEDURE-WORKER-TEST", "SEV-VAULT-WORKER-AUTHORITY", "SEV-WORK-RUNTIME", "SEV-WORK-RUNTIME-TEST", "SEV-ADOPT-CONTRACT", "SEV-ADOPT-SELECTION", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-JOB", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
+    evidenceRefs: ["SEV-ROUNDTRIP-PLAN", "SEV-REVIEW-INTEGRATED-RUNNER", "SEV-RETENTION-MATRIX", "SEV-RETENTION-SERVER", "SEV-RETENTION-SQL-TEST", "SEV-RETENTION-RESEARCH", "SEV-RELEASE-MANIFEST", "SEV-RELEASE-LOADER", "SEV-RELEASE-LOADER-TEST", "SEV-RELEASE-GOLD", "SEV-METHOD-WORKER", "SEV-METHOD-WORKER-TEST", "SEV-METHOD-PIN-TEST", "SEV-METHOD-CALLBACK", "SEV-PROCEDURE-PROJECTION", "SEV-PROCEDURE-WORKER", "SEV-PROCEDURE-WORKER-TEST", "SEV-VAULT-WORKER-AUTHORITY", "SEV-WORK-RUNTIME", "SEV-WORK-RUNTIME-TEST", "SEV-ADOPT-CONTRACT", "SEV-ADOPT-SELECTION", "SEV-OBS-READING", "SEV-OBS-READING-EVAL", "SEV-OBS-REVISION", "SEV-RIGHTS-JOB", "SEV-RIGHTS-ADAPTER", "SEV-RIGHTS-ADAPTER-EVAL", "SEV-RIGHTS-DELIVERY", "SEV-SOURCE-JOB", "SEV-SOURCE-STORAGE", "SEV-SOURCE-PDF-STRUCTURE", "SEV-SOURCE-PDF-REGRESSION", "SEV-SOURCE-E2E", "SEV-DOSSIER-WORKER", "SEV-DOSSIER-PUBLIC-CACHE", "SEV-POLICY-DELEGATION", "SEV-POLICY-EVENT-ONCE", "SEV-OUTBOX-CONSUMER", "SEV-OUTBOX-CONTRACT", "SEV-OUTBOX-REVOCATION", "SEV-PROFILE-REMEDIATION", "SEV-PROFILE-REGRESSION", "SEV-WORKER-TASK", "SEV-WORKER-RUNTIME", "SEV-WORKER-CONFIG"], gapRefs: ["SG-LIVE-CONFIG", "SG-PROVIDER-ASSURANCE", "SG-SCHEMA-BEFORE-CODE", "SG-OWNER-ASSIGNMENT", "SG-LOGGING-CONTENT-SAFETY", "SG-ASSET-DISCOVERY", ], controlIds: ["TRUST-DOC-01", "TRUST-DOC-02", "TRUST-AI-01", "TRUST-CLOUD-01"],
   },
   {
     systemId: "SYS-GITHUB", title: "GitHub source and delivery control plane", kind: "delivery_pipeline", purpose: "Source control, pull requests, CI, security analysis and deployment identity.",
@@ -843,7 +849,7 @@ const gaps = [
   {
     gapId: "SG-PROVIDER-ASSURANCE", title: "Provider coverage and future evaluation transports remain incomplete", severity: "critical", owner: owner("AI governance owner", "Privacy owner"),
     targetRefs: ["ENV-CI", "ENV-EXTERNAL", "customer_confidential", "restricted_financial", "SYS-WORKER", "SYS-GITHUB", "FLOW-WORKER-ANTHROPIC", "FLOW-WORKER-OPENAI", "FLOW-WORKER-FIRECRAWL", "FLOW-GITHUB-EVAL-SECRETS", "FLOW-GITHUB-EVAL-ANTHROPIC", "FLOW-GITHUB-EVAL-OPENAI", "FLOW-GITHUB-EVAL-PERPLEXITY", "ID-GITHUB-EVALS-OIDC", "VEN-ANTHROPIC", "VEN-OPENAI", "VEN-PERPLEXITY", "VEN-FIRECRAWL"], evidenceRefs: ["SEV-MODEL-DATA-POLICY", "SEV-MODEL-DATA-POLICY-TEST", "SEV-WORKER-CONFIG", "SEV-WORKER-TASK", "SEV-EVAL-GOLD", "SEV-EVAL-LIVE-GATE"],
-    controlIds: ["TRUST-AI-01", "TRUST-DATA-04", "TRUST-VENDOR-01"], nextAction: "Stage 16 enforces reviewed account/model/resource eligibility and suspends nine direct evaluators. Keep unknown combinations denied, renew attestations before expiry and reconnect evaluations through the stage 17 authority. No universal provider coverage or zero-retention contract is claimed.",
+    controlIds: ["TRUST-AI-01", "TRUST-DATA-04", "TRUST-VENDOR-01"], nextAction: "Stage 16 enforces reviewed account/model/resource eligibility and suspends nine direct evaluators. Keep unknown combinations denied, renew attestations before expiry and use only the governed execution authority for any permitted evaluation. No universal provider coverage or zero-retention contract is claimed.",
   },
   {
     gapId: "SG-TELEMETRY-ASSURANCE", title: "Telemetry activation and handling not live-verified", severity: "high", owner: owner("Security operations owner", "Privacy owner"),
@@ -909,9 +915,9 @@ const gaps = [
 ];
 
 const currentSecurityInventoryDeclaration = {
-  inventoryVersion: "2026.09.21-wave-17-opening-v1",
+  inventoryVersion: "2026.10.05-wave-21-opening-v1",
   generatedAt: capturedAt,
-  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-17", waveStatus: "open", materialChangeState: "reviewed"},
+  baseline: {repository: "carlosevg100/offroad", branch: "main", commit: baselineCommit, evidenceCutoff: capturedAt, reviewDueAt: null, reviewCadence: "per_wave", waveId: "wave-21", waveStatus: "open", materialChangeState: "reviewed"},
   scopeStatement: "Repository-observed current state for the Offroad application, delivery path, worker, data platforms and known external integrations.",
   scopeRelationship: {
     semantics: "environment_and_data_class_refs_are_independent_unions",
@@ -924,7 +930,7 @@ const currentSecurityInventoryDeclaration = {
     "Functional owner roles are recorded, but named primary and backup assignments are not evidenced.",
     "Vendor contract, retention, region and training-use statements remain unknown without current evidence.",
     "Environment and data-class references are independent scope unions, not a Cartesian authorization matrix; that matrix remains an explicit critical gap.",
-    "Stage 16 deployment enforces account/model/resource retention authority with pinned credentials. Dated operational attestations do not establish universal vendor coverage. Unknown combinations remain denied; the nine direct evaluators remain suspended until stage 17.",
+    "Stage 16 deployment enforces account/model/resource retention authority with pinned credentials. Dated operational attestations do not establish universal vendor coverage. Unknown combinations remain denied; the nine legacy direct evaluators remain denied; governed evaluation authority is a separate path.",
     "Asset discovery is incomplete; missing boundaries are named in SG-ASSET-DISCOVERY rather than silently treated as absent.",
     "The Codex review workflow is an agentic executor with danger-full-access to an ephemeral runner, workspace command execution and network egress; least-privilege enforcement and prompt-injection containment remain an explicit critical gap.",
     "External-assurance and regulatory claims are represented only by the governed assurance section; this inventory is not their evidence.",

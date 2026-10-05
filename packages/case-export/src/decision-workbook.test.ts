@@ -4,6 +4,7 @@ import {describe, expect, it} from "vitest";
 import {buildDecisionArtifactContract} from "@offroad/case-understanding";
 
 import {renderDecisionWorkbook} from "./decision-workbook";
+import {roundtripDefinedName} from "./artifact-roundtrip";
 
 const contract = () => buildDecisionArtifactContract({
   schemaVersion: "2026.09.07-v1",
@@ -67,4 +68,19 @@ describe("governed decision workbook", () => {
     expect(allSheetXml).toContain("Não é um modelo financeiro integrado");
     expect(control).toMatch(/Claims(?:&apos;|')?!B2/);
   });
+  it("adds valid stable names only to explicit new roundtrip exports", async () => {
+    const input = {contract: contract(), locale: "en-US" as const, title: "Synthetic decision"};
+    const legacy = await renderDecisionWorkbook(input);
+    const newExport = await renderDecisionWorkbook({...input, roundtrip: {assumptions: [{assumptionId: "assumption-rate", period: "2026-06-30", blockKey: "canonical-inputs"}]}});
+    const expectedName = roundtripDefinedName("in", "assumption-rate", "2026-06-30");
+    expect(expectedName).toMatch(/^[A-Za-z_][A-Za-z0-9_.]*$/);
+    expect(newExport.roundtrip?.inputs).toEqual([{assumptionId: "assumption-rate", period: "2026-06-30", blockKey: "canonical-inputs", name: expectedName, cellRef: "B2", sheet: "Assumptions"}]);
+    const zip = await JSZip.loadAsync(newExport.bytes);
+    expect(await zip.file("xl/workbook.xml")!.async("string")).toContain(expectedName);
+    const legacyZip = await JSZip.loadAsync(legacy.bytes);
+    expect(await legacyZip.file("xl/workbook.xml")!.async("string")).not.toContain(expectedName);
+    expect(legacy.roundtrip).toBeUndefined();
+    await expect(renderDecisionWorkbook({...input, roundtrip: {assumptions: [{assumptionId: "missing", period: "2026", blockKey: "inputs"}]}})).rejects.toThrow("roundtrip_decision_binding_invalid");
+  });
+
 });

@@ -1,0 +1,1451 @@
+{
+  "schemaVersion": "stage21-installed-verification.2026.10.05-v1",
+  "replayRun": "https://github.com/carlosevg100/offroad/actions/runs/37356734182",
+  "replayCommit": "05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90",
+  "stage21Status": "PASS",
+  "environments": {
+    "production": {
+      "project_id": "ifnogpksgdadruooqydi",
+      "catalogueCapturedAt": "2026-10-05T19:00:37.89929+00:00",
+      "functionsCapturedAt": "2026-10-05T19:01:07.719568+00:00",
+      "journalCapturedAt": "2026-10-05T19:00:21.264943+00:00",
+      "catalogueSha256": "248b83f11900ab146a319891d5f6aadc498af3cdf7286a45299e14a385b79469",
+      "functionsSha256": "e23186f3dbaffe077a1e1ad5c51d99a6a6507f787602e540378c4173407b1ccd",
+      "migrationReceipts": [
+        {
+          "version": "20261005171558",
+          "name": "artifact_export_receipts",
+          "file": "supabase/migrations/20261005171558_artifact_export_receipts.sql",
+          "sqlSha256": "e1e2aded642cd1a9649a4ae07a1eaf417d79baaefea364825b040f3874fb59a5",
+          "journalStatementsJsonSha256": "8cd5cc6c12fcae6cd8e38af3bca3ad4c2b75e205ce65b3b98d4f22bb6a0d2b2c",
+          "exactJournalStatementEqualsCanonicalFile": true
+        },
+        {
+          "version": "20261005172709",
+          "name": "artifact_import_candidates",
+          "file": "supabase/migrations/20261005172709_artifact_import_candidates.sql",
+          "sqlSha256": "727eba62839721e7e3a53cec098a5bed51ce02259219a1777113aebc23260f02",
+          "journalStatementsJsonSha256": "20c6c04ad74e03176349015c2dfdae57f204cca91fe3509f265f647dd2b1ed61",
+          "exactJournalStatementEqualsCanonicalFile": true
+        },
+        {
+          "version": "20261005184946",
+          "name": "artifact_import_review_reason_parity",
+          "file": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+          "sqlSha256": "db7a939bcc0a64f6f1c1fdcd6893b1fe454ad828dfccff0a9aa94dedd7ebe7fe",
+          "journalStatementsJsonSha256": "5ccbd5545abb2c09b8898b7dc7002543fafed3f4fe0638bd7a53b2c741f4505f",
+          "exactJournalStatementEqualsCanonicalFile": true
+        }
+      ],
+      "objects": 4749,
+      "functions": 2108,
+      "stage21FunctionBodiesMatchedReplay": 73,
+      "stage21ReplayContractsMatched": 4749,
+      "stage21Errors": []
+    },
+    "staging": {
+      "project_id": "gjkkjtbfnssdsbmlhmwk",
+      "catalogueCapturedAt": "2026-10-05T19:00:28.926311+00:00",
+      "functionsCapturedAt": "2026-10-05T19:01:26.045107+00:00",
+      "journalCapturedAt": "2026-10-05T19:01:15.656106+00:00",
+      "catalogueSha256": "e1786af350c7d064128c13862f377d571686577bd40cbf15b3672185e084d41a",
+      "functionsSha256": "30a36854f58a7cd09bdeafe819a3f52054ea1b722d07a8aa6f7de7821d857923",
+      "migrationReceipts": [
+        {
+          "version": "20261005171223",
+          "name": "artifact_export_receipts",
+          "file": "supabase/migrations/20261005171558_artifact_export_receipts.sql",
+          "sqlSha256": "e1e2aded642cd1a9649a4ae07a1eaf417d79baaefea364825b040f3874fb59a5",
+          "journalStatementsJsonSha256": "8cd5cc6c12fcae6cd8e38af3bca3ad4c2b75e205ce65b3b98d4f22bb6a0d2b2c",
+          "exactJournalStatementEqualsCanonicalFile": true
+        },
+        {
+          "version": "20261005172344",
+          "name": "artifact_import_candidates",
+          "file": "supabase/migrations/20261005172709_artifact_import_candidates.sql",
+          "sqlSha256": "727eba62839721e7e3a53cec098a5bed51ce02259219a1777113aebc23260f02",
+          "journalStatementsJsonSha256": "20c6c04ad74e03176349015c2dfdae57f204cca91fe3509f265f647dd2b1ed61",
+          "exactJournalStatementEqualsCanonicalFile": true
+        },
+        {
+          "version": "20261005184625",
+          "name": "artifact_import_review_reason_parity",
+          "file": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+          "sqlSha256": "db7a939bcc0a64f6f1c1fdcd6893b1fe454ad828dfccff0a9aa94dedd7ebe7fe",
+          "journalStatementsJsonSha256": "5ccbd5545abb2c09b8898b7dc7002543fafed3f4fe0638bd7a53b2c741f4505f",
+          "exactJournalStatementEqualsCanonicalFile": true
+        }
+      ],
+      "objects": 4810,
+      "functions": 2135,
+      "stage21FunctionBodiesMatchedReplay": 73,
+      "stage21ReplayContractsMatched": 4749,
+      "stage21Errors": []
+    }
+  },
+  "curatedHistoricalBodies": {
+    "production": {
+      "captured_at": "2026-10-05T19:01:00.539503+00:00",
+      "compared": 119,
+      "byteExactMatches": 118,
+      "knownHistoricalDifferences": [
+        {
+          "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
+          "snapshotSha256": "b1fa646225d6d2aed3bdec639967bfab06c2a4b33e9bc15b9555bd13ee7cd0d6",
+          "liveSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.worker_activate_integration_preview_run_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
+              "name": "worker_activate_integration_preview_run_v1",
+              "schema": "private",
+              "definitionSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "SQL line comments or one blank line only",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ production live\n@@ -326,8 +326,6 @@\n         'sourceMessageId', source_message.id,\n         'assistantMessageId', assistant_message.id\n       ),\n-      -- Deterministic runs spend nothing; a live run may make one bounded call for the questions\n-      -- and, later, one for the synthesis. The worker's own caps still apply on top.\n       -- Questions and synthesis in live mode: two bounded calls whose preflight reservations must fit.\n       'model_budget', jsonb_build_object('max_cost_usd', 0.60, 'max_calls', 4),\n       'preview', jsonb_build_object(\n",
+          "argumentNames": [
+            "p_job_id",
+            "p_capability_token",
+            "p_assistant_message_id",
+            "p_activation"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": true,
+          "volatility": "v",
+          "catalogueComment": null
+        }
+      ],
+      "unreconciledDifferences": 0,
+      "status": "PASS_WITH_EXPLICIT_HISTORICAL_EQUIVALENCE",
+      "baseline": "Known differences remain byte-identical to their individually proved pre-corrective captures; corrective alias matches actual05d CI snapshot",
+      "proofRule": "Exact captured definitions differ only as the attached diff; removing SQL line comments/blank lines and, only for staging job_failure_class, the two individually enumerated redundant CASE arms produces identical definitions. No snapshot or database body was changed.",
+      "capturedFunctionHashes": [
+        {
+          "exists": true,
+          "signature": "private.accept_workspace_invite_v1(uuid)",
+          "definitionSha256": "a3a7938aeb3026fd41fd12037c1176672349348e336c70e43a46bc4ff18eca9b"
+        },
+        {
+          "exists": true,
+          "signature": "private.advance_dependency_update_request_v1(uuid,uuid,uuid)",
+          "definitionSha256": "595907f3828c00d1f9e29bcae9e3a78b3e724e69c18422d8bebdbb3810e461e3"
+        },
+        {
+          "exists": true,
+          "signature": "private.append_domain_event_v1(uuid,uuid,text,uuid,text,jsonb,uuid,bigint,uuid)",
+          "definitionSha256": "9dfe1df85f3171fbee728cc714d3a2da853ed9fb67dffc0c19507274c52af69c"
+        },
+        {
+          "exists": true,
+          "signature": "private.apply_dependency_event_v1(uuid,uuid)",
+          "definitionSha256": "fb74eade68eee6bc6da5f25b7c363e69fba4c28d2f2dfd9a326942b6e6a97325"
+        },
+        {
+          "exists": true,
+          "signature": "private.approve_advisor_execution_brief_v1(uuid,uuid,text,uuid)",
+          "definitionSha256": "1af081f246b9baefb64de88e0d2a5701207f73f28a571e0879f76405c5b300e6"
+        },
+        {
+          "exists": true,
+          "signature": "private.attest_platform_method_candidate_v1(uuid,uuid,text,text,text,jsonb)",
+          "definitionSha256": "31b901cec476b0992292ee23a96d6b8abd71d1afa75ee25bf641c984470afab5"
+        },
+        {
+          "exists": true,
+          "signature": "private.authorize_qualified_introduction_plan(uuid,text)",
+          "definitionSha256": "8fff7210853ef9f640dfabc45641dd3774d618644a07725258e83433618dd62b"
+        },
+        {
+          "exists": true,
+          "signature": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)",
+          "definitionSha256": "3904fb897ccfc833aea2b5ac21ddc0971b1f5c026549c87fc9c49d68d9bc3fa2"
+        },
+        {
+          "exists": true,
+          "signature": "private.bind_job_authority_v1()",
+          "definitionSha256": "abbf6365d9a52feec8fc90eca2e602fb18c28c29bb3fa11d89a1677f6b27f89a"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_debt_commit_result_core_v1(uuid,uuid,uuid,uuid,uuid,text,jsonb,uuid,text)",
+          "definitionSha256": "2216781aa2a547f56fc8bfc265a30e4ed39e49037c5aafcd51a8c564e4eb59c0"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_debt_native_read_allowed_v1(uuid,uuid,uuid)",
+          "definitionSha256": "9afa78352f5f7cd3b3d5940d259e580799197ff3b312dca813c8073984631b01"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_debt_recipe_deadline_v1(uuid,uuid,uuid)",
+          "definitionSha256": "646f6ef99cff25d50e6dc62ddf981b4e5647057861d41a368dc6c3025525014c"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_m07_native_read_allowed_v1(uuid,uuid,uuid)",
+          "definitionSha256": "ed1411ae041270cafca0d41addcc47368f41b6323e879dc35f1d680ce882e810"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_project_review_action_allowed(uuid,uuid,text,uuid)",
+          "definitionSha256": "2d6f1bc6fc7811da59770e672d79bbf453719f01ccda8affd92bc2baff1c4f7d"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_project_review_roles(uuid,uuid,uuid)",
+          "definitionSha256": "0889eaa39709a73188b6c3b50d5667e1ac058331b9bcda9a15222d593e5fb461"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_s11_native_read_allowed_v1(uuid,uuid,uuid)",
+          "definitionSha256": "9291ff3fa2d798b049fa9bc9cfb2935999145fb82b2a64c24674705b2d1c58d1"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_s11_recipe_deadline_v1(uuid,uuid,uuid)",
+          "definitionSha256": "55b21f9fc69a786164bee49e531ddcda54f6f473b64d936ec8808b4f17b56fd9"
+        },
+        {
+          "exists": true,
+          "signature": "private.capture_authority_domain_event_v1()",
+          "definitionSha256": "8b298da49b08167a00b1ccec74a1bd70ba567311bb94b678729ce0b1a9affd4c"
+        },
+        {
+          "exists": true,
+          "signature": "private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text)",
+          "definitionSha256": "f2e39d370b8962b9117410cbc083cf5133756fe9b693c0b04ef7e84b7fd2e8f0"
+        },
+        {
+          "exists": true,
+          "signature": "private.complete_event_outbox_v1(text,uuid,text)",
+          "definitionSha256": "a5c3dd9ee50cdcb7c679b1d6e8ee4b8047a3ea0886562003604bb8eed2a89298"
+        },
+        {
+          "exists": true,
+          "signature": "private.compose_method_v1(uuid,text,jsonb,uuid,text)",
+          "definitionSha256": "0912339b6a4cf98c15c819d792885adcf1d8828d2bf40c127959ec10b41e9fef"
+        },
+        {
+          "exists": true,
+          "signature": "private.create_artifact_revision_v1(uuid,uuid,text,text,text,text,jsonb,jsonb,jsonb,text,bigint,jsonb,uuid,uuid,uuid,boolean)",
+          "definitionSha256": "11a3f5c00f3afa16ee36021552790825b085854d7ae58a98323e578fbf1766d3"
+        },
+        {
+          "exists": true,
+          "signature": "private.enqueue_incremental_deal_state_analysis(uuid,uuid,text)",
+          "definitionSha256": "2a2c5cbdc6df1b86dd40ffd68d03a5d3e5422641fde13874194f3c0e02d5b4f1"
+        },
+        {
+          "exists": true,
+          "signature": "private.enqueue_primary_case_analysis(uuid,uuid,uuid)",
+          "definitionSha256": "5dfb0c83669771ce35ec1f7c770aa7a24ad4f6b31394dcd830af80695685c7ee"
+        },
+        {
+          "exists": true,
+          "signature": "private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text)",
+          "definitionSha256": "1f857eb3aba254546b9f191405cc4eb91143a96e6ed4ff0f12ad420180c4a3ff"
+        },
+        {
+          "exists": true,
+          "signature": "private.execution_approval_input_fingerprint(uuid,uuid)",
+          "definitionSha256": "6123e40b297c8c10c9da3630350cf875a63529c105d61231b3e281f5e1b9486c"
+        },
+        {
+          "exists": true,
+          "signature": "private.execution_contract_basis_v1(uuid,uuid,text)",
+          "definitionSha256": "3961efa13483b4e93203f91af7d308cc69beb4955afe139c26260afb38407403"
+        },
+        {
+          "exists": true,
+          "signature": "private.execution_hold_is_live_v1(uuid)",
+          "definitionSha256": "1276ac003721380a0d26573a6c129d55b733ae58abf86b9c183169ac12d63cc2"
+        },
+        {
+          "exists": true,
+          "signature": "private.execution_inputs_current_v1(uuid,uuid,uuid)",
+          "definitionSha256": "c71a43458bbec8b7b2e3d1364ede76f22a802ab0570a70c95deaed1db11865d2"
+        },
+        {
+          "exists": true,
+          "signature": "private.get_workspace_bootstrap()",
+          "definitionSha256": "c5b904887fdb2b4958479fa5363b8c0ef2da60206c5b88a498bb2011cc67d7eb"
+        },
+        {
+          "exists": true,
+          "signature": "private.grant_resource_access_v1(uuid,uuid,text,timestamptz)",
+          "definitionSha256": "e95460fe059b496e0cde6c270f7088827cc05a00dd743cdc31bef36515182b9c"
+        },
+        {
+          "exists": true,
+          "signature": "private.guard_execution_approval_queue()",
+          "definitionSha256": "2952fbe405388f3f684fdf92515e7420436371506f6c5ab48efaf5dae8b3de3e"
+        },
+        {
+          "exists": true,
+          "signature": "private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid)",
+          "definitionSha256": "4d4ec240be90c0f95fb09686f328bd717d8ae448cf9b3d36c1e69d8adb04f39b"
+        },
+        {
+          "exists": true,
+          "signature": "private.is_released_documentary_plan_v1(jsonb,text)",
+          "definitionSha256": "1038a9570d8a80d4112b1fecce9f1cd1baad022b0eb6f38c5adbeb1204942fce"
+        },
+        {
+          "exists": true,
+          "signature": "private.job_authority_is_current_v1(uuid)",
+          "definitionSha256": "4bf313da7a91664ea74d94fe9db1513a952d6e2a442f8d6dea006799d34e4338"
+        },
+        {
+          "exists": true,
+          "signature": "private.job_failure_class(jsonb)",
+          "definitionSha256": "acc3872d527991517cd1418d57901e85db975f5d3c7fd38b176d9b4b8fd85a9f"
+        },
+        {
+          "exists": true,
+          "signature": "private.job_for_capability(uuid,text)",
+          "definitionSha256": "9636c7a9d138e41c112f964fac50904bcc766ce1f9268b31950e221c507ef9aa"
+        },
+        {
+          "exists": true,
+          "signature": "private.job_sources_rights_current_v1(uuid)",
+          "definitionSha256": "ca08bf0d07ea24a556c9bbb3b67eeccd4e3bb8bf31c8541765e06ab148ce44c6"
+        },
+        {
+          "exists": true,
+          "signature": "private.list_method_releases_v1(integer)",
+          "definitionSha256": "cdc093a9d644d46aca9ef59c813ab1522635bf3f3912a5b71d3503aedf951b82"
+        },
+        {
+          "exists": true,
+          "signature": "private.lock_job_authority_v1(uuid)",
+          "definitionSha256": "4e40ca5a31c68bccfac716002a77e2298c3898576df529a385cc9e1cc7680827"
+        },
+        {
+          "exists": true,
+          "signature": "private.manage_work_v1(uuid,text,text)",
+          "definitionSha256": "52cfd1e01f1da4f1817b83bf7a75051af2f104c170ba076f7b59478b33d45ef8"
+        },
+        {
+          "exists": true,
+          "signature": "private.merge_dependency_update_request_v1(uuid,uuid,uuid,uuid[])",
+          "definitionSha256": "69ee600374de77bfb9cb27f03407bb79e3f8b740ebda0b9d065de2732feb1632"
+        },
+        {
+          "exists": true,
+          "signature": "private.normalize_origination_runtime_budget_v1()",
+          "definitionSha256": "6de825144f70c330da6739e3d74d6b5fd388cf78fc43370465fa9b6eaa989f18"
+        },
+        {
+          "exists": true,
+          "signature": "private.pin_contribution_sources_v1(uuid,uuid,uuid[],uuid,uuid)",
+          "definitionSha256": "60f5e30cb947dd22f29688ff4b64c5dcc96ea81ecbb2c10409916c748ec758a3"
+        },
+        {
+          "exists": true,
+          "signature": "private.plan_dependency_recompute_v1(uuid,uuid)",
+          "definitionSha256": "41d005e62101a381f5aae0833f84169a6978cf63bddc6eafb4ebb49465857a03"
+        },
+        {
+          "exists": true,
+          "signature": "private.promote_contribution_to_work_v1(uuid,uuid,uuid)",
+          "definitionSha256": "d4d7d8f2d5b47be8885eea415856d47e3baa83852e52235dae7930795c9a1ac8"
+        },
+        {
+          "exists": true,
+          "signature": "private.r01_preparation_authority_v1(uuid,uuid,uuid,uuid)",
+          "definitionSha256": "ebbee15ae484b27a0e97e42ad85db12020122c38442782d474cc6718624b8d75"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_artifact_revision_v1(uuid)",
+          "definitionSha256": "5edc7e2c77f225a4ff7b6d00dabf360df3a65b138cdb4ceba2a56f2d6af8b2ea"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_capital_project_execution_brief_progress_v1(uuid)",
+          "definitionSha256": "7d3f010b7f139085d916e238f957f676c2633f9d88794f386277b02cbebbce50"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_institutional_model_results_v1(uuid)",
+          "definitionSha256": "eea2a8579c85ae940df7d47e4c78e8687133c1d0f6c6b4c950355ea990f4a404"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_project_revision_history_v1(uuid)",
+          "definitionSha256": "58e54fbf8f727b2cddd1767db53de0ce9d869e1543b02f5accb2375cc1365242"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_receivables_evidence_scope_v1(uuid)",
+          "definitionSha256": "c944abc5d68244f37c4bdd373073fec484834c5073213e671d4efd941c81b22e"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_work_review_dashboard_v1(uuid,uuid,uuid)",
+          "definitionSha256": "bfa1e6414a743e76a8dadaff171c11d7fa776d15f653500bb0d54e7ae8983aa5"
+        },
+        {
+          "exists": true,
+          "signature": "private.receivables_scope_sources_current(uuid,uuid,jsonb)",
+          "definitionSha256": "b2961da9bcc3a8bff03d1ffb3f55389e12b1de53f557e19b04b3ca02beac4818"
+        },
+        {
+          "exists": true,
+          "signature": "private.record_capital_project_plan(uuid,jsonb)",
+          "definitionSha256": "b7f86e65d0f1922d052335b1ba5bc956675ab7455384d14417f17b1a99c6cd91"
+        },
+        {
+          "exists": true,
+          "signature": "private.record_execution_proposal_plan_as_actor(uuid,jsonb,uuid)",
+          "definitionSha256": "cbfde21ffafa6434b332e0a0bfc4883575e9acb1add20eb3233be03ddaa78f6a"
+        },
+        {
+          "exists": true,
+          "signature": "private.record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text)",
+          "definitionSha256": "062ca74d883819de06ec07fd2e82d5bc98e3d4d0ad03a1cc293f3f0ea1626eff"
+        },
+        {
+          "exists": true,
+          "signature": "private.request_documentary_work_revision_v1(uuid,uuid,text,uuid,text,text,jsonb)",
+          "definitionSha256": "f52557bcfbf97b60225311bed5d1011a092415ac6e07eb80da0b6e2eacfd0f4d"
+        },
+        {
+          "exists": true,
+          "signature": "private.request_work_execution_producer_v1(text,text)",
+          "definitionSha256": "8071d5e431f249b92b1a03d694157854208fe91e45eed4bf2a4c1f0b5df2353b"
+        },
+        {
+          "exists": true,
+          "signature": "private.request_work_execution_producer_v2(text,text,text)",
+          "definitionSha256": "84d07a2bf115ba8f85f0519e7d03c4d2e44201399060ac99f19e671133610463"
+        },
+        {
+          "exists": true,
+          "signature": "private.request_work_execution_v1(uuid,text,text)",
+          "definitionSha256": "36de286910f434c13397a2866362aa528d69e050db58ccd18fddc39e95a0bc83"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_artifact_revision_before_capital_cutover_v1(uuid,text,text,uuid,text,boolean,uuid,uuid)",
+          "definitionSha256": "18f1836ba2625919a9d5879ebea388b5eadf6a08009e53871df33dc7b11d5ec5"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_artifact_revision_v1(uuid,text,text,uuid,text,boolean,uuid,uuid)",
+          "definitionSha256": "96f05a6209593fc39cdf0e0053b2bdf9660027ca71898dd654f07d082e3ff7aa"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text)",
+          "definitionSha256": "4bd15181fab2ab6c5f65bf3ceca04a481fb9d1e567011ac452056112532e1d12"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_institutional_configuration_before_sources_v1(uuid,uuid,text,text,text)",
+          "definitionSha256": "6b3c830b73f719bc93bf683d87b3e1dab0be4f27f93b5e86466721ca4a643f0c"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_institutional_configuration_v1(uuid,uuid,text,text,text)",
+          "definitionSha256": "1ddd207a4bc4bcefd61756deadce44ae6be2bfa9626054792c6e98dd4df64b02"
+        },
+        {
+          "exists": true,
+          "signature": "private.save_guided_company_profile(uuid,text,text,text,text,bytea,text)",
+          "definitionSha256": "4cf5de3b76324008ef6841c83f1d8fe21ee6226afacf74eae293ce184d303b2b"
+        },
+        {
+          "exists": true,
+          "signature": "private.save_project_company_profile(uuid,text,text,text,text,bytea,text)",
+          "definitionSha256": "71e9e3cddb0e8d4a6830a138ea881a36c4ba4e1c68ab4f45e5a07cf7cafc12bf"
+        },
+        {
+          "exists": true,
+          "signature": "private.set_resource_policy_grant_v1(uuid,uuid,uuid,text,text,boolean,timestamptz)",
+          "definitionSha256": "56be50a4f60001af0d139e80e742907f474d27a0ab88239e243692f93522e02c"
+        },
+        {
+          "exists": true,
+          "signature": "private.settle_stale_execution_jobs_v1()",
+          "definitionSha256": "0aae7d2255354470017bca819884c3500efc5e9c3e03d60cb8996760128cc711"
+        },
+        {
+          "exists": true,
+          "signature": "private.start_provider_case_fit_project_v1(uuid,text,text,text,jsonb,uuid,uuid,text,jsonb)",
+          "definitionSha256": "717d9c6e65b784447bbb257e4833848d3ebeacad8759fc1ac9737ef57abbf5e1"
+        },
+        {
+          "exists": true,
+          "signature": "private.submit_advisor_execution_brief_edit_v1(uuid,uuid,text,uuid,text,text)",
+          "definitionSha256": "d147c5c37c60b9ebf27978c3a2b07ef882c365f42148e1205f4835bce8aaad74"
+        },
+        {
+          "exists": true,
+          "signature": "private.submit_advisor_turn_v1(uuid,uuid,text,text)",
+          "definitionSha256": "e8d171ce04650360665e270a102135f9358a65845fe5f349a04d05e922487de5"
+        },
+        {
+          "exists": true,
+          "signature": "private.submit_institutional_model_setup_v1(uuid,text,jsonb,jsonb,uuid,text)",
+          "definitionSha256": "72b39b3be74244f970dbaca50a6a063fc186af5d029f0c48035d6c52dba4774b"
+        },
+        {
+          "exists": true,
+          "signature": "private.submit_platform_method_candidate_v1(uuid,text,jsonb,text)",
+          "definitionSha256": "19b1a2dad37015982a2bf100877162c2524aff93fd55e55e66b507f89e8e95a6"
+        },
+        {
+          "exists": true,
+          "signature": "private.validate_receivables_scope_brief(uuid,uuid,jsonb,jsonb)",
+          "definitionSha256": "eaf6ca549432e7da405fabb40ae44762d292166198ddad000e331d37318caf4b"
+        },
+        {
+          "exists": true,
+          "signature": "private.wake_capital_debt_retention_v1()",
+          "definitionSha256": "684b59f9086ce2656b966ac6ea8529c0c0dae061c64f6d89adcc5aa2cf7d6f2d"
+        },
+        {
+          "exists": true,
+          "signature": "private.wake_capital_m07_retention_v1()",
+          "definitionSha256": "7b22db1323beff5d86bcdca57bcd4ba5a6987d7e1d03ffb2a2b3f8eece447e5b"
+        },
+        {
+          "exists": true,
+          "signature": "private.wake_capital_s11_retention_v1()",
+          "definitionSha256": "92442e6f004fbf34df582c2c4daabaca96a9f9ebb75a168e9ecc6ad10b42be5c"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
+          "definitionSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_bind_receivables_information_request_fields_v1(uuid,text,jsonb)",
+          "definitionSha256": "5b019207559021f8ab74b37df4ba5d1e0ad130b22fa85b038c59bfcf1bfba1f4"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_claim_job_v2(text,integer)",
+          "definitionSha256": "22bbeb60b03a2f0152435b7876334fa42d1f2e7c57d3fd34bb36bf147811f39b"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_claim_job(text,integer)",
+          "definitionSha256": "87cc729fc638f2e3f700c10eae940a415158907b1a7c68e17405713d34f8feb3"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_commit_capital_s11_task_projection_core_v1(uuid,text,uuid,uuid,uuid,boolean)",
+          "definitionSha256": "bae7cec86909bca8ba2fb08387aa799d0d7f4414608e45f298e4bc80b7589256"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text)",
+          "definitionSha256": "c6b4a5b3040c6f6871bb976e9f6636b9c3ddfdf105b1de958dd714c86fa20cf7"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
+          "definitionSha256": "c3789f41692c35ce6ea7e923dc1b3d358ed6e4849d41079f00ae29fb3a18faf4"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_finalize_capital_s11_recipe_v1(uuid,text,uuid,uuid,jsonb,text,text,text,text,bigint,integer,text,text,boolean,text)",
+          "definitionSha256": "a131db0941fb3bc5f835de9ca7a7f4ef33eb7357fbeb17fc4ea5ffbf34eda6dc"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_finish_capital_project_task(uuid,text,uuid,text,jsonb,text,jsonb,jsonb,jsonb)",
+          "definitionSha256": "9658b992c087bad03e69aa0cf119a8a08f415ea050ada0827431c087b43fe8ff"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_agent_context_before_professional_context_v1(uuid,text)",
+          "definitionSha256": "288cb123a2260197fde477d379396018cc4c842e1db48077c3defd2d3f1edcf8"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_agent_context_v2(uuid,text)",
+          "definitionSha256": "64155ebd16682a2b847ba5aa6600a9197199082074c4c205b991b3cb83de4316"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_agent_context_v3(uuid,text)",
+          "definitionSha256": "72edafbe73b260e88abd8fc0017b38d7a263021f8ff008fd4b8e4b545fff1db5"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_agent_context(uuid,text)",
+          "definitionSha256": "142dfd1dd4a7b6abfc7c3754ad3f7596cc01e42bba219c471122e784ced0b7da"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_capital_project_context_v6(uuid,text)",
+          "definitionSha256": "020dbce34d6f50666d61c9f8540a9d234b0938b6df275721bfa127961e5aa7ff"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_case_bundle_before_scope(uuid,text)",
+          "definitionSha256": "6820f909e672a6ff8a94f2af9c9773b7114c30a552adfa89cb08409b86656c64"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_case_input(uuid,text)",
+          "definitionSha256": "a4d04935ec7e1e46aa48bcd3f542fc359d21a4934cf81bdd948ba0dd406c3973"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_execution_brief_proposal_v1(uuid,text)",
+          "definitionSha256": "0242dbab1828f28423bf5bcc4fd508ffbeddf56948beacdeef2bd04c2c71c6b5"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_execution_brief_proposal_v2(uuid,text)",
+          "definitionSha256": "40ae61d594798e089fa96b68224de40d61086eb1d2a47f659b1f5d25d54f5a97"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_execution_brief_proposal_v3(uuid,text)",
+          "definitionSha256": "59bbc7db0be5716facf678d03517fc511155d0744a2ceef61b114cad642e7fc9"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_institutional_model_context_v1(uuid,text)",
+          "definitionSha256": "76a97240ed327e5a2c18f422fa855f140c58bf8a99533b92e03a4bbca249fcc4"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_institutional_model_context_v3(uuid,text)",
+          "definitionSha256": "45ca463646f107c11d55f868401b57ed48c518d451b79d7f027dd5673600e2b1"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_public_company_memory(uuid,text,text)",
+          "definitionSha256": "e0371ad59379b36ccc7ce6a0cf0b758a6812e735c3f1ceb7281634a32982b000"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_public_research_cache(uuid,text,text[])",
+          "definitionSha256": "0119852f2db800761525a6a7050f4385b41474cc4bc804a4da27e9e3df1ccb99"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_receivables_analytical_release_v1(uuid,text)",
+          "definitionSha256": "08f328f99eb3c6993b78f25af35e06526dd542657e452881a2e9d60532a8541c"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_prepare_capital_debt_context_v1(uuid,text,uuid,uuid)",
+          "definitionSha256": "adc7762fc22cc3d79dc99a90dc93776bdff8a07d5d55cf4581e88cfbc7ef3f1a"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_prepare_capital_native_result_v1(uuid,text,uuid,text,text,jsonb,uuid)",
+          "definitionSha256": "8b97eeb633a008dda0d66cd57bf985ebea2396279763af2a571807a7083728ec"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_prepare_capital_s11_context_v1(uuid,text,uuid,uuid)",
+          "definitionSha256": "5b4b234c0a5ef41c028765b8ff3701179b1348930ae67a39fc6bbbb514251f35"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_agent_assessment_before_native_v1(uuid,text,jsonb)",
+          "definitionSha256": "6571b1d46615241a4a306fed5c5db5011d7b62269935d1ca133af0327372940b"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_agent_assessment_v1(uuid,text,jsonb)",
+          "definitionSha256": "7f6d4ff6ca03d703128065de9b72b32dc2a9124a3ce1e9270375f79fb871217a"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_agent_stage_event_v1(uuid,text,text,text,jsonb)",
+          "definitionSha256": "328246d04649053d32f972e148b9be166bf322292dd3004bf732200376a65307"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_capital_project_artifact(uuid,text,uuid,text,text,text,text,jsonb,jsonb,jsonb)",
+          "definitionSha256": "ca8812c851215e14a08b2ec75892d73a7df354b2c08485b9bee3c313679f8756"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)",
+          "definitionSha256": "a9555895c9ee7a1a275621cdec0712c1ff29396759163becf5d5a65043dea5ce"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_execution_brief_proposal_v1(uuid,text,jsonb,jsonb,text,jsonb)",
+          "definitionSha256": "b1d99cc2ded61416f91c5686815b71b4d5e0a4f7e4257a7483cec988e67ffc33"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_operating_control_snapshot_v1(uuid,text,text,text,text,jsonb,jsonb)",
+          "definitionSha256": "b0b759ebcc1d21f68fbeb287605744a1576a99e4f66847274b2342bc5732d693"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_store_public_company_memory(uuid,text,jsonb)",
+          "definitionSha256": "73de6fd4e104320708e21986bd0f295e6419f023705311b8f731d8373907e760"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_store_public_research_cache(uuid,text,jsonb)",
+          "definitionSha256": "1db70dc7cd3748f12a0d6ce0fb72db750eaef151933d7bac6b30dbca1474991f"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_sync_project_information_requests_v1(uuid,text,jsonb)",
+          "definitionSha256": "954a4a37c966038ee13d87fa12249796d4a1acbd9aefb64148e96db3860a0a5d"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_sync_receivables_information_requests_v1(uuid,text,jsonb)",
+          "definitionSha256": "21ac368fd48d8281f65233544647f54a3693032217ce50ce09f4798500b3ec1d"
+        },
+        {
+          "exists": true,
+          "signature": "public.worker_load_case_input(uuid,text)",
+          "definitionSha256": "4d5f3c1ce05b5b77373b66f54745a8857401e43070c59b800ba91442eb105acf"
+        },
+        {
+          "exists": true,
+          "signature": "public.worker_runtime_schema_contract_v1()",
+          "definitionSha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
+        }
+      ],
+      "capturePayloadSha256": "f14d468b49daa1824d1f6735f4c881140f0bc4c670b318a3b7b2f1f8c66606ac"
+    },
+    "staging": {
+      "captured_at": "2026-10-05T19:00:50.234299+00:00",
+      "compared": 119,
+      "byteExactMatches": 115,
+      "knownHistoricalDifferences": [
+        {
+          "signature": "private.job_failure_class(jsonb)",
+          "snapshotSha256": "acc3872d527991517cd1418d57901e85db975f5d3c7fd38b176d9b4b8fd85a9f",
+          "liveSha256": "cfe3e3d09dc0aee179f19159f7ea0da47746c5cbd662e6cc98376873dc5c227b",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.job_failure_class(p_error jsonb)",
+              "name": "job_failure_class",
+              "schema": "private",
+              "definitionSha256": "cfe3e3d09dc0aee179f19159f7ea0da47746c5cbd662e6cc98376873dc5c227b"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "redundant CASE arms already covered by the following identical IN arm",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ staging live\n@@ -12,6 +12,8 @@\n     when coalesce(p_error ->> 'code', '') in ('invalid_output', 'output_truncated') then 'model_invalid_output'\n     when coalesce(p_error ->> 'code', '') in ('model_not_allowed', 'data_policy_violation', 'cassette_missing') then 'model_policy'\n     when coalesce(p_error ->> 'code', '') ~* 'quality_gate' then 'quality_gate'\n+    when coalesce(p_error ->> 'reason', '') = 'infected' then 'invalid_input'\n+    when coalesce(p_error ->> 'reason', '') = 'unreadable_document' then 'invalid_input'\n     when coalesce(p_error ->> 'reason', '') in ('infected', 'unreadable_document') then 'invalid_input'\n     when coalesce(p_error ->> 'code', '') ~* 'invalid_.*input|invalid_case'\n       or p_error ? 'validation' then 'invalid_input'\n",
+          "argumentNames": [
+            "p_error"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": false,
+          "volatility": "i",
+          "catalogueComment": "Classifies a failed job's last_error into a cause class. Reads the cause the worker now writes and falls back to the gateway code, the message and the validation issues for older rows."
+        },
+        {
+          "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
+          "snapshotSha256": "b1fa646225d6d2aed3bdec639967bfab06c2a4b33e9bc15b9555bd13ee7cd0d6",
+          "liveSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.worker_activate_integration_preview_run_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
+              "name": "worker_activate_integration_preview_run_v1",
+              "schema": "private",
+              "definitionSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "SQL line comments or one blank line only",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ staging live\n@@ -326,8 +326,6 @@\n         'sourceMessageId', source_message.id,\n         'assistantMessageId', assistant_message.id\n       ),\n-      -- Deterministic runs spend nothing; a live run may make one bounded call for the questions\n-      -- and, later, one for the synthesis. The worker's own caps still apply on top.\n       -- Questions and synthesis in live mode: two bounded calls whose preflight reservations must fit.\n       'model_budget', jsonb_build_object('max_cost_usd', 0.60, 'max_calls', 4),\n       'preview', jsonb_build_object(\n",
+          "argumentNames": [
+            "p_job_id",
+            "p_capability_token",
+            "p_assistant_message_id",
+            "p_activation"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": true,
+          "volatility": "v",
+          "catalogueComment": null
+        },
+        {
+          "signature": "private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text)",
+          "snapshotSha256": "c6b4a5b3040c6f6871bb976e9f6636b9c3ddfdf105b1de958dd714c86fa20cf7",
+          "liveSha256": "890ad2670bc6646d8dc18ebbc556c03cdcf9b07a6afab85185cdb62beb801cfb",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.worker_enqueue_receivables_method_refresh_v1(p_job_id uuid, p_capability_token text, p_draft_fingerprint text, p_compiled_supplement_fingerprint text)",
+              "name": "worker_enqueue_receivables_method_refresh_v1",
+              "schema": "private",
+              "definitionSha256": "890ad2670bc6646d8dc18ebbc556c03cdcf9b07a6afab85185cdb62beb801cfb"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "SQL line comments or one blank line only",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ staging live\n@@ -87,10 +87,6 @@\n     raise exception 'model_month_ceiling_reached' using errcode = '53400';\n   end if;\n \n-  -- This is an internal transition, not a tenant command. The leased job capability already\n-  -- binds organization, session and caller; impersonating the source user would weaken that\n-  -- boundary. Create only the reuse-only run here, then let the canonical case enqueue helper\n-  -- create its controlled execution and budgeted job.\n   select coalesce(max(run.run_no), 0) + 1 into next_run_no\n   from public.processing_runs run\n   where run.organization_id = job_row.organization_id\n",
+          "argumentNames": [
+            "p_job_id",
+            "p_capability_token",
+            "p_draft_fingerprint",
+            "p_compiled_supplement_fingerprint"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": true,
+          "volatility": "v",
+          "catalogueComment": null
+        },
+        {
+          "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
+          "snapshotSha256": "c3789f41692c35ce6ea7e923dc1b3d358ed6e4849d41079f00ae29fb3a18faf4",
+          "liveSha256": "1e57618ae74f3ef6ea00abc2d1d9ffcd6e696985fb604ac9e7a49a3bedcc5123",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.worker_fail_job(p_job_id uuid, p_capability_token text, p_error jsonb, p_retryable boolean, p_retry_in_seconds integer)",
+              "name": "worker_fail_job",
+              "schema": "private",
+              "definitionSha256": "1e57618ae74f3ef6ea00abc2d1d9ffcd6e696985fb604ac9e7a49a3bedcc5123"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "SQL line comments or one blank line only",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ staging live\n@@ -14,7 +14,6 @@\n   spent_calls integer := private.reported_spend_calls(p_error);\n begin\n   perform private.assert_job_failure_record(p_error);\n-\n   will_retry := coalesce(p_retryable, true) and job_row.attempts < job_row.max_attempts and (not private.requires_execution_brief_approval(job_row.id) or private.execution_dispatch_is_current(job_row.id,true));\n \n   update public.processing_jobs\n",
+          "argumentNames": [
+            "p_job_id",
+            "p_capability_token",
+            "p_error",
+            "p_retryable",
+            "p_retry_in_seconds"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": true,
+          "volatility": "v",
+          "catalogueComment": null
+        }
+      ],
+      "unreconciledDifferences": 0,
+      "status": "PASS_WITH_EXPLICIT_HISTORICAL_EQUIVALENCE",
+      "baseline": "Known differences remain byte-identical to their individually proved pre-corrective captures; corrective alias matches actual05d CI snapshot",
+      "proofRule": "Exact captured definitions differ only as the attached diff; removing SQL line comments/blank lines and, only for staging job_failure_class, the two individually enumerated redundant CASE arms produces identical definitions. No snapshot or database body was changed.",
+      "capturedFunctionHashes": [
+        {
+          "exists": true,
+          "signature": "private.accept_workspace_invite_v1(uuid)",
+          "definitionSha256": "a3a7938aeb3026fd41fd12037c1176672349348e336c70e43a46bc4ff18eca9b"
+        },
+        {
+          "exists": true,
+          "signature": "private.advance_dependency_update_request_v1(uuid,uuid,uuid)",
+          "definitionSha256": "595907f3828c00d1f9e29bcae9e3a78b3e724e69c18422d8bebdbb3810e461e3"
+        },
+        {
+          "exists": true,
+          "signature": "private.append_domain_event_v1(uuid,uuid,text,uuid,text,jsonb,uuid,bigint,uuid)",
+          "definitionSha256": "9dfe1df85f3171fbee728cc714d3a2da853ed9fb67dffc0c19507274c52af69c"
+        },
+        {
+          "exists": true,
+          "signature": "private.apply_dependency_event_v1(uuid,uuid)",
+          "definitionSha256": "fb74eade68eee6bc6da5f25b7c363e69fba4c28d2f2dfd9a326942b6e6a97325"
+        },
+        {
+          "exists": true,
+          "signature": "private.approve_advisor_execution_brief_v1(uuid,uuid,text,uuid)",
+          "definitionSha256": "1af081f246b9baefb64de88e0d2a5701207f73f28a571e0879f76405c5b300e6"
+        },
+        {
+          "exists": true,
+          "signature": "private.attest_platform_method_candidate_v1(uuid,uuid,text,text,text,jsonb)",
+          "definitionSha256": "31b901cec476b0992292ee23a96d6b8abd71d1afa75ee25bf641c984470afab5"
+        },
+        {
+          "exists": true,
+          "signature": "private.authorize_qualified_introduction_plan(uuid,text)",
+          "definitionSha256": "8fff7210853ef9f640dfabc45641dd3774d618644a07725258e83433618dd62b"
+        },
+        {
+          "exists": true,
+          "signature": "private.begin_processing_run(uuid,uuid,text,jsonb,text,jsonb)",
+          "definitionSha256": "3904fb897ccfc833aea2b5ac21ddc0971b1f5c026549c87fc9c49d68d9bc3fa2"
+        },
+        {
+          "exists": true,
+          "signature": "private.bind_job_authority_v1()",
+          "definitionSha256": "abbf6365d9a52feec8fc90eca2e602fb18c28c29bb3fa11d89a1677f6b27f89a"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_debt_commit_result_core_v1(uuid,uuid,uuid,uuid,uuid,text,jsonb,uuid,text)",
+          "definitionSha256": "2216781aa2a547f56fc8bfc265a30e4ed39e49037c5aafcd51a8c564e4eb59c0"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_debt_native_read_allowed_v1(uuid,uuid,uuid)",
+          "definitionSha256": "9afa78352f5f7cd3b3d5940d259e580799197ff3b312dca813c8073984631b01"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_debt_recipe_deadline_v1(uuid,uuid,uuid)",
+          "definitionSha256": "646f6ef99cff25d50e6dc62ddf981b4e5647057861d41a368dc6c3025525014c"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_m07_native_read_allowed_v1(uuid,uuid,uuid)",
+          "definitionSha256": "ed1411ae041270cafca0d41addcc47368f41b6323e879dc35f1d680ce882e810"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_project_review_action_allowed(uuid,uuid,text,uuid)",
+          "definitionSha256": "2d6f1bc6fc7811da59770e672d79bbf453719f01ccda8affd92bc2baff1c4f7d"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_project_review_roles(uuid,uuid,uuid)",
+          "definitionSha256": "0889eaa39709a73188b6c3b50d5667e1ac058331b9bcda9a15222d593e5fb461"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_s11_native_read_allowed_v1(uuid,uuid,uuid)",
+          "definitionSha256": "9291ff3fa2d798b049fa9bc9cfb2935999145fb82b2a64c24674705b2d1c58d1"
+        },
+        {
+          "exists": true,
+          "signature": "private.capital_s11_recipe_deadline_v1(uuid,uuid,uuid)",
+          "definitionSha256": "55b21f9fc69a786164bee49e531ddcda54f6f473b64d936ec8808b4f17b56fd9"
+        },
+        {
+          "exists": true,
+          "signature": "private.capture_authority_domain_event_v1()",
+          "definitionSha256": "8b298da49b08167a00b1ccec74a1bd70ba567311bb94b678729ce0b1a9affd4c"
+        },
+        {
+          "exists": true,
+          "signature": "private.commit_work_execution_result_v1(uuid,text,uuid,text,text,text,text,text)",
+          "definitionSha256": "f2e39d370b8962b9117410cbc083cf5133756fe9b693c0b04ef7e84b7fd2e8f0"
+        },
+        {
+          "exists": true,
+          "signature": "private.complete_event_outbox_v1(text,uuid,text)",
+          "definitionSha256": "a5c3dd9ee50cdcb7c679b1d6e8ee4b8047a3ea0886562003604bb8eed2a89298"
+        },
+        {
+          "exists": true,
+          "signature": "private.compose_method_v1(uuid,text,jsonb,uuid,text)",
+          "definitionSha256": "0912339b6a4cf98c15c819d792885adcf1d8828d2bf40c127959ec10b41e9fef"
+        },
+        {
+          "exists": true,
+          "signature": "private.create_artifact_revision_v1(uuid,uuid,text,text,text,text,jsonb,jsonb,jsonb,text,bigint,jsonb,uuid,uuid,uuid,boolean)",
+          "definitionSha256": "11a3f5c00f3afa16ee36021552790825b085854d7ae58a98323e578fbf1766d3"
+        },
+        {
+          "exists": true,
+          "signature": "private.enqueue_incremental_deal_state_analysis(uuid,uuid,text)",
+          "definitionSha256": "2a2c5cbdc6df1b86dd40ffd68d03a5d3e5422641fde13874194f3c0e02d5b4f1"
+        },
+        {
+          "exists": true,
+          "signature": "private.enqueue_primary_case_analysis(uuid,uuid,uuid)",
+          "definitionSha256": "5dfb0c83669771ce35ec1f7c770aa7a24ad4f6b31394dcd830af80695685c7ee"
+        },
+        {
+          "exists": true,
+          "signature": "private.evaluate_resource_policy_v1(uuid,uuid,uuid,text,text)",
+          "definitionSha256": "1f857eb3aba254546b9f191405cc4eb91143a96e6ed4ff0f12ad420180c4a3ff"
+        },
+        {
+          "exists": true,
+          "signature": "private.execution_approval_input_fingerprint(uuid,uuid)",
+          "definitionSha256": "6123e40b297c8c10c9da3630350cf875a63529c105d61231b3e281f5e1b9486c"
+        },
+        {
+          "exists": true,
+          "signature": "private.execution_contract_basis_v1(uuid,uuid,text)",
+          "definitionSha256": "3961efa13483b4e93203f91af7d308cc69beb4955afe139c26260afb38407403"
+        },
+        {
+          "exists": true,
+          "signature": "private.execution_hold_is_live_v1(uuid)",
+          "definitionSha256": "1276ac003721380a0d26573a6c129d55b733ae58abf86b9c183169ac12d63cc2"
+        },
+        {
+          "exists": true,
+          "signature": "private.execution_inputs_current_v1(uuid,uuid,uuid)",
+          "definitionSha256": "c71a43458bbec8b7b2e3d1364ede76f22a802ab0570a70c95deaed1db11865d2"
+        },
+        {
+          "exists": true,
+          "signature": "private.get_workspace_bootstrap()",
+          "definitionSha256": "c5b904887fdb2b4958479fa5363b8c0ef2da60206c5b88a498bb2011cc67d7eb"
+        },
+        {
+          "exists": true,
+          "signature": "private.grant_resource_access_v1(uuid,uuid,text,timestamptz)",
+          "definitionSha256": "e95460fe059b496e0cde6c270f7088827cc05a00dd743cdc31bef36515182b9c"
+        },
+        {
+          "exists": true,
+          "signature": "private.guard_execution_approval_queue()",
+          "definitionSha256": "2952fbe405388f3f684fdf92515e7420436371506f6c5ab48efaf5dae8b3de3e"
+        },
+        {
+          "exists": true,
+          "signature": "private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid)",
+          "definitionSha256": "4d4ec240be90c0f95fb09686f328bd717d8ae448cf9b3d36c1e69d8adb04f39b"
+        },
+        {
+          "exists": true,
+          "signature": "private.is_released_documentary_plan_v1(jsonb,text)",
+          "definitionSha256": "1038a9570d8a80d4112b1fecce9f1cd1baad022b0eb6f38c5adbeb1204942fce"
+        },
+        {
+          "exists": true,
+          "signature": "private.job_authority_is_current_v1(uuid)",
+          "definitionSha256": "4bf313da7a91664ea74d94fe9db1513a952d6e2a442f8d6dea006799d34e4338"
+        },
+        {
+          "exists": true,
+          "signature": "private.job_failure_class(jsonb)",
+          "definitionSha256": "cfe3e3d09dc0aee179f19159f7ea0da47746c5cbd662e6cc98376873dc5c227b"
+        },
+        {
+          "exists": true,
+          "signature": "private.job_for_capability(uuid,text)",
+          "definitionSha256": "9636c7a9d138e41c112f964fac50904bcc766ce1f9268b31950e221c507ef9aa"
+        },
+        {
+          "exists": true,
+          "signature": "private.job_sources_rights_current_v1(uuid)",
+          "definitionSha256": "ca08bf0d07ea24a556c9bbb3b67eeccd4e3bb8bf31c8541765e06ab148ce44c6"
+        },
+        {
+          "exists": true,
+          "signature": "private.list_method_releases_v1(integer)",
+          "definitionSha256": "cdc093a9d644d46aca9ef59c813ab1522635bf3f3912a5b71d3503aedf951b82"
+        },
+        {
+          "exists": true,
+          "signature": "private.lock_job_authority_v1(uuid)",
+          "definitionSha256": "4e40ca5a31c68bccfac716002a77e2298c3898576df529a385cc9e1cc7680827"
+        },
+        {
+          "exists": true,
+          "signature": "private.manage_work_v1(uuid,text,text)",
+          "definitionSha256": "52cfd1e01f1da4f1817b83bf7a75051af2f104c170ba076f7b59478b33d45ef8"
+        },
+        {
+          "exists": true,
+          "signature": "private.merge_dependency_update_request_v1(uuid,uuid,uuid,uuid[])",
+          "definitionSha256": "69ee600374de77bfb9cb27f03407bb79e3f8b740ebda0b9d065de2732feb1632"
+        },
+        {
+          "exists": true,
+          "signature": "private.normalize_origination_runtime_budget_v1()",
+          "definitionSha256": "6de825144f70c330da6739e3d74d6b5fd388cf78fc43370465fa9b6eaa989f18"
+        },
+        {
+          "exists": true,
+          "signature": "private.pin_contribution_sources_v1(uuid,uuid,uuid[],uuid,uuid)",
+          "definitionSha256": "60f5e30cb947dd22f29688ff4b64c5dcc96ea81ecbb2c10409916c748ec758a3"
+        },
+        {
+          "exists": true,
+          "signature": "private.plan_dependency_recompute_v1(uuid,uuid)",
+          "definitionSha256": "41d005e62101a381f5aae0833f84169a6978cf63bddc6eafb4ebb49465857a03"
+        },
+        {
+          "exists": true,
+          "signature": "private.promote_contribution_to_work_v1(uuid,uuid,uuid)",
+          "definitionSha256": "d4d7d8f2d5b47be8885eea415856d47e3baa83852e52235dae7930795c9a1ac8"
+        },
+        {
+          "exists": true,
+          "signature": "private.r01_preparation_authority_v1(uuid,uuid,uuid,uuid)",
+          "definitionSha256": "ebbee15ae484b27a0e97e42ad85db12020122c38442782d474cc6718624b8d75"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_artifact_revision_v1(uuid)",
+          "definitionSha256": "5edc7e2c77f225a4ff7b6d00dabf360df3a65b138cdb4ceba2a56f2d6af8b2ea"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_capital_project_execution_brief_progress_v1(uuid)",
+          "definitionSha256": "7d3f010b7f139085d916e238f957f676c2633f9d88794f386277b02cbebbce50"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_institutional_model_results_v1(uuid)",
+          "definitionSha256": "eea2a8579c85ae940df7d47e4c78e8687133c1d0f6c6b4c950355ea990f4a404"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_project_revision_history_v1(uuid)",
+          "definitionSha256": "58e54fbf8f727b2cddd1767db53de0ce9d869e1543b02f5accb2375cc1365242"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_receivables_evidence_scope_v1(uuid)",
+          "definitionSha256": "c944abc5d68244f37c4bdd373073fec484834c5073213e671d4efd941c81b22e"
+        },
+        {
+          "exists": true,
+          "signature": "private.read_work_review_dashboard_v1(uuid,uuid,uuid)",
+          "definitionSha256": "bfa1e6414a743e76a8dadaff171c11d7fa776d15f653500bb0d54e7ae8983aa5"
+        },
+        {
+          "exists": true,
+          "signature": "private.receivables_scope_sources_current(uuid,uuid,jsonb)",
+          "definitionSha256": "b2961da9bcc3a8bff03d1ffb3f55389e12b1de53f557e19b04b3ca02beac4818"
+        },
+        {
+          "exists": true,
+          "signature": "private.record_capital_project_plan(uuid,jsonb)",
+          "definitionSha256": "b7f86e65d0f1922d052335b1ba5bc956675ab7455384d14417f17b1a99c6cd91"
+        },
+        {
+          "exists": true,
+          "signature": "private.record_execution_proposal_plan_as_actor(uuid,jsonb,uuid)",
+          "definitionSha256": "cbfde21ffafa6434b332e0a0bfc4883575e9acb1add20eb3233be03ddaa78f6a"
+        },
+        {
+          "exists": true,
+          "signature": "private.record_r01_preparation_receipt_v1(uuid,uuid,text,uuid,text,text)",
+          "definitionSha256": "062ca74d883819de06ec07fd2e82d5bc98e3d4d0ad03a1cc293f3f0ea1626eff"
+        },
+        {
+          "exists": true,
+          "signature": "private.request_documentary_work_revision_v1(uuid,uuid,text,uuid,text,text,jsonb)",
+          "definitionSha256": "f52557bcfbf97b60225311bed5d1011a092415ac6e07eb80da0b6e2eacfd0f4d"
+        },
+        {
+          "exists": true,
+          "signature": "private.request_work_execution_producer_v1(text,text)",
+          "definitionSha256": "8071d5e431f249b92b1a03d694157854208fe91e45eed4bf2a4c1f0b5df2353b"
+        },
+        {
+          "exists": true,
+          "signature": "private.request_work_execution_producer_v2(text,text,text)",
+          "definitionSha256": "84d07a2bf115ba8f85f0519e7d03c4d2e44201399060ac99f19e671133610463"
+        },
+        {
+          "exists": true,
+          "signature": "private.request_work_execution_v1(uuid,text,text)",
+          "definitionSha256": "36de286910f434c13397a2866362aa528d69e050db58ccd18fddc39e95a0bc83"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_artifact_revision_before_capital_cutover_v1(uuid,text,text,uuid,text,boolean,uuid,uuid)",
+          "definitionSha256": "18f1836ba2625919a9d5879ebea388b5eadf6a08009e53871df33dc7b11d5ec5"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_artifact_revision_v1(uuid,text,text,uuid,text,boolean,uuid,uuid)",
+          "definitionSha256": "96f05a6209593fc39cdf0e0053b2bdf9660027ca71898dd654f07d082e3ff7aa"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_institutional_configuration_and_calculate_v1(uuid,uuid,text,text,text,uuid,text)",
+          "definitionSha256": "4bd15181fab2ab6c5f65bf3ceca04a481fb9d1e567011ac452056112532e1d12"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_institutional_configuration_before_sources_v1(uuid,uuid,text,text,text)",
+          "definitionSha256": "6b3c830b73f719bc93bf683d87b3e1dab0be4f27f93b5e86466721ca4a643f0c"
+        },
+        {
+          "exists": true,
+          "signature": "private.review_institutional_configuration_v1(uuid,uuid,text,text,text)",
+          "definitionSha256": "1ddd207a4bc4bcefd61756deadce44ae6be2bfa9626054792c6e98dd4df64b02"
+        },
+        {
+          "exists": true,
+          "signature": "private.save_guided_company_profile(uuid,text,text,text,text,bytea,text)",
+          "definitionSha256": "4cf5de3b76324008ef6841c83f1d8fe21ee6226afacf74eae293ce184d303b2b"
+        },
+        {
+          "exists": true,
+          "signature": "private.save_project_company_profile(uuid,text,text,text,text,bytea,text)",
+          "definitionSha256": "71e9e3cddb0e8d4a6830a138ea881a36c4ba4e1c68ab4f45e5a07cf7cafc12bf"
+        },
+        {
+          "exists": true,
+          "signature": "private.set_resource_policy_grant_v1(uuid,uuid,uuid,text,text,boolean,timestamptz)",
+          "definitionSha256": "56be50a4f60001af0d139e80e742907f474d27a0ab88239e243692f93522e02c"
+        },
+        {
+          "exists": true,
+          "signature": "private.settle_stale_execution_jobs_v1()",
+          "definitionSha256": "0aae7d2255354470017bca819884c3500efc5e9c3e03d60cb8996760128cc711"
+        },
+        {
+          "exists": true,
+          "signature": "private.start_provider_case_fit_project_v1(uuid,text,text,text,jsonb,uuid,uuid,text,jsonb)",
+          "definitionSha256": "717d9c6e65b784447bbb257e4833848d3ebeacad8759fc1ac9737ef57abbf5e1"
+        },
+        {
+          "exists": true,
+          "signature": "private.submit_advisor_execution_brief_edit_v1(uuid,uuid,text,uuid,text,text)",
+          "definitionSha256": "d147c5c37c60b9ebf27978c3a2b07ef882c365f42148e1205f4835bce8aaad74"
+        },
+        {
+          "exists": true,
+          "signature": "private.submit_advisor_turn_v1(uuid,uuid,text,text)",
+          "definitionSha256": "e8d171ce04650360665e270a102135f9358a65845fe5f349a04d05e922487de5"
+        },
+        {
+          "exists": true,
+          "signature": "private.submit_institutional_model_setup_v1(uuid,text,jsonb,jsonb,uuid,text)",
+          "definitionSha256": "72b39b3be74244f970dbaca50a6a063fc186af5d029f0c48035d6c52dba4774b"
+        },
+        {
+          "exists": true,
+          "signature": "private.submit_platform_method_candidate_v1(uuid,text,jsonb,text)",
+          "definitionSha256": "19b1a2dad37015982a2bf100877162c2524aff93fd55e55e66b507f89e8e95a6"
+        },
+        {
+          "exists": true,
+          "signature": "private.validate_receivables_scope_brief(uuid,uuid,jsonb,jsonb)",
+          "definitionSha256": "eaf6ca549432e7da405fabb40ae44762d292166198ddad000e331d37318caf4b"
+        },
+        {
+          "exists": true,
+          "signature": "private.wake_capital_debt_retention_v1()",
+          "definitionSha256": "684b59f9086ce2656b966ac6ea8529c0c0dae061c64f6d89adcc5aa2cf7d6f2d"
+        },
+        {
+          "exists": true,
+          "signature": "private.wake_capital_m07_retention_v1()",
+          "definitionSha256": "7b22db1323beff5d86bcdca57bcd4ba5a6987d7e1d03ffb2a2b3f8eece447e5b"
+        },
+        {
+          "exists": true,
+          "signature": "private.wake_capital_s11_retention_v1()",
+          "definitionSha256": "92442e6f004fbf34df582c2c4daabaca96a9f9ebb75a168e9ecc6ad10b42be5c"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
+          "definitionSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_bind_receivables_information_request_fields_v1(uuid,text,jsonb)",
+          "definitionSha256": "5b019207559021f8ab74b37df4ba5d1e0ad130b22fa85b038c59bfcf1bfba1f4"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_claim_job_v2(text,integer)",
+          "definitionSha256": "22bbeb60b03a2f0152435b7876334fa42d1f2e7c57d3fd34bb36bf147811f39b"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_claim_job(text,integer)",
+          "definitionSha256": "87cc729fc638f2e3f700c10eae940a415158907b1a7c68e17405713d34f8feb3"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_commit_capital_s11_task_projection_core_v1(uuid,text,uuid,uuid,uuid,boolean)",
+          "definitionSha256": "bae7cec86909bca8ba2fb08387aa799d0d7f4414608e45f298e4bc80b7589256"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text)",
+          "definitionSha256": "890ad2670bc6646d8dc18ebbc556c03cdcf9b07a6afab85185cdb62beb801cfb"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
+          "definitionSha256": "1e57618ae74f3ef6ea00abc2d1d9ffcd6e696985fb604ac9e7a49a3bedcc5123"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_finalize_capital_s11_recipe_v1(uuid,text,uuid,uuid,jsonb,text,text,text,text,bigint,integer,text,text,boolean,text)",
+          "definitionSha256": "a131db0941fb3bc5f835de9ca7a7f4ef33eb7357fbeb17fc4ea5ffbf34eda6dc"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_finish_capital_project_task(uuid,text,uuid,text,jsonb,text,jsonb,jsonb,jsonb)",
+          "definitionSha256": "9658b992c087bad03e69aa0cf119a8a08f415ea050ada0827431c087b43fe8ff"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_agent_context_before_professional_context_v1(uuid,text)",
+          "definitionSha256": "288cb123a2260197fde477d379396018cc4c842e1db48077c3defd2d3f1edcf8"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_agent_context_v2(uuid,text)",
+          "definitionSha256": "64155ebd16682a2b847ba5aa6600a9197199082074c4c205b991b3cb83de4316"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_agent_context_v3(uuid,text)",
+          "definitionSha256": "72edafbe73b260e88abd8fc0017b38d7a263021f8ff008fd4b8e4b545fff1db5"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_agent_context(uuid,text)",
+          "definitionSha256": "142dfd1dd4a7b6abfc7c3754ad3f7596cc01e42bba219c471122e784ced0b7da"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_capital_project_context_v6(uuid,text)",
+          "definitionSha256": "020dbce34d6f50666d61c9f8540a9d234b0938b6df275721bfa127961e5aa7ff"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_case_bundle_before_scope(uuid,text)",
+          "definitionSha256": "6820f909e672a6ff8a94f2af9c9773b7114c30a552adfa89cb08409b86656c64"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_case_input(uuid,text)",
+          "definitionSha256": "a4d04935ec7e1e46aa48bcd3f542fc359d21a4934cf81bdd948ba0dd406c3973"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_execution_brief_proposal_v1(uuid,text)",
+          "definitionSha256": "0242dbab1828f28423bf5bcc4fd508ffbeddf56948beacdeef2bd04c2c71c6b5"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_execution_brief_proposal_v2(uuid,text)",
+          "definitionSha256": "40ae61d594798e089fa96b68224de40d61086eb1d2a47f659b1f5d25d54f5a97"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_execution_brief_proposal_v3(uuid,text)",
+          "definitionSha256": "59bbc7db0be5716facf678d03517fc511155d0744a2ceef61b114cad642e7fc9"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_institutional_model_context_v1(uuid,text)",
+          "definitionSha256": "76a97240ed327e5a2c18f422fa855f140c58bf8a99533b92e03a4bbca249fcc4"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_institutional_model_context_v3(uuid,text)",
+          "definitionSha256": "45ca463646f107c11d55f868401b57ed48c518d451b79d7f027dd5673600e2b1"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_public_company_memory(uuid,text,text)",
+          "definitionSha256": "e0371ad59379b36ccc7ce6a0cf0b758a6812e735c3f1ceb7281634a32982b000"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_public_research_cache(uuid,text,text[])",
+          "definitionSha256": "0119852f2db800761525a6a7050f4385b41474cc4bc804a4da27e9e3df1ccb99"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_load_receivables_analytical_release_v1(uuid,text)",
+          "definitionSha256": "08f328f99eb3c6993b78f25af35e06526dd542657e452881a2e9d60532a8541c"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_prepare_capital_debt_context_v1(uuid,text,uuid,uuid)",
+          "definitionSha256": "adc7762fc22cc3d79dc99a90dc93776bdff8a07d5d55cf4581e88cfbc7ef3f1a"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_prepare_capital_native_result_v1(uuid,text,uuid,text,text,jsonb,uuid)",
+          "definitionSha256": "8b97eeb633a008dda0d66cd57bf985ebea2396279763af2a571807a7083728ec"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_prepare_capital_s11_context_v1(uuid,text,uuid,uuid)",
+          "definitionSha256": "5b4b234c0a5ef41c028765b8ff3701179b1348930ae67a39fc6bbbb514251f35"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_agent_assessment_before_native_v1(uuid,text,jsonb)",
+          "definitionSha256": "6571b1d46615241a4a306fed5c5db5011d7b62269935d1ca133af0327372940b"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_agent_assessment_v1(uuid,text,jsonb)",
+          "definitionSha256": "7f6d4ff6ca03d703128065de9b72b32dc2a9124a3ce1e9270375f79fb871217a"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_agent_stage_event_v1(uuid,text,text,text,jsonb)",
+          "definitionSha256": "328246d04649053d32f972e148b9be166bf322292dd3004bf732200376a65307"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_capital_project_artifact(uuid,text,uuid,text,text,text,text,jsonb,jsonb,jsonb)",
+          "definitionSha256": "ca8812c851215e14a08b2ec75892d73a7df354b2c08485b9bee3c313679f8756"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_capital_project_execution_brief_v1(uuid,text,jsonb,jsonb,uuid,jsonb)",
+          "definitionSha256": "a9555895c9ee7a1a275621cdec0712c1ff29396759163becf5d5a65043dea5ce"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_execution_brief_proposal_v1(uuid,text,jsonb,jsonb,text,jsonb)",
+          "definitionSha256": "b1d99cc2ded61416f91c5686815b71b4d5e0a4f7e4257a7483cec988e67ffc33"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_record_operating_control_snapshot_v1(uuid,text,text,text,text,jsonb,jsonb)",
+          "definitionSha256": "b0b759ebcc1d21f68fbeb287605744a1576a99e4f66847274b2342bc5732d693"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_store_public_company_memory(uuid,text,jsonb)",
+          "definitionSha256": "73de6fd4e104320708e21986bd0f295e6419f023705311b8f731d8373907e760"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_store_public_research_cache(uuid,text,jsonb)",
+          "definitionSha256": "1db70dc7cd3748f12a0d6ce0fb72db750eaef151933d7bac6b30dbca1474991f"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_sync_project_information_requests_v1(uuid,text,jsonb)",
+          "definitionSha256": "954a4a37c966038ee13d87fa12249796d4a1acbd9aefb64148e96db3860a0a5d"
+        },
+        {
+          "exists": true,
+          "signature": "private.worker_sync_receivables_information_requests_v1(uuid,text,jsonb)",
+          "definitionSha256": "21ac368fd48d8281f65233544647f54a3693032217ce50ce09f4798500b3ec1d"
+        },
+        {
+          "exists": true,
+          "signature": "public.worker_load_case_input(uuid,text)",
+          "definitionSha256": "4d5f3c1ce05b5b77373b66f54745a8857401e43070c59b800ba91442eb105acf"
+        },
+        {
+          "exists": true,
+          "signature": "public.worker_runtime_schema_contract_v1()",
+          "definitionSha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
+        }
+      ],
+      "capturePayloadSha256": "f081ec9d2fafa51a6860cc86ff7b74df5e1c1c60174bb6f5d07c7e15cbbd4543"
+    }
+  },
+  "curatedHistoricalStatus": "PASS_WITH_EXPLICIT_PREEXISTING_EQUIVALENCE; no snapshot/database body changed",
+  "curatedHistoricalReceipt": "docs/build/schema-history/effective-function-bodies/LIVE-VERIFICATION-STAGE21.json"
+}

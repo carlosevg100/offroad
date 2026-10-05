@@ -30,7 +30,7 @@ describe("security current-state inventory", () => {
     const decision = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue);
     expect(decision.structurallyValid, JSON.stringify(decision.blockers)).toBe(true);
     expect(currentSecurityInventory.baseline).toMatchObject({
-      waveId: "wave-17", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
+      waveId: "wave-21", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
     });
     expect(decision.evidenceVerification).toBe("declaration_only");
     expect(decision.currentStateTruthVerified).toBe(false);
@@ -207,6 +207,16 @@ describe("security current-state inventory", () => {
 
   it("requires retention and containment evidence at wave-seventeen opening", () => {
     for (const evidenceRef of ["SEV-RETENTION-MATRIX", "SEV-RETENTION-SERVER", "SEV-RETENTION-SQL-TEST", "SEV-RETENTION-RESEARCH", "SEV-RETENTION-ACCOUNT-REVIEW", "SEV-EVAL-CONTAINMENT", "SEV-EVAL-CONTAINMENT-TEST"]) {
+      const attacked = copyInventory();
+      attacked.evidenceIndex = attacked.evidenceIndex.filter(item => item.evidenceId !== evidenceRef);
+      const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);
+      expect(decision.structurallyValid).toBe(false);
+      expect(decision.blockers.some(item => item.subjectRef === evidenceRef)).toBe(true);
+    }
+  });
+
+  it("requires the reviewed stage-twenty and roundtrip-design evidence at wave-twenty-one opening", () => {
+    for (const evidenceRef of ["SEV-ROUNDTRIP-PLAN", "SEV-REVIEW-INTEGRATED-PLAN", "SEV-REVIEW-INTEGRATED-RUNNER", "SEV-REVIEW-INTEGRATED-TEST", "SEV-REVIEW-REVISION-PROTOCOL"]) {
       const attacked = copyInventory();
       attacked.evidenceIndex = attacked.evidenceIndex.filter(item => item.evidenceId !== evidenceRef);
       const decision = evaluateSecurityCurrentStateInventory(attacked, masterTrustControlCatalogue);

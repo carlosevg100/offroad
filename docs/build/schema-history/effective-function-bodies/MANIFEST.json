@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-10-04T18:43:01Z",
-  "source": "LIVE production supplied by root; capturedAt records offline verifiedAt, not database capture time; historical preview activation canonical bytes preserved by exact dual-SHA and two-comment proof",
+  "capturedAt": "2026-10-05T18:37:54Z",
+  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -161,6 +161,11 @@
       "signature": "private.guard_execution_approval_queue()",
       "file": "private.guard_execution_approval_queue().sql",
       "sha256": "2952fbe405388f3f684fdf92515e7420436371506f6c5ab48efaf5dae8b3de3e"
+    },
+    {
+      "signature": "private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid)",
+      "file": "private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid).sql",
+      "sha256": "4d4ec240be90c0f95fb09686f328bd717d8ae448cf9b3d36c1e69d8adb04f39b"
     },
     {
       "signature": "private.is_released_documentary_plan_v1(jsonb,text)",
@@ -594,10 +599,21 @@
     }
   ],
   "missing": [],
-  "appendCaptureEvidence": {
-    "capturedAt": "2026-10-04 20:37:00.329719+00",
-    "signature": "private.worker_load_institutional_model_context_v3(uuid,text)",
-    "source": "LIVE production after actual forward18; prior117 entries/bytes preserved",
-    "receipt": "outputs/etapa-20-2026-10-02-continuacao/PRODUCTION-18-INSTITUTIONAL-CAPTURE-NOWAIT-APPLIED.json"
+  "environmentReceipts": {
+    "source": "Actual final post-corrective Supabase SELECT of all119 pg_get_functiondef SHA-256 values; known historical equivalence already individually proved, no byte snapshot overwritten",
+    "receipt": "LIVE-VERIFICATION-STAGE21.json",
+    "receiptSha256": "a179b090d9d226096c47c8a33722bd4a7940ab09a30b1497691a0af88357dc38",
+    "production": {
+      "capturedAt": "2026-10-05T19:01:00.539503+00:00",
+      "byteExactMatches": 118,
+      "knownEquivalentHistoricalDifferences": 1,
+      "unreconciledDifferences": 0
+    },
+    "staging": {
+      "capturedAt": "2026-10-05T19:00:50.234299+00:00",
+      "byteExactMatches": 115,
+      "knownEquivalentHistoricalDifferences": 4,
+      "unreconciledDifferences": 0
+    }
   }
 }

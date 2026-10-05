@@ -43,6 +43,8 @@ export type CellRole =
   | "note";
 
 export type Cell = {
+  /** Optional identity for a new roundtrip export; omitted by historical renderers. */
+  roundtrip?: {name: string; role: "input" | "formula" | "output" | "recorded"; assumptionId?: string; configurationId?: string; period?: string};
   role: CellRole;
   value?: string | number;
   /** A1 formula without the leading `=`; when present it wins over `value`. */

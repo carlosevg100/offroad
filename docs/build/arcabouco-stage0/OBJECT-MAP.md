@@ -3690,3 +3690,25 @@ Revisão adicional de100objetos gerados por loops ou rename na migração2026100
 | `apps/web/src/app/[locale]/app/projects/[projectId]/work-review-actions.ts` | preservar | Revisão exata e reassociação autorizadas; relatos e contestação sem efeito operacional. |
 
 O SQL de `supabase/pending/work_review_dashboard.sql` é candidato de teste no stack descartável; não afirma instalação em staging ou produção. O catálogo será conciliado com a migração efetivamente aplicada antes da publicação.
+
+## Etapa 21: contratos instalados e conferidos nos dois ambientes
+
+O replay real do run `37356734182`, commit `05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90`,
+foi comparado aos catálogos finais após as três migrações: produção em
+`2026-10-05T19:00:37.89929+00:00` e staging em `2026-10-05T19:00:28.926311+00:00`.
+Os 4.749 contratos e os 73 corpos funcionais da etapa21 conferem nos dois ambientes.
+Os 61 objetos adicionais de staging conservam os contratos revisados. Os 96 objetos
+novos têm decisões, âncoras e contratos reais de ambos os ambientes no inventário.
+
+Carimbos produção/staging: exportação `20261005171558`/`20261005171223`;
+importação `20261005172709`/`20261005172344`; correção de classificação de ancestry
+`20261005184946`/`20261005184625`. Os seis textos dos journals são byte a byte idênticos
+aos respectivos arquivos canônicos. A terceira migração preserva a distinção histórica
+entre configuração ausente e trabalho divergente, sem ampliar autoridade.
+
+Os 119 snapshots foram conferidos ao vivo: produção118 idênticos e1equivalente histórico;
+staging115 idênticos e4equivalentes históricos. Essas diferenças são somente comentários,
+linha vazia e dois CASE redundantes já conciliados individualmente. Os hashes permanecem
+iguais à prova anterior; nenhum corpo de banco/snapshot foi modificado para escondê-las.
+Os recibos completos estão em `STAGE21-INSTALLED-VERIFICATION.json` e
+`schema-history/effective-function-bodies/LIVE-VERIFICATION-STAGE21.json`.

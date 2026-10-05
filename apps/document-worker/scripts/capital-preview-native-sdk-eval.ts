@@ -93,7 +93,7 @@ async function main(){
    // Only stdin carries the actual capability and ids; sql() withholds all
    // database stderr and only this fixed proof DTO is emitted.
    const result=z.strictObject({schemaVersion:z.literal('capital-preview-storage-authority-proof.v1'),beforeSharedAuthority:z.literal(false),actualLeaseAndAccount:z.literal(true),afterPreviewAuthority:z.literal(true),checksPassed:z.literal(9)}).parse(JSON.parse(sql(db,
-    `begin;\n${testSql}\nselect pg_temp.prove_preview_storage_job_authority(${quote(z.uuid().parse(job.job_id))}::uuid,${quote(job.capability_token)},${quote(z.uuid().parse(login.data.user?.id))}::uuid,${quote(allocation.allocationId)}::uuid);\nrollback;`)));
+    `begin;\n${testSql}\nselect pg_temp.prove_preview_storage_job_authority(${quote(z.uuid().parse(job.job_id))}::uuid,${quote(job.capability_token)},${quote(z.uuid().parse(login.data.user?.id))}::uuid,${quote(allocation.allocationId)}::uuid,${quote(z.uuid().parse(process.env.PREVIEW_OTHER_FAMILY_ALLOCATION_ID))}::uuid,${quote(z.uuid().parse(process.env.PREVIEW_OTHER_FAMILY_ORGANIZATION_ID))}::uuid);\nrollback;`)));
    physicalProofPhase='none';storageAuthorityProved=true;console.log(JSON.stringify({eval:'capital_preview_storage_job_authority',result:'PASS',...result}));
   }
   return response;

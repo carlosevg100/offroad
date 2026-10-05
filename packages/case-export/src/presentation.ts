@@ -1,7 +1,7 @@
 import {createHash} from "node:crypto";
 
 import type {Material} from "@offroad/case-materials";
-import type {DocxLang, DocxMeta} from "./docx";
+import type {DocxLang, DocxMeta, MaterialRoundtripBinding} from "./docx";
 import type {InstitutionalPresentationTemplate} from "./presentation-template";
 import type {DecisionArtifactContract} from "@offroad/case-understanding";
 import JSZip from "jszip";
@@ -63,6 +63,7 @@ type PresentationBlock = PresentationView["blocks"][number];
 type PresentationSeries = NonNullable<DecisionArtifactContract["series"]>[number];
 
 type SlideSpec = {
+  roundtrip?: {binding: MaterialRoundtripBinding; partNo: number};
   title: string;
   eyebrow: string;
   kind: "cover" | PresentationBlock["kind"];
@@ -289,12 +290,15 @@ function slideXml(spec: SlideSpec, index: number, total: number, input: {locale:
   shapes.push(shape({id: 3, name: "Accent", x: 610_000, y: isCover ? 680_000 : 420_000, w: isCover ? 1_070_000 : 650_000, h: 58_000, fill: c.accent}));
   shapes.push(shape({id: 4, name: "Eyebrow", x: 610_000, y: isCover ? 820_000 : 300_000, w: 8_400_000, h: 310_000, paragraphs: paragraph(spec.eyebrow, {size: 10, color: isCover ? c.accent : c.muted, bold: true, font: template.fonts.body})}));
 
+  let roundtripContentStart = shapes.length;
   if (isCover) {
     shapes.push(shape({id: 5, name: "Title", x: 610_000, y: 1_400_000, w: 9_200_000, h: 2_100_000, paragraphs: paragraph(spec.title, {size: spec.title.length > 70 ? 28 : 36, color: foreground, bold: false, font: template.fonts.display})}));
+    roundtripContentStart = shapes.length;
     const detail = spec.lines.map((line) => paragraph(line.label, {size: 13, color: muted, font: template.fonts.body})).join("");
     shapes.push(shape({id: 6, name: "Cover details", x: 610_000, y: 4_150_000, w: 7_500_000, h: 1_300_000, paragraphs: detail}));
   } else {
     shapes.push(shape({id: 5, name: "Title", x: 610_000, y: 760_000, w: 10_600_000, h: 840_000, paragraphs: paragraph(spec.title, {size: spec.title.length > 55 ? 24 : 29, color: foreground, font: template.fonts.display})}));
+    roundtripContentStart = shapes.length;
     if (spec.table) {
       if (spec.tableIntroduction) shapes.push(shape({id: 13, name: "Table introduction", x: 610_000, y: 1_620_000, w: 10_600_000, h: 600_000, paragraphs: paragraph(spec.tableIntroduction, {size: 12, color: muted, font: template.fonts.body})}));
       shapes.push(tableShape(spec.table, template, spec.tableIntroduction ? 2_300_000 : 1_720_000));
@@ -326,12 +330,17 @@ function slideXml(spec: SlideSpec, index: number, total: number, input: {locale:
     }
   }
 
+  if (spec.roundtrip) {
+    const body = shapes.splice(roundtripContentStart);
+    const name = roundtripSlidePartName(spec.roundtrip.binding.blockKey, spec.roundtrip.partNo);
+    shapes.push(`<p:grpSp><p:nvGrpSpPr><p:cNvPr id="9000" name="${xml(name)}"/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${EMU_W}" cy="${EMU_H}"/><a:chOff x="0" y="0"/><a:chExt cx="${EMU_W}" cy="${EMU_H}"/></a:xfrm></p:grpSpPr>${body.join("")}</p:grpSp>`);
+  }
   const selectedLogo = isCover ? template.logoOnDark ?? template.logo : template.logo;
   if (selectedLogo) shapes.push(picture(90, selectedLogo.extension, 10_790_000, isCover ? 520_000 : 270_000, 710_000, 710_000));
   const confidentiality = template.confidentialityLabel ?? (input.locale === "pt-BR" ? "CONFIDENCIAL · MATERIAL DE TRABALHO" : "CONFIDENTIAL · WORKING MATERIAL");
   const footer = `${confidentiality} · ${input.locale === "pt-BR" ? "Data-base" : "As of"} ${input.contract.asOf} · ${index}/${total}`;
   shapes.push(shape({id: 91, name: "Footer", x: 610_000, y: 6_480_000, w: 10_900_000, h: 190_000, paragraphs: paragraph(footer, {size: 7.5, color: muted, font: template.fonts.body})}));
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>${shapes.join("")}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld${spec.roundtrip ? ` name="${xml(roundtripSlidePartName(spec.roundtrip.binding.blockKey, spec.roundtrip.partNo))}"` : ""}><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>${shapes.join("")}</p:spTree></p:cSld><p:clrMapOvr><a:masterClrMapping/></p:clrMapOvr></p:sld>`;
 }
 
 function tableShape(table: NonNullable<SlideSpec["table"]>, template: InstitutionalPresentationTemplate, y = 1_720_000): string {
@@ -491,7 +500,10 @@ export async function renderInstitutionalPresentation(input: InstitutionalPresen
 }
 
 /** A faithful editable presentation of the immutable approved material, with no generated claims. */
-export async function materialToPptx(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Promise<Uint8Array> {
+type MaterialPptxRoundtripRegions = {blockKey: string; claimIds: readonly string[]; region: {kind: "slide"; slideName: string; shapeName: string;
+  parts: {partKey: string; slideName: string; shapeName: string}[]}};
+function roundtripSlidePartName(blockKey: string, partNo: number): string {return `block:${blockKey}|part:${partNo}`;}
+async function renderMaterialPptx(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Promise<{bytes: Uint8Array; blocks: MaterialPptxRoundtripRegions[]}> {
   const {material, lang, meta} = input;
   const title = material.title[lang];
   const slides: SlideSpec[] = [{title, eyebrow: meta.companyName ?? meta.template?.confidentialityLabel ?? (meta.template && meta.template.origin === "client_supplied" ? meta.template.id.toUpperCase() : "OFFROAD"), kind: "cover", blockId: null, lines: [{label: `${lang === "pt" ? "Emitido em" : "Issued on"}: ${meta.issuedOn}`, traceId: "issued"}]}];
@@ -522,12 +534,16 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
     ? {...block, rows: block.rows.map((row) => row.map((cell) => (typeof cell === "string" ? cell : cell[lang])))}
     : block);
   blocks.forEach((block, index) => {
-    if (block.type === "heading") {section = block.text[lang]; sectionHeading = block.text[lang]; return;}
-    if(index===0 && block.type==="paragraph" && material.presentationCharts?.length && block.text[lang].length<320) {
+    if (block.type === "heading") {
+      section = block.text[lang]; sectionHeading = block.text[lang];
+      if (meta.roundtrip?.blocks.some(binding => binding.blockIndex === index)) slides.push({title: section, eyebrow: lang === "pt" ? "CONTEXTO" : "CONTEXT", kind: "narrative", blockId: `material-block-${index}`, lines: [{label: section, traceId: `material-block-${index}`}]});
+      return;
+    }
+    if(!meta.roundtrip && index===0 && block.type==="paragraph" && material.presentationCharts?.length && block.text[lang].length<320) {
       slides[0]!.lines.push({label:block.text[lang],traceId:"material-block-0"});return;
     }
     const nextBlock = blocks[index + 1];
-    if (block.type === "paragraph" && block.text[lang].length <= 320 && nextBlock?.type === "table"
+    if (!meta.roundtrip && block.type === "paragraph" && block.text[lang].length <= 320 && nextBlock?.type === "table"
       && nextBlock.head.length <= 8 && nextBlock.rows.length > 0
       && nextBlock.rows.every(row => row.length === nextBlock.head.length && row.every(cell => cell.length <= 200))) {
       tableIntroduction = block.text[lang]; return;
@@ -542,6 +558,9 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
       const flush = () => {if (rows.length) pages.push(rows); rows = []; cost = 0;};
       block.rows.forEach(row => {const weight = rowCost(row); if (rows.length && cost + weight + rowCost(block.head.map(head => head[lang])) > maxHeight) flush(); rows.push(row); cost += weight;});
       flush();
+      // An explicitly bound empty table still has a physical header region. Legacy
+      // serialization keeps omitting it; roundtrip must not lose its structural key.
+      if (!pages.length && block.head.length && meta.roundtrip?.blocks.some(binding => binding.blockIndex === index)) pages.push([]);
       // Avoid a trailing one-row appendix slide while preserving row order and readable type.
       const tail=pages.at(-1), previous=pages.at(-2);
       if(tail && previous) while(tail.length<3 && previous.length>3) {
@@ -565,8 +584,27 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
       case "callout": section = block.title[lang]; lines = block.items.map((item) => ({label: item.label[lang], value: item.value[lang], traceId})); break;
       case "table": section = block.caption[lang]; lines = block.rows.flatMap((row, rowIndex) => row.map((value, column) => ({label: `${rowIndex + 1} · ${block.head[column]?.[lang] ?? ""}`, value, traceId}))); break;
     }
-    paginateLines(lines).forEach((page) => slides.push({title: section, eyebrow: eyebrowFor(section), kind: "narrative", blockId: traceId, lines: page}));
+    const pages = paginateLines(lines);
+    // Empty collections carry a binding to an empty group, without invented text.
+    if (!pages.length && meta.roundtrip?.blocks.some(binding => binding.blockIndex === index)) pages.push([]);
+    pages.forEach((page) => slides.push({title: section, eyebrow: eyebrowFor(section), kind: "narrative", blockId: traceId, lines: page}));
   });
+  const roundtripBlocks: MaterialPptxRoundtripRegions[] = [];
+  if (meta.roundtrip) {
+    const seen = new Set<number>(); const keys = new Set<string>();
+    for (const binding of meta.roundtrip.blocks) {
+      if (!Number.isSafeInteger(binding.blockIndex) || !material.blocks[binding.blockIndex] || seen.has(binding.blockIndex) || keys.has(binding.blockKey) || !/^\S{1,160}$/.test(binding.blockKey)) throw new Error("roundtrip_material_binding_invalid");
+      seen.add(binding.blockIndex); keys.add(binding.blockKey);
+      const pages = slides.filter(slide => slide.blockId === `material-block-${binding.blockIndex}`);
+      if (!pages.length) throw new Error("roundtrip_material_block_not_rendered");
+      const parts = pages.map((slide, index) => {
+        slide.roundtrip = {binding, partNo: index + 1};
+        const name = roundtripSlidePartName(binding.blockKey, index + 1);
+        return {partKey: `${index + 1}`, slideName: name, shapeName: name};
+      });
+      roundtripBlocks.push({blockKey: binding.blockKey, claimIds: binding.claimIds, region: {kind: "slide", slideName: parts[0]!.slideName, shapeName: parts[0]!.shapeName, parts}});
+    }
+  }
   if (slides.length > 120) throw new Error("material presentation exceeds the 120-slide safety limit");
   const template = meta.template ?? offroadHousePresentationTemplate;
   // The material fingerprint answers what the deck says; the template manifest answers which
@@ -576,5 +614,14 @@ export async function materialToPptx(input: {material: Material; lang: DocxLang;
     ...presentationTemplateManifest(template, template.fingerprint ?? ""),
   ];
   const metadata = `<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">${properties.map((property, index) => `<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="${index + 2}" name="${xml(property.name)}"><vt:lpwstr>${xml(property.value)}</vt:lpwstr></property>`).join("")}</Properties>`;
-  return packageSlides(slides, {title, locale: lang === "pt" ? "pt-BR" : "en-US", contract: {asOf: meta.issuedOn.slice(0, 10)}}, template, metadata);
+  const bytes = await packageSlides(slides, {title, locale: lang === "pt" ? "pt-BR" : "en-US", contract: {asOf: meta.issuedOn.slice(0, 10)}}, template, metadata);
+  return {bytes, blocks: roundtripBlocks};
+}
+
+/** Legacy/default serialization is unchanged; bindings are explicit opt-in metadata. */
+export async function materialToPptx(input: {material: Material; lang: DocxLang; meta: DocxMeta}): Promise<Uint8Array> {
+  return (await renderMaterialPptx(input)).bytes;
+}
+export async function materialToPptxRoundtrip(input: {material: Material; lang: DocxLang; meta: DocxMeta & {roundtrip: NonNullable<DocxMeta["roundtrip"]>}}): Promise<{bytes: Uint8Array; blocks: MaterialPptxRoundtripRegions[]}> {
+  return renderMaterialPptx(input);
 }

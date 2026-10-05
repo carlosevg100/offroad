@@ -42,5 +42,10 @@ export async function evaluateAssessmentNativePublic(input:{db:string;client:Sup
  sql(db,human(`do $$begin begin perform public.read_assessment_review_basis_v2('${project}','${assessmentId}');raise exception 'revoked_source_review_accepted';exception when insufficient_privilege then null;end;end$$;`));
  assert.equal(sql(db,`select count(*)from private.assessment_review_projections where command_id='${commandId}';`),'1');
  await realQueue.complete(claimed,{eval:'assessment-physical-source',source_count:research.sourceCount});
- process.stdout.write(JSON.stringify({eval:'assessment_native_public_sdk',result:'PASS',checks:['atomic-m07-index-produced','real-source-version-license','real-storage-bytes','real-job-claim','primary-and-public-capture','uncited-public-source-count','human-native-confirm-freeze','publisher-rights-revoked-denied','approval-history-preserved']})+'\n');
+ // Research reads the existing licensed M07 bytes; it does not allocate a copy.
+ // The inherited harness next purges that original job through real Storage
+ // and verifies absence plus immutable erasure acknowledgements.
+ const allocationCount=Number(sql(db,`select count(*)from private.capital_public_payload_allocations where organization_id='${job.organization_id}'and job_id='${id}';`));
+ assert.equal(allocationCount,0,'assessment_research_must_reuse_existing_capture');
+ process.stdout.write(JSON.stringify({eval:'assessment_native_public_sdk',result:'PASS',checks:['atomic-m07-index-produced','real-source-version-license','real-storage-bytes','real-job-claim','primary-and-public-capture','uncited-public-source-count','human-native-confirm-freeze','publisher-rights-revoked-denied','approval-history-preserved','research-reuses-existing-physical-capture']})+'\n');
 }

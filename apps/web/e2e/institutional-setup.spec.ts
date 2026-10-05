@@ -1,3 +1,4 @@
+import {requestRoundtripDownload} from "./support/roundtrip-download";
 import {useLegacyCompanyFixture} from "./support/legacy-workspace";
 import {execFileSync} from "node:child_process";
 import {randomBytes} from "node:crypto";
@@ -202,7 +203,7 @@ test("guided institutional setup calculates only after review and survives resum
  await expect(xlsx).toHaveCount(1);
  const resultUrl=await xlsx.getAttribute("href");
  for(const format of ["xlsx","docx","pptx","pdf"]){
-  const response=await page.request.get(resultUrl!.replace(/\/xlsx(?=\?)/,`/${format}`));
+  const response=await requestRoundtripDownload(page,resultUrl!.replace(/\/xlsx(?=\?)/,`/${format}`));
   expect(response.status()).toBe(200);const bytes=await response.body();expect(bytes.byteLength).toBeGreaterThan(500);expect(bytes.subarray(0,format==="pdf"?5:2).toString()).toBe(format==="pdf"?"%PDF-":"PK");
  }
  await page.reload();await resultLink.click();

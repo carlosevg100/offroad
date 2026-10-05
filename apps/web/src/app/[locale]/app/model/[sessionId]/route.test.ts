@@ -36,7 +36,7 @@ const modelPackage = {...governedPackage, plannedArtifacts: ["financial_model" a
 let documents: {data: unknown; error: unknown};
 let supabase: ReturnType<typeof materialSupabase>;
 const withReads = (reads = [legacyMaterialRead()]) => materialSupabase(reads, {tables: {source_documents: () => documents}, rpc: () => ({data: {state: "legacy"}, error: null})});
-const request = (locale = "pt-BR", query = "") => GET(new Request(`https://offroad.test/model${query}`), {params: Promise.resolve({locale, sessionId: materialSessionId})});
+const request = (locale = "pt-BR", query = "") => GET(new Request(`https://offroad.test/model${query}${query ? "&" : "?"}exportContext=1`), {params: Promise.resolve({locale, sessionId: materialSessionId})});
 const legacyRequest = (locale = "pt-BR") => legacyGET(new Request("https://offroad.test/model"), {params: Promise.resolve({locale, sessionId: materialSessionId})});
 const sha = (bytes: ArrayBuffer) => createHash("sha256").update(Buffer.from(bytes)).digest("hex");
 
@@ -58,13 +58,11 @@ describe("approved model download", () => {
     const friday = await request(locale);
     expect(monday.status).toBe(200);
     expect(friday.status).toBe(200);
-    const bytes = await friday.arrayBuffer();
-    expect(sha(bytes)).toBe(artifact.workbooks[lang].sha256);
-    expect(sha(await monday.arrayBuffer())).toBe(sha(bytes));
-    expect(friday.headers.get("content-disposition")).toContain(`_${governedPackage.issuedOn}.xlsx`);
-    expect(friday.headers.get("x-artifact-revision")).toBe(materialRevisionId);
-    expect(friday.headers.get("x-artifact-legacy")).toBe("unpinned");
-    expect(friday.headers.get("x-artifact-content-sha256")).toBeNull();
+    const selected = await friday.json();
+    expect(selected).toMatchObject({revisionId: materialRevisionId, format: "xlsx", locale, variant: "financial_model"});
+    expect(await monday.json()).toEqual(selected);
+    // The original producer still replays against its approved hash before the selection is returned.
+    expect(sha(await (await legacyRequest(locale)).arrayBuffer())).toBe(artifact.workbooks[lang].sha256);
     expect(supabase.reads.find(read => read.table === "source_documents")?.filters).toContainEqual(["eq", ["intake_session_id", materialSessionId]]);
   });
   it("refuses sources that changed, a receipt that no longer replays and a plan without the model", async () => {
@@ -84,8 +82,8 @@ describe("approved model download", () => {
     supabase = withReads([pinned(artifact.workbooks.pt.sha256)]);
     const verified = await request();
     expect(verified.status).toBe(200);
-    expect(verified.headers.get("x-artifact-content-sha256")).toBe(artifact.workbooks.pt.sha256);
-    expect((await request("en-US")).headers.get("x-artifact-bytes")).toBe("unpinned");
+    expect(await verified.json()).toMatchObject({revisionId: materialRevisionId, format: "xlsx"});
+    expect((await request("en-US")).status).toBe(200);
     supabase = withReads([pinned("c".repeat(64))]);
     expect((await request()).status).toBe(409);
   });
@@ -98,9 +96,10 @@ describe("approved model download", () => {
     supabase=materialSupabase([legacy,native],{tables:{source_documents:()=>documents},rpc:()=>({data:{state:"native",resultId,revisionId:native.revision.id},error:null})});
     const response=await request();
     expect(response.status).toBe(200);
-    expect(response.headers.get("x-artifact-revision")).toBe(native.revision.id);
-    expect(response.headers.get("x-artifact-bytes")).toBe("unpinned");
-    expect(response.headers.get("x-artifact-content-sha256")).toBeNull();
+    const selected = await response.json();
+    expect(selected.revisionId).toBe(native.revision.id);
+    expect(selected.artifactId).toBe(native.artifact.id);
+    expect(selected).not.toHaveProperty("sha256");
   });
   it("denies copied workbooks when native authority disappears during rendering", async () => {
     let lookups=0;
@@ -123,13 +122,13 @@ describe("approved model download", () => {
 });
 
 describe("old and new resolution decide equal for the model", () => {
-  it.each(["pt-BR", "en-US"])("serve the same workbook bytes (%s)", async locale => {
+  it.each(["pt-BR", "en-US"])("preserve producer authority while selecting a receipted export (%s)", async locale => {
     const before = await legacyRequest(locale);
     const after = await request(locale);
     expect(before.status).toBe(200);
     expect(after.status).toBe(200);
-    expect(sha(await after.arrayBuffer())).toBe(sha(await before.arrayBuffer()));
-    expect(after.headers.get("content-disposition")).toBe(`attachment; filename="${locale === "pt-BR" ? "Cenarios" : "Scenarios"}_${governedPackage.issuedOn}.xlsx"`);
+    expect(sha(await before.arrayBuffer())).toBe(artifact.workbooks[locale === "pt-BR" ? "pt" : "en"].sha256);
+    expect(await after.json()).toMatchObject({revisionId: materialRevisionId, locale, format: "xlsx", variant: "financial_model"});
   });
   it("refuse the same cases with the same status and text", async () => {
     const cases: Array<() => void> = [

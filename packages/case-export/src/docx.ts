@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 /**
  * A material as a Word document a lawyer can mark up.
  *
@@ -27,7 +28,12 @@ export const houseDocumentTemplate: InstitutionalPresentationTemplate = {
 
 export type DocxLang = "pt" | "en";
 
+export type MaterialRoundtripBinding = {blockIndex: number; blockKey: string; claimIds: readonly string[]};
+export type MaterialRoundtripMap = {blocks: readonly MaterialRoundtripBinding[]};
+
 export type DocxMeta = {
+  /** Explicit canonical block map for new roundtrip exports; absent preserves historical bytes. */
+  roundtrip?: MaterialRoundtripMap;
   /** Redacted upstream when the company has not authorised disclosure. */
   companyName?: string;
   /** ISO date the document was produced. */
@@ -228,7 +234,19 @@ export function materialDocumentXml(input: {material: Material; lang: DocxLang; 
     references.clear();
     for (const [id, number] of bound) references.set(id, number);
   }
-  const body = material.blocks.map((block, index) => blockXml(block, lang, references, embeddedTargets.get(index))).join("");
+  const bindingMap = new Map<number, MaterialRoundtripBinding>();
+  if (meta.roundtrip) for (const binding of meta.roundtrip.blocks) {
+    if (!Number.isSafeInteger(binding.blockIndex) || !material.blocks[binding.blockIndex] || bindingMap.has(binding.blockIndex)
+      || !/^\S{1,160}$/.test(binding.blockKey) || [...bindingMap.values()].some(existing => existing.blockKey === binding.blockKey)) throw new Error("roundtrip_material_binding_invalid");
+    bindingMap.set(binding.blockIndex, binding);
+  }
+  const body = material.blocks.map((block, index) => {
+    const body = blockXml(block, lang, references, embeddedTargets.get(index));
+    const binding = bindingMap.get(index);
+    if (!binding) return body;
+    const bookmark = roundtripWordBookmark(binding.blockKey);
+    return `<w:sdt><w:sdtPr><w:alias w:val="${escapeXml(`Block ${index + 1}`)}"/><w:tag w:val="${escapeXml(`block:${binding.blockKey}`)}"/></w:sdtPr><w:sdtContent>${paragraph(`<w:bookmarkStart w:id="${10000 + index}" w:name="${bookmark}"/>`)}${body}${paragraph(`<w:bookmarkEnd w:id="${10000 + index}"/>`)}</w:sdtContent></w:sdt>`;
+  }).join("");
   const appendix = references.size && meta.referenceTargets === undefined ? paragraph(run(copy.references[lang]), {style: "Heading2", keepNext: true}) + [...references].map(([id, index]) =>
     paragraph(`<w:bookmarkStart w:id="${index}" w:name="offroad_ref_${index}"/>${run(`[${index}] `, {bold: true, size: 17})}${run(id, {size: 17, color: "52616C"})}<w:bookmarkEnd w:id="${index}"/>`, {spacingAfter: 70})
   ).join("") : "";
@@ -251,4 +269,13 @@ export function materialToDocx(input: {material: Material; lang: DocxLang; meta:
     {name: "word/footer1.xml", data: footer(footerText)},
     {name: "docProps/core.xml", data: core(material.title[lang], meta.issuedOn, template)},
   ]);
+}
+
+/** Word bookmark names are bounded and contain only characters Word preserves. */
+export function roundtripWordBookmark(blockKey: string): string {
+  return `offroad_block_${createHash("sha256").update(blockKey).digest("hex").slice(0, 24)}`;
+}
+export function materialDocxRoundtripRegions(bindings: MaterialRoundtripMap): {blockKey: string; claimIds: readonly string[]; region: {kind: "word"; tag: string; bookmark: string}}[] {
+  return bindings.blocks.map(binding => ({blockKey: binding.blockKey, claimIds: binding.claimIds,
+    region: {kind: "word", tag: `block:${binding.blockKey}`, bookmark: roundtripWordBookmark(binding.blockKey)}}));
 }

@@ -1,3 +1,4 @@
+import {serveRoundtripDownload} from "@/lib/artifacts/roundtrip-download";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 
 import {
@@ -13,7 +14,6 @@ import {
   type RouteRevisionTarget,
 } from "@/lib/artifacts/artifact-route";
 import {
-  artifactResponseHeaders,
   readGovernedObject,
   resolveRenderer,
   revisionIssuedOn,
@@ -136,9 +136,6 @@ export async function GET(request: Request, {params}: Params) {
 
   if (format === "pptx" || format === "xlsx") {
     let object: GovernedObject;
-    let legacyHeaders: Record<string, string> = {};
-    let mimeType: string;
-    let fileName: string;
     let manifest: ReturnType<typeof resolveGovernedMaterialDownload> | null = null;
     if (stored) {
       // A stored file is current only while the latest decision contract binds exactly its bytes: after a
@@ -147,8 +144,6 @@ export async function GET(request: Request, {params}: Params) {
         return artifactUnavailable(read.isHead ? notReady : copy.revisionReplaced);
       }
       object = stored;
-      mimeType = format === "pptx" ? "application/vnd.openxmlformats-officedocument.presentationml.presentation" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-      fileName = `material-preview-${projectId.slice(0, 8)}-r${revision.revisionNo}.${format}`;
     } else {
       try {
         manifest = resolveGovernedMaterialDownload({
@@ -163,9 +158,6 @@ export async function GET(request: Request, {params}: Params) {
       }
       object = {organizationId: organization.id, workId: projectId, bucket: manifest.storage.bucket, path: manifest.storage.objectPath,
         sha256: manifest.contentSha256, byteLength: manifest.byteLength, format: manifest.format};
-      mimeType = manifest.mimeType;
-      fileName = manifest.fileName;
-      legacyHeaders = {"x-material-sha256": manifest.contentSha256, "x-material-manifest-fingerprint": manifest.manifestFingerprint, "x-material-release-state": manifest.release.state};
     }
     const storedObject = await readGovernedObject(supabase, object);
     if (!storedObject.ok) {
@@ -207,13 +199,7 @@ export async function GET(request: Request, {params}: Params) {
     }
     if (!bindingCurrent) return artifactUnavailable(notReady);
     if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
-    return new Response(bytes, {headers: {
-      "content-type": mimeType,
-      "content-disposition": `attachment; filename="${fileName}"`,
-      "cache-control": "private, no-store",
-      ...legacyHeaders,
-      ...artifactResponseHeaders(read, verification),
-    }});
+    return serveRoundtripDownload(request, {supabase, locale, artifactId: read.artifact.id, revisionId: read.summary.id, format, variant: "default"});
   }
 
   const material = current!;
@@ -269,12 +255,5 @@ export async function GET(request: Request, {params}: Params) {
   if (verification.status === "mismatch") return artifactUnavailable(copy.bytesMismatch);
   if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
   if (!await renderedRevisionStillAuthorized(supabase, read)) return artifactUnavailable(copy.sourceRestricted);
-  return new Response(new Uint8Array(rendered.bytes), {headers: {
-    "x-preview-artifact-version": String(material.artifact_version),
-    "x-preview-artifact-fingerprint": material.artifact_fingerprint,
-    "cache-control": "private, no-store",
-    "content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "content-disposition": `attachment; filename="material-preview-${projectId.slice(0, 8)}-v${material.artifact_version}.docx"`,
-    ...artifactResponseHeaders(read, verification),
-  }});
+  return serveRoundtripDownload(request, {supabase, locale, artifactId: read.artifact.id, revisionId: read.summary.id, format, variant: "default"});
 }
