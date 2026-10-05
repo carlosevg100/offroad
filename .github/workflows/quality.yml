@@ -197,6 +197,7 @@ jobs:
           module = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(module)
           found, absent, resolved = module.database_state(os.environ['DATABASE_URL'], module.migration_targets())
+          found = {key: value.decode('utf-8') for key, value in found.items()}
           Path(os.environ['RUNNER_TEMP'], 'stage21-effective-bodies.json').write_text(json.dumps({'found': found, 'absent': sorted(absent), 'resolved': resolved}))
           PY
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_export_receipts.sql
