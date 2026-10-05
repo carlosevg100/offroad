@@ -327,6 +327,14 @@ begin
  or not exists(select 1 from jsonb_array_elements(proof->'sources')pin where pin->>'sourceVersionId'=source.id::text)
  then raise exception 'native import did not capture lineage, review and deterministic request';end if;
  raise notice 'PASS native_import_capture_v2_review_and_real_deterministic_request';
+ -- The import extension preserves the established classifier's scope denial reasons.
+ proof:=private.institutional_configuration_ancestry_v1(source.organization_id,gen_random_uuid(),target_configuration_id);
+ if proof->>'state'<>'unresolved'or proof->>'reason'<>'work_mismatch'or proof?'nodes'or proof?'sources'then raise exception 'import ancestry foreign work classification changed: %',proof;end if;
+ proof:=private.institutional_configuration_ancestry_v1(source.organization_id,artifact.work_id,gen_random_uuid());
+ if proof->>'state'<>'unresolved'or proof->>'reason'<>'configuration_missing'or proof?'nodes'or proof?'sources'then raise exception 'import ancestry missing configuration classification changed: %',proof;end if;
+ proof:=private.institutional_configuration_ancestry_v1(gen_random_uuid(),artifact.work_id,target_configuration_id);
+ if proof->>'state'<>'unresolved'or proof->>'reason'<>'configuration_missing'or proof?'nodes'or proof?'sources'then raise exception 'import ancestry foreign tenant classification changed: %',proof;end if;
+ raise notice 'PASS native_import_ancestry_scope_classification_preserves_denial';
  select j.id into strict recalculation_job_id from public.processing_jobs j where j.kind='agent_operation_brief'and j.payload->>'message_id'=adopted#>>'{institutional,resultId}';
  update public.processing_jobs j set status='leased',attempts=1,lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(repeat('x',64),'sha256')where j.id=recalculation_job_id;
  set local role authenticated;

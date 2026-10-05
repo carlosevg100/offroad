@@ -2,6 +2,7 @@
 """Offline callbacks exercise actual launcher order; no SQL/HTTP/model execution."""
 import importlib.util,os,re,sys,tempfile,unittest
 from pathlib import Path
+from contextlib import contextmanager
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts/ci'))
@@ -34,14 +35,24 @@ class InstallOrder(unittest.TestCase):
     if command[0]=='psql'and kwargs.get('input')and'OFFLINE CALLBACK-ORDER-ONLY'in kwargs['input']:
      self.assertFalse(canonical,'Canonical path must not install fixture SQL')
     calls.append((command,kwargs.get('input')))
+   @contextmanager
+   def owned_producer_order_only(given_env):
+    # This unit proves orchestration only. Real SDK/SQL/Storage proof remains mandatory in CI.
+    calls.append((['OFFLINE-owned-other-family-producer'],None))
+    yield {**given_env,'PREVIEW_OTHER_FAMILY_ALLOCATION_ID':'10000000-0000-4000-8000-000000000001','PREVIEW_OTHER_FAMILY_ORGANIZATION_ID':'10000000-0000-4000-8000-000000000002'}
    env={'DATABASE_URL':'postgresql://127.0.0.1:54322/postgres','OFFROAD_E2E_API_URL':'http://127.0.0.1:54321','OFFROAD_E2E_PUBLISHABLE_KEY':'sb_publishable_fixture','PREVIEW_DRAFTS_IN_LOCAL_STACK':'1'}
    validate_source=getattr(launcher,'validate_preview_forward_source',None)
    def validate_callback_source(name,content):
     if (ROOT/'docs/build/schema-history/stage20-native-canonical.json').is_file():
      self.assertEqual(content,callback_order_sources()[name].encode());return
     if validate_source is not None:validate_source(name,content)
-   with patch.object(launcher,'validate_preview_forward_source',side_effect=validate_callback_source,create=True),patch.object(launcher,'ROOT',root),patch.object(launcher,'canonical_groups_installed',return_value=canonical),patch.object(launcher.subprocess,'run',side_effect=observed),patch.dict(os.environ,env,clear=True),patch.object(sys,'argv',['test-capital-preview-sdk.py']):
+   with patch.object(launcher,'validate_preview_forward_source',side_effect=validate_callback_source,create=True),patch.object(launcher,'ROOT',root),patch.object(launcher,'canonical_groups_installed',return_value=canonical),patch.object(launcher.subprocess,'run',side_effect=observed),patch.object(launcher,'owned_other_family_allocation',side_effect=owned_producer_order_only),patch.dict(os.environ,env,clear=True),patch.object(sys,'argv',['test-capital-preview-sdk.py']):
     launcher.main()
+   owner=next(i for i,(command,_)in enumerate(calls)if command[0]=='OFFLINE-owned-other-family-producer')
+   self.assertTrue(calls[owner-1][0][-1]=='--self-test')
+   self.assertTrue(calls[owner+1][0][-1].endswith('test-execution-brief-native-agent.py'))
+   self.assertTrue(calls[owner+2][0][-1].endswith('capital-preview-native-sdk-eval.ts'))
+   self.assertEqual(len(calls),owner+3)
    return calls
  def test_no_manifest_prospective_install_once_before_all_evals(self):
   calls=self.execute(False);installs=[(i,sql)for i,(command,sql)in enumerate(calls)if command[0]=='psql'and sql is not None]
