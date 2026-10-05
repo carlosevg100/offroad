@@ -28,6 +28,7 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   sql(asRegimeOwner(f, `select public.review_artifact_revision_v1('${created.revision_id}','${created.manifest_fingerprint}','approve',null,'Synthetic base approval',true,'${randomUUID()}');`));
   await page.goto(`/pt-BR/app/projects/${f.workId}?workspace=${f.organizationId}`);
   await page.locator('.advisor-work-surface__navigation a[href="#work-artifact-roundtrip"]').click();
+  await expect(page.getByText("Synthetic Office contribution", {exact: true})).toBeVisible();
   await page.getByText("Synthetic Office contribution", {exact: true}).click();
   const panel = page.locator("details").filter({has: page.getByText("Synthetic Office contribution", {exact: true})}).getByTestId("artifact-import-panel");
   await expect(panel.getByRole("button", {name: messages.ArtifactImportPanel.export, exact: true})).toBeEnabled();

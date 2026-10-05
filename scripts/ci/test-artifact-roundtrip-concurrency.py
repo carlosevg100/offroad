@@ -45,7 +45,10 @@ def setup(number):
     path = ROOT / 'supabase/tests/artifact_import_candidates.sql'
     content = path.read_text()
     start = content.index('do $$declare request jsonb;')
-    stop = content.index('\ndo $$begin\n', start)
+    # Bound the setup by its own dollar-quoted block, never the next eval's declaration.
+    # Later evals may declare variables without changing this preparation contract.
+    terminator = '\nend;$$;'
+    stop = content.index(terminator, start) + len(terminator)
     preparation = content[start:stop]
     # Only candidate/command IDs differ, never work/session IDs in the shared fixture.
     other = preparation.replace('a4210000-0000-4000-9000-000000000002', 'a4210000-0000-4000-9000-000000000012').replace('a4210000-0000-4000-9000-000000000003', 'a4210000-0000-4000-9000-000000000013').replace('roundtrip-upload', 'roundtrip-upload-second').replace('Human prose', 'Second human prose')
