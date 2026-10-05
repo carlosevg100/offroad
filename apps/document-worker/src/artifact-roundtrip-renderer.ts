@@ -8,6 +8,7 @@ import {houseDocumentTemplate, institutionalTemplateFromDefinition, presentation
 import {institutionalFinancialModelMaterial, type Material, type MaterialBlock} from "@offroad/case-materials";
 import {buildInstitutionalFinancialModel, buildFinancialModel, parseVerifiedInstitutionalWorkbookArtifact, renderApprovedInstitutionalFinancialWorkbook, renderInstitutionalRoundtripWorkbook, renderApprovedFinancialWorkbook, toGovernedXlsxBuffer, type ApprovedWorkbookBinding, type GovernedWorkbookMetadata, type FinancialModel, type InstitutionalWorkbookArtifact, type InstitutionalModelInput} from "@offroad/financial-model";
 import {decisionArtifactContractSchema, deskEvidence, fingerprintJson, type DecisionArtifactContract} from "@offroad/case-understanding";
+import {archetypeIdSchema} from "@offroad/credit-playbook";
 import type {ArtifactRoundtripClaim, RoundtripRenderer} from "./artifact-roundtrip-processing";
 
 const bilingual = z.object({pt: z.string().max(100000), en: z.string().max(100000)});
@@ -88,7 +89,10 @@ export function createArtifactRoundtripRenderer(client:SupabaseClient):Roundtrip
       const rawPackage=packageValue as Record<string,unknown>,rawState=stateValue as Record<string,unknown>;
       if(["materials","financialModel","materialTruth"].some(key=>!isDeepStrictEqual(rawPackage[key],rawState[key])))throw new Error("artifact_roundtrip_producer_native_body_mismatch");
       const evidence=stateBody.reconciliation?deskEvidence((stateBody.desk??null) as Parameters<typeof deskEvidence>[0],(stateBody.trajectory??null) as Parameters<typeof deskEvidence>[1]):null;
-      const financialReplay=producer.archetypeId&&stateBody.reconciliation?{archetypeId:producer.archetypeId,facts:stateBody.reconciliation.facts,calculations:[...stateBody.reconciliation.calculations,...(evidence?.calculations??[])],filenames:producer.filenames??[]}:undefined;
+      // The case producer uses other for a session without a declared archetype.
+      // This reconstructs only a candidate: the exact approved workbook SHA/size
+      // below must still match before any roundtrip file or receipt is issued.
+      const financialReplay=stateBody.reconciliation?{archetypeId:archetypeIdSchema.parse(producer.archetypeId??"other"),facts:stateBody.reconciliation.facts,calculations:[...stateBody.reconciliation.calculations,...(evidence?.calculations??[])],filenames:producer.filenames??[]}:undefined;
       producer={kind:"material_package",sourceRowId:producer.recipeId,materials:packageBody.materials,financialModel:packageBody.financialModel,...(financialReplay?{financialReplay}:{})};
     }
     let bytes:Uint8Array;

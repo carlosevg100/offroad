@@ -161,16 +161,35 @@ it("exports the actual native compiler term sheet to PPTX with every structural 
  expect(extracted.manifest?.blocks.length).toBeGreaterThan(0);
  expect((await readRoundtripSnapshot(rendered.bytes,"pptx")).entries.length).toBe(extracted.manifest?.blocks.length);
 });
-it("exports the actual native compiler financial model to XLSX under its approved bytes",async()=>{
+it("exports the actual native compiler financial model with null archetype only under approved workbook bytes",async()=>{
  const {buildMaterialCompilerReadyFixture}=await import("./testing/material-compiler-ready-fixture");
  const {bundle}=await buildMaterialCompilerReadyFixture({sessionId:id(80),runId:id(81)});
  const encode=(value:unknown)=>new TextEncoder().encode(JSON.stringify(value));
  const packageBytes=encode(bundle.materialPackage),stateBytes=encode(bundle.caseState);
  const body=(bytes:Uint8Array,path:string)=>({retainedPayloadId:id(82),allocationId:id(83),storage:{bucket:"capital-input-capture",path},sha256:roundtripSha256(bytes),byteLength:bytes.length,storageObjectId:id(84),storageVersion:"exact-synthetic-version",expiresAt:"2100-01-01T00:00:00Z"});
- const c={...claim("xlsx"),variant:"financial_model",producer:{kind:"native_material",recipeId:id(85),variants:["financial_model"],archetypeId:"other",packageBody:body(packageBytes,"owned/package.json"),stateBody:body(stateBytes,"owned/state.json")}};
+ const c={...claim("xlsx"),variant:"financial_model",producer:{kind:"native_material",recipeId:id(85),variants:["financial_model"],archetypeId:null,packageBody:body(packageBytes,"owned/package.json"),stateBody:body(stateBytes,"owned/state.json")}};
  const p=port();p.download.mockImplementation(async(path:string)=>({data:new Blob([path==="owned/package.json"?packageBytes:stateBytes]),error:null}));
  const rendered=await createArtifactRoundtripRenderer(p.client)(c,c.revision);
  const extracted=await extractRoundtripManifest(rendered.bytes,"xlsx");expect(extracted.issue).toBeNull();
  expect(extracted.manifest?.logicalManifestFingerprint).toBe(c.revision!.logicalManifestFingerprint);
  expect((await readRoundtripSnapshot(rendered.bytes,"xlsx")).entries.length).toBeGreaterThan(0);
+ const renderedPt=await createArtifactRoundtripRenderer(p.client)({...c,locale:"pt-BR"},c.revision);
+ expect((await extractRoundtripManifest(renderedPt.bytes,"xlsx")).issue).toBeNull();
+ const changedPackage=structuredClone(bundle.materialPackage) as Record<string,unknown>;
+ const changedState=structuredClone(bundle.caseState) as Record<string,unknown>;
+ for(const value of [changedPackage,changedState]){
+  const model=value.financialModel as {inputs:{amount:string}};
+  model.inputs.amount="12345678";
+ }
+ const changedPackageBytes=encode(changedPackage),changedStateBytes=encode(changedState);
+ p.download.mockImplementation(async(path:string)=>({data:new Blob([path==="owned/package.json"?changedPackageBytes:changedStateBytes]),error:null}));
+ const changed={...c,producer:{...c.producer,packageBody:body(changedPackageBytes,"owned/package.json"),stateBody:body(changedStateBytes,"owned/state.json")}};
+ await expect(createArtifactRoundtripRenderer(p.client)(changed,changed.revision)).rejects.toThrow("calculation_divergence");
+ const badPackage=structuredClone(bundle.materialPackage) as Record<string,unknown>;
+ const badState=structuredClone(bundle.caseState) as Record<string,unknown>;
+ for(const value of [badPackage,badState]) (value.financialModel as {workbooks:{en:{sha256:string}}}).workbooks.en.sha256="e".repeat(64);
+ const badPackageBytes=encode(badPackage),badStateBytes=encode(badState);
+ p.download.mockImplementation(async(path:string)=>({data:new Blob([path==="owned/package.json"?badPackageBytes:badStateBytes]),error:null}));
+ const invalidHash={...c,producer:{...c.producer,packageBody:body(badPackageBytes,"owned/package.json"),stateBody:body(badStateBytes,"owned/state.json")}};
+ await expect(createArtifactRoundtripRenderer(p.client)(invalidHash,invalidHash.revision)).rejects.toThrow("calculation_divergence");
 });
