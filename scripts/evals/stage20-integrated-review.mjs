@@ -162,14 +162,16 @@ export async function run(env = process.env) {
   const r2 = await write(owner, 'Synthetic unchanged recommendation.', 'synthetic-review-layout');
   assert.notEqual(r1.revision_id, r2.revision_id);checkedRelease(await release(r2),'internal','r2_before_reaffirm');assert.equal(await pendingReview(r2),true);
   const reaffirm = await rpc(reviewer, 'reaffirm_work_revision_v1', {p_work_id: f.workId, p_revision_id: r2.revision_id, p_expected_fingerprint: r2.manifest_fingerprint, p_basis_review_id: approval.reviewId, p_note: 'Synthetic cosmetic template change', p_declared: false, p_command_id: randomUUID()});
-  checkedRelease(await release(r2),'internal','r2_after_reaffirm');assert.equal(await pendingReview(r2),false);assert(reaffirm);checked('cosmetic_revision_requires_explicit_reaffirm');
+  // Stage 21 releases a person's informational answer only under its exact
+  // active review. Reaffirmation is that explicit act; revocation below undoes it.
+  checkedRelease(await release(r2),'released','r2_after_reaffirm');assert.equal(await pendingReview(r2),false);assert(reaffirm);checked('cosmetic_revision_requires_explicit_reaffirm');
   await review(reviewer, r1, 'revoke_approval', approval.reviewId);checkedRelease(await release(r2),'internal','r2_after_base_revocation');assert.equal(await pendingReview(r2),true);
   await deny(()=>rpc(reviewer,'reaffirm_work_revision_v1',{p_work_id:f.workId,p_revision_id:r2.revision_id,p_expected_fingerprint:r2.manifest_fingerprint,p_basis_review_id:approval.reviewId,p_note:'Synthetic revoked base cannot authorize reaffirm',p_declared:false,p_command_id:randomUUID()}),'artifact_review_basis_invalid');
   assert.equal(await pendingReview(r2),true);checked('base_revocation_invalidates_reaffirm_chain');
   const freshApproval = await review(reviewer, r2, 'approve');
   const r3 = await write(owner, 'Synthetic changed recommendation.', 'synthetic-review-material');
   await deny(() => review(reviewer, r3, 'reaffirm', freshApproval.reviewId), 'artifact_review_material_change');
-  checkedRelease(await release(r3),'internal','r3_before_new_approval');assert.equal(await pendingReview(r3),true);await review(reviewer, r3, 'approve');checkedRelease(await release(r3),'internal','r3_after_new_approval');assert.equal(await pendingReview(r3),false);checked('material_change_requires_new_human_act');
+  checkedRelease(await release(r3),'internal','r3_before_new_approval');assert.equal(await pendingReview(r3),true);await review(reviewer, r3, 'approve');checkedRelease(await release(r3),'released','r3_after_new_approval');assert.equal(await pendingReview(r3),false);checked('material_change_requires_new_human_act');
   const pending = await write(reviewer, 'Synthetic successor review pending.', 'synthetic-review-pending', `${subject}-pending`);
   await rpc(owner, 'set_capital_project_review_assignment_v1', {p_project_id: f.workId, p_user_id: f.ownerId, p_review_role: 'approver', p_assigned: true});
   const moved = await rpc(owner, 'reassign_pending_review_v1', {p_project_id: f.workId, p_from_user: f.reviewerId, p_to_user: f.ownerId, p_reason: 'Synthetic authorized review succession', p_command_id: randomUUID()});
