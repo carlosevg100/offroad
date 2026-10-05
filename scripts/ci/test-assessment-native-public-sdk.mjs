@@ -56,7 +56,7 @@ try {
   source='const isolated='+isolated.toString()+';\n'+source;
   const marker="phase='physical-purge-fixture-clock';";
   if(source.split(marker).length!==2)throw new Error("assessment_existing_sdk_hook_changed");
-  const content='import {evaluateAssessmentNativePublic} from "./assessment-native-public-sdk-eval";\n'+source.replace(marker,"await evaluateAssessmentNativePublic({db,client,realQueue,job});\n "+marker);
+  const content='import {evaluateAssessmentNativePublic} from "./assessment-native-public-sdk-eval";\n'+source.replace(marker,"await evaluateAssessmentNativePublic({db,client,realQueue,job,workerToken:'p'.repeat(64)});\n "+marker);
   await build({stdin:{contents:content,resolveDir:join(worker,"scripts"),sourcefile:"assessment-native-public-sdk-harness.ts",loader:"ts"}, outfile: entry,
     bundle: true, platform: "node", format: "esm", target: "node24", logLevel: "silent", plugins: [{name:"assessment-eval-namespace",setup(b){b.onLoad({filter:/assessment-native-public-sdk-eval\.ts$/},async args=>({contents:isolated(await readFile(args.path,'utf8')),loader:"ts"}));}},{name: "external-third-party", setup(b) {
       b.onResolve({filter: /^[^.\/]/}, async args => {

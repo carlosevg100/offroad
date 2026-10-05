@@ -7,11 +7,12 @@ import {randomUUID} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import type {SupabaseClient} from '@supabase/supabase-js';
 import {z} from 'zod';
+import {createCapitalPublicCaptureStorage} from '../src/capital-public-capture-storage';
 import {createAssessmentNativeRuntime} from '../src/assessment-native-runtime';
 import type {CaseAnalysisJob,CapitalProjectAnalysisJob,QueueClient} from '../src/queue';
 function sql(db:string,query:string){const target=new URL(db);assert.ok(['localhost','127.0.0.1','[::1]'].includes(target.hostname));const p=spawnSync('psql',[db,'-X','-Atq','-v','ON_ERROR_STOP=1'],{input:query,encoding:'utf8'});if(p.status!==0)throw new Error('assessment_local_sql_failed');return p.stdout.trim();}
-export async function evaluateAssessmentNativePublic(input:{db:string;client:SupabaseClient;realQueue:QueueClient;job:CapitalProjectAnalysisJob}){
- const {db,client,realQueue,job}=input;const id=randomUUID(),assessmentId=randomUUID(),commandId=randomUUID(),actor='10000000-0000-4000-8000-000000000201';
+export async function evaluateAssessmentNativePublic(input:{db:string;client:SupabaseClient;realQueue:QueueClient;job:CapitalProjectAnalysisJob;workerToken:string}){
+ const {db,client,realQueue,job,workerToken}=input;const id=randomUUID(),assessmentId=randomUUID(),commandId=randomUUID(),actor='10000000-0000-4000-8000-000000000201';
  const human=(body:string)=>`begin;set local role authenticated;select set_config('request.headers','{"x-offroad-workspace":"${job.organization_id}"}',true);select set_config('request.jwt.claims','{"sub":"${actor}","role":"authenticated"}',true);${body}commit;`;
  const project=z.uuid().parse(job.payload.capital_project_id);
  sql(db,human(`select public.set_capital_project_review_policy_v1('${project}','allowed');`));
@@ -42,5 +43,19 @@ export async function evaluateAssessmentNativePublic(input:{db:string;client:Sup
  sql(db,human(`do $$begin begin perform public.read_assessment_review_basis_v2('${project}','${assessmentId}');raise exception 'revoked_source_review_accepted';exception when insufficient_privilege then null;end;end$$;`));
  assert.equal(sql(db,`select count(*)from private.assessment_review_projections where command_id='${commandId}';`),'1');
  await realQueue.complete(claimed,{eval:'assessment-physical-source',source_count:research.sourceCount});
- process.stdout.write(JSON.stringify({eval:'assessment_native_public_sdk',result:'PASS',checks:['atomic-m07-index-produced','real-source-version-license','real-storage-bytes','real-job-claim','primary-and-public-capture','uncited-public-source-count','human-native-confirm-freeze','publisher-rights-revoked-denied','approval-history-preserved']})+'\n');
+ // This supplemental job owns extra captures beyond the inherited M07 job.
+ // Advance only their disposable purge clocks; actual Storage deletion, absence
+ // verification and acknowledgement remain the existing authenticated janitor.
+ const allocationCount=Number(sql(db,`select count(*)from private.capital_public_payload_allocations where organization_id='${job.organization_id}'and job_id='${id}';`));
+ assert.ok(Number.isInteger(allocationCount)&&allocationCount>0&&allocationCount<=100);
+ sql(db,`update private.capital_public_payload_purge_queue q set next_check_at=clock_timestamp()-interval'1 minute',effective_purge_at=clock_timestamp()-interval'1 minute'where q.organization_id='${job.organization_id}'and q.allocation_id in(select id from private.capital_public_payload_allocations where organization_id='${job.organization_id}'and job_id='${id}');`);
+ const janitor=createCapitalPublicCaptureStorage(client);
+ for(let batch=0;batch<5;batch++){
+  const pending=Number(sql(db,`select count(*)from private.capital_public_payload_purge_queue q join private.capital_public_payload_allocations a on(a.organization_id,a.id)=(q.organization_id,q.allocation_id)where a.organization_id='${job.organization_id}'and a.job_id='${id}'and q.status<>'purged';`));
+  if(pending===0)break;
+  const erased=await janitor.purgeOnce(workerToken,20);assert.ok(erased.length>0&&erased.every(item=>item.state==='purged'));
+ }
+ const cleanup=JSON.parse(sql(db,`select jsonb_build_object('objects',(select count(*)from storage.objects o join private.capital_public_payload_allocations a on(a.bucket_id,a.object_path)=(o.bucket_id,o.name)where a.organization_id='${job.organization_id}'and a.job_id='${id}'),'purged',(select count(*)from private.capital_public_payload_purge_queue q join private.capital_public_payload_allocations a on(a.organization_id,a.id)=(q.organization_id,q.allocation_id)where a.organization_id='${job.organization_id}'and a.job_id='${id}'and q.status='purged'),'erasureEvents',(select count(*)from private.capital_public_payload_erasure_events e join private.capital_public_payload_allocations a on(a.organization_id,a.id)=(e.organization_id,e.allocation_id)where a.organization_id='${job.organization_id}'and a.job_id='${id}'));`));
+ assert.deepEqual(cleanup,{objects:0,purged:allocationCount,erasureEvents:allocationCount});
+ process.stdout.write(JSON.stringify({eval:'assessment_native_public_sdk',result:'PASS',checks:['atomic-m07-index-produced','real-source-version-license','real-storage-bytes','real-job-claim','primary-and-public-capture','uncited-public-source-count','human-native-confirm-freeze','publisher-rights-revoked-denied','approval-history-preserved','supplemental-capture-physical-purge-and-immutable-erasure']})+'\n');
 }
