@@ -1,3 +1,4 @@
+import {requestRoundtripDownload} from "./support/roundtrip-download";
 import {randomBytes} from "node:crypto";
 import {expect, test, type Page} from "@playwright/test";
 import {institutionalInputFixture} from "../../../packages/financial-model/src/institutional-input.fixture";
@@ -272,7 +273,7 @@ test("a mixed update of an execution and the financial model is adopted in one a
   expect(nativeRevision).toMatch(/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/);
   const nativeDownload = page.locator(`a[href$="/financial-results/${r1}/xlsx?revision=${nativeRevision}"]`);
   await expect(nativeDownload).toHaveCount(1);
-  const download = await page.request.get((await nativeDownload.getAttribute("href"))!);
+  const download = await requestRoundtripDownload(page, (await nativeDownload.getAttribute("href"))!);
   expect(download.status()).toBe(200);
   expect(download.headers()["x-artifact-revision"]).toBe(nativeRevision);
   await test.info().attach("mixed-update-adopted", {body: await page.screenshot({fullPage: true}), contentType: "image/png"});

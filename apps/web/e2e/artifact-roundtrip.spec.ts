@@ -14,7 +14,10 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   await page.goto(`/pt-BR/app/projects/${f.workId}?workspace=${f.organizationId}`);
   await page.locator('.advisor-work-surface__navigation a[href="#work-project-review"]').click();
   const regimePanel = page.getByTestId("project-review-roles");
-  await regimePanel.locator(`tr[data-user-id="${f.actorId}"] input[value="approver"]`).check();
+  const approver = regimePanel.locator(`tr[data-user-id="${f.actorId}"] input[value="approver"]`);
+  await approver.click();
+  await expect(approver).toBeChecked();
+  await expect(regimePanel.locator('select[name="project_self_approval"]')).toBeEnabled();
   await regimePanel.locator('select[name="project_self_approval"]').selectOption("allowed");
   await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective", "true");
   const text = `Synthetic original roundtrip text ${suffix}`, changed = `Synthetic edited human contribution ${suffix}`;

@@ -189,10 +189,6 @@ jobs:
         if: ${{ !inputs.native_diagnostic }}
         run: |
           set -euo pipefail
-          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_export_receipts.sql
-          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_import_candidates.sql
-          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/artifact_roundtrip_pending_groups_eval.sql
-          DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B scripts/ci/test-artifact-roundtrip-concurrency.py
           psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage21-replay-catalogue.json"
           DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B - <<'PY'
           import importlib.util, json, os
@@ -203,6 +199,11 @@ jobs:
           found, absent, resolved = module.database_state(os.environ['DATABASE_URL'], module.migration_targets())
           Path(os.environ['RUNNER_TEMP'], 'stage21-effective-bodies.json').write_text(json.dumps({'found': found, 'absent': sorted(absent), 'resolved': resolved}))
           PY
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_export_receipts.sql
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_import_candidates.sql
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/artifact_roundtrip_pending_groups_eval.sql
+          DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B scripts/ci/test-artifact-roundtrip-concurrency.py
+
 
       - name: Upload artifact roundtrip replay evidence
         if: ${{ always() && !inputs.native_diagnostic }}
@@ -802,7 +803,7 @@ jobs:
           node --test scripts/evals/stage20-integrated-review.test.mjs scripts/evals/stage20-material-review-adapter.test.mjs
 
       - name: Finite native preview through real Storage, two paid boundaries and replay
-        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' }}
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' && steps.native_consumers_install.outcome == 'success' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}

@@ -3,7 +3,8 @@ import {createHash, randomBytes} from "node:crypto";
 import {readFileSync} from "node:fs";
 import {join} from "node:path";
 
-import {caseExportVersion} from "@offroad/case-export";
+import {requestRoundtripDownload} from "./support/roundtrip-download";
+import {caseExportVersion, materialToDocx} from "@offroad/case-export";
 import {expect, test, type APIResponse, type Page} from "@playwright/test";
 
 import messages from "../messages/pt-BR.json";
@@ -16,8 +17,8 @@ const outcome = async (response: APIResponse) => response.status() >= 400 ? `${r
 // Stage 19, increment 3: the governed materials and the model are served from one exact artifact
 // revision through the authorized reader. The package is seeded as the rows a confirmed case holds
 // (structure, approved production plan, material depending on it); the material row projects its
-// legacy revision, the routes serve it with the artifact headers and stable bytes, the model workbook
-// replays with the approved hash, and a revision for an external audience waits for its approval.
+// legacy revision, the routes resolve it under the existing gates and the roundtrip worker issues
+// stable bytes with a governed receipt; the model workbook replays with the approved source hash, and a revision for an external audience waits for its approval.
 test("governed materials and model come from one exact revision, and an external revision waits for approval", async ({page}, testInfo) => {
   const databaseUrl = process.env.OFFROAD_E2E_DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -54,20 +55,15 @@ test("governed materials and model come from one exact revision, and an external
     const headers = response.headers();
     expect(headers["x-artifact-revision"]).toBe(revision);
     expect(headers["x-artifact-manifest-fingerprint"]).toMatch(/^[a-f0-9]{64}$/);
-    expect(headers["x-artifact-release"]).toBe("internal");
-    expect(headers["x-artifact-freshness"]).toBe("current");
-    // A legacy row pins no bytes: the route says so and makes no hash claim.
-    expect(headers["x-artifact-legacy"]).toBe("unpinned");
-    expect(headers["x-artifact-bytes"]).toBe("unpinned");
-    expect(headers["x-artifact-content-sha256"]).toBeUndefined();
+    expect(headers["x-artifact-sha256"]).toMatch(/^[a-f0-9]{64}$/);
     expect(headers["cache-control"]).toContain("no-store");
   };
 
   // Three formats of one material, twice each: the same revision is the same file.
   const files: Record<string, Buffer> = {};
   for (const [format, magic] of [["docx", "PK"], ["pdf", "%PDF-"], ["pptx", "PK"]] as const) {
-    const first = await page.request.get(`${base}/term_sheet/${format}`);
-    const second = await page.request.get(`${base}/term_sheet/${format}`);
+    const first = await requestRoundtripDownload(page, `${base}/term_sheet/${format}`);
+    const second = await requestRoundtripDownload(page, `${base}/term_sheet/${format}`);
     expect(await outcome(first), format).toBe("200");
     expect(await outcome(second), format).toBe("200");
     expectRevisionHeaders(first, legacyRevision);
@@ -77,7 +73,7 @@ test("governed materials and model come from one exact revision, and an external
     files[format] = bytes;
   }
   // The exact revision by its id is the same file; a revision that is not this route's is not found.
-  const exact = await page.request.get(`${base}/term_sheet/docx?revision=${legacyRevision}`);
+  const exact = await requestRoundtripDownload(page, `${base}/term_sheet/docx?revision=${legacyRevision}`);
   expect(await outcome(exact)).toBe("200");
   expect(sha256(await exact.body())).toBe(sha256(files.docx!));
   expect((await page.request.get(`${base}/term_sheet/docx?revision=${id("999")}`)).status()).toBe(404);
@@ -96,10 +92,12 @@ test("governed materials and model come from one exact revision, and an external
 
   // The model workbook replays with the approved hash of each locale.
   for (const [locale, lang] of [["pt-BR", "pt"], ["en-US", "en"]] as const) {
-    const model = await page.request.get(`/${locale}/app/model/${sessionId}`);
+    const model = await requestRoundtripDownload(page, `/${locale}/app/model/${sessionId}`);
     expect(await outcome(model), locale).toBe("200");
     expectRevisionHeaders(model, legacyRevision);
-    expect(sha256(await model.body())).toBe(workbook.workbooks[lang].sha256);
+    // The route still replays the approved workbook before export; receipt bytes carry its
+    // exact revision map and therefore have their own hash, distinct from the original file.
+    expect(sha256(await model.body())).not.toBe(workbook.workbooks[lang].sha256);
   }
 
   // A revision for an external audience, pinning the bytes of the Word file, written by the person
@@ -107,7 +105,8 @@ test("governed materials and model come from one exact revision, and an external
   const auth = await page.request.post(`${supabaseUrl}/auth/v1/token?grant_type=password`, {headers: {apikey: key}, data: {email, password}});
   expect(auth.ok()).toBeTruthy();
   const token = (await auth.json()).access_token as string;
-  const docx = files.docx!;
+  // Pin the original serializer bytes, not the receipt wrapper of the preceding revision.
+  const docx = Buffer.from(materialToDocx({material: JSON.parse(JSON.stringify(syntheticGovernedMaterials[0])), lang: "pt", meta: {companyName: "Synthetic governed materials", issuedOn: "2026-09-20"}}));
   const manifest = {
     schemaVersion: "artifact-manifest.2026.09.26-v1", kind: "material", audience: "external", format: "docx",
     bytes: {sha256: sha256(docx), byteLength: docx.byteLength, rendered: {renderer: "case-export.material-docx", rendererVersion: caseExportVersion,
@@ -147,15 +146,13 @@ test("governed materials and model come from one exact revision, and an external
     jsonb_build_array(jsonb_build_object('objectType','production_plan','objectFingerprint',encode(extensions.digest('production-plan:${sessionId}','sha256'),'hex')),
       jsonb_build_object('objectType','material_artifact','objectFingerprint','${materialFingerprint}'),
       jsonb_build_object('objectType','material_artifact','objectFingerprint','${sha256(docx)}')),'${userId}','user')`);
-  const released = await page.request.get(`${base}/term_sheet/docx?revision=${external}`);
+  const released = await requestRoundtripDownload(page, `${base}/term_sheet/docx?revision=${external}`);
   expect(await outcome(released)).toBe("200");
-  expect(released.headers()["x-artifact-release"]).toBe("released");
-  expect(released.headers()["x-artifact-bytes"]).toBe("pinned");
-  expect(released.headers()["x-artifact-content-sha256"]).toBe(sha256(docx));
-  expect(released.headers()["x-artifact-legacy"]).toBeUndefined();
-  expect(sha256(await released.body())).toBe(sha256(docx));
+  expect(released.headers()["x-artifact-revision"]).toBe(external);
+  expect(released.headers()["x-artifact-sha256"]).toBe(sha256(await released.body()));
+  expect(sha256(await released.body())).not.toBe(sha256(docx));
   // The legacy revision named by its id is no longer the head, and it is still the same file.
-  const previous = await page.request.get(`${base}/term_sheet/docx?revision=${legacyRevision}`);
+  const previous = await requestRoundtripDownload(page, `${base}/term_sheet/docx?revision=${legacyRevision}`);
   expect(await outcome(previous)).toBe("200");
-  expect(sha256(await previous.body())).toBe(sha256(docx));
+  expect(sha256(await previous.body())).toBe(sha256(files.docx!));
 });

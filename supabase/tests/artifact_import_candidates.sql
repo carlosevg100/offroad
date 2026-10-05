@@ -62,6 +62,7 @@ do $$declare source uuid;head jsonb;manifest jsonb;blocks jsonb;comparison jsonb
  source:=pg_temp.source_version('roundtrip-history-restricted',null);
  blocks:=jsonb_build_array(pg_temp.block('lead','paragraph','{"text":"Restricted current prose"}'));
  manifest:=pg_temp.manifest('answer','internal',jsonb_build_array(pg_temp.source_ref(source)),pg_temp.summary(blocks));
+ manifest:=manifest||jsonb_build_object('provenance',jsonb_build_object('producer','history-restricted-head','jobId',null,'taskRunId',null,'messageId',null,'capability',null));
  head:=pg_temp.person_write('answer','roundtrip-test','internal',manifest,blocks);
  set local role authenticated;
  perform public.recompare_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(head->>'revision_id')::uuid,gen_random_uuid());reset role;
@@ -72,6 +73,7 @@ do $$declare source uuid;head jsonb;manifest jsonb;blocks jsonb;comparison jsonb
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
  blocks:=jsonb_build_array(pg_temp.block('lead','paragraph','{"text":"Clean latest prose"}'));
  manifest:=pg_temp.manifest('answer','internal',jsonb_build_array(pg_temp.source_ref(pg_temp.val('source_a','')::uuid)),pg_temp.summary(blocks));
+ manifest:=manifest||jsonb_build_object('provenance',jsonb_build_object('producer','history-clean-head','jobId',null,'taskRunId',null,'messageId',null,'capability',null));
  head:=pg_temp.person_write('answer','roundtrip-test','internal',manifest,blocks);
  set local role authenticated;
  perform public.recompare_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(head->>'revision_id')::uuid,gen_random_uuid());reset role;

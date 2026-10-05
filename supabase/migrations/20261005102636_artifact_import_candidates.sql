@@ -579,7 +579,7 @@ begin
  if c.id<>parent.id and not p_rebase_declared then raise exception 'artifact_import_explicit_rebase_required'using errcode='40001';end if;
  if not exists(select 1 from jsonb_array_elements((select roundtrip_manifest from public.artifact_export_receipts where id=imp.export_receipt_id)->'inputs')i where i->>'configurationId'=c.id::text)and c.id<>m.configuration_id then raise exception 'artifact_import_configuration_scope_invalid'using errcode='22023';end if;
  if c.id is null or jsonb_array_length(p_changes)not between 1 and 500 then raise exception 'artifact_import_institutional_basis_invalid'using errcode='22023';end if;
- if exists(select 1 from jsonb_array_elements(p_changes)change where change->>'configurationId'is not null and change->>'configurationId'<>c.id::text)then raise exception 'artifact_import_configuration_scope_stale'using errcode='40001';end if;
+ if exists(select 1 from jsonb_array_elements(p_changes)changeset(value)where changeset.value->>'configurationId'is not null and changeset.value->>'configurationId'<>c.id::text)then raise exception 'artifact_import_configuration_scope_stale'using errcode='40001';end if;
  proof:=private.institutional_configuration_ancestry_v1(imp.organization_id,imp.work_id,c.id);
  if proof->>'state'is distinct from'captured_lineage'then raise exception 'institutional_configuration_capture_required'using errcode='42501';end if;
  conf:=c.configuration;

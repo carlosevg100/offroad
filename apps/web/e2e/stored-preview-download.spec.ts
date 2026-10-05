@@ -22,7 +22,12 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
   const email = `e2e-regime-stored-${suffix}@example.com`;
   await signUpRegimeAccount(page, email, `Offroad-stored-${suffix}!`);
   const f = createRegimeWork(sql, email, suffix);
-  const source = randomUUID(), session = randomUUID(), run = randomUUID(), job = randomUUID();
+  const source = randomUUID(), run = randomUUID(), job = randomUUID();
+  // The synthetic owner explicitly accepts the official terms and requests private document
+  // intake through the same public commands used by the upload route; no access-basis patch.
+  const session = sql(asRegimeOwner(f, `select public.accept_private_workspace_terms('pt-BR','Synthetic stored download analyst','Analyst',true,true);
+    select public.prepare_work_document_intake_v1('${f.workId}','pt-BR',${literal(JSON.stringify(capitalProjectPlanSnapshot("company_debt_view")))}::jsonb);`)).split("\n").at(-1)!;
+  if (!/^[0-9a-f-]{36}$/.test(session)) throw new Error("synthetic_private_intake_missing");
   const artifactRow = randomUUID(), taskRun = randomUUID();
   const workbook = await institutionalWorkbookFor(source, f.actorId);
   const bytes = await renderApprovedInstitutionalFinancialWorkbook(workbook, "pt");
@@ -41,17 +46,15 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
   const emittedPaths: string[] = [];
   try {
     sql(`begin;select set_config('request.jwt.claim.sub','${f.actorId}',true);select set_config('request.headers','{"x-offroad-workspace":"${f.organizationId}"}',true);
-      select private.record_capital_project_plan('${f.workId}',${literal(JSON.stringify(capitalProjectPlanSnapshot("company_debt_view")))}::jsonb);
       insert into private.integration_preview_grants(organization_id,note,granted_by,mode) values('${f.organizationId}','Synthetic stored download only','local-e2e','deterministic');
-      insert into public.document_intake_sessions(id,organization_id,capital_project_id,started_by,journey) values('${session}','${f.organizationId}','${f.workId}','${f.actorId}','company');
       insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,mime_type,byte_size,sha256,sha256_verified_at,created_by,processing_status)
       values('${source}','${f.organizationId}','${session}','${f.organizationId}/${session}/synthetic.txt','Synthetic download evidence.txt','text/plain',1,repeat('a',64),now(),'${f.actorId}','ready');
       insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by) values('${run}','${f.organizationId}','${session}',1,'manual','succeeded','synthetic-download-only','${f.actorId}');
       insert into public.processing_jobs(id,organization_id,intake_session_id,processing_run_id,kind,status,payload) values('${job}','${f.organizationId}','${session}','${run}','agent_operation_brief','succeeded','{}');
       insert into private.capital_project_material_upload_grants(worker_account_id,organization_id,capital_project_id,processing_job_id,object_path,content_sha256,byte_length,format,mime_type,state,storage_etag,expires_at,stored_at)
       values('${f.actorId}','${f.organizationId}','${f.workId}','${job}',${literal(path)},'${sha}',${bytes.byteLength},'xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','stored','synthetic-download',now()+interval '1 hour',now());commit;`);
-    sql(asRegimeOwner(f, `select public.set_source_rights_v1('${source}',0,array['read','process','store','derive','export'],array['analysis','retrieval','export'],null,null,'${randomUUID()}',repeat('b',64));`));
     const rights = sql(`select id from private.source_rights_versions where source_version_id='${source}' order by revision desc limit 1;`);
+    expect(rights).toMatch(/^[0-9a-f-]{36}$/);
     const manifest = {schemaVersion: "artifact-manifest.2026.09.26-v1", kind: "workbook", audience: "internal", format: "xlsx", bytes: {sha256: sha, byteLength: bytes.byteLength, storage: {bucket: "case-artifacts", path}}, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [{sourceVersionId: source, rightsVersionId: rights}], claims: [], traces: [], template: null, provenance: {producer: "synthetic-stored-download", jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null};
     const created = JSON.parse(sql(asRegimeOwner(f, `select public.create_artifact_revision_v1('${f.workId}','workbook','integration-preview:workbook','internal',${literal(JSON.stringify(manifest))}::jsonb,'[{"blockKey":"explanation","kind":"paragraph","content":{"text":"Synthetic stored workbook for the download boundary."},"claims":[]}]','[]','${sha}',${bytes.byteLength});`)).split("\n").at(-1)!) as {revision_id: string; manifest_fingerprint: string};
     const contract = buildDecisionArtifactContract({schemaVersion: "2026.09.07-v1", caseId: f.workId, snapshotFingerprint: "c".repeat(64), asOf: "2026-06-30", status: "draft", release: {state: "internal_only", recipientIds: []}, sources: [{id: source, title: "Synthetic download evidence", classification: "synthetic", asOf: "2026-06-30", locator: "synthetic fixture"}], assumptions: [], gaps: [], claims: [{id: "synthetic-size", label: "Synthetic file size", value: bytes.byteLength, unit: "bytes", evidenceState: "observed_private", object: {id: source, type: "document", fingerprint: sha, path: "byteLength"}, sourceIds: [source], assumptionIds: [], gapIds: []}], views: [{surface: "workbook", artifactId: "synthetic-workbook", artifactKind: "xlsx", artifactFingerprint: sha, blocks: [{id: "synthetic-file", kind: "metric", title: "Synthetic stored file", claimIds: ["synthetic-size"], sourceIds: [], assumptionIds: [], gapIds: []}]}], identityRequirements: []});
