@@ -204,7 +204,6 @@ jobs:
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_export_receipts.sql
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_import_candidates.sql
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/artifact_roundtrip_pending_groups_eval.sql
-          DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B scripts/ci/test-artifact-roundtrip-concurrency.py
 
 
       - name: Upload artifact roundtrip replay evidence
@@ -820,6 +819,14 @@ jobs:
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_dispatch_policy.sql
           psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/capital_preview_native_consumption.sql
 
+
+      # These real races require committed fixtures. Keep them after every other
+      # database/SDK contract, immediately before destroying the disposable stack.
+      - name: Verify artifact roundtrip races before disposable stack teardown
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: python3 -B scripts/ci/test-artifact-roundtrip-concurrency.py
 
       - name: Stop the capital body Edge reader
         if: always()

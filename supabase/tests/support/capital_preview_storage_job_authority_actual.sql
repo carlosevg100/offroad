@@ -2,7 +2,7 @@
 -- allocated preview body BEFORE upload. No allocation/receipt is fabricated.
 -- Execute as operator on the disposable stack only; caller passes identities
 -- already checked by actual Auth SDK. Return contains fixed booleans/counts only.
-create function pg_temp.prove_preview_storage_job_authority(p_job uuid,p_capability text,p_account uuid,p_allocation uuid)returns jsonb language plpgsql as $$
+create function pg_temp.prove_preview_storage_job_authority(p_job uuid,p_capability text,p_account uuid,p_allocation uuid,p_other_allocation uuid,p_other_organization uuid)returns jsonb language plpgsql as $$
 declare a private.capital_public_payload_allocations;headers jsonb;claims jsonb;old_headers text:=current_setting('request.headers',true);old_claims text:=current_setting('request.jwt.claims',true);other uuid;checks integer:=0;
 begin
  select *into strict a from private.capital_public_payload_allocations where id=p_allocation and job_id=p_job and worker_account_id=p_account and content_kind='preview_body';
@@ -25,7 +25,11 @@ begin
  perform set_config('request.headers',headers::text,true);perform set_config('request.jwt.claims',jsonb_set(claims,'{sub}',to_jsonb(gen_random_uuid()::text))::text,true);
  if private.capital_preview_storage_job_authority_v1(a.id)then raise exception 'preview_storage_wrong_account_allowed';end if;checks:=checks+1;
  perform set_config('request.jwt.claims',claims::text,true);
- select id into other from private.capital_public_payload_allocations where content_kind<>'preview_body'order by created_at limit 1;
+ -- Explicit identity from the independently owned real SDK producer, never any old fixture.
+ select a.id into other from private.capital_public_payload_allocations a
+ join private.capital_public_retained_payloads r on(r.organization_id,r.allocation_id)=(a.organization_id,a.id)
+ join private.material_production_bindings b on(b.organization_id,b.package_retained_payload_id)=(r.organization_id,r.id)
+ where a.id=p_other_allocation and a.organization_id=p_other_organization and a.organization_id<>(headers->>'x-offroad-workspace')::uuid and a.content_kind='material_body';
  if other is null then raise exception 'preview_storage_other_family_fixture_required';end if;
  if private.capital_preview_storage_job_authority_v1(other)then raise exception 'preview_storage_other_family_allowed';end if;checks:=checks+1;
  begin
