@@ -191,6 +191,8 @@ jobs:
           set -euo pipefail
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_export_receipts.sql
           psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/artifact_import_candidates.sql
+          psql "${{ steps.db.outputs.url }}" -X -v ON_ERROR_STOP=1 -f supabase/tests/support/artifact_roundtrip_pending_groups_eval.sql
+          DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B scripts/ci/test-artifact-roundtrip-concurrency.py
           psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage21-replay-catalogue.json"
           DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B - <<'PY'
           import importlib.util, json, os
@@ -874,6 +876,7 @@ jobs:
           # boot starts on the AWS mirror and switches registry on every retry.
           SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
         run: |
+          set -o pipefail
           supabase stop --no-backup || true
           docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
           # Retry the boot a few times, alternating registries with a pause, instead of failing the

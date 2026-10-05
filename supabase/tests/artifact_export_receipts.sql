@@ -47,7 +47,7 @@ begin
  claim:=public.worker_claim_artifact_roundtrip_v1('synthetic-roundtrip-worker-token');
  begin perform public.worker_revalidate_artifact_roundtrip_v1((claim->>'taskId')::uuid,'wrong-capability');raise exception 'wrong lease accepted';exception when insufficient_privilege then null;end;reset role;
  insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
- values('a11b0000-0000-4000-9000-000000000001',v,(select max(revision)+1from private.source_rights_versions where source_version_id=v),array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('d',64),'a11b0000-0000-4000-8000-000000000001');
+ values('a11b0000-0000-4000-9000-000000000001',v,(select max(revision)+1 from private.source_rights_versions where source_version_id=v),array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('d',64),'a11b0000-0000-4000-8000-000000000001');
  set local role authenticated;
  begin perform public.worker_revalidate_artifact_roundtrip_v1((claim->>'taskId')::uuid,claim->>'capabilityToken');raise exception 'revoked leased worker retained source';exception when insufficient_privilege then null;end;reset role;
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
