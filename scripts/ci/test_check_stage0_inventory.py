@@ -59,9 +59,21 @@ class CoverageTest(unittest.TestCase):
 
     def test_staging_only_object_cannot_enter_production_replay(self):
         c = copy.deepcopy(self.catalogue)
-        r = next(x for x in self.manifest['objects'] if 'production' not in x['catalogues'])
+        r = next(x for x in self.manifest['objects'] if 'production' not in x['catalogues'] and 'staging' in x['catalogues'])
         c['objects'].append(r['catalogues']['staging'])
         self.assertIn('unapproved_environment:' + r['id'], self.errors(c))
+
+    def test_replay_observation_cannot_promote_an_uninstalled_production_object(self):
+        m = copy.deepcopy(self.manifest)
+        c = copy.deepcopy(self.catalogue)
+        obj = copy.deepcopy(next(x for x in c['objects'] if x['kind'] == 'function'))
+        obj['id'] += '_replay_only'
+        row = copy.deepcopy(next(x for x in m['objects'] if x['kind'] == 'function'))
+        row['id'] = obj['id']
+        row['catalogues'] = {'replay': obj}
+        m['objects'].append(row)
+        c['objects'].append(obj)
+        self.assertIn('unapproved_environment:' + obj['id'], self.errors(c, m))
 
     def test_removing_a_decision_fails_against_actual_catalogue(self):
         m = copy.deepcopy(self.manifest)

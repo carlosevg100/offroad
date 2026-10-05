@@ -91,27 +91,51 @@ do $$declare source uuid;head jsonb;manifest jsonb;blocks jsonb;comparison jsonb
 end;$$;
 
 -- Adoption uses an actual approved decision base, the real human policy and continuation18.
-do $$declare basis jsonb;decision jsonb;milestone public.work_milestones;candidate jsonb;adopted jsonb;replayed jsonb;revision public.artifact_revisions;
+do $$declare milestone public.work_milestones;candidate jsonb;adopted jsonb;replayed jsonb;revision public.artifact_revisions;clean_head jsonb;clean_blocks jsonb;clean_manifest jsonb;comparison jsonb;claim jsonb;output jsonb;
 begin
  begin
  insert into public.organization_review_policies(organization_id,assignment_required,self_approval_allowed,updated_by)
  values('a11b0000-0000-4000-9000-000000000001',false,true,'a11b0000-0000-4000-8000-000000000001')on conflict(organization_id)do update set assignment_required=false,self_approval_allowed=true;
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
  update public.agent_messages set status='completed'where organization_id='a11b0000-0000-4000-9000-000000000001'and status in('queued','processing');
- basis:=jsonb_build_object('artifacts',jsonb_build_array(jsonb_build_object('artifactRevisionId',pg_temp.val('rt_revision','revision_id'),'manifestFingerprint',(select manifest_fingerprint from public.artifact_revisions where id=pg_temp.val('rt_revision','revision_id')::uuid))),'milestones','[]'::jsonb,'assessments','[]'::jsonb,'decisions','[]'::jsonb,'execution',null,'configuration',null);
+ insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
+ values('a4210000-0000-4000-9000-000000000081','a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000003',121,'manual','queued','approval-fixture-v1','a11b0000-0000-4000-8000-000000000001');
+ insert into public.processing_jobs(id,organization_id,intake_session_id,processing_run_id,kind,status,payload)
+ values('a4210000-0000-4000-9000-000000000082','a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000003','a4210000-0000-4000-9000-000000000081','case_analysis','queued','{"analysis_scope":"full_case"}');
+ perform pg_temp.fixture_approve_execution('a4210000-0000-4000-9000-000000000082');
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+ -- Current head intentionally has a different source and no dependency on the exported base.
+ clean_blocks:=jsonb_build_array(pg_temp.block('lead','paragraph','{"text":"Original prose"}'));
+ clean_manifest:=pg_temp.manifest('answer','internal',jsonb_build_array(pg_temp.source_ref(pg_temp.val('source_b','')::uuid)),pg_temp.summary(clean_blocks));
+ clean_manifest:=clean_manifest||jsonb_build_object('provenance',jsonb_build_object('producer','positive-clean-head','jobId',null,'taskRunId',null,'messageId',null,'capability',null));
+ clean_head:=pg_temp.person_write('answer','roundtrip-test','internal',clean_manifest,clean_blocks);
  set local role authenticated;
- decision:=public.record_work_decision_v1('a11b0000-0000-4000-9000-000000000002','roundtrip-continuation-base','choose_alternative',basis,array['none'],'in_product',null,'Synthetic capital alternative',null,gen_random_uuid());
+ perform public.recompare_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(clean_head->>'revision_id')::uuid,gen_random_uuid());reset role;
+ perform pg_temp.act_as('a4210000-0000-4000-8000-000000000001');set local role authenticated;
+ claim:=public.worker_claim_artifact_roundtrip_v1('synthetic-roundtrip-worker-token');
+ comparison:=jsonb_set((select value from arp where name='rt_comparison'),'{headRevisionId}',to_jsonb(clean_head->>'revision_id'));
+ perform public.worker_commit_artifact_import_comparison_v1((claim->>'taskId')::uuid,claim->>'capabilityToken',comparison,(select value from arp where name='rt_contributions'));reset role;
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+ set local role authenticated;
  candidate:=public.read_artifact_import_candidate_v1('a4210000-0000-4000-9000-000000000002');reset role;
- select*into strict milestone from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002'and subject_id=(decision->>'decisionId')::uuid and kind='decision';
+ select*into strict milestone from public.work_milestones where work_id='a11b0000-0000-4000-9000-000000000002'and subject_kind='execution_brief'and kind='decision';
  set local role authenticated;
- begin perform public.adopt_artifact_import_v1('a4210000-0000-4000-9000-000000000002',pg_temp.val('rt_revision','revision_id')::uuid,candidate->>'comparisonFingerprint','[]',gen_random_uuid(),'pt-BR',false,milestone.id,milestone.subject_id,milestone.revision);raise exception 'self approval silently accepted';exception when insufficient_privilege then null;end;
- adopted:=public.adopt_artifact_import_v1('a4210000-0000-4000-9000-000000000002',pg_temp.val('rt_revision','revision_id')::uuid,candidate->>'comparisonFingerprint','[]','a4210000-0000-4000-9000-000000000007','pt-BR',true,milestone.id,milestone.subject_id,milestone.revision);
- replayed:=public.adopt_artifact_import_v1('a4210000-0000-4000-9000-000000000002',pg_temp.val('rt_revision','revision_id')::uuid,candidate->>'comparisonFingerprint','[]','a4210000-0000-4000-9000-000000000007','pt-BR',true,milestone.id,milestone.subject_id,milestone.revision);reset role;
+ begin perform public.adopt_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(clean_head->>'revision_id')::uuid,candidate->>'comparisonFingerprint','[]',gen_random_uuid(),'pt-BR',false,milestone.id,milestone.subject_id,milestone.revision);raise exception 'self approval silently accepted';exception when insufficient_privilege then null;end;
+ adopted:=public.adopt_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(clean_head->>'revision_id')::uuid,candidate->>'comparisonFingerprint','[]','a4210000-0000-4000-9000-000000000007','pt-BR',true,milestone.id,milestone.subject_id,milestone.revision);
+ replayed:=public.adopt_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(clean_head->>'revision_id')::uuid,candidate->>'comparisonFingerprint','[]','a4210000-0000-4000-9000-000000000007','pt-BR',true,milestone.id,milestone.subject_id,milestone.revision);reset role;
  select*into strict revision from public.artifact_revisions where id=(adopted->>'appliedRevisionId')::uuid;
  if adopted->>'status'<>'applied'or adopted->>'continuationRequestId'is null or replayed->>'replayed'<>'true'or revision.origin<>'person'
  or not exists(select 1 from public.artifact_blocks where revision_id=revision.id and block_key='lead'and content->>'text'='Human prose'and claims='[]')
  or not exists(select 1 from private.artifact_dependency_links where revision_id=revision.id and derived_from_revision_id=pg_temp.val('rt_revision','revision_id')::uuid)
+ or not exists(select 1 from private.artifact_dependency_links where revision_id=revision.id and derived_from_revision_id=(clean_head->>'revision_id')::uuid)
+ or (select count(distinct source_version_id)from private.artifact_dependency_links where revision_id=revision.id and link_kind='source_version'and source_version_id in(pg_temp.val('source_a','')::uuid,pg_temp.val('source_b','')::uuid,pg_temp.val('rt_upload','')::uuid))<>3
  then raise exception 'adoption did not preserve contribution and continuation';end if;
+ insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+ values('a11b0000-0000-4000-9000-000000000001',pg_temp.val('source_a','')::uuid,(select max(revision)+1 from private.source_rights_versions where source_version_id=pg_temp.val('source_a','')::uuid),array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('e',64),'a11b0000-0000-4000-8000-000000000001');
+ if private.artifact_roundtrip_revision_allowed_v1(revision.organization_id,revision.id,'a11b0000-0000-4000-8000-000000000001',false)then raise exception 'adopted contribution lost exported-base restriction';end if;
+ set local role authenticated;output:=public.read_artifact_import_candidate_v1('a4210000-0000-4000-9000-000000000002');reset role;
+ if output->>'withheld'<>'true'or output?'comparison'or output?'events'then raise exception 'adopted base revocation leaked candidate';end if;
+ raise notice 'PASS import_adoption_retains_distinct_base_head_upload_and_base_revocation';
  raise notice 'PASS import_human_adoption_replay_person_revision_and_continuation';
  raise exception 'rollback_positive_adoption'using errcode='ZX021';
  exception when sqlstate 'ZX021'then null;end;

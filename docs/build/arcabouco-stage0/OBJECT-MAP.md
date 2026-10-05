@@ -3690,3 +3690,21 @@ Revisão adicional de100objetos gerados por loops ou rename na migração2026100
 | `apps/web/src/app/[locale]/app/projects/[projectId]/work-review-actions.ts` | preservar | Revisão exata e reassociação autorizadas; relatos e contestação sem efeito operacional. |
 
 O SQL de `supabase/pending/work_review_dashboard.sql` é candidato de teste no stack descartável; não afirma instalação em staging ou produção. O catálogo será conciliado com a migração efetivamente aplicada antes da publicação.
+
+## Etapa 21: delta observado somente no replay da CI
+
+O run `37311193945`, commit `f2dd6f55787c209791a8b5a7b23df60f4a0271f2`,
+coletou 4.746 contratos em `2026-10-05T12:43:51.321307+00:00`:
+93 objetos novos da etapa 21 e nenhuma diferença nos contratos de acesso anteriores.
+As decisões novas em `object-decisions.json` registram `catalogues.replay`.
+Produção e staging permanecem com seus contratos anteriormente coletados; esta revisão
+não promove o replay a evidência instalada nem registra carimbo remoto.
+
+O delta cobre recibos físicos de exportação, candidatas de importação, eventos imutáveis,
+leases do worker, contribuições de texto e propostas de premissas institucionais,
+comparação de três vias, templates fixados e políticas de Storage. As duas migrações e
+os entrypoints presentes estão inventariados como escopo da etapa 21.
+
+A promoção exige SQL e E2E reais aprovados, aplicação remota, catálogo e journal de ambos
+os ambientes conferidos. O checker continua recusando objeto observado apenas no replay
+como contrato de produção e versão de arquivo ausente do journal de produção.

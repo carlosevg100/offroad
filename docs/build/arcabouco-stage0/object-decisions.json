@@ -58392,6 +58392,29 @@
           ],
           "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean",
           "security_definer": true
+        },
+        "replay": {
+          "id": "function:private.review_institutional_configuration_and_calculate_v2(p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean)",
+          "kind": "function",
+          "name": "review_institutional_configuration_and_calculate_v2",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_project_id uuid, p_candidate_id uuid, p_expected_parent_fingerprint text, p_decision text, p_expected_candidate_fingerprint text, p_expected_lineage_fingerprint text, p_command_id uuid, p_locale text, p_self_approval_declared boolean",
+          "security_definer": true
         }
       },
       "owner": "Engenharia de execução, etapa 20",
@@ -58403,6 +58426,12 @@
           "path": "supabase/migrations/20261002113623_institutional_configuration_review_projection.sql",
           "line": 133,
           "anchor": "create function private.review_institutional_configuration_and_calculate_v2(",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 609,
+          "anchor": "create or replace function private.review_institutional_configuration_and_calculate_v2(",
           "mechanism": "direct_ddl"
         }
       ]
@@ -62013,6 +62042,29 @@
           ],
           "signature": "p_bucket text, p_path text",
           "security_definer": true
+        },
+        "replay": {
+          "id": "function:private.source_storage_read_v1(p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "source_storage_read_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text",
+          "security_definer": true
         }
       },
       "owner": "Codex — etapa 6",
@@ -62024,6 +62076,12 @@
           "path": "supabase/migrations/20260916212202_logical_sources_and_versions.sql",
           "line": 669,
           "anchor": "create or replace function private.source_storage_read_v1(p_bucket text,p_path text) returns boolean language sql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 938,
+          "anchor": "create or replace function private.source_storage_read_v1(p_bucket text,p_path text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -63855,6 +63913,29 @@
           ],
           "signature": "p_bucket text, p_path text",
           "security_definer": true
+        },
+        "replay": {
+          "id": "function:private.storage_export_purpose_allowed_v1(p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "storage_export_purpose_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text",
+          "security_definer": true
         }
       },
       "owner": "Codex — etapa 3",
@@ -63866,6 +63947,12 @@
           "path": "supabase/migrations/20260916163753_resource_policy_and_barriers.sql",
           "line": 486,
           "anchor": "create function private.storage_export_purpose_allowed_v1(p_bucket text,p_path text)",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 920,
+          "anchor": "create or replace function private.storage_export_purpose_allowed_v1(p_bucket text,p_path text)",
           "mechanism": "direct_ddl"
         }
       ],
@@ -305378,6 +305465,3682 @@
           "stageVersion": "20261004150808"
         }
       ]
+    },
+    {
+      "id": "function:private.adopt_artifact_import_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer, p_configuration_id uuid, p_rebase_declared boolean)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.adopt_artifact_import_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer, p_configuration_id uuid, p_rebase_declared boolean)",
+          "kind": "function",
+          "name": "adopt_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer, p_configuration_id uuid, p_rebase_declared boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 747,
+          "anchor": "create function private.adopt_artifact_import_v1(p_candidate_id uuid,p_expected_head_revision_id uuid,p_expected_comparison_fingerprint text,p_resolutions jsonb,",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.apply_institutional_artifact_import_v1(p_candidate uuid, p_changes jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_configuration_id uuid, p_rebase_declared boolean)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.apply_institutional_artifact_import_v1(p_candidate uuid, p_changes jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_configuration_id uuid, p_rebase_declared boolean)",
+          "kind": "function",
+          "name": "apply_institutional_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate uuid, p_changes jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_configuration_id uuid, p_rebase_declared boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 569,
+          "anchor": "create function private.apply_institutional_artifact_import_v1(p_candidate uuid,p_changes jsonb,p_command_id uuid,p_locale text,p_self_approval_declared boolean,p_configuration_id uuid,p_rebase_declared boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_import_processor_context_v1(t private.artifact_roundtrip_tasks)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_import_processor_context_v1(t private.artifact_roundtrip_tasks)",
+          "kind": "function",
+          "name": "artifact_import_processor_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "t private.artifact_roundtrip_tasks",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 235,
+          "anchor": "create function private.artifact_import_processor_context_v1(t private.artifact_roundtrip_tasks)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_import_source_allowed_v1(p_org uuid, p_work uuid, p_source uuid, p_actor uuid, p_operation text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_import_source_allowed_v1(p_org uuid, p_work uuid, p_source uuid, p_actor uuid, p_operation text)",
+          "kind": "function",
+          "name": "artifact_import_source_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_source uuid, p_actor uuid, p_operation text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 85,
+          "anchor": "create function private.artifact_import_source_allowed_v1(p_org uuid,p_work uuid,p_source uuid,p_actor uuid,p_operation text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_import_source_bound_v1(p_org uuid, p_work uuid, p_source uuid, p_actor uuid, p_operation text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_import_source_bound_v1(p_org uuid, p_work uuid, p_source uuid, p_actor uuid, p_operation text)",
+          "kind": "function",
+          "name": "artifact_import_source_bound_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_source uuid, p_actor uuid, p_operation text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 76,
+          "anchor": "create function private.artifact_import_source_bound_v1(p_org uuid,p_work uuid,p_source uuid,p_actor uuid,p_operation text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_claim_context_v1(t private.artifact_roundtrip_tasks, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_claim_context_v1(t private.artifact_roundtrip_tasks, p_capability_token text)",
+          "kind": "function",
+          "name": "artifact_roundtrip_claim_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "t private.artifact_roundtrip_tasks, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 475,
+          "anchor": "create function private.artifact_roundtrip_claim_context_v1(t private.artifact_roundtrip_tasks,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_logical_fingerprint_v1(p_manifest jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_logical_fingerprint_v1(p_manifest jsonb)",
+          "kind": "function",
+          "name": "artifact_roundtrip_logical_fingerprint_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_manifest jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 46,
+          "anchor": "create function private.artifact_roundtrip_logical_fingerprint_v1(p_manifest jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_material_body_v1(p_org uuid, p_payload uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_material_body_v1(p_org uuid, p_payload uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "artifact_roundtrip_material_body_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_payload uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 374,
+          "anchor": "create function private.artifact_roundtrip_material_body_v1(p_org uuid,p_payload uuid,p_subject uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_material_storage_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid, p_bucket text, p_path text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_material_storage_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid, p_bucket text, p_path text)",
+          "kind": "function",
+          "name": "artifact_roundtrip_material_storage_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_subject uuid, p_bucket text, p_path text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 902,
+          "anchor": "create function private.artifact_roundtrip_material_storage_allowed_v1(p_org uuid,p_revision uuid,p_subject uuid,p_bucket text,p_path text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_producer_before_import_v1(p_revision uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_producer_before_import_v1(p_revision uuid)",
+          "kind": "function",
+          "name": "artifact_roundtrip_producer_before_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 835,
+          "anchor": "alter function private.artifact_roundtrip_producer_context_v1(uuid)rename to artifact_roundtrip_producer_before_import_v1;",
+          "mechanism": "function_rename"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_producer_chain_v1(p_revision uuid, p_visited uuid[])",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_producer_chain_v1(p_revision uuid, p_visited uuid[])",
+          "kind": "function",
+          "name": "artifact_roundtrip_producer_chain_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision uuid, p_visited uuid[]",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 837,
+          "anchor": "create function private.artifact_roundtrip_producer_chain_v1(p_revision uuid,p_visited uuid[])",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_producer_context_v1(p_revision uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_producer_context_v1(p_revision uuid)",
+          "kind": "function",
+          "name": "artifact_roundtrip_producer_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 852,
+          "anchor": "create function private.artifact_roundtrip_producer_context_v1(p_revision uuid)returns jsonb language sql security definer set search_path=''as $$select private.artifact_roundtrip_producer_chain_v1(p_revision,'{}');$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_revision_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid, p_export boolean)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_revision_allowed_v1(p_org uuid, p_revision uuid, p_subject uuid, p_export boolean)",
+          "kind": "function",
+          "name": "artifact_roundtrip_revision_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_revision uuid, p_subject uuid, p_export boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 207,
+          "anchor": "create or replace function private.artifact_roundtrip_revision_allowed_v1(p_org uuid,p_revision uuid,p_subject uuid,p_export boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_storage_allowed_v1(p_bucket text, p_path text, p_write boolean)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_storage_allowed_v1(p_bucket text, p_path text, p_write boolean)",
+          "kind": "function",
+          "name": "artifact_roundtrip_storage_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_bucket text, p_path text, p_write boolean",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 339,
+          "anchor": "create or replace function private.artifact_roundtrip_storage_allowed_v1(p_bucket text,p_path text,p_write boolean)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_task_allowed_v1(t private.artifact_roundtrip_tasks)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_task_allowed_v1(t private.artifact_roundtrip_tasks)",
+          "kind": "function",
+          "name": "artifact_roundtrip_task_allowed_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "t private.artifact_roundtrip_tasks",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 173,
+          "anchor": "create or replace function private.artifact_roundtrip_task_allowed_v1(t private.artifact_roundtrip_tasks)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.artifact_roundtrip_template_context_v1(p_revision uuid, p_subject uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.artifact_roundtrip_template_context_v1(p_revision uuid, p_subject uuid)",
+          "kind": "function",
+          "name": "artifact_roundtrip_template_context_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision uuid, p_subject uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 187,
+          "anchor": "create function private.artifact_roundtrip_template_context_v1(p_revision uuid,p_subject uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.discard_artifact_import_v1(p_candidate_id uuid, p_command_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.discard_artifact_import_v1(p_candidate_id uuid, p_command_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "discard_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_command_id uuid, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 404,
+          "anchor": "create function private.discard_artifact_import_v1(p_candidate_id uuid,p_command_id uuid,p_reason text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.guard_artifact_import_candidate_v1()",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.guard_artifact_import_candidate_v1()",
+          "kind": "function",
+          "name": "guard_artifact_import_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 66,
+          "anchor": "create function private.guard_artifact_import_candidate_v1()returns trigger language plpgsql set search_path=''as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.institutional_configuration_ancestry_before_artifact_import_v1(p_org uuid, p_work uuid, p_configuration uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.institutional_configuration_ancestry_before_artifact_import_v1(p_org uuid, p_work uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_ancestry_before_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_configuration uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 519,
+          "anchor": "alter function private.institutional_configuration_ancestry_before_review_projection_v1(uuid,uuid,uuid)rename to institutional_configuration_ancestry_before_artifact_import_v1;",
+          "mechanism": "function_rename"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.keep_artifact_import_as_source_v1(p_candidate_id uuid, p_command_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.keep_artifact_import_as_source_v1(p_candidate_id uuid, p_command_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "keep_artifact_import_as_source_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_command_id uuid, p_reason text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 695,
+          "anchor": "create function private.keep_artifact_import_as_source_v1(p_candidate_id uuid,p_command_id uuid,p_reason text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.list_artifact_export_receipts_v1(p_artifact_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.list_artifact_export_receipts_v1(p_artifact_id uuid)",
+          "kind": "function",
+          "name": "list_artifact_export_receipts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_artifact_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 454,
+          "anchor": "create function private.list_artifact_export_receipts_v1(p_artifact_id uuid)returns jsonb language plpgsql security definer set search_path=''as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.list_work_artifact_imports_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.list_work_artifact_imports_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "list_work_artifact_imports_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 464,
+          "anchor": "create function private.list_work_artifact_imports_v1(p_work_id uuid)returns jsonb language plpgsql security definer set search_path=''as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.match_artifact_import_v1(p_candidate_id uuid, p_export_receipt_id uuid, p_expected_head_revision_id uuid, p_mappings jsonb, p_command_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.match_artifact_import_v1(p_candidate_id uuid, p_export_receipt_id uuid, p_expected_head_revision_id uuid, p_mappings jsonb, p_command_id uuid)",
+          "kind": "function",
+          "name": "match_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_export_receipt_id uuid, p_expected_head_revision_id uuid, p_mappings jsonb, p_command_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 715,
+          "anchor": "create function private.match_artifact_import_v1(p_candidate_id uuid,p_export_receipt_id uuid,p_expected_head_revision_id uuid,p_mappings jsonb,p_command_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.read_artifact_export_options_v1(p_revision_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.read_artifact_export_options_v1(p_revision_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_export_options_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 882,
+          "anchor": "create function private.read_artifact_export_options_v1(p_revision_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.read_artifact_export_receipt_v1(p_receipt_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.read_artifact_export_receipt_v1(p_receipt_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_export_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_receipt_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 149,
+          "anchor": "create function private.read_artifact_export_receipt_v1(p_receipt_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.read_artifact_import_candidate_v1(p_candidate_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.read_artifact_import_candidate_v1(p_candidate_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_import_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 136,
+          "anchor": "create function private.read_artifact_import_candidate_v1(p_candidate_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.read_artifact_roundtrip_task_v1(p_task_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.read_artifact_roundtrip_task_v1(p_task_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_roundtrip_task_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 858,
+          "anchor": "create or replace function private.read_artifact_roundtrip_task_v1(p_task_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.recompare_artifact_import_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_command_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.recompare_artifact_import_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_command_id uuid)",
+          "kind": "function",
+          "name": "recompare_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_expected_head_revision_id uuid, p_command_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 376,
+          "anchor": "create function private.recompare_artifact_import_v1(p_candidate_id uuid,p_expected_head_revision_id uuid,p_command_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.reject_artifact_export_receipt_mutation_v1()",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.reject_artifact_export_receipt_mutation_v1()",
+          "kind": "function",
+          "name": "reject_artifact_export_receipt_mutation_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 53,
+          "anchor": "create function private.reject_artifact_export_receipt_mutation_v1() returns trigger language plpgsql set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.request_artifact_export_v1(p_revision_id uuid, p_format text, p_locale text, p_command_id uuid, p_variant text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.request_artifact_export_v1(p_revision_id uuid, p_format text, p_locale text, p_command_id uuid, p_variant text)",
+          "kind": "function",
+          "name": "request_artifact_export_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_format text, p_locale text, p_command_id uuid, p_variant text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 118,
+          "anchor": "create function private.request_artifact_export_v1(p_revision_id uuid,p_format text,p_locale text,p_command_id uuid,p_variant text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.require_artifact_roundtrip_task_v1(p_task_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.require_artifact_roundtrip_task_v1(p_task_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "require_artifact_roundtrip_task_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 182,
+          "anchor": "create function private.require_artifact_roundtrip_task_v1(p_task_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.submit_artifact_import_v1(p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.submit_artifact_import_v1(p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid)",
+          "kind": "function",
+          "name": "submit_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 94,
+          "anchor": "create function private.submit_artifact_import_v1(p_candidate_id uuid,p_work_id uuid,p_artifact_id uuid,p_export_receipt_id uuid,",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.validate_artifact_export_manifest_v1(m jsonb, r artifact_revisions, t private.artifact_roundtrip_tasks)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.validate_artifact_export_manifest_v1(m jsonb, r artifact_revisions, t private.artifact_roundtrip_tasks)",
+          "kind": "function",
+          "name": "validate_artifact_export_manifest_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "m jsonb, r artifact_revisions, t private.artifact_roundtrip_tasks",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 353,
+          "anchor": "create function private.validate_artifact_export_manifest_v1(m jsonb,r public.artifact_revisions,t private.artifact_roundtrip_tasks)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.validate_artifact_import_comparison_v1(p_comparison jsonb, p_contributions jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.validate_artifact_import_comparison_v1(p_comparison jsonb, p_contributions jsonb)",
+          "kind": "function",
+          "name": "validate_artifact_import_comparison_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_comparison jsonb, p_contributions jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 275,
+          "anchor": "create function private.validate_artifact_import_comparison_v1(p_comparison jsonb,p_contributions jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.worker_claim_artifact_roundtrip_before_import_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.worker_claim_artifact_roundtrip_before_import_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_artifact_roundtrip_before_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 255,
+          "anchor": "alter function private.worker_claim_artifact_roundtrip_v1(text)rename to worker_claim_artifact_roundtrip_before_import_v1;",
+          "mechanism": "function_rename"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.worker_claim_artifact_roundtrip_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.worker_claim_artifact_roundtrip_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_artifact_roundtrip_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 257,
+          "anchor": "create function private.worker_claim_artifact_roundtrip_v1(p_worker_token text)returns jsonb language plpgsql security definer set search_path=''as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.worker_commit_artifact_export_v1(p_task_id uuid, p_capability_token text, p_storage_object_id uuid, p_template_fingerprint text, p_roundtrip_manifest jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.worker_commit_artifact_export_v1(p_task_id uuid, p_capability_token text, p_storage_object_id uuid, p_template_fingerprint text, p_roundtrip_manifest jsonb)",
+          "kind": "function",
+          "name": "worker_commit_artifact_export_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_storage_object_id uuid, p_template_fingerprint text, p_roundtrip_manifest jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 238,
+          "anchor": "create function private.worker_commit_artifact_export_v1(p_task_id uuid,p_capability_token text,p_storage_object_id uuid,p_template_fingerprint text,p_roundtrip_manifest jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.worker_commit_artifact_import_comparison_v1(p_task_id uuid, p_capability_token text, p_comparison jsonb, p_contributions jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.worker_commit_artifact_import_comparison_v1(p_task_id uuid, p_capability_token text, p_comparison jsonb, p_contributions jsonb)",
+          "kind": "function",
+          "name": "worker_commit_artifact_import_comparison_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_comparison jsonb, p_contributions jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 305,
+          "anchor": "create function private.worker_commit_artifact_import_comparison_v1(p_task_id uuid,p_capability_token text,p_comparison jsonb,p_contributions jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.worker_fail_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text, p_failure_code text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.worker_fail_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text, p_failure_code text)",
+          "kind": "function",
+          "name": "worker_fail_artifact_roundtrip_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_failure_code text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 265,
+          "anchor": "create function private.worker_fail_artifact_roundtrip_v1(p_task_id uuid,p_capability_token text,p_failure_code text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.worker_prepare_artifact_export_storage_v1(p_task_id uuid, p_capability_token text, p_sha256 text, p_byte_length bigint)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.worker_prepare_artifact_export_storage_v1(p_task_id uuid, p_capability_token text, p_sha256 text, p_byte_length bigint)",
+          "kind": "function",
+          "name": "worker_prepare_artifact_export_storage_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_sha256 text, p_byte_length bigint",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 225,
+          "anchor": "create function private.worker_prepare_artifact_export_storage_v1(p_task_id uuid,p_capability_token text,p_sha256 text,p_byte_length bigint)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.worker_record_artifact_import_quarantine_v1(p_task_id uuid, p_capability_token text, p_receipt jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.worker_record_artifact_import_quarantine_v1(p_task_id uuid, p_capability_token text, p_receipt jsonb)",
+          "kind": "function",
+          "name": "worker_record_artifact_import_quarantine_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_receipt jsonb",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 426,
+          "anchor": "create function private.worker_record_artifact_import_quarantine_v1(p_task_id uuid,p_capability_token text,p_receipt jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_revalidate_artifact_roundtrip_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 489,
+          "anchor": "create or replace function private.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid,p_capability_token text)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.adopt_artifact_import_group_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer, p_configuration_id uuid, p_rebase_declared boolean)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.adopt_artifact_import_group_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer, p_configuration_id uuid, p_rebase_declared boolean)",
+          "kind": "function",
+          "name": "adopt_artifact_import_group_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer, p_configuration_id uuid, p_rebase_declared boolean",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 831,
+          "anchor": "create function public.adopt_artifact_import_group_v1(p_candidate_id uuid,p_expected_head_revision_id uuid,p_expected_comparison_fingerprint text,p_resolutions jsonb,",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.adopt_artifact_import_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.adopt_artifact_import_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer)",
+          "kind": "function",
+          "name": "adopt_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_expected_head_revision_id uuid, p_expected_comparison_fingerprint text, p_resolutions jsonb, p_command_id uuid, p_locale text, p_self_approval_declared boolean, p_base_milestone_id uuid, p_base_decision_id uuid, p_base_revision integer",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 827,
+          "anchor": "create function public.adopt_artifact_import_v1(p_candidate_id uuid,p_expected_head_revision_id uuid,p_expected_comparison_fingerprint text,p_resolutions jsonb,",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.discard_artifact_import_v1(p_candidate_id uuid, p_command_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.discard_artifact_import_v1(p_candidate_id uuid, p_command_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "discard_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_command_id uuid, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 422,
+          "anchor": "create function public.discard_artifact_import_v1(p_candidate_id uuid,p_command_id uuid,p_reason text)returns jsonb language sql security invoker set search_path=''as $$select private.discard_artifact_import_v1(p_candidate_id,p_command_id,p_reason);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.keep_artifact_import_as_source_v1(p_candidate_id uuid, p_command_id uuid, p_reason text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.keep_artifact_import_as_source_v1(p_candidate_id uuid, p_command_id uuid, p_reason text)",
+          "kind": "function",
+          "name": "keep_artifact_import_as_source_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_command_id uuid, p_reason text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 713,
+          "anchor": "create function public.keep_artifact_import_as_source_v1(p_candidate_id uuid,p_command_id uuid,p_reason text)returns jsonb language sql security invoker set search_path=''as $$select private.keep_artifact_import_as_source_v1(p_candidate_id,p_command_id,p_reason);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.list_artifact_export_receipts_v1(p_artifact_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.list_artifact_export_receipts_v1(p_artifact_id uuid)",
+          "kind": "function",
+          "name": "list_artifact_export_receipts_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_artifact_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 463,
+          "anchor": "create function public.list_artifact_export_receipts_v1(p_artifact_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.list_artifact_export_receipts_v1(p_artifact_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.list_work_artifact_imports_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.list_work_artifact_imports_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "list_work_artifact_imports_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 473,
+          "anchor": "create function public.list_work_artifact_imports_v1(p_work_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.list_work_artifact_imports_v1(p_work_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.match_artifact_import_v1(p_candidate_id uuid, p_export_receipt_id uuid, p_expected_head_revision_id uuid, p_mappings jsonb, p_command_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.match_artifact_import_v1(p_candidate_id uuid, p_export_receipt_id uuid, p_expected_head_revision_id uuid, p_mappings jsonb, p_command_id uuid)",
+          "kind": "function",
+          "name": "match_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_export_receipt_id uuid, p_expected_head_revision_id uuid, p_mappings jsonb, p_command_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 745,
+          "anchor": "create function public.match_artifact_import_v1(p_candidate_id uuid,p_export_receipt_id uuid,p_expected_head_revision_id uuid,p_mappings jsonb,p_command_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.match_artifact_import_v1(p_candidate_id,p_export_receipt_id,p_expected_head_revision_id,p_mappings,p_command_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.read_artifact_export_options_v1(p_revision_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.read_artifact_export_options_v1(p_revision_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_export_options_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 898,
+          "anchor": "create function public.read_artifact_export_options_v1(p_revision_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.read_artifact_export_options_v1(p_revision_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.read_artifact_export_receipt_v1(p_receipt_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.read_artifact_export_receipt_v1(p_receipt_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_export_receipt_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_receipt_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 161,
+          "anchor": "create function public.read_artifact_export_receipt_v1(p_receipt_id uuid) returns jsonb language sql security invoker set search_path='' as $$select private.read_artifact_export_receipt_v1(p_receipt_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.read_artifact_import_candidate_v1(p_candidate_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.read_artifact_import_candidate_v1(p_candidate_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_import_candidate_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 171,
+          "anchor": "create function public.read_artifact_import_candidate_v1(p_candidate_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.read_artifact_import_candidate_v1(p_candidate_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.read_artifact_roundtrip_task_v1(p_task_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.read_artifact_roundtrip_task_v1(p_task_id uuid)",
+          "kind": "function",
+          "name": "read_artifact_roundtrip_task_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 173,
+          "anchor": "create function public.read_artifact_roundtrip_task_v1(p_task_id uuid) returns jsonb language sql security invoker set search_path='' as $$select private.read_artifact_roundtrip_task_v1(p_task_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.recompare_artifact_import_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_command_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.recompare_artifact_import_v1(p_candidate_id uuid, p_expected_head_revision_id uuid, p_command_id uuid)",
+          "kind": "function",
+          "name": "recompare_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_expected_head_revision_id uuid, p_command_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 401,
+          "anchor": "create function public.recompare_artifact_import_v1(p_candidate_id uuid,p_expected_head_revision_id uuid,p_command_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.request_artifact_export_v1(p_revision_id uuid, p_format text, p_locale text, p_command_id uuid, p_variant text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.request_artifact_export_v1(p_revision_id uuid, p_format text, p_locale text, p_command_id uuid, p_variant text)",
+          "kind": "function",
+          "name": "request_artifact_export_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_revision_id uuid, p_format text, p_locale text, p_command_id uuid, p_variant text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 146,
+          "anchor": "create function public.request_artifact_export_v1(p_revision_id uuid,p_format text,p_locale text,p_command_id uuid,p_variant text default 'default')",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.request_artifact_import_upload_v1(p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.request_artifact_import_upload_v1(p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid)",
+          "kind": "function",
+          "name": "request_artifact_import_upload_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 451,
+          "anchor": "create function public.request_artifact_import_upload_v1(p_candidate_id uuid,p_work_id uuid,p_artifact_id uuid,p_export_receipt_id uuid,p_source_version_id uuid,p_expected_head_revision_id uuid,p_format text,p_locale text,p_command_id uuid)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.submit_artifact_import_v1(p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.submit_artifact_import_v1(p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid)",
+          "kind": "function",
+          "name": "submit_artifact_import_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_candidate_id uuid, p_work_id uuid, p_artifact_id uuid, p_export_receipt_id uuid, p_source_version_id uuid, p_expected_head_revision_id uuid, p_format text, p_locale text, p_command_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 132,
+          "anchor": "create function public.submit_artifact_import_v1(p_candidate_id uuid,p_work_id uuid,p_artifact_id uuid,p_export_receipt_id uuid,",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.worker_claim_artifact_roundtrip_v1(p_worker_token text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.worker_claim_artifact_roundtrip_v1(p_worker_token text)",
+          "kind": "function",
+          "name": "worker_claim_artifact_roundtrip_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_worker_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 268,
+          "anchor": "create or replace function public.worker_claim_artifact_roundtrip_v1(p_worker_token text)returns jsonb language sql security invoker set search_path=''as $$select private.worker_claim_artifact_roundtrip_v1(p_worker_token);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.worker_commit_artifact_export_v1(p_task_id uuid, p_capability_token text, p_storage_object_id uuid, p_template_fingerprint text, p_roundtrip_manifest jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.worker_commit_artifact_export_v1(p_task_id uuid, p_capability_token text, p_storage_object_id uuid, p_template_fingerprint text, p_roundtrip_manifest jsonb)",
+          "kind": "function",
+          "name": "worker_commit_artifact_export_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_storage_object_id uuid, p_template_fingerprint text, p_roundtrip_manifest jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 263,
+          "anchor": "create function public.worker_commit_artifact_export_v1(p_task_id uuid,p_capability_token text,p_storage_object_id uuid,p_template_fingerprint text,p_roundtrip_manifest jsonb) returns jsonb language sql security invoker set search_path='' as $$select private.worker_commit_artifact_export_v1(p_task_id,p_capability_token,p_storage_object_id,p_template_fingerprint,p_roundtrip_manifest);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.worker_commit_artifact_import_comparison_v1(p_task_id uuid, p_capability_token text, p_comparison jsonb, p_contributions jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.worker_commit_artifact_import_comparison_v1(p_task_id uuid, p_capability_token text, p_comparison jsonb, p_contributions jsonb)",
+          "kind": "function",
+          "name": "worker_commit_artifact_import_comparison_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_comparison jsonb, p_contributions jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 335,
+          "anchor": "create function public.worker_commit_artifact_import_comparison_v1(p_task_id uuid,p_capability_token text,p_comparison jsonb,p_contributions jsonb)",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.worker_fail_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text, p_failure_code text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.worker_fail_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text, p_failure_code text)",
+          "kind": "function",
+          "name": "worker_fail_artifact_roundtrip_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_failure_code text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 274,
+          "anchor": "create function public.worker_fail_artifact_roundtrip_v1(p_task_id uuid,p_capability_token text,p_failure_code text) returns jsonb language sql security invoker set search_path='' as $$select private.worker_fail_artifact_roundtrip_v1(p_task_id,p_capability_token,p_failure_code);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.worker_prepare_artifact_export_storage_v1(p_task_id uuid, p_capability_token text, p_sha256 text, p_byte_length bigint)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.worker_prepare_artifact_export_storage_v1(p_task_id uuid, p_capability_token text, p_sha256 text, p_byte_length bigint)",
+          "kind": "function",
+          "name": "worker_prepare_artifact_export_storage_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_sha256 text, p_byte_length bigint",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 236,
+          "anchor": "create function public.worker_prepare_artifact_export_storage_v1(p_task_id uuid,p_capability_token text,p_sha256 text,p_byte_length bigint) returns jsonb language sql security invoker set search_path='' as $$select private.worker_prepare_artifact_export_storage_v1(p_task_id,p_capability_token,p_sha256,p_byte_length);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.worker_record_artifact_import_quarantine_v1(p_task_id uuid, p_capability_token text, p_receipt jsonb)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.worker_record_artifact_import_quarantine_v1(p_task_id uuid, p_capability_token text, p_receipt jsonb)",
+          "kind": "function",
+          "name": "worker_record_artifact_import_quarantine_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text, p_receipt jsonb",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 450,
+          "anchor": "create function public.worker_record_artifact_import_quarantine_v1(p_task_id uuid,p_capability_token text,p_receipt jsonb)returns jsonb language sql security invoker set search_path=''as $$select private.worker_record_artifact_import_quarantine_v1(p_task_id,p_capability_token,p_receipt);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid, p_capability_token text)",
+          "kind": "function",
+          "name": "worker_revalidate_artifact_roundtrip_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_task_id uuid, p_capability_token text",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar contrato de roundtrip com autoridade comum, recibos físicos e contribuições imutáveis; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 273,
+          "anchor": "create function public.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid,p_capability_token text)returns jsonb language sql security invoker set search_path=''as $$select private.worker_revalidate_artifact_roundtrip_v1(p_task_id,p_capability_token);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:private.artifact_import_events.artifact_import_events_deny",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:private.artifact_import_events.artifact_import_events_deny",
+          "kind": "policy",
+          "name": "artifact_import_events_deny",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_import_events",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 62,
+          "anchor": "create policy artifact_import_events_deny on private.artifact_import_events for all to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:private.artifact_roundtrip_tasks.artifact_roundtrip_tasks_deny",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:private.artifact_roundtrip_tasks.artifact_roundtrip_tasks_deny",
+          "kind": "policy",
+          "name": "artifact_roundtrip_tasks_deny",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_roundtrip_tasks",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 90,
+          "anchor": "create policy artifact_roundtrip_tasks_deny on private.artifact_roundtrip_tasks for all to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:private.institutional_artifact_import_receipts.institutional_artifact_import_deny",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:private.institutional_artifact_import_receipts.institutional_artifact_import_deny",
+          "kind": "policy",
+          "name": "institutional_artifact_import_deny",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "institutional_artifact_import_receipts",
+          "schema": "private",
+          "command": "ALL",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 511,
+          "anchor": "create policy institutional_artifact_import_deny on private.institutional_artifact_import_receipts for all to authenticated using(false)with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:public.artifact_export_receipts.artifact_export_receipts_delete",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:public.artifact_export_receipts.artifact_export_receipts_delete",
+          "kind": "policy",
+          "name": "artifact_export_receipts_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_export_receipts",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 44,
+          "anchor": "create policy artifact_export_receipts_delete on public.artifact_export_receipts for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:public.artifact_export_receipts.artifact_export_receipts_insert",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:public.artifact_export_receipts.artifact_export_receipts_insert",
+          "kind": "policy",
+          "name": "artifact_export_receipts_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_export_receipts",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 42,
+          "anchor": "create policy artifact_export_receipts_insert on public.artifact_export_receipts for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:public.artifact_export_receipts.artifact_export_receipts_select",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:public.artifact_export_receipts.artifact_export_receipts_select",
+          "kind": "policy",
+          "name": "artifact_export_receipts_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_export_receipts",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 41,
+          "anchor": "create policy artifact_export_receipts_select on public.artifact_export_receipts for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:public.artifact_export_receipts.artifact_export_receipts_update",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:public.artifact_export_receipts.artifact_export_receipts_update",
+          "kind": "policy",
+          "name": "artifact_export_receipts_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_export_receipts",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 43,
+          "anchor": "create policy artifact_export_receipts_update on public.artifact_export_receipts for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:public.artifact_import_candidates.artifact_import_candidates_delete",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:public.artifact_import_candidates.artifact_import_candidates_delete",
+          "kind": "policy",
+          "name": "artifact_import_candidates_delete",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_import_candidates",
+          "schema": "public",
+          "command": "DELETE",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 45,
+          "anchor": "create policy artifact_import_candidates_delete on public.artifact_import_candidates for delete to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:public.artifact_import_candidates.artifact_import_candidates_insert",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:public.artifact_import_candidates.artifact_import_candidates_insert",
+          "kind": "policy",
+          "name": "artifact_import_candidates_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_import_candidates",
+          "schema": "public",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 43,
+          "anchor": "create policy artifact_import_candidates_insert on public.artifact_import_candidates for insert to authenticated with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:public.artifact_import_candidates.artifact_import_candidates_select",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:public.artifact_import_candidates.artifact_import_candidates_select",
+          "kind": "policy",
+          "name": "artifact_import_candidates_select",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_import_candidates",
+          "schema": "public",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 42,
+          "anchor": "create policy artifact_import_candidates_select on public.artifact_import_candidates for select to authenticated using(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:public.artifact_import_candidates.artifact_import_candidates_update",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:public.artifact_import_candidates.artifact_import_candidates_update",
+          "kind": "policy",
+          "name": "artifact_import_candidates_update",
+          "qual": "false",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "artifact_import_candidates",
+          "schema": "public",
+          "command": "UPDATE",
+          "permissive": "PERMISSIVE",
+          "with_check": "false"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 44,
+          "anchor": "create policy artifact_import_candidates_update on public.artifact_import_candidates for update to authenticated using(false) with check(false);",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:storage.objects.artifact_roundtrip_storage_insert",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:storage.objects.artifact_roundtrip_storage_insert",
+          "kind": "policy",
+          "name": "artifact_roundtrip_storage_insert",
+          "qual": null,
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "INSERT",
+          "permissive": "PERMISSIVE",
+          "with_check": "private.artifact_roundtrip_storage_allowed_v1(bucket_id, name, true)"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 300,
+          "anchor": "create policy artifact_roundtrip_storage_insert on storage.objects for insert to authenticated with check(private.artifact_roundtrip_storage_allowed_v1(bucket_id,name,true));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "policy:storage.objects.artifact_roundtrip_storage_select",
+      "kind": "policy",
+      "catalogues": {
+        "replay": {
+          "id": "policy:storage.objects.artifact_roundtrip_storage_select",
+          "kind": "policy",
+          "name": "artifact_roundtrip_storage_select",
+          "qual": "private.artifact_roundtrip_storage_allowed_v1(bucket_id, name, false)",
+          "roles": [
+            "authenticated"
+          ],
+          "table": "objects",
+          "schema": "storage",
+          "command": "SELECT",
+          "permissive": "PERMISSIVE",
+          "with_check": null
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar barreira de acesso do roundtrip; política e papéis conferidos no replay, sem atalhos públicos",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 299,
+          "anchor": "create policy artifact_roundtrip_storage_select on storage.objects for select to authenticated using(private.artifact_roundtrip_storage_allowed_v1(bucket_id,name,false));",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "r:private.artifact_import_events",
+      "kind": "table",
+      "catalogues": {
+        "replay": {
+          "id": "r:private.artifact_import_events",
+          "rls": true,
+          "kind": "table",
+          "name": "artifact_import_events",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar estado persistente de exportação, candidata ou lease do roundtrip; RLS e grants conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 52,
+          "anchor": "create table private.artifact_import_events (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "r:private.artifact_roundtrip_tasks",
+      "kind": "table",
+      "catalogues": {
+        "replay": {
+          "id": "r:private.artifact_roundtrip_tasks",
+          "rls": true,
+          "kind": "table",
+          "name": "artifact_roundtrip_tasks",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar estado persistente de exportação, candidata ou lease do roundtrip; RLS e grants conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 64,
+          "anchor": "create table private.artifact_roundtrip_tasks (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "r:private.institutional_artifact_import_receipts",
+      "kind": "table",
+      "catalogues": {
+        "replay": {
+          "id": "r:private.institutional_artifact_import_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "institutional_artifact_import_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar estado persistente de exportação, candidata ou lease do roundtrip; RLS e grants conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 494,
+          "anchor": "create table private.institutional_artifact_import_receipts(",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "r:public.artifact_export_receipts",
+      "kind": "table",
+      "catalogues": {
+        "replay": {
+          "id": "r:public.artifact_export_receipts",
+          "rls": true,
+          "kind": "table",
+          "name": "artifact_export_receipts",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar estado persistente de exportação, candidata ou lease do roundtrip; RLS e grants conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 4,
+          "anchor": "create table public.artifact_export_receipts (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "r:public.artifact_import_candidates",
+      "kind": "table",
+      "catalogues": {
+        "replay": {
+          "id": "r:public.artifact_import_candidates",
+          "rls": true,
+          "kind": "table",
+          "name": "artifact_import_candidates",
+          "grants": [
+            [
+              "postgres",
+              "DELETE",
+              false
+            ],
+            [
+              "postgres",
+              "INSERT",
+              false
+            ],
+            [
+              "postgres",
+              "MAINTAIN",
+              false
+            ],
+            [
+              "postgres",
+              "REFERENCES",
+              false
+            ],
+            [
+              "postgres",
+              "SELECT",
+              false
+            ],
+            [
+              "postgres",
+              "TRIGGER",
+              false
+            ],
+            [
+              "postgres",
+              "TRUNCATE",
+              false
+            ],
+            [
+              "postgres",
+              "UPDATE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "force_rls": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar estado persistente de exportação, candidata ou lease do roundtrip; RLS e grants conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 3,
+          "anchor": "create table public.artifact_import_candidates (",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:private.artifact_import_events.artifact_import_events_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:private.artifact_import_events.artifact_import_events_audit",
+          "kind": "trigger",
+          "name": "artifact_import_events_audit",
+          "table": "artifact_import_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER artifact_import_events_audit AFTER INSERT ON private.artifact_import_events FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 64,
+          "anchor": "create trigger artifact_import_events_audit after insert on private.artifact_import_events for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:private.artifact_import_events.artifact_import_events_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:private.artifact_import_events.artifact_import_events_immutable",
+          "kind": "trigger",
+          "name": "artifact_import_events_immutable",
+          "table": "artifact_import_events",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_artifact_export_receipt_mutation_v1()",
+          "definition": "CREATE TRIGGER artifact_import_events_immutable BEFORE DELETE OR UPDATE ON private.artifact_import_events FOR EACH ROW EXECUTE FUNCTION private.reject_artifact_export_receipt_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 63,
+          "anchor": "create trigger artifact_import_events_immutable before update or delete on private.artifact_import_events for each row execute function private.reject_artifact_export_receipt_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:private.artifact_roundtrip_tasks.artifact_roundtrip_tasks_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:private.artifact_roundtrip_tasks.artifact_roundtrip_tasks_audit",
+          "kind": "trigger",
+          "name": "artifact_roundtrip_tasks_audit",
+          "table": "artifact_roundtrip_tasks",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER artifact_roundtrip_tasks_audit AFTER INSERT OR DELETE OR UPDATE ON private.artifact_roundtrip_tasks FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 92,
+          "anchor": "create trigger artifact_roundtrip_tasks_audit after insert or update or delete on private.artifact_roundtrip_tasks for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:private.artifact_roundtrip_tasks.artifact_roundtrip_tasks_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:private.artifact_roundtrip_tasks.artifact_roundtrip_tasks_updated",
+          "kind": "trigger",
+          "name": "artifact_roundtrip_tasks_updated",
+          "table": "artifact_roundtrip_tasks",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER artifact_roundtrip_tasks_updated BEFORE UPDATE ON private.artifact_roundtrip_tasks FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 91,
+          "anchor": "create trigger artifact_roundtrip_tasks_updated before update on private.artifact_roundtrip_tasks for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:private.institutional_artifact_import_receipts.institutional_artifact_import_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:private.institutional_artifact_import_receipts.institutional_artifact_import_audit",
+          "kind": "trigger",
+          "name": "institutional_artifact_import_audit",
+          "table": "institutional_artifact_import_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER institutional_artifact_import_audit AFTER INSERT ON private.institutional_artifact_import_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 513,
+          "anchor": "create trigger institutional_artifact_import_audit after insert on private.institutional_artifact_import_receipts for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:private.institutional_artifact_import_receipts.institutional_artifact_import_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:private.institutional_artifact_import_receipts.institutional_artifact_import_immutable",
+          "kind": "trigger",
+          "name": "institutional_artifact_import_immutable",
+          "table": "institutional_artifact_import_receipts",
+          "schema": "private",
+          "enabled": "O",
+          "function": "private.reject_artifact_export_receipt_mutation_v1()",
+          "definition": "CREATE TRIGGER institutional_artifact_import_immutable BEFORE DELETE OR UPDATE ON private.institutional_artifact_import_receipts FOR EACH ROW EXECUTE FUNCTION private.reject_artifact_export_receipt_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 512,
+          "anchor": "create trigger institutional_artifact_import_immutable before update or delete on private.institutional_artifact_import_receipts for each row execute function private.reject_artifact_export_receipt_mutation_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:public.artifact_export_receipts.artifact_export_receipts_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:public.artifact_export_receipts.artifact_export_receipts_audit",
+          "kind": "trigger",
+          "name": "artifact_export_receipts_audit",
+          "table": "artifact_export_receipts",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER artifact_export_receipts_audit AFTER INSERT OR DELETE OR UPDATE ON public.artifact_export_receipts FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 60,
+          "anchor": "create trigger artifact_export_receipts_audit after insert or update or delete on public.artifact_export_receipts",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:public.artifact_export_receipts.artifact_export_receipts_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:public.artifact_export_receipts.artifact_export_receipts_immutable",
+          "kind": "trigger",
+          "name": "artifact_export_receipts_immutable",
+          "table": "artifact_export_receipts",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.reject_artifact_export_receipt_mutation_v1()",
+          "definition": "CREATE TRIGGER artifact_export_receipts_immutable BEFORE DELETE OR UPDATE ON public.artifact_export_receipts FOR EACH ROW EXECUTE FUNCTION private.reject_artifact_export_receipt_mutation_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+          "line": 58,
+          "anchor": "create trigger artifact_export_receipts_immutable before update or delete on public.artifact_export_receipts",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:public.artifact_import_candidates.artifact_import_candidates_audit",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:public.artifact_import_candidates.artifact_import_candidates_audit",
+          "kind": "trigger",
+          "name": "artifact_import_candidates_audit",
+          "table": "artifact_import_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.capture_identity_audit_v1()",
+          "definition": "CREATE TRIGGER artifact_import_candidates_audit AFTER INSERT OR DELETE OR UPDATE ON public.artifact_import_candidates FOR EACH ROW EXECUTE FUNCTION private.capture_identity_audit_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 47,
+          "anchor": "create trigger artifact_import_candidates_audit after insert or update or delete on public.artifact_import_candidates for each row execute function private.capture_identity_audit_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:public.artifact_import_candidates.artifact_import_candidates_immutable",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:public.artifact_import_candidates.artifact_import_candidates_immutable",
+          "kind": "trigger",
+          "name": "artifact_import_candidates_immutable",
+          "table": "artifact_import_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.guard_artifact_import_candidate_v1()",
+          "definition": "CREATE TRIGGER artifact_import_candidates_immutable BEFORE DELETE OR UPDATE ON public.artifact_import_candidates FOR EACH ROW EXECUTE FUNCTION private.guard_artifact_import_candidate_v1()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 74,
+          "anchor": "create trigger artifact_import_candidates_immutable before update or delete on public.artifact_import_candidates for each row execute function private.guard_artifact_import_candidate_v1();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "trigger:public.artifact_import_candidates.artifact_import_candidates_updated",
+      "kind": "trigger",
+      "catalogues": {
+        "replay": {
+          "id": "trigger:public.artifact_import_candidates.artifact_import_candidates_updated",
+          "kind": "trigger",
+          "name": "artifact_import_candidates_updated",
+          "table": "artifact_import_candidates",
+          "schema": "public",
+          "enabled": "O",
+          "function": "private.set_updated_at()",
+          "definition": "CREATE TRIGGER artifact_import_candidates_updated BEFORE UPDATE ON public.artifact_import_candidates FOR EACH ROW EXECUTE FUNCTION private.set_updated_at()"
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar imutabilidade, auditoria e transições do roundtrip; alvo e função conferidos no replay",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 46,
+          "anchor": "create trigger artifact_import_candidates_updated before update on public.artifact_import_candidates for each row execute function private.set_updated_at();",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
     }
   ],
   "repository_items": [
@@ -312727,6 +316490,55 @@
       "decision": "preservar",
       "stage": "20",
       "reason": "Correção prospectiva exata da ordem NOWAIT da captura institucional;17 migrações anteriores imutáveis."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261005101952_artifact_export_receipts.sql",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "instalar contrato governado de roundtrip; replay aplicado na CI, carimbos de produção e staging ainda pendentes"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "instalar contrato governado de roundtrip; replay aplicado na CI, carimbos de produção e staging ainda pendentes"
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/exports/route.ts",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "encaminhar comandos, upload e download do roundtrip pelo contrato e autorização comuns; sem atalho de autorização para Storage ou revisão"
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/imports/[candidateId]/decide/route.ts",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "encaminhar comandos, upload e download do roundtrip pelo contrato e autorização comuns; sem atalho de autorização para Storage ou revisão"
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/imports/[candidateId]/route.ts",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "encaminhar comandos, upload e download do roundtrip pelo contrato e autorização comuns; sem atalho de autorização para Storage ou revisão"
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/imports/route.ts",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "encaminhar comandos, upload e download do roundtrip pelo contrato e autorização comuns; sem atalho de autorização para Storage ou revisão"
+    },
+    {
+      "kind": "entrypoint",
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/imports/upload/route.ts",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "encaminhar comandos, upload e download do roundtrip pelo contrato e autorização comuns; sem atalho de autorização para Storage ou revisão"
     }
   ],
   "staging_archive": [
@@ -313433,5 +317245,14 @@
       ],
       "production": "not applied"
     }
+  },
+  "stage21_replay_review": {
+    "state": "pending_remote_application",
+    "run": "https://github.com/carlosevg100/offroad/actions/runs/37311193945",
+    "commit": "f2dd6f55787c209791a8b5a7b23df60f4a0271f2",
+    "captured_at": "2026-10-05T12:43:51.321307+00:00",
+    "catalogue_sha256": "9b1e9181acdd3c258802786e6e8cab948521241a3cfea99ddbb8ac2e88b5bf87",
+    "scope": "catalogues.replay only; installed production and staging contracts and journals unchanged",
+    "new_objects": 93
   }
 }

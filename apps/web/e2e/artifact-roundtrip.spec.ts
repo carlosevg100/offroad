@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {join} from "node:path";
 import {randomBytes, randomUUID, createHash} from "node:crypto";
 import {expect, test} from "@playwright/test";
 import JSZip from "jszip";
@@ -23,12 +25,11 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   const text = `Synthetic original roundtrip text ${suffix}`, changed = `Synthetic edited human contribution ${suffix}`;
   const manifest = {schemaVersion: "artifact-manifest.2026.09.26-v1", kind: "work_product", audience: "internal", format: "json", bytes: null, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [], claims: [], traces: [], template: null, provenance: {producer: "synthetic-e2e-roundtrip", jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null};
   const created = JSON.parse(sql(asRegimeOwner(f, `select public.create_artifact_revision_v1('${f.workId}','work_product','Synthetic Office contribution','internal',${literal(JSON.stringify(manifest))}::jsonb,${literal(JSON.stringify([{blockKey: "synthetic.text", kind: "paragraph", content: {text}, claims: []}]))}::jsonb,'[]',null,null);`)).split("\n").at(-1)!);
-  sql(asRegimeOwner(f, `select public.review_artifact_revision_v1('${created.revision_id}','${created.manifest_fingerprint}','approve',null,'Synthetic base approval',true,'${randomUUID()}');
-    select public.record_work_decision_v1('${f.workId}','synthetic-roundtrip-base','choose_alternative',jsonb_build_object('artifacts',jsonb_build_array(jsonb_build_object('artifactRevisionId','${created.revision_id}','manifestFingerprint','${created.manifest_fingerprint}')),'milestones','[]'::jsonb,'assessments','[]'::jsonb,'decisions','[]'::jsonb,'execution',null,'configuration',null),array['none'],'in_product',null,'Synthetic continuation basis',null,'${randomUUID()}','approved');`));
+  sql(asRegimeOwner(f, `select public.review_artifact_revision_v1('${created.revision_id}','${created.manifest_fingerprint}','approve',null,'Synthetic base approval',true,'${randomUUID()}');`));
   await page.goto(`/pt-BR/app/projects/${f.workId}?workspace=${f.organizationId}`);
   await page.locator('.advisor-work-surface__navigation a[href="#work-artifact-roundtrip"]').click();
   await page.getByText("Synthetic Office contribution", {exact: true}).click();
-  const panel = page.getByTestId("artifact-import-panel");
+  const panel = page.locator("details").filter({has: page.getByText("Synthetic Office contribution", {exact: true})}).getByTestId("artifact-import-panel");
   await expect(panel.getByRole("button", {name: messages.ArtifactImportPanel.export, exact: true})).toBeEnabled();
   await panel.getByLabel(messages.ArtifactImportPanel.exportFormat, {exact: true}).selectOption("docx");
   await panel.getByRole("button", {name: messages.ArtifactImportPanel.export, exact: true}).click();
@@ -47,6 +48,21 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   await panel.getByRole("button", {name: messages.ArtifactImportPanel.upload, exact: true}).click();
   const review = panel.getByTestId("artifact-import-review");await expect(review.getByText(changed, {exact: true})).toBeVisible({timeout: 90000});
   await expect(review.getByText(text, {exact: true}).first()).toBeVisible();
+  // Stage18's real producer projects the approved execution brief into a decision milestone.
+  // Stage20 record_work_decision is a separate object and must never masquerade as that basis.
+  // This bounded synthetic dispatch is parked in the future: no model can be invoked by the test.
+  const approvalFixture = readFileSync(join(__dirname, "../../../supabase/tests/support/execution_approval.sql"), "utf8");
+  const continuationJob = randomUUID(), continuationRun = randomUUID();
+  sql(`begin;select set_config('request.jwt.claim.sub','${f.actorId}',true);select set_config('request.jwt.claims','{"sub":"${f.actorId}","role":"authenticated","aal":"aal1"}',true);select set_config('request.headers','{"x-offroad-workspace":"${f.organizationId}"}',true);
+    ${approvalFixture}
+    insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
+    select '${continuationRun}','${f.organizationId}',s.id,121,'manual','queued','synthetic-roundtrip-continuation','${f.actorId}' from public.document_intake_sessions s where s.capital_project_id='${f.workId}' order by created_at limit 1;
+    insert into public.processing_jobs(id,organization_id,intake_session_id,processing_run_id,kind,status,payload,available_at)
+    select '${continuationJob}','${f.organizationId}',r.intake_session_id,r.id,'case_analysis','queued','{"analysis_scope":"full_case"}','2099-01-01' from public.processing_runs r where r.id='${continuationRun}';
+    select pg_temp.fixture_approve_execution('${continuationJob}');commit;`);
+  expect(sql(`select count(*) from public.work_milestones where work_id='${f.workId}' and kind='decision' and subject_kind='execution_brief';`)).toBe("1");
+  // Refresh the actual server context to expose the producer-created basis to the person.
+  await page.reload();await page.locator('.advisor-work-surface__navigation a[href="#work-artifact-roundtrip"]').click();await page.getByText("Synthetic Office contribution", {exact: true}).click();
   const basis = panel.getByLabel(messages.ArtifactImportPanel.basis, {exact: true});const basisValue = await basis.locator("option").nth(1).getAttribute("value");expect(basisValue).not.toBeNull();await basis.selectOption(basisValue!);
   const declaration = review.getByLabel(messages.ArtifactImportReview.declaration, {exact: true});if (await declaration.count()) await declaration.check();
   await review.getByRole("button", {name: messages.ArtifactImportReview.apply, exact: true}).click();

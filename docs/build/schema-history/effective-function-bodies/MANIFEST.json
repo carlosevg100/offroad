@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-10-04T18:43:01Z",
-  "source": "LIVE production supplied by root; capturedAt records offline verifiedAt, not database capture time; historical preview activation canonical bytes preserved by exact dual-SHA and two-comment proof",
+  "capturedAt": "2026-10-05T12:45:43Z",
+  "source": "CI replay only; production/staging application pending; https://github.com/carlosevg100/offroad/actions/runs/37311193945; commit f2dd6f55787c209791a8b5a7b23df60f4a0271f2; capture sha256:ec536bddc05634be3ac3ddb75492d0cfc3430cc6438b33a005fa249bd2957ff6",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -593,11 +593,5 @@
       "sha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
     }
   ],
-  "missing": [],
-  "appendCaptureEvidence": {
-    "capturedAt": "2026-10-04 20:37:00.329719+00",
-    "signature": "private.worker_load_institutional_model_context_v3(uuid,text)",
-    "source": "LIVE production after actual forward18; prior117 entries/bytes preserved",
-    "receipt": "outputs/etapa-20-2026-10-02-continuacao/PRODUCTION-18-INSTITUTIONAL-CAPTURE-NOWAIT-APPLIED.json"
-  }
+  "missing": []
 }

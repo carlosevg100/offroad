@@ -601,7 +601,7 @@ begin
  values(new_configuration_id,imp.organization_id,imp.work_id,canonical.id,c.id,c.configuration_fingerprint,m.artifact->>'fingerprint',imp.comparison_fingerprint,imp.upload_sha256,p_changes,imp.submitted_by);
  proof:=private.institutional_configuration_ancestry_before_review_projection_v1(imp.organization_id,imp.work_id,new_configuration_id);
  result:=private.review_institutional_configuration_and_calculate_v2(imp.work_id,new_configuration_id,parent.configuration_fingerprint,'approved',fp,private.institutional_config_hash(proof),native_command,p_locale,p_self_approval_declared);
- update private.institutional_revision_proposals p set status='approved',candidate_configuration_id=apply_institutional_artifact_import_v1.new_configuration_id,reviewed_by=auth.uid(),reviewed_at=now()where p.organization_id=imp.organization_id and p.id=apply_institutional_artifact_import_v1.new_configuration_id;
+ update private.institutional_revision_proposals p set status='approved',candidate_configuration_id=new_configuration_id,reviewed_by=auth.uid(),reviewed_at=now()where p.organization_id=imp.organization_id and p.id=new_configuration_id;
  return result||jsonb_build_object('configurationId',new_configuration_id,'configurationFingerprint',fp,'resultId',native_command);
 end;$$;
 
@@ -781,7 +781,7 @@ begin
  select value into binding from jsonb_array_elements(c.comparison#>'{baseManifest,inputs}')where 'in:'||(value->>'name')=diff->>'key';
  proposed_value:=diff#>>'{received,value}';
  if binding is null or proposed_value is null or length(proposed_value)>100 or proposed_value!~'^-?[0-9]+(\.[0-9]+)?$'then raise exception 'artifact_import_resolution_invalid'using errcode='22023';end if;
- changes:=changes||jsonb_build_array(jsonb_strip_nulls(jsonb_build_object('assumptionId',binding->>'assumptionId','period',binding->>'period','configurationId',binding->>'configurationId','approved',coalesce(diff#>>'{current,value}',binding->>'approved'),'proposed',proposed_value)));
+ changes:=changes||jsonb_build_array(jsonb_strip_nulls(jsonb_build_object('assumptionId',binding->>'assumptionId','period',binding->>'period','configurationId',binding->>'configurationId','approved',coalesce(binding->>'approved',diff#>>'{base,value}'),'proposed',proposed_value)));
  elsif diff#>>'{received,role}'='text'then
  proposals:=proposals||jsonb_build_array(jsonb_build_object('blockKey',diff#>>'{base,blockKey}','content',jsonb_build_object('text',diff#>>'{received,value}'),'claims','[]'::jsonb,'supportIds','[]'::jsonb,'detachedClaimIds',coalesce(diff#>'{base,claimIds}','[]')));
  else raise exception 'artifact_import_resolution_invalid'using errcode='22023';end if;end loop;
@@ -807,12 +807,13 @@ begin
  select id into rights from private.source_rights_versions where organization_id=c.organization_id and source_version_id=c.source_version_id order by revision desc limit 1;
  -- Sources are rederived from immutable database dependencies plus the verified human upload,
  -- never from received-file citations; changed blocks carry no inherited claim/support identity.
- select coalesce(jsonb_agg(distinct jsonb_build_object('sourceVersionId',source_version_id,'rightsVersionId',source_rights_version_id)),'[]')into refs from private.artifact_dependency_links where organization_id=c.organization_id and revision_id=head.id and link_kind='source_version';
+ select coalesce(jsonb_agg(distinct jsonb_build_object('sourceVersionId',source_version_id,'rightsVersionId',source_rights_version_id)),'[]')into refs from private.artifact_dependency_links where organization_id=c.organization_id and revision_id in(head.id,c.base_revision_id) and link_kind='source_version';
  if not exists(select 1 from jsonb_array_elements(refs)r where r->>'sourceVersionId'=c.source_version_id::text)then refs:=refs||jsonb_build_array(jsonb_build_object('sourceVersionId',c.source_version_id,'rightsVersionId',rights));end if;
  manifest:=head.manifest||jsonb_build_object('kind',case when a.kind='execution_result'then'answer'else a.kind end,'audience','internal','bytes',null,'execution',null,'inputSnapshot',null,'legacy',null,'sources',refs,'claims',claims,'traces','[]'::jsonb,
  'provenance',jsonb_build_object('producer','artifact-import','jobId',null,'taskRunId',null,'messageId',null,'capability',null),
  'institutionalResult',case when institutional is not null then jsonb_build_object('id',institutional->>'resultId','configurationFingerprint',institutional->>'configurationFingerprint')else null end);
  links:=jsonb_build_array(jsonb_build_object('kind','artifact_revision','derivedFromRevisionId',head.id));
+ if c.base_revision_id is distinct from head.id then links:=links||jsonb_build_array(jsonb_build_object('kind','artifact_revision','derivedFromRevisionId',c.base_revision_id));end if;
  written:=private.create_artifact_revision_v1(c.organization_id,c.work_id,case when a.kind='execution_result'then'answer'else a.kind end,case when a.kind='execution_result'then'artifact-import:'||c.id::text else a.subject end,'internal','person',manifest,blocks,links,null,null,null,auth.uid(),auth.uid(),null,true);
  decision:=private.record_work_decision_v1(c.work_id,'artifact-import:'||c.id::text||':'||p_command_id::text,'adopt_import',jsonb_build_object('artifacts',jsonb_build_array(jsonb_build_object('artifactRevisionId',head.id,'manifestFingerprint',head.manifest_fingerprint)),'milestones','[]'::jsonb,'assessments','[]'::jsonb,'decisions','[]'::jsonb,'execution',null,'configuration',null),array['recompute'],'in_product',null,null,null,p_command_id);
  if(decision->>'contested')::boolean then raise exception 'artifact_import_decision_contested'using errcode='40001';end if;
