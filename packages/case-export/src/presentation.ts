@@ -558,6 +558,9 @@ async function renderMaterialPptx(input: {material: Material; lang: DocxLang; me
       const flush = () => {if (rows.length) pages.push(rows); rows = []; cost = 0;};
       block.rows.forEach(row => {const weight = rowCost(row); if (rows.length && cost + weight + rowCost(block.head.map(head => head[lang])) > maxHeight) flush(); rows.push(row); cost += weight;});
       flush();
+      // An explicitly bound empty table still has a physical header region. Legacy
+      // serialization keeps omitting it; roundtrip must not lose its structural key.
+      if (!pages.length && block.head.length && meta.roundtrip?.blocks.some(binding => binding.blockIndex === index)) pages.push([]);
       // Avoid a trailing one-row appendix slide while preserving row order and readable type.
       const tail=pages.at(-1), previous=pages.at(-2);
       if(tail && previous) while(tail.length<3 && previous.length>3) {
@@ -581,7 +584,10 @@ async function renderMaterialPptx(input: {material: Material; lang: DocxLang; me
       case "callout": section = block.title[lang]; lines = block.items.map((item) => ({label: item.label[lang], value: item.value[lang], traceId})); break;
       case "table": section = block.caption[lang]; lines = block.rows.flatMap((row, rowIndex) => row.map((value, column) => ({label: `${rowIndex + 1} · ${block.head[column]?.[lang] ?? ""}`, value, traceId}))); break;
     }
-    paginateLines(lines).forEach((page) => slides.push({title: section, eyebrow: eyebrowFor(section), kind: "narrative", blockId: traceId, lines: page}));
+    const pages = paginateLines(lines);
+    // Empty collections carry a binding to an empty group, without invented text.
+    if (!pages.length && meta.roundtrip?.blocks.some(binding => binding.blockIndex === index)) pages.push([]);
+    pages.forEach((page) => slides.push({title: section, eyebrow: eyebrowFor(section), kind: "narrative", blockId: traceId, lines: page}));
   });
   const roundtripBlocks: MaterialPptxRoundtripRegions[] = [];
   if (meta.roundtrip) {

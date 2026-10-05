@@ -148,3 +148,29 @@ it("requires the exact pinned logo bytes and current lease before and after Stor
  const corrupt=port();corrupt.download.mockResolvedValue({data:new Blob([new Uint8Array([4,3,2,1])]),error:null});await expect(createArtifactRoundtripRenderer(corrupt.client)(c,identity)).rejects.toThrow("template_logo_changed");
  const revoked=port();revoked.download.mockResolvedValue({data:new Blob([logo]),error:null});revoked.rpc.mockResolvedValueOnce({data:{valid:true},error:null}).mockResolvedValueOnce({data:{valid:false},error:null});await expect(createArtifactRoundtripRenderer(revoked.client)(c,identity)).rejects.toThrow("source_revoked");
 });
+it("exports the actual native compiler term sheet to PPTX with every structural block bound",async()=>{
+ const {buildMaterialCompilerReadyFixture}=await import("./testing/material-compiler-ready-fixture");
+ const {bundle}=await buildMaterialCompilerReadyFixture({sessionId:id(70),runId:id(71)});
+ const encode=(value:unknown)=>new TextEncoder().encode(JSON.stringify(value));
+ const packageBytes=encode(bundle.materialPackage),stateBytes=encode(bundle.caseState);
+ const body=(bytes:Uint8Array,path:string)=>({retainedPayloadId:id(72),allocationId:id(73),storage:{bucket:"capital-input-capture",path},sha256:roundtripSha256(bytes),byteLength:bytes.length,storageObjectId:id(74),storageVersion:"exact-synthetic-version",expiresAt:"2100-01-01T00:00:00Z"});
+ const c={...claim("pptx"),variant:"term_sheet",producer:{kind:"native_material",recipeId:id(75),variants:["term_sheet"],archetypeId:"other",packageBody:body(packageBytes,"owned/package.json"),stateBody:body(stateBytes,"owned/state.json")}};
+ const p=port();p.download.mockImplementation(async(path:string)=>({data:new Blob([path==="owned/package.json"?packageBytes:stateBytes]),error:null}));
+ const rendered=await createArtifactRoundtripRenderer(p.client)(c,c.revision);
+ const extracted=await extractRoundtripManifest(rendered.bytes,"pptx");expect(extracted.issue).toBeNull();
+ expect(extracted.manifest?.blocks.length).toBeGreaterThan(0);
+ expect((await readRoundtripSnapshot(rendered.bytes,"pptx")).entries.length).toBe(extracted.manifest?.blocks.length);
+});
+it("exports the actual native compiler financial model to XLSX under its approved bytes",async()=>{
+ const {buildMaterialCompilerReadyFixture}=await import("./testing/material-compiler-ready-fixture");
+ const {bundle}=await buildMaterialCompilerReadyFixture({sessionId:id(80),runId:id(81)});
+ const encode=(value:unknown)=>new TextEncoder().encode(JSON.stringify(value));
+ const packageBytes=encode(bundle.materialPackage),stateBytes=encode(bundle.caseState);
+ const body=(bytes:Uint8Array,path:string)=>({retainedPayloadId:id(82),allocationId:id(83),storage:{bucket:"capital-input-capture",path},sha256:roundtripSha256(bytes),byteLength:bytes.length,storageObjectId:id(84),storageVersion:"exact-synthetic-version",expiresAt:"2100-01-01T00:00:00Z"});
+ const c={...claim("xlsx"),variant:"financial_model",producer:{kind:"native_material",recipeId:id(85),variants:["financial_model"],archetypeId:"other",packageBody:body(packageBytes,"owned/package.json"),stateBody:body(stateBytes,"owned/state.json")}};
+ const p=port();p.download.mockImplementation(async(path:string)=>({data:new Blob([path==="owned/package.json"?packageBytes:stateBytes]),error:null}));
+ const rendered=await createArtifactRoundtripRenderer(p.client)(c,c.revision);
+ const extracted=await extractRoundtripManifest(rendered.bytes,"xlsx");expect(extracted.issue).toBeNull();
+ expect(extracted.manifest?.logicalManifestFingerprint).toBe(c.revision!.logicalManifestFingerprint);
+ expect((await readRoundtripSnapshot(rendered.bytes,"xlsx")).entries.length).toBeGreaterThan(0);
+});

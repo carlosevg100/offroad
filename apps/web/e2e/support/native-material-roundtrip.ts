@@ -1,7 +1,7 @@
 /** Local prospective fixture: the same SDK producer, Storage receipts and commit as stage 20. */
 import {spawn, execFileSync} from "node:child_process";
 import {randomUUID} from "node:crypto";
-import {constants, existsSync, openSync, fstatSync, readFileSync, closeSync, mkdirSync, rmSync} from "node:fs";
+import {constants, openSync, fstatSync, readFileSync, closeSync, mkdirSync, rmSync} from "node:fs";
 import {join} from "node:path";
 import {z} from "zod";
 
@@ -113,12 +113,18 @@ export async function startNativeMaterialRoundtripFixture(): Promise<NativeMater
     {input: query, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"]}).trim();
   try {
     const deadline = Date.now() + 120_000;
-    while (!existsSync(file)) {
-      if (exited) throw new Error(diagnostic);
-      if (Date.now() > deadline) throw new Error("native_material_fixture_timeout");
-      await new Promise(resolve => setTimeout(resolve, 100));
+    let fd: number | undefined;
+    while (fd === undefined) {
+      // Opening is the readiness check; metadata and contents use that same fd.
+      // There is no path existence check that can race with a replacement.
+      try {fd = openSync(file, constants.O_RDONLY | constants.O_NOFOLLOW);}
+      catch (error) {
+        if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+        if (exited) throw new Error(diagnostic);
+        if (Date.now() > deadline) throw new Error("native_material_fixture_timeout");
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
-    const fd = openSync(file, constants.O_RDONLY | constants.O_NOFOLLOW);
     let raw: unknown;
     try {
       const metadata = fstatSync(fd);
