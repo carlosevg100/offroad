@@ -3693,9 +3693,9 @@ O SQL de `supabase/pending/work_review_dashboard.sql` é candidato de teste no s
 
 ## Etapa 21: delta observado somente no replay da CI
 
-O run `37314005995`, commit `f2b2f78ed3582abec706b6953123460e9244f68a`,
-coletou 4.746 contratos em `2026-10-05T13:06:56.654271+00:00`:
-93 objetos novos da etapa 21 e nenhuma diferença nos contratos de acesso anteriores.
+O run `37328944580`, commit `60d122802014aa3735474b5f380054735b0e8260`,
+coletou 4.748 contratos em `2026-10-05T14:59:26.669387+00:00`:
+95 objetos novos da etapa 21 e nenhuma diferença nos contratos de acesso anteriores.
 As decisões novas em `object-decisions.json` registram `catalogues.replay`.
 Produção e staging permanecem com seus contratos anteriormente coletados; esta revisão
 não promove o replay a evidência instalada nem registra carimbo remoto.

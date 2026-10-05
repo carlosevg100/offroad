@@ -33312,6 +33312,24 @@
           ],
           "signature": "p_org uuid, p_session uuid",
           "security_definer": true
+        },
+        "replay": {
+          "id": "function:private.institutional_source_context(p_org uuid, p_session uuid)",
+          "kind": "function",
+          "name": "institutional_source_context",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_session uuid",
+          "security_definer": true
         }
       },
       "owner": "Codex — etapa responsável do roteiro aprovado",
@@ -33323,6 +33341,12 @@
           "path": "supabase/migrations/20260910072054_institutional_model_setup_and_source_bindings.sql",
           "line": 29,
           "anchor": "create function private.institutional_source_context(p_org uuid,p_session uuid) returns jsonb language plpgsql stable security definer set search_path='' as $$",
+          "mechanism": "direct_ddl"
+        },
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 535,
+          "anchor": "create or replace function private.institutional_source_context(p_org uuid,p_session uuid) returns jsonb language plpgsql stable security definer set search_path='' as $$",
           "mechanism": "direct_ddl"
         }
       ],
@@ -58430,7 +58454,7 @@
         },
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 609,
+          "line": 642,
           "anchor": "create or replace function private.review_institutional_configuration_and_calculate_v2(",
           "mechanism": "direct_ddl"
         }
@@ -62080,7 +62104,7 @@
         },
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 938,
+          "line": 971,
           "anchor": "create or replace function private.source_storage_read_v1(p_bucket text,p_path text)",
           "mechanism": "direct_ddl"
         }
@@ -63951,7 +63975,7 @@
         },
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 920,
+          "line": 953,
           "anchor": "create or replace function private.storage_export_purpose_allowed_v1(p_bucket text,p_path text)",
           "mechanism": "direct_ddl"
         }
@@ -305501,7 +305525,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 747,
+          "line": 780,
           "anchor": "create function private.adopt_artifact_import_v1(p_candidate_id uuid,p_expected_head_revision_id uuid,p_expected_comparison_fingerprint text,p_resolutions jsonb,",
           "mechanism": "direct_ddl"
         }
@@ -305538,7 +305562,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 569,
+          "line": 607,
           "anchor": "create function private.apply_institutional_artifact_import_v1(p_candidate uuid,p_changes jsonb,p_command_id uuid,p_locale text,p_self_approval_declared boolean,p_configuration_id uuid,p_rebase_declared boolean)",
           "mechanism": "direct_ddl"
         }
@@ -305686,7 +305710,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 475,
+          "line": 490,
           "anchor": "create function private.artifact_roundtrip_claim_context_v1(t private.artifact_roundtrip_tasks,p_capability_token text)",
           "mechanism": "direct_ddl"
         }
@@ -305797,7 +305821,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 902,
+          "line": 935,
           "anchor": "create function private.artifact_roundtrip_material_storage_allowed_v1(p_org uuid,p_revision uuid,p_subject uuid,p_bucket text,p_path text)",
           "mechanism": "direct_ddl"
         }
@@ -305834,7 +305858,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 835,
+          "line": 868,
           "anchor": "alter function private.artifact_roundtrip_producer_context_v1(uuid)rename to artifact_roundtrip_producer_before_import_v1;",
           "mechanism": "function_rename"
         }
@@ -305871,7 +305895,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 837,
+          "line": 870,
           "anchor": "create function private.artifact_roundtrip_producer_chain_v1(p_revision uuid,p_visited uuid[])",
           "mechanism": "direct_ddl"
         }
@@ -305908,7 +305932,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 852,
+          "line": 885,
           "anchor": "create function private.artifact_roundtrip_producer_context_v1(p_revision uuid)returns jsonb language sql security definer set search_path=''as $$select private.artifact_roundtrip_producer_chain_v1(p_revision,'{}');$$;",
           "mechanism": "direct_ddl"
         }
@@ -306177,7 +306201,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 519,
+          "line": 557,
           "anchor": "alter function private.institutional_configuration_ancestry_before_review_projection_v1(uuid,uuid,uuid)rename to institutional_configuration_ancestry_before_artifact_import_v1;",
           "mechanism": "function_rename"
         }
@@ -306219,7 +306243,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 695,
+          "line": 728,
           "anchor": "create function private.keep_artifact_import_as_source_v1(p_candidate_id uuid,p_command_id uuid,p_reason text)",
           "mechanism": "direct_ddl"
         }
@@ -306261,7 +306285,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 454,
+          "line": 469,
           "anchor": "create function private.list_artifact_export_receipts_v1(p_artifact_id uuid)returns jsonb language plpgsql security definer set search_path=''as $$",
           "mechanism": "direct_ddl"
         }
@@ -306303,7 +306327,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 464,
+          "line": 479,
           "anchor": "create function private.list_work_artifact_imports_v1(p_work_id uuid)returns jsonb language plpgsql security definer set search_path=''as $$",
           "mechanism": "direct_ddl"
         }
@@ -306345,7 +306369,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 715,
+          "line": 748,
           "anchor": "create function private.match_artifact_import_v1(p_candidate_id uuid,p_export_receipt_id uuid,p_expected_head_revision_id uuid,p_mappings jsonb,p_command_id uuid)",
           "mechanism": "direct_ddl"
         }
@@ -306387,7 +306411,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 882,
+          "line": 915,
           "anchor": "create function private.read_artifact_export_options_v1(p_revision_id uuid)",
           "mechanism": "direct_ddl"
         }
@@ -306513,7 +306537,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 858,
+          "line": 891,
           "anchor": "create or replace function private.read_artifact_roundtrip_task_v1(p_task_id uuid)",
           "mechanism": "direct_ddl"
         }
@@ -307118,7 +307142,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 489,
+          "line": 504,
           "anchor": "create or replace function private.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid,p_capability_token text)",
           "mechanism": "direct_ddl"
         }
@@ -307160,7 +307184,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 831,
+          "line": 864,
           "anchor": "create function public.adopt_artifact_import_group_v1(p_candidate_id uuid,p_expected_head_revision_id uuid,p_expected_comparison_fingerprint text,p_resolutions jsonb,",
           "mechanism": "direct_ddl"
         }
@@ -307202,7 +307226,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 827,
+          "line": 860,
           "anchor": "create function public.adopt_artifact_import_v1(p_candidate_id uuid,p_expected_head_revision_id uuid,p_expected_comparison_fingerprint text,p_resolutions jsonb,",
           "mechanism": "direct_ddl"
         }
@@ -307286,7 +307310,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 713,
+          "line": 746,
           "anchor": "create function public.keep_artifact_import_as_source_v1(p_candidate_id uuid,p_command_id uuid,p_reason text)returns jsonb language sql security invoker set search_path=''as $$select private.keep_artifact_import_as_source_v1(p_candidate_id,p_command_id,p_reason);$$;",
           "mechanism": "direct_ddl"
         }
@@ -307328,7 +307352,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 463,
+          "line": 478,
           "anchor": "create function public.list_artifact_export_receipts_v1(p_artifact_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.list_artifact_export_receipts_v1(p_artifact_id);$$;",
           "mechanism": "direct_ddl"
         }
@@ -307370,7 +307394,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 473,
+          "line": 488,
           "anchor": "create function public.list_work_artifact_imports_v1(p_work_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.list_work_artifact_imports_v1(p_work_id);$$;",
           "mechanism": "direct_ddl"
         }
@@ -307412,7 +307436,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 745,
+          "line": 778,
           "anchor": "create function public.match_artifact_import_v1(p_candidate_id uuid,p_export_receipt_id uuid,p_expected_head_revision_id uuid,p_mappings jsonb,p_command_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.match_artifact_import_v1(p_candidate_id,p_export_receipt_id,p_expected_head_revision_id,p_mappings,p_command_id);$$;",
           "mechanism": "direct_ddl"
         }
@@ -307454,7 +307478,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 898,
+          "line": 931,
           "anchor": "create function public.read_artifact_export_options_v1(p_revision_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.read_artifact_export_options_v1(p_revision_id);$$;",
           "mechanism": "direct_ddl"
         }
@@ -308141,7 +308165,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 511,
+          "line": 526,
           "anchor": "create policy institutional_artifact_import_deny on private.institutional_artifact_import_receipts for all to authenticated using(false)with check(false);",
           "mechanism": "direct_ddl"
         }
@@ -308678,7 +308702,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 494,
+          "line": 509,
           "anchor": "create table private.institutional_artifact_import_receipts(",
           "mechanism": "direct_ddl"
         }
@@ -308961,7 +308985,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 513,
+          "line": 528,
           "anchor": "create trigger institutional_artifact_import_audit after insert on private.institutional_artifact_import_receipts for each row execute function private.capture_identity_audit_v1();",
           "mechanism": "direct_ddl"
         }
@@ -308990,7 +309014,7 @@
       "sources": [
         {
           "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
-          "line": 512,
+          "line": 527,
           "anchor": "create trigger institutional_artifact_import_immutable before update or delete on private.institutional_artifact_import_receipts for each row execute function private.reject_artifact_export_receipt_mutation_v1();",
           "mechanism": "direct_ddl"
         }
@@ -309141,6 +309165,90 @@
         }
       ],
       "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de SQL/E2E e carimbos reais."
+    },
+    {
+      "id": "function:private.list_work_artifact_heads_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:private.list_work_artifact_heads_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "list_work_artifact_heads_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": true
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar leitura dos artefatos pelo contrato e autoridade comuns; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 455,
+          "anchor": "create function private.list_work_artifact_heads_v1(p_work_id uuid)returns jsonb language plpgsql security definer set search_path=''as $$",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de E2E e carimbos reais."
+    },
+    {
+      "id": "function:public.list_work_artifact_heads_v1(p_work_id uuid)",
+      "kind": "function",
+      "catalogues": {
+        "replay": {
+          "id": "function:public.list_work_artifact_heads_v1(p_work_id uuid)",
+          "kind": "function",
+          "name": "list_work_artifact_heads_v1",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ],
+            [
+              "authenticated",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "public",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_work_id uuid",
+          "security_definer": false
+        }
+      },
+      "owner": "Engenharia de execução — etapa 21",
+      "decision": "preservar",
+      "stage": "21",
+      "reason": "preservar leitura dos artefatos pelo contrato e autoridade comuns; privilégio instalado no replay conferido por assinatura",
+      "sources": [
+        {
+          "path": "supabase/migrations/20261005102636_artifact_import_candidates.sql",
+          "line": 465,
+          "anchor": "create function public.list_work_artifact_heads_v1(p_work_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.list_work_artifact_heads_v1(p_work_id);$$;",
+          "mechanism": "direct_ddl"
+        }
+      ],
+      "consumer_status": "Contrato novo da etapa 21 observado somente no replay CI; publicação remota pendente de E2E e carimbos reais."
     }
   ],
   "repository_items": [
@@ -317248,11 +317356,12 @@
   },
   "stage21_replay_review": {
     "state": "pending_remote_application",
-    "run": "https://github.com/carlosevg100/offroad/actions/runs/37314005995",
-    "commit": "f2b2f78ed3582abec706b6953123460e9244f68a",
-    "captured_at": "2026-10-05T13:06:56.654271+00:00",
-    "catalogue_sha256": "d64da58868593467dd9b611af40b10bce912f4bae536074bc2b6003deddeaac8",
+    "run": "https://github.com/carlosevg100/offroad/actions/runs/37328944580",
+    "commit": "60d122802014aa3735474b5f380054735b0e8260",
+    "captured_at": "2026-10-05T14:59:26.669387+00:00",
+    "catalogue_sha256": "03ccc9d3567dcb8f772be55faf709a399ffe39411ccf6e829f52ec82a4ea22fa",
     "scope": "catalogues.replay only; installed production and staging contracts and journals unchanged",
-    "new_objects": 93
+    "new_objects": 95,
+    "function_catalogue_sha256": "7013b34ac663f0db69ad69fa7fa8ed2706532526221c2d991c6c8cba2f9b765d"
   }
 }

@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-10-05T13:08:11Z",
-  "source": "CI replay only; production/staging application pending; https://github.com/carlosevg100/offroad/actions/runs/37314005995; commit f2b2f78ed3582abec706b6953123460e9244f68a; capture sha256:ec536bddc05634be3ac3ddb75492d0cfc3430cc6438b33a005fa249bd2957ff6",
+  "capturedAt": "2026-10-05T15:04:45Z",
+  "source": "CI replay only; production/staging application pending; https://github.com/carlosevg100/offroad/actions/runs/37328944580; commit 60d122802014aa3735474b5f380054735b0e8260; capture sha256:ec536bddc05634be3ac3ddb75492d0cfc3430cc6438b33a005fa249bd2957ff6",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",

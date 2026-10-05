@@ -9,7 +9,7 @@ import {asRegimeOwner, createRegimeWork, localReviewRegimeSql, signUpRegimeAccou
 const literal = (value: string) => `convert_from(decode('${Buffer.from(value).toString("hex")}','hex'),'UTF8')`;
 /** Actual browser -> queue -> offline worker -> export receipt -> Office edit -> quarantine ->
  * comparison -> explicit human adoption. No model or fabricated verification is used. */
-test("Office roundtrip preserves the base and adopts a reviewed human text contribution", async ({page}) => {
+test("Office roundtrip preserves the base and adopts a reviewed human text contribution", async ({page}, testInfo) => {
   const sql = localReviewRegimeSql(), suffix = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
   await signUpRegimeAccount(page, `e2e-regime-roundtrip-${suffix}@example.com`, `Offroad-roundtrip-${suffix}!`);
   const f = createRegimeWork(sql, `e2e-regime-roundtrip-${suffix}@example.com`, suffix);
@@ -41,6 +41,7 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   const snapshot = await readRoundtripSnapshot(bytes, "docx");expect(snapshot.manifest?.revisionId).toBe(created.revision_id);
   const zip = await JSZip.loadAsync(bytes);const originalXml = await zip.file("word/document.xml")!.async("string");expect(originalXml).toContain(text);
   zip.file("word/document.xml", originalXml.replace(text, changed));const edited = await zip.generateAsync({type: "nodebuffer"});
+  const editedSnapshot = await readRoundtripSnapshot(edited, "docx");expect(editedSnapshot.entries.find(entry => entry.blockKey === "synthetic.text")?.value).toBe(changed);
   await panel.getByLabel(messages.ArtifactImportPanel.name, {exact: true}).fill("Synthetic analyst");
   await panel.getByLabel(messages.ArtifactImportPanel.role, {exact: true}).fill("Analyst");
   const checks = panel.locator('input[type="checkbox"]');await checks.nth(0).check();await checks.nth(1).check();
@@ -49,7 +50,16 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   await expect(receipts.locator(`option[value="${receipt}"]`)).toBeAttached();await receipts.selectOption(receipt);
   await panel.getByLabel(messages.ArtifactImportPanel.file, {exact: true}).setInputFiles({name: "synthetic-edit.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: edited});
   await panel.getByRole("button", {name: messages.ArtifactImportPanel.upload, exact: true}).click();
-  const review = panel.getByTestId("artifact-import-review");await expect(review.getByText(changed, {exact: true})).toBeVisible({timeout: 90000});
+  const review = panel.getByTestId("artifact-import-review");
+  try {await expect(review.getByText(changed, {exact: true})).toBeVisible({timeout: 90000});}
+  catch(error) {
+    // Only bounded lifecycle metadata is captured. No document, comparison value or worker token
+    // is printed; failures remain failures and the production authorization path stays unchanged.
+    const response = await page.request.get(`/pt-BR/app/artifacts/${created.artifact_id}/imports?workId=${f.workId}`);
+    const lifecycle = JSON.parse(sql(`select json_build_object('candidates',coalesce((select json_agg(json_build_object('status',c.status,'reason',c.reason,'comparisonStatus',c.comparison->>'status','classifications',(select json_agg(json_build_object('classification',x.kind,'count',x.n)) from(select value->>'classification'kind,count(*)n from jsonb_array_elements(coalesce(c.comparison->'differences','[]'))group by value->>'classification')x),'proposalCount',jsonb_array_length(coalesce(c.contributions->'blockProposals','[]')))) from public.artifact_import_candidates c where c.work_id='${f.workId}' and c.artifact_id='${created.artifact_id}'),'[]'::json),'tasks',coalesce((select json_agg(json_build_object('operation',t.operation,'state',t.state,'failureCode',t.failure_code))from private.artifact_roundtrip_tasks t where t.work_id='${f.workId}' and t.import_candidate_id is not null),'[]'::json));`));
+    await testInfo.attach("roundtrip-readiness-lifecycle",{body:JSON.stringify({httpStatus:response.status(),...lifecycle}),contentType:"application/json"});
+    throw error;
+  }
   await expect(review.getByText(text, {exact: true}).first()).toBeVisible();
   // Stage18's real producer projects the approved execution brief into a decision milestone.
   // Stage20 record_work_decision is a separate object and must never masquerade as that basis.

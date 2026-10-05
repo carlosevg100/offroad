@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 import {join} from "node:path";
 
 import {requestArtifactExport} from "./support/roundtrip-download";
-import {readRoundtripSnapshot} from "@offroad/case-export/artifact-roundtrip";
+import {extractRoundtripManifest, readRoundtripSnapshot} from "@offroad/case-export/artifact-roundtrip";
 import {startNativeMaterialRoundtripFixture} from "./support/native-material-roundtrip";
 import {expect, test, type Page} from "@playwright/test";
 
@@ -57,7 +57,9 @@ test("governed materials and model come from one exact revision, and an external
       const selection = {artifactId:native.artifactId,revisionId:native.materialRevisionId,locale:"pt-BR",format,variant:"term_sheet",workspace:native.organizationId};
       const first = await requestArtifactExport(page,selection), second = await requestArtifactExport(page,selection);
       const bytes = await first.body();expect(bytes.subarray(0,magic.length).toString()).toBe(magic);expect(sha256(await second.body())).toBe(sha256(bytes));files[format]=bytes;
-      const snapshot = await readRoundtripSnapshot(bytes,format);expect(snapshot.manifest?.revisionId).toBe(native.materialRevisionId);
+      // PDF is a final delivery, not a supported reimport format. Its receipt/hash/revision
+      // were verified above; only editable Office files enter the roundtrip parser.
+      if(format!=="pdf"){const snapshot=await readRoundtripSnapshot(bytes,format);expect(snapshot.manifest?.revisionId).toBe(native.materialRevisionId);}else{const extracted=await extractRoundtripManifest(bytes,"pdf");expect(extracted.issue).toBeNull();expect(extracted.manifest?.revisionId).toBe(native.materialRevisionId);expect(extracted.manifest?.artifactId).toBe(native.artifactId);}
     }
     const model = await requestArtifactExport(page,{artifactId:native.artifactId,revisionId:native.materialRevisionId,locale:"pt-BR",format:"xlsx",variant:"financial_model",workspace:native.organizationId});
     expect((await model.body()).subarray(0,2).toString()).toBe("PK");expect((await readRoundtripSnapshot(await model.body(),"xlsx")).manifest?.revisionId).toBe(native.materialRevisionId);
