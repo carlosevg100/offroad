@@ -26,10 +26,10 @@ begin
  if private.capital_preview_storage_job_authority_v1(a.id)then raise exception 'preview_storage_wrong_account_allowed';end if;checks:=checks+1;
  perform set_config('request.jwt.claims',claims::text,true);
  -- Explicit identity from the independently owned real SDK producer, never any old fixture.
- select a.id into other from private.capital_public_payload_allocations a
- join private.capital_public_retained_payloads r on(r.organization_id,r.allocation_id)=(a.organization_id,a.id)
+ select other_capture.id into other from private.capital_public_payload_allocations other_capture
+ join private.capital_public_retained_payloads r on(r.organization_id,r.allocation_id)=(other_capture.organization_id,other_capture.id)
  join private.material_production_bindings b on(b.organization_id,b.package_retained_payload_id)=(r.organization_id,r.id)
- where a.id=p_other_allocation and a.organization_id=p_other_organization and a.organization_id<>(headers->>'x-offroad-workspace')::uuid and a.content_kind='material_body';
+ where other_capture.id=p_other_allocation and other_capture.organization_id=p_other_organization and other_capture.organization_id<>(headers->>'x-offroad-workspace')::uuid and other_capture.content_kind='material_body';
  if other is null then raise exception 'preview_storage_other_family_fixture_required';end if;
  if private.capital_preview_storage_job_authority_v1(other)then raise exception 'preview_storage_other_family_allowed';end if;checks:=checks+1;
  begin
