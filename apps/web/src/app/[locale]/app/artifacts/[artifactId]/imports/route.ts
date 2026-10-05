@@ -1,6 +1,7 @@
 import {z} from "zod";
 import {requireWorkspace} from "@/lib/auth/workspace";
 import {artifactImportCandidateSchema, artifactImportReviewView, artifactImportError, artifactImportRpc} from "@/lib/artifacts/artifact-import";
+import {readWorkArtifactHeads} from "@/lib/artifacts/artifact-import-heads";
 import {readArtifactRevision} from "@/lib/artifacts/authorized-artifact-reader";
 import {artifactImportMime, artifactImportSubmitSchema, importLocaleSchema, importNoStore, importSameOrigin, readImportRequest} from "@/lib/artifacts/artifact-import-request";
 import {workUpdateViewSchema} from "@/lib/advisor/work-update-view";
@@ -29,27 +30,30 @@ export async function POST(request: Request, {params}: Context) {
   return Response.json({ok: true, candidateId: queuedResult.data.candidateId, result: queued.data}, {status: 202, headers: importNoStore});
 }
 
-export async function GET(_request: Request, {params}: Context) {
+export async function GET(request: Request, {params}: Context) {
   const raw = await params, locale = importLocaleSchema.safeParse(raw.locale);
   if (!locale.success || !z.uuid().safeParse(raw.artifactId).success) return Response.json({ok: false}, {status: 404, headers: importNoStore});
-  const {supabase, organization, userId} = await requireWorkspace(locale.data);
-  const artifact = await supabase.from("artifacts").select("id,work_id,head_revision_id").eq("id", raw.artifactId).eq("organization_id", organization.id).maybeSingle();
-  if (artifact.error || !artifact.data) return Response.json({ok: false}, {status: 404, headers: importNoStore});
-  const currentArtifact = artifact.data;
+  const workId = new URL(request.url).searchParams.get("workId");
+  if (!z.uuid().safeParse(workId).success) return Response.json({ok: false}, {status: 404, headers: importNoStore});
+  const {supabase, userId} = await requireWorkspace(locale.data);
+  const heads = await readWorkArtifactHeads(supabase, workId!);
+  const head = heads?.find(artifact => artifact.id === raw.artifactId);
+  if (!head) return Response.json({ok: false}, {status: 404, headers: importNoStore});
+  const currentArtifact = {id: head.id, work_id: workId!, head_revision_id: head.headRevisionId};
   const rpc = artifactImportRpc(supabase);
-  const [imports, receipts, terms, updates, options] = await Promise.all([rpc("list_work_artifact_imports_v1", {p_work_id: artifact.data.work_id}), rpc("list_artifact_export_receipts_v1", {p_artifact_id: raw.artifactId}), supabase.rpc("get_workspace_project_setup", {p_locale: locale.data}), supabase.rpc("work_update_view_v1", {p_work_id: artifact.data.work_id}), rpc("read_artifact_export_options_v1", {p_revision_id: artifact.data.head_revision_id})]);
+  const [imports, receipts, terms, updates, options] = await Promise.all([rpc("list_work_artifact_imports_v1", {p_work_id: currentArtifact.work_id}), rpc("list_artifact_export_receipts_v1", {p_artifact_id: raw.artifactId}), supabase.rpc("get_workspace_project_setup", {p_locale: locale.data}), supabase.rpc("work_update_view_v1", {p_work_id: currentArtifact.work_id}), rpc("read_artifact_export_options_v1", {p_revision_id: currentArtifact.head_revision_id})]);
   if (imports.error || receipts.error || terms.error || updates.error) return Response.json({ok: false}, {status: 409, headers: importNoStore});
   const list = z.object({workId: z.uuid(), candidates: z.array(z.unknown()).max(100)}).safeParse(imports.data);
   const receiptList = z.object({artifactId: z.uuid(), receipts: z.array(z.unknown()).max(100)}).safeParse(receipts.data);
-  if (!list.success || list.data.workId !== artifact.data.work_id || !receiptList.success || receiptList.data.artifactId !== raw.artifactId) return Response.json({ok: false}, {status: 502, headers: importNoStore});
+  if (!list.success || list.data.workId !== currentArtifact.work_id || !receiptList.success || receiptList.data.artifactId !== raw.artifactId) return Response.json({ok: false}, {status: 502, headers: importNoStore});
   const candidates = list.data.candidates.map(value => artifactImportCandidateSchema.safeParse(value)).flatMap(parsed => parsed.success && "artifactId" in parsed.data && parsed.data.artifactId === raw.artifactId && parsed.data.workId === currentArtifact.work_id ? [parsed.data] : []);
   const reviews = await Promise.all(candidates.map(async candidate => ({candidate, view: await artifactImportReviewView(supabase, candidate, userId)})));
   const updateView = workUpdateViewSchema.safeParse(updates.data);
-  if (!updateView.success || updateView.data.workId !== artifact.data.work_id) return Response.json({ok: false}, {status: 502, headers: importNoStore});
+  if (!updateView.success || updateView.data.workId !== currentArtifact.work_id) return Response.json({ok: false}, {status: 502, headers: importNoStore});
   if (options.error && options.error.code !== "42501") return Response.json({ok: false}, {status: 502, headers: importNoStore});
   const exportOptions = z.object({revisionId: z.uuid(), options: z.array(z.object({variant: z.string().min(1).max(80), formats: z.array(z.enum(["xlsx", "docx", "pptx", "pdf"])).min(1).max(4)})).max(20)}).safeParse(options.data);
-  if (!options.error && (!exportOptions.success || exportOptions.data.revisionId !== artifact.data.head_revision_id)) return Response.json({ok: false}, {status: 502, headers: importNoStore});
-  const current = artifact.data.head_revision_id ? await readArtifactRevision(supabase, {revisionId: artifact.data.head_revision_id}) : null;
+  if (!options.error && (!exportOptions.success || exportOptions.data.revisionId !== currentArtifact.head_revision_id)) return Response.json({ok: false}, {status: 502, headers: importNoStore});
+  const current = currentArtifact.head_revision_id ? await readArtifactRevision(supabase, {revisionId: currentArtifact.head_revision_id}) : null;
   const blockKeys = current?.ok && !current.read.withheld ? current.read.blocks.map(block => block.blockKey) : [];
-  return Response.json({ok: true, exportOptions: exportOptions.success && !options.error ? exportOptions.data.options : [], blockKeys, workId: artifact.data.work_id, headRevisionId: artifact.data.head_revision_id, candidates: reviews.filter(review => review.view !== null), receipts: receiptList.data.receipts, terms: terms.data, bases: updateView.data.bases}, {headers: importNoStore});
+  return Response.json({ok: true, exportOptions: exportOptions.success && !options.error ? exportOptions.data.options : [], blockKeys, workId: currentArtifact.work_id, headRevisionId: currentArtifact.head_revision_id, candidates: reviews.filter(review => review.view !== null), receipts: receiptList.data.receipts, terms: terms.data, bases: updateView.data.bases}, {headers: importNoStore});
 }

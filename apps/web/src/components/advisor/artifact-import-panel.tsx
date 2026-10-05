@@ -30,7 +30,7 @@ export function ArtifactImportPanel({locale, workId, artifactId}: {locale: "pt-B
   const [mappings, setMappings] = useState<Record<string, string>>({});
   const attempt = useRef<{file: File; receipt: string; request: Record<string, unknown>; prepared: z.infer<typeof preparedSchema> | null; uploaded: boolean} | null>(null);
   const refresh = useCallback(async () => {
-    try {const response = await fetch(endpoint, {cache: "no-store"}); const parsed = contextSchema.safeParse(await response.json()); if (!response.ok || !parsed.success || parsed.data.workId !== workId) throw new Error(); setContext(parsed.data); setError(false);} catch {setError(true);}
+    try {const response = await fetch(`${endpoint}?workId=${workId}`, {cache: "no-store"}); const parsed = contextSchema.safeParse(await response.json()); if (!response.ok || !parsed.success || parsed.data.workId !== workId) throw new Error(); setContext(parsed.data); setError(false);} catch {setError(true);}
   }, [endpoint, workId]);
   useEffect(() => {const timer = setTimeout(() => void refresh(), 0); return () => clearTimeout(timer);}, [refresh]);
   const hasQueued = context?.candidates.some(row => row.candidate.status === "queued");

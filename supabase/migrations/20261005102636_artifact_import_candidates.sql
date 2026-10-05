@@ -451,6 +451,21 @@ create function public.worker_record_artifact_import_quarantine_v1(p_task_id uui
 create function public.request_artifact_import_upload_v1(p_candidate_id uuid,p_work_id uuid,p_artifact_id uuid,p_export_receipt_id uuid,p_source_version_id uuid,p_expected_head_revision_id uuid,p_format text,p_locale text,p_command_id uuid)
 returns jsonb language sql security invoker set search_path=''as $$select private.submit_artifact_import_v1(p_candidate_id,p_work_id,p_artifact_id,p_export_receipt_id,p_source_version_id,p_expected_head_revision_id,p_format,p_locale,p_command_id);$$;
 
+-- Discovery exposes only authorized head identities; content stays in the revision reader.
+create function private.list_work_artifact_heads_v1(p_work_id uuid)returns jsonb language plpgsql security definer set search_path=''as $$
+declare org uuid;items jsonb;
+begin
+ select organization_id into org from public.capital_projects where id=p_work_id and status<>'archived';
+ if org is null or not private.evaluate_resource_policy_v1(org,p_work_id,auth.uid(),'read','analysis')then raise exception 'artifact_work_denied'using errcode='42501';end if;
+ select coalesce(jsonb_agg(jsonb_build_object('id',visible.id,'headRevisionId',visible.head_revision_id)order by visible.created_at desc,visible.id),'[]')into items from(
+ select a.id,a.head_revision_id,a.created_at from public.artifacts a where a.organization_id=org and a.work_id=p_work_id and a.head_revision_id is not null
+ and private.artifact_roundtrip_revision_allowed_v1(org,a.head_revision_id,auth.uid(),false)order by a.created_at desc,a.id limit 100)visible;
+ return jsonb_build_object('workId',p_work_id,'artifacts',items);
+end;$$;
+create function public.list_work_artifact_heads_v1(p_work_id uuid)returns jsonb language sql security invoker set search_path=''as $$select private.list_work_artifact_heads_v1(p_work_id);$$;
+revoke all on function private.list_work_artifact_heads_v1(uuid),public.list_work_artifact_heads_v1(uuid)from public,anon,authenticated,service_role;
+grant execute on function private.list_work_artifact_heads_v1(uuid),public.list_work_artifact_heads_v1(uuid)to authenticated;
+
 create function private.list_artifact_export_receipts_v1(p_artifact_id uuid)returns jsonb language plpgsql security definer set search_path=''as $$
 declare a public.artifacts;r public.artifact_export_receipts;items jsonb:='[]';
 begin

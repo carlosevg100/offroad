@@ -36,8 +36,15 @@ begin
  raise notice 'PASS import_scan_binding_and_exact_export_comparison';
 end;$$;
 
-do $$begin
+do $$declare heads jsonb;begin
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
+ heads:=public.list_work_artifact_heads_v1('a11b0000-0000-4000-9000-000000000002');reset role;
+ if not exists(select 1 from jsonb_array_elements(heads->'artifacts')item where item->>'id'=pg_temp.val('rt_revision','artifact_id')and item->>'headRevisionId'=pg_temp.val('rt_revision','revision_id'))
+ or exists(select 1 from jsonb_array_elements(heads->'artifacts')item where item-array['id','headRevisionId']<>'{}')then raise exception 'artifact discovery leaked content or omitted authorized head';end if;
+ raise notice 'PASS import_work_artifact_discovery_exact_authorized_identity';
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000002');set local role authenticated;
+ begin perform public.list_work_artifact_heads_v1('a11b0000-0000-4000-9000-000000000002');raise exception 'membership discovered work artifact heads';exception when insufficient_privilege then null;end;
+
  begin perform public.read_artifact_import_candidate_v1('a4210000-0000-4000-9000-000000000002');raise exception 'membership read import';exception when insufficient_privilege then null;end;reset role;
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
  begin perform public.worker_commit_artifact_import_comparison_v1(pg_temp.val('rt_import_claim','taskId')::uuid,pg_temp.val('rt_import_claim','capabilityToken'),(select value from arp where name='rt_comparison'),(select value from arp where name='rt_contributions'));raise exception 'human comparison writer';exception when insufficient_privilege then null;end;
@@ -136,6 +143,8 @@ begin
  if private.artifact_roundtrip_revision_allowed_v1(revision.organization_id,revision.id,'a11b0000-0000-4000-8000-000000000001',false)then raise exception 'adopted contribution lost exported-base restriction';end if;
  set local role authenticated;output:=public.read_artifact_import_candidate_v1('a4210000-0000-4000-9000-000000000002');reset role;
  if output->>'withheld'<>'true'or output?'comparison'or output?'events'then raise exception 'adopted base revocation leaked candidate';end if;
+ set local role authenticated;output:=public.list_work_artifact_heads_v1('a11b0000-0000-4000-9000-000000000002');reset role;
+ if exists(select 1 from jsonb_array_elements(output->'artifacts')item where item->>'id'=revision.artifact_id::text)then raise exception 'revoked derived artifact leaked through discovery';end if;
  raise notice 'PASS import_adoption_retains_distinct_base_head_upload_and_base_revocation';
  raise notice 'PASS import_human_adoption_replay_person_revision_and_continuation';
  raise exception 'rollback_positive_adoption'using errcode='ZX021';

@@ -15,7 +15,7 @@ const literal = (value: string) => `convert_from(decode('${Buffer.from(value).to
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 
 /** Real local Auth, Storage, RLS and route. Operator setup creates only this synthetic namespace;
- * no worker/model is invoked, and setup is not evidence of native artifact publication. */
+ * the real offline export worker runs; no model runs, and setup is not publication evidence. */
 test("stored preview downloads exact bytes and refuses missing, altered and source-revoked objects", async ({page}) => {
   const sql = localReviewRegimeSql();
   const suffix = `${Date.now().toString(36)}${randomBytes(4).toString("hex")}`;
@@ -43,7 +43,6 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
     expect(result.error?.name ?? null).toBeNull();
   };
   await write(bytes, false);
-  const emittedPaths: string[] = [];
   try {
     sql(`begin;select set_config('request.jwt.claim.sub','${f.actorId}',true);select set_config('request.headers','{"x-offroad-workspace":"${f.organizationId}"}',true);
       insert into private.integration_preview_grants(organization_id,note,granted_by,mode) values('${f.organizationId}','Synthetic stored download only','local-e2e','deterministic');
@@ -70,7 +69,6 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
     let receiptId: string | null = null;
     await expect.poll(async () => {const task = await page.request.get(`/pt-BR/app/artifacts/${context.artifactId}/exports?workspace=${f.organizationId}&taskId=${taskId}`);expect(task.status()).toBe(200);const state = (await task.json()).task;expect(state.status).not.toBe("failed");receiptId = state.receiptId;return receiptId;}, {timeout: 90000}).not.toBeNull();
     const receipt = JSON.parse(sql(asRegimeOwner(f, `select public.read_artifact_export_receipt_v1('${receiptId}');`)).split("\n").at(-1)!);
-    emittedPaths.push(receipt.storage.path);
     const first = await page.request.get(route);expect(first.status(), await first.text()).toBe(200);
     const emitted = await first.body();expect(digest(emitted)).toBe(receipt.sha256);expect(emitted.length).toBe(receipt.byteLength);expect(digest(emitted)).not.toBe(sha);
     const snapshot = await readRoundtripSnapshot(emitted, "xlsx");expect(snapshot.manifest?.revisionId).toBe(created.revision_id);
@@ -80,9 +78,21 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
     await replaceOutput(new Uint8Array(emitted.length).fill(1), true);
     const corruptOutput = await page.request.get(outputRoute);expect(corruptOutput.status()).toBe(409);expect((await corruptOutput.json()).error).toBe("storageMismatch");
     await replaceOutput(emitted, true);expect((await page.request.get(outputRoute)).status()).toBe(200);
-    const missingOutput = await operator.storage.from(receipt.storage.bucket).remove([receipt.storage.path]);expect(missingOutput.error).toBeNull();
-    const absentOutput = await page.request.get(outputRoute);expect(absentOutput.status()).toBe(409);expect((await absentOutput.json()).error).toBe("storageMissing");
-    await replaceOutput(emitted, false);expect((await page.request.get(outputRoute)).status()).toBe(200);
+    // A receipt pins its storage identity for audit; even the operator cannot delete that row.
+    // Actual missing output bytes are tested below without weakening this identity FK.
+    const pinnedOutput = await operator.storage.from(receipt.storage.bucket).remove([receipt.storage.path]);expect(pinnedOutput.error?.message).toContain("foreign key");
+    expect((await page.request.get(outputRoute)).status()).toBe(200);
+    // Move the local operator's physical object while preserving its identity: the receipt's
+    // original path now has no bytes. This exercises a missing output without deleting audit.
+    const displacedPath = `${receipt.storage.path}.synthetic-missing`;
+    const movedOutput = await operator.storage.from(receipt.storage.bucket).move(receipt.storage.path, displacedPath);expect(movedOutput.error).toBeNull();
+    try {
+      const absentOutput = await page.request.get(outputRoute);expect(absentOutput.status()).toBe(409);expect((await absentOutput.json()).error).toBe("storageMissing");
+      expect(absentOutput.headers()["x-artifact-sha256"]).toBeUndefined();
+    } finally {
+      const restored = await operator.storage.from(receipt.storage.bucket).move(displacedPath, receipt.storage.path);expect(restored.error).toBeNull();
+    }
+    expect((await page.request.get(outputRoute)).status()).toBe(200);
     const removed = await operator.storage.from("case-artifacts").remove([path]);expect(removed.error).toBeNull();
     const missing = await page.request.get(route);expect(missing.status()).toBe(409);expect(await missing.text()).toBe(messages.ArtifactDownload.preview.storageMissing);
     await write(new TextEncoder().encode("Synthetic altered object"), false);
@@ -99,6 +109,7 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
     const revokedExport = await page.request.get(outputRoute);expect(revokedExport.status()).toBe(403);expect(revokedExport.headers()["x-artifact-sha256"]).toBeUndefined();
     expect(sql(`select count(*) from public.processing_jobs where work_id='${f.workId}' and status in ('queued','leased');`)).toBe("0");
   } finally {
-    const cleanup = await operator.storage.from("case-artifacts").remove([path, ...emittedPaths]);expect(cleanup.error).toBeNull();
+    // Receipt objects are immutable audit fixtures; the disposable local stack removes them.
+    const cleanup = await operator.storage.from("case-artifacts").remove([path]);expect(cleanup.error).toBeNull();
   }
 });

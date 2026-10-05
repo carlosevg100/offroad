@@ -13,6 +13,9 @@ export async function serveRoundtripDownload(request: Request, input: {supabase:
   if (result.error || !parsed.success || parsed.data.artifactId !== input.artifactId) return Response.json({ok: false}, {status: 403, headers: importNoStore});
   const receipt = parsed.data.receipts.find(receipt => receipt.revisionId === input.revisionId && receipt.format === input.format && receipt.locale === input.locale && receipt.variant === input.variant);
   if (!receipt) return Response.json({ok: false, error: "export_required"}, {status: 409, headers: importNoStore});
-  url.pathname = `/${input.locale}/app/artifacts/${input.artifactId}/exports`;url.search = new URLSearchParams({receiptId: receipt.id}).toString();
-  return new Response(null, {status: 303, headers: {...importNoStore, location: url.toString()}});
+  const query = new URLSearchParams({receiptId: receipt.id});
+  const workspace = url.searchParams.get("workspace");if (workspace) query.set("workspace", workspace);
+  // Next may normalize request.url to its internal listener. Keep the browser origin and cookies.
+  const location = `/${input.locale}/app/artifacts/${input.artifactId}/exports?${query}`;
+  return new Response(null, {status: 303, headers: {...importNoStore, location}});
 }

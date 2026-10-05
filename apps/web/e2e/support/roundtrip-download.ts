@@ -10,6 +10,25 @@ export async function requestRoundtripDownload(page: Page, route: string): Promi
   const context = await selected.json() as {artifactId: string; revisionId: string; locale: string; format: string; variant: string};
   const endpoint = new URL(`/${context.locale}/app/artifacts/${context.artifactId}/exports`, page.url());
   const workspace = selectedUrl.searchParams.get("workspace");if (workspace) endpoint.searchParams.set("workspace", workspace);
+  await queueArtifactExport(page, endpoint, context);
+  const downloaded = await page.request.get(route);
+  expect(downloaded.status(), await downloaded.text()).toBe(200);
+  const bytes = await downloaded.body();
+  expect(downloaded.headers()["x-artifact-revision"]).toBe(context.revisionId);
+  expect(downloaded.headers()["x-artifact-sha256"]).toBe(createHash("sha256").update(bytes).digest("hex"));
+  expect(downloaded.headers()["cache-control"]).toContain("no-store");
+  return downloaded;
+}
+
+/** The same queue and receipt contract for a native artifact without a legacy delivery route. */
+export async function requestArtifactExport(page: Page, context: {artifactId: string; revisionId: string; locale: string; format: string; variant: string; workspace: string}): Promise<APIResponse> {
+  const endpoint = new URL(`/${context.locale}/app/artifacts/${context.artifactId}/exports`, page.url());endpoint.searchParams.set("workspace", context.workspace);
+  const receiptId = await queueArtifactExport(page, endpoint, context);endpoint.searchParams.set("receiptId", receiptId);
+  const response = await page.request.get(endpoint.href);expect(response.status(), await response.text()).toBe(200);
+  const bytes = await response.body();expect(response.headers()["x-artifact-revision"]).toBe(context.revisionId);expect(response.headers()["x-artifact-sha256"]).toBe(createHash("sha256").update(bytes).digest("hex"));expect(response.headers()["cache-control"]).toContain("no-store");
+  return response;
+}
+async function queueArtifactExport(page: Page, endpoint: URL, context: {revisionId: string; format: string; variant: string}): Promise<string> {
   const queued = await page.request.post(endpoint.href, {headers: {origin: endpoint.origin}, data: {revisionId: context.revisionId, format: context.format, variant: context.variant, commandId: randomUUID()}});
   expect(queued.status(), await queued.text()).toBe(202);
   const result = (await queued.json()).result as {taskId?: string; receiptId: string | null};
@@ -24,11 +43,6 @@ export async function requestRoundtripDownload(page: Page, route: string): Promi
       receiptId = task.receiptId;return receiptId;
     }, {timeout: 90000}).not.toBeNull();
   }
-  const downloaded = await page.request.get(route);
-  expect(downloaded.status(), await downloaded.text()).toBe(200);
-  const bytes = await downloaded.body();
-  expect(downloaded.headers()["x-artifact-revision"]).toBe(context.revisionId);
-  expect(downloaded.headers()["x-artifact-sha256"]).toBe(createHash("sha256").update(bytes).digest("hex"));
-  expect(downloaded.headers()["cache-control"]).toContain("no-store");
-  return downloaded;
+  if (!receiptId) throw new Error("governed_export_receipt_missing");
+  return receiptId;
 }

@@ -7,7 +7,7 @@ do $$declare c private.institutional_model_configurations;b private.institutiona
 begin
  select*into strict c from private.institutional_model_configurations where id=current_setting('test.setup_candidate_id')::uuid;
  select value#>>'{values,2027}'into v from jsonb_array_elements(c.configuration#>'{assumptionBook,assumptions}')where value->>'editable'='true'and value->>'unit'='percent'limit 1;
- aid:=pg_temp.add_ancestry_contribution(c.id,((v::numeric)*100)::text||'%');
+ aid:=pg_temp.add_ancestry_contribution(c.id,((v::numeric)*100)::text);
  set local role authenticated;
  result:=pg_temp.approve_native_configuration(c.capital_project_id,aid,command,'en-US');reset role;
  select*into strict b from private.institutional_model_configurations where id=aid;

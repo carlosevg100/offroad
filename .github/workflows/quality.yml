@@ -1059,10 +1059,22 @@ jobs:
           OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
         run: node scripts/ci/verify-pinned-consumer.mjs
 
+      - name: Verify governed artifact export and reimport paths
+        if: ${{ !inputs.native_diagnostic }}
+        # Fail early on changed paths; every selected case remains a required release gate.
+        run: |
+          set -euo pipefail
+          export OFFROAD_E2E_WORKER_PID="$(cat worker.pid)"
+          pnpm --filter web exec playwright test --retries=0 --output=test-results-roundtrip --grep 'Office roundtrip preserves the base|stored preview downloads exact bytes|governed materials and model come from one exact revision|guided institutional setup calculates only after review|a mixed update of an execution and the financial model is adopted in one act'
+        env:
+          CI: "true"
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-roundtrip
+          OFFROAD_E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
       - name: Run end-to-end tests
         if: ${{ !inputs.native_diagnostic }}
-        # The native material case above already ran with its own queue consumer.
-        run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$'
+        # The native material case and changed roundtrip paths already ran in required steps.
+        run: pnpm --filter web exec playwright test --grep-invert 'native internal material approval and revocation use the same exact basis on project and opportunity$|Office roundtrip preserves the base|stored preview downloads exact bytes|governed materials and model come from one exact revision|guided institutional setup calculates only after review|a mixed update of an execution and the financial model is adopted in one act'
         env:
           CI: "true"
           # Restricted to loopback by the synthetic sector-planning setup.
@@ -1078,6 +1090,8 @@ jobs:
             apps/web/test-results
             apps/web/playwright-report-material
             apps/web/test-results-material
+            apps/web/playwright-report-roundtrip
+            apps/web/test-results-roundtrip
           if-no-files-found: ignore
           retention-days: 7
 
