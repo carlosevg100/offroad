@@ -4,10 +4,10 @@ import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import {artifactBlockDraftSchema, artifactManifestSchema, documentWorkProductSchema, roundtripManifestVersion, type RoundtripManifest} from "@offroad/domain-contracts";
 import {embedRoundtripManifest, roundtripSha256} from "@offroad/case-export/artifact-roundtrip";
-import {houseDocumentTemplate, materialToDocx, materialToPdf, materialToPptxRoundtrip, materialDocxRoundtripRegions, renderDecisionWorkbook, type MaterialRoundtripBinding} from "@offroad/case-export";
+import {houseDocumentTemplate, institutionalTemplateFromDefinition, presentationTemplateFromStored, presentationStructureFromStored, type InstitutionalPresentationTemplate, materialToDocx, materialToPdf, materialToPptxRoundtrip, materialDocxRoundtripRegions, renderDecisionWorkbook, type MaterialRoundtripBinding} from "@offroad/case-export";
 import {institutionalFinancialModelMaterial, type Material, type MaterialBlock} from "@offroad/case-materials";
 import {buildInstitutionalFinancialModel, buildFinancialModel, parseVerifiedInstitutionalWorkbookArtifact, renderApprovedInstitutionalFinancialWorkbook, renderInstitutionalRoundtripWorkbook, renderApprovedFinancialWorkbook, toGovernedXlsxBuffer, type ApprovedWorkbookBinding, type GovernedWorkbookMetadata, type FinancialModel, type InstitutionalWorkbookArtifact, type InstitutionalModelInput} from "@offroad/financial-model";
-import {decisionArtifactContractSchema, deskEvidence, type DecisionArtifactContract} from "@offroad/case-understanding";
+import {decisionArtifactContractSchema, deskEvidence, fingerprintJson, type DecisionArtifactContract} from "@offroad/case-understanding";
 import type {ArtifactRoundtripClaim, RoundtripRenderer} from "./artifact-roundtrip-processing";
 
 const bilingual = z.object({pt: z.string().max(100000), en: z.string().max(100000)});
@@ -58,9 +58,7 @@ export function createArtifactRoundtripRenderer(client:SupabaseClient):Roundtrip
     let producer=normalized.producer;
     const blocks=z.array(artifactBlockDraftSchema).max(1000).parse(producer.kind==="blocks"&&producer.blocks?producer.blocks:isHead?claim.importCandidate?.headBlocks??[]:claim.blocks);
     const manifest=artifactManifestSchema.parse(identity.manifest);
-    const template=manifest.template;
-    if(template!==null&&template.templateVersionId!==`${houseDocumentTemplate.id}@${houseDocumentTemplate.version}`&&template.templateVersionId!=="offroad-house@2026.09.07-v1")
-      throw new Error("artifact_roundtrip_producer_template_unavailable");
+    const templatePin=manifest.template;
     const exportedAt=new Date(identity.issuedAt).toISOString();
     const roundtrip:RoundtripManifest={schemaVersion:roundtripManifestVersion,artifactId:identity.artifactId,revisionId:identity.id,revisionNo:identity.revisionNo,
       logicalManifestFingerprint:identity.logicalManifestFingerprint,format:claim.format,variant:claim.variant,exportedAt,blocks:[],inputs:[],outputs:[],formulas:[]};
@@ -71,6 +69,8 @@ export function createArtifactRoundtripRenderer(client:SupabaseClient):Roundtrip
       if(r.error||!z.object({valid:z.literal(true)}).safeParse(r.data).success)throw new Error("artifact_roundtrip_source_revoked");
     };
     const lang=claim.locale==="en-US"?"en":"pt";
+    const template=await resolveRoundtripTemplate({pin:templatePin,body:isHead?claim.importCandidate?.headTemplateBody:claim.templateBody,client,current});
+    if(templatePin&&claim.format==="xlsx")throw new Error("artifact_roundtrip_producer_template_format_unsupported");
     if(producer.kind==="native_material") {
       if(!producer.variants.includes(claim.variant))throw new Error("artifact_roundtrip_producer_variant_unsupported");
       const readBody=async(body:z.infer<typeof nativeBodySchema>):Promise<unknown>=>{
@@ -136,7 +136,7 @@ export function createArtifactRoundtripRenderer(client:SupabaseClient):Roundtrip
       } else {
         const material=institutionalMaterial(artifact,lang);
         const composed=applyOverlays(material,prospectiveBindings(material,claim.variant),normalized.overlays,claim.variant);
-        bytes=await renderMaterial(composed.material,composed.bindings,roundtrip,lang,true);
+        bytes=await renderMaterial(composed.material,composed.bindings,roundtrip,lang,true,template);
       }
     } else {
       let material:Material;let bindings:MaterialRoundtripBinding[];
@@ -154,15 +154,40 @@ export function createArtifactRoundtripRenderer(client:SupabaseClient):Roundtrip
       }
       const composed=applyOverlays(material,bindings,normalized.overlays,claim.variant);
       if(claim.format==="xlsx")throw new Error("artifact_roundtrip_producer_format_unsupported");
-      bytes=await renderMaterial(composed.material,composed.bindings,roundtrip,lang,material.kind==="financial_model");
+      bytes=await renderMaterial(composed.material,composed.bindings,roundtrip,lang,material.kind==="financial_model",template);
     }
     await current();
     const embedded=await embedRoundtripManifest(bytes,roundtrip);await current();
-    return {bytes:embedded,templateFingerprint:template?.fingerprint??null,manifest:roundtrip};
+    return {bytes:embedded,templateFingerprint:templatePin?.fingerprint??null,manifest:roundtrip};
   };
 }
-async function renderMaterial(material:Material,bindings:MaterialRoundtripBinding[],roundtrip:RoundtripManifest,lang:"pt"|"en",financial:boolean):Promise<Uint8Array> {
-  const meta={issuedOn:roundtrip.exportedAt.slice(0,10),roundtrip:{blocks:bindings}};
+async function resolveRoundtripTemplate(input:{pin:{templateVersionId:string;fingerprint:string}|null;body:unknown;client:SupabaseClient;current:()=>Promise<void>}):Promise<InstitutionalPresentationTemplate|undefined> {
+  const {pin}=input;if(pin===null)return undefined;
+  if(pin.templateVersionId===`${houseDocumentTemplate.id}@${houseDocumentTemplate.version}`) {
+    const house=houseDocumentTemplate;
+    const expected=fingerprintJson({id:house.id,version:house.version,origin:house.origin,colors:house.colors,fonts:house.fonts,logo:null,logoOnDark:null});
+    if(expected!==pin.fingerprint)throw new Error("artifact_roundtrip_producer_template_fingerprint_changed");
+    return {...house,fingerprint:expected};
+  }
+  const body=z.object({versionId:z.uuid(),fingerprint:z.string().regex(/^[a-f0-9]{64}$/),definition:z.unknown(),structure:z.unknown(),canonicalFingerprintInput:z.string().min(1).max(1048576)}).safeParse(input.body);
+  if(!body.success||body.data.versionId!==pin.templateVersionId||body.data.fingerprint!==pin.fingerprint)throw new Error("artifact_roundtrip_producer_template_unavailable");
+  if(roundtripSha256(body.data.canonicalFingerprintInput)!==pin.fingerprint)throw new Error("artifact_roundtrip_producer_template_fingerprint_changed");
+  let canonical:unknown;try{canonical=JSON.parse(body.data.canonicalFingerprintInput);}catch{throw new Error("artifact_roundtrip_producer_template_unavailable");}
+  if(!isDeepStrictEqual(canonical,{definition:body.data.definition,structure:body.data.structure}))throw new Error("artifact_roundtrip_producer_template_fingerprint_changed");
+  const definition=presentationTemplateFromStored(body.data.definition),structure=presentationStructureFromStored(body.data.structure);
+  if(!definition||!structure)throw new Error("artifact_roundtrip_producer_template_unavailable");
+  let logo:{data:Uint8Array;extension:"png"|"jpeg"}|undefined;
+  if(definition.logo) {
+    await input.current();const stored=await input.client.storage.from("brand-templates").download(definition.logo.objectPath);
+    if(stored.error||!stored.data||stored.data.size!==definition.logo.byteLength)throw new Error("artifact_roundtrip_producer_template_logo_unavailable");
+    const bytes=new Uint8Array(await stored.data.arrayBuffer());
+    if(bytes.byteLength!==definition.logo.byteLength||roundtripSha256(bytes)!==definition.logo.sha256)throw new Error("artifact_roundtrip_producer_template_logo_changed");
+    await input.current();logo={data:bytes,extension:definition.logo.contentType==="image/png"?"png":"jpeg"};
+  }
+  await input.current();return {...institutionalTemplateFromDefinition(definition,logo),versionId:body.data.versionId,fingerprint:pin.fingerprint,structure};
+}
+async function renderMaterial(material:Material,bindings:MaterialRoundtripBinding[],roundtrip:RoundtripManifest,lang:"pt"|"en",financial:boolean,template?:InstitutionalPresentationTemplate):Promise<Uint8Array> {
+  const meta={issuedOn:roundtrip.exportedAt.slice(0,10),roundtrip:{blocks:bindings},...(template?{template}:{})};
   if(roundtrip.format==="docx") {
     roundtrip.blocks=materialDocxRoundtripRegions({blocks:bindings}).map((region,index)=>({...region,claimIds:[...region.claimIds],kind:kindOf(material.blocks[index]!),recorded:recorded(material.blocks[index]!,financial)}));
     return materialToDocx({material,lang,meta});

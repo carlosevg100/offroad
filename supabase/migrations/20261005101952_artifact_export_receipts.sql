@@ -53,6 +53,7 @@ revoke all on function private.artifact_roundtrip_logical_fingerprint_v1(jsonb) 
 create function private.reject_artifact_export_receipt_mutation_v1() returns trigger language plpgsql set search_path='' as $$
 begin raise exception 'artifact_export_receipt_immutable' using errcode='55000';end;
 $$;
+revoke all on function private.reject_artifact_export_receipt_mutation_v1()from public,anon,authenticated,service_role;
 revoke all on function private.reject_artifact_export_receipt_mutation_v1() from public,anon,authenticated,service_role;
 create trigger artifact_export_receipts_immutable before update or delete on public.artifact_export_receipts
  for each row execute function private.reject_artifact_export_receipt_mutation_v1();
@@ -242,6 +243,7 @@ begin
  or not exists(select 1 from storage.objects o where o.id=p_storage_object_id and o.bucket_id='case-artifacts' and o.name=t.output_path
  and coalesce(o.metadata->>'size','')=t.output_byte_length::text) then raise exception 'artifact_export_storage_invalid' using errcode='22023';end if;
  select * into strict r from public.artifact_revisions where organization_id=t.organization_id and id=t.revision_id;
+ if p_template_fingerprint is distinct from r.manifest#>>'{template,fingerprint}'then raise exception 'artifact_export_template_pin_mismatch'using errcode='22023';end if;
  perform private.validate_artifact_export_manifest_v1(p_roundtrip_manifest,r,t);
  insert into public.artifact_export_receipts(organization_id,work_id,artifact_id,revision_id,revision_manifest_fingerprint,logical_manifest_fingerprint,roundtrip_manifest,
  format,locale,variant,renderer_version,template_fingerprint,content_sha256,byte_length,bucket_id,object_path,storage_object_id,issued_at,created_by,command_id)

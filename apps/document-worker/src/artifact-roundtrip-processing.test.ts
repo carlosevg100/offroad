@@ -58,3 +58,44 @@ describe("leased artifact roundtrip processor boundaries", () => {
     expect(p.rpc).not.toHaveBeenCalled();
   });
 });
+
+async function importPort(options:{clean?:boolean;withoutScanner?:boolean;wrongBinding?:boolean;changedReceipt?:boolean;revokeAfterScan?:boolean}={}) {
+  const {materialToDocx}=await import("@offroad/case-export");
+  const {embedRoundtripManifest}=await import("@offroad/case-export/artifact-roundtrip");
+  const office=await embedRoundtripManifest(materialToDocx({material:{kind:"credit_memo",title:{pt:"Sintético",en:"Synthetic"},dependsOn:[],blocks:[{type:"paragraph",text:{pt:"Texto governado",en:"Governed text"},supportIds:[]}]},lang:"en",meta:{issuedOn:"2026-10-05"}}),manifest);
+  const digest=createHash("sha256").update(office).digest("hex");
+  const source={versionId:id(10),bucket:"opportunity-documents"as const,path:"synthetic/received.docx",sha256:digest,byteLength:office.length,binding:{organizationId:options.wrongBinding?id(99):claim.organizationId,sourceDocumentId:id(10),documentVersion:1,expectedSha256:digest,expectedByteSize:office.length,originalName:"synthetic.docx",declaredMediaType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document",operationId:claim.taskId}};
+  const scanned:ArtifactRoundtripClaim={...claim,operation:"import",importCandidate:{id:id(11),artifactId:id(6),source,baseReceipt:{id:id(12),revisionId:id(5),logicalManifestFingerprint:manifest.logicalManifestFingerprint,sha256:digest,byteLength:office.length,format:"docx",roundtripManifest:options.changedReceipt?{...manifest,variant:"changed"}:manifest,storage:{bucket:"case-artifacts",path:"synthetic/base.docx"}},headRevision:claim.revision!}};
+  const initial:ArtifactRoundtripClaim={...claim,operation:"import_scan",revision:null,blocks:[],importCandidate:{id:id(11),artifactId:id(6),source}};
+  let quarantined=false,revoked=false;
+  const rpc=vi.fn(async(name:string,_args?:Record<string,unknown>):Promise<{data:unknown;error:null}>=>{
+    if(name==="worker_claim_artifact_roundtrip_v1")return {data:initial,error:null};
+    if(name==="worker_record_artifact_import_quarantine_v1"){quarantined=true;return {data:{status:"clean"},error:null};}
+    if(name==="worker_revalidate_artifact_roundtrip_v1")return {data:{valid:!revoked,context:quarantined?scanned:initial},error:null};
+    return {data:{completed:true},error:null};
+  });
+  const download=vi.fn().mockResolvedValue({data:new Blob([Buffer.from(office)]),error:null});
+  const client={rpc,storage:{from:vi.fn(()=>({download}))}}as unknown as SupabaseClient;
+  const scan=vi.fn(async()=>{if(options.revokeAfterScan)revoked=true;return {clean:options.clean!==false};});
+  const render=vi.fn();
+  return {rpc,download,scan,run:()=>processArtifactRoundtrip({client,workerToken:"worker",scanner:options.withoutScanner?null:{name:"synthetic-scanner",scan},render,signal:new AbortController().signal})};
+}
+describe("scanned import and captured SQL context integration",()=>{
+  it("parses only after the clean receipt and refreshed import context, preserving the captured manifest",async()=>{
+    const p=await importPort();expect(await p.run()).toBe("completed");expect(p.scan).toHaveBeenCalledOnce();
+    const names=p.rpc.mock.calls.map(([name])=>name);expect(names.indexOf("worker_record_artifact_import_quarantine_v1")).toBeLessThan(names.indexOf("worker_commit_artifact_import_comparison_v1"));
+    const committed=p.rpc.mock.calls.find(([name])=>name==="worker_commit_artifact_import_comparison_v1");expect(committed?.[1]?.p_comparison).toMatchObject({status:"candidate",baseManifest:manifest});
+  });
+  it.each([{withoutScanner:true},{clean:false}])("denies unavailable or infected scanner before any comparison %#",async options=>{
+    const p=await importPort(options);await expect(p.run()).rejects.toThrow("invalid_file");expect(p.rpc.mock.calls.some(([name])=>name==="worker_record_artifact_import_quarantine_v1"||name==="worker_commit_artifact_import_comparison_v1")).toBe(false);
+  });
+  it("denies a substituted organization in the scan binding before scanning",async()=>{
+    const p=await importPort({wrongBinding:true});await expect(p.run()).rejects.toThrow("scan_binding_changed");expect(p.scan).not.toHaveBeenCalled();
+  });
+  it("denies captured manifest substitution even when base bytes and SHA are intact",async()=>{
+    const p=await importPort({changedReceipt:true});await expect(p.run()).rejects.toThrow("receipt_manifest_changed");expect(p.rpc.mock.calls.some(([name])=>name==="worker_commit_artifact_import_comparison_v1")).toBe(false);
+  });
+  it("denies revocation during scanning before parsing or committing comparison",async()=>{
+    const p=await importPort({revokeAfterScan:true});await expect(p.run()).rejects.toThrow();expect(p.rpc.mock.calls.some(([name])=>name==="worker_commit_artifact_import_comparison_v1")).toBe(false);
+  });
+});

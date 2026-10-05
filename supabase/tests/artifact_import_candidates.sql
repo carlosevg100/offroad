@@ -7,6 +7,9 @@ begin
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
  perform pg_temp.remember('rt_upload',to_jsonb(pg_temp.source_version('roundtrip-upload',null)));
  set local role authenticated;
+ begin
+ perform public.request_artifact_import_upload_v1(gen_random_uuid(),'a11b0000-0000-4000-9000-000000000002',pg_temp.val('rt_revision','artifact_id')::uuid,pg_temp.val('rt_receipt','receiptId')::uuid,pg_temp.val('rt_upload','')::uuid,pg_temp.val('rt_revision','revision_id')::uuid,'docx','en-US',gen_random_uuid());
+ raise exception 'import locale mismatch accepted';exception when insufficient_privilege then null;end;
  request:=public.request_artifact_import_upload_v1('a4210000-0000-4000-9000-000000000002','a11b0000-0000-4000-9000-000000000002',pg_temp.val('rt_revision','artifact_id')::uuid,
  pg_temp.val('rt_receipt','receiptId')::uuid,pg_temp.val('rt_upload','')::uuid,pg_temp.val('rt_revision','revision_id')::uuid,'docx','pt-BR','a4210000-0000-4000-9000-000000000003');reset role;
  perform pg_temp.remember('rt_import_request',request);
@@ -41,6 +44,48 @@ do $$begin
  begin perform public.adopt_artifact_import_v1('a4210000-0000-4000-9000-000000000002',gen_random_uuid(),repeat('a',64),'[]',gen_random_uuid(),'pt-BR',false,null,null,null);raise exception 'stale adoption';exception when serialization_failure then null;end;
  reset role;
  raise notice 'PASS import_membership_writer_and_stale_adoption_denied';
+end;$$;
+
+-- Comparison bounds cover legitimate multi-scenario workbooks and retain strict byte limits.
+do $$declare comparison jsonb;contributions jsonb;begin
+ comparison:=jsonb_build_object('status','candidate','differences',(select jsonb_agg(jsonb_build_object('key','recorded:'||i,'classification','unchanged','alreadyPresent',false))from generate_series(1,1500)i));
+ contributions:=jsonb_build_object('assumptionChanges','[]'::jsonb,'blockProposals','[]'::jsonb,'observations','[]'::jsonb,'conflicts','[]'::jsonb);
+ perform private.validate_artifact_import_comparison_v1(comparison,contributions);
+ begin perform private.validate_artifact_import_comparison_v1(comparison||jsonb_build_object('oversized',repeat('x',8388609)),contributions);raise exception 'oversized comparison accepted';exception when invalid_parameter_value then null;end;
+ raise notice 'PASS import_multiscenario_comparison_bounds';
+end;$$;
+
+-- A clean later head cannot expose revoked sources through immutable comparison history.
+do $$declare source uuid;head jsonb;manifest jsonb;blocks jsonb;comparison jsonb;claim jsonb;output jsonb;begin
+ begin
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+ source:=pg_temp.source_version('roundtrip-history-restricted',null);
+ blocks:=jsonb_build_array(pg_temp.block('lead','paragraph','{"text":"Restricted current prose"}'));
+ manifest:=pg_temp.manifest('answer','internal',jsonb_build_array(pg_temp.source_ref(source)),pg_temp.summary(blocks));
+ head:=pg_temp.person_write('answer','roundtrip-test','internal',manifest,blocks);
+ set local role authenticated;
+ perform public.recompare_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(head->>'revision_id')::uuid,gen_random_uuid());reset role;
+ perform pg_temp.act_as('a4210000-0000-4000-8000-000000000001');set local role authenticated;
+ claim:=public.worker_claim_artifact_roundtrip_v1('synthetic-roundtrip-worker-token');
+ comparison:=jsonb_set((select value from arp where name='rt_comparison'),'{headRevisionId}',to_jsonb(head->>'revision_id'));
+ perform public.worker_commit_artifact_import_comparison_v1((claim->>'taskId')::uuid,claim->>'capabilityToken',comparison,(select value from arp where name='rt_contributions'));reset role;
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');
+ blocks:=jsonb_build_array(pg_temp.block('lead','paragraph','{"text":"Clean latest prose"}'));
+ manifest:=pg_temp.manifest('answer','internal',jsonb_build_array(pg_temp.source_ref(pg_temp.val('source_a','')::uuid)),pg_temp.summary(blocks));
+ head:=pg_temp.person_write('answer','roundtrip-test','internal',manifest,blocks);
+ set local role authenticated;
+ perform public.recompare_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(head->>'revision_id')::uuid,gen_random_uuid());reset role;
+ perform pg_temp.act_as('a4210000-0000-4000-8000-000000000001');set local role authenticated;
+ claim:=public.worker_claim_artifact_roundtrip_v1('synthetic-roundtrip-worker-token');
+ comparison:=jsonb_set(comparison,'{headRevisionId}',to_jsonb(head->>'revision_id'));
+ perform public.worker_commit_artifact_import_comparison_v1((claim->>'taskId')::uuid,claim->>'capabilityToken',comparison,(select value from arp where name='rt_contributions'));reset role;
+ insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+ values('a11b0000-0000-4000-9000-000000000001',source,(select max(revision)+1 from private.source_rights_versions where source_version_id=source),array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('d',64),'a11b0000-0000-4000-8000-000000000001');
+ perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
+ output:=public.read_artifact_import_candidate_v1('a4210000-0000-4000-9000-000000000002');reset role;
+ if output->>'withheld'<>'true'or output?'comparison'or output?'events'then raise exception 'revoked comparison history leaked';end if;
+ raise notice 'PASS import_revocation_reaches_comparison_history';
+ raise exception 'rollback_history_eval'using errcode='ZX021';exception when sqlstate 'ZX021'then null;end;
 end;$$;
 
 -- Adoption uses an actual approved decision base, the real human policy and continuation18.

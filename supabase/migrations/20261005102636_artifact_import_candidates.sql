@@ -112,7 +112,7 @@ begin
  end if;
  if a.head_revision_id is distinct from p_expected_head_revision_id then raise exception 'artifact_import_stale' using errcode='40001';end if;
  if p_export_receipt_id is not null then
- select * into receipt from public.artifact_export_receipts where organization_id=org and id=p_export_receipt_id and artifact_id=a.id and work_id=p_work_id and format=p_format;
+ select * into receipt from public.artifact_export_receipts where organization_id=org and id=p_export_receipt_id and artifact_id=a.id and work_id=p_work_id and format=p_format and locale=p_locale;
  if receipt.id is null then raise exception 'artifact_import_denied' using errcode='42501';end if;
  end if;
  state:=case when receipt.id is null then 'unmatched' when not private.artifact_roundtrip_revision_allowed_v1(org,receipt.revision_id,auth.uid(),false) then 'stale' else 'queued' end;
@@ -135,13 +135,27 @@ returns jsonb language sql security invoker set search_path=''as $$select privat
 
 create function private.read_artifact_import_candidate_v1(p_candidate_id uuid)
 returns jsonb language plpgsql security definer set search_path=''as $$
-declare c public.artifact_import_candidates;a public.artifacts;events jsonb;allowed boolean;policy jsonb;groups jsonb;
+declare c public.artifact_import_candidates;a public.artifacts;events jsonb;allowed boolean;policy jsonb;groups jsonb;history_revision uuid;
 begin
  select * into c from public.artifact_import_candidates where id=p_candidate_id;
  if c.id is null or not private.evaluate_resource_policy_v1(c.organization_id,c.work_id,auth.uid(),'read','analysis') then raise exception 'artifact_import_denied' using errcode='42501';end if;
  if private.artifact_import_source_bound_v1(c.organization_id,c.work_id,c.source_version_id,auth.uid(),'read') and not exists(select 1 from private.source_version_verifications where organization_id=c.organization_id and source_version_id=c.source_version_id)then return jsonb_build_object('candidateId',c.id,'workId',c.work_id,'artifactId',c.artifact_id,'status','queued','reason','verification_pending','withheld',true);end if;
  allowed:=private.artifact_import_source_allowed_v1(c.organization_id,c.work_id,c.source_version_id,auth.uid(),'read') and
- (c.base_revision_id is null or private.artifact_roundtrip_revision_allowed_v1(c.organization_id,c.base_revision_id,auth.uid(),false));
+ (c.base_revision_id is null or private.artifact_roundtrip_revision_allowed_v1(c.organization_id,c.base_revision_id,auth.uid(),false))
+ and(c.compared_head_revision_id is null or private.artifact_roundtrip_revision_allowed_v1(c.organization_id,c.compared_head_revision_id,auth.uid(),false));
+ -- The response includes immutable comparison history: every recorded basis must remain readable.
+ -- A newer head may introduce sources absent from the original export; base-only checks leak it.
+ if allowed then
+ for history_revision in
+ select distinct value::uuid from private.artifact_import_events e
+ cross join lateral jsonb_array_elements_text(jsonb_build_array(
+ e.payload#>>'{previousComparison,baseRevisionId}',e.payload#>>'{previousComparison,headRevisionId}',
+ e.payload#>>'{request,expectedHeadRevisionId}',e.payload->>'appliedRevisionId'))q(value)
+ where e.organization_id=c.organization_id and e.candidate_id=c.id and value is not null
+ loop
+ if not private.artifact_roundtrip_revision_allowed_v1(c.organization_id,history_revision,auth.uid(),false)then allowed:=false;exit;end if;
+ end loop;
+ end if;
  if not allowed then return jsonb_build_object('candidateId',c.id,'workId',c.work_id,'artifactId',c.artifact_id,'status','stale','reason','source_revoked','withheld',true);end if;
  select * into a from public.artifacts where organization_id=c.organization_id and id=c.artifact_id;
  policy:=private.review_policy_snapshot_v1(c.organization_id,c.work_id,auth.uid());
@@ -169,6 +183,55 @@ begin
  and private.artifact_roundtrip_revision_allowed_v1(t.organization_id,coalesce(c.compared_head_revision_id,c.head_revision_id_at_submit),t.requested_by,false);
 end;$$;
 
+-- Exact version-19 template pins, evaluated for the task requester rather than the worker account.
+create function private.artifact_roundtrip_template_context_v1(p_revision uuid,p_subject uuid)
+returns jsonb language plpgsql stable security definer set search_path=''as $$
+declare r public.artifact_revisions;v public.presentation_template_versions;t public.presentation_templates;pin jsonb;canonical text;
+begin
+ select*into strict r from public.artifact_revisions where id=p_revision;pin:=r.manifest->'template';
+ if pin is null or pin='null'::jsonb then return null;end if;
+ -- Non-UUID builtin pins are checked against the renderer's exact builtin contract and fingerprint.
+ if pin->>'templateVersionId'!~'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'then return null;end if;
+ select*into v from public.presentation_template_versions where organization_id=r.organization_id and id=(pin->>'templateVersionId')::uuid;
+ select*into t from public.presentation_templates where organization_id=r.organization_id and id=v.template_id;
+ canonical:=jsonb_build_object('definition',v.definition,'structure',v.structure)::text;
+ if v.id is null or t.id is null or v.fingerprint is distinct from pin->>'fingerprint'
+ or v.fingerprint is distinct from encode(extensions.digest(canonical,'sha256'),'hex')
+ or not exists(select 1 from public.organization_memberships where organization_id=r.organization_id and user_id=p_subject and status='active')
+ or(t.capital_project_id is not null and not private.evaluate_resource_policy_v1(r.organization_id,t.capital_project_id,p_subject,'read','analysis'))
+ then raise exception 'artifact_roundtrip_template_denied'using errcode='42501';end if;
+ return jsonb_build_object('versionId',v.id,'fingerprint',v.fingerprint,'definition',v.definition,'structure',v.structure,'canonicalFingerprintInput',canonical);
+end;$$;
+revoke all on function private.artifact_roundtrip_template_context_v1(uuid,uuid)from public,anon,authenticated,service_role;
+
+create or replace function private.artifact_roundtrip_revision_allowed_v1(p_org uuid,p_revision uuid,p_subject uuid,p_export boolean)
+returns boolean language plpgsql volatile security definer set search_path='' as $$
+declare r public.artifact_revisions;a public.artifacts;ids uuid[];node uuid;
+begin
+ select * into r from public.artifact_revisions where organization_id=p_org and id=p_revision;
+ select * into a from public.artifacts where organization_id=p_org and id=r.artifact_id;
+ if r.id is null or a.id is null or not private.evaluate_resource_policy_v1(p_org,a.work_id,p_subject,'read',case when p_export then 'export' else 'analysis' end)
+  or not private.artifact_review_sources_allowed_v1(p_org,r.id,p_subject)
+  or private.artifact_revision_release_v1(r)='blocked' then return false;end if;
+ with recursive ancestry(id,depth) as(select r.id,0 union
+ select l.derived_from_revision_id,c.depth+1 from ancestry c join private.artifact_dependency_links l
+ on l.organization_id=p_org and l.revision_id=c.id and l.link_kind='artifact_revision' where c.depth<64)
+ select array_agg(distinct id) into ids from ancestry;
+ foreach node in array ids loop
+  begin
+   perform private.artifact_roundtrip_template_context_v1(node,p_subject);
+  exception when insufficient_privilege then return false;end;
+  if not exists(select 1 from public.artifact_revisions where organization_id=p_org and id=node)
+   or exists(select 1 from private.artifact_dependency_links l where l.organization_id=p_org and l.revision_id=node
+    and ((l.link_kind='artifact_revision' and not(l.derived_from_revision_id=any(ids)))
+    or (l.link_kind='source_version' and not private.source_use_allowed_v1(p_org,l.source_version_id,p_subject,case when p_export then 'export' else 'read' end,case when p_export then 'export' else 'analysis' end))))
+  then return false;end if;
+ end loop;
+ return true;
+end;
+$$;
+
+
 create function private.artifact_import_processor_context_v1(t private.artifact_roundtrip_tasks)
 returns jsonb language plpgsql security definer set search_path=''as $$
 declare c public.artifact_import_candidates;v public.source_versions;receipt public.artifact_export_receipts;r public.artifact_revisions;blocks jsonb;
@@ -187,7 +250,7 @@ begin
  'logicalManifestFingerprint',receipt.logical_manifest_fingerprint,'rendererVersion',receipt.renderer_version,'sha256',receipt.content_sha256,'byteLength',receipt.byte_length,
  'roundtripManifest',receipt.roundtrip_manifest,'variant',receipt.variant,'format',receipt.format,'locale',receipt.locale,'issuedAt',receipt.issued_at,'storage',jsonb_build_object('bucket',receipt.bucket_id,'path',receipt.object_path))end,
  'headRevision',jsonb_build_object('id',r.id,'artifactId',r.artifact_id,'revisionNo',r.revision_no,'manifest',r.manifest,'manifestFingerprint',r.manifest_fingerprint,
- 'logicalManifestFingerprint',private.artifact_roundtrip_logical_fingerprint_v1(r.manifest),'issuedAt',date_trunc('milliseconds',r.created_at)),'headBlocks',blocks,'headProducer',private.artifact_roundtrip_producer_context_v1(r.id)));
+ 'logicalManifestFingerprint',private.artifact_roundtrip_logical_fingerprint_v1(r.manifest),'issuedAt',date_trunc('milliseconds',r.created_at)),'headBlocks',blocks,'headProducer',private.artifact_roundtrip_producer_context_v1(r.id),'headTemplateBody',private.artifact_roundtrip_template_context_v1(r.id,t.requested_by)));
 end;$$;
 alter function private.worker_claim_artifact_roundtrip_v1(text)rename to worker_claim_artifact_roundtrip_before_import_v1;
 revoke all on function private.worker_claim_artifact_roundtrip_before_import_v1(text)from public,anon,authenticated,service_role;
@@ -214,8 +277,8 @@ returns void language plpgsql immutable set search_path=''as $$
 declare d jsonb;b jsonb;a jsonb;
 begin
  if p_comparison is null or jsonb_typeof(p_comparison)<>'object' or coalesce(p_comparison->>'status','') not in ('candidate','unmatched')
- or jsonb_typeof(p_comparison->'differences')is distinct from'array' or jsonb_array_length(p_comparison->'differences')>1000
- or octet_length(p_comparison::text)>1048576 or p_contributions is null or jsonb_typeof(p_contributions)<>'object'
+ or jsonb_typeof(p_comparison->'differences')is distinct from'array' or jsonb_array_length(p_comparison->'differences')>15000
+ or octet_length(p_comparison::text)>8388608 or p_contributions is null or jsonb_typeof(p_contributions)<>'object'
  or not(p_contributions ?& array['assumptionChanges','blockProposals','observations','conflicts'])
  or p_contributions-array['assumptionChanges','blockProposals','observations','conflicts']<>'{}'
  or octet_length(p_contributions::text)>1048576 then raise exception 'artifact_import_comparison_invalid'using errcode='22023';end if;
@@ -235,7 +298,7 @@ begin
  for b in select value from jsonb_array_elements(p_contributions->'blockProposals')loop
  if b-array['blockKey','content','claims','supportIds','detachedClaimIds']<>'{}' or coalesce(b->>'blockKey','')!~'^[^[:space:]]{1,160}$'
  or b->'claims' is distinct from '[]'::jsonb or b->'supportIds' is distinct from '[]'::jsonb or jsonb_typeof(b->'content')<>'object'
- or b->'content'-array['text']<>'{}'or jsonb_typeof(b#>'{content,text}')is distinct from'string'or length(b#>>'{content,text}')>200000
+ or (b->'content')-array['text']<>'{}'or jsonb_typeof(b#>'{content,text}')is distinct from'string'or length(b#>>'{content,text}')>200000
  or jsonb_typeof(b->'detachedClaimIds')<>'array' then raise exception 'artifact_import_contributions_invalid'using errcode='22023';end if;end loop;
 end;$$;
 
@@ -275,7 +338,7 @@ returns jsonb language sql security invoker set search_path=''as $$select privat
 -- Only this task's verified upload, historical export and current revision are readable by its leased worker.
 create or replace function private.artifact_roundtrip_storage_allowed_v1(p_bucket text,p_path text,p_write boolean)
 returns boolean language plpgsql volatile security definer set search_path=''as $$
-declare t private.artifact_roundtrip_tasks;receipt public.artifact_export_receipts;r public.artifact_revisions;c public.artifact_import_candidates;
+declare t private.artifact_roundtrip_tasks;receipt public.artifact_export_receipts;r public.artifact_revisions;c public.artifact_import_candidates;template_body jsonb;
 begin
  if auth.uid()is null then return false;end if;
  if not p_write and p_bucket='case-artifacts'then
@@ -287,6 +350,14 @@ begin
  if not private.artifact_roundtrip_task_allowed_v1(t)then continue;end if;
  if p_bucket='case-artifacts'and t.operation='export'and t.output_path=p_path then return true;end if;
  if not p_write then
+ if t.operation<>'import_scan'and p_bucket='brand-templates'then
+ template_body:=private.artifact_roundtrip_template_context_v1(t.revision_id,t.requested_by);
+ if template_body#>>'{definition,logo,object_path}'=p_path then return true;end if;
+ if t.operation='import'then
+ select*into c from public.artifact_import_candidates where organization_id=t.organization_id and id=t.import_candidate_id;
+ template_body:=private.artifact_roundtrip_template_context_v1(coalesce(c.compared_head_revision_id,c.head_revision_id_at_submit),t.requested_by);
+ if template_body#>>'{definition,logo,object_path}'=p_path then return true;end if;
+ end if;end if;
  if t.operation<>'import_scan'and private.artifact_roundtrip_material_storage_allowed_v1(t.organization_id,t.revision_id,t.requested_by,p_bucket,p_path)then return true;end if;
  select*into r from public.artifact_revisions where organization_id=t.organization_id and id=t.revision_id;
  if t.operation<>'import_scan'and r.manifest#>>'{bytes,storage,bucket}'=p_bucket and r.manifest#>>'{bytes,storage,path}'=p_path then return true;end if;
@@ -413,7 +484,7 @@ begin
  return jsonb_build_object('claimed',true,'taskId',t.id,'organizationId',t.organization_id,'workId',t.work_id,'operation',t.operation,'format',t.format,'variant',t.variant,'locale',t.locale,
  'capabilityToken',p_capability_token,'leaseExpiresAt',t.lease_expires_at,'requestedBy',t.requested_by,'commandId',t.command_id,'storageObjectId',object_id,
  'revision',case when r.id is not null then jsonb_build_object('id',r.id,'artifactId',r.artifact_id,'revisionNo',r.revision_no,'manifest',r.manifest,'manifestFingerprint',r.manifest_fingerprint,
- 'logicalManifestFingerprint',private.artifact_roundtrip_logical_fingerprint_v1(r.manifest),'issuedAt',date_trunc('milliseconds',r.created_at))end,'blocks',blocks,'producer',producer)||private.artifact_import_processor_context_v1(t);
+ 'logicalManifestFingerprint',private.artifact_roundtrip_logical_fingerprint_v1(r.manifest),'issuedAt',date_trunc('milliseconds',r.created_at))end,'blocks',blocks,'producer',producer,'templateBody',case when r.id is not null then private.artifact_roundtrip_template_context_v1(r.id,t.requested_by)else null end)||private.artifact_import_processor_context_v1(t);
 end;$$;
 create or replace function private.worker_revalidate_artifact_roundtrip_v1(p_task_id uuid,p_capability_token text)
 returns jsonb language plpgsql security definer set search_path=''as $$
@@ -498,7 +569,7 @@ end;$$;
 create function private.apply_institutional_artifact_import_v1(p_candidate uuid,p_changes jsonb,p_command_id uuid,p_locale text,p_self_approval_declared boolean,p_configuration_id uuid,p_rebase_declared boolean)
 returns jsonb language plpgsql security definer set search_path=''as $$
 declare imp public.artifact_import_candidates;ar public.artifact_revisions;m private.institutional_model_results;c private.institutional_model_configurations;parent private.institutional_model_configurations;
- conf jsonb;change jsonb;pos integer;id uuid:=gen_random_uuid();fp text;rights uuid;proof jsonb;next_revision integer;result jsonb;canonical private.project_canonical_revisions;native_command uuid:=gen_random_uuid();
+ conf jsonb;change jsonb;pos integer;new_configuration_id uuid:=gen_random_uuid();fp text;rights uuid;proof jsonb;next_revision integer;result jsonb;canonical private.project_canonical_revisions;native_command uuid:=gen_random_uuid();
 begin
  select*into strict imp from public.artifact_import_candidates where id=p_candidate;
  select*into strict ar from public.artifact_revisions where organization_id=imp.organization_id and id=imp.compared_head_revision_id;
@@ -520,18 +591,18 @@ begin
  fp:=private.institutional_config_hash(conf);
  select coalesce(max(revision),0)+1 into next_revision from private.institutional_model_configurations where organization_id=imp.organization_id and capital_project_id=imp.work_id;
  insert into private.institutional_model_configurations(id,organization_id,capital_project_id,revision,configuration,configuration_fingerprint,parent_fingerprint,status,answer_evidence)
- values(id,imp.organization_id,imp.work_id,next_revision,conf,fp,parent.configuration_fingerprint,'review_required',jsonb_build_object('kind','imported_workbook_proposal','importCandidateId',imp.id,'uploadFingerprint',imp.upload_sha256,'changes',p_changes,'sourceConfigurationId',c.id,'rebaseDeclared',p_rebase_declared));
+ values(new_configuration_id,imp.organization_id,imp.work_id,next_revision,conf,fp,parent.configuration_fingerprint,'review_required',jsonb_build_object('kind','imported_workbook_proposal','importCandidateId',imp.id,'uploadFingerprint',imp.upload_sha256,'changes',p_changes,'sourceConfigurationId',c.id,'rebaseDeclared',p_rebase_declared));
  select r.id into rights from private.source_rights_versions r where organization_id=imp.organization_id and source_version_id=imp.source_version_id order by revision desc limit 1;
  insert into private.institutional_artifact_import_receipts(organization_id,work_id,import_candidate_id,configuration_id,parent_configuration_id,source_configuration_id,rebase_declared,parent_fingerprint,candidate_fingerprint,source_version_id,rights_version_id,author_id,changes)
- values(imp.organization_id,imp.work_id,imp.id,id,parent.id,c.id,p_rebase_declared,parent.configuration_fingerprint,fp,imp.source_version_id,rights,imp.submitted_by,p_changes);
+ values(imp.organization_id,imp.work_id,imp.id,new_configuration_id,parent.id,c.id,p_rebase_declared,parent.configuration_fingerprint,fp,imp.source_version_id,rights,imp.submitted_by,p_changes);
  -- Preserve the former proposal storage as an explicit projection; it is never the approval authority.
  select*into canonical from private.project_canonical_revisions where organization_id=imp.organization_id and capital_project_id=imp.work_id order by revision_number desc limit 1;
  insert into private.institutional_revision_proposals(id,organization_id,capital_project_id,canonical_revision_id,configuration_id,configuration_fingerprint,artifact_fingerprint,structure_fingerprint,upload_fingerprint,changes,prepared_by)
- values(id,imp.organization_id,imp.work_id,canonical.id,c.id,c.configuration_fingerprint,m.artifact->>'fingerprint',imp.comparison_fingerprint,imp.upload_sha256,p_changes,imp.submitted_by);
- proof:=private.institutional_configuration_ancestry_before_review_projection_v1(imp.organization_id,imp.work_id,id);
- result:=private.review_institutional_configuration_and_calculate_v2(imp.work_id,id,parent.configuration_fingerprint,'approved',fp,private.institutional_config_hash(proof),native_command,p_locale,p_self_approval_declared);
- update private.institutional_revision_proposals p set status='approved',candidate_configuration_id=apply_institutional_artifact_import_v1.id,reviewed_by=auth.uid(),reviewed_at=now()where p.organization_id=imp.organization_id and p.id=apply_institutional_artifact_import_v1.id;
- return result||jsonb_build_object('configurationId',id,'configurationFingerprint',fp,'resultId',native_command);
+ values(new_configuration_id,imp.organization_id,imp.work_id,canonical.id,c.id,c.configuration_fingerprint,m.artifact->>'fingerprint',imp.comparison_fingerprint,imp.upload_sha256,p_changes,imp.submitted_by);
+ proof:=private.institutional_configuration_ancestry_before_review_projection_v1(imp.organization_id,imp.work_id,new_configuration_id);
+ result:=private.review_institutional_configuration_and_calculate_v2(imp.work_id,new_configuration_id,parent.configuration_fingerprint,'approved',fp,private.institutional_config_hash(proof),native_command,p_locale,p_self_approval_declared);
+ update private.institutional_revision_proposals p set status='approved',candidate_configuration_id=apply_institutional_artifact_import_v1.new_configuration_id,reviewed_by=auth.uid(),reviewed_at=now()where p.organization_id=imp.organization_id and p.id=apply_institutional_artifact_import_v1.new_configuration_id;
+ return result||jsonb_build_object('configurationId',new_configuration_id,'configurationFingerprint',fp,'resultId',native_command);
 end;$$;
 
 -- The complete native v2 command, unchanged except its prospective import preparer receipt.
@@ -648,7 +719,7 @@ begin
  select*into c from public.artifact_import_candidates where id=p_candidate_id;perform private.lock_review_work_v1(c.work_id);
  select*into c from public.artifact_import_candidates where id=p_candidate_id for update;
  select*into a from public.artifacts where organization_id=c.organization_id and id=c.artifact_id for update;
- select*into r from public.artifact_export_receipts where organization_id=c.organization_id and artifact_id=c.artifact_id and format=c.format and id=p_export_receipt_id;
+ select*into r from public.artifact_export_receipts where organization_id=c.organization_id and artifact_id=c.artifact_id and format=c.format and locale=c.locale and id=p_export_receipt_id;
  if r.id is null or not private.artifact_roundtrip_revision_allowed_v1(c.organization_id,r.revision_id,auth.uid(),false)or not private.artifact_import_source_allowed_v1(c.organization_id,c.work_id,c.source_version_id,auth.uid(),'process')then raise exception 'artifact_import_denied'using errcode='42501';end if;
  if a.head_revision_id is distinct from p_expected_head_revision_id then raise exception 'artifact_import_stale'using errcode='40001';end if;
  if p_command_id is null or p_mappings is null or jsonb_typeof(p_mappings)<>'array'or jsonb_array_length(p_mappings)not between 1 and 1000 then raise exception 'artifact_import_mapping_invalid'using errcode='22023';end if;
@@ -678,7 +749,7 @@ create function private.adopt_artifact_import_v1(p_candidate_id uuid,p_expected_
 returns jsonb language plpgsql security definer set search_path=''as $$
 declare c public.artifact_import_candidates;a public.artifacts;head public.artifact_revisions;policy jsonb;resolution jsonb;diff jsonb;binding jsonb;
  changes jsonb;proposals jsonb;blocks jsonb;block jsonb;claims jsonb;manifest jsonb;links jsonb;refs jsonb;rights uuid;written jsonb;decision jsonb;continuation jsonb;institutional jsonb;
- event private.artifact_import_events;content text;value text;pending jsonb;pending_ids uuid[];
+ event private.artifact_import_events;content text;proposed_value text;pending jsonb;pending_ids uuid[];
 begin
  select*into c from public.artifact_import_candidates where id=p_candidate_id;perform private.lock_review_work_v1(c.work_id);
  select*into c from public.artifact_import_candidates where id=p_candidate_id for update;
@@ -708,9 +779,9 @@ begin
  if diff->>'classification'<>'conflict'then raise exception 'artifact_import_manual_mapping_required'using errcode='22023';end if;
  if diff#>>'{received,role}'='input'then
  select value into binding from jsonb_array_elements(c.comparison#>'{baseManifest,inputs}')where 'in:'||(value->>'name')=diff->>'key';
- value:=diff#>>'{received,value}';
- if binding is null or value is null or length(value)>100 or value!~'^-?[0-9]+(\.[0-9]+)?$'then raise exception 'artifact_import_resolution_invalid'using errcode='22023';end if;
- changes:=changes||jsonb_build_array(jsonb_strip_nulls(jsonb_build_object('assumptionId',binding->>'assumptionId','period',binding->>'period','configurationId',binding->>'configurationId','approved',coalesce(diff#>>'{current,value}',binding->>'approved'),'proposed',value)));
+ proposed_value:=diff#>>'{received,value}';
+ if binding is null or proposed_value is null or length(proposed_value)>100 or proposed_value!~'^-?[0-9]+(\.[0-9]+)?$'then raise exception 'artifact_import_resolution_invalid'using errcode='22023';end if;
+ changes:=changes||jsonb_build_array(jsonb_strip_nulls(jsonb_build_object('assumptionId',binding->>'assumptionId','period',binding->>'period','configurationId',binding->>'configurationId','approved',coalesce(diff#>>'{current,value}',binding->>'approved'),'proposed',proposed_value)));
  elsif diff#>>'{received,role}'='text'then
  proposals:=proposals||jsonb_build_array(jsonb_build_object('blockKey',diff#>>'{base,blockKey}','content',jsonb_build_object('text',diff#>>'{received,value}'),'claims','[]'::jsonb,'supportIds','[]'::jsonb,'detachedClaimIds',coalesce(diff#>'{base,claimIds}','[]')));
  else raise exception 'artifact_import_resolution_invalid'using errcode='22023';end if;end loop;
@@ -725,7 +796,7 @@ begin
  select coalesce(array_agg(distinct(value->>'configurationId')::uuid),'{}')into pending_ids from jsonb_array_elements(pending);
  end if;
  institutional:=private.apply_institutional_artifact_import_v1(c.id,changes,p_command_id,p_locale,p_self_approval_declared,p_configuration_id,p_rebase_declared);end if;
- select coalesce(jsonb_agg(jsonb_build_object('blockKey',block_key,'kind',kind,'content',content,'claims',claims)order by block_no),'[]')into blocks from public.artifact_blocks where organization_id=c.organization_id and revision_id=head.id;
+ select coalesce(jsonb_agg(jsonb_build_object('blockKey',ab.block_key,'kind',ab.kind,'content',ab.content,'claims',ab.claims)order by ab.block_no),'[]')into blocks from public.artifact_blocks ab where ab.organization_id=c.organization_id and ab.revision_id=head.id;
  for block in select value from jsonb_array_elements(proposals)loop
  -- A new captured export block is a contribution, not fabricated legacy authority.
  if exists(select 1 from jsonb_array_elements(blocks)b where b->>'blockKey'=block->>'blockKey')then

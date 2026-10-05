@@ -40,6 +40,8 @@ describe("authorized prospective artifact roundtrip renderer",()=>{
   await expect(renderer({...c,variant:"absent"},c.revision)).rejects.toThrow("variant_unsupported");
   const identity={...c.revision!,manifest:{...(c.revision!.manifest as Record<string,unknown>),template:{templateVersionId:id(12),fingerprint:"e".repeat(64)}}};
   await expect(renderer(c,identity)).rejects.toThrow("template_unavailable");
+  const disguisedHouse={...identity,manifest:{...(identity.manifest as Record<string,unknown>),template:{templateVersionId:"offroad-house@2026.09.07-v1",fingerprint:"e".repeat(64)}}};
+  await expect(renderer(c,disguisedHouse)).rejects.toThrow("template_fingerprint_changed");
  });
  it("hashes and revalidates a stored object before and after I/O, without a raw URL",async()=>{
   const bytes=materialToDocx({material,lang:"en",meta:{issuedOn:"2026-10-05"}});const c={...claim(),variant:"default",producer:{kind:"stored",storage:{bucket:"case-artifacts",path:"owned/exact.docx"},sha256:roundtripSha256(bytes),byteLength:bytes.byteLength,sourceFormat:"docx"}};
@@ -116,4 +118,33 @@ it("hydrates native material only from the two leased retained bodies and reject
  await expect(createArtifactRoundtripRenderer(client)({...c,producer:{...producer,packageBody:{...producer.packageBody,expiresAt:"2020-01-01T00:00:00Z"}}},c.revision)).rejects.toThrow("source_revoked");
  download.mockImplementation(async()=>({data:new Blob([new Uint8Array(packageBytes.length)]),error:null}));
  await expect(createArtifactRoundtripRenderer(client)(c,c.revision)).rejects.toThrow("bytes_changed");
+});
+it("renders an exact immutable template version and rejects swapped body or canonical digest",async()=>{
+ const {offroadHouseTemplateDefinition,offroadHousePresentationStructure,presentationTemplateToStored,presentationStructureToStored}=await import("@offroad/case-export");
+ const definition=presentationTemplateToStored({...offroadHouseTemplateDefinition,templateKey:"synthetic-client",origin:"client_supplied",colors:{...offroadHouseTemplateDefinition.colors,accent:"112233"}});
+ const structure=presentationStructureToStored(offroadHousePresentationStructure);
+ const canonicalFingerprintInput=JSON.stringify({definition,structure}),fingerprint=roundtripSha256(canonicalFingerprintInput);
+ const c={...claim(),templateBody:{versionId:id(90),fingerprint,definition,structure,canonicalFingerprintInput}};
+ const identity={...c.revision!,manifest:{...(c.revision!.manifest as Record<string,unknown>),template:{templateVersionId:id(90),fingerprint}}};
+ const result=await createArtifactRoundtripRenderer(port().client)(c,identity);expect(result.templateFingerprint).toBe(fingerprint);
+ expect((await extractRoundtripManifest(result.bytes,"docx")).manifest?.revisionId).toBe(identity.id);
+ await expect(createArtifactRoundtripRenderer(port().client)({...c,templateBody:{...c.templateBody,definition:{...definition,template_key:"swapped"}}},identity)).rejects.toThrow("template_fingerprint_changed");
+ await expect(createArtifactRoundtripRenderer(port().client)({...c,templateBody:{...c.templateBody,canonicalFingerprintInput:"{}"}},identity)).rejects.toThrow("template_fingerprint_changed");
+ await expect(createArtifactRoundtripRenderer(port().client)({...c,templateBody:{...c.templateBody,versionId:id(91)}},identity)).rejects.toThrow("template_unavailable");
+});
+it("checks the actual builtin template fingerprint rather than trusting its version label",async()=>{
+ const {houseDocumentTemplate}=await import("@offroad/case-export");const {fingerprintJson}=await import("@offroad/case-understanding");const t=houseDocumentTemplate;
+ const fingerprint=fingerprintJson({id:t.id,version:t.version,origin:t.origin,colors:t.colors,fonts:t.fonts,logo:null,logoOnDark:null});const c=claim();
+ const identity={...c.revision!,manifest:{...(c.revision!.manifest as Record<string,unknown>),template:{templateVersionId:`${t.id}@${t.version}`,fingerprint}}};
+ expect((await createArtifactRoundtripRenderer(port().client)(c,identity)).templateFingerprint).toBe(fingerprint);
+});
+it("requires the exact pinned logo bytes and current lease before and after Storage",async()=>{
+ const {offroadHouseTemplateDefinition,offroadHousePresentationStructure,presentationTemplateToStored,presentationStructureToStored}=await import("@offroad/case-export");
+ const logo=new Uint8Array([1,2,3,4]);const definition=presentationTemplateToStored({...offroadHouseTemplateDefinition,logo:{objectPath:"synthetic/logo.png",sha256:roundtripSha256(logo),byteLength:logo.length,contentType:"image/png"}});
+ const structure=presentationStructureToStored(offroadHousePresentationStructure),canonicalFingerprintInput=JSON.stringify({definition,structure}),fingerprint=roundtripSha256(canonicalFingerprintInput);
+ const c={...claim(),templateBody:{versionId:id(90),fingerprint,definition,structure,canonicalFingerprintInput}};
+ const identity={...c.revision!,manifest:{...(c.revision!.manifest as Record<string,unknown>),template:{templateVersionId:id(90),fingerprint}}};
+ const p=port();p.download.mockResolvedValue({data:new Blob([logo]),error:null});await createArtifactRoundtripRenderer(p.client)(c,identity);expect(p.from).toHaveBeenCalledWith("brand-templates");expect(p.download).toHaveBeenCalledWith("synthetic/logo.png");
+ const corrupt=port();corrupt.download.mockResolvedValue({data:new Blob([new Uint8Array([4,3,2,1])]),error:null});await expect(createArtifactRoundtripRenderer(corrupt.client)(c,identity)).rejects.toThrow("template_logo_changed");
+ const revoked=port();revoked.download.mockResolvedValue({data:new Blob([logo]),error:null});revoked.rpc.mockResolvedValueOnce({data:{valid:true},error:null}).mockResolvedValueOnce({data:{valid:false},error:null});await expect(createArtifactRoundtripRenderer(revoked.client)(c,identity)).rejects.toThrow("source_revoked");
 });
