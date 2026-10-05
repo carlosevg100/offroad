@@ -29,7 +29,7 @@ create table public.artifact_import_candidates (
  check((base_revision_id is null)=(base_manifest_fingerprint is null)),
  check(status<>'applied' or (decision_id is not null and applied_revision_id is not null)),
  check((comparison is null)=(comparison_fingerprint is null)),
- check(comparison is null or (jsonb_typeof(comparison)='object' and octet_length(comparison::text)<=1048576)),
+ check(comparison is null or (jsonb_typeof(comparison)='object' and octet_length(comparison::text)<=8388608)),
  check(contributions is null or (jsonb_typeof(contributions)='object' and octet_length(contributions::text)<=1048576))
 );
 create index artifact_import_candidates_work_idx on public.artifact_import_candidates(organization_id,work_id,status);
@@ -514,6 +514,29 @@ create trigger institutional_artifact_import_audit after insert on private.insti
 create index institutional_artifact_import_parent_idx on private.institutional_artifact_import_receipts(organization_id,parent_configuration_id);
 create index institutional_artifact_import_candidate_idx on private.institutional_artifact_import_receipts(organization_id,import_candidate_id);
 create index institutional_artifact_import_author_idx on private.institutional_artifact_import_receipts(author_id);
+
+-- Office roundtrip intake is an attested contribution, not a new model input.
+-- Preserve the original source-context and approval guards for all actual model evidence.
+create or replace function private.institutional_source_context(p_org uuid,p_session uuid) returns jsonb language plpgsql stable security definer set search_path='' as $$
+declare sources jsonb;candidates jsonb;body jsonb;
+begin
+ select coalesce(jsonb_agg(jsonb_build_object('sourceDocument',d.id,'version',d.document_version::text,'hash',d.sha256,'hashVerified',d.sha256_verified_at is not null and d.processing_status='ready' and d.scan_result->>'verdict'='clean','originalName',d.original_name) order by d.id),'[]'::jsonb) into sources from public.source_documents d where d.organization_id=p_org and d.intake_session_id=p_session
+ and (
+  not exists(select 1 from public.artifact_import_candidates imp where imp.organization_id=p_org and imp.source_version_id=d.id)
+  or exists(select 1 from private.artifact_import_events e join public.artifact_import_candidates imp on imp.organization_id=e.organization_id and imp.id=e.candidate_id where imp.organization_id=p_org and imp.source_version_id=d.id and e.kind='as_source')
+  -- A technical import cannot hide a source already reviewed for a model or accepted as financial evidence.
+  or exists(select 1 from private.institutional_model_setup_submissions ss cross join lateral jsonb_array_elements(ss.source_reviews)sr(value) where ss.organization_id=p_org and ss.intake_session_id=p_session and sr.value->>'sourceDocument'=d.id::text)
+  or exists(select 1 from public.intake_field_candidates accepted where accepted.organization_id=p_org and accepted.source_document_id=d.id and accepted.review_state='accepted' and accepted.anchor_verified and accepted.value_type='number' and accepted.field_group in('historical_financials','interim_financials'))
+ );
+ select coalesce(jsonb_agg(jsonb_build_object('id',c.id,'label',c.label,'field_path',c.field_path,'normalized_value',c.normalized_value#>>'{}','value_type',c.value_type,'source_document_id',c.source_document_id,'evidence_rank',c.evidence_rank,'information_class',c.information_class,'confidence',c.confidence,'period_start',c.period_start,'period_end',c.period_end,'entity_name',c.entity_name,'entity_scope',c.entity_scope,'source_anchor',c.source_anchor,'anchor_verified',c.anchor_verified,'review_state',c.review_state,'reviewed_by',c.reviewed_by,'reviewed_at',c.reviewed_at,'currency',c.currency,'unit',c.unit,'value_scale',c.value_scale,'extraction_document_version',d.document_version,'extraction_source_sha256',d.sha256) order by c.id),'[]'::jsonb) into candidates
+ from public.intake_field_candidates c join public.source_documents d on d.organization_id=c.organization_id and d.id=c.source_document_id and d.intake_session_id=c.intake_session_id
+ where c.organization_id=p_org and c.intake_session_id=p_session and c.review_state='accepted' and c.anchor_verified and c.value_type='number' and c.field_group in ('historical_financials','interim_financials') and c.entity_name is not null and c.entity_scope in ('consolidated','standalone','segment') and c.period_end is not null and d.sha256_verified_at is not null and d.processing_status='ready' and d.scan_result->>'verdict'='clean'
+ and exists(select 1 from public.processing_jobs j where j.organization_id=c.organization_id and j.intake_session_id=c.intake_session_id and j.source_document_id=c.source_document_id and j.processing_run_id=c.processing_run_id and j.kind='document_pipeline' and j.status='succeeded' and j.payload->>'sha256'=d.sha256 and j.payload->>'document_version'=d.document_version::text);
+ if jsonb_array_length(sources)>1000 or jsonb_array_length(candidates)>5000 then raise exception 'institutional_source_scope_refinement_required';end if;
+ body:=jsonb_build_object('currentSources',sources,'candidates',candidates);
+ return body||jsonb_build_object('sourceManifestFingerprint',private.institutional_config_hash(body));
+end $$;
+revoke all on function private.institutional_source_context(uuid,uuid)from public,anon,authenticated,service_role;
 
 -- Extend the immutable proof with an import receipt; all established origin handlers remain unchanged.
 alter function private.institutional_configuration_ancestry_before_review_projection_v1(uuid,uuid,uuid)rename to institutional_configuration_ancestry_before_artifact_import_v1;

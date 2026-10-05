@@ -190,6 +190,7 @@ jobs:
         run: |
           set -euo pipefail
           psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage21-replay-catalogue.json"
+          psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage21-function-catalogue.sql > "$RUNNER_TEMP/stage21-function-catalogue.json"
           DATABASE_URL="${{ steps.db.outputs.url }}" python3 -B - <<'PY'
           import importlib.util, json, os
           from pathlib import Path
@@ -213,6 +214,7 @@ jobs:
           name: stage21-replay-evidence
           path: |
             ${{ runner.temp }}/stage21-replay-catalogue.json
+            ${{ runner.temp }}/stage21-function-catalogue.json
             ${{ runner.temp }}/stage21-effective-bodies.json
 
       - name: Verify effective function bodies match the committed snapshot
@@ -226,6 +228,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -B scripts/ci/test_check_stage0_inventory.py
+          python3 -B scripts/ci/test_compare_stage21_installed.py
           psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage0-replay-catalogue.json"
           python3 -B scripts/ci/check-stage0-inventory.py --catalogue "$RUNNER_TEMP/stage0-replay-catalogue.json" --environment replay --production-journal docs/build/schema-history/production-migration-journal.json
 

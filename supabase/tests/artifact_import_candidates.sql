@@ -51,6 +51,7 @@ do $$declare comparison jsonb;contributions jsonb;begin
  comparison:=jsonb_build_object('status','candidate','differences',(select jsonb_agg(jsonb_build_object('key','recorded:'||i,'classification','unchanged','alreadyPresent',false))from generate_series(1,1500)i));
  contributions:=jsonb_build_object('assumptionChanges','[]'::jsonb,'blockProposals','[]'::jsonb,'observations','[]'::jsonb,'conflicts','[]'::jsonb);
  perform private.validate_artifact_import_comparison_v1(comparison,contributions);
+ if not exists(select 1 from pg_constraint c where c.conrelid='public.artifact_import_candidates'::regclass and c.contype='c' and pg_get_constraintdef(c.oid)like '%octet_length((comparison)::text)%8388608%')then raise exception 'comparison storage rejects legitimate multi-scenario payload before processor bound';end if;
  begin perform private.validate_artifact_import_comparison_v1(comparison||jsonb_build_object('oversized',repeat('x',8388609)),contributions);raise exception 'oversized comparison accepted';exception when invalid_parameter_value then null;end;
  raise notice 'PASS import_multiscenario_comparison_bounds';
 end;$$;
@@ -177,7 +178,7 @@ insert into private.worker_tokens(label,token_sha256,execution_account_user_id)
 values('synthetic native roundtrip worker',extensions.digest('synthetic-native-roundtrip-token','sha256'),'10000000-0000-4000-8000-000000000881');
 insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,mime_type,byte_size,sha256,created_by,processing_status)values('50000000-0000-4000-8000-000000000921','20000000-0000-4000-8000-000000000881','40000000-0000-4000-8000-000000000881','20000000-0000-4000-8000-000000000881/40000000-0000-4000-8000-000000000881/roundtrip.xlsx','Synthetic roundtrip.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',12,repeat('b',64),'10000000-0000-4000-8000-000000000881','quarantined');
 do $$declare revision public.artifact_revisions;artifact public.artifacts;cfg private.institutional_model_configurations;assumption jsonb;
- request jsonb;claim jsonb;map jsonb;receipt jsonb;path text;obj uuid:=gen_random_uuid();source public.source_versions;candidate jsonb;comparison jsonb;contributions jsonb;scan jsonb;adopted jsonb;proof jsonb;target_configuration_id uuid;
+ request jsonb;claim jsonb;map jsonb;receipt jsonb;path text;obj uuid:=gen_random_uuid();source public.source_versions;candidate jsonb;comparison jsonb;contributions jsonb;scan jsonb;adopted jsonb;proof jsonb;target_configuration_id uuid;recalculation_job_id uuid;recalculation_context jsonb;
 begin
  select*into strict artifact from public.artifacts where id=(select artifact_id from public.artifact_revisions where id=(current_setting('test.roundtrip_native_result')::jsonb#>>'{nativeProjection,revisionId}')::uuid);
  select*into strict revision from public.artifact_revisions where id=artifact.head_revision_id;
@@ -208,6 +209,33 @@ begin
  contributions:=jsonb_build_object('assumptionChanges',jsonb_build_array(jsonb_build_object('assumptionId',assumption->>'id','period','2027','configurationId',cfg.id,'approved',assumption#>>'{values,2027}','proposed','0.09')),'blockProposals','[]'::jsonb,'observations','[]'::jsonb,'conflicts','[]'::jsonb);
  perform public.worker_commit_artifact_import_comparison_v1((claim->>'taskId')::uuid,claim->>'capabilityToken',comparison,contributions);
  candidate:=public.read_artifact_import_candidate_v1('a4210000-0000-4000-9000-000000000021');reset role;
+ if private.institutional_source_context(source.organization_id,'40000000-0000-4000-8000-000000000881'::uuid)->>'sourceManifestFingerprint'
+ is distinct from private.institutional_configuration_provenance(source.organization_id,cfg.id)->>'sourceManifestFingerprint'
+ then raise exception 'technical Office upload changed institutional model source context';end if;
+ raise notice 'PASS native_import_technical_upload_preserves_model_source_context';
+ begin
+  update public.intake_field_candidates accepted set normalized_value='999'::jsonb where accepted.organization_id=source.organization_id and accepted.intake_session_id='40000000-0000-4000-8000-000000000881'::uuid and accepted.review_state='accepted'and accepted.value_type='number'and accepted.field_group in('historical_financials','interim_financials');
+  if not found then raise exception 'financial source mutation fixture missing';end if;
+  begin
+   perform private.apply_institutional_configuration_review_before_projection_v1(artifact.work_id,cfg.id,cfg.parent_fingerprint,'approved',cfg.configuration_fingerprint);
+   raise exception 'changed financial model source accepted';
+  exception when serialization_failure then
+   if sqlerrm<>'institutional_review_sources_changed'then raise;end if;
+  end;
+  raise exception 'rollback_financial_source_mutation'using errcode='ZX021';
+ exception when sqlstate 'ZX021'then null;end;
+ raise notice 'PASS native_import_genuine_financial_source_mutation_still_denied';
+ begin
+  insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+  values(source.organization_id,source.id,(select max(sr.revision)+1 from private.source_rights_versions sr where sr.source_version_id=source.id),array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('d',64),'10000000-0000-4000-8000-000000000881');
+  set local role authenticated;
+  begin
+   perform public.adopt_artifact_import_group_v1('a4210000-0000-4000-9000-000000000021',revision.id,candidate->>'comparisonFingerprint','[]',gen_random_uuid(),'en-US',true,null,null,null,cfg.id,false);
+   raise exception 'revoked Office contribution adopted';
+  exception when insufficient_privilege then reset role;end;
+  raise exception 'rollback_office_source_revocation'using errcode='ZX021';
+ exception when sqlstate 'ZX021'then null;end;
+ raise notice 'PASS native_import_revoked_office_source_blocks_adoption';
  -- Missing self-declaration or a forged configuration scope creates neither revision nor job.
  begin
  set local role authenticated;
@@ -224,7 +252,19 @@ begin
  if adopted->>'status'<>'applied'or proof->>'state'<>'captured_lineage'or not exists(select 1 from private.institutional_configuration_review_projections where configuration_id=target_configuration_id)
  or not exists(select 1 from private.institutional_model_results where id=(adopted#>>'{institutional,resultId}')::uuid and status='queued')
  or not exists(select 1 from private.institutional_artifact_import_receipts where configuration_id=target_configuration_id and source_configuration_id=cfg.id and not rebase_declared)
+ or not exists(select 1 from jsonb_array_elements(proof->'sources')pin where pin->>'sourceVersionId'=source.id::text)
  then raise exception 'native import did not capture lineage, review and deterministic request';end if;
  raise notice 'PASS native_import_capture_v2_review_and_real_deterministic_request';
+ select j.id into strict recalculation_job_id from public.processing_jobs j where j.kind='agent_operation_brief'and j.payload->>'message_id'=adopted#>>'{institutional,resultId}';
+ update public.processing_jobs j set status='leased',attempts=1,lease_expires_at=now()+interval '10 minutes',capability_sha256=extensions.digest(repeat('x',64),'sha256')where j.id=recalculation_job_id;
+ set local role authenticated;
+ recalculation_context:=public.worker_load_institutional_model_context_v2(recalculation_job_id,repeat('x',64));reset role;
+ if jsonb_typeof(recalculation_context->'inputSnapshot')is distinct from'object'then raise exception 'native import recalculation capture missing';end if;
+ insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+ values(source.organization_id,source.id,(select max(sr.revision)+1 from private.source_rights_versions sr where sr.source_version_id=source.id),array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('c',64),'10000000-0000-4000-8000-000000000881');
+ set local role authenticated;
+ begin perform public.worker_load_institutional_model_context_v2(recalculation_job_id,repeat('x',64));raise exception 'revoked Office source allowed native recalculation';exception when insufficient_privilege then reset role;end;
+ if private.artifact_roundtrip_revision_allowed_v1(source.organization_id,(adopted->>'appliedRevisionId')::uuid,'10000000-0000-4000-8000-000000000881',false)then raise exception 'revoked Office source allowed derived import revision';end if;
+ raise notice 'PASS native_import_office_revocation_reaches_recalculation_capture_and_derived_revision';
 end;$$;
 rollback;
