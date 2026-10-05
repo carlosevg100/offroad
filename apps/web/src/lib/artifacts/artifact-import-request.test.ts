@@ -19,6 +19,12 @@ describe("Office import command boundary", () => {
     expect(importSameOrigin(new Request("https://offroad.test/import", {method: "POST", headers: {origin: "https://evil.test"}}))).toBe(false);
     expect(importSameOrigin(new Request("https://offroad.test/import", {method: "POST", headers: {origin: "https://offroad.test"}}))).toBe(true);
   });
+  it("uses the actual Host authority when Next normalizes its listen hostname", () => {
+    expect(importSameOrigin(new Request("http://localhost:3000/import", {method: "POST", headers: {host: "127.0.0.1:3000", origin: "http://127.0.0.1:3000"}}))).toBe(true);
+    expect(importSameOrigin(new Request("http://localhost:3000/import", {method: "POST", headers: {host: "127.0.0.1:3000", origin: "http://evil.test", "x-forwarded-host": "evil.test"}}))).toBe(false);
+    expect(importSameOrigin(new Request("https://offroad.test/import", {method: "POST", headers: {host: "offroad.test", origin: "http://offroad.test"}}))).toBe(false);
+    expect(importSameOrigin(new Request("https://offroad.test/import", {method: "POST", headers: {host: "offroad.test/path", origin: "https://offroad.test"}}))).toBe(false);
+  });
   it("caps untrusted request bytes even when Content-Length is omitted", async () => {
     expect(await readImportRequest(new Request("https://offroad.test/import", {method: "POST", headers: {"content-type": "application/json"}, body: `{"text":"${"a".repeat(2_097_152)}"}`}))).toBeNull();
     expect(await readImportRequest(new Request("https://offroad.test/import", {method: "POST", headers: {"content-type": "application/json"}, body: '{"act":"discard"}'}))).toEqual({act: "discard"});

@@ -13,7 +13,14 @@ export const artifactImportDecisionSchema = z.discriminatedUnion("act", [
 export const artifactImportMime = {xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation"} as const;
 export const importNoStore = {"cache-control": "private, no-store"};
 /** Cookie-authenticated mutation endpoints do not accept cross-origin form/API submissions. */
-export function importSameOrigin(request: Request): boolean {const origin = request.headers.get("origin"); return origin !== null && origin === new URL(request.url).origin;}
+export function importSameOrigin(request: Request): boolean {
+  const origin = request.headers.get("origin"), url = new URL(request.url);
+  // Next's server URL may contain its listen hostname rather than the browser's authority.
+  // Host is the authority of this HTTP request; forwarded hosts never authorize a mutation.
+  const host = request.headers.get("host") ?? url.host;
+  if (!origin || /[\s,\/\\@]/.test(host)) return false;
+  try {const expected = new URL(`${url.protocol}//${host}`);return expected.host.toLowerCase() === host.toLowerCase() && origin === expected.origin;} catch {return false;}
+}
 export async function readImportRequest(request: Request): Promise<unknown> {
   if (request.headers.get("content-type")?.split(";")[0] !== "application/json") return null;
   const declaredLength = Number(request.headers.get("content-length") ?? "0");

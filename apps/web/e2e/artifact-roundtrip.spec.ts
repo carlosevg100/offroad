@@ -22,9 +22,9 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   await expect(regimePanel.locator('select[name="project_self_approval"]')).toBeEnabled();
   await regimePanel.locator('select[name="project_self_approval"]').selectOption("allowed");
   await expect(page.getByTestId("project-review-self-approval")).toHaveAttribute("data-effective", "true");
-  const text = `Synthetic original roundtrip text ${suffix}`, changed = `Synthetic edited human contribution ${suffix}`;
-  const manifest = {schemaVersion: "artifact-manifest.2026.09.26-v1", kind: "work_product", audience: "internal", format: "json", bytes: null, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [], claims: [], traces: [], template: null, provenance: {producer: "synthetic-e2e-roundtrip", jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null};
-  const created = JSON.parse(sql(asRegimeOwner(f, `select public.create_artifact_revision_v1('${f.workId}','work_product','Synthetic Office contribution','internal',${literal(JSON.stringify(manifest))}::jsonb,${literal(JSON.stringify([{blockKey: "synthetic.text", kind: "paragraph", content: {text}, claims: []}]))}::jsonb,'[]',null,null);`)).split("\n").at(-1)!);
+  const text = "Synthetic original roundtrip text", changed = "Synthetic edited human contribution";
+  const manifest = {schemaVersion: "artifact-manifest.2026.09.26-v1", kind: "answer", audience: "internal", format: "json", bytes: null, method: null, execution: null, inputSnapshot: null, institutionalResult: null, sources: [], claims: [], traces: [], template: null, provenance: {producer: "synthetic-e2e-roundtrip", jobId: null, taskRunId: null, messageId: null, capability: null}, legacy: null};
+  const created = JSON.parse(sql(asRegimeOwner(f, `select public.create_artifact_revision_v1('${f.workId}','answer','Synthetic Office contribution','internal',${literal(JSON.stringify(manifest))}::jsonb,${literal(JSON.stringify([{blockKey: "synthetic.text", kind: "paragraph", content: {text}, claims: []}]))}::jsonb,'[]',null,null);`)).split("\n").at(-1)!);
   sql(asRegimeOwner(f, `select public.review_artifact_revision_v1('${created.revision_id}','${created.manifest_fingerprint}','approve',null,'Synthetic base approval',true,'${randomUUID()}');`));
   await page.goto(`/pt-BR/app/projects/${f.workId}?workspace=${f.organizationId}`);
   await page.locator('.advisor-work-surface__navigation a[href="#work-artifact-roundtrip"]').click();
@@ -67,7 +67,7 @@ test("Office roundtrip preserves the base and adopts a reviewed human text contr
   const declaration = review.getByLabel(messages.ArtifactImportReview.declaration, {exact: true});if (await declaration.count()) await declaration.check();
   await review.getByRole("button", {name: messages.ArtifactImportReview.apply, exact: true}).click();
   await expect(review.getByText(messages.ArtifactImportReview.status.applied, {exact: true})).toBeVisible();
-  const result = JSON.parse(sql(asRegimeOwner(f, `select public.read_artifact_head_v1('${f.workId}','work_product','Synthetic Office contribution');`)).split("\n").at(-1)!);
+  const result = JSON.parse(sql(asRegimeOwner(f, `select public.read_artifact_head_v1('${f.workId}','answer','Synthetic Office contribution');`)).split("\n").at(-1)!);
   expect(result.revision.id).not.toBe(created.revision_id);expect(result.revision.origin).toBe("person");expect(result.blocks.find((block: {blockKey: string}) => block.blockKey === "synthetic.text").content.text).toBe(changed);
   const base = JSON.parse(sql(asRegimeOwner(f, `select public.read_artifact_revision_v1('${created.revision_id}');`)).split("\n").at(-1)!);expect(base.blocks[0].content.text).toBe(text);
   const audit = sql(`select count(*) from private.artifact_import_events e join public.artifact_import_candidates c on c.id=e.candidate_id where c.work_id='${f.workId}' and e.kind='adopted';`);expect(audit).toBe("1");

@@ -145,6 +145,7 @@ do $$declare b jsonb;m jsonb;r jsonb;out jsonb;claim jsonb;
 begin
  b:=jsonb_build_array(pg_temp.block('lead','paragraph','{"text":"Concurrent current prose"}'));
  m:=pg_temp.manifest('answer','internal',jsonb_build_array(pg_temp.source_ref(pg_temp.val('source_a','')::uuid)),pg_temp.summary(b));
+ m:=m||jsonb_build_object('provenance',jsonb_build_object('producer','head-cas-current','jobId',null,'taskRunId',null,'messageId',null,'capability',null));
  r:=pg_temp.person_write('answer','roundtrip-test','internal',m,b);
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
  out:=public.recompare_artifact_import_v1('a4210000-0000-4000-9000-000000000002',(r->>'revision_id')::uuid,'a4210000-0000-4000-9000-000000000004');reset role;
