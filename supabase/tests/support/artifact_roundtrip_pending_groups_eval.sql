@@ -104,6 +104,9 @@ begin
  or rebased_configuration#>>'{assumptionBook,scenarioId}'is distinct from cfg.configuration#>>'{assumptionBook,scenarioId}'
  or rebased_configuration#>>'{assumptionBook,scenarioId}'is not distinct from second_config.configuration#>>'{assumptionBook,scenarioId}'
  or not exists(select 1 from private.institutional_artifact_import_receipts where configuration_id=rebased_configuration_id and source_configuration_id=cfg.id and parent_configuration_id=target_configuration_id and rebase_declared)
+ or not exists(select 1 from private.institutional_configuration_review_projections where configuration_id=rebased_configuration_id)
+ or not exists(select 1 from private.institutional_model_results where id=(rebased->>'resultId')::uuid and configuration_id=rebased_configuration_id and status='queued')
+ or (select count(*)from private.institutional_artifact_import_receipts where import_candidate_id='a4210000-0000-4000-9000-000000000021')<>2
  or not exists(select 1 from jsonb_array_elements(proof->'nodes')n where n->>'configurationId'=cfg.id::text)
  or not exists(select 1 from jsonb_array_elements(proof->'nodes')n where n->>'configurationId'=target_configuration_id::text)
  then raise exception 'explicit rebase lost source scenario or parent lineage';end if;

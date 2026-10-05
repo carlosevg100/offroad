@@ -607,7 +607,7 @@ end;$$;
 create function private.apply_institutional_artifact_import_v1(p_candidate uuid,p_changes jsonb,p_command_id uuid,p_locale text,p_self_approval_declared boolean,p_configuration_id uuid,p_rebase_declared boolean)
 returns jsonb language plpgsql security definer set search_path=''as $$
 declare imp public.artifact_import_candidates;ar public.artifact_revisions;m private.institutional_model_results;c private.institutional_model_configurations;parent private.institutional_model_configurations;
- conf jsonb;change jsonb;pos integer;new_configuration_id uuid:=gen_random_uuid();fp text;rights uuid;proof jsonb;next_revision integer;result jsonb;canonical private.project_canonical_revisions;native_command uuid:=gen_random_uuid();
+ conf jsonb;change jsonb;pos integer;new_configuration_id uuid:=gen_random_uuid();fp text;rights uuid;proof jsonb;next_revision integer;result jsonb;native_command uuid:=gen_random_uuid();
 begin
  select*into strict imp from public.artifact_import_candidates where id=p_candidate;
  select*into strict ar from public.artifact_revisions where organization_id=imp.organization_id and id=imp.compared_head_revision_id;
@@ -633,13 +633,8 @@ begin
  select r.id into rights from private.source_rights_versions r where organization_id=imp.organization_id and source_version_id=imp.source_version_id order by revision desc limit 1;
  insert into private.institutional_artifact_import_receipts(organization_id,work_id,import_candidate_id,configuration_id,parent_configuration_id,source_configuration_id,rebase_declared,parent_fingerprint,candidate_fingerprint,source_version_id,rights_version_id,author_id,changes)
  values(imp.organization_id,imp.work_id,imp.id,new_configuration_id,parent.id,c.id,p_rebase_declared,parent.configuration_fingerprint,fp,imp.source_version_id,rights,imp.submitted_by,p_changes);
- -- Preserve the former proposal storage as an explicit projection; it is never the approval authority.
- select*into canonical from private.project_canonical_revisions where organization_id=imp.organization_id and capital_project_id=imp.work_id order by revision_number desc limit 1;
- insert into private.institutional_revision_proposals(id,organization_id,capital_project_id,canonical_revision_id,configuration_id,configuration_fingerprint,artifact_fingerprint,structure_fingerprint,upload_fingerprint,changes,prepared_by)
- values(new_configuration_id,imp.organization_id,imp.work_id,canonical.id,c.id,c.configuration_fingerprint,m.artifact->>'fingerprint',imp.comparison_fingerprint,imp.upload_sha256,p_changes,imp.submitted_by);
  proof:=private.institutional_configuration_ancestry_before_review_projection_v1(imp.organization_id,imp.work_id,new_configuration_id);
  result:=private.review_institutional_configuration_and_calculate_v2(imp.work_id,new_configuration_id,parent.configuration_fingerprint,'approved',fp,private.institutional_config_hash(proof),native_command,p_locale,p_self_approval_declared);
- update private.institutional_revision_proposals p set status='approved',candidate_configuration_id=new_configuration_id,reviewed_by=auth.uid(),reviewed_at=now()where p.organization_id=imp.organization_id and p.id=new_configuration_id;
  return result||jsonb_build_object('configurationId',new_configuration_id,'configurationFingerprint',fp,'resultId',native_command);
 end;$$;
 
