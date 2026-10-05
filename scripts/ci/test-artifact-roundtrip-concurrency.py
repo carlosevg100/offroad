@@ -71,13 +71,13 @@ def setup(number):
     update public.agent_messages set status='completed' where organization_id='{c['org']}' and status in('queued','processing');
     insert into public.organization_review_policies(organization_id,assignment_required,self_approval_allowed,updated_by)
     values('{c['org']}',false,true,'{c['actor']}') on conflict(organization_id) do update set assignment_required=false,self_approval_allowed=true;
-    select set_config('request.jwt.claim.sub','{c['actor']}',true);
+    select pg_temp.act_as('{c['actor']}');
     insert into public.processing_runs(id,organization_id,intake_session_id,run_no,trigger,status,pipeline_version,created_by)
     values('{uuid4()}','{c['org']}','{mapping['a11b0000']}-0000-4000-9000-000000000003',121,'manual','queued','approval-fixture-v1','{c['actor']}');
     insert into public.processing_jobs(organization_id,intake_session_id,processing_run_id,kind,status,payload)
     select '{c['org']}','{mapping['a11b0000']}-0000-4000-9000-000000000003',r.id,'case_analysis','queued','{{"analysis_scope":"full_case"}}'
     from public.processing_runs r where r.organization_id='{c['org']}' and r.run_no=121;
-    select pg_temp.fixture_approve_execution(j.id) from public.processing_jobs j join public.processing_runs r on r.id=j.processing_run_id where r.organization_id='{c['org']}' and r.run_no=121;
+    select pg_temp.fixture_approve_execution(j.id) from public.processing_jobs j join public.processing_runs r on r.id=j.processing_run_id where r.organization_id='{c['org']}' and r.run_no=121 and j.kind='case_analysis';
     do $$declare t record;begin
      for t in select tgname,tgrelid::regclass as rel from pg_trigger join pg_proc on pg_proc.oid=tgfoid where pronamespace=pg_my_temp_schema() and not tgisinternal loop
       execute format('drop trigger %I on %s',t.tgname,t.rel);
