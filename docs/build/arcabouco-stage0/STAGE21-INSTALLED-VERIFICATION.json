@@ -1,0 +1,239 @@
+{
+  "schemaVersion": "stage21-installed-verification.2026.10.05-v1",
+  "replayRun": "https://github.com/carlosevg100/offroad/actions/runs/37343367471",
+  "replayCommit": "5820c6835ba90a519a39e3ca2f5f633d14356145",
+  "stage21Status": "PASS",
+  "environments": {
+    "production": {
+      "project_id": "ifnogpksgdadruooqydi",
+      "catalogueCapturedAt": "2026-10-05T17:31:53.517966+00:00",
+      "functionsCapturedAt": "2026-10-05T17:32:01.071198+00:00",
+      "journalCapturedAt": "2026-10-05T17:32:08.666114+00:00",
+      "catalogueSha256": "668e5d90bf847a781cdff13c11266717198b5ff4bf205468660f69f1f9f40d8d",
+      "functionsSha256": "4a8dbf8a1ae9bec921a2e370c294010982c70f9955ce99df7d65e37d4d8d7d7a",
+      "migrationReceipts": [
+        {
+          "version": "20261005171558",
+          "name": "artifact_export_receipts",
+          "file": "supabase/migrations/20261005171558_artifact_export_receipts.sql",
+          "sqlSha256": "e1e2aded642cd1a9649a4ae07a1eaf417d79baaefea364825b040f3874fb59a5",
+          "journalStatementsJsonSha256": "8cd5cc6c12fcae6cd8e38af3bca3ad4c2b75e205ce65b3b98d4f22bb6a0d2b2c",
+          "exactJournalStatementEqualsCanonicalFile": true
+        },
+        {
+          "version": "20261005172709",
+          "name": "artifact_import_candidates",
+          "file": "supabase/migrations/20261005172709_artifact_import_candidates.sql",
+          "sqlSha256": "727eba62839721e7e3a53cec098a5bed51ce02259219a1777113aebc23260f02",
+          "journalStatementsJsonSha256": "20c6c04ad74e03176349015c2dfdae57f204cca91fe3509f265f647dd2b1ed61",
+          "exactJournalStatementEqualsCanonicalFile": true
+        }
+      ],
+      "objects": 4749,
+      "functions": 2108,
+      "stage21FunctionBodiesMatchedReplay": 73,
+      "stage21ReplayContractsMatched": 4749,
+      "stage21Errors": []
+    },
+    "staging": {
+      "project_id": "gjkkjtbfnssdsbmlhmwk",
+      "catalogueCapturedAt": "2026-10-05T17:32:14.803413+00:00",
+      "functionsCapturedAt": "2026-10-05T17:32:22.559197+00:00",
+      "journalCapturedAt": "2026-10-05T17:32:30.214138+00:00",
+      "catalogueSha256": "8d797f3d026b9f52d96ac36fda67eb6d86a1e656b78bc5512a8314ea62bc71e2",
+      "functionsSha256": "7273f6f980b86759a8e784cc7e7aaaeb2a6f397bd1a9a7f12f9ec8762fb961cb",
+      "migrationReceipts": [
+        {
+          "version": "20261005171223",
+          "name": "artifact_export_receipts",
+          "file": "supabase/migrations/20261005171558_artifact_export_receipts.sql",
+          "sqlSha256": "e1e2aded642cd1a9649a4ae07a1eaf417d79baaefea364825b040f3874fb59a5",
+          "journalStatementsJsonSha256": "8cd5cc6c12fcae6cd8e38af3bca3ad4c2b75e205ce65b3b98d4f22bb6a0d2b2c",
+          "exactJournalStatementEqualsCanonicalFile": true
+        },
+        {
+          "version": "20261005172344",
+          "name": "artifact_import_candidates",
+          "file": "supabase/migrations/20261005172709_artifact_import_candidates.sql",
+          "sqlSha256": "727eba62839721e7e3a53cec098a5bed51ce02259219a1777113aebc23260f02",
+          "journalStatementsJsonSha256": "20c6c04ad74e03176349015c2dfdae57f204cca91fe3509f265f647dd2b1ed61",
+          "exactJournalStatementEqualsCanonicalFile": true
+        }
+      ],
+      "objects": 4810,
+      "functions": 2135,
+      "stage21FunctionBodiesMatchedReplay": 73,
+      "stage21ReplayContractsMatched": 4749,
+      "stage21Errors": []
+    }
+  },
+  "curatedHistoricalBodies": {
+    "production": {
+      "captured_at": "2026-10-05T17:33:51.546516+00:00",
+      "compared": 118,
+      "byteExactMatches": 117,
+      "knownHistoricalDifferences": [
+        {
+          "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
+          "snapshotSha256": "b1fa646225d6d2aed3bdec639967bfab06c2a4b33e9bc15b9555bd13ee7cd0d6",
+          "liveSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.worker_activate_integration_preview_run_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
+              "name": "worker_activate_integration_preview_run_v1",
+              "schema": "private",
+              "definitionSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "SQL line comments or one blank line only",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ production live\n@@ -326,8 +326,6 @@\n         'sourceMessageId', source_message.id,\n         'assistantMessageId', assistant_message.id\n       ),\n-      -- Deterministic runs spend nothing; a live run may make one bounded call for the questions\n-      -- and, later, one for the synthesis. The worker's own caps still apply on top.\n       -- Questions and synthesis in live mode: two bounded calls whose preflight reservations must fit.\n       'model_budget', jsonb_build_object('max_cost_usd', 0.60, 'max_calls', 4),\n       'preview', jsonb_build_object(\n",
+          "argumentNames": [
+            "p_job_id",
+            "p_capability_token",
+            "p_assistant_message_id",
+            "p_activation"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": true,
+          "volatility": "v",
+          "catalogueComment": null
+        }
+      ],
+      "unreconciledDifferences": 0,
+      "status": "PASS_WITH_EXPLICIT_HISTORICAL_EQUIVALENCE",
+      "baseline": "All differing live hashes equal actual pre-apply capture; no stage21 mutation",
+      "proofRule": "Exact captured definitions differ only as the attached diff; removing SQL line comments/blank lines and, only for staging job_failure_class, the two individually enumerated redundant CASE arms produces identical definitions. No snapshot or database body was changed."
+    },
+    "staging": {
+      "captured_at": "2026-10-05T17:33:57.230552+00:00",
+      "compared": 118,
+      "byteExactMatches": 114,
+      "knownHistoricalDifferences": [
+        {
+          "signature": "private.job_failure_class(jsonb)",
+          "snapshotSha256": "acc3872d527991517cd1418d57901e85db975f5d3c7fd38b176d9b4b8fd85a9f",
+          "liveSha256": "cfe3e3d09dc0aee179f19159f7ea0da47746c5cbd662e6cc98376873dc5c227b",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.job_failure_class(p_error jsonb)",
+              "name": "job_failure_class",
+              "schema": "private",
+              "definitionSha256": "cfe3e3d09dc0aee179f19159f7ea0da47746c5cbd662e6cc98376873dc5c227b"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "redundant CASE arms already covered by the following identical IN arm",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ staging live\n@@ -12,6 +12,8 @@\n     when coalesce(p_error ->> 'code', '') in ('invalid_output', 'output_truncated') then 'model_invalid_output'\n     when coalesce(p_error ->> 'code', '') in ('model_not_allowed', 'data_policy_violation', 'cassette_missing') then 'model_policy'\n     when coalesce(p_error ->> 'code', '') ~* 'quality_gate' then 'quality_gate'\n+    when coalesce(p_error ->> 'reason', '') = 'infected' then 'invalid_input'\n+    when coalesce(p_error ->> 'reason', '') = 'unreadable_document' then 'invalid_input'\n     when coalesce(p_error ->> 'reason', '') in ('infected', 'unreadable_document') then 'invalid_input'\n     when coalesce(p_error ->> 'code', '') ~* 'invalid_.*input|invalid_case'\n       or p_error ? 'validation' then 'invalid_input'\n",
+          "argumentNames": [
+            "p_error"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": false,
+          "volatility": "i",
+          "catalogueComment": "Classifies a failed job's last_error into a cause class. Reads the cause the worker now writes and falls back to the gateway code, the message and the validation issues for older rows."
+        },
+        {
+          "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
+          "snapshotSha256": "b1fa646225d6d2aed3bdec639967bfab06c2a4b33e9bc15b9555bd13ee7cd0d6",
+          "liveSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.worker_activate_integration_preview_run_v1(p_job_id uuid, p_capability_token text, p_assistant_message_id uuid, p_activation jsonb)",
+              "name": "worker_activate_integration_preview_run_v1",
+              "schema": "private",
+              "definitionSha256": "a09a8f66c8f0fab7ed092f6749459b1321ff9e702b514d9dee045aad03ffe77a"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "SQL line comments or one blank line only",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ staging live\n@@ -326,8 +326,6 @@\n         'sourceMessageId', source_message.id,\n         'assistantMessageId', assistant_message.id\n       ),\n-      -- Deterministic runs spend nothing; a live run may make one bounded call for the questions\n-      -- and, later, one for the synthesis. The worker's own caps still apply on top.\n       -- Questions and synthesis in live mode: two bounded calls whose preflight reservations must fit.\n       'model_budget', jsonb_build_object('max_cost_usd', 0.60, 'max_calls', 4),\n       'preview', jsonb_build_object(\n",
+          "argumentNames": [
+            "p_job_id",
+            "p_capability_token",
+            "p_assistant_message_id",
+            "p_activation"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": true,
+          "volatility": "v",
+          "catalogueComment": null
+        },
+        {
+          "signature": "private.worker_enqueue_receivables_method_refresh_v1(uuid,text,text,text)",
+          "snapshotSha256": "c6b4a5b3040c6f6871bb976e9f6636b9c3ddfdf105b1de958dd714c86fa20cf7",
+          "liveSha256": "890ad2670bc6646d8dc18ebbc556c03cdcf9b07a6afab85185cdb62beb801cfb",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.worker_enqueue_receivables_method_refresh_v1(p_job_id uuid, p_capability_token text, p_draft_fingerprint text, p_compiled_supplement_fingerprint text)",
+              "name": "worker_enqueue_receivables_method_refresh_v1",
+              "schema": "private",
+              "definitionSha256": "890ad2670bc6646d8dc18ebbc556c03cdcf9b07a6afab85185cdb62beb801cfb"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "SQL line comments or one blank line only",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ staging live\n@@ -87,10 +87,6 @@\n     raise exception 'model_month_ceiling_reached' using errcode = '53400';\n   end if;\n \n-  -- This is an internal transition, not a tenant command. The leased job capability already\n-  -- binds organization, session and caller; impersonating the source user would weaken that\n-  -- boundary. Create only the reuse-only run here, then let the canonical case enqueue helper\n-  -- create its controlled execution and budgeted job.\n   select coalesce(max(run.run_no), 0) + 1 into next_run_no\n   from public.processing_runs run\n   where run.organization_id = job_row.organization_id\n",
+          "argumentNames": [
+            "p_job_id",
+            "p_capability_token",
+            "p_draft_fingerprint",
+            "p_compiled_supplement_fingerprint"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": true,
+          "volatility": "v",
+          "catalogueComment": null
+        },
+        {
+          "signature": "private.worker_fail_job(uuid,text,jsonb,boolean,integer)",
+          "snapshotSha256": "c3789f41692c35ce6ea7e923dc1b3d358ed6e4849d41079f00ae29fb3a18faf4",
+          "liveSha256": "1e57618ae74f3ef6ea00abc2d1d9ffcd6e696985fb604ac9e7a49a3bedcc5123",
+          "preApplyMatchingCaptures": [
+            {
+              "id": "function:private.worker_fail_job(p_job_id uuid, p_capability_token text, p_error jsonb, p_retryable boolean, p_retry_in_seconds integer)",
+              "name": "worker_fail_job",
+              "schema": "private",
+              "definitionSha256": "1e57618ae74f3ef6ea00abc2d1d9ffcd6e696985fb604ac9e7a49a3bedcc5123"
+            }
+          ],
+          "unchangedFromPreApply": true,
+          "conclusion": "same_executable_behavior",
+          "exactDeltaKind": "SQL line comments or one blank line only",
+          "exactDefinitionDiff": "--- CI snapshot\n+++ staging live\n@@ -14,7 +14,6 @@\n   spent_calls integer := private.reported_spend_calls(p_error);\n begin\n   perform private.assert_job_failure_record(p_error);\n-\n   will_retry := coalesce(p_retryable, true) and job_row.attempts < job_row.max_attempts and (not private.requires_execution_brief_approval(job_row.id) or private.execution_dispatch_is_current(job_row.id,true));\n \n   update public.processing_jobs\n",
+          "argumentNames": [
+            "p_job_id",
+            "p_capability_token",
+            "p_error",
+            "p_retryable",
+            "p_retry_in_seconds"
+          ],
+          "settings": [
+            "search_path=\"\""
+          ],
+          "securityDefiner": true,
+          "volatility": "v",
+          "catalogueComment": null
+        }
+      ],
+      "unreconciledDifferences": 0,
+      "status": "PASS_WITH_EXPLICIT_HISTORICAL_EQUIVALENCE",
+      "baseline": "All differing live hashes equal actual pre-apply capture; no stage21 mutation",
+      "proofRule": "Exact captured definitions differ only as the attached diff; removing SQL line comments/blank lines and, only for staging job_failure_class, the two individually enumerated redundant CASE arms produces identical definitions. No snapshot or database body was changed."
+    }
+  },
+  "curatedHistoricalStatus": "PASS_WITH_EXPLICIT_PREEXISTING_EQUIVALENCE; no snapshot/database body changed",
+  "curatedHistoricalReceipt": "docs/build/schema-history/effective-function-bodies/LIVE-VERIFICATION-STAGE21.json"
+}

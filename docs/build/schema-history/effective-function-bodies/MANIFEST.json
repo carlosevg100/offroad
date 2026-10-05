@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-10-05T15:04:45Z",
-  "source": "CI replay only; production/staging application pending; https://github.com/carlosevg100/offroad/actions/runs/37328944580; commit 60d122802014aa3735474b5f380054735b0e8260; capture sha256:ec536bddc05634be3ac3ddb75492d0cfc3430cc6438b33a005fa249bd2957ff6",
+  "capturedAt": "2026-10-05T16:51:03Z",
+  "source": "CI replay only; production/staging application pending; https://github.com/carlosevg100/offroad/actions/runs/37343367471; commit 5820c6835ba90a519a39e3ca2f5f633d14356145; capture sha256:ec536bddc05634be3ac3ddb75492d0cfc3430cc6438b33a005fa249bd2957ff6",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -593,5 +593,22 @@
       "sha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
     }
   ],
-  "missing": []
+  "missing": [],
+  "environmentReceipts": {
+    "source": "Actual post-application Supabase SELECT of all 118 pg_get_functiondef SHA-256 values; known historical equivalence individually proved, no byte snapshot promoted",
+    "receipt": "LIVE-VERIFICATION-STAGE21.json",
+    "receiptSha256": "f05e8fe2148b4a30289b502d2771ab2249144f5445df80839a84ac8638c54647",
+    "production": {
+      "capturedAt": "2026-10-05T17:33:51.546516+00:00",
+      "byteExactMatches": 117,
+      "knownEquivalentHistoricalDifferences": 1,
+      "unreconciledDifferences": 0
+    },
+    "staging": {
+      "capturedAt": "2026-10-05T17:33:57.230552+00:00",
+      "byteExactMatches": 114,
+      "knownEquivalentHistoricalDifferences": 4,
+      "unreconciledDifferences": 0
+    }
+  }
 }

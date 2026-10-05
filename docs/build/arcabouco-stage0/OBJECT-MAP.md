@@ -3691,20 +3691,24 @@ Revisão adicional de100objetos gerados por loops ou rename na migração2026100
 
 O SQL de `supabase/pending/work_review_dashboard.sql` é candidato de teste no stack descartável; não afirma instalação em staging ou produção. O catálogo será conciliado com a migração efetivamente aplicada antes da publicação.
 
-## Etapa 21: delta observado somente no replay da CI
+## Etapa 21: contratos instalados e conferidos nos dois ambientes
 
-O run `37328944580`, commit `60d122802014aa3735474b5f380054735b0e8260`,
-coletou 4.748 contratos em `2026-10-05T14:59:26.669387+00:00`:
-95 objetos novos da etapa 21 e nenhuma diferença nos contratos de acesso anteriores.
-As decisões novas em `object-decisions.json` registram `catalogues.replay`.
-Produção e staging permanecem com seus contratos anteriormente coletados; esta revisão
-não promove o replay a evidência instalada nem registra carimbo remoto.
+O replay real do run `37343367471`, commit `5820c6835ba90a519a39e3ca2f5f633d14356145`,
+foi comparado aos catálogos instalados: produção em `2026-10-05T17:31:53.517966+00:00`
+e staging em `2026-10-05T17:32:14.803413+00:00`. Os 4.749 contratos e os 73 corpos
+funcionais do escopo da etapa 21 conferem nos dois ambientes; os 61 objetos adicionais
+de staging conservam os contratos já revisados. Os 96 objetos novos têm decisões,
+fontes verificáveis e contratos reais de produção e staging em `object-decisions.json`.
 
-O delta cobre recibos físicos de exportação, candidatas de importação, eventos imutáveis,
-leases do worker, contribuições de texto e propostas de premissas institucionais,
-comparação de três vias, templates fixados e políticas de Storage. As duas migrações e
-os entrypoints presentes estão inventariados como escopo da etapa 21.
+Carimbos de exportação: produção `20261005171558`, staging `20261005171223`.
+Carimbos de importação: produção `20261005172709`, staging `20261005172344`.
+Em cada journal, o texto instalado é idêntico ao arquivo canônico; nenhum SQL foi
+reaplicado para alinhar carimbos. Recibos, hashes e timestamps estão em
+`STAGE21-INSTALLED-VERIFICATION.json`.
 
-A promoção exige SQL e E2E reais aprovados, aplicação remota, catálogo e journal de ambos
-os ambientes conferidos. O checker continua recusando objeto observado apenas no replay
-como contrato de produção e versão de arquivo ausente do journal de produção.
+A comparação adicional dos 118 snapshots históricos encontrou uma divergência
+preexistente em produção e quatro em staging, todas com hashes idênticos aos da captura
+anterior à aplicação da etapa 21. Os diffs reais foram conciliados: comentários/linha vazia e dois ramos CASE redundantes
+já cobertos pelo ramo IN seguinte, conforme o registro anterior da etapa 2. A evidência
+individual está em `schema-history/effective-function-bodies/LIVE-VERIFICATION-STAGE21.json`;
+nenhum corpo de banco ou snapshot foi reescrito e nenhuma diferença executável ficou sem prova.
