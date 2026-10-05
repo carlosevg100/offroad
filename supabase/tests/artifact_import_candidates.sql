@@ -190,6 +190,21 @@ do $$declare b jsonb;m jsonb;written jsonb;r public.artifact_revisions;reviewed 
  request:=public.request_artifact_export_v1(r.id,'docx','pt-BR',gen_random_uuid(),'default');reset role;
  if request->>'status'<>'queued'then raise exception 'reviewed informational export not queued';end if;
  raise notice 'PASS import_informational_external_exact_review_releases_and_export_queues';
+ begin
+ insert into private.source_rights_versions(organization_id,source_version_id,revision,operations,purposes,audience,valid_from,evidence_kind,evidence_reference,evidence_sha256,created_by)
+ values(r.organization_id,pg_temp.val('source_a','')::uuid,(select max(revision)+1 from private.source_rights_versions where source_version_id=pg_temp.val('source_a','')::uuid),array['process'],array['analysis'],'authorized_workspace',clock_timestamp(),'human_declaration',gen_random_uuid(),repeat('d',64),'a11b0000-0000-4000-8000-000000000001');
+ if private.artifact_revision_release_v1(r)<>'blocked'then raise exception 'revoked source retained informational release';end if;
+ set local role authenticated;
+ begin perform public.request_artifact_export_v1(r.id,'docx','pt-BR',gen_random_uuid(),'default');raise exception 'revoked informational source exported';exception when insufficient_privilege then null;end;reset role;
+ raise notice 'PASS import_informational_approved_source_revocation_blocks_release';
+ raise exception 'rollback_source_release_eval'using errcode='ZX021';exception when sqlstate 'ZX021'then null;end;
+ begin
+ update public.organization_memberships set status='revoked'where organization_id=r.organization_id and user_id='a11b0000-0000-4000-8000-000000000001';
+ if private.artifact_revision_release_v1(r)<>'blocked'then raise exception 'revoked reviewer retained informational release';end if;
+ set local role authenticated;
+ begin perform public.request_artifact_export_v1(r.id,'docx','pt-BR',gen_random_uuid(),'default');raise exception 'revoked informational reviewer exported';exception when insufficient_privilege then null;end;reset role;
+ raise notice 'PASS import_informational_reviewer_access_revocation_blocks_release';
+ raise exception 'rollback_reviewer_release_eval'using errcode='ZX021';exception when sqlstate 'ZX021'then null;end;
  set local role authenticated;
  perform public.review_artifact_revision_v1(r.id,r.manifest_fingerprint,'revoke_approval',null,'Approval revoked',false,gen_random_uuid(),(reviewed->>'reviewId')::uuid);reset role;
  if private.artifact_revision_release_v1(r)<>'blocked'then raise exception 'revoked informational approval retained release';end if;
