@@ -978,3 +978,55 @@ returns boolean language sql volatile security definer set search_path=''as $$
 $$;
 revoke all on function private.source_storage_read_v1(text,text)from public,anon,authenticated,service_role;
 grant execute on function private.source_storage_read_v1(text,text)to authenticated;
+
+-- A generic person's informational answer is approved by its exact stage20 review,
+-- never by a financial confirmation/package_review. Native wrappers retain their gates.
+create function private.artifact_person_informational_release_v1(r public.artifact_revisions)
+returns text language plpgsql stable security definer set search_path='' as $$
+declare ids uuid[];exhausted boolean;a public.artifacts;v public.artifact_reviews;policy jsonb;preparer uuid;
+begin
+ if r.origin<>'person' then return null;end if;
+ with recursive ancestry(id,depth)as(select r.id,0 union
+ select l.derived_from_revision_id,c.depth+1 from ancestry c join private.artifact_dependency_links l
+ on l.organization_id=r.organization_id and l.revision_id=c.id and l.link_kind='artifact_revision'where c.depth<64)
+ select array_agg(distinct id),coalesce(bool_or(depth=64),false)into ids,exhausted from ancestry;
+ if exhausted then return case when r.audience='external'then'blocked'else'internal'end;end if;
+ if exists(select 1 from unnest(ids)node(id)left join public.artifact_revisions x on x.organization_id=r.organization_id and x.id=node.id
+ left join public.artifacts art on art.organization_id=x.organization_id and art.id=x.artifact_id
+ where x.id is null or x.origin<>'person'or art.kind<>'answer'or x.legacy_ref is not null
+ or jsonb_typeof(x.manifest->'legacy')='object'or jsonb_typeof(x.manifest->'execution')='object'
+ or jsonb_typeof(x.manifest->'institutionalResult')='object'or jsonb_typeof(x.manifest->'method')='object'
+ or jsonb_typeof(x.manifest->'inputSnapshot')='object'or jsonb_typeof(x.manifest->'bytes')='object'
+ or not exists(select 1 from public.artifact_blocks b where b.organization_id=x.organization_id and b.revision_id=x.id)
+ or exists(select 1 from public.artifact_blocks b where b.organization_id=x.organization_id and b.revision_id=x.id
+ and(b.kind not in('section','paragraph')or jsonb_array_length(b.claims)>0)))
+ or exists(select 1 from private.artifact_dependency_links d where d.organization_id=r.organization_id and d.revision_id=any(ids)
+ and d.link_kind not in('source_version','artifact_revision'))then return null;end if;
+ select*into a from public.artifacts where organization_id=r.organization_id and id=r.artifact_id;
+ preparer:=private.artifact_review_preparer_v1(r);
+ for v in select*from public.artifact_reviews where organization_id=r.organization_id and artifact_id=r.artifact_id
+ and revision_id=r.id and work_id=a.work_id and manifest_fingerprint=r.manifest_fingerprint and audience=r.audience
+ loop
+ if not private.artifact_review_is_active_v1(r.organization_id,v.id)
+ or v.prepared_by is distinct from preparer
+ or not private.evaluate_resource_policy_v1(r.organization_id,a.work_id,v.reviewer_id,'work','analysis')
+ or not private.artifact_review_sources_allowed_v1(r.organization_id,r.id,v.reviewer_id)then continue;end if;
+ policy:=private.review_policy_snapshot_v1(r.organization_id,a.work_id,v.reviewer_id);
+ if(policy->>'assignmentRequired')::boolean and not(policy->'roles'?'approver')then continue;end if;
+ if preparer=v.reviewer_id and(not(policy->>'selfApprovalAllowed')::boolean or not v.self_approval_declared)then continue;end if;
+ return 'released';
+ end loop;
+ return case when r.audience='external'then'blocked'else'internal'end;
+end;$$;
+revoke all on function private.artifact_person_informational_release_v1(public.artifact_revisions)from public,anon,authenticated,service_role;
+-- Change only the unique historical fallback core, after its native/execution branches.
+-- All installed native wrappers and financial release conditions remain byte-for-byte intact.
+do $$declare definition text;matches integer;needle text:=' approved:=exists(select 1 from public.capital_project_artifact_decisions';begin
+ select count(*),max(pg_get_functiondef(p.oid))into matches,definition
+ from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+ where n.nspname='private'and p.proname like'artifact_revision_release%'
+ and position('-- Execution receipts attest computation, never human approval.'in p.prosrc)>0
+ and position(needle in p.prosrc)>0;
+ if matches<>1 then raise exception 'artifact_informational_release_core_definition_drift';end if;
+ execute replace(definition,needle,E' if private.artifact_person_informational_release_v1(r) is not null then return private.artifact_person_informational_release_v1(r);end if;\n'||needle);
+end;$$;

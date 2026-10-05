@@ -173,6 +173,54 @@ begin
  if(select count(*)from private.artifact_import_events where candidate_id='a4210000-0000-4000-9000-000000000002')<4 then raise exception 'comparison history erased';end if;
  raise notice 'PASS import_compare_head_cas_no_lost_update_and_append_history';
 end;$$;
+-- Exact stage20 approval releases only a person's informational answer.
+do $$declare b jsonb;m jsonb;written jsonb;r public.artifact_revisions;reviewed jsonb;request jsonb;financial jsonb;financial_revision public.artifact_revisions;before_state text;legacy_id uuid:=gen_random_uuid();legacy_revision public.artifact_revisions;legacy_manifest jsonb;legacy_blocks jsonb;legacy_external jsonb;begin
+ insert into public.organization_review_policies(organization_id,assignment_required,self_approval_allowed,updated_by)
+ values('a11b0000-0000-4000-9000-000000000001',false,true,'a11b0000-0000-4000-8000-000000000001')on conflict(organization_id)do update set assignment_required=false,self_approval_allowed=true;
+ b:=jsonb_build_array(pg_temp.block('prose','paragraph','{"text":"Human informational contribution dated 2026"}'));
+ m:=pg_temp.manifest('answer','external',jsonb_build_array(pg_temp.source_ref(pg_temp.val('source_a','')::uuid)),pg_temp.summary(b));
+ written:=pg_temp.person_write('answer','stage21 informational release','external',m,b);
+ select*into strict r from public.artifact_revisions where id=(written->>'revision_id')::uuid;
+ if private.artifact_revision_release_v1(r)<>'blocked'then raise exception 'unreviewed informational answer released';end if;
+ set local role authenticated;
+ begin perform public.request_artifact_export_v1(r.id,'docx','pt-BR',gen_random_uuid(),'default');raise exception 'unreviewed external answer exported';exception when insufficient_privilege then null;end;
+ reviewed:=public.review_artifact_revision_v1(r.id,r.manifest_fingerprint,'approve',null,'Explicit human approval',true,gen_random_uuid());reset role;
+ if private.artifact_revision_release_v1(r)<>'released'then raise exception 'exact informational review did not release';end if;
+ set local role authenticated;
+ request:=public.request_artifact_export_v1(r.id,'docx','pt-BR',gen_random_uuid(),'default');reset role;
+ if request->>'status'<>'queued'then raise exception 'reviewed informational export not queued';end if;
+ raise notice 'PASS import_informational_external_exact_review_releases_and_export_queues';
+ set local role authenticated;
+ perform public.review_artifact_revision_v1(r.id,r.manifest_fingerprint,'revoke_approval',null,'Approval revoked',false,gen_random_uuid(),(reviewed->>'reviewId')::uuid);reset role;
+ if private.artifact_revision_release_v1(r)<>'blocked'then raise exception 'revoked informational approval retained release';end if;
+ set local role authenticated;
+ begin perform public.request_artifact_export_v1(r.id,'docx','pt-BR',gen_random_uuid(),'default');raise exception 'revoked informational answer exported';exception when insufficient_privilege then null;end;reset role;
+ raise notice 'PASS import_informational_revoked_review_blocks_export';
+ -- An actual person-authored financial answer still requires the existing financial authority.
+ b:=jsonb_build_array(pg_temp.block('financial','paragraph','{"text":"Financial amount 100"}',jsonb_build_array(pg_temp.claim('amount','100'::jsonb))));
+ m:=pg_temp.manifest('answer','external',jsonb_build_array(pg_temp.source_ref(pg_temp.val('source_a','')::uuid)),pg_temp.summary(b));
+ financial:=pg_temp.person_write('answer','stage21 financial negative','external',m,b);
+ select*into strict financial_revision from public.artifact_revisions where id=(financial->>'revision_id')::uuid;
+ before_state:=private.artifact_revision_release_v1(financial_revision);
+ set local role authenticated;
+ perform public.review_artifact_revision_v1(financial_revision.id,financial_revision.manifest_fingerprint,'approve',null,'Human review does not replace financial authority',true,gen_random_uuid());reset role;
+ if before_state<>'blocked'or private.artifact_revision_release_v1(financial_revision)<>'blocked'
+ or private.artifact_person_informational_release_v1(financial_revision)is not null then raise exception 'financial release gate bypassed';end if;
+ raise notice 'PASS import_financial_release_gate_unchanged_by_informational_review';
+ -- Real legacy material projection remains outside the informational release lane.
+ insert into public.deal_state_objects(id,organization_id,intake_session_id,object_type,object_version,status,input_fingerprint,object_fingerprint,payload,dependencies,created_by_kind)
+ values(legacy_id,'a11b0000-0000-4000-9000-000000000001','a11b0000-0000-4000-9000-000000000003','material_artifact',99,'pending_confirmation',repeat('1',64),repeat('7',64),
+ jsonb_build_object('schemaVersion','2026.08.29-v1','materials',jsonb_build_array(jsonb_build_object('kind','teaser','artifactFingerprint',repeat('8',64))),
+ 'financialModel',jsonb_build_object('fingerprint',repeat('9',64),'workbooks',jsonb_build_object('pt',jsonb_build_object('sha256',repeat('b',64),'byteSize',10),'en',jsonb_build_object('sha256',repeat('c',64),'byteSize',11))),'materialTruth','{}'::jsonb,'dataRoom','{}'::jsonb),'[]','worker');
+ select*into strict legacy_revision from public.artifact_revisions where legacy_ref->>'table'='deal_state_objects'and legacy_ref->>'id'=legacy_id::text;
+ select jsonb_agg(jsonb_build_object('blockKey',block_key,'kind',kind,'content',content,'claims',claims)order by block_no)into legacy_blocks from public.artifact_blocks where revision_id=legacy_revision.id;
+ legacy_manifest:=legacy_revision.manifest||jsonb_build_object('audience','external');
+ legacy_external:=private.create_artifact_revision_v1(legacy_revision.organization_id,'a11b0000-0000-4000-9000-000000000002','material','stage21 legacy financial negative','external',legacy_revision.origin,legacy_manifest,legacy_blocks,'[]',null,null,legacy_revision.legacy_ref,legacy_revision.created_by);
+ select*into strict legacy_revision from public.artifact_revisions where id=(legacy_external->>'revision_id')::uuid;
+ if private.artifact_person_informational_release_v1(legacy_revision)is not null or private.artifact_revision_release_v1(legacy_revision)<>'blocked'then raise exception 'legacy financial release bypassed';end if;
+ raise notice 'PASS import_legacy_financial_release_remains_blocked';
+end;$$;
+
 rollback;
 
 -- Native institutional route: capture/setup/approval/result are the existing real producers.
