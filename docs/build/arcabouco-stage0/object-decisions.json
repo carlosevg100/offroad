@@ -31685,6 +31685,24 @@
           ],
           "signature": "p_org uuid, p_work uuid, p_configuration uuid",
           "security_definer": true
+        },
+        "replay": {
+          "id": "function:private.institutional_configuration_ancestry_before_review_projection_v(p_org uuid, p_work uuid, p_configuration uuid)",
+          "kind": "function",
+          "name": "institutional_configuration_ancestry_before_review_projection_v",
+          "grants": [
+            [
+              "postgres",
+              "EXECUTE",
+              false
+            ]
+          ],
+          "schema": "private",
+          "settings": [
+            "search_path=\"\""
+          ],
+          "signature": "p_org uuid, p_work uuid, p_configuration uuid",
+          "security_definer": true
         }
       },
       "owner": "Engenharia de execução, etapa 20",
@@ -31697,6 +31715,12 @@
           "line": 56,
           "anchor": " rename to institutional_configuration_ancestry_before_review_projection_v1;",
           "mechanism": "renamed_private_primitive"
+        },
+        {
+          "path": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+          "line": 6,
+          "anchor": " definition:=pg_get_functiondef('private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid)'::regprocedure);",
+          "mechanism": "catalogue_body_rewrite"
         }
       ]
     },
@@ -320613,14 +320637,14 @@
       "path": "supabase/migrations/20261005171558_artifact_export_receipts.sql",
       "decision": "preservar",
       "stage": "21",
-      "reason": "instalar contrato governado de roundtrip; replay aplicado na CI, carimbos de produção e staging ainda pendentes"
+      "reason": "instalar contrato governado de roundtrip; SQL dos journals idêntico ao arquivo canônico, catálogo e corpos conferidos em produção e staging"
     },
     {
       "kind": "migration",
       "path": "supabase/migrations/20261005172709_artifact_import_candidates.sql",
       "decision": "preservar",
       "stage": "21",
-      "reason": "instalar contrato governado de roundtrip; replay aplicado na CI, carimbos de produção e staging ainda pendentes"
+      "reason": "instalar contrato governado de roundtrip; SQL dos journals idêntico ao arquivo canônico, catálogo e corpos conferidos em produção e staging"
     },
     {
       "kind": "entrypoint",
@@ -320656,6 +320680,13 @@
       "decision": "preservar",
       "stage": "21",
       "reason": "encaminhar comandos, upload e download do roundtrip pelo contrato e autorização comuns; sem atalho de autorização para Storage ou revisão"
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+      "decision": "preservar",
+      "stage": "21 — correção prospectiva",
+      "reason": "preservar as classificações ancestrais de ausência/trabalho divergente; SQL e corpo instalados conferidos em produção e staging sob os carimbos reais"
     }
   ],
   "staging_archive": [
@@ -321365,21 +321396,21 @@
   },
   "stage21_replay_review": {
     "state": "installed_production_and_staging_verified",
-    "run": "https://github.com/carlosevg100/offroad/actions/runs/37343367471",
-    "commit": "5820c6835ba90a519a39e3ca2f5f633d14356145",
-    "captured_at": "2026-10-05T16:49:40.024136+00:00",
-    "catalogue_sha256": "429879a994a04bb6cdebd883f1e11cb5a72d9649a5e02d597e029c597ac7c7ab",
-    "scope": "catalogues.replay only; installed production and staging contracts and journals unchanged",
+    "run": "https://github.com/carlosevg100/offroad/actions/runs/37356734182",
+    "commit": "05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90",
+    "captured_at": "2026-10-05T18:35:59.222296+00:00",
+    "catalogue_sha256": "7053162078da658c47220e4f90bd30cb73b279132cec9dd1d88ead6c76fae3c2",
+    "scope": "Latest actual CI replay compared with installed final three-migration catalogue; all96newobjects and73bodies verified in both environments",
     "new_objects": 96,
-    "function_catalogue_sha256": "fe2403930fa7bda97f3d68db511b3045fabc55b972521c1b7c97452beb43c96a",
+    "function_catalogue_sha256": "9bc702493a03e957d32b25f47de217f2c65c8ee29ddc13fecc08a0dedaf0d578",
     "installed": {
       "production": {
         "project_id": "ifnogpksgdadruooqydi",
-        "catalogueCapturedAt": "2026-10-05T17:31:53.517966+00:00",
-        "functionsCapturedAt": "2026-10-05T17:32:01.071198+00:00",
-        "journalCapturedAt": "2026-10-05T17:32:08.666114+00:00",
-        "catalogueSha256": "668e5d90bf847a781cdff13c11266717198b5ff4bf205468660f69f1f9f40d8d",
-        "functionsSha256": "4a8dbf8a1ae9bec921a2e370c294010982c70f9955ce99df7d65e37d4d8d7d7a",
+        "catalogueCapturedAt": "2026-10-05T19:00:37.89929+00:00",
+        "functionsCapturedAt": "2026-10-05T19:01:07.719568+00:00",
+        "journalCapturedAt": "2026-10-05T19:00:21.264943+00:00",
+        "catalogueSha256": "248b83f11900ab146a319891d5f6aadc498af3cdf7286a45299e14a385b79469",
+        "functionsSha256": "e23186f3dbaffe077a1e1ad5c51d99a6a6507f787602e540378c4173407b1ccd",
         "migrationReceipts": [
           {
             "version": "20261005171558",
@@ -321396,6 +321427,14 @@
             "sqlSha256": "727eba62839721e7e3a53cec098a5bed51ce02259219a1777113aebc23260f02",
             "journalStatementsJsonSha256": "20c6c04ad74e03176349015c2dfdae57f204cca91fe3509f265f647dd2b1ed61",
             "exactJournalStatementEqualsCanonicalFile": true
+          },
+          {
+            "version": "20261005184946",
+            "name": "artifact_import_review_reason_parity",
+            "file": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+            "sqlSha256": "db7a939bcc0a64f6f1c1fdcd6893b1fe454ad828dfccff0a9aa94dedd7ebe7fe",
+            "journalStatementsJsonSha256": "5ccbd5545abb2c09b8898b7dc7002543fafed3f4fe0638bd7a53b2c741f4505f",
+            "exactJournalStatementEqualsCanonicalFile": true
           }
         ],
         "objects": 4749,
@@ -321406,11 +321445,11 @@
       },
       "staging": {
         "project_id": "gjkkjtbfnssdsbmlhmwk",
-        "catalogueCapturedAt": "2026-10-05T17:32:14.803413+00:00",
-        "functionsCapturedAt": "2026-10-05T17:32:22.559197+00:00",
-        "journalCapturedAt": "2026-10-05T17:32:30.214138+00:00",
-        "catalogueSha256": "8d797f3d026b9f52d96ac36fda67eb6d86a1e656b78bc5512a8314ea62bc71e2",
-        "functionsSha256": "7273f6f980b86759a8e784cc7e7aaaeb2a6f397bd1a9a7f12f9ec8762fb961cb",
+        "catalogueCapturedAt": "2026-10-05T19:00:28.926311+00:00",
+        "functionsCapturedAt": "2026-10-05T19:01:26.045107+00:00",
+        "journalCapturedAt": "2026-10-05T19:01:15.656106+00:00",
+        "catalogueSha256": "e1786af350c7d064128c13862f377d571686577bd40cbf15b3672185e084d41a",
+        "functionsSha256": "30a36854f58a7cd09bdeafe819a3f52054ea1b722d07a8aa6f7de7821d857923",
         "migrationReceipts": [
           {
             "version": "20261005171223",
@@ -321426,6 +321465,108 @@
             "file": "supabase/migrations/20261005172709_artifact_import_candidates.sql",
             "sqlSha256": "727eba62839721e7e3a53cec098a5bed51ce02259219a1777113aebc23260f02",
             "journalStatementsJsonSha256": "20c6c04ad74e03176349015c2dfdae57f204cca91fe3509f265f647dd2b1ed61",
+            "exactJournalStatementEqualsCanonicalFile": true
+          },
+          {
+            "version": "20261005184625",
+            "name": "artifact_import_review_reason_parity",
+            "file": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+            "sqlSha256": "db7a939bcc0a64f6f1c1fdcd6893b1fe454ad828dfccff0a9aa94dedd7ebe7fe",
+            "journalStatementsJsonSha256": "5ccbd5545abb2c09b8898b7dc7002543fafed3f4fe0638bd7a53b2c741f4505f",
+            "exactJournalStatementEqualsCanonicalFile": true
+          }
+        ],
+        "objects": 4810,
+        "functions": 2135,
+        "stage21FunctionBodiesMatchedReplay": 73,
+        "stage21ReplayContractsMatched": 4749,
+        "stage21Errors": []
+      }
+    }
+  },
+  "stage21_corrective_review": {
+    "state": "installed_production_and_staging_verified",
+    "run": "https://github.com/carlosevg100/offroad/actions/runs/37356734182",
+    "commit": "05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90",
+    "captured_at": "2026-10-05T18:35:59.222296+00:00",
+    "catalogueSha256": "7053162078da658c47220e4f90bd30cb73b279132cec9dd1d88ead6c76fae3c2",
+    "functionCatalogueSha256": "9bc702493a03e957d32b25f47de217f2c65c8ee29ddc13fecc08a0dedaf0d578",
+    "changedFunctionId": "function:private.institutional_configuration_ancestry_before_review_projection_v(p_org uuid, p_work uuid, p_configuration uuid)",
+    "definitionSha256": "4d4ec240be90c0f95fb09686f328bd717d8ae448cf9b3d36c1e69d8adb04f39b",
+    "migration": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+    "sqlSha256": "db7a939bcc0a64f6f1c1fdcd6893b1fe454ad828dfccff0a9aa94dedd7ebe7fe",
+    "newObjects": 0,
+    "scope": "Typed missing/work_mismatch classification only; original ancestry eval and three real races passed in CI. Installed catalogues/journals remain preceding two-migration proof until corrective application.",
+    "installed": {
+      "production": {
+        "project_id": "ifnogpksgdadruooqydi",
+        "catalogueCapturedAt": "2026-10-05T19:00:37.89929+00:00",
+        "functionsCapturedAt": "2026-10-05T19:01:07.719568+00:00",
+        "journalCapturedAt": "2026-10-05T19:00:21.264943+00:00",
+        "catalogueSha256": "248b83f11900ab146a319891d5f6aadc498af3cdf7286a45299e14a385b79469",
+        "functionsSha256": "e23186f3dbaffe077a1e1ad5c51d99a6a6507f787602e540378c4173407b1ccd",
+        "migrationReceipts": [
+          {
+            "version": "20261005171558",
+            "name": "artifact_export_receipts",
+            "file": "supabase/migrations/20261005171558_artifact_export_receipts.sql",
+            "sqlSha256": "e1e2aded642cd1a9649a4ae07a1eaf417d79baaefea364825b040f3874fb59a5",
+            "journalStatementsJsonSha256": "8cd5cc6c12fcae6cd8e38af3bca3ad4c2b75e205ce65b3b98d4f22bb6a0d2b2c",
+            "exactJournalStatementEqualsCanonicalFile": true
+          },
+          {
+            "version": "20261005172709",
+            "name": "artifact_import_candidates",
+            "file": "supabase/migrations/20261005172709_artifact_import_candidates.sql",
+            "sqlSha256": "727eba62839721e7e3a53cec098a5bed51ce02259219a1777113aebc23260f02",
+            "journalStatementsJsonSha256": "20c6c04ad74e03176349015c2dfdae57f204cca91fe3509f265f647dd2b1ed61",
+            "exactJournalStatementEqualsCanonicalFile": true
+          },
+          {
+            "version": "20261005184946",
+            "name": "artifact_import_review_reason_parity",
+            "file": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+            "sqlSha256": "db7a939bcc0a64f6f1c1fdcd6893b1fe454ad828dfccff0a9aa94dedd7ebe7fe",
+            "journalStatementsJsonSha256": "5ccbd5545abb2c09b8898b7dc7002543fafed3f4fe0638bd7a53b2c741f4505f",
+            "exactJournalStatementEqualsCanonicalFile": true
+          }
+        ],
+        "objects": 4749,
+        "functions": 2108,
+        "stage21FunctionBodiesMatchedReplay": 73,
+        "stage21ReplayContractsMatched": 4749,
+        "stage21Errors": []
+      },
+      "staging": {
+        "project_id": "gjkkjtbfnssdsbmlhmwk",
+        "catalogueCapturedAt": "2026-10-05T19:00:28.926311+00:00",
+        "functionsCapturedAt": "2026-10-05T19:01:26.045107+00:00",
+        "journalCapturedAt": "2026-10-05T19:01:15.656106+00:00",
+        "catalogueSha256": "e1786af350c7d064128c13862f377d571686577bd40cbf15b3672185e084d41a",
+        "functionsSha256": "30a36854f58a7cd09bdeafe819a3f52054ea1b722d07a8aa6f7de7821d857923",
+        "migrationReceipts": [
+          {
+            "version": "20261005171223",
+            "name": "artifact_export_receipts",
+            "file": "supabase/migrations/20261005171558_artifact_export_receipts.sql",
+            "sqlSha256": "e1e2aded642cd1a9649a4ae07a1eaf417d79baaefea364825b040f3874fb59a5",
+            "journalStatementsJsonSha256": "8cd5cc6c12fcae6cd8e38af3bca3ad4c2b75e205ce65b3b98d4f22bb6a0d2b2c",
+            "exactJournalStatementEqualsCanonicalFile": true
+          },
+          {
+            "version": "20261005172344",
+            "name": "artifact_import_candidates",
+            "file": "supabase/migrations/20261005172709_artifact_import_candidates.sql",
+            "sqlSha256": "727eba62839721e7e3a53cec098a5bed51ce02259219a1777113aebc23260f02",
+            "journalStatementsJsonSha256": "20c6c04ad74e03176349015c2dfdae57f204cca91fe3509f265f647dd2b1ed61",
+            "exactJournalStatementEqualsCanonicalFile": true
+          },
+          {
+            "version": "20261005184625",
+            "name": "artifact_import_review_reason_parity",
+            "file": "supabase/migrations/20261005184946_artifact_import_review_reason_parity.sql",
+            "sqlSha256": "db7a939bcc0a64f6f1c1fdcd6893b1fe454ad828dfccff0a9aa94dedd7ebe7fe",
+            "journalStatementsJsonSha256": "5ccbd5545abb2c09b8898b7dc7002543fafed3f4fe0638bd7a53b2c741f4505f",
             "exactJournalStatementEqualsCanonicalFile": true
           }
         ],

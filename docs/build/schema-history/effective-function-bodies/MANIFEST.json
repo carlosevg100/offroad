@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-10-05T16:51:03Z",
-  "source": "CI replay only; production/staging application pending; https://github.com/carlosevg100/offroad/actions/runs/37343367471; commit 5820c6835ba90a519a39e3ca2f5f633d14356145; capture sha256:ec536bddc05634be3ac3ddb75492d0cfc3430cc6438b33a005fa249bd2957ff6",
+  "capturedAt": "2026-10-05T18:37:54Z",
+  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -161,6 +161,11 @@
       "signature": "private.guard_execution_approval_queue()",
       "file": "private.guard_execution_approval_queue().sql",
       "sha256": "2952fbe405388f3f684fdf92515e7420436371506f6c5ab48efaf5dae8b3de3e"
+    },
+    {
+      "signature": "private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid)",
+      "file": "private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid).sql",
+      "sha256": "4d4ec240be90c0f95fb09686f328bd717d8ae448cf9b3d36c1e69d8adb04f39b"
     },
     {
       "signature": "private.is_released_documentary_plan_v1(jsonb,text)",
@@ -595,18 +600,18 @@
   ],
   "missing": [],
   "environmentReceipts": {
-    "source": "Actual post-application Supabase SELECT of all 118 pg_get_functiondef SHA-256 values; known historical equivalence individually proved, no byte snapshot promoted",
+    "source": "Actual final post-corrective Supabase SELECT of all119 pg_get_functiondef SHA-256 values; known historical equivalence already individually proved, no byte snapshot overwritten",
     "receipt": "LIVE-VERIFICATION-STAGE21.json",
-    "receiptSha256": "f05e8fe2148b4a30289b502d2771ab2249144f5445df80839a84ac8638c54647",
+    "receiptSha256": "a179b090d9d226096c47c8a33722bd4a7940ab09a30b1497691a0af88357dc38",
     "production": {
-      "capturedAt": "2026-10-05T17:33:51.546516+00:00",
-      "byteExactMatches": 117,
+      "capturedAt": "2026-10-05T19:01:00.539503+00:00",
+      "byteExactMatches": 118,
       "knownEquivalentHistoricalDifferences": 1,
       "unreconciledDifferences": 0
     },
     "staging": {
-      "capturedAt": "2026-10-05T17:33:57.230552+00:00",
-      "byteExactMatches": 114,
+      "capturedAt": "2026-10-05T19:00:50.234299+00:00",
+      "byteExactMatches": 115,
       "knownEquivalentHistoricalDifferences": 4,
       "unreconciledDifferences": 0
     }

@@ -12,7 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 PROJECTS = {'production': 'ifnogpksgdadruooqydi', 'staging': 'gjkkjtbfnssdsbmlhmwk'}
-MIGRATIONS = ('artifact_export_receipts', 'artifact_import_candidates')
+MIGRATIONS = ('artifact_export_receipts', 'artifact_import_candidates', 'artifact_import_review_reason_parity')
 
 
 def load_payload(path: Path):

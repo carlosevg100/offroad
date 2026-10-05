@@ -7,9 +7,9 @@
   ],
   "environments": {
     "production": {
-      "captured_at": "2026-10-05T17:33:51.546516+00:00",
-      "compared": 118,
-      "byteExactMatches": 117,
+      "captured_at": "2026-10-05T19:01:00.539503+00:00",
+      "compared": 119,
+      "byteExactMatches": 118,
       "knownHistoricalDifferences": [
         {
           "signature": "private.worker_activate_integration_preview_run_v1(uuid,text,uuid,jsonb)",
@@ -43,7 +43,7 @@
       ],
       "unreconciledDifferences": 0,
       "status": "PASS_WITH_EXPLICIT_HISTORICAL_EQUIVALENCE",
-      "baseline": "All differing live hashes equal actual pre-apply capture; no stage21 mutation",
+      "baseline": "Known differences remain byte-identical to their individually proved pre-corrective captures; corrective alias matches actual05d CI snapshot",
       "proofRule": "Exact captured definitions differ only as the attached diff; removing SQL line comments/blank lines and, only for staging job_failure_class, the two individually enumerated redundant CASE arms produces identical definitions. No snapshot or database body was changed.",
       "capturedFunctionHashes": [
         {
@@ -205,6 +205,11 @@
           "exists": true,
           "signature": "private.guard_execution_approval_queue()",
           "definitionSha256": "2952fbe405388f3f684fdf92515e7420436371506f6c5ab48efaf5dae8b3de3e"
+        },
+        {
+          "exists": true,
+          "signature": "private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid)",
+          "definitionSha256": "4d4ec240be90c0f95fb09686f328bd717d8ae448cf9b3d36c1e69d8adb04f39b"
         },
         {
           "exists": true,
@@ -637,12 +642,12 @@
           "definitionSha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
         }
       ],
-      "capturePayloadSha256": "bebd53435fc23eb470dd4532838bdbe8208094655e5285bf7c73510f0eacfd93"
+      "capturePayloadSha256": "f14d468b49daa1824d1f6735f4c881140f0bc4c670b318a3b7b2f1f8c66606ac"
     },
     "staging": {
-      "captured_at": "2026-10-05T17:33:57.230552+00:00",
-      "compared": 118,
-      "byteExactMatches": 114,
+      "captured_at": "2026-10-05T19:00:50.234299+00:00",
+      "compared": 119,
+      "byteExactMatches": 115,
       "knownHistoricalDifferences": [
         {
           "signature": "private.job_failure_class(jsonb)",
@@ -761,7 +766,7 @@
       ],
       "unreconciledDifferences": 0,
       "status": "PASS_WITH_EXPLICIT_HISTORICAL_EQUIVALENCE",
-      "baseline": "All differing live hashes equal actual pre-apply capture; no stage21 mutation",
+      "baseline": "Known differences remain byte-identical to their individually proved pre-corrective captures; corrective alias matches actual05d CI snapshot",
       "proofRule": "Exact captured definitions differ only as the attached diff; removing SQL line comments/blank lines and, only for staging job_failure_class, the two individually enumerated redundant CASE arms produces identical definitions. No snapshot or database body was changed.",
       "capturedFunctionHashes": [
         {
@@ -923,6 +928,11 @@
           "exists": true,
           "signature": "private.guard_execution_approval_queue()",
           "definitionSha256": "2952fbe405388f3f684fdf92515e7420436371506f6c5ab48efaf5dae8b3de3e"
+        },
+        {
+          "exists": true,
+          "signature": "private.institutional_configuration_ancestry_before_review_projection_v(uuid,uuid,uuid)",
+          "definitionSha256": "4d4ec240be90c0f95fb09686f328bd717d8ae448cf9b3d36c1e69d8adb04f39b"
         },
         {
           "exists": true,
@@ -1355,7 +1365,8 @@
           "definitionSha256": "b15c98f101052f70cbc24de4b74f322dff39ec5ab16980a1b6a52513a518acd5"
         }
       ],
-      "capturePayloadSha256": "fd28c3015f99c9e2d3227760a7e4f5600b7a28dd818fd4a4f177513b1d539de2"
+      "capturePayloadSha256": "f081ec9d2fafa51a6860cc86ff7b74df5e1c1c60174bb6f5d07c7e15cbbd4543"
     }
-  }
+  },
+  "sourceScope": "119 targets from actual05d CI and actual post-corrective captures; previously proved historical differences are unchanged"
 }

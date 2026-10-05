@@ -32,7 +32,7 @@ class InstalledComparisonTest(unittest.TestCase):
             root = Path(directory)
             migrations = root / 'supabase/migrations'
             migrations.mkdir(parents=True)
-            for stamp, name in [('1', 'artifact_export_receipts'), ('2', 'artifact_import_candidates')]:
+            for stamp, name in [('1', 'artifact_export_receipts'), ('2', 'artifact_import_candidates'), ('3', 'artifact_import_review_reason_parity')]:
                 (migrations / (stamp + '_' + name + '.sql')).write_text(
                     'create or replace function private.institutional_source_context(p_org uuid) returns jsonb;')
             function_id = 'function:private.institutional_source_context(p_org uuid)'
@@ -44,7 +44,8 @@ class InstalledComparisonTest(unittest.TestCase):
                                      'catalogues': {'staging': {'id': 'table:archive', 'kind': 'table'}}}]}
             journal = {'captured_at': 'actual', 'project_id': project or installed.PROJECTS[environment],
                        'rows': [{'version': '1', 'name': 'artifact_export_receipts'},
-                                {'version': '2', 'name': 'artifact_import_candidates'}]}
+                                {'version': '2', 'name': 'artifact_import_candidates'},
+                                {'version': '3', 'name': 'artifact_import_review_reason_parity'}]}
             return installed.compare(replay, functions, remote, remote_functions, journal, manifest, environment, root)
 
     def test_existing_rewritten_helper_is_in_hash_scope_before_anchor_refresh(self):

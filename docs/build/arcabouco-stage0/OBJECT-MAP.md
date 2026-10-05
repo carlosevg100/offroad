@@ -3693,22 +3693,22 @@ O SQL de `supabase/pending/work_review_dashboard.sql` é candidato de teste no s
 
 ## Etapa 21: contratos instalados e conferidos nos dois ambientes
 
-O replay real do run `37343367471`, commit `5820c6835ba90a519a39e3ca2f5f633d14356145`,
-foi comparado aos catálogos instalados: produção em `2026-10-05T17:31:53.517966+00:00`
-e staging em `2026-10-05T17:32:14.803413+00:00`. Os 4.749 contratos e os 73 corpos
-funcionais do escopo da etapa 21 conferem nos dois ambientes; os 61 objetos adicionais
-de staging conservam os contratos já revisados. Os 96 objetos novos têm decisões,
-fontes verificáveis e contratos reais de produção e staging em `object-decisions.json`.
+O replay real do run `37356734182`, commit `05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90`,
+foi comparado aos catálogos finais após as três migrações: produção em
+`2026-10-05T19:00:37.89929+00:00` e staging em `2026-10-05T19:00:28.926311+00:00`.
+Os 4.749 contratos e os 73 corpos funcionais da etapa21 conferem nos dois ambientes.
+Os 61 objetos adicionais de staging conservam os contratos revisados. Os 96 objetos
+novos têm decisões, âncoras e contratos reais de ambos os ambientes no inventário.
 
-Carimbos de exportação: produção `20261005171558`, staging `20261005171223`.
-Carimbos de importação: produção `20261005172709`, staging `20261005172344`.
-Em cada journal, o texto instalado é idêntico ao arquivo canônico; nenhum SQL foi
-reaplicado para alinhar carimbos. Recibos, hashes e timestamps estão em
-`STAGE21-INSTALLED-VERIFICATION.json`.
+Carimbos produção/staging: exportação `20261005171558`/`20261005171223`;
+importação `20261005172709`/`20261005172344`; correção de classificação de ancestry
+`20261005184946`/`20261005184625`. Os seis textos dos journals são byte a byte idênticos
+aos respectivos arquivos canônicos. A terceira migração preserva a distinção histórica
+entre configuração ausente e trabalho divergente, sem ampliar autoridade.
 
-A comparação adicional dos 118 snapshots históricos encontrou uma divergência
-preexistente em produção e quatro em staging, todas com hashes idênticos aos da captura
-anterior à aplicação da etapa 21. Os diffs reais foram conciliados: comentários/linha vazia e dois ramos CASE redundantes
-já cobertos pelo ramo IN seguinte, conforme o registro anterior da etapa 2. A evidência
-individual está em `schema-history/effective-function-bodies/LIVE-VERIFICATION-STAGE21.json`;
-nenhum corpo de banco ou snapshot foi reescrito e nenhuma diferença executável ficou sem prova.
+Os 119 snapshots foram conferidos ao vivo: produção118 idênticos e1equivalente histórico;
+staging115 idênticos e4equivalentes históricos. Essas diferenças são somente comentários,
+linha vazia e dois CASE redundantes já conciliados individualmente. Os hashes permanecem
+iguais à prova anterior; nenhum corpo de banco/snapshot foi modificado para escondê-las.
+Os recibos completos estão em `STAGE21-INSTALLED-VERIFICATION.json` e
+`schema-history/effective-function-bodies/LIVE-VERIFICATION-STAGE21.json`.
