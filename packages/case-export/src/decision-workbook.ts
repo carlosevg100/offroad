@@ -174,6 +174,13 @@ export async function renderDecisionWorkbook(inputData: {
       cell.roundtrip = {name: binding.name, role: "input", assumptionId: binding.assumptionId, period: binding.period};
     }
   }
+  if (inputData.roundtrip) {
+    for (const sheet of model.sheets) for (const row of sheet.rows) for (const [column, cell] of row.cells.entries()) {
+      if (!cell.roundtrip && (cell.formula || typeof cell.value === "number")) cell.roundtrip = {
+        name: roundtripDefinedName(cell.formula ? "f" : "out", `${sheet.key}.${row.key}.${column}`, "scalar"), role: cell.formula ? "formula" : "recorded",
+      };
+    }
+  }
   const rendered = await toGovernedXlsxBuffer(model, lang, {
     title: inputData.title,
     ...(inputData.companyName ? {companyName: inputData.companyName} : {}),

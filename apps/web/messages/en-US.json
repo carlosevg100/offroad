@@ -7155,7 +7155,7 @@
     "name": "Declarant name",
     "role": "Role or title",
     "receipt": "Export that produced the file",
-    "noReceipt": "Unidentified — choose how to handle it after verification",
+    "noReceipt": "Unidentified. choose how to handle it after verification",
     "file": "Edited file",
     "upload": "Submit for verification",
     "basis": "Approved basis for continuing the work",
@@ -7177,6 +7177,18 @@
     "chooseGroup": "Choose a configuration",
     "rebase": "I confirm using this configuration as the new basis while preserving prior lineages.",
     "pendingGroups": "Pending configurations: {count}. Review the comparison after each adoption.",
-    "unnamedGroup": "Unnamed configuration"
+    "unnamedGroup": "Unnamed configuration",
+    "exportVariant": "Material to export",
+    "variants": {
+      "default": "This material",
+      "teaser": "Teaser",
+      "credit_profile": "Credit profile",
+      "package": "Material package",
+      "credit_memo": "Credit memorandum",
+      "term_sheet": "Term sheet",
+      "financial_model": "Financial model",
+      "diligence_qa": "Diligence questions",
+      "data_room_index": "Document index"
+    }
   }
 }

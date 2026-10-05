@@ -5,7 +5,7 @@ import {dirname, isAbsolute, relative, resolve, sep} from "node:path";
 import {promisify} from "node:util";
 import {fileURLToPath} from "node:url";
 import {z} from "zod";
-import {readGitEvidenceSummaries} from "./git-evidence-reader";
+import {readGitEvidenceSummaries} from "./git-evidence-reader.ts";
 import type {TrustControlCatalogue} from "./control-register";
 import {
   createCanonicalSecurityEntityRelationships,
@@ -366,6 +366,11 @@ const canonicalSecurityCoverageCatalogue = [
       {evidenceRef: "SEV-RETENTION-ACCOUNT-REVIEW", criterion: "Dated account-specific operational review, limited retention and explicit exceptions; not universal vendor attestation."},
       {evidenceRef: "SEV-EVAL-CONTAINMENT", criterion: "Nine manual evaluators are suspended pending governed execution transport."},
       {evidenceRef: "SEV-EVAL-CONTAINMENT-TEST", criterion: "Negative mutations detect direct provider construction without the reviewed barrier."},
+      {evidenceRef: "SEV-ROUNDTRIP-PLAN", criterion: "Approved stage-21 design: explicit governed export and candidate import. Presence of this design does not prove deployment."},
+      {evidenceRef: "SEV-REVIEW-INTEGRATED-PLAN", criterion: "Stage-20 native CI proof and public human review are deliberately separate; runner presence is not a remote execution receipt."},
+      {evidenceRef: "SEV-REVIEW-INTEGRATED-RUNNER", criterion: "Allowlisted staging human review runner with exact native body authority, revocation and cleanup boundaries."},
+      {evidenceRef: "SEV-REVIEW-INTEGRATED-TEST", criterion: "Tests protect the integrated review contract and exact fingerprints; source evidence does not assert a run result."},
+      {evidenceRef: "SEV-REVIEW-REVISION-PROTOCOL", criterion: "SQL regression contract for immutable artifact revisions, authority and human review."},
       {evidenceRef: "SEV-SOURCE-PDF-STRUCTURE", criterion: "PDF object inspection distinguishes stream bytes from executable names, with bounded object-stream inflation and fail-closed unsupported structures."},
       {evidenceRef: "SEV-SOURCE-PDF-REGRESSION", criterion: "Real corpus image false positive, escaped/compressed JavaScript, encrypted and embedded objects, inflation and nesting bounds."},
       {evidenceRef: "SEV-SOURCE-E2E", criterion: "Local-only E2E downloads actual uploaded bytes through the delegated worker Storage boundary and records an E0 receipt; no production fixtures or fake verification timestamps."},
@@ -981,13 +986,13 @@ const trustedExternalEvidenceAuthorities = {
     authorityRef: "AUTH-OPERATOR-OBSERVATION-ONLY",
     kind: "operator_observation",
     freshness: "wave_bound",
-    waveId: "wave-17",
-    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-wave-17.json",
-    capturedAt: "2026-09-21T22:00:20.589Z",
+    waveId: "wave-21",
+    ref: "docs/security/evidence/aws-worker-rollout-diagnostics-wave-21.json",
+    capturedAt: "2026-10-05T11:36:21.079837+00:00",
     validThrough: null,
-    contentFingerprint: "sha256:0b6d0932d17e45714e5e8a7711643506669b6c97f8043819e2f81b207d5f7ae9",
-    source: "Codex read-only GitHub and AWS API delivery observation",
-    collector: {"name": "codex-read-only-delivery-observation", "version": "2", "principalClass": "repository automation using existing GitHub and temporary AWS console-authenticated CLI sessions"},
+    contentFingerprint: "sha256:08bef4ca3668539cd609c7ced832a7c6cf3e9516b51896427a02f94f769cfd2f",
+    source: "Codex read-only AWS CloudShell delivery and IAM observation",
+    collector: {"name": "codex-read-only-delivery-observation", "version": "3", "principalClass": "Codex UI automation using an existing authenticated AWS console session and CloudShell"},
     origin: {
       repository: canonicalRepository,
       environmentRef: "ENV-PRODUCTION",

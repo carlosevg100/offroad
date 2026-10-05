@@ -72,3 +72,48 @@ describe("authorized prospective artifact roundtrip renderer",()=>{
   await expect(createArtifactRoundtripRenderer(port().client)({...c,producer:nested},c.revision)).rejects.toThrow("ancestry_cycle");
  });
 });
+
+it("preserves exact financial_model XLSX from a material package instead of rejecting that family",async()=>{
+ const {readFile}=await import("node:fs/promises");const artifact=parseVerifiedInstitutionalWorkbookArtifact(JSON.parse(await readFile(new URL("../../../packages/financial-model/src/institutional-workbook-v1.fixture.json",import.meta.url),"utf8")));
+ const financialMaterial={...material,kind:"financial_model",artifactFingerprint:artifact!.fingerprint};
+ const c={...claim("xlsx"),variant:"financial_model",producer:{kind:"material_package",materials:[financialMaterial],financialModel:artifact,sourceRowId:id(4)}};
+ const result=await createArtifactRoundtripRenderer(port().client)(c,c.revision);const snapshot=await readRoundtripSnapshot(result.bytes,"xlsx");
+ expect(snapshot.manifest?.logicalManifestFingerprint).toBe(c.revision!.logicalManifestFingerprint);expect(snapshot.entries.some(entry=>entry.role==="input")).toBe(true);
+ await expect(createArtifactRoundtripRenderer(port().client)({...c,producer:{...c.producer,materials:[{...financialMaterial,artifactFingerprint:"e".repeat(64)}]}},c.revision)).rejects.toThrow("calculation_divergence");
+});
+it("replays a stored full financial model under its approved bytes before adding roundtrip names",async()=>{
+ const {toXlsxBuffer}=await import("@offroad/financial-model");
+ const model={sheets:[{key:"calculations",name:{pt:"Cálculos",en:"Calculations"},widths:[25,20],rows:[{key:"base",cells:[{role:"label" as const,value:"Principal"},{role:"input" as const,value:1250}]},{key:"derived",cells:[{role:"label" as const,value:"Recorded calculation"},{role:"formula" as const,formula:"B1*2"}]}]}],periods:["2026"],deskAssumptions:[]};
+ const pt=toXlsxBuffer(model,"pt"),en=toXlsxBuffer(model,"en");
+ const financialModel={model,fingerprint:"e".repeat(64),workbooks:{pt:{sha256:roundtripSha256(pt),byteSize:pt.length},en:{sha256:roundtripSha256(en),byteSize:en.length}}};
+ const c={...claim("xlsx"),variant:"default",producer:{kind:"work_product",artifactType:"financial_model",sourceRowId:id(4),content:{financialModel}}};
+ const result=await createArtifactRoundtripRenderer(port().client)(c,c.revision);const snapshot=await readRoundtripSnapshot(result.bytes,"xlsx");
+ expect(snapshot.entries.some(entry=>entry.role==="formula")).toBe(true);expect(snapshot.manifest?.inputs).toEqual([]);expect(snapshot.entries.some(entry=>entry.role==="recorded")).toBe(true);
+ await expect(createArtifactRoundtripRenderer(port().client)({...c,producer:{...c.producer,content:{financialModel:{...financialModel,model:{...model,deskAssumptions:["Changed body"]}}}}},c.revision)).rejects.toThrow("calculation_divergence");
+});
+it("uses the existing decision workbook renderer for an actual fingerprinted work product contract",async()=>{
+ const {buildDecisionArtifactContract}=await import("@offroad/case-understanding");
+ const contract=buildDecisionArtifactContract({schemaVersion:"2026.09.07-v1",caseId:"synthetic-decision",snapshotFingerprint:"a".repeat(64),asOf:"2026-10-05",status:"draft",release:{state:"internal_only",recipientIds:[]},sources:[],assumptions:[],gaps:[],claims:[{id:"recorded-debt",label:"Recorded debt",value:1250,unit:"BRL",evidenceState:"observed_private",object:{id:"source-result",type:"financial_position",fingerprint:"b".repeat(64),path:"debt"},sourceIds:[],assumptionIds:[],gapIds:[]}],views:[{surface:"workbook",artifactId:"workbook",artifactKind:"xlsx",artifactFingerprint:null,blocks:[{id:"debt",kind:"metric",title:"Recorded debt",claimIds:["recorded-debt"],sourceIds:[],assumptionIds:[],gapIds:[]}]}],identityRequirements:[]});
+ const c={...claim("xlsx"),variant:"default",producer:{kind:"work_product",artifactType:"preview_decision_contract",sourceRowId:id(4),content:contract}};
+ const result=await createArtifactRoundtripRenderer(port().client)(c,c.revision);const snapshot=await readRoundtripSnapshot(result.bytes,"xlsx");
+ expect(snapshot.entries.some(entry=>entry.role==="formula")).toBe(true);expect(snapshot.manifest?.inputs).toEqual([]);expect(snapshot.entries.some(entry=>entry.role==="recorded"&&entry.value?.includes("Recorded debt"))).toBe(true);
+});
+
+it("hydrates native material only from the two leased retained bodies and rejects mismatch or expiry",async()=>{
+ const packageValue={schemaVersion:"2026.08.29-v1",materials:[material],financialModel:null,materialTruth:{synthetic:true}};
+ const stateValue={materials:[material],financialModel:null,materialTruth:{synthetic:true}};
+ const encode=(value:unknown)=>new TextEncoder().encode(JSON.stringify(value));
+ const packageBytes=encode(packageValue),stateBytes=encode(stateValue);
+ const body=(bytes:Uint8Array,path:string)=>({retainedPayloadId:id(30),allocationId:id(31),storage:{bucket:"capital-input-capture",path},sha256:roundtripSha256(bytes),byteLength:bytes.length,storageObjectId:id(32),storageVersion:"exact-synthetic-version",expiresAt:"2100-01-01T00:00:00Z"});
+ const producer={kind:"native_material",recipeId:id(33),variants:["credit_memo"],archetypeId:null,packageBody:body(packageBytes,"owned/package.json"),stateBody:body(stateBytes,"owned/state.json")};
+ const c={...claim(),producer};const p=port();const download=vi.fn(async(path:string)=>({data:new Blob([path==="owned/package.json"?packageBytes:stateBytes]),error:null}));
+ const client={...p.client,storage:{from:vi.fn((bucket:string)=>{expect(bucket).toBe("capital-input-capture");return{download};})}} as unknown as SupabaseClient;
+ const result=await createArtifactRoundtripRenderer(client)(c,c.revision);expect((await readRoundtripSnapshot(result.bytes,"docx")).entries[0]?.value).toContain("Base text");expect(download).toHaveBeenCalledTimes(2);
+ const badState=encode({...stateValue,materials:[{...material,title:{pt:"Outro",en:"Changed"}}]});
+ const changed={...c,producer:{...producer,stateBody:body(badState,"owned/state.json")}};
+ download.mockImplementation(async(path:string)=>({data:new Blob([path==="owned/package.json"?packageBytes:badState]),error:null}));
+ await expect(createArtifactRoundtripRenderer(client)(changed,changed.revision)).rejects.toThrow("native_body_mismatch");
+ await expect(createArtifactRoundtripRenderer(client)({...c,producer:{...producer,packageBody:{...producer.packageBody,expiresAt:"2020-01-01T00:00:00Z"}}},c.revision)).rejects.toThrow("source_revoked");
+ download.mockImplementation(async()=>({data:new Blob([new Uint8Array(packageBytes.length)]),error:null}));
+ await expect(createArtifactRoundtripRenderer(client)(c,c.revision)).rejects.toThrow("bytes_changed");
+});

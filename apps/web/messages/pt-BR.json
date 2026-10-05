@@ -7155,7 +7155,7 @@
     "name": "Nome de quem declara",
     "role": "Cargo ou função",
     "receipt": "Exportação que originou o arquivo",
-    "noReceipt": "Não identificada — escolher o tratamento após a verificação",
+    "noReceipt": "Não identificada. escolher o tratamento após a verificação",
     "file": "Arquivo editado",
     "upload": "Enviar para verificação",
     "basis": "Base aprovada para continuar o trabalho",
@@ -7177,6 +7177,18 @@
     "chooseGroup": "Escolha a configuração",
     "rebase": "Confirmo usar esta configuração como nova base e preservar as linhagens anteriores.",
     "pendingGroups": "Configurações pendentes: {count}. Revise a comparação após cada adoção.",
-    "unnamedGroup": "Configuração sem nome"
+    "unnamedGroup": "Configuração sem nome",
+    "exportVariant": "Material a exportar",
+    "variants": {
+      "default": "Este material",
+      "teaser": "Teaser",
+      "credit_profile": "Perfil de crédito",
+      "package": "Pacote de materiais",
+      "credit_memo": "Memorando de crédito",
+      "term_sheet": "Term sheet",
+      "financial_model": "Modelo financeiro",
+      "diligence_qa": "Perguntas de diligência",
+      "data_room_index": "Índice de documentos"
+    }
   }
 }

@@ -88,7 +88,7 @@ begin
  perform pg_temp.act_as('a11b0000-0000-4000-8000-000000000001');set local role authenticated;
  out:=public.discard_artifact_import_v1('a4210000-0000-4000-9000-000000000002',gen_random_uuid(),'Human chose to retain current revision');reset role;
  if out->>'status'<>'discarded'then raise exception 'discard failed';end if;
- if(select count(*)from private.artifact_import_events where candidate_id='a4210000-0000-4000-9000-000000000002')<4then raise exception 'comparison history erased';end if;
+ if(select count(*)from private.artifact_import_events where candidate_id='a4210000-0000-4000-9000-000000000002')<4 then raise exception 'comparison history erased';end if;
  raise notice 'PASS import_compare_head_cas_no_lost_update_and_append_history';
 end;$$;
 rollback;
@@ -99,18 +99,19 @@ begin;
 \ir support/institutional_contribution_builder.sql
 set local role authenticated;
 select set_config('test.roundtrip_native_capture',public.worker_load_institutional_model_context_v2(current_setting('test.result_job')::uuid,repeat('x',64))::text,true);
-select public.worker_record_institutional_model_result_v3(current_setting('test.result_job')::uuid,repeat('x',64),jsonb_build_object('status','completed','artifact',current_setting('test.result_artifact')::jsonb,'inputSnapshot',current_setting('test.roundtrip_native_capture')::jsonb->'inputSnapshot'));
+select set_config('test.roundtrip_native_result',public.worker_record_institutional_model_result_v3(current_setting('test.result_job')::uuid,repeat('x',64),jsonb_build_object('status','completed','artifact',current_setting('test.result_artifact')::jsonb,'inputSnapshot',current_setting('test.roundtrip_native_capture')::jsonb->'inputSnapshot'))::text,true);
 reset role;
 insert into private.worker_tokens(label,token_sha256,execution_account_user_id)
 values('synthetic native roundtrip worker',extensions.digest('synthetic-native-roundtrip-token','sha256'),'10000000-0000-4000-8000-000000000881');
+insert into public.source_documents(id,organization_id,intake_session_id,object_path,original_name,mime_type,byte_size,sha256,created_by,processing_status)values('50000000-0000-4000-8000-000000000921','20000000-0000-4000-8000-000000000881','40000000-0000-4000-8000-000000000881','20000000-0000-4000-8000-000000000881/40000000-0000-4000-8000-000000000881/roundtrip.xlsx','Synthetic roundtrip.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',12,repeat('b',64),'10000000-0000-4000-8000-000000000881','quarantined');
 do $$declare revision public.artifact_revisions;artifact public.artifacts;cfg private.institutional_model_configurations;assumption jsonb;
- request jsonb;claim jsonb;map jsonb;receipt jsonb;path text;obj uuid:=gen_random_uuid();source public.source_versions;candidate jsonb;comparison jsonb;contributions jsonb;scan jsonb;adopted jsonb;proof jsonb;configuration_id uuid;
+ request jsonb;claim jsonb;map jsonb;receipt jsonb;path text;obj uuid:=gen_random_uuid();source public.source_versions;candidate jsonb;comparison jsonb;contributions jsonb;scan jsonb;adopted jsonb;proof jsonb;target_configuration_id uuid;
 begin
- select*into strict artifact from public.artifacts where organization_id='20000000-0000-4000-8000-000000000881'and legacy_origin=jsonb_build_object('table','institutional_model_results','id','90000000-0000-4000-8000-000000000883');
+ select*into strict artifact from public.artifacts where id=(select artifact_id from public.artifact_revisions where id=(current_setting('test.roundtrip_native_result')::jsonb#>>'{nativeProjection,revisionId}')::uuid);
  select*into strict revision from public.artifact_revisions where id=artifact.head_revision_id;
  select*into strict cfg from private.institutional_model_configurations where id=current_setting('test.setup_candidate_id')::uuid;
  select value into strict assumption from jsonb_array_elements(cfg.configuration#>'{assumptionBook,assumptions}')where value->>'editable'='true'and value->>'unit'='percent'limit 1;
- select*into strict source from public.source_versions where id='50000000-0000-4000-8000-000000000881';
+ select*into strict source from public.source_versions where id='50000000-0000-4000-8000-000000000921';
  set local role authenticated;
  request:=public.request_artifact_export_v1(revision.id,'xlsx','en-US',gen_random_uuid(),'default');
  claim:=public.worker_claim_artifact_roundtrip_v1('synthetic-native-roundtrip-token');reset role;
@@ -128,7 +129,7 @@ begin
  scan:=jsonb_build_object('verdict','clean','organizationId',source.organization_id,'sourceDocumentId',source.id,'documentVersion',source.legacy_document_version,'operationId',claim->>'taskId',
  'expectedSha256',source.declared_sha256,'observedSha256',source.declared_sha256,'expectedByteSize',source.byte_size,'observedByteSize',source.byte_size,'receiptId','sha256:'||repeat('f',64));
  perform public.worker_record_artifact_import_quarantine_v1((claim->>'taskId')::uuid,claim->>'capabilityToken',scan);
- comparison:=jsonb_build_object('status','candidate','baseRevisionId',revision.id,'headRevisionId',revision.id,'baseManifest',map,'manifestIssue',null,'differences',jsonb_build_array(jsonb_build_object('key','premise','classification','edited','alreadyPresent',false,
+ comparison:=jsonb_build_object('status','candidate','baseRevisionId',revision.id,'headRevisionId',revision.id,'baseManifest',map,'manifestIssue',null,'differences',jsonb_build_array(jsonb_build_object('key','in:premise','classification','edited','alreadyPresent',false,
  'base',jsonb_build_object('key','premise','blockKey','premise','role','input','value',assumption#>>'{values,2027}','formula',null,'locator','cell:C10','claimIds','[]'::jsonb),
  'received',jsonb_build_object('key','premise','blockKey','premise','role','input','value','0.09','formula',null,'locator','cell:C10','claimIds','[]'::jsonb),
  'current',jsonb_build_object('key','premise','blockKey','premise','role','input','value',assumption#>>'{values,2027}','formula',null,'locator','cell:C10','claimIds','[]'::jsonb))));
@@ -146,11 +147,11 @@ begin
  raise exception 'native scope forgery accepted';exception when invalid_parameter_value then reset role;end;
  set local role authenticated;
  adopted:=public.adopt_artifact_import_group_v1('a4210000-0000-4000-9000-000000000021',revision.id,candidate->>'comparisonFingerprint','[]',gen_random_uuid(),'en-US',true,null,null,null,cfg.id,false);reset role;
- configuration_id:=(adopted#>>'{institutional,configurationId}')::uuid;
- proof:=private.institutional_configuration_ancestry_v1(source.organization_id,artifact.work_id,configuration_id);
- if adopted->>'status'<>'applied'or proof->>'state'<>'captured_lineage'or not exists(select 1 from private.institutional_configuration_review_projections where configuration_id=configuration_id)
+ target_configuration_id:=(adopted#>>'{institutional,configurationId}')::uuid;
+ proof:=private.institutional_configuration_ancestry_v1(source.organization_id,artifact.work_id,target_configuration_id);
+ if adopted->>'status'<>'applied'or proof->>'state'<>'captured_lineage'or not exists(select 1 from private.institutional_configuration_review_projections where configuration_id=target_configuration_id)
  or not exists(select 1 from private.institutional_model_results where id=(adopted#>>'{institutional,resultId}')::uuid and status='queued')
- or not exists(select 1 from private.institutional_artifact_import_receipts where configuration_id=configuration_id and source_configuration_id=cfg.id and not rebase_declared)
+ or not exists(select 1 from private.institutional_artifact_import_receipts where configuration_id=target_configuration_id and source_configuration_id=cfg.id and not rebase_declared)
  then raise exception 'native import did not capture lineage, review and deterministic request';end if;
  raise notice 'PASS native_import_capture_v2_review_and_real_deterministic_request';
 end;$$;

@@ -16,7 +16,7 @@ const request = () => GET(new Request("https://offroad.test/material?exportConte
 afterEach(() => {vi.useRealTimers(); vi.resetAllMocks();});
 
 describe("governed material DOCX download", () => {
-  it("returns identical bytes on Monday and Friday for the same persisted revision", async () => {
+  it("authorizes the same exact revision for export on Monday and Friday", async () => {
     const {client} = materialSupabase();
     mocks.workspace.mockResolvedValue({supabase: client, organization: {id: "org", name: "Empresa sintética"}});
     mocks.load.mockResolvedValue(governedPackage);
@@ -32,8 +32,8 @@ describe("governed material DOCX download", () => {
     expect(selected).toMatchObject({revisionId: materialRevisionId, format: "docx", variant: "term_sheet"});
     expect(materialDocumentXml({material: termSheet, lang: "pt", meta: {issuedOn: governedPackage.issuedOn}})).toContain("Emitido em 2026-09-07");
     expect(friday.headers.get("cache-control")).toBe("private, no-store");
-    
-    
+
+
     expect(friday.headers.get("x-artifact-content-sha256")).toBeNull();
     expect(mocks.load).toHaveBeenCalledWith(client, "org", materialSessionId);
   });

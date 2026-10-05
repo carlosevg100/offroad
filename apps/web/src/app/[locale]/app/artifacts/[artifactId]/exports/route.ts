@@ -6,7 +6,7 @@ import {importSameOrigin, importNoStore, importLocaleSchema, readImportRequest, 
 import {readArtifactRevision} from "@/lib/artifacts/authorized-artifact-reader";
 type Context = {params: Promise<{locale: string; artifactId: string}>};
 const requestSchema = z.strictObject({revisionId: z.uuid(), format: z.enum(["xlsx", "docx", "pptx", "pdf"]), variant: z.enum(["default", "teaser", "credit_profile", "package", "credit_memo", "term_sheet", "financial_model", "diligence_qa", "data_room_index"]).default("default"), commandId: z.uuid()});
-const receiptSchema = z.object({id: z.uuid(), artifactId: z.uuid(), revisionId: z.uuid(), format: z.enum(["xlsx", "docx", "pptx", "pdf"]), sha256: z.string().regex(/^[a-f0-9]{64}$/), byteLength: z.number().int().min(1).max(52428800), storage: z.object({bucket: z.string(), path: z.string(), objectId: z.uuid()})});
+const receiptSchema = z.object({id: z.uuid(), artifactId: z.uuid(), revisionId: z.uuid(), format: z.enum(["xlsx", "docx", "pptx", "pdf"]), sha256: z.string().regex(/^[a-f0-9]{64}$/), byteLength: z.number().int().min(1).max(104857600), storage: z.object({bucket: z.string(), path: z.string(), objectId: z.uuid()})});
 export async function POST(request: Request, {params}: Context) {
   if (!importSameOrigin(request)) return Response.json({ok: false}, {status: 403, headers: importNoStore});
   const raw = await params, locale = importLocaleSchema.safeParse(raw.locale), parsed = requestSchema.safeParse(await readImportRequest(request));

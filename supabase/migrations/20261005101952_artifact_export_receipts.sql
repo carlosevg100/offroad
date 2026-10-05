@@ -124,9 +124,10 @@ begin
  if p_command_id is null or p_format is null or p_format not in ('xlsx','docx','pptx','pdf') or p_locale is null or p_locale not in ('pt-BR','en-US') then raise exception 'artifact_export_invalid' using errcode='22023';end if;
  if p_variant is null or p_variant not in ('default','teaser','credit_profile','package','credit_memo','term_sheet','financial_model','diligence_qa','data_room_index') then raise exception 'artifact_export_variant_invalid' using errcode='22023';end if;
  producer:=private.artifact_roundtrip_producer_context_v1(r.id);
- while producer->>'kind'='composite'loop producer_depth:=producer_depth+1;if producer_depth>64then raise exception 'artifact_roundtrip_producer_ancestry_bound'using errcode='42501';end if;producer:=producer->'parent';end loop;
+ while producer->>'kind'='composite'loop producer_depth:=producer_depth+1;if producer_depth>64 then raise exception 'artifact_roundtrip_producer_ancestry_bound'using errcode='42501';end if;producer:=producer->'parent';end loop;
  if (producer->>'kind'='material_package' and not exists(select 1 from jsonb_array_elements(producer->'materials')m where m->>'kind'=p_variant))
- or (producer->>'kind'<>'material_package' and p_variant<>'default') then raise exception 'artifact_export_variant_invalid'using errcode='22023';end if;
+ or (producer->>'kind'='native_material'and not(producer->'variants'?p_variant))
+ or (producer->>'kind'not in('material_package','native_material') and p_variant<>'default') then raise exception 'artifact_export_variant_invalid'using errcode='22023';end if;
  perform pg_advisory_xact_lock(hashtextextended('artifact-roundtrip:'||a.organization_id::text||':'||a.work_id::text,0));
  select * into t from private.artifact_roundtrip_tasks where organization_id=a.organization_id and work_id=a.work_id and command_id=p_command_id;
  if t.id is not null then
@@ -311,10 +312,19 @@ end;$$;
 -- Renderer inputs are bound to this exact revision, never to a latest-result query.
 create function private.artifact_roundtrip_producer_context_v1(p_revision uuid)
 returns jsonb language plpgsql security definer set search_path=''as $$
-declare r public.artifact_revisions;a public.artifacts;imr private.institutional_model_results;dso public.deal_state_objects;cpa public.capital_project_artifacts;
+declare r public.artifact_revisions;a public.artifacts;imr private.institutional_model_results;dso public.deal_state_objects;cpa public.capital_project_artifacts;binding private.material_production_bindings;recipe private.material_production_recipes;variants jsonb;
 begin
  select*into strict r from public.artifact_revisions where id=p_revision;
  select*into strict a from public.artifacts where organization_id=r.organization_id and id=r.artifact_id;
+ select*into binding from private.material_production_bindings where organization_id=r.organization_id and work_id=a.work_id and revision_id=r.id;
+ if binding.id is not null then
+ select*into strict recipe from private.material_production_recipes where organization_id=r.organization_id and id=binding.recipe_id;
+ select coalesce(jsonb_agg(case value when'indicative_term_sheet'then'term_sheet'else value end order by value),'[]')into variants from public.deal_state_objects plan cross join lateral jsonb_array_elements_text(plan.payload->'artifacts')v(value)where plan.organization_id=r.organization_id and plan.id=recipe.production_plan_id and plan.object_fingerprint=recipe.production_plan_fingerprint;
+ -- Descriptors expose no body. The task checks its actual requester on every storage read.
+ return jsonb_build_object('kind','native_material','recipeId',recipe.id,'variants',variants,'archetypeId',(select archetype from public.document_intake_sessions where organization_id=r.organization_id and id=recipe.session_id),
+ 'filenames',(select coalesce(jsonb_agg(jsonb_build_object('id',v.id,'name',v.original_name)order by v.id),'[]')from private.material_production_source_pins pin join public.source_versions v on(v.organization_id,v.id)=(pin.organization_id,pin.source_version_id)where pin.organization_id=r.organization_id and pin.recipe_id=recipe.id),
+ 'packageBody',private.artifact_roundtrip_material_body_v1(r.organization_id,binding.package_retained_payload_id,recipe.human_subject_id),
+ 'stateBody',private.artifact_roundtrip_material_body_v1(r.organization_id,binding.state_retained_payload_id,recipe.human_subject_id));end if;
  if jsonb_typeof(r.manifest->'institutionalResult')='object' or r.legacy_ref->>'table'='institutional_model_results' then
  select*into imr from private.institutional_model_results where organization_id=r.organization_id and capital_project_id=a.work_id
  and id=coalesce(nullif(r.manifest#>>'{institutionalResult,id}','')::uuid,nullif(r.legacy_ref->>'id','')::uuid);
@@ -359,3 +369,14 @@ begin
 end;$$;
 revoke all on function private.validate_artifact_export_manifest_v1(jsonb,public.artifact_revisions,private.artifact_roundtrip_tasks)from public,anon,authenticated,service_role;
 revoke all on function private.artifact_roundtrip_producer_context_v1(uuid)from public,anon,authenticated,service_role;
+create function private.artifact_roundtrip_material_body_v1(p_org uuid,p_payload uuid,p_subject uuid)
+returns jsonb language plpgsql security definer set search_path=''as $$
+declare q private.capital_public_retained_payloads;a private.capital_public_payload_allocations;deadline timestamptz;
+begin
+ select*into q from private.capital_public_retained_payloads where organization_id=p_org and id=p_payload;
+ select*into a from private.capital_public_payload_allocations where organization_id=p_org and id=q.allocation_id;
+ deadline:=private.material_production_allocation_deadline_v1(p_org,a.id,p_subject);
+ if q.id is null or a.id is null or deadline is null or not private.capital_body_physical_receipt_v1(p_org,q.id)then raise exception 'artifact_roundtrip_material_body_denied'using errcode='42501';end if;
+ return jsonb_build_object('retainedPayloadId',q.id,'allocationId',a.id,'storage',jsonb_build_object('bucket',a.bucket_id,'path',a.object_path),'sha256',q.verified_sha256,'byteLength',q.verified_size,'storageObjectId',q.storage_object_id,'storageVersion',q.storage_version,'expiresAt',deadline);
+end;$$;
+revoke all on function private.artifact_roundtrip_material_body_v1(uuid,uuid,uuid)from public,anon,authenticated,service_role;

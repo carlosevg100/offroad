@@ -105,7 +105,7 @@ describe("document work product download route", () => {
     expect((await response.arrayBuffer()).byteLength).toBe(0);
     expect(response.headers.get("cache-control")).toBe("private, no-store");
   });
-  it("downloads exact authorized persisted version using content locale and publication date", async () => {
+  it("validates the exact persisted reading before selecting its receipted export", async () => {
     const response = await request();
     expect(response.status).toBe(200);
     expect(mocks.workspace).toHaveBeenCalledWith("en-US");
@@ -117,22 +117,22 @@ describe("document work product download route", () => {
     }));
     expect(await response.json()).toMatchObject({revisionId, format: "docx", variant: "default"});
     expect(response.headers.get("cache-control")).toBe("private, no-store");
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
     expect(mocks.rpc).toHaveBeenCalledWith("read_artifact_head_v1", {p_work_id: projectId, p_kind: "work_product", p_subject: `case-snapshot:${sessionId}`});
   });
-  it("produces the final PDF from the same approved reading, with no second content path", async () => {
+  it("validates the PDF delivery from the same approved reading before export selection", async () => {
     const response = await request({format: "pdf"});
     expect(response.status).toBe(200);
     expect(render).toHaveBeenCalledWith(expect.objectContaining({format: "pdf", revision: {issuedOn: "2026-09-08", template: expect.objectContaining({origin: "offroad_house"})}}));
-    
-    
-    
+
+
+
     expect(await response.json()).toMatchObject({revisionId, format: "pdf", variant: "default"});
   });
   it("renders with the visual identity selected for the project and binds its fingerprint", async () => {
@@ -217,7 +217,7 @@ describe("document work product download route", () => {
 
 describe("old and new resolution decide equal", () => {
   const legacyRequest = (overrides = {}) => legacyGET(new Request("https://offroad.test/material"), {params: Promise.resolve({...params, ...overrides})});
-  it.each(["docx", "pdf"])("serve the same %s bytes for the current reading, on any day", async format => {
+  it.each(["docx", "pdf"])("authorize the same exact reading for a receipted %s export on any day", async format => {
     vi.useFakeTimers({toFake: ["Date"]});
     try {
       vi.setSystemTime(new Date("2026-09-14T12:00:00Z"));

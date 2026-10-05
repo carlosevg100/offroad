@@ -141,8 +141,11 @@ jobs:
           docker ps -aq --filter 'name=^supabase_.*_offroad$' | xargs -r docker rm -f
           # Retry the boot a few times, alternating registries with a pause, instead of failing the
           # whole gate on a registry limit.
+          set -o pipefail
           for attempt in 1 2 3 4 5; do
-            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector; then break; fi
+            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta,logflare,vector 2>&1 | tee "$RUNNER_TEMP/supabase-start-database.log"; then break; fi
+            # SQL errors are deterministic and cannot recover by pulling another image.
+            if grep -q 'SQLSTATE' "$RUNNER_TEMP/supabase-start-database.log"; then exit 1; fi
             if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
             if [ "$SUPABASE_INTERNAL_IMAGE_REGISTRY" = public.ecr.aws ]; then
               SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io
@@ -876,7 +879,8 @@ jobs:
           # Retry the boot a few times, alternating registries with a pause, instead of failing the
           # whole gate on a registry limit.
           for attempt in 1 2 3 4 5; do
-            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta; then break; fi
+            if supabase start -x studio,imgproxy,edge-runtime,realtime,supavisor,postgres-meta 2>&1 | tee "$RUNNER_TEMP/supabase-start-e2e.log"; then break; fi
+            if grep -q 'SQLSTATE' "$RUNNER_TEMP/supabase-start-e2e.log"; then exit 1; fi
             if [ "$attempt" = 5 ]; then echo "supabase start failed after 5 attempts"; exit 1; fi
             if [ "$SUPABASE_INTERNAL_IMAGE_REGISTRY" = public.ecr.aws ]; then
               SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io

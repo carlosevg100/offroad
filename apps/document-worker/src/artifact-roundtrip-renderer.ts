@@ -4,9 +4,10 @@ import type {SupabaseClient} from "@supabase/supabase-js";
 import {z} from "zod";
 import {artifactBlockDraftSchema, artifactManifestSchema, documentWorkProductSchema, roundtripManifestVersion, type RoundtripManifest} from "@offroad/domain-contracts";
 import {embedRoundtripManifest, roundtripSha256} from "@offroad/case-export/artifact-roundtrip";
-import {houseDocumentTemplate, materialToDocx, materialToPdf, materialToPptxRoundtrip, materialDocxRoundtripRegions, type MaterialRoundtripBinding} from "@offroad/case-export";
+import {houseDocumentTemplate, materialToDocx, materialToPdf, materialToPptxRoundtrip, materialDocxRoundtripRegions, renderDecisionWorkbook, type MaterialRoundtripBinding} from "@offroad/case-export";
 import {institutionalFinancialModelMaterial, type Material, type MaterialBlock} from "@offroad/case-materials";
-import {buildInstitutionalFinancialModel, parseVerifiedInstitutionalWorkbookArtifact, renderApprovedInstitutionalFinancialWorkbook, renderInstitutionalRoundtripWorkbook, type FinancialModel, type InstitutionalWorkbookArtifact, type InstitutionalModelInput} from "@offroad/financial-model";
+import {buildInstitutionalFinancialModel, buildFinancialModel, parseVerifiedInstitutionalWorkbookArtifact, renderApprovedInstitutionalFinancialWorkbook, renderInstitutionalRoundtripWorkbook, renderApprovedFinancialWorkbook, toGovernedXlsxBuffer, type ApprovedWorkbookBinding, type GovernedWorkbookMetadata, type FinancialModel, type InstitutionalWorkbookArtifact, type InstitutionalModelInput} from "@offroad/financial-model";
+import {decisionArtifactContractSchema, deskEvidence, type DecisionArtifactContract} from "@offroad/case-understanding";
 import type {ArtifactRoundtripClaim, RoundtripRenderer} from "./artifact-roundtrip-processing";
 
 const bilingual = z.object({pt: z.string().max(100000), en: z.string().max(100000)});
@@ -21,11 +22,13 @@ const blockSchema = z.discriminatedUnion("type", [
 ]);
 const materialSchema = z.object({kind:z.enum(["teaser","credit_profile","package","credit_memo","term_sheet","financial_model","diligence_qa","data_room_index"]),title:bilingual,blocks:z.array(blockSchema).max(1000),dependsOn:z.array(z.string()).max(2000),artifactFingerprint:z.string().regex(/^[a-f0-9]{64}$/).optional()}).passthrough();
 const storageSchema = z.object({bucket:z.enum(["case-artifacts","opportunity-documents"]),path:z.string().min(1).max(1024)});
+const nativeBodySchema=z.object({retainedPayloadId:z.uuid(),allocationId:z.uuid(),storage:z.object({bucket:z.literal("capital-input-capture"),path:z.string().min(1).max(1024)}),sha256:z.string().regex(/^[a-f0-9]{64}$/),byteLength:z.number().int().positive().max(1048576),storageObjectId:z.uuid(),storageVersion:z.string().min(1).max(200),expiresAt:z.string().min(1)});
 const producers = z.discriminatedUnion("kind", [
+  z.object({kind:z.literal("native_material"),recipeId:z.uuid(),variants:z.array(z.string().min(1).max(80)).min(1).max(8),archetypeId:z.string().nullable(),packageBody:nativeBodySchema,stateBody:nativeBodySchema,filenames:z.array(z.object({id:z.string().min(1).max(160),name:z.string().min(1).max(1024)})).max(20000).optional()}),
   z.object({kind:z.literal("institutional"),artifact:z.unknown(),resultId:z.uuid(),configurationId:z.uuid()}),
   z.object({kind:z.literal("stored"),storage:storageSchema,sha256:z.string().regex(/^[a-f0-9]{64}$/),byteLength:z.number().int().positive().max(104857600),sourceFormat:z.enum(["xlsx","docx","pptx","pdf"])}),
-  z.object({kind:z.literal("material_package"),materials:z.array(z.unknown()),financialModel:z.unknown().optional(),sourceRowId:z.uuid()}),
-  z.object({kind:z.literal("work_product"),content:z.unknown(),artifactType:z.string(),sourceRowId:z.uuid()}),
+  z.object({kind:z.literal("material_package"),materials:z.array(z.unknown()),financialModel:z.unknown().optional(),financialReplay:z.unknown().optional(),sourceRowId:z.uuid()}),
+  z.object({kind:z.literal("work_product"),content:z.unknown(),artifactType:z.string(),financialReplay:z.unknown().optional(),sourceRowId:z.uuid()}),
   z.object({kind:z.literal("blocks"),blocks:z.array(artifactBlockDraftSchema).max(1000).optional()}),
 ]);
 type Draft = z.infer<typeof artifactBlockDraftSchema>;
@@ -52,7 +55,7 @@ export function createArtifactRoundtripRenderer(client:SupabaseClient):Roundtrip
     if(!identity || !claim.variant || !/^[a-zA-Z0-9_.-]{1,80}$/.test(claim.variant))throw new Error("artifact_roundtrip_producer_identity_missing");
     const isHead=claim.operation!=="export"&&claim.importCandidate?.headRevision?.id===identity.id;
     const normalized=unpackProducer(isHead?claim.importCandidate?.headProducer:claim.producer);
-    const producer=normalized.producer;
+    let producer=normalized.producer;
     const blocks=z.array(artifactBlockDraftSchema).max(1000).parse(producer.kind==="blocks"&&producer.blocks?producer.blocks:isHead?claim.importCandidate?.headBlocks??[]:claim.blocks);
     const manifest=artifactManifestSchema.parse(identity.manifest);
     const template=manifest.template;
@@ -63,11 +66,31 @@ export function createArtifactRoundtripRenderer(client:SupabaseClient):Roundtrip
       logicalManifestFingerprint:identity.logicalManifestFingerprint,format:claim.format,variant:claim.variant,exportedAt,blocks:[],inputs:[],outputs:[],formulas:[]};
     const scope={p_task_id:claim.taskId,p_capability_token:claim.capabilityToken};
     const current=async()=>{
-      if(Date.parse(claim.leaseExpiresAt)<=Date.now())throw new Error("artifact_roundtrip_source_revoked");
+      if(!Number.isFinite(Date.parse(claim.leaseExpiresAt))||Date.parse(claim.leaseExpiresAt)<=Date.now())throw new Error("artifact_roundtrip_source_revoked");
       const r=await client.rpc("worker_revalidate_artifact_roundtrip_v1",scope);
       if(r.error||!z.object({valid:z.literal(true)}).safeParse(r.data).success)throw new Error("artifact_roundtrip_source_revoked");
     };
     const lang=claim.locale==="en-US"?"en":"pt";
+    if(producer.kind==="native_material") {
+      if(!producer.variants.includes(claim.variant))throw new Error("artifact_roundtrip_producer_variant_unsupported");
+      const readBody=async(body:z.infer<typeof nativeBodySchema>):Promise<unknown>=>{
+        if(!Number.isFinite(Date.parse(body.expiresAt))||Date.parse(body.expiresAt)<=Date.now())throw new Error("artifact_roundtrip_source_revoked");
+        await current();const result=await client.storage.from(body.storage.bucket).download(body.storage.path);
+        if(result.error||!result.data||result.data.size!==body.byteLength)throw new Error("artifact_roundtrip_missing_base");
+        const value=new Uint8Array(await result.data.arrayBuffer());
+        if(value.byteLength!==body.byteLength||roundtripSha256(value)!==body.sha256)throw new Error("artifact_roundtrip_bytes_changed");
+        await current();
+        try{return JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(value)) as unknown;}catch{throw new Error("artifact_roundtrip_producer_native_body_invalid");}
+      };
+      const packageValue=await readBody(producer.packageBody),stateValue=await readBody(producer.stateBody);
+      const packageBody=z.object({schemaVersion:z.literal("2026.08.29-v1"),materials:z.array(materialSchema).max(1000),financialModel:z.unknown().nullable(),materialTruth:z.unknown()}).parse(packageValue);
+      const stateBody=z.object({materials:z.array(materialSchema).max(1000),financialModel:z.unknown().nullable(),materialTruth:z.unknown(),reconciliation:z.object({facts:z.array(z.unknown()).max(20000),calculations:z.array(z.unknown()).max(20000)}).optional(),desk:z.unknown().optional(),trajectory:z.unknown().optional()}).parse(stateValue);
+      const rawPackage=packageValue as Record<string,unknown>,rawState=stateValue as Record<string,unknown>;
+      if(["materials","financialModel","materialTruth"].some(key=>!isDeepStrictEqual(rawPackage[key],rawState[key])))throw new Error("artifact_roundtrip_producer_native_body_mismatch");
+      const evidence=stateBody.reconciliation?deskEvidence((stateBody.desk??null) as Parameters<typeof deskEvidence>[0],(stateBody.trajectory??null) as Parameters<typeof deskEvidence>[1]):null;
+      const financialReplay=producer.archetypeId&&stateBody.reconciliation?{archetypeId:producer.archetypeId,facts:stateBody.reconciliation.facts,calculations:[...stateBody.reconciliation.calculations,...(evidence?.calculations??[])],filenames:producer.filenames??[]}:undefined;
+      producer={kind:"material_package",sourceRowId:producer.recipeId,materials:packageBody.materials,financialModel:packageBody.financialModel,...(financialReplay?{financialReplay}:{})};
+    }
     let bytes:Uint8Array;
     if(producer.kind==="stored") {
       if(normalized.overlays.length)throw new Error("artifact_roundtrip_producer_stored_overlay_unsupported");
@@ -79,6 +102,28 @@ export function createArtifactRoundtripRenderer(client:SupabaseClient):Roundtrip
       bytes=new Uint8Array(await downloaded.data.arrayBuffer());
       if(bytes.byteLength!==producer.byteLength||roundtripSha256(bytes)!==producer.sha256)throw new Error("artifact_roundtrip_bytes_changed");
       await current();
+    } else if (claim.format === "xlsx" && (producer.kind === "material_package" || producer.kind === "work_product")) {
+      if (normalized.overlays.length) throw new Error("artifact_roundtrip_producer_workbook_overlay_unsupported");
+      if (producer.kind === "material_package") {
+        const selection = producer.materials.filter(item => item && typeof item === "object" && (item as Record<string, unknown>).kind === claim.variant);
+        if (claim.variant !== "financial_model" || selection.length !== 1) throw new Error("artifact_roundtrip_producer_variant_unsupported");
+        const selected = materialSchema.parse(selection[0]);
+        const institutional = parseVerifiedInstitutionalWorkbookArtifact(producer.financialModel);
+        if (institutional) {
+          if (selected.artifactFingerprint !== institutional.fingerprint || !await renderApprovedInstitutionalFinancialWorkbook(institutional, lang)) throw new Error("artifact_roundtrip_producer_calculation_divergence");
+          const rendered = await renderInstitutionalRoundtripWorkbook(institutional, lang);
+          if (!rendered) throw new Error("artifact_roundtrip_producer_calculation_divergence");
+          bytes = rendered.bytes; roundtripWorkbookBindings(roundtrip, rendered.model, institutional, blocks, lang);
+        } else {
+          const rendered = await renderExactFinancialEvidence(producer.financialModel, selected.artifactFingerprint, roundtrip, lang, producer.financialReplay);
+          bytes = rendered;
+        }
+      } else {
+        const body = producer.content && typeof producer.content === "object" && !Array.isArray(producer.content) ? producer.content as Record<string, unknown> : {};
+        const decision = decisionArtifactContractSchema.safeParse(body.decisionContract ?? body.decisionWorkbook ?? producer.content);
+        if (decision.success) bytes = await renderDecisionEvidence(decision.data, roundtrip, lang);
+        else bytes = await renderExactFinancialEvidence(body.financialModel ?? producer.content, undefined, roundtrip, lang, producer.financialReplay);
+      }
     } else if(producer.kind==="institutional") {
       const artifact=parseVerifiedInstitutionalWorkbookArtifact(producer.artifact);
       if(!artifact||!await renderApprovedInstitutionalFinancialWorkbook(artifact,lang))throw new Error("artifact_roundtrip_producer_calculation_divergence");
@@ -211,4 +256,51 @@ function applyOverlays(original:Material,bindings:MaterialRoundtripBinding[],ove
     }
   }
   return {material,bindings:mapped};
+}
+
+async function renderDecisionEvidence(contract:DecisionArtifactContract,manifest:RoundtripManifest,lang:"pt"|"en"):Promise<Uint8Array> {
+  // Scalar assumptions have no declared period in this historical contract. Preserve the
+  // editable workbook but record those cells on import until a producer supplies period bindings.
+  const rendered=await renderDecisionWorkbook({contract,locale:lang==="pt"?"pt-BR":"en-US",title:lang==="pt"?"Workbook de decisão":"Decision workbook",roundtrip:{assumptions:[]}});
+  if(!rendered.roundtrip)throw new Error("artifact_roundtrip_producer_workbook_binding_missing");
+  recordedWorkbookBindings(manifest,rendered.roundtrip.model,lang);
+  return rendered.bytes;
+}
+const financialCellSchema=z.object({role:z.enum(["input","formula","historical","label","header","total","note"]),value:z.union([z.string().max(100000),z.number().finite()]).optional(),formula:z.string().max(10000).optional(),format:z.enum(["money","percent","multiple","integer","text","years"]).optional()});
+const financialModelSchema=z.object({sheets:z.array(z.object({key:z.string().min(1).max(160),name:bilingual,widths:z.array(z.number().finite()).max(128),rows:z.array(z.object({key:z.string().max(160),cells:z.array(financialCellSchema).max(128)})).max(20000)})).min(1).max(128),periods:z.array(z.string().max(80)).max(1000),deskAssumptions:z.array(z.string().max(100000)).max(1000)});
+async function renderExactFinancialEvidence(value:unknown,expectedFingerprint:string|undefined,manifest:RoundtripManifest,lang:"pt"|"en",replay?:unknown):Promise<Uint8Array> {
+  const body=value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:{};
+  if(expectedFingerprint&&body.fingerprint!==expectedFingerprint)throw new Error("artifact_roundtrip_producer_calculation_divergence");
+  let parsed=financialModelSchema.safeParse(body.model);
+  if(!parsed.success && replay!==undefined) {
+    const context=z.object({archetypeId:z.string().min(1).max(80),facts:z.array(z.unknown()).max(20000),calculations:z.array(z.unknown()).max(20000),filenames:z.array(z.object({id:z.string().min(1).max(160),name:z.string().min(1).max(1024)})).max(20000)}).parse(replay);
+    const economic=z.object({amount:z.string().min(1).max(100),termMonths:z.number().int().positive().max(1200),graceMonths:z.number().int().nonnegative().max(1200),amortization:z.enum(["sac","price","bullet"]),annualInterestRate:z.string().max(100).nullable().optional()}).parse(body.inputs);
+    type Input=Parameters<typeof buildFinancialModel>[0];
+    // Current case state is only a reconstruction candidate. The approved byte digest below,
+    // not its freshness or a fabricated historical snapshot, proves economic equivalence.
+    const model=buildFinancialModel({archetypeId:context.archetypeId as Input["archetypeId"],facts:context.facts as Input["facts"],calculations:context.calculations as Input["calculations"],filenames:new Map(context.filenames.map(item=>[item.id,item.name])),lang,
+      requestedAmount:economic.amount,requestedTermMonths:economic.termMonths,requestedGraceMonths:economic.graceMonths,amortizationFormat:economic.amortization,...(economic.annualInterestRate?{annualInterestRate:economic.annualInterestRate}:{})});
+    parsed=financialModelSchema.safeParse(model);
+  }
+  const binding=z.object({workbooks:z.object({pt:z.object({sha256:z.string().regex(/^[a-f0-9]{64}$/),byteSize:z.number().int().positive()}),en:z.object({sha256:z.string().regex(/^[a-f0-9]{64}$/),byteSize:z.number().int().positive()})}),rendering:z.object({rendererVersion:z.string(),metadata:z.object({pt:z.unknown(),en:z.unknown()})}).optional()}).safeParse(body);
+  if(!parsed.success||!binding.success)throw new Error("artifact_roundtrip_producer_workbook_replay_missing");
+  const model=parsed.data as FinancialModel;
+  if(!await renderApprovedFinancialWorkbook(model,lang,binding.data as ApprovedWorkbookBinding))throw new Error("artifact_roundtrip_producer_calculation_divergence");
+  // The historical replay above proves this exact model; new names belong only to the new export.
+  for(const sheet of model.sheets)for(const row of sheet.rows)for(const[column,cell]of row.cells.entries())if(cell.formula||typeof cell.value==="number")cell.roundtrip={name:`${cell.formula?"f":"out"}.id${roundtripSha256(`${sheet.key}.${row.key}.${column}`)}`,role:cell.formula?"formula":"recorded"};
+  recordedWorkbookBindings(manifest,model,lang);
+  const metadata=binding.data.rendering?.metadata[lang] as GovernedWorkbookMetadata|undefined;
+  if(metadata)return(await toGovernedXlsxBuffer(model,lang,metadata)).bytes;
+  // Reuse the existing exporter for a historical ungoverned binding, preserving model economics.
+  const {toXlsxBuffer}=await import("@offroad/financial-model");return toXlsxBuffer(model,lang);
+}
+function recordedWorkbookBindings(manifest:RoundtripManifest,model:FinancialModel,lang:"pt"|"en"):void {
+ for(const sheet of model.sheets){
+  const blockKey=`export.${manifest.variant}.sheet.${roundtripSha256(sheet.key).slice(0,32)}`;
+  manifest.blocks.push({blockKey,kind:"cell_region",recorded:true,claimIds:[],region:{kind:"cell",sheet:sheet.name[lang],ref:`A1:${columnLetter(Math.max(0,sheet.widths.length-1))}${Math.max(1,sheet.rows.length)}`,definedName:`block.id${roundtripSha256(sheet.key)}`}});
+  for(const[rowIndex,row]of sheet.rows.entries())for(const[columnIndex,cell]of row.cells.entries())if(cell.roundtrip){const ref=`${columnLetter(columnIndex)}${rowIndex+1}`;
+   if(cell.formula)manifest.formulas.push({name:cell.roundtrip.name,cellRef:ref,formulaSha256:roundtripSha256(cell.formula)});
+   else manifest.outputs.push({name:cell.roundtrip.name,cellRef:ref,traceId:cell.roundtrip.name});
+  }
+ }
 }

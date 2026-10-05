@@ -3,6 +3,7 @@
 import {readFileSync,mkdtempSync,rmSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import {join,posix,resolve} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
@@ -12,7 +13,10 @@ export const historicalTermSheetSnapshotHash='3a26d5d52e8b0426c42e0c4cc2bd6941fb
 let loaded;export function loadHistoricalTermSheet(){return loaded??=load();}
 async function load(){
  const bytes=readFileSync(join(root,'packages/deal-structure/scripts/fixtures/termsheet-v9-runtime.sources.json'));if(sha(bytes)!==historicalTermSheetSnapshotHash)throw Error('historical_termsheet_snapshot_hash_mismatch');const fixture=JSON.parse(bytes);
- if(fixture.sourceCommit!==historicalTermSheetSourceCommit||sha(fixture.entry)!==fixture.entryHash||sha(readFileSync(join(root,'pnpm-lock.yaml')))!==fixture.lockHash)throw Error('historical_termsheet_identity_mismatch');
+ // The frozen fixture belongs to its source commit. Unrelated workspace additions must
+ // not redefine that lock; actual runtime dependency versions remain checked below.
+ const historicalLock=execFileSync('git',['show',historicalTermSheetSourceCommit+':pnpm-lock.yaml'],{cwd:root,maxBuffer:4*1024*1024});
+ if(fixture.sourceCommit!==historicalTermSheetSourceCommit||sha(fixture.entry)!==fixture.entryHash||sha(historicalLock)!==fixture.lockHash)throw Error('historical_termsheet_identity_mismatch');
  for(const[path,file]of Object.entries(fixture.files)){const content=Buffer.from(file.content);if(sha(content)!==file.hash||createHash('sha1').update(Buffer.from('blob '+content.length+'\0')).update(content).digest('hex')!==file.gitBlob)throw Error('historical_termsheet_source_hash_mismatch:'+path);}
  const require=createRequire(join(root,'apps/document-worker/package.json')),esbuild=require('esbuild');if(require('decimal.js/package.json').version!=='10.6.0'||require('zod/package.json').version!=='4.4.3')throw Error('historical_termsheet_dependency_version_mismatch');if(esbuild.version!==fixture.esbuildVersion)throw Error('historical_termsheet_bundler_version_mismatch');
  const resolveSource=input=>{const path=posix.normalize(input);for(const candidate of[path,path+'.ts',path+'/index.ts'])if(fixture.files[candidate])return candidate;throw Error('historical_termsheet_uncaptured_source');};

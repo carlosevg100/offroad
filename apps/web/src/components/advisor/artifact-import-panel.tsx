@@ -9,7 +9,7 @@ import {continuationBaseRowSchema} from "@/lib/advisor/work-update-view";
 import {ArtifactImportReview, type ArtifactImportReviewCommand, type ArtifactImportReviewView} from "./artifact-import-review";
 
 const setupSchema = z.object({legal_document: z.object({title: z.string(), rendered_text: z.string(), acceptance_statement: z.string(), information_rights_statement: z.string()}).nullable()});
-const contextSchema = z.object({ok: z.literal(true), workId: z.uuid(), headRevisionId: z.uuid(), blockKeys: z.array(z.string()), bases: z.array(continuationBaseRowSchema), receipts: z.array(z.object({id: z.uuid(), revisionId: z.uuid(), format: z.enum(["xlsx", "docx", "pptx"]), issuedAt: z.string()})), terms: setupSchema, candidates: z.array(z.object({candidate: artifactImportCandidateSchema, view: z.custom<ArtifactImportReviewView>(value => typeof value === "object" && value !== null && "id" in value)}))});
+const contextSchema = z.object({ok: z.literal(true), workId: z.uuid(), headRevisionId: z.uuid(), blockKeys: z.array(z.string()), exportOptions: z.array(z.object({variant: z.enum(["default", "teaser", "credit_profile", "package", "credit_memo", "term_sheet", "financial_model", "diligence_qa", "data_room_index"]), formats: z.array(z.enum(["xlsx", "docx", "pptx", "pdf"])).min(1)})), bases: z.array(continuationBaseRowSchema), receipts: z.array(z.object({id: z.uuid(), revisionId: z.uuid(), format: z.enum(["xlsx", "docx", "pptx", "pdf"]), issuedAt: z.string()})), terms: setupSchema, candidates: z.array(z.object({candidate: artifactImportCandidateSchema, view: z.custom<ArtifactImportReviewView>(value => typeof value === "object" && value !== null && "id" in value)}))});
 type ImportContext = z.infer<typeof contextSchema>;
 const preparedSchema = z.object({ok: z.literal(true), sessionId: z.uuid(), sourceVersionId: z.uuid(), bucket: z.literal("opportunity-documents"), objectPath: z.string().min(1)});
 /** Reads and commands use current authority; the browser only carries uploaded bytes and explicit
@@ -21,7 +21,10 @@ export function ArtifactImportPanel({locale, workId, artifactId}: {locale: "pt-B
   const [file, setFile] = useState<File | null>(null), [receiptId, setReceiptId] = useState("");
   const [name, setName] = useState(""), [title, setTitle] = useState(""), [agreed, setAgreed] = useState(false), [rights, setRights] = useState(false);
   const [basisId, setBasisId] = useState(""), [discardReason, setDiscardReason] = useState("");
-  const [exportBusy, setExportBusy] = useState(false), [exportTask, setExportTask] = useState<string | null>(null), [readyReceipt, setReadyReceipt] = useState<string | null>(null), [exportFormat, setExportFormat] = useState<"xlsx" | "docx" | "pptx">("xlsx");
+  const [exportBusy, setExportBusy] = useState(false), [exportTask, setExportTask] = useState<string | null>(null), [readyReceipt, setReadyReceipt] = useState<string | null>(null), [exportFormat, setExportFormat] = useState<"xlsx" | "docx" | "pptx" | "pdf">("xlsx");
+  const [exportVariant, setExportVariant] = useState("default");
+  const selectedExport = context?.exportOptions.find(option => option.variant === exportVariant) ?? context?.exportOptions[0];
+  const selectedFormat = selectedExport?.formats.includes(exportFormat) ? exportFormat : selectedExport?.formats[0];
   const exportCommand = useRef<{key: string; id: string} | null>(null);
   const [group, setGroup] = useState<Record<string, string>>({}), [rebase, setRebase] = useState<Record<string, boolean>>({});
   const [mappings, setMappings] = useState<Record<string, string>>({});
@@ -33,9 +36,9 @@ export function ArtifactImportPanel({locale, workId, artifactId}: {locale: "pt-B
   const hasQueued = context?.candidates.some(row => row.candidate.status === "queued");
   useEffect(() => {if (!hasQueued) return; const timer = setInterval(() => void refresh(), 3000); return () => clearInterval(timer);}, [hasQueued, refresh]);
   async function requestExport() {
-    if (!context || exportBusy) return; setExportBusy(true); setError(false);
-    const key = `${context.headRevisionId}:${exportFormat}`; if (exportCommand.current?.key !== key) exportCommand.current = {key, id: crypto.randomUUID()};
-    try {const response = await fetch(`/${locale}/app/artifacts/${artifactId}/exports`, {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({revisionId: context.headRevisionId, format: exportFormat, commandId: exportCommand.current.id})});const data = await response.json();const result = z.object({receiptId: z.uuid().nullable(), taskId: z.uuid().optional()}).safeParse(data.result);if (!response.ok || !result.success) throw new Error();setReadyReceipt(result.data.receiptId);setExportTask(result.data.taskId ?? null);} catch {setError(true);} finally {setExportBusy(false);}
+    if (!context || !selectedExport || !selectedFormat || exportBusy) return; setExportBusy(true); setError(false);
+    const key = `${context.headRevisionId}:${selectedExport.variant}:${selectedFormat}`; if (exportCommand.current?.key !== key) exportCommand.current = {key, id: crypto.randomUUID()};
+    try {const response = await fetch(`/${locale}/app/artifacts/${artifactId}/exports`, {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({revisionId: context.headRevisionId, format: selectedFormat, variant: selectedExport.variant, commandId: exportCommand.current.id})});const data = await response.json();const result = z.object({receiptId: z.uuid().nullable(), taskId: z.uuid().optional()}).safeParse(data.result);if (!response.ok || !result.success) throw new Error();setReadyReceipt(result.data.receiptId);setExportTask(result.data.taskId ?? null);} catch {setError(true);} finally {setExportBusy(false);}
   }
   useEffect(() => {if (!exportTask || readyReceipt) return; const timer = setInterval(async () => {try {const response = await fetch(`/${locale}/app/artifacts/${artifactId}/exports?taskId=${exportTask}`, {cache: "no-store"});const data = await response.json();const result = z.object({status: z.string(), receiptId: z.uuid().nullable()}).safeParse(data.task);if (!response.ok || !result.success) throw new Error();if (result.data.receiptId) {setReadyReceipt(result.data.receiptId);setExportTask(null);void refresh();} else if (["failed", "cancelled"].includes(result.data.status)) {setExportTask(null);setError(true);}} catch {setExportTask(null);setError(true);}}, 3000); return () => clearInterval(timer);}, [exportTask, readyReceipt, artifactId, locale, refresh]);
   async function command(candidateId: string, input: Record<string, unknown>) {
@@ -74,15 +77,16 @@ export function ArtifactImportPanel({locale, workId, artifactId}: {locale: "pt-B
   const legal = context?.terms.legal_document;
   return <section data-testid="artifact-import-panel" aria-busy={busy}>
     <h3>{t("title")}</h3><p>{t("scope")}</p>
-    <label>{t("exportFormat")}<select value={exportFormat} disabled={exportBusy || Boolean(exportTask)} onChange={event => setExportFormat(event.target.value as "xlsx" | "docx" | "pptx")}>{(["xlsx", "docx", "pptx"] as const).map(format => <option key={format}>{format}</option>)}</select></label>
-    <button disabled={!context || exportBusy || Boolean(exportTask)} onClick={() => void requestExport()}>{t("export")}</button>
+    <label>{t("exportVariant")}<select value={selectedExport?.variant ?? ""} disabled={exportBusy || Boolean(exportTask) || !selectedExport} onChange={event => {setExportVariant(event.target.value);setReadyReceipt(null);}}>{context?.exportOptions.map(option => <option key={option.variant} value={option.variant}>{t(`variants.${option.variant}`)}</option>)}</select></label>
+    <label>{t("exportFormat")}<select value={selectedFormat ?? ""} disabled={exportBusy || Boolean(exportTask) || !selectedFormat} onChange={event => {setExportFormat(event.target.value as "xlsx" | "docx" | "pptx" | "pdf");setReadyReceipt(null);}}>{selectedExport?.formats.map(format => <option key={format}>{format}</option>)}</select></label>
+    <button disabled={!context || !selectedExport || !selectedFormat || exportBusy || Boolean(exportTask)} onClick={() => void requestExport()}>{t("export")}</button>
     {exportTask ? <p role="status">{t("exportQueued")}</p> : null}
     {readyReceipt ? <a href={`/${locale}/app/artifacts/${artifactId}/exports?receiptId=${readyReceipt}`}>{t("download")}</a> : null}
     {legal ? <details><summary>{legal.title}</summary><p style={{whiteSpace: "pre-wrap"}}>{legal.rendered_text}</p></details> : <p>{t("unavailable")}</p>}
     <label>{t("name")}<input value={name} onChange={event => setName(event.target.value)} disabled={busy}/></label>
     <label>{t("role")}<input value={title} onChange={event => setTitle(event.target.value)} disabled={busy}/></label>
     {legal ? <><label><input type="checkbox" checked={agreed} onChange={event => setAgreed(event.target.checked)} disabled={busy}/>{legal.acceptance_statement}</label><label><input type="checkbox" checked={rights} onChange={event => setRights(event.target.checked)} disabled={busy}/>{legal.information_rights_statement}</label></> : null}
-    <label>{t("receipt")}<select value={receiptId} onChange={event => setReceiptId(event.target.value)} disabled={busy}><option value="">{t("noReceipt")}</option>{context?.receipts.map(receipt => <option key={receipt.id} value={receipt.id}>{receipt.format.toUpperCase()} · {receipt.issuedAt}</option>)}</select></label>
+    <label>{t("receipt")}<select value={receiptId} onChange={event => setReceiptId(event.target.value)} disabled={busy}><option value="">{t("noReceipt")}</option>{context?.receipts.filter(receipt => receipt.format !== "pdf").map(receipt => <option key={receipt.id} value={receipt.id}>{receipt.format.toUpperCase()} · {receipt.issuedAt}</option>)}</select></label>
     <label>{t("file")}<input type="file" accept=".xlsx,.docx,.pptx" disabled={busy} onChange={event => setFile(event.target.files?.[0] ?? null)}/></label>
     <button disabled={busy || !legal || !file || !agreed || !rights || name.trim().length < 2} onClick={() => void upload()}>{t("upload")}</button>
     <label>{t("basis")}<select value={basisId} onChange={event => setBasisId(event.target.value)}><option value="">{t("chooseBasis")}</option>{context?.bases.map(base => <option key={base.milestoneId} value={base.milestoneId}>{base.label} · {base.revision}</option>)}</select></label>

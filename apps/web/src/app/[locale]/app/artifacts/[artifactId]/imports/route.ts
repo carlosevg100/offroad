@@ -37,7 +37,7 @@ export async function GET(_request: Request, {params}: Context) {
   if (artifact.error || !artifact.data) return Response.json({ok: false}, {status: 404, headers: importNoStore});
   const currentArtifact = artifact.data;
   const rpc = artifactImportRpc(supabase);
-  const [imports, receipts, terms, updates] = await Promise.all([rpc("list_work_artifact_imports_v1", {p_work_id: artifact.data.work_id}), rpc("list_artifact_export_receipts_v1", {p_artifact_id: raw.artifactId}), supabase.rpc("get_workspace_project_setup", {p_locale: locale.data}), supabase.rpc("work_update_view_v1", {p_work_id: artifact.data.work_id})]);
+  const [imports, receipts, terms, updates, options] = await Promise.all([rpc("list_work_artifact_imports_v1", {p_work_id: artifact.data.work_id}), rpc("list_artifact_export_receipts_v1", {p_artifact_id: raw.artifactId}), supabase.rpc("get_workspace_project_setup", {p_locale: locale.data}), supabase.rpc("work_update_view_v1", {p_work_id: artifact.data.work_id}), rpc("read_artifact_export_options_v1", {p_revision_id: artifact.data.head_revision_id})]);
   if (imports.error || receipts.error || terms.error || updates.error) return Response.json({ok: false}, {status: 409, headers: importNoStore});
   const list = z.object({workId: z.uuid(), candidates: z.array(z.unknown()).max(100)}).safeParse(imports.data);
   const receiptList = z.object({artifactId: z.uuid(), receipts: z.array(z.unknown()).max(100)}).safeParse(receipts.data);
@@ -46,7 +46,10 @@ export async function GET(_request: Request, {params}: Context) {
   const reviews = await Promise.all(candidates.map(async candidate => ({candidate, view: await artifactImportReviewView(supabase, candidate, userId)})));
   const updateView = workUpdateViewSchema.safeParse(updates.data);
   if (!updateView.success || updateView.data.workId !== artifact.data.work_id) return Response.json({ok: false}, {status: 502, headers: importNoStore});
+  if (options.error && options.error.code !== "42501") return Response.json({ok: false}, {status: 502, headers: importNoStore});
+  const exportOptions = z.object({revisionId: z.uuid(), options: z.array(z.object({variant: z.string().min(1).max(80), formats: z.array(z.enum(["xlsx", "docx", "pptx", "pdf"])).min(1).max(4)})).max(20)}).safeParse(options.data);
+  if (!options.error && (!exportOptions.success || exportOptions.data.revisionId !== artifact.data.head_revision_id)) return Response.json({ok: false}, {status: 502, headers: importNoStore});
   const current = artifact.data.head_revision_id ? await readArtifactRevision(supabase, {revisionId: artifact.data.head_revision_id}) : null;
   const blockKeys = current?.ok && !current.read.withheld ? current.read.blocks.map(block => block.blockKey) : [];
-  return Response.json({ok: true, blockKeys, workId: artifact.data.work_id, headRevisionId: artifact.data.head_revision_id, candidates: reviews.filter(review => review.view !== null), receipts: receiptList.data.receipts, terms: terms.data, bases: updateView.data.bases}, {headers: importNoStore});
+  return Response.json({ok: true, exportOptions: exportOptions.success && !options.error ? exportOptions.data.options : [], blockKeys, workId: artifact.data.work_id, headRevisionId: artifact.data.head_revision_id, candidates: reviews.filter(review => review.view !== null), receipts: receiptList.data.receipts, terms: terms.data, bases: updateView.data.bases}, {headers: importNoStore});
 }

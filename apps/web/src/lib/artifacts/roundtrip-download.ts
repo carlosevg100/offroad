@@ -14,5 +14,5 @@ export async function serveRoundtripDownload(request: Request, input: {supabase:
   const receipt = parsed.data.receipts.find(receipt => receipt.revisionId === input.revisionId && receipt.format === input.format && receipt.locale === input.locale && receipt.variant === input.variant);
   if (!receipt) return Response.json({ok: false, error: "export_required"}, {status: 409, headers: importNoStore});
   url.pathname = `/${input.locale}/app/artifacts/${input.artifactId}/exports`;url.search = new URLSearchParams({receiptId: receipt.id}).toString();
-  return Response.redirect(url, 303);
+  return new Response(null, {status: 303, headers: {...importNoStore, location: url.toString()}});
 }

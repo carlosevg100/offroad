@@ -56,7 +56,7 @@ beforeEach(() => {
 afterEach(() => {vi.useRealTimers(); vi.resetAllMocks();});
 
 describe("old and new resolution decide equal for the governed materials", () => {
-  it.each(["docx", "pdf", "pptx"] as const)("serve the same %s bytes for the governed package, on any day", async format => {
+  it.each(["docx", "pdf", "pptx"] as const)("authorize the same revision and variant for a receipted %s export on any day", async format => {
     vi.useFakeTimers({toFake: ["Date"]});
     vi.setSystemTime(new Date("2026-09-14T12:00:00Z"));
     const before = await call(routes[format].before);
@@ -65,7 +65,7 @@ describe("old and new resolution decide equal for the governed materials", () =>
     expect(before.status).toBe(200);
     expect(after.status).toBe(200);
     expect(await after.json()).toMatchObject({revisionId: materialRevisionId, format, variant: "term_sheet"});
-    
+
   });
   it.each(["docx", "pdf", "pptx", "html"] as const)("refuse the same cases with the same status (%s)", async format => {
     const cases: Array<[string, () => void]> = [
@@ -108,15 +108,15 @@ describe("old and new resolution decide equal for the governed materials", () =>
 });
 
 describe("the materials routes serve one exact revision", () => {
-  it("sets the artifact headers and keeps the bytes stable across two requests", async () => {
+  it("returns the same authorized export selection across two requests", async () => {
     for (const format of ["docx", "pdf", "pptx"] as const) {
       const first = await call(routes[format].now);
       const second = await call(routes[format].now);
-      
-      
-      
-      
-      
+
+
+
+
+
       expect(await first.json()).toEqual(await second.json());
     }
     expect(supabase.reads.find(read => read.table === "document_intake_sessions")?.filters).toContainEqual(["eq", ["organization_id", "org"]]);
@@ -151,13 +151,13 @@ describe("the materials routes serve one exact revision", () => {
     supabase = materialSupabase([pinned(createHash("sha256").update(docx).digest("hex"), docx.byteLength)]);
     const verified = await call(routes.docx.now);
     expect(verified.status).toBe(200);
-    
-    
+
+
     expect(verified.headers.get("x-artifact-legacy")).toBeNull();
     // Another rendering of the same revision is served without any hash claim.
     const pdf = await call(routes.pdf.now);
     expect(pdf.status).toBe(200);
-    
+
     supabase = materialSupabase([pinned("e".repeat(64), docx.byteLength)]);
     const mismatch = await call(routes.docx.now);
     expect(mismatch.status).toBe(409);
@@ -175,7 +175,7 @@ describe("the materials routes serve one exact revision", () => {
       deterministicInputs: {materialFingerprint, materialKind: "term_sheet", locale: "pt", issuedOn: governedPackage.issuedOn}}})]);
     const printable = await call(routes.html.now, "?print=1");
     expect(printable.status).toBe(200);
-    
+
     expect(await printable.text()).toContain("window.print()");
     const plain = await call(routes.html.now);
     expect(sha(await plain.arrayBuffer())).toBe(sha(page));

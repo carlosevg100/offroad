@@ -72,6 +72,14 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
     const emitted = await first.body();expect(digest(emitted)).toBe(receipt.sha256);expect(emitted.length).toBe(receipt.byteLength);expect(digest(emitted)).not.toBe(sha);
     const snapshot = await readRoundtripSnapshot(emitted, "xlsx");expect(snapshot.manifest?.revisionId).toBe(created.revision_id);
     expect(first.headers()["x-artifact-sha256"]).toBe(receipt.sha256);expect(first.headers()["cache-control"]).toContain("no-store");
+    const outputRoute = `/pt-BR/app/artifacts/${context.artifactId}/exports?workspace=${f.organizationId}&receiptId=${receiptId}`;
+    const replaceOutput = async (content: Uint8Array, upsert: boolean) => {const result = await operator.storage.from(receipt.storage.bucket).upload(receipt.storage.path, content, {upsert, contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});expect(result.error).toBeNull();};
+    await replaceOutput(new Uint8Array(emitted.length).fill(1), true);
+    const corruptOutput = await page.request.get(outputRoute);expect(corruptOutput.status()).toBe(409);expect((await corruptOutput.json()).error).toBe("storageMismatch");
+    await replaceOutput(emitted, true);expect((await page.request.get(outputRoute)).status()).toBe(200);
+    const missingOutput = await operator.storage.from(receipt.storage.bucket).remove([receipt.storage.path]);expect(missingOutput.error).toBeNull();
+    const absentOutput = await page.request.get(outputRoute);expect(absentOutput.status()).toBe(409);expect((await absentOutput.json()).error).toBe("storageMissing");
+    await replaceOutput(emitted, false);expect((await page.request.get(outputRoute)).status()).toBe(200);
     const removed = await operator.storage.from("case-artifacts").remove([path]);expect(removed.error).toBeNull();
     const missing = await page.request.get(route);expect(missing.status()).toBe(409);expect(await missing.text()).toBe(messages.ArtifactDownload.preview.storageMissing);
     await write(new TextEncoder().encode("Synthetic altered object"), false);
@@ -85,6 +93,7 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
     expect(projectAccess).toBe("t");
     const revoked = await page.request.get(route);expect(revoked.status()).toBe(409);expect(await revoked.text()).toBe(messages.ArtifactDownload.sourceRestricted);
     expect(revoked.headers()["x-artifact-content-sha256"]).toBeUndefined();
+    const revokedExport = await page.request.get(outputRoute);expect(revokedExport.status()).toBe(403);expect(revokedExport.headers()["x-artifact-sha256"]).toBeUndefined();
     expect(sql(`select count(*) from public.processing_jobs where work_id='${f.workId}' and status in ('queued','leased');`)).toBe("0");
   } finally {
     const cleanup = await operator.storage.from("case-artifacts").remove([path, ...emittedPaths]);expect(cleanup.error).toBeNull();

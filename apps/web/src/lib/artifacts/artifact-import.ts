@@ -29,7 +29,7 @@ export async function artifactImportReviewView(client: SupabaseClient<Database>,
   const [base, head] = await Promise.all([read(candidate.baseRevisionId), read(candidate.currentHeadRevisionId)]);
   if (!head || candidate.baseRevisionId && !base) return null;
   const current = candidate.comparedHeadRevisionId === candidate.currentHeadRevisionId;
-  return {id: candidate.candidateId, status: current || candidate.status === "queued" ? candidate.status : "stale", base, head,
+  return {id: candidate.candidateId, status: current || ["queued", "applied", "discarded"].includes(candidate.status) ? candidate.status : "stale", base, head,
     items: (candidate.comparison?.differences ?? []).map(item => ({key: item.key, classification: item.classification,
       base: item.base?.value ?? null, received: item.received?.value ?? null, current: item.current?.value ?? null,
       detachedClaimIds: candidate.contributions?.blockProposals.find(proposal => proposal.blockKey === item.base?.blockKey)?.detachedClaimIds ?? []})),
