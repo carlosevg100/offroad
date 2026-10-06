@@ -34,5 +34,18 @@ begin
  perform public.worker_retry_retention_action_v1('synthetic-roundtrip-worker-token',(claim->>'actionId')::uuid,claim->>'capability','storage_delete_failed');reset role;
  if not exists(select 1 from private.retention_actions where id=(claim->>'actionId')::uuid and state='pending' and capability_sha256 is null)then raise exception 'retry kept old capability';end if;
  raise notice 'PASS retention_retry_revokes_old_lease_without_claiming_erasure';
+ update private.retention_actions set attempts=4 where id=(claim->>'actionId')::uuid;
+ perform pg_temp.act_as('a4210000-0000-4000-8000-000000000001');set local role authenticated;
+ claim:=public.worker_claim_retention_action_v1('synthetic-roundtrip-worker-token');reset role;
+ if (claim->>'claimed')::boolean is distinct from true then raise exception 'fifth attempt was not leased';end if;
+ set local role authenticated;
+ perform public.worker_retry_retention_action_v1('synthetic-roundtrip-worker-token',(claim->>'actionId')::uuid,claim->>'capability','storage_absence_unconfirmed');reset role;
+ if not exists(select 1 from private.retention_actions where id=(claim->>'actionId')::uuid and state='blocked'and attempts=5 and completed_at is null)then raise exception 'failed purge falsely completed or unbounded retry';end if;
+ raise notice 'PASS retention_fifth_failure_deadletters_without_claiming_erasure';
+ if(select count(*)from private.retention_plan_receipts where organization_id=org and rule_id=rule)<>1 then raise exception 'planning receipt missing';end if;
+ perform private.plan_retention_actions_v1('synthetic-roundtrip-worker-token');
+ if(select count(*)from private.retention_plan_receipts where organization_id=org and rule_id=rule)<>1 then raise exception 'rule replanned';end if;
+ raise notice 'PASS retention_plan_is_sealed_once_without_starving_next_rules';
+
 end;$$;
 rollback;

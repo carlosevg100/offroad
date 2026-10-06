@@ -10,6 +10,11 @@ function fixture() {
   return {rpc, remove, info, log, from, worker: createRetentionWorker({rpc, storage: {from}} as unknown as SupabaseClient, "private-worker-token", log, () => Date.parse("2026-10-06T12:00:00Z"))};
 }
 describe("retention worker byte erasure receipts", () => {
+  it("isolates a rejected transport promise without logging private data or deleting bytes", async () => {
+    const f=fixture();f.rpc.mockRejectedValue(new Error("private transport detail"));
+    expect(await f.worker.poll()).toBe(false);expect(f.remove).not.toHaveBeenCalled();
+    expect(JSON.stringify(f.log.mock.calls)).not.toContain("private transport detail");
+  });
   it("removes only the leased path and acknowledges exact physical absence", async () => {
     const f = fixture(); expect(await f.worker.poll()).toBe(true);
     expect(f.from).toHaveBeenCalledWith("case-artifacts"); expect(f.remove).toHaveBeenCalledWith([item.path]);

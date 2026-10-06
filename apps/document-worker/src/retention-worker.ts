@@ -25,6 +25,7 @@ function exactAbsent(error: unknown) {
 export function createRetentionWorker(client: SupabaseClient, workerToken: string, log: Log, now = Date.now) {
   return {
     async poll(): Promise<boolean> {
+      try {
       const claimed = await client.rpc("worker_claim_retention_action_v1", {p_worker_token: workerToken});
       if (claimed.error) {log("retention.poll.failed", {reason: "authority_or_transport_failed"}); return false;}
       const parsed = claimSchema.safeParse(claimed.data);
@@ -57,6 +58,9 @@ export function createRetentionWorker(client: SupabaseClient, workerToken: strin
       const ack = await client.rpc("worker_ack_retention_action_v1", {...args, p_storage_absence_confirmed: true});
       if (ack.error || !ackSchema.safeParse(ack.data).success) {log("retention.ack.failed", {reason: "completion_unconfirmed"}); return false;}
       log("retention.completed"); return true;
+      } catch {
+        log("retention.poll.failed", {reason: "authority_or_transport_failed"}); return false;
+      }
     },
   };
 }
