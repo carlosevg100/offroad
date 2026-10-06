@@ -326879,6 +326879,13 @@
       "decision": "preservar",
       "stage": "23",
       "reason": "Retirar caminhos antigos de autoridade, fechar distribuição não publicada e alinhar modelos e objetos privados."
+    },
+    {
+      "kind": "migration",
+      "path": "supabase/migrations/20261006174747_template_authoring_scope_projection.sql",
+      "decision": "preservar",
+      "stage": "23",
+      "reason": "Projetar autoridade real de cada escopo de autoria na interface, sem poder por cargo."
     }
   ],
   "staging_archive": [

@@ -19,7 +19,9 @@ begin
   return jsonb_build_object(
     'project_id', project.id,
     'organization_id', project.organization_id,
-    'can_manage', private.can_manage_organization(project.organization_id),
+    'can_manage', private.can_manage_organization(project.organization_id) and (private.method_scope_allowed_v1(project.organization_id,'work') or private.can_access_resource_v1(project.organization_id,project.id,'manage')),
+    'can_manage_organization', private.can_manage_organization(project.organization_id) and private.method_scope_allowed_v1(project.organization_id,'work'),
+    'can_manage_project', private.can_manage_organization(project.organization_id) and private.can_access_resource_v1(project.organization_id,project.id,'manage'),
     'effective', private.presentation_template_json_v1(effective.organization_id, effective.id),
     'organization', private.presentation_template_json_v1(organization_row.organization_id, organization_row.id),
     'project', private.presentation_template_json_v1(project_row.organization_id, project_row.id),
@@ -27,3 +29,4 @@ begin
     'pdf_fonts', to_jsonb(private.presentation_template_pdf_fonts()));
 end;
 $function$
+

@@ -1599,7 +1599,7 @@
     },
     {
       "path": "apps/web/src/lib/advisor/presentation-template.ts",
-      "sha256": "36a85ffa0052526b18fc2d3dc422e97560ab21bd7c63308165df396f9fd3385a",
+      "sha256": "47c237b24ccc142bf28c0a6b062218b8e5c53519a73ea7a0f3b3e84acc5bebd4",
       "entrypoint": false,
       "rpcs": [
         "read_presentation_template_v1"

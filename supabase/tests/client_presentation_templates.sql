@@ -141,6 +141,11 @@ select pg_temp.expect_not_found($q$select public.set_presentation_template_v1(cu
 select pg_temp.as_user('10000000-0000-4000-8000-000000000801');
 select public.grant_resource_access_v1(current_setting('test.project_id')::uuid,'10000000-0000-4000-8000-000000000802','manage');
 -- Stage 23: identity administration alone is insufficient to author reusable private templates.
+do $$ declare ctx jsonb;begin
+ ctx:=public.read_presentation_template_v1(current_setting('test.project_id')::uuid);
+ if (ctx->>'can_manage_organization')::boolean or not (ctx->>'can_manage_project')::boolean then raise exception 'template_scope_projection_confuses_project_manage_and_vault_work';end if;
+end;$$;
+select 'template_controls_project_current_scope_authority_without_organization_role_bypass' as test,'PASS' as result;
 do $$ declare scope uuid;begin
  select id into strict scope from public.vault_scopes where organization_id=current_setting('test.org_id')::uuid;
  perform public.set_resource_policy_grant_v1(scope,'10000000-0000-4000-8000-000000000801',null,'work','allow');

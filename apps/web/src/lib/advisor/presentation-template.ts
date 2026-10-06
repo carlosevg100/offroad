@@ -42,6 +42,8 @@ const contextSchema = z.object({
   project_id: z.uuid(),
   organization_id: z.uuid(),
   can_manage: z.boolean(),
+  can_manage_organization: z.boolean().default(false),
+  can_manage_project: z.boolean().default(false),
   effective: storedTemplateSchema.nullable(),
   organization: storedTemplateSchema.nullable(),
   project: storedTemplateSchema.nullable(),
@@ -73,6 +75,8 @@ export type PresentationTemplateContext = {
   projectId: string;
   organizationId: string;
   canManage: boolean;
+  canManageOrganization: boolean;
+  canManageProject: boolean;
   effective: StoredPresentationTemplate | null;
   organization: StoredPresentationTemplate | null;
   project: StoredPresentationTemplate | null;
@@ -106,7 +110,9 @@ export async function loadPresentationTemplateContext(
   return {
     projectId: parsed.data.project_id,
     organizationId: parsed.data.organization_id,
-    canManage: parsed.data.can_manage,
+    canManage: parsed.data.can_manage && (parsed.data.can_manage_organization || parsed.data.can_manage_project),
+    canManageOrganization: parsed.data.can_manage_organization,
+    canManageProject: parsed.data.can_manage_project,
     effective: parseStored(parsed.data.effective, "organization"),
     organization: parseStored(parsed.data.organization, "organization"),
     project: parseStored(parsed.data.project, "project"),

@@ -12,6 +12,8 @@ Metodologia histórica continua como candidato ligado a `method_releases`, sujei
 
 Modelos organizacionais têm leitura/autoria por política explícita do cofre. Modelos de projeto mantêm acesso por recurso. A mesma autorização governa o DTO de contexto e a leitura por versão. Storage não abre logos por membership; o caminho precisa estar registrado numa versão de modelo e permitido ao leitor. Um worker necessita lease vigente, autoridade e direitos atuais e o caminho registrado, além da validação de bytes no renderer. O worker Office conserva sua autorização de tarefa e versão específica.
 
+O DTO projeta permissões de autoria separadas por organização e projeto. A tela oferece somente os escopos autorizados; uma flag administrativa histórica sem essas permissões não abre o editor. A fixture institucional concede trabalho no cofre pelo RPC real de acesso, em vez de presumir poder de autoria por cargo.
+
 As oito tabelas e funções de distribuição exclusiva de staging recebem revogação dos papéis da Data API. As duas políticas de leitura por membership são retiradas. A migração condicional não cria esses objetos em produção ou no replay. Dados, triggers estruturais e migrações históricas permanecem; intercâmbio entre organizações aguarda escopo próprio.
 
 ## Runtime e leitores históricos

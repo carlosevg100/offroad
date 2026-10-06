@@ -4,7 +4,7 @@
   "environments": {
     "production": {
       "project_id": "ifnogpksgdadruooqydi",
-      "captured_at": "2026-10-06 17:27:16.115702+00",
+      "captured_at": "2026-10-06 17:47:53.461129+00",
       "rows": [
         {
           "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -212,7 +212,7 @@
         },
         {
           "signature": "private.read_presentation_template_v1(uuid)",
-          "sha256": "832dc1a7e4d52124c26990373e9e72362bc3fd9389e400f27d42579c1029175d"
+          "sha256": "f66ac454c9e119ad19c3bbb75ea27ef4d6aed335b4c0c2487fd9438d3abf0885"
         },
         {
           "signature": "private.read_project_revision_history_v1(uuid)",
@@ -501,7 +501,7 @@
     },
     "staging": {
       "project_id": "gjkkjtbfnssdsbmlhmwk",
-      "captured_at": "2026-10-06 17:27:16.115702+00",
+      "captured_at": "2026-10-06 17:47:53.461129+00",
       "rows": [
         {
           "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -709,7 +709,7 @@
         },
         {
           "signature": "private.read_presentation_template_v1(uuid)",
-          "sha256": "832dc1a7e4d52124c26990373e9e72362bc3fd9389e400f27d42579c1029175d"
+          "sha256": "f66ac454c9e119ad19c3bbb75ea27ef4d6aed335b4c0c2487fd9438d3abf0885"
         },
         {
           "signature": "private.read_project_revision_history_v1(uuid)",
