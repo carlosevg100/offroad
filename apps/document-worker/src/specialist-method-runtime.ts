@@ -1,5 +1,5 @@
 import {isDeepStrictEqual} from "node:util";
-import {loadReleasedReceivables} from "./released-method-executor";
+import {loadReleasedExecutionProfile, loadReleasedReceivables} from "./released-method-executor";
 import {assertPublishedMethodBinding, type PublishedMethodBinding} from "./published-method-binding";
 import {
   assertBundledMethodProvenance,
@@ -312,6 +312,8 @@ export function releaseReceivablesSpecialistAnalysis(
   }
   const methodBinding = assertPublishedMethodBinding(release.methodBinding);
   if (methodBinding.methodId !== "underwrite-receivables-pool" || methodBinding.methodVersion !== input.executorVersion) throw new Error("method_release_executor_mismatch");
+  // This adapter consumes the same immutable execution profile as native dispatch.
+  loadReleasedExecutionProfile({methodId: methodBinding.methodId, methodVersion: methodBinding.methodVersion, manifestHash: methodBinding.baseManifestHash});
   const snapshot = completedCalculations.get(input.shadow);
   if (!snapshot) throw new Error("receivables_calculation_receipt_required");
   if (!isDeepStrictEqual(snapshot, calculationInput(input))) throw new Error("receivables_calculation_input_changed");

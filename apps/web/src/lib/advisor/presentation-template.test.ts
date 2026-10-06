@@ -25,7 +25,7 @@ const stored = {
   version_id: versionId, version_no: 2, version_created_at: "2026-09-27T13:00:00Z", versions,
 };
 const context = (overrides: Record<string, unknown> = {}) => ({
-  project_id: projectId, organization_id: "20000000-0000-4000-8000-000000000001", can_manage: true,
+  project_id: projectId, organization_id: "20000000-0000-4000-8000-000000000001", can_manage: true, can_manage_organization: true, can_manage_project: true,
   effective: stored, organization: stored, project: null, house_structure: offroadHousePresentationStructure,
   pdf_fonts: ["Helvetica", "Times New Roman", "Courier New"], ...overrides,
 });
@@ -35,6 +35,15 @@ const client = (data: unknown, download: unknown = {data: {arrayBuffer: async ()
 }) as never;
 
 describe("project visual identity", () => {
+  it("fails closed on a legacy administrator flag without explicit scope permissions", async () => {
+    const old = context();
+    delete (old as Partial<typeof old>).can_manage_organization;
+    delete (old as Partial<typeof old>).can_manage_project;
+    const result = await loadPresentationTemplateContext(client(old), projectId);
+    expect(result?.canManage).toBe(false);
+    expect(result?.canManageOrganization).toBe(false);
+    expect(result?.canManageProject).toBe(false);
+  });
   it("reads the record, the override, the version identity, the history and the families the PDF can embed", async () => {
     const override = {...stored, scope: "project", template_key: "project-only", definition: {...definition, template_key: "project-only"}};
     const result = await loadPresentationTemplateContext(client(context({project: override})), projectId);

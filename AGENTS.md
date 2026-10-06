@@ -243,3 +243,7 @@ released reading shows a calculation under declared assumptions and carries no e
 no financier recommendation and no credit approval; extraction quality of arbitrary documents is
 unchanged. That approval covers this method only: no agent may promote another method, and nothing
 about it authorizes an external effect.
+
+## Etapa 23: uma autoridade por caminho
+
+O escopo autorizado está em `docs/build/arcabouco/etapa-23-execucao.md`. Entradas antigas de contexto são adaptadores do loader atual; implementações históricas privadas não são endpoints da Data API. Preview técnico é isolado e recusado pelo dispatcher de produção antes do gateway. Todo consumidor/rota/RPC novo exige decisão e teste no manifesto `docs/build/arcabouco/framework-consumer-surface.json`, além do catálogo real da etapa 0. Modelos e logos exigem a política própria de conteúdo; administração de identidade não concede leitura/autoria. Esta nota não comprova publicação: consultar CI, journals e completion reais antes de afirmar conclusão.

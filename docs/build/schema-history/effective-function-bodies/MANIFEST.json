@@ -1,6 +1,6 @@
 {
   "capturedAt": "2026-10-05T18:37:54Z",
-  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite",
+  "source": "CI replay only; all three migrations installed/verified against actual live119 target hashes; explicit historical equivalents recorded in environmentReceipts; https://github.com/carlosevg100/offroad/actions/runs/37356734182; commit 05d0ff36cd6b4076dbeb7f7eea327b8fca75ec90; capture sha256:0257940b28b1482097ae314c94deadb7b7a0e9fe8c178dcba00a5a937f5921a0; stage22 PDP retention gate captured from live staging 2026-10-06; four previously reconciled historical equivalents preserved without overwrite; stage23 three template-authority targets captured from live production after actual migrations, no historical body overwritten",
   "functions": [
     {
       "signature": "private.accept_workspace_invite_v1(uuid)",
@@ -46,6 +46,11 @@
       "signature": "private.bind_job_authority_v1()",
       "file": "private.bind_job_authority_v1().sql",
       "sha256": "abbf6365d9a52feec8fc90eca2e602fb18c28c29bb3fa11d89a1677f6b27f89a"
+    },
+    {
+      "signature": "private.can_read_presentation_template_v1(uuid,uuid)",
+      "file": "private.can_read_presentation_template_v1(uuid,uuid).sql",
+      "sha256": "5b5c90d6a3e89a033feb66e08f1020fc215748f910943ed8d08b9bb15e4d2cc9"
     },
     {
       "signature": "private.capital_debt_commit_result_core_v1(uuid,uuid,uuid,uuid,uuid,text,jsonb,uuid,text)",
@@ -253,6 +258,11 @@
       "sha256": "eea2a8579c85ae940df7d47e4c78e8687133c1d0f6c6b4c950355ea990f4a404"
     },
     {
+      "signature": "private.read_presentation_template_v1(uuid)",
+      "file": "private.read_presentation_template_v1(uuid).sql",
+      "sha256": "b94375c7b4c97501ca1edb285195e6f062b8bdd9e5af297ce6b6fcfdf47a136d"
+    },
+    {
       "signature": "private.read_project_revision_history_v1(uuid)",
       "file": "private.read_project_revision_history_v1(uuid).sql",
       "sha256": "58e54fbf8f727b2cddd1767db53de0ce9d869e1543b02f5accb2375cc1365242"
@@ -341,6 +351,11 @@
       "signature": "private.save_project_company_profile(uuid,text,text,text,text,bytea,text)",
       "file": "private.save_project_company_profile(uuid,text,text,text,text,bytea,text).sql",
       "sha256": "71e9e3cddb0e8d4a6830a138ea881a36c4ba4e1c68ab4f45e5a07cf7cafc12bf"
+    },
+    {
+      "signature": "private.set_presentation_template_v1(uuid,uuid,jsonb,jsonb)",
+      "file": "private.set_presentation_template_v1(uuid,uuid,jsonb,jsonb).sql",
+      "sha256": "48c385b015321b1dbece1a0129d26ae40800522232d9f7c85d7c9648aea6e827"
     },
     {
       "signature": "private.set_resource_policy_grant_v1(uuid,uuid,uuid,text,text,boolean,timestamptz)",
@@ -600,18 +615,16 @@
   ],
   "missing": [],
   "environmentReceipts": {
-    "source": "Actual live119 SHA-256 values after all12 stage22 migrations; historical equivalents unchanged from stage21 receipt",
-    "receipt": "LIVE-VERIFICATION-STAGE22.json",
-    "receiptSha256": "fdc30286ba9ad699dcd3ff292cfcf7b144ea02b54c1b0c68e0722af7bce9d732",
+    "source": "Live catalogues after all three stage23 migrations; stage22 historical equivalents retained without overwrite",
+    "receipt": "LIVE-VERIFICATION-STAGE23.json",
+    "receiptSha256": "0bf88402b01b23095975227547783e93bb02962fb4986bc77a69ac0e4a467229",
     "production": {
-      "capturedAt": "2026-10-06 15:02:41.336926+00",
-      "byteExactMatches": 118,
+      "byteExactMatches": 121,
       "knownEquivalentHistoricalDifferences": 1,
       "unreconciledDifferences": 0
     },
     "staging": {
-      "capturedAt": "2026-10-06 15:02:53.223942+00",
-      "byteExactMatches": 115,
+      "byteExactMatches": 118,
       "knownEquivalentHistoricalDifferences": 4,
       "unreconciledDifferences": 0
     }

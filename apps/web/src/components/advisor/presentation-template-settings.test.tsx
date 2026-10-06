@@ -28,7 +28,7 @@ const storedTemplate = (overrides: Partial<StoredPresentationTemplate> = {}): St
   ...overrides,
 });
 const context = (overrides: Partial<PresentationTemplateContext> = {}): PresentationTemplateContext => ({
-  projectId, organizationId: "20000000-0000-4000-8000-000000000001", canManage: true,
+  projectId, organizationId: "20000000-0000-4000-8000-000000000001", canManage: true, canManageOrganization: true, canManageProject: true,
   effective: null, organization: null, project: null, houseStructure: offroadHousePresentationStructure,
   pdfFonts: ["Helvetica", "Times New Roman", "Courier New"], ...overrides,
 });
@@ -38,6 +38,12 @@ const render = (value: PresentationTemplateContext, locale: "pt-BR" | "en-US" = 
   </NextIntlClientProvider>);
 
 describe("visual identity settings", () => {
+  it("offers project authorship without offering organization authorship from an administrator role", () => {
+    const html = render(context({canManageOrganization: false, canManageProject: true}));
+    expect(html).toContain('data-scope="project"');
+    expect(html).toMatch(/name="scope"[^>]*value="project"/);
+    expect(html).not.toMatch(/name="scope"[^>]*value="organization"/);
+  });
   it("states that the Offroad template is in use when nothing is recorded and offers the house structure to start from", () => {
     const html = render(context());
     expect(html).toContain(ptBR.PresentationTemplate.currentHouse);

@@ -18,6 +18,12 @@ do $$declare actor uuid;org uuid;s public.document_intake_sessions;r uuid:=gen_r
  select org,s.id,d,r,f#>>'{key,fieldPath}',f#>>'{key,fieldPath}','historical_financials',f#>>'{key,fieldPath}',(f->>'value')::jsonb,'number','audited',1,f#>'{accepted,anchor}',1,true,(f#>>'{accepted,periodStart}')::date,(f#>>'{accepted,periodEnd}')::date,f#>>'{accepted,entityName}',f#>>'{accepted,entityScope}','accepted',actor,now(),'BRL','currency',1,'user_entry',actor from jsonb_array_elements(current_setting('e2e.setup_facts')::jsonb) f;
  update public.document_intake_sessions set status='review_ready',current_run_id=r where id=s.id;
  perform set_config('e2e.setup_project',s.capital_project_id::text,true);
+ perform set_config('e2e.setup_vault',(select id::text from public.vault_scopes where organization_id=org),true);
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',actor,'role','authenticated')::text,true);
 end $$;
+-- The author has an explicit vault work grant; organization ownership is not content authority.
+set local role authenticated;
+select public.set_resource_policy_grant_v1(current_setting('e2e.setup_vault')::uuid,auth.uid(),null,'work','allow');
+reset role;
 select current_setting('e2e.setup_project');
 commit;

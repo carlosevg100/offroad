@@ -40,7 +40,7 @@ export function PresentationTemplateSettings({context, locale, projectId}: {cont
   const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [scope, setScope] = useState<Scope>(context.project ? "project" : "organization");
+  const [scope, setScope] = useState<Scope>(context.canManageProject && (context.project || !context.canManageOrganization) ? "project" : "organization");
   const stored = scope === "project" ? context.project : context.organization;
   const [values, setValues] = useState(() => initialValues(stored));
   const [structure, setStructure] = useState<PresentationStructure>(() => stored?.structure ?? context.houseStructure);
@@ -133,7 +133,7 @@ export function PresentationTemplateSettings({context, locale, projectId}: {cont
         <input type="hidden" name="intent" value="store" />
         <fieldset className={styles.scope}>
           <legend>{t("scopeLegend")}</legend>
-          {(["organization", "project"] as const).map(option => <label key={option}>
+          {(["organization", "project"] as const).filter(option => option === "organization" ? context.canManageOrganization : context.canManageProject).map(option => <label key={option}>
             <input type="radio" name="scope" value={option} checked={scope === option} onChange={() => changeScope(option)} />
             {t(`scope.${option}`)}
           </label>)}

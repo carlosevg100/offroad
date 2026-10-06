@@ -97,3 +97,7 @@ a workload-identity-backed authorization issuer and revocation path, and a durab
 revalidation receipt in the same transaction that resolves/loads context. Recovery tests across process
 restart/concurrent workers, and an explicit promotion review. Only after that review may a separately
 approved change consider connecting a production route or changing a real capability manifest.
+
+## Isolamento vigente na etapa 23
+
+O runtime universal de fixture reside em `apps/document-worker/src/testing/universal-dispatch-runtime.ts`. Não há import pelo dispatcher de produção. O adaptador R01 usa a publicação e o execution profile fixados; os contratos técnicos históricos não concedem execução de produção.

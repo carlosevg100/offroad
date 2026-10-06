@@ -6288,3 +6288,7 @@ A etapa 21 terminou na main `90e3c7d248cb4ba604a4519fd08239054b28f14a`; worker 5
 ## Onda 23 autorizada em 6 de outubro de 2026
 
 Etapa 22 concluída na main `9732563b3a8c8172139bfa8b43de9eafdf5a9508`. Inventário renovado por onda, com fontes fixadas nesse commit e observação ECS atual. Escopo autorizado: retirada de caminhos antigos e fechamento da superfície. A etapa 23 continua aberta; não antecipar 24.
+
+## Etapa 23: uma autoridade por caminho
+
+O escopo autorizado está em `docs/build/arcabouco/etapa-23-execucao.md`. Entradas antigas de contexto são adaptadores do loader atual; implementações históricas privadas não são endpoints da Data API. Preview técnico é isolado e recusado pelo dispatcher de produção antes do gateway. Todo consumidor/rota/RPC novo exige decisão e teste no manifesto `docs/build/arcabouco/framework-consumer-surface.json`, além do catálogo real da etapa 0. Modelos e logos exigem a política própria de conteúdo; administração de identidade não concede leitura/autoria. Esta nota não comprova publicação: consultar CI, journals e completion reais antes de afirmar conclusão.

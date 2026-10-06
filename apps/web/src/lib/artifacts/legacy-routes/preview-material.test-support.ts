@@ -8,7 +8,7 @@ import {materialToDocx} from "@offroad/case-export";
 import type {Material, MaterialBlock} from "@offroad/case-materials";
 
 import {requireWorkspace} from "@/lib/auth/workspace";
-import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
+import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "./integration-preview-status.test-support";
 import {resolveGovernedMaterialDownload, verifyGovernedMaterialDownload} from "@/lib/integration-preview/governed-material-download";
 
 /**

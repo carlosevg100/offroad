@@ -1,0 +1,2047 @@
+{
+  "schemaVersion": "framework-consumer-surface.v1",
+  "reviewedStage": 23,
+  "consumers": [
+    {
+      "path": "apps/document-worker/src/artifact-roundtrip-processing.ts",
+      "sha256": "2e81df960f53f889682bbf5e3c9db32910c9525cef841c3d57c1cd71dc6bcd4b",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_claim_artifact_roundtrip_v1",
+        "worker_commit_artifact_export_v1",
+        "worker_commit_artifact_import_comparison_v1",
+        "worker_fail_artifact_roundtrip_v1",
+        "worker_prepare_artifact_export_storage_v1",
+        "worker_record_artifact_import_quarantine_v1",
+        "worker_revalidate_artifact_roundtrip_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/artifact-roundtrip-processing.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/artifact-roundtrip-renderer.ts",
+      "sha256": "ccf796501c762a8e79ff100144f52f9dbe745a5e416ab085d9c294f70abe3413",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_revalidate_artifact_roundtrip_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/artifact-roundtrip-renderer.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/assessment-native-capture.ts",
+      "sha256": "2da363e29c737445d7c959ca07a227cd2ac4b393ea24a293d69266fa54474779",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_load_assessment_institutional_context_v1",
+        "worker_load_assessment_retrieval_v2",
+        "worker_load_case_assessment_input_v5",
+        "worker_load_preliminary_assessment_input_v3",
+        "worker_record_agent_assessment_v2",
+        "worker_record_m07_assessment_index_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/assessment-native-capture.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/assessment-native-runtime.ts",
+      "sha256": "0072c116b96fa74dfb6c2d40dadde9f01f9b34e3e73b51878374e1010709c255",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_prepare_assessment_research_v1",
+        "worker_read_assessment_research_source_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/assessment-native-runtime.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/audit-archive.ts",
+      "sha256": "5c71ff7e869ca0e9b3ea0b33d07dc7c533dcd7373c162c1c2b8351c9482160ce",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_ack_audit_batch_v1",
+        "worker_claim_audit_batch_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/audit-archive.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-body-processing.ts",
+      "sha256": "c3a0731bafeecc21b86377263c0c0d3fc295a34458f441cfc01dd59360c34143",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_authorize_capital_body_processing_v2",
+        "worker_record_capital_body_attempt_outcome_v1",
+        "worker_record_capital_body_input_v3"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-body-processing.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-body-retention.ts",
+      "sha256": "47adbfa7baf165d66da31002b900048b6f6fecc3eeb9420f0a8ee79ced206ef5",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_capital_body_v1",
+        "worker_prepare_capital_body_v1",
+        "worker_read_capital_body_v1",
+        "worker_record_capital_body_accepted_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-body-retention.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-company-debt-native-runtime.ts",
+      "sha256": "58277f514cdf9fbd9f6a254d912cc1d0f81a595923d93db9ad5b4d7a466963ef",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_read_capital_debt_allocation_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-company-debt-physical-store.ts",
+      "sha256": "3af2912d2ed261e2c350c6428cf9c59d95c53e6a3f9845583cf27875ff427002",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_capital_debt_body_v1",
+        "worker_read_capital_debt_allocation_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-company-debt-queue-adapter.ts",
+      "sha256": "cd802d523970ba0e39fd6c8c6ceab8659625dc4563c252ab1169023c48e6f34e",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_authorize_capital_debt_processing_v1",
+        "worker_commit_capital_debt_result_v1",
+        "worker_commit_capital_debt_task_projection_v1",
+        "worker_finalize_capital_debt_recipe_v1",
+        "worker_prepare_capital_debt_output_v1",
+        "worker_prepare_capital_debt_task_projection_v1",
+        "worker_record_capital_debt_accepted_v1",
+        "worker_record_capital_debt_attempt_outcome_v1",
+        "worker_record_capital_debt_execution_failure_v1",
+        "worker_record_capital_debt_input_v1",
+        "worker_record_capital_debt_quality_failure_v1",
+        "worker_revalidate_capital_debt_recipe_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-company-debt-recovery-queue-adapter.ts",
+      "sha256": "dd36f61dd60ce08fe770bc0a41ee3850e531f7afa0b5cd015b6e39013b4507d1",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_capital_debt_recovered_result_v1",
+        "worker_commit_capital_debt_recovered_task_projection_v1",
+        "worker_find_capital_debt_recovery_v1",
+        "worker_load_capital_debt_recovered_projection_state_v1",
+        "worker_prepare_capital_debt_recovered_output_v1",
+        "worker_prepare_capital_debt_recovered_task_projection_v1",
+        "worker_read_capital_debt_recovery_body_v1",
+        "worker_read_capital_debt_recovery_source_v1",
+        "worker_record_capital_debt_quality_failure_v1",
+        "worker_recover_capital_debt_result_v1",
+        "worker_start_capital_project_task"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-company-debt-revision-queue-adapter.ts",
+      "sha256": "72a3e50d6527b1ba946e8014be00b8c0fadbd89b14e3e3187f1579ada526d33f",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_load_capital_debt_revision_inputs_v1",
+        "worker_read_capital_debt_revision_body_v1",
+        "worker_read_capital_debt_revision_source_v1",
+        "worker_read_capital_debt_revision_task_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-m07-queue-adapter.ts",
+      "sha256": "3644ffba5d3e9b179f412ed185649a3ef569fa2ce582cc4703f5c90f6e6724a3",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_authorize_capital_m07_processing_v1",
+        "worker_commit_capital_m07_body_v1",
+        "worker_commit_capital_m07_result_v1",
+        "worker_finalize_capital_m07_recipe_v1",
+        "worker_prepare_capital_m07_context_v1",
+        "worker_prepare_capital_m07_output_v1",
+        "worker_prepare_capital_m07_recipe_v1",
+        "worker_read_capital_m07_allocation_v1",
+        "worker_record_capital_m07_accepted_v1",
+        "worker_record_capital_m07_attempt_outcome_v1",
+        "worker_record_capital_m07_execution_failure_v1",
+        "worker_record_capital_m07_input_v1",
+        "worker_record_capital_m07_quality_failure_v1",
+        "worker_revalidate_capital_m07_recipe_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-m07-queue-adapter.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-m07-recovery.ts",
+      "sha256": "05a19f421aceb46ae89bc191722ce6fa93fadee195ad532e5235dca7be538c57",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_capital_m07_body_v1",
+        "worker_commit_capital_m07_recovered_result_v1",
+        "worker_find_capital_m07_recovery_v1",
+        "worker_prepare_capital_m07_recovered_output_v1",
+        "worker_read_capital_m07_recovery_body_v1",
+        "worker_read_capital_m07_recovery_source_v1",
+        "worker_record_capital_m07_quality_failure_v1",
+        "worker_recover_capital_m07_result_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-m07-recovery.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-material-production-adapter.ts",
+      "sha256": "c3fc295d7718eab28e7ae526f24bfc6096b41e1dda905f4820000a411a35f16e",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_capture_material_production_v1",
+        "worker_commit_material_production_v1",
+        "worker_prepare_material_production_output_v1",
+        "worker_record_material_production_terminal_v1",
+        "worker_recover_material_production_v1",
+        "worker_revalidate_material_production_v1",
+        "worker_seal_material_production_context_v1",
+        "worker_seal_material_production_sources_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-material-production-adapter.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-material-production-runtime.ts",
+      "sha256": "36935e67f8f417b4287ec2dff05df8355b33a65b7ddba5f52721ea9cac8132c9",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_prepare_material_production_plan_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-material-production-runtime.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-material-production-storage.ts",
+      "sha256": "489d481df95fa28ec8c9ee7ebb71f6d995dc322427893a116177409ab0942294",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_material_production_body_v1",
+        "worker_read_material_production_allocation_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-material-production-storage.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-native-provider-adapter.ts",
+      "sha256": "37b299bcd3893e146f57cdb6575a689c78ecfbac7600ee0ff34ccbdc05ed258e",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_capital_body_v1",
+        "worker_commit_capital_native_result_v1",
+        "worker_finalize_capital_native_recipe_v1",
+        "worker_prepare_capital_native_recipe_v1",
+        "worker_prepare_capital_native_result_v1",
+        "worker_read_capital_native_allocation_v1",
+        "worker_read_capital_native_recipe_v1",
+        "worker_read_capital_native_result_v1",
+        "worker_recover_capital_native_provider_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-native-provider-adapter.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-public-capture-adapter.ts",
+      "sha256": "22af23b3cb223196b469987ddfd69118d8086d5208f72cb83a6c1c68a0c0a70c",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_capture_capital_project_delivery_v1",
+        "worker_load_capital_project_capture_context_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-public-capture-adapter.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-public-capture-storage.ts",
+      "sha256": "ab97ac6893b005fe6af767213d219dda105f3aa0d3814aae2dea5a593ae321ee",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_ack_capital_capture_purge_v1",
+        "worker_claim_capital_capture_purge_v1",
+        "worker_commit_capital_public_payload_v1",
+        "worker_prepare_capital_public_payload_v1",
+        "worker_read_capital_public_payload_v1",
+        "worker_retry_capital_capture_purge_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/capital-public-capture-storage.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-s11-physical-store.ts",
+      "sha256": "ded2ac16e56f19dfcc8a8468a31ce07c7cbaed9f134a3061c19f48fed3c97221",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_capital_s11_body_v1",
+        "worker_read_capital_s11_allocation_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-s11-queue-adapter.ts",
+      "sha256": "1d1362a9fc522719ba82e6f56143e22f3ba8fbd25a37d0d99c9e6eb546c36161",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_authorize_capital_s11_processing_v1",
+        "worker_commit_capital_s11_result_v1",
+        "worker_commit_capital_s11_task_projection_v1",
+        "worker_finalize_capital_s11_recipe_v1",
+        "worker_prepare_capital_s11_output_v1",
+        "worker_prepare_capital_s11_task_projection_v1",
+        "worker_record_capital_s11_accepted_v1",
+        "worker_record_capital_s11_attempt_outcome_v1",
+        "worker_record_capital_s11_execution_failure_v1",
+        "worker_record_capital_s11_input_v1",
+        "worker_record_capital_s11_quality_failure_v1",
+        "worker_revalidate_capital_s11_recipe_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-s11-recovery-queue-adapter.ts",
+      "sha256": "b03ca922c62f682e9075671cfba74bd26a321cccc967731f8b2ed621205a7b58",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_capital_s11_recovered_result_v1",
+        "worker_commit_capital_s11_recovered_task_projection_v1",
+        "worker_find_capital_s11_recovery_v1",
+        "worker_load_capital_s11_recovered_projection_state_v1",
+        "worker_prepare_capital_s11_recovered_output_v1",
+        "worker_prepare_capital_s11_recovered_task_projection_v1",
+        "worker_read_capital_s11_recovery_body_v1",
+        "worker_read_capital_s11_recovery_source_v1",
+        "worker_record_capital_s11_quality_failure_v1",
+        "worker_recover_capital_s11_result_v1",
+        "worker_start_capital_project_task"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/capital-s11-revision-queue-adapter.ts",
+      "sha256": "82b4531e8105969ec5c1af57aa7e36f2dc40e3589048fe32ce6bf6cc02bf6476",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_load_capital_s11_revision_inputs_v1",
+        "worker_read_capital_s11_revision_body_v1",
+        "worker_read_capital_s11_revision_source_v1",
+        "worker_read_capital_s11_revision_task_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/dependency-recompute.ts",
+      "sha256": "fbaa1db0bc877a752065a6b9fa0766dc86be3c83c2a9df0de677da036ea00dd3",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_claim_dependency_recompute_v1",
+        "worker_dependency_recompute_basis_v1",
+        "worker_dependency_recompute_health_v1",
+        "worker_fail_dependency_recompute_v1",
+        "worker_submit_dependency_recompute_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/dependency-recompute.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/evaluation-queue.ts",
+      "sha256": "b965a3ed266a80e30a7f56ebdccbca15e9f2ea41f8a656f801eb4434b3277a7c",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_claim_evaluation_v1",
+        "worker_commit_evaluation_v1",
+        "worker_renew_evaluation_v1",
+        "worker_reserve_evaluation_operation_v1",
+        "worker_settle_evaluation_operation_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/evaluation-queue.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/event-outbox.ts",
+      "sha256": "d759d383e4782bf11023aa2eb6f1701062acb4b81d8ceb3ada92957e03cbc782",
+      "entrypoint": false,
+      "rpcs": [
+        "claim_event_outbox_v1",
+        "complete_event_outbox_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/event-outbox.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/execution-queue.ts",
+      "sha256": "fc14934d19c309145510082e990ad6752cbfed8f99cab7adf4b5f0b415d853a3",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_claim_execution_v1",
+        "worker_commit_execution_v1",
+        "worker_renew_execution_v1",
+        "worker_reserve_execution_v1",
+        "worker_settle_execution_v2",
+        "worker_settled_execution_result_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/execution-queue.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/integration-preview-body-storage.ts",
+      "sha256": "938250a0cb3951f4168fb2204a9d8ee5d12c1519a356d51c6051d5317ec7dac1",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_commit_capital_preview_body_v1",
+        "worker_prepare_capital_preview_body_v1",
+        "worker_read_capital_preview_allocation_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/integration-preview-body-storage.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/integration-preview-native-runtime.ts",
+      "sha256": "2a9ef9fb16c35178fb8b68edcf2f66acfcfbf13686925f72eb43cc6b42c8c4c6",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_capital_preview_boundary_usage_v1",
+        "worker_commit_capital_preview_task_v1",
+        "worker_finalize_capital_preview_run_v1",
+        "worker_finish_capital_preview_task_v1",
+        "worker_lookup_capital_preview_boundary_v1",
+        "worker_prepare_capital_preview_run_v1",
+        "worker_recover_capital_preview_run_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/integration-preview-queue-adapter.ts",
+      "sha256": "be11b7f25d881fc805480d2cc3073e2907b3b8e5b6e65ec903a438b52a94de9a",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_authorize_capital_preview_processing_v1",
+        "worker_prepare_capital_preview_boundary_v1",
+        "worker_record_capital_preview_accepted_v1",
+        "worker_record_capital_preview_attempt_outcome_v1",
+        "worker_record_capital_preview_execution_failure_v1",
+        "worker_record_capital_preview_input_v1",
+        "worker_recover_capital_preview_accepted_v1",
+        "worker_revalidate_capital_preview_boundary_v1",
+        "worker_seal_capital_preview_boundary_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/job-storage.ts",
+      "sha256": "019293779c0236e68232d5ada6b7bfa73e729131a078ccb3f6cfcffb8e830d20",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_authorize_document_storage_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/job-storage.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/provider-processing.ts",
+      "sha256": "58c734e0dcf1739ccc27ce0a21e744d63c99d84ecb4d8bb350f47cf0c5ba3493",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_authorize_provider_processing_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/provider-processing.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/queue.ts",
+      "sha256": "4fcdd17946fb37bd6a1101713f4709fa21a317af36c27cb10a9ec0d65efc0726",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_apply_institutional_assumption_answer_v1",
+        "worker_apply_receivables_method_supplement_patch_v1",
+        "worker_authorize_capital_project_material_upload_v1",
+        "worker_bind_receivables_information_request_fields_v1",
+        "worker_capture_execution_brief_inputs_v1",
+        "worker_claim_job_v4",
+        "worker_commit_documentary_execution_v1",
+        "worker_commit_work_turn_v1",
+        "worker_complete_advisor_specialized_job_v2",
+        "worker_complete_capital_project_material_upload_v1",
+        "worker_complete_integration_preview_run_v1",
+        "worker_complete_job",
+        "worker_create_artifact_revision_v1",
+        "worker_document_advisor_authorization",
+        "worker_enqueue_receivables_method_refresh_v1",
+        "worker_fail_job",
+        "worker_finish_capital_project_task",
+        "worker_freeze_case_input",
+        "worker_heartbeat",
+        "worker_load_agent_context_v5",
+        "worker_load_agent_plan_context_v1",
+        "worker_load_capital_project_context_v6",
+        "worker_load_case_input_v3",
+        "worker_load_claim_decisions",
+        "worker_load_document_work_request_v1",
+        "worker_load_execution_brief_proposal_v4",
+        "worker_load_institutional_configuration_v1",
+        "worker_load_institutional_model_context_v3",
+        "worker_load_intake_events",
+        "worker_load_integration_preview_artifacts_v1",
+        "worker_load_latest_objective_workflow_selection_v1",
+        "worker_load_preliminary_input_v2",
+        "worker_load_prior_case_report",
+        "worker_load_provider_case_fit_context",
+        "worker_load_provider_research_context",
+        "worker_load_public_company_memory",
+        "worker_load_public_research_cache",
+        "worker_load_receivables_method_supplement_draft_v1",
+        "worker_load_work_freshness_v1",
+        "worker_load_work_turn_v1",
+        "worker_read_presentation_template_version_v1",
+        "worker_read_public_entity_subject_v1",
+        "worker_record_agent_assessment_v1",
+        "worker_record_agent_failure",
+        "worker_record_agent_plan_v1",
+        "worker_record_agent_response_and_activate_v7",
+        "worker_record_agent_stage_event_v1",
+        "worker_record_analysis_scope_suggestions",
+        "worker_record_candidates",
+        "worker_record_capital_project_artifact",
+        "worker_record_case_snapshot",
+        "worker_record_controlled_execution",
+        "worker_record_deal_state_object",
+        "worker_record_document_result",
+        "worker_record_execution_brief_proposal_v2",
+        "worker_record_initial_institutional_candidate_v2",
+        "worker_record_institutional_model_result_v3",
+        "worker_record_intake_request_ladders",
+        "worker_record_intent_envelope",
+        "worker_record_objective_plan_preflight_v5",
+        "worker_record_operating_control_snapshot_v1",
+        "worker_record_preliminary_understanding",
+        "worker_record_public_research",
+        "worker_record_receivables_evidence",
+        "worker_record_receivables_method_input_assembly_v1",
+        "worker_record_receivables_released_result_v1",
+        "worker_record_receivables_specialist_shadow_run_v1",
+        "worker_record_retrieval_chunks",
+        "worker_recover_execution_brief_product_v1",
+        "worker_start_capital_project_task",
+        "worker_store_public_company_memory",
+        "worker_store_public_research_cache",
+        "worker_sync_institutional_information_requests_v1",
+        "worker_sync_project_information_requests_v1",
+        "worker_sync_receivables_information_requests_v1",
+        "worker_write_stage_result"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/queue.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/retention-worker.ts",
+      "sha256": "11c0f92c3664997f2f9792195c0ccfeb0b35f3fc3024b184fb9343403cb6ca2c",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_ack_retention_action_v1",
+        "worker_claim_retention_action_v1",
+        "worker_retry_retention_action_v1",
+        "worker_revalidate_retention_action_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/retention-worker.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/runtime-schema.ts",
+      "sha256": "e62e54ba33cf53afab075d3fcac259e323857854960699e8df12ff7251537732",
+      "entrypoint": false,
+      "rpcs": [
+        "worker_runtime_schema_contract_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/runtime-schema.test.ts"
+      ]
+    },
+    {
+      "path": "apps/document-worker/src/storage-rotation.ts",
+      "sha256": "595a8aca4ed3be53aca434adc787710b012b8c752b5e974ad26ab9f9a34d5675",
+      "entrypoint": false,
+      "rpcs": [
+        "claim_storage_rotation_v1",
+        "record_storage_rotation_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/document-worker/src/storage-rotation.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/access/actions.ts",
+      "sha256": "cb1f97b487cfb76d76ca34c26c13c336d844371374738e0e6446c589d3dcf2ad",
+      "entrypoint": true,
+      "rpcs": [
+        "grant_resource_access_v1",
+        "invite_workspace_member_v1",
+        "revoke_resource_access_v1",
+        "set_workspace_member_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/access/page.tsx",
+      "sha256": "070b3e870025edadea960e2d7b020aba287befc077e435bfdd322dec4f3d904e",
+      "entrypoint": false,
+      "rpcs": [
+        "read_workspace_access_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/actions.ts",
+      "sha256": "87a1c193c19074c608c6b5314be41ddf34624562753ded6631ec1d6a23acba61",
+      "entrypoint": true,
+      "rpcs": [
+        "create_workspace_project_group",
+        "manage_work_v1",
+        "manage_workspace_project",
+        "manage_workspace_project_group"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/advisor-actions.ts",
+      "sha256": "e64c5328422313da30418bc68bd15a3243ddaca2301c81e39ebf11890f9c17ae",
+      "entrypoint": true,
+      "rpcs": [
+        "append_work_turn_v1",
+        "prepare_work_document_intake_v1",
+        "queue_advisor_initial_turn_v1",
+        "request_documentary_work_revision_v1",
+        "request_work_continuation_v1",
+        "start_work_v1",
+        "submit_advisor_artifact_revision_turn_v1",
+        "submit_advisor_execution_brief_edit_v1",
+        "submit_advisor_information_response_v1",
+        "work_update_view_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/advisor-actions.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/exports/route.ts",
+      "sha256": "e645db677c6c2cf940cf4070917cf3329c2d8b9026b00c0e774ac8d0c221f0e4",
+      "entrypoint": true,
+      "rpcs": [
+        "read_artifact_export_receipt_v1",
+        "read_artifact_roundtrip_task_v1",
+        "record_artifact_access_denial_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/imports/[candidateId]/decide/route.ts",
+      "sha256": "420ef0f358824baa575cfe583729d45ee78a81e59f8984ebf1a2efd956c8226c",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/imports/[candidateId]/route.ts",
+      "sha256": "d43104c3f310526ebecca806b6f7a5f0d640e238c73a514fa29af056d1542b2e",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/imports/route.ts",
+      "sha256": "fd9879d787b02745cb137c9a94bbeb18397525e2d686cd04efcc290d4d99c00a",
+      "entrypoint": true,
+      "rpcs": [
+        "get_workspace_project_setup",
+        "list_artifact_export_receipts_v1",
+        "list_work_artifact_imports_v1",
+        "read_artifact_export_options_v1",
+        "register_intake_document_command",
+        "work_update_view_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/artifacts/[artifactId]/imports/upload/route.ts",
+      "sha256": "6284b9689a595f12d200e887a9594c7d37fbcabd632dc1d385b67c9418486aec",
+      "entrypoint": true,
+      "rpcs": [
+        "accept_private_workspace_terms"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/case/[sessionId]/route.ts",
+      "sha256": "ecb4f7a4142b793689a342bc713ed4492f5da15fcd2b6e91e46286b069c81246",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/documents/[documentId]/route.ts",
+      "sha256": "9a301d71de17b6ac19bef0f3164ddf46fb98afaf5be312a664a5eae44e40b5ce",
+      "entrypoint": true,
+      "rpcs": [
+        "authorize_source_version_download_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/documents/[documentId]/route.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/institutional-setup-actions.ts",
+      "sha256": "b6ad100870c2f5dd527ec1ed186b23893d1c90f5eb39c2071a925b53e2475873",
+      "entrypoint": true,
+      "rpcs": [
+        "submit_institutional_model_setup_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/mandates/actions.ts",
+      "sha256": "838408136e76a01514809d4c4240406d0e85c519ab0705f2e9a13407f1150ed2",
+      "entrypoint": true,
+      "rpcs": [
+        "confirm_provider_mandate_v1",
+        "register_provider_mandate_v1",
+        "withdraw_provider_mandate_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/mandates/page.tsx",
+      "sha256": "3ad48b1f2234076285a04a01cf0c7871435c198e16dc2694cbd3cb5a98f8ebf3",
+      "entrypoint": false,
+      "rpcs": [
+        "list_provider_mandates_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/materials/[sessionId]/[kind]/docx/route.ts",
+      "sha256": "e067f8d2563e8032da110eb3d6d070893eb896b9cb9b87b46337f5617bdc69d2",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/materials/[sessionId]/[kind]/docx/route.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/materials/[sessionId]/[kind]/pdf/route.ts",
+      "sha256": "28a92647afff79d9e6fec96503d29886fd4b8d99cd85bf0f9a779ce6667422a0",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/materials/[sessionId]/[kind]/pdf/route.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/materials/[sessionId]/[kind]/pptx/route.ts",
+      "sha256": "715b2769f4c84f1fb0392f2cbaca23276b518874196bb962dd3ea4d25a260950",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/materials/[sessionId]/[kind]/pptx/route.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/materials/[sessionId]/[kind]/route.ts",
+      "sha256": "cbfc1ba23f5d0ea79012a941c2c9af4e401fd9d4a2d72e635fdb51b4f28ed971",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/model/[sessionId]/route.ts",
+      "sha256": "96a1cfc1403f99cdabfca2c6129737d237b5744e371f15628d57f73d0e7c9bff",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/model/[sessionId]/route.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/new/actions.ts",
+      "sha256": "6ff24c02faa0e60c0909a7454d3d7a0e82cf969b5813c6acfee17b6e7aefb6cf",
+      "entrypoint": true,
+      "rpcs": [
+        "accept_private_workspace_terms",
+        "decide_preliminary_understanding",
+        "enqueue_deal_state_analysis",
+        "record_intake_information_command",
+        "save_project_company_context",
+        "start_workspace_capital_project_v2",
+        "update_workspace_project"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/new/page.tsx",
+      "sha256": "cf0ada3dd51811a6bd80573b7499c47a81678fd50cf4eb51e0f57108dc111547",
+      "entrypoint": false,
+      "rpcs": [
+        "get_workspace_project_setup"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/opportunities/[opportunityId]/actions.ts",
+      "sha256": "a4d6909d0a2a976027dbb09e9008760864b3873881fff3d0f2695d32ae57c89f",
+      "entrypoint": true,
+      "rpcs": [
+        "approve_match_shortlist_and_prepare_plan",
+        "authorize_qualified_introduction_plan",
+        "enqueue_deal_state_analysis",
+        "record_deal_state_object"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/page.tsx",
+      "sha256": "5e78ea5158405c9a89b0f34e7727c9fe19d87dca8be44b958c6a0b1e78978155",
+      "entrypoint": false,
+      "rpcs": [
+        "get_workspace_project_setup"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/actions.ts",
+      "sha256": "0952732410adb80ed7373fccb0e38307c6499377fcd63475001080f450c7e4a3",
+      "entrypoint": true,
+      "rpcs": [
+        "accept_and_apply_agent_operation_brief_proposal",
+        "approve_match_shortlist_and_prepare_plan",
+        "authorize_qualified_introduction_plan",
+        "confirm_document_intake",
+        "confirm_receivables_evidence_scope_v2",
+        "decide_advisor_preliminary_v1",
+        "decide_agent_change_proposal",
+        "enqueue_deal_state_analysis",
+        "record_deal_state_object",
+        "record_qualified_introduction_feedback"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/artifact-review-actions.ts",
+      "sha256": "a4ed4fe12bdc98ba0ea204d9d380094aff81b5cebec440a19ccc310f15276426",
+      "entrypoint": true,
+      "rpcs": [
+        "review_artifact_revision_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/artifact-review-actions.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/assessment-review-actions.ts",
+      "sha256": "0011c730b2c1ebe1098dad8f9d5daadeda44086eb888d236bb694e0eacb61393",
+      "entrypoint": true,
+      "rpcs": [
+        "read_assessment_review_basis_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/assessment-review-actions.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/basis/actions.ts",
+      "sha256": "daa85fe6a0ed0b6a3d58cd6fcb8a0f6560752a8a300e8b8d9e81b90850999cca",
+      "entrypoint": true,
+      "rpcs": [
+        "ensure_basis_entity_v1",
+        "link_dossier_entity_v1",
+        "read_adoption_basis_v1",
+        "record_definition_version_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/basis/actions.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/execution-review-actions.ts",
+      "sha256": "a19bdcf576b359e0f44e17cd99bbeffea8b7210518f7c314d871abedaafed8b0",
+      "entrypoint": true,
+      "rpcs": [
+        "review_artifact_revision_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/execution-review-actions.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/[executionId]/page.tsx",
+      "sha256": "791a9dd6b99259a8aab51555128b5c471eeb3529667bf120bdf98d6ec85bac09",
+      "entrypoint": false,
+      "rpcs": [
+        "read_work_execution_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/actions.ts",
+      "sha256": "988eb2adb39b9cee2411657e2c52a31367a737906c580e22a580cc3fa1f00aed",
+      "entrypoint": true,
+      "rpcs": [
+        "execution_contract_basis_v2",
+        "request_work_execution_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/executions/page.tsx",
+      "sha256": "3469c9642b4545e088d007d18e0ff5a3017dc64e670eb6887b10f6a6c4120dbd",
+      "entrypoint": false,
+      "rpcs": [
+        "list_work_executions_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/financial-results/[resultId]/[format]/route.ts",
+      "sha256": "daa60020b13613be79ee2a867451176ec686050e27f81f52f4b28c87894f8cd6",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "compatibility adapter",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/financial-results/[resultId]/[format]/route.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/material-package-review-actions.ts",
+      "sha256": "79f0979e14d8b95635964bb536a8920660ea4a909e1d7c35b0bb5f653e7e6b22",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/material-package-review-actions.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/page.tsx",
+      "sha256": "7b14523777e0bcaffb88f4d54ce4cbbc44f398b8d9866cb7c51dc13b0c5bde7a",
+      "entrypoint": false,
+      "rpcs": [
+        "read_advisor_execution_brief_approval_v1",
+        "read_capital_project_execution_brief_narrative_v1",
+        "read_capital_project_execution_brief_progress_v1",
+        "read_documentary_plan_job_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/presentation-template-actions.ts",
+      "sha256": "0b8a5374c572f71cd5daf9baea80c4f105945fe6626fb3ebd26f4625f9a73b7f",
+      "entrypoint": true,
+      "rpcs": [
+        "set_presentation_template_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/preview/material/route.ts",
+      "sha256": "e47a57047bb2e43357384f78986ad1cbe98a7dae11aff667083b8901c3b79326",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "compatibility adapter",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/preview/material/route.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/review-actions.ts",
+      "sha256": "8feba76da0cbe5ff51e7c9c93785c737eeedf37df21637a66457b2956700208c",
+      "entrypoint": true,
+      "rpcs": [
+        "set_capital_project_review_assignment_v1",
+        "set_capital_project_review_policy_v1",
+        "set_capital_project_review_policy_v2",
+        "set_organization_review_policy_v1",
+        "set_organization_review_policy_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/review-actions.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/work-products/[fingerprint]/[format]/route.ts",
+      "sha256": "cd36bf4c54fd04235e18e74216ac8cbb11c1583229e9d2c31c3834b46fca0b78",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "compatibility adapter",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/work-products/[fingerprint]/[format]/route.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/work-request-actions.ts",
+      "sha256": "41d2106631b7041b32df4a71bb7f2bcc3078f1d2119fae5a77e33047b4363ade",
+      "entrypoint": true,
+      "rpcs": [
+        "record_capital_project_work_request_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/work-review-actions.ts",
+      "sha256": "fd51677a06ea6477339cb2bdbd289505aa45d1ebcbe3a4e9bf8dad4df5b7c4a4",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/projects/[projectId]/work-update-actions.ts",
+      "sha256": "c4fceb6f8a681e3fa8beeaaecd94bb23d3d5b19b9f26e9da2f6e277c43f5f585",
+      "entrypoint": true,
+      "rpcs": [
+        "authorize_work_update_v1",
+        "decline_work_update_v1",
+        "read_work_update_adoption_basis_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/app/[locale]/app/projects/[projectId]/work-update-actions.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/settings/method/actions.ts",
+      "sha256": "9f193f0f9a87ce7bc152b8b661438d7bddd67a9eb35b5806689c57ece2bb63fb",
+      "entrypoint": true,
+      "rpcs": [
+        "bind_method_release_v1",
+        "list_method_releases_v1",
+        "publish_method_release_v1",
+        "retire_method_release_v1",
+        "review_method_candidate_v1",
+        "set_method_publication_policy_v1",
+        "submit_method_candidate_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/vault/actions.ts",
+      "sha256": "995f4f0a3cc3a24ed5a340d818d51ccdc14b35f3be338f4e33f3a6932353178d",
+      "entrypoint": true,
+      "rpcs": [
+        "list_vault_entries_v1",
+        "list_vault_people_v1",
+        "list_vault_publication_receipts_v1",
+        "propose_vault_publication_v1",
+        "publish_vault_entry_v1",
+        "search_vault_for_work_v1",
+        "set_resource_policy_grant_v1",
+        "submit_vault_entry_version_v1",
+        "withdraw_vault_publication_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/work-context-actions.ts",
+      "sha256": "34f6ec9a05b14d88b202f3d07ce7c2f28c35d759c725b83abd978e92cb4c2f96",
+      "entrypoint": true,
+      "rpcs": [
+        "link_work_dossier_v1",
+        "update_work_context_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/app/work-contribution-actions.ts",
+      "sha256": "1b81036b2a0291c15a8003c364efc6bbc4fc377a8ecfc07299bbbb8ab8c22d01",
+      "entrypoint": true,
+      "rpcs": [
+        "add_work_participant_v1",
+        "list_work_people_v1",
+        "promote_contribution_to_work_v1",
+        "revoke_resource_access_v1",
+        "submit_work_contribution_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/auth/confirm/route.ts",
+      "sha256": "bcb34256e852f27639328a01d75ad0c92804cc9933bc0e87810f1f00dff1248d",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/forgot-password/actions.ts",
+      "sha256": "80190161bc1bc943bd00c161d8339f9d0369933220dc126ddbe988a45f5662b8",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/login/actions.ts",
+      "sha256": "33f49509ff7c26a61e46b02d81cf9effe90e3c961864140389fbfb2e56fde00f",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/onboarding/actions.ts",
+      "sha256": "8f34e2f07fb5b9ca92f47ab9c53ae113c3281b6fb186373bd170e84a7a268a05",
+      "entrypoint": true,
+      "rpcs": [
+        "accept_and_apply_agent_operation_brief_proposal",
+        "accept_private_workspace_terms",
+        "decide_agent_change_proposal",
+        "get_workspace_context_v1",
+        "record_intake_information_command",
+        "save_project_company_context",
+        "start_financier_analytical_workspace_v1",
+        "start_onboarding_capital_project_v2",
+        "submit_agent_message"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/onboarding/page.tsx",
+      "sha256": "6178783a1d4ee3b2f99d8e5cf14d2602e5683ba83b91044d49a53970c83e1ed5",
+      "entrypoint": false,
+      "rpcs": [
+        "get_onboarding_bootstrap",
+        "get_workspace_bootstrap"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/signup/actions.ts",
+      "sha256": "0224f6e53c49f3f37682c0df24365b3c9afe2199e58517481f1d2429f605dea3",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/workspaces/actions.ts",
+      "sha256": "81f28c5284ee9603ac76ad2c67cf35c758b85763d4bb193c5c2040ceb8878143",
+      "entrypoint": true,
+      "rpcs": [
+        "accept_workspace_invite_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/app/[locale]/workspaces/page.tsx",
+      "sha256": "d94cb7a85fa2e357f5bf19bb80470404271cd39ccc2dcf2a043df98a65a47489",
+      "entrypoint": false,
+      "rpcs": [
+        "list_my_workspace_invites_v1",
+        "list_my_workspaces_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/components/advisor/standalone-work.tsx",
+      "sha256": "5dbeee51fb5447a64b5653f43a0d6c816526e52c34f15acc3ad12d2346db2dd9",
+      "entrypoint": false,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/components/advisor/standalone-work.test.tsx"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/adoption-basis-reader.ts",
+      "sha256": "6c0e4f2aa87aa50e576bbb59ec81300c70622a0c39583ea1680933f26a298405",
+      "entrypoint": false,
+      "rpcs": [
+        "compare_adoption_bases_v1",
+        "list_work_observations_v1",
+        "read_adoption_basis_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/document-work-product-reader.ts",
+      "sha256": "0596e54a53218d1594b5391ae761b426652aca8297235ad87d1768464fbd3591",
+      "entrypoint": false,
+      "rpcs": [
+        "read_advisor_document_work_binding_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/document-work-product-reader.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/execution-brief-review-command.ts",
+      "sha256": "f0e7b5fde09f7dcdfda681f7abde487e77cfbd0ea48355d99d161a8a6113c053",
+      "entrypoint": false,
+      "rpcs": [
+        "approve_advisor_execution_brief_v2",
+        "read_execution_brief_review_basis_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/execution-brief-review-command.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/institutional-configuration-review-command.ts",
+      "sha256": "cac07984ce88a5e86d5cbb2430c1e14dbb9a8203b46c3184db42650a335b9d85",
+      "entrypoint": false,
+      "rpcs": [
+        "read_institutional_configuration_review_basis_v2",
+        "review_institutional_configuration_and_calculate_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/institutional-configuration-review-command.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/institutional-configuration-reviews.ts",
+      "sha256": "fb78199fb953f6ada23d5c6636c62d821649fb1979fe02f9b69774216dcd118c",
+      "entrypoint": false,
+      "rpcs": [
+        "read_institutional_configuration_reviews_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/institutional-configuration-reviews.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/institutional-model-results.ts",
+      "sha256": "871da95d93bba7b35c33d9a2446441773ca38f41b248c4bd95df50f812ada589",
+      "entrypoint": false,
+      "rpcs": [
+        "read_institutional_model_results_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/institutional-model-results.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/institutional-setup-reader.ts",
+      "sha256": "76e56ce4c6893a9d21445a1f103130c5d692e6cce4bdbb6c2cd5dc8c11f60356",
+      "entrypoint": false,
+      "rpcs": [
+        "read_institutional_model_setup_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/presentation-template.ts",
+      "sha256": "47c237b24ccc142bf28c0a6b062218b8e5c53519a73ea7a0f3b3e84acc5bebd4",
+      "entrypoint": false,
+      "rpcs": [
+        "read_presentation_template_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/presentation-template.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/project-review-context.ts",
+      "sha256": "7233e0925391c7a9fd5bc60ddeca0528cd1a486ac25d9ddab9d3b1c0655f7dde",
+      "entrypoint": false,
+      "rpcs": [
+        "read_capital_project_review_context_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/project-review-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/project-review-policy-context.ts",
+      "sha256": "8548b90a26e99e8be98432a7fac28202584e002f90220da470550b54e9135731",
+      "entrypoint": false,
+      "rpcs": [
+        "read_capital_project_review_context_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/project-review-policy-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/provider-case-fit-action.ts",
+      "sha256": "771f950fbd32e64c480b735e6050d9fbaaa924c97c3d7487a6f94f595926e556",
+      "entrypoint": true,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/provider-case-fit-action.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/provider-case-fit-command.ts",
+      "sha256": "2af1e7836726562cb06984f39209b29d99ac7018cb6d74dc42994e5b190d83a8",
+      "entrypoint": false,
+      "rpcs": [
+        "start_provider_case_fit_project_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/provider-research-command.ts",
+      "sha256": "8b2ee4ad56df94a8aea5f8ca858a7a4ba23baef84d574a79a58668ece04da4e2",
+      "entrypoint": false,
+      "rpcs": [
+        "start_provider_research_project_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/work-review-dashboard.ts",
+      "sha256": "fee4079fb26930f0af2bfdd7d70994938c96a5d85d878a2850279a8be311cd3f",
+      "entrypoint": false,
+      "rpcs": [
+        "read_work_review_dashboard_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/advisor/work-review-dashboard.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/advisor/work-updates-reader.ts",
+      "sha256": "8d58831f1605ff9f21a220435e65ba1c727ecec2828d0f053bd30c91a64955f9",
+      "entrypoint": false,
+      "rpcs": [
+        "work_update_view_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/artifact-import.ts",
+      "sha256": "79ac857ed7e9f5af85d1d002a39cf5860e0bcbce4450b8ca1efc2ee0a87d5286",
+      "entrypoint": false,
+      "rpcs": [],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/artifact-route.ts",
+      "sha256": "a704fdd4e57bfbda010dded49442c7bc59ba2df24c8711f4d880e8abb6ead628",
+      "entrypoint": false,
+      "rpcs": [
+        "read_presentation_template_version_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/authorized-artifact-reader.ts",
+      "sha256": "249079b6f1e5573ac86345d88ac986b38d9a8579f44967c1c96ba448041c89d9",
+      "entrypoint": false,
+      "rpcs": [
+        "read_artifact_head_v1",
+        "read_artifact_revision_v1",
+        "record_artifact_access_denial_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/artifacts/authorized-artifact-reader.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/capital-project-review.ts",
+      "sha256": "89c109df6f376890f2cf79b9bcbe97f8ab2367a56c11003c9cfd8c87f590b4e4",
+      "entrypoint": false,
+      "rpcs": [
+        "decide_capital_project_artifact_v2",
+        "read_capital_project_artifact_review_v2",
+        "submit_advisor_artifact_revision_turn_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/artifacts/capital-project-review.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/execution-review.ts",
+      "sha256": "9ac2ddec462dfa36b251cfe77f8de762f5201e3cb7263d71349af1ca9346246f",
+      "entrypoint": false,
+      "rpcs": [
+        "read_artifact_revision_reviews_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/artifacts/execution-review.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/institutional-binding.ts",
+      "sha256": "8e6b4677cf8893044cc148cf316d33b69b318faceeb78c4c36b5629af12a9460",
+      "entrypoint": false,
+      "rpcs": [
+        "read_institutional_workbook_binding_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/artifacts/institutional-binding.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/institutional-review.ts",
+      "sha256": "49dfa0ee272103b893985450622d0b2f7b414b8f92dfb2a0a5fd773bead1a379",
+      "entrypoint": false,
+      "rpcs": [
+        "read_artifact_revision_reviews_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/artifacts/institutional-review.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/material-package-review.ts",
+      "sha256": "87ca02305d36f6220bf3e8e7452aff63ae857731d1a943ea382f16dbca6b50c4",
+      "entrypoint": false,
+      "rpcs": [
+        "decide_material_package_v1",
+        "read_material_package_review_basis_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/artifacts/material-package-review.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/artifacts/material-production-plan-command.ts",
+      "sha256": "37de9f3523dfab1a86d7ca193e4e93e47839ab3de455517ba5728f090c3be162",
+      "entrypoint": false,
+      "rpcs": [
+        "approve_material_production_plan_v1",
+        "read_material_production_plan_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/artifacts/material-production-plan-command.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/auth/registration.ts",
+      "sha256": "dbaa0277f08f515f5026f6cd6c0c5cde955ae75cc2d7da20f83fda5ce19ce2b4",
+      "entrypoint": false,
+      "rpcs": [
+        "initialize_workspace_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/auth/registration.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/auth/resource-download.ts",
+      "sha256": "e6852d04ecb63d920419a5090fe7ce6a756ac90718036116beb4d2b578aa546f",
+      "entrypoint": false,
+      "rpcs": [
+        "explain_my_access_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/auth/resource-download.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/auth/workspace.ts",
+      "sha256": "f2fc67e1d5af933103f8d9a17381ded8bfc575edd44ce1264b9d0859d4082d68",
+      "entrypoint": false,
+      "rpcs": [
+        "get_workspace_bootstrap"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/deal-state/resume-analysis.ts",
+      "sha256": "9df81c40f9d4a9bd718fb3922fc1b81a61cf769263861f93990959d4eb5c1882",
+      "entrypoint": false,
+      "rpcs": [
+        "enqueue_deal_state_analysis"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/intake/case-pipeline.ts",
+      "sha256": "5e716012108fd6f7ac12188ab888ce2384baa47d3fa78e3f0db9fdacace8644a",
+      "entrypoint": false,
+      "rpcs": [
+        "record_fallback_case_snapshot",
+        "record_intake_analysis"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/intake/deal-brief.ts",
+      "sha256": "083493304a611e2e7d35f17b511f46fee80b26dc610a733f206ac9d98d5495f8",
+      "entrypoint": false,
+      "rpcs": [
+        "record_intake_capital_need_command"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/intake/deal-brief.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/intake/execution-approval.ts",
+      "sha256": "ab05238186b640f1fa78ed49bfc6bc4cdbc67ed5cc082aee69df744bc0d5610e",
+      "entrypoint": false,
+      "rpcs": [
+        "read_advisor_execution_brief_approval_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/intake/execution-approval.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/intake/pipeline-run.ts",
+      "sha256": "18fc2166b2b233600b75a184d08d2805eff6ba14c1b0ec5f68b981f1df70c4c3",
+      "entrypoint": false,
+      "rpcs": [
+        "begin_processing_run"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/intake/pipeline-run.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/intake/reconcile.ts",
+      "sha256": "cd71bc5350d4238d4f0d735e68920c9e05c79bafa727e06db44ae0f89069ad20",
+      "entrypoint": false,
+      "rpcs": [
+        "record_intake_analysis"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/intake/reconcile.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/intake/replay.ts",
+      "sha256": "0a64300cfe05493bea2d6cfa00b08ab2493b0f793657d9858f630abcdf476b86",
+      "entrypoint": false,
+      "rpcs": [
+        "record_intake_request_ladders_command"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/intake/replay.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/intake/server.ts",
+      "sha256": "73d9d9a98311de5fca9b84177268965521d5e50e59bd6d403579dee4cd4752ef",
+      "entrypoint": false,
+      "rpcs": [
+        "begin_intake_processing",
+        "complete_intake_processing",
+        "confirm_document_intake",
+        "fail_intake_session",
+        "record_fallback_document_profiles",
+        "record_fallback_preliminary_understanding",
+        "record_intake_analysis",
+        "record_intake_information_command",
+        "remove_intake_document_command",
+        "resolve_analysis_scope_suggestion_command",
+        "review_intake_candidate",
+        "revoke_advisor_authorization_command",
+        "set_intake_operation_context_command",
+        "start_workspace_intake",
+        "verify_advisor_authorization_command"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/intake/upload-client.ts",
+      "sha256": "29574865f9ac4f3e9a52d7621f4e93218ea650b9247509b35fee2f150e92376a",
+      "entrypoint": false,
+      "rpcs": [
+        "register_intake_document_command"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/receivables/released-result.ts",
+      "sha256": "b9ffcd33c75690974df039938cb5defd40e74910a1eae21954aa58fd946f7b72",
+      "entrypoint": false,
+      "rpcs": [
+        "read_receivables_released_result_v1"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "supabase/tests/no_legacy_access_bypass.sql",
+        "apps/web/src/lib/auth/workspace-context.test.ts"
+      ]
+    },
+    {
+      "path": "apps/web/src/lib/receivables/scope.ts",
+      "sha256": "92cdc43fff5e5a4922ad41699312860baf7914cffb3bff5b3336f10e334b5fff",
+      "entrypoint": false,
+      "rpcs": [
+        "read_receivables_evidence_scope_v2"
+      ],
+      "decision": "preserve governed consumer",
+      "authority": "Current resource/revision/receipt and worker capability contracts in SQL; session context does not confer resource authority.",
+      "negativeTests": [
+        "apps/web/src/lib/receivables/scope.test.ts"
+      ]
+    }
+  ],
+  "isolatedTechnicalModules": [
+    "apps/document-worker/src/integration-preview-protocol.ts",
+    "apps/document-worker/src/integration-preview.ts",
+    "apps/document-worker/src/integration-preview-queue-adapter.ts",
+    "apps/document-worker/src/integration-preview-model-recipe.ts",
+    "apps/document-worker/src/integration-preview-consumed-basis.ts",
+    "apps/document-worker/src/integration-preview-native-processor.ts",
+    "apps/document-worker/src/integration-preview-installed-corpus.ts",
+    "apps/document-worker/src/integration-preview-processing.ts",
+    "apps/document-worker/src/integration-preview-native-pipeline.ts",
+    "apps/document-worker/src/integration-preview-native-runtime.ts",
+    "apps/document-worker/src/integration-preview-body-storage.ts",
+    "apps/document-worker/src/live-preview.ts"
+  ],
+  "technicalDisposition": "Technical native consumers retained for CI/staging proofs. They are absent from main.ts and web entrypoints; no production dispatcher imports them."
+}

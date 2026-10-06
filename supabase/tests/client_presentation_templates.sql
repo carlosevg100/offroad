@@ -38,7 +38,7 @@ begin
   begin
     execute p_sql;
   exception when insufficient_privilege then
-    if sqlerrm not in (p_message,'resource_access_denied') then raise exception 'expected % but got %',p_message,sqlerrm; end if;
+    if sqlerrm not in (p_message,'resource_access_denied','template_authoring_denied') then raise exception 'expected % but got %',p_message,sqlerrm; end if;
     rejected:=true;
   end;
   if not rejected then raise exception 'command was not denied: %',p_sql; end if;
@@ -60,7 +60,7 @@ begin
   begin
     execute p_sql;
   exception when invalid_parameter_value then
-    if sqlerrm not in (p_message,'resource_access_denied') then raise exception 'expected % but got %',p_message,sqlerrm; end if;
+    if sqlerrm not in (p_message,'resource_access_denied','template_authoring_denied') then raise exception 'expected % but got %',p_message,sqlerrm; end if;
     rejected:=true;
   end;
   if not rejected then raise exception 'invalid template was accepted: %',p_sql; end if;
@@ -140,6 +140,19 @@ select pg_temp.expect_not_found($q$select public.set_presentation_template_v1(cu
 -- Content permission is explicit; administration alone was tested above and is not reading authority.
 select pg_temp.as_user('10000000-0000-4000-8000-000000000801');
 select public.grant_resource_access_v1(current_setting('test.project_id')::uuid,'10000000-0000-4000-8000-000000000802','manage');
+-- Stage 23: identity administration alone is insufficient to author reusable private templates.
+do $$ declare ctx jsonb;begin
+ ctx:=public.read_presentation_template_v1(current_setting('test.project_id')::uuid);
+ if (ctx->>'can_manage_organization')::boolean or not (ctx->>'can_manage_project')::boolean then raise exception 'template_scope_projection_confuses_project_manage_and_vault_work';end if;
+end;$$;
+select 'template_controls_project_current_scope_authority_without_organization_role_bypass' as test,'PASS' as result;
+do $$ declare scope uuid;begin
+ select id into strict scope from public.vault_scopes where organization_id=current_setting('test.org_id')::uuid;
+ perform public.set_resource_policy_grant_v1(scope,'10000000-0000-4000-8000-000000000801',null,'work','allow');
+ perform public.set_resource_policy_grant_v1(scope,'10000000-0000-4000-8000-000000000802',null,'work','allow');
+ perform public.set_resource_policy_grant_v1(scope,'10000000-0000-4000-8000-000000000803',null,'read','allow');
+end;$$;
+
 
 -- An administrator stores the organization identity: version 1 with the house structure, and a
 -- replay of the same definition is idempotent. The existing three-argument call keeps working.
@@ -318,7 +331,7 @@ select pg_temp.expect_immutable($q$delete from public.presentation_template_vers
 select pg_temp.expect_immutable($q$truncate public.presentation_template_versions cascade$q$);
 do $$ begin
   -- Organization versions 1, 2 and 3 plus the project version 1; two template rows.
-  if (select count(*) from public.presentation_template_versions)<>4 or (select count(*) from public.presentation_templates)<>2 then
+  if (select count(*) from public.presentation_template_versions where organization_id=current_setting('test.org_id')::uuid)<>4 or (select count(*) from public.presentation_templates where organization_id=current_setting('test.org_id')::uuid)<>2 then
     raise exception 'the refused truncate removed rows';
   end if;
 end $$;
@@ -362,7 +375,7 @@ select pg_temp.as_user('10000000-0000-4000-8000-000000000803');
 do $$
 declare rejected boolean:=false;
 begin
-  if (select count(*) from public.presentation_templates)<>2 then raise exception 'organization member cannot read its own templates'; end if;
+  if (select count(*) from public.presentation_templates where organization_id=current_setting('test.org_id')::uuid)<>2 then raise exception 'organization member cannot read its own templates'; end if;
   if (select count(*) from public.presentation_template_versions where template_id=(select value from template_test_state where key='template_id')::uuid)<>4 then
     raise exception 'organization member cannot read the versions of its own template';
   end if;
@@ -479,20 +492,41 @@ begin
     or read#>>'{template,fingerprint}' !~ '^[a-f0-9]{64}$' or read#>>'{template,definition,template_key}'<>'synthetic-revived' then
     raise exception 'the worker did not read the current organization version: %',read;
   end if;
-  if (select count(*) from storage.objects where bucket_id='brand-templates')<>1
-    or not exists (select 1 from storage.objects where bucket_id='brand-templates' and name like '20000000-0000-4000-8000-000000000801/%') then
-    raise exception 'the worker read the logo object of another organization, or not its own';
+  if (select count(*) from storage.objects where bucket_id='brand-templates')<>0 then
+    raise exception 'a lease read an unregistered organization logo';
   end if;
 end $$;
+reset role;
+-- The exact registered logo becomes readable while the underlying work/vault rights are live.
+set local role authenticated;
+select pg_temp.as_user('10000000-0000-4000-8000-000000000801');
+select public.set_presentation_template_v1(current_setting('test.org_id')::uuid,null,
+ pg_temp.client_template(null,jsonb_build_object('object_path','20000000-0000-4000-8000-000000000801/presentation-templates/'||repeat('a',64)||'.png','sha256',repeat('a',64),'byte_length',1024,'content_type','image/png')));
+select pg_temp.as_user('10000000-0000-4000-8000-000000000805');
+do $$ begin
+ if (select count(*)from storage.objects where bucket_id='brand-templates')<>1 then raise exception 'current scoped worker cannot read the exact registered logo';end if;
+end;$$;
+select 'unregistered_logo_denied_registered_exact_logo_under_current_job_allowed' as test,'PASS' as result;
 -- The worker policy opens nothing to anyone else: under the same operation a member still reads
--- only its own organization's logo, through membership, and the other tenant never reads it.
+-- only the registered logo through its explicit vault read grant; the other tenant never reads it.
 select pg_temp.as_user('10000000-0000-4000-8000-000000000803');
 do $$ begin
   if not exists (select 1 from storage.objects where bucket_id='brand-templates' and name like '20000000-0000-4000-8000-000000000801/%')
     or exists (select 1 from storage.objects where bucket_id='brand-templates' and name like '20000000-0000-4000-8000-000000000802/%') then
-    raise exception 'an organization member does not read exactly its own logo objects';
+    raise exception 'an explicitly authorized vault reader does not read exactly its registered logo';
   end if;
 end $$;
+select pg_temp.as_user('10000000-0000-4000-8000-000000000801');
+do $$ declare scope uuid;begin
+ select id into strict scope from public.vault_scopes where organization_id=current_setting('test.org_id')::uuid;
+ perform public.set_resource_policy_grant_v1(scope,'10000000-0000-4000-8000-000000000803',null,'read','deny');
+end;$$;
+select pg_temp.as_user('10000000-0000-4000-8000-000000000803');
+do $$ begin
+ if exists(select 1 from storage.objects where bucket_id='brand-templates')then raise exception 'revoked vault reader retains logo by membership';end if;
+ if public.read_presentation_template_v1(current_setting('test.project_id')::uuid)->'organization'<>'null'::jsonb then raise exception 'context RPC bypasses revoked vault read';end if;
+end;$$;
+select 'vault_read_revocation_reaches_logo_and_context_without_removing_membership' as test,'PASS' as result;
 select pg_temp.as_user('10000000-0000-4000-8000-000000000804');
 do $$ begin
   if exists (select 1 from storage.objects where bucket_id='brand-templates' and name like '20000000-0000-4000-8000-000000000801/%') then

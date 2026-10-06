@@ -25,14 +25,13 @@ import {
 import {renderArtifactRevision} from "@/lib/artifacts/render-artifact-revision";
 import {resourceStillReadable} from "@/lib/auth/resource-download";
 import {requireWorkspace} from "@/lib/auth/workspace";
-import {integrationPreviewCoversProject, loadIntegrationPreviewStatus} from "@/lib/integration-preview";
 import {decisionContractBoundSha256, resolveGovernedMaterialDownload} from "@/lib/integration-preview/governed-material-download";
 
 /**
  * Authenticated retrieval for governed presentation/workbook bytes plus the basic internal Word
  * preview. Office decision surfaces are never regenerated here: their fingerprinted manifest, private
- * object, exact SHA and binding in the latest Decision Artifact must all agree. Internal
- * validation only; the project must run in integration_preview and every read remains scoped.
+ * object, exact SHA and binding in the latest Decision Artifact must all agree. Historical download adapter: current resource, revision and receipt authority
+ * apply; an internal preview grant cannot authorize reading or execution.
  *
  * Each file is one exact artifact revision (`?revision=`, or the head), read through the authorized
  * reader with the same release evaluation as every download: a version for an external audience is
@@ -93,8 +92,6 @@ export async function GET(request: Request, {params}: Params) {
   if (!revisionParameter.ok) return artifactNotFound();
   const {supabase, organization} = await requireWorkspace(locale);
   if (!await resourceStillReadable(supabase,organization.id,projectId,"project")) return artifactNotFound();
-  const status = await loadIntegrationPreviewStatus(supabase, organization.id);
-  if (!integrationPreviewCoversProject(status, projectId)) return new Response("Not found", {status: 404});
   const copy = artifactDownloadCopy(lang);
   const notReady = format === "pptx" ? copy.preview.presentationNotReady : format === "xlsx" ? copy.preview.workbookNotReady : copy.preview.synthesisMissing;
 
