@@ -763,6 +763,19 @@ jobs:
         if: always()
         run: bash scripts/ci/start-documentary-scanner.sh stop
 
+      # These families own their fixtures. A passed human-return proof may keep
+      # original bytes until their real deadline; no later test may inherit that
+      # global retention backlog or depend on runner speed to beat its expiry.
+      - name: Rebuild the isolated database before native provider contracts
+        if: ${{ !inputs.native_diagnostic }}
+        env:
+          DATABASE_URL: ${{ steps.db.outputs.url }}
+        run: |
+          set -euo pipefail
+          psql "$DATABASE_URL" -XAtq -v ON_ERROR_STOP=1 -c "select json_build_object('eval','provider_fixture_isolation','pending',count(*),'overdue',count(*) filter(where effective_purge_at<=clock_timestamp())) from private.capital_public_payload_purge_queue where status<>'purged';"
+          supabase db reset --local
+          psql "$DATABASE_URL" -XAtq -v ON_ERROR_STOP=1 -c "do \$\$ begin if exists(select 1 from private.capital_public_payload_purge_queue) then raise exception 'provider_fixture_isolation_failed';end if;end \$\$;"
+
       - name: Install unpublished deterministic provider draft in isolated CI only
         if: ${{ !inputs.native_diagnostic }}
         env:
@@ -794,9 +807,19 @@ jobs:
           OFFROAD_E2E_PUBLISHABLE_KEY: ${{ steps.db.outputs.publishable_key }}
         run: node scripts/ci/test-capital-native-provider-sdk.mjs
 
+      # Preview is another independent family and produces its own real
+      # other-family material. Destroy only this disposable CI database; do not
+      # renew retained bytes, forge erasure ACKs or change production policy.
+      - name: Rebuild the isolated database before native preview
+        id: preview_reset
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' && steps.database_deps.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          supabase db reset --local
+
       - name: Work review dashboard SQL and integrated runner target guards
         # Collect this independent review failure even when a preceding provider proof fails.
-        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' }}
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' && steps.preview_reset.outcome == 'success' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_WORK_REVIEW_DRAFT_INSTALL: isolated-loopback-ci
@@ -807,7 +830,7 @@ jobs:
           node --test scripts/evals/stage20-integrated-review.test.mjs scripts/evals/stage20-material-review-adapter.test.mjs
 
       - name: Finite native preview through real Storage, two paid boundaries and replay
-        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' && steps.native_consumers_install.outcome == 'success' }}
+        if: ${{ !cancelled() && !inputs.native_diagnostic && steps.db.outcome == 'success' && steps.native_consumers_install.outcome == 'success' && steps.preview_reset.outcome == 'success' }}
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
           OFFROAD_E2E_API_URL: ${{ steps.db.outputs.api_url }}

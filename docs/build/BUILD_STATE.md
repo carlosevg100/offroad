@@ -5546,3 +5546,12 @@ Migração aplicada não encerra o incremento. CI, merge, web e worker no mesmo 
 ## Etapa 20: candidata 3W e eval integrado 3X, 02/10/2026
 
 Histórico/pendências de revisão, reafirmação cosmética, reassociação, relato e contestação usam comandos com autoridade atual e efeitos fechados. O eval integra duas contas Auth, leitura nativa pelo Storage/Edge, mudança material, revogação e contagens de efeitos. Testes focais locais passaram; SQL, HTTP, Playwright, staging, produção e implantação ainda dependem dos gates. Esta nota não declara completion da etapa. Contratos e saldo: `docs/build/arcabouco/etapa-20-3w-consumidor.md` e `docs/build/arcabouco/etapa-20-3x-integrated-review-eval.md`.
+
+
+## 2026-10-05: etapas 20 e 21, publicação e isolamento do eval
+
+A etapa 20 foi concluída em produção na main `3354eaa29fcfcb847d82c165d060006c64eb0d9c`; as notas anteriores de candidata aberta são histórico. PR 881 publicou o núcleo da etapa 21 na main `1727413f945c9f0d26293f0668ebf46fc928d0e6`, mesclada em 2026-10-05T23:42:58Z. Quality 37386546537 e Security 37386525032 passaram integralmente antes do merge. Web READY/production e worker ECS 521 estável foram conferidos nesse commit, com boot e executores fixados verificados. As três migrações da 21 estão instaladas e conciliadas nos dois ambientes, com arquivos nos carimbos reais de produção 20261005171558, 20261005172709 e 20261005184946.
+
+A CI automática de main 37390066802 encontrou uma falha posterior na admissão de retenção do fixture de provedores, seguida pela falha de seu consumidor de preview. A mesma árvore havia passado na PR. As famílias independentes ainda compartilhavam a base usada pelas jornadas anteriores, cujas alocações originais conservam seus prazos reais. O ajuste da CI reconstrói a base descartável antes de provedores e antes de preview; nenhuma função instalada, política, heartbeat, deadline ou ACK é falsificado. Os testes de purga física, retorno humano, provedores, preview e as três corridas permanecem obrigatórios. O preview produz seu material de outra família na própria base nova.
+
+O fechamento final deve usar os runs, journals e deploys reais da correção, registrados no relatório de completion e na PR de isolamento. Não interpretar a publicação do núcleo como aprovação antecipada da CI de correção. O risco de purga física de bytes referenciados por recibos Office permanece na etapa 22, preservando identidade histórica; não retirar FK ou alterar recibos para facilitar limpeza. Nenhum ensaio de produto com usuários foi iniciado.
