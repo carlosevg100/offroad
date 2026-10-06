@@ -30,7 +30,7 @@ describe("security current-state inventory", () => {
     const decision = evaluateSecurityCurrentStateInventory(currentSecurityInventory, masterTrustControlCatalogue);
     expect(decision.structurallyValid, JSON.stringify(decision.blockers)).toBe(true);
     expect(currentSecurityInventory.baseline).toMatchObject({
-      waveId: "wave-21", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
+      waveId: "wave-22", reviewCadence: "per_wave", waveStatus: "open", materialChangeState: "reviewed", reviewDueAt: null,
     });
     expect(decision.evidenceVerification).toBe("declaration_only");
     expect(decision.currentStateTruthVerified).toBe(false);

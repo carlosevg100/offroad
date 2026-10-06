@@ -1,0 +1,88 @@
+{
+  "evidenceId": "SEV-AWS-DEPLOY-ROLE-SNAPSHOT",
+  "capturedAt": "2026-10-06T10:56:20.993979Z",
+  "validThrough": null,
+  "source": "Codex read-only AWS CLI delivery and IAM observation",
+  "origin": {
+    "repository": "carlosevg100/offroad",
+    "environmentRef": "ENV-PRODUCTION",
+    "systemRef": "SYS-GITHUB",
+    "authorityClass": "observation_only_no_attestation_authority"
+  },
+  "collector": {
+    "name": "codex-read-only-delivery-observation",
+    "version": "4",
+    "principalClass": "Codex AWS CLI using an existing authenticated temporary AWS login session"
+  },
+  "scope": "Wave 22 opening: current worker service, deployment role, inline policy and trust policy observed read-only.",
+  "observation": "Existing ECS worker revision 522 is PRIMARY COMPLETED with desired=running=1 and pending=0. Deployment role and inline policy were collected read-only. No attached managed policies were observed. Simulation only against wildcard resource returned implicitDeny for four diagnostic actions; this is not a resource-specific effective-permission conclusion.",
+  "verificationState": "unverified_operator_observation",
+  "collection": {
+    "baselineCommit": "90e3c7d248cb4ba604a4519fd08239054b28f14a",
+    "transport": "AWS CLI through existing temporary AWS login session; read-only API calls",
+    "runtimeReadOnly": {
+      "captured_at": "2026-10-06T10:56:20.993979Z",
+      "desired": 1,
+      "running": 1,
+      "pending": 0,
+      "deployments": [
+        {
+          "status": "PRIMARY",
+          "rolloutState": "COMPLETED"
+        }
+      ],
+      "task_revision": 522
+    },
+    "iamReadOnly": {
+      "role": "worker GitHub deployment role (identifier redacted)",
+      "inlinePolicyAvailable": true,
+      "inlinePolicySha256": "9f4da2989b0bf4ffe9a8ca2296335447af03733fcf6473c5977541937c5e8eba",
+      "attachedManagedPolicyCount": 0,
+      "trustPolicyCollected": true,
+      "trustPolicySha256": "5fe739cb80a554919f3223ccb6188e0258ec6db616337cf6989e8c78b2bf961f",
+      "permissionsBoundaryCollected": true,
+      "permissionsBoundaryPresent": false,
+      "scpCollected": false
+    },
+    "policySimulation": {
+      "resources": [
+        "*"
+      ],
+      "simulationDenied": false,
+      "results": [
+        {
+          "action": "ecs:DescribeTasks",
+          "decision": "implicitDeny"
+        },
+        {
+          "action": "ecs:ListTasks",
+          "decision": "implicitDeny"
+        },
+        {
+          "action": "logs:FilterLogEvents",
+          "decision": "implicitDeny"
+        },
+        {
+          "action": "logs:GetLogEvents",
+          "decision": "implicitDeny"
+        }
+      ]
+    }
+  },
+  "actionsRequiringEffectivePermissionVerification": [
+    "ecs:DescribeTasks",
+    "ecs:ListTasks",
+    "logs:FilterLogEvents",
+    "cloudwatch:DescribeAlarms"
+  ],
+  "requiredNextEvidence": "Exact in-scope/out-of-scope resource simulations, applicable external controls and real diagnostic reads before broader effective-permission conclusions.",
+  "redaction": "No credentials, account identifiers, role identifiers, policy contents, task identifiers, customer payloads or raw worker logs are retained. Policy SHA-256 identifies only the collected bytes.",
+  "limitations": [
+    "Point-in-time technical observation, not independent assurance.",
+    "Wildcard-only simulation does not prove permissions on representative permitted or prohibited resources.",
+    "SCPs, outbox health, alarm states and notification configuration were not collected in this receipt.",
+    "Task revision and deployment state alone do not establish the image commit or stage-22 publication."
+  ],
+  "freshness": "wave_bound",
+  "waveId": "wave-22"
+}
