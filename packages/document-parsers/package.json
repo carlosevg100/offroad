@@ -22,8 +22,8 @@
   "dependencies": {
     "@offroad/credit-ontology": "workspace:*",
     "@offroad/document-intelligence": "workspace:*",
-    "csv-parse": "7.0.2",
-    "fast-xml-parser": "5.11.1",
+    "csv-parse": "7.0.3",
+    "fast-xml-parser": "5.11.2",
     "file-type": "22.1.1",
     "iconv-lite": "0.7.3",
     "jszip": "3.10.2",
