@@ -28,7 +28,7 @@ const transcript: string[] = [];
 const journey: Array<{step: string; prompt: string; headline: Record<string, string>; reply: string}> = [];
 const LIVE_MARK = "[Validação interna, live_intelligence_preview]";
 
-test.skip(!process.env.LIVE_PREVIEW, "live gate only: needs the worker with a model key (LIVE_PREVIEW=1)");
+test.skip(true, "Stage 23: retired production preview; technical router and native SDK gates preserve execution coverage.");
 test.describe.configure({mode: "serial"});
 
 async function assistantMessages(page: Page): Promise<string[]> {

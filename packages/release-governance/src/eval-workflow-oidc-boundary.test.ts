@@ -44,12 +44,15 @@ describe("paid evaluation workflow OIDC boundary", () => {
   it("applies the same repository, ref, Environment, checkout and token boundary", () => {
     for (const {name, source} of roleConsumers()) {
       const continuation = name === "document-work-product-continuation.yml";
+      const retiredPreview = name === "live-preview-gate.yml";
       expect(
         source,
         `${name} must fail closed outside the canonical repository main branch`,
       ).toMatch(
         continuation
           ? /^ {4}if: github\.repository == 'carlosevg100\/offroad' && github\.ref == 'refs\/heads\/main' && github\.run_attempt == 1$/m
+          : retiredPreview
+          ? /^ {4}if: github\.repository == 'carlosevg100\/offroad' && github\.ref == 'refs\/heads\/main' && inputs\.journey == 'documentary-work-products'$/m
           : /^ {4}if: github\.repository == 'carlosevg100\/offroad' && github\.ref == 'refs\/heads\/main'$/m,
       );
       expect(source, `${name} must use the common paid-eval Environment`).toMatch(

@@ -32,7 +32,8 @@ concurrency:
 jobs:
   gate:
     name: Live intelligence preview (local Supabase + worker with model keys)
-    if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main'
+    # Stage 23 retires the production preview journey before any OIDC token or model key.
+    if: github.repository == 'carlosevg100/offroad' && github.ref == 'refs/heads/main' && inputs.journey == 'documentary-work-products'
     environment: intent-router-gold-main
     runs-on: ubuntu-latest
     timeout-minutes: 45

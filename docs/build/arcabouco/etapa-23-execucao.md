@@ -22,6 +22,8 @@ O worker recusa claims e turnos de preview técnico antes de contexto, pesquisa 
 
 A web retira o banner e o status experimental. A rota histórica de material continua como adaptador para revisão e recibo atuais: a permissão de preview deixa de atuar como leitura. Os caminhos técnicos, fixtures e bibliotecas de fechamento/monitoramento são preservados para seus testes ou futuro escopo; não entram no caminho de execução liberado.
 
+O E2E com concessão histórica prova agora a recusa do job antes de contexto e gateway: zero chamadas, custo e artefatos, sem retomada por reload. A antiga jornada paga de preview fica congelada e o workflow não obtém OIDC para essa opção; sua jornada documental continua separadamente permitida. Testes técnicos de router e os contratos físicos nativos permanecem nos gates.
+
 ## Gates e prevenção de novos atalhos
 
 `supabase/tests/no_legacy_access_bypass.sql` verifica permissões reais, adaptadores, políticas de conteúdo, candidatos e leitor de logo. `client_presentation_templates.sql` cobre registro exato, leitura autorizada e revogação no Storage/DTO, com fixtures próprias e rollback. O checker de etapa 0 já confronta todas as assinaturas, políticas e grants com replay real e todas as versões com o journal de produção.
