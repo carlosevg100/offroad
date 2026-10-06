@@ -228,14 +228,11 @@ jobs:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/verify-effective-function-bodies.py
 
-      - name: Check stage-zero access surface and every file version against production journal
+      - name: Capture the migration-only access surface before isolated test consumers
         if: ${{ !inputs.native_diagnostic }}
         run: |
           set -euo pipefail
-          python3 -B scripts/ci/test_check_stage0_inventory.py
-          python3 -B scripts/ci/test_compare_stage21_installed.py
           psql "${{ steps.db.outputs.url }}" -X -A -t -v ON_ERROR_STOP=1 -f scripts/ci/stage0-catalogue.sql > "$RUNNER_TEMP/stage0-replay-catalogue.json"
-          python3 -B scripts/ci/check-stage0-inventory.py --catalogue "$RUNNER_TEMP/stage0-replay-catalogue.json" --environment replay --production-journal docs/build/schema-history/production-migration-journal.json
 
       - name: Install pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -866,6 +863,16 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.db.outputs.url }}
         run: python3 -B scripts/ci/test-artifact-roundtrip-concurrency.py
+
+      - name: Check stage-zero access surface and every file version against production journal
+        # The gate remains mandatory. Independent tests can produce evidence while a new
+        # migration is still being verified in staging; native drafts never enter this receipt.
+        if: ${{ always() && !inputs.native_diagnostic && steps.db.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          python3 -B scripts/ci/test_check_stage0_inventory.py
+          python3 -B scripts/ci/test_compare_stage21_installed.py
+          python3 -B scripts/ci/check-stage0-inventory.py --catalogue "$RUNNER_TEMP/stage0-replay-catalogue.json" --environment replay --production-journal docs/build/schema-history/production-migration-journal.json
 
       - name: Stop the capital body Edge reader
         if: always()

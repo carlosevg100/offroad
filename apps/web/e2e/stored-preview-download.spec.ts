@@ -78,12 +78,12 @@ test("stored preview downloads exact bytes and refuses missing, altered and sour
     await replaceOutput(new Uint8Array(emitted.length).fill(1), true);
     const corruptOutput = await page.request.get(outputRoute);expect(corruptOutput.status()).toBe(409);expect((await corruptOutput.json()).error).toBe("storageMismatch");
     await replaceOutput(emitted, true);expect((await page.request.get(outputRoute)).status()).toBe(200);
-    // A receipt pins its storage identity for audit; even the operator cannot delete that row.
-    // Actual missing output bytes are tested below without weakening this identity FK.
-    const pinnedOutput = await operator.storage.from(receipt.storage.bucket).remove([receipt.storage.path]);expect(pinnedOutput.error?.message).toContain("foreign key");
+    // Stage22 pins the receipt to the durable identity ledger, allowing physical erasure.
+    // Storage metadata is disposable; it must no longer be the receipt's retention barrier.
+    expect(sql(`select count(*) from private.artifact_export_object_identities i join public.artifact_export_receipts r on (r.organization_id,r.storage_object_id)=(i.organization_id,i.id) where r.id='${receipt.id}';`)).toBe("1");
     expect((await page.request.get(outputRoute)).status()).toBe(200);
     // Move the local operator's physical object while preserving its identity: the receipt's
-    // original path now has no bytes. This exercises a missing output without deleting audit.
+    // original path now has no bytes. This exercises a missing output with durable audit identity.
     const displacedPath = `${receipt.storage.path}.synthetic-missing`;
     const movedOutput = await operator.storage.from(receipt.storage.bucket).move(receipt.storage.path, displacedPath);expect(movedOutput.error).toBeNull();
     try {

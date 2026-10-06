@@ -12,6 +12,7 @@ begin
  where p.organization_id=p_org and p.user_id=p_subject and p.kind='human' and p.revoked_at is null and m.status='active'
  and u.deleted_at is null and (u.banned_until is null or u.banned_until<=clock_timestamp());
  if principal is null then return false; end if;
+ if not private.retention_access_allowed_v1(p_org,p_resource) then return false;end if;
  if p_action='publish' and not exists(select 1 from private.access_resources where organization_id=p_org and id=p_resource and resource_kind in ('vault_scope','vault_entry')) then return false;end if;
  root:=private.resource_root_v1(p_org,p_resource); if root is null then return false; end if;
  -- Both the child and root can narrow purposes. Missing resources never grant authority.
