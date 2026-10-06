@@ -45,6 +45,9 @@ with tempfile.TemporaryDirectory(prefix='offroad-lifecycle-sdk-') as temporary:
             result = subprocess.run(['node', 'scripts/ci/test-lifecycle-sdk.mjs', phase],
                 cwd=ROOT, env=environment, timeout=180)
             assert result.returncode == 0, 'lifecycle_sdk_' + phase + '_failed'
+            if phase == 'release':
+                result = subprocess.run(['python3', '-B', 'scripts/ci/test-lifecycle-concurrency.py'], cwd=ROOT, env=environment, timeout=90)
+                assert result.returncode == 0, 'lifecycle_observed_concurrency_failed'
         assert sql(f"select count(*) from storage.objects where bucket_id='case-artifacts' and name like '%{work}%';") == '0'
         assert sql(f"select count(*) from private.retention_actions where organization_id='{org}' and state='completed' and receipt_fingerprint ~ '^[a-f0-9]{{64}}$';") == '1'
         assert sql(f"select count(*) from private.typed_payload_disposals where organization_id='{org}';") == '1'

@@ -8,10 +8,9 @@ begin
  begin perform public.worker_claim_audit_batch_v1('synthetic-roundtrip-worker-token');raise exception 'human borrowed archive worker';exception when insufficient_privilege then null;end;reset role;
  insert into public.audit_events(organization_id,actor_user_id,action,resource_type,resource_id,metadata)
  values(org,'a11b0000-0000-4000-8000-000000000001','read.allowed','work','a11b0000-0000-4000-9000-000000000002','{"privateText":"must not leave the database","financialAmount":999999}');
- -- Select only our synthetic wake, preventing fixture dependence on an empty staging database.
- update private.audit_archive_wakes set archived_through_id=last_event_id where organization_id<>org;
- perform pg_temp.act_as('a4210000-0000-4000-8000-000000000001');set local role authenticated;
- claim:=public.worker_claim_audit_batch_v1('synthetic-roundtrip-worker-token');reset role;
+ -- Scoped internal consumer under the exact registered identity; no other tenant is mutated.
+ perform pg_temp.act_as('a4210000-0000-4000-8000-000000000001');
+ claim:=private.worker_claim_audit_batch_for_scope_v1('synthetic-roundtrip-worker-token',org);
  if claim->>'organizationId'<>org::text or not(claim->>'claimed')::boolean then raise exception 'wrong tenant batch claimed';end if;
  batch:=(claim->>'batchId')::uuid;payload:=(claim->>'canonicalPayload')::jsonb;
  if payload::text like '%must not leave%' or payload::text like '%999999%' or payload::text like '%privateText%'then raise exception 'financial metadata leaked';end if;
