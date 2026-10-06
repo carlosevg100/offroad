@@ -6270,3 +6270,7 @@ Migração aplicada não encerra o incremento. CI, merge, web e worker no mesmo 
 ## Etapa 20: candidata 3W e eval integrado 3X, 02/10/2026
 
 Histórico/pendências de revisão, reafirmação cosmética, reassociação, relato e contestação usam comandos com autoridade atual e efeitos fechados. O eval integra duas contas Auth, leitura nativa pelo Storage/Edge, mudança material, revogação e contagens de efeitos. Testes focais locais passaram; SQL, HTTP, Playwright, staging, produção e implantação ainda dependem dos gates. Esta nota não declara completion da etapa. Contratos e saldo: `docs/build/arcabouco/etapa-20-3w-consumidor.md` e `docs/build/arcabouco/etapa-20-3x-integrated-review-eval.md`.
+
+## 2026-10-06: continuidade autorizada: etapa 22
+
+A etapa 21 terminou na main `90e3c7d248cb4ba604a4519fd08239054b28f14a`; worker 522 e web implantados nesse commit. O completion local contém CI e publicação final. Próxima onda autorizada pelo fundador: 22, auditoria/retenção/revogação, com telas administrativas adiadas conforme decisão vigente. Inventário renovado para `wave-22` contra main e observação AWS CLI real, sem confundir observação técnica com assurance independente. Nenhuma regra automática de prazo para documentos de clientes foi adotada.

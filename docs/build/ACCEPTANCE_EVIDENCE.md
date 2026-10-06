@@ -4225,3 +4225,7 @@ Migração aplicada não encerra o incremento. CI, merge, web e worker no mesmo 
 ## Etapa 20: candidata 3W e eval integrado 3X, 02/10/2026
 
 Histórico/pendências de revisão, reafirmação cosmética, reassociação, relato e contestação usam comandos com autoridade atual e efeitos fechados. O eval integra duas contas Auth, leitura nativa pelo Storage/Edge, mudança material, revogação e contagens de efeitos. Testes focais locais passaram; SQL, HTTP, Playwright, staging, produção e implantação ainda dependem dos gates. Esta nota não declara completion da etapa. Contratos e saldo: `docs/build/arcabouco/etapa-20-3w-consumidor.md` e `docs/build/arcabouco/etapa-20-3x-integrated-review-eval.md`.
+
+## 2026-10-06: onda 22, pré-condição de publicação
+
+Baseline main `90e3c7d248cb4ba604a4519fd08239054b28f14a`. Evidência `docs/security/evidence/aws-worker-rollout-diagnostics-wave-22.json`: leitura AWS em sessão temporária existente; ECS revisão 522 PRIMARY COMPLETED, desired=running=1, pending=0. Role, política inline, trust e presença/ausência de boundary coletados; simulação wildcard implicitDeny não equivale à leitura efetiva por recurso. Hashes do inventário refeitos com bytes reais de git, renderer trusted com relógio corrente e testes negativos conservados. Nenhuma mudança IAM ou novo acesso foi feita.
